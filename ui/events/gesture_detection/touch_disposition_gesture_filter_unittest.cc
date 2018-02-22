@@ -275,7 +275,7 @@ class TouchDispositionGestureFilterTest
     GestureEventDetails details(type);
     details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
     return GestureEventData(
-        details, 0, MotionEvent::TOOL_TYPE_FINGER, base::TimeTicks(), x, y, 0,
+        details, 0, MotionEvent::ToolType::FINGER, base::TimeTicks(), x, y, 0,
         0, 1,
         gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter),
         kDefaultEventFlags, 0U);

@@ -421,12 +421,13 @@ void PrepareTextureCopyOutputResult(
 
 void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
   ui::MotionEventAndroid::Action action = event.GetAction();
-  if (action == ui::MotionEventAndroid::ACTION_DOWN ||
-      action == ui::MotionEventAndroid::ACTION_POINTER_DOWN ||
-      action == ui::MotionEventAndroid::ACTION_BUTTON_PRESS) {
-    UMA_HISTOGRAM_ENUMERATION("Event.AndroidActionDown.ToolType",
-                              event.GetToolType(0),
-                              ui::MotionEventAndroid::TOOL_TYPE_LAST + 1);
+  if (action == ui::MotionEventAndroid::Action::DOWN ||
+      action == ui::MotionEventAndroid::Action::POINTER_DOWN ||
+      action == ui::MotionEventAndroid::Action::BUTTON_PRESS) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Event.AndroidActionDown.ToolType",
+        static_cast<int>(event.GetToolType(0)),
+        static_cast<int>(ui::MotionEventAndroid::ToolType::LAST) + 1);
   }
 }
 
@@ -980,7 +981,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   // Send a proactive BeginFrame for this vsync to reduce scroll latency for
   // scroll-inducing touch events. Note that Android's Choreographer ensures
-  // that BeginFrame requests made during ACTION_MOVE dispatch will be honored
+  // that BeginFrame requests made during Action::MOVE dispatch will be honored
   // in the same vsync phase.
   if (observing_root_window_ && result.moved_beyond_slop_region)
     AddBeginFrameRequest(BEGIN_FRAME);
@@ -2377,17 +2378,17 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
   base::TimeTicks event_time = event.GetEventTime();
   base::TimeDelta delta = base::TimeTicks::Now() - event_time;
   switch (event.GetAction()) {
-    case ui::MotionEvent::ACTION_DOWN:
-    case ui::MotionEvent::ACTION_POINTER_DOWN:
+    case ui::MotionEvent::Action::DOWN:
+    case ui::MotionEvent::Action::POINTER_DOWN:
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_PRESSED",
                                   delta.InMicroseconds(), 1, 1000000, 50);
       return;
-    case ui::MotionEvent::ACTION_MOVE:
+    case ui::MotionEvent::Action::MOVE:
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_MOVED",
                                   delta.InMicroseconds(), 1, 1000000, 50);
       return;
-    case ui::MotionEvent::ACTION_UP:
-    case ui::MotionEvent::ACTION_POINTER_UP:
+    case ui::MotionEvent::Action::UP:
+    case ui::MotionEvent::Action::POINTER_UP:
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
                                   delta.InMicroseconds(), 1, 1000000, 50);
       return;

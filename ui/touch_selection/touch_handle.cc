@@ -165,11 +165,11 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
   if (!enabled_)
     return false;
 
-  if (!is_dragging_ && event.GetAction() != MotionEvent::ACTION_DOWN)
+  if (!is_dragging_ && event.GetAction() != MotionEvent::Action::DOWN)
     return false;
 
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN: {
+    case MotionEvent::Action::DOWN: {
       if (!is_visible_)
         return false;
       const gfx::PointF touch_point(event.GetX(), event.GetY());
@@ -191,7 +191,7 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
       BeginDrag();
     } break;
 
-    case MotionEvent::ACTION_MOVE: {
+    case MotionEvent::Action::MOVE: {
       gfx::PointF touch_move_position(event.GetX(), event.GetY());
       is_drag_within_tap_region_ &=
           client_->IsWithinTapSlop(touch_down_position_ - touch_move_position);
@@ -201,7 +201,7 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
       client_->OnDragUpdate(*this, touch_move_position + touch_drag_offset_);
     } break;
 
-    case MotionEvent::ACTION_UP: {
+    case MotionEvent::Action::UP: {
       if (is_drag_within_tap_region_ &&
           (event.GetEventTime() - touch_down_time_) <
               client_->GetMaxTapDuration()) {
@@ -211,7 +211,7 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
       EndDrag();
     } break;
 
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::CANCEL:
       EndDrag();
       break;
 

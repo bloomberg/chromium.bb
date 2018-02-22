@@ -36,8 +36,8 @@ float Lerp(float a, float b, float alpha) {
 }
 
 bool CanAddSample(const MotionEvent& event0, const MotionEvent& event1) {
-  DCHECK_EQ(event0.GetAction(), MotionEvent::ACTION_MOVE);
-  if (event1.GetAction() != MotionEvent::ACTION_MOVE)
+  DCHECK_EQ(event0.GetAction(), MotionEvent::Action::MOVE);
+  if (event1.GetAction() != MotionEvent::Action::MOVE)
     return false;
 
   const size_t pointer_count = event0.GetPointerCount();
@@ -57,8 +57,8 @@ bool CanAddSample(const MotionEvent& event0, const MotionEvent& event1) {
 }
 
 bool ShouldResampleTool(MotionEvent::ToolType tool) {
-  return tool == MotionEvent::TOOL_TYPE_UNKNOWN ||
-         tool == MotionEvent::TOOL_TYPE_FINGER;
+  return tool == MotionEvent::ToolType::UNKNOWN ||
+         tool == MotionEvent::ToolType::FINGER;
 }
 
 // Splits a chunk of events from the front of the provided |batch| and returns
@@ -109,7 +109,7 @@ std::unique_ptr<MotionEventGeneric> ResampleMotionEvent(
     const MotionEvent& event0,
     const MotionEvent& event1,
     base::TimeTicks resample_time) {
-  DCHECK_EQ(MotionEvent::ACTION_MOVE, event0.GetAction());
+  DCHECK_EQ(MotionEvent::Action::MOVE, event0.GetAction());
   DCHECK_EQ(event0.GetPointerCount(), event1.GetPointerCount());
 
   const base::TimeTicks time0 = event0.GetEventTime();
@@ -130,8 +130,8 @@ std::unique_ptr<MotionEventGeneric> ResampleMotionEvent(
         event0, event1, event0_i, static_cast<size_t>(event1_i), alpha);
 
     if (event0_i == 0) {
-      event.reset(new MotionEventGeneric(
-          MotionEvent::ACTION_MOVE, resample_time, pointer));
+      event.reset(new MotionEventGeneric(MotionEvent::Action::MOVE,
+                                         resample_time, pointer));
     } else {
       event->PushPointer(pointer);
     }
@@ -233,7 +233,7 @@ MotionEventBuffer::~MotionEventBuffer() {
 
 void MotionEventBuffer::OnMotionEvent(const MotionEvent& event) {
   DCHECK_EQ(0U, event.GetHistorySize());
-  if (event.GetAction() != MotionEvent::ACTION_MOVE) {
+  if (event.GetAction() != MotionEvent::Action::MOVE) {
     last_extrapolated_event_time_ = base::TimeTicks();
     if (!buffered_events_.empty())
       FlushWithoutResampling(std::move(buffered_events_));

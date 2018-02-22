@@ -36,16 +36,16 @@ namespace {
 
 static_assert(MotionEvent::MAX_POINTER_ID < 32, "max pointer id too large");
 
-// Threshold between ACTION_MOVE events for determining that a pointer has
-// stopped moving. Some input devices do not send ACTION_MOVE events in the case
-// where a pointer has stopped.  We need to detect this case so that we can
+// Threshold between Action::MOVE events for determining that a pointer has
+// stopped moving. Some input devices do not send Action::MOVE events in the
+// case where a pointer has stopped.  We need to detect this case so that we can
 // accurately predict the velocity after the pointer starts moving again.
 const int kAssumePointerMoveStoppedTimeMs = 40;
 
-// Threshold between ACTION_MOVE and ACTION_{UP|POINTER_UP} events for
+// Threshold between Action::MOVE and Action::{UP|POINTER_UP} events for
 // determining that a pointer has stopped moving. This is a larger threshold
 // than |kAssumePointerMoveStoppedTimeMs|, as some devices may delay synthesis
-// of ACTION_{UP|POINTER_UP} to reduce risk of noisy release.
+// of Action::{UP|POINTER_UP} to reduce risk of noisy release.
 const int kAssumePointerUpStoppedTimeMs = 80;
 
 struct Position {
@@ -297,15 +297,13 @@ void VelocityTracker::AddMovement(const TimeTicks& event_time,
 }
 
 void VelocityTracker::AddMovement(const MotionEvent& event) {
-  int32_t actionMasked = event.GetAction();
-
-  switch (actionMasked) {
-    case MotionEvent::ACTION_DOWN:
+  switch (event.GetAction()) {
+    case MotionEvent::Action::DOWN:
       // case MotionEvent::HOVER_ENTER:
       // Clear all pointers on down before adding the new movement.
       Clear();
       break;
-    case MotionEvent::ACTION_POINTER_DOWN: {
+    case MotionEvent::Action::POINTER_DOWN: {
       // Start a new movement trace for a pointer that just went down.
       // We do this on down instead of on up because the client may want to
       // query the final velocity for a pointer that just went up.
@@ -314,20 +312,20 @@ void VelocityTracker::AddMovement(const MotionEvent& event) {
       ClearPointers(downIdBits);
       break;
     }
-    case MotionEvent::ACTION_MOVE:
-      // case MotionEvent::ACTION_HOVER_MOVE:
+    case MotionEvent::Action::MOVE:
+      // case MotionEvent::Action::HOVER_MOVE:
       break;
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_POINTER_UP:
-      // Note that ACTION_UP and ACTION_POINTER_UP always report the last known
-      // position of the pointers that went up.  ACTION_POINTER_UP does include
-      // the new position of pointers that remained down but we will also
-      // receive an ACTION_MOVE with this information if any of them actually
-      // moved.  Since we don't know how many pointers will be going up at once
-      // it makes sense to just wait for the following ACTION_MOVE before adding
-      // the movement. However, if the up event itself is delayed because of
-      // (difficult albeit possible) prolonged stationary screen contact, assume
-      // that motion has stopped.
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::POINTER_UP:
+      // Note that Action::UP and Action::POINTER_UP always report the last
+      // known position of the pointers that went up.  Action::POINTER_UP does
+      // include the new position of pointers that remained down but we will
+      // also receive an Action::MOVE with this information if any of them
+      // actually moved.  Since we don't know how many pointers will be going up
+      // at once it makes sense to just wait for the following Action::MOVE
+      // before adding the movement. However, if the up event itself is delayed
+      // because of (difficult albeit possible) prolonged stationary screen
+      // contact, assume that motion has stopped.
       if ((event.GetEventTime() - last_event_time_) >=
           base::TimeDelta::FromMilliseconds(kAssumePointerUpStoppedTimeMs))
         strategy_->Clear();

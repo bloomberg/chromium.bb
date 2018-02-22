@@ -44,24 +44,24 @@ const int kInvalidTouchIndex = -1;
 
 WebInputEvent::Type ToWebTouchEventType(MotionEvent::Action action) {
   switch (action) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       return WebInputEvent::kTouchStart;
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::MOVE:
       return WebInputEvent::kTouchMove;
-    case MotionEvent::ACTION_UP:
+    case MotionEvent::Action::UP:
       return WebInputEvent::kTouchEnd;
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::CANCEL:
       return WebInputEvent::kTouchCancel;
-    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::Action::POINTER_DOWN:
       return WebInputEvent::kTouchStart;
-    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::Action::POINTER_UP:
       return WebInputEvent::kTouchEnd;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_HOVER_ENTER:
-    case MotionEvent::ACTION_HOVER_EXIT:
-    case MotionEvent::ACTION_HOVER_MOVE:
-    case MotionEvent::ACTION_BUTTON_PRESS:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::HOVER_ENTER:
+    case MotionEvent::Action::HOVER_EXIT:
+    case MotionEvent::Action::HOVER_MOVE:
+    case MotionEvent::Action::BUTTON_PRESS:
+    case MotionEvent::Action::BUTTON_RELEASE:
       break;
   }
   NOTREACHED() << "Invalid MotionEvent::Action = " << action;
@@ -69,50 +69,51 @@ WebInputEvent::Type ToWebTouchEventType(MotionEvent::Action action) {
 }
 
 // Note that the action index is meaningful only in the context of
-// |ACTION_POINTER_UP| and |ACTION_POINTER_DOWN|; other actions map directly to
-// WebTouchPoint::State.
+// |Action::POINTER_UP| and |Action::POINTER_DOWN|; other actions map directly
+// to WebTouchPoint::State.
 WebTouchPoint::State ToWebTouchPointState(const MotionEvent& event,
                                           size_t pointer_index) {
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       return WebTouchPoint::kStatePressed;
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::MOVE:
       return WebTouchPoint::kStateMoved;
-    case MotionEvent::ACTION_UP:
+    case MotionEvent::Action::UP:
       return WebTouchPoint::kStateReleased;
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::CANCEL:
       return WebTouchPoint::kStateCancelled;
-    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::Action::POINTER_DOWN:
       return static_cast<int>(pointer_index) == event.GetActionIndex()
                  ? WebTouchPoint::kStatePressed
                  : WebTouchPoint::kStateStationary;
-    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::Action::POINTER_UP:
       return static_cast<int>(pointer_index) == event.GetActionIndex()
                  ? WebTouchPoint::kStateReleased
                  : WebTouchPoint::kStateStationary;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_HOVER_ENTER:
-    case MotionEvent::ACTION_HOVER_EXIT:
-    case MotionEvent::ACTION_HOVER_MOVE:
-    case MotionEvent::ACTION_BUTTON_PRESS:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::HOVER_ENTER:
+    case MotionEvent::Action::HOVER_EXIT:
+    case MotionEvent::Action::HOVER_MOVE:
+    case MotionEvent::Action::BUTTON_PRESS:
+    case MotionEvent::Action::BUTTON_RELEASE:
       break;
   }
   NOTREACHED() << "Invalid MotionEvent::Action.";
   return WebTouchPoint::kStateUndefined;
 }
 
-WebPointerProperties::PointerType ToWebPointerType(int tool_type) {
-  switch (static_cast<MotionEvent::ToolType>(tool_type)) {
-    case MotionEvent::TOOL_TYPE_UNKNOWN:
+WebPointerProperties::PointerType ToWebPointerType(
+    MotionEvent::ToolType tool_type) {
+  switch (tool_type) {
+    case MotionEvent::ToolType::UNKNOWN:
       return WebPointerProperties::PointerType::kUnknown;
-    case MotionEvent::TOOL_TYPE_FINGER:
+    case MotionEvent::ToolType::FINGER:
       return WebPointerProperties::PointerType::kTouch;
-    case MotionEvent::TOOL_TYPE_STYLUS:
+    case MotionEvent::ToolType::STYLUS:
       return WebPointerProperties::PointerType::kPen;
-    case MotionEvent::TOOL_TYPE_MOUSE:
+    case MotionEvent::ToolType::MOUSE:
       return WebPointerProperties::PointerType::kMouse;
-    case MotionEvent::TOOL_TYPE_ERASER:
+    case MotionEvent::ToolType::ERASER:
       return WebPointerProperties::PointerType::kEraser;
   }
   NOTREACHED() << "Invalid MotionEvent::ToolType = " << tool_type;
@@ -940,23 +941,23 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
 
 WebInputEvent::Type ToWebMouseEventType(MotionEvent::Action action) {
   switch (action) {
-    case MotionEvent::ACTION_DOWN:
-    case MotionEvent::ACTION_BUTTON_PRESS:
+    case MotionEvent::Action::DOWN:
+    case MotionEvent::Action::BUTTON_PRESS:
       return WebInputEvent::kMouseDown;
-    case MotionEvent::ACTION_MOVE:
-    case MotionEvent::ACTION_HOVER_MOVE:
+    case MotionEvent::Action::MOVE:
+    case MotionEvent::Action::HOVER_MOVE:
       return WebInputEvent::kMouseMove;
-    case MotionEvent::ACTION_HOVER_ENTER:
+    case MotionEvent::Action::HOVER_ENTER:
       return WebInputEvent::kMouseEnter;
-    case MotionEvent::ACTION_HOVER_EXIT:
+    case MotionEvent::Action::HOVER_EXIT:
       return WebInputEvent::kMouseLeave;
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::BUTTON_RELEASE:
       return WebInputEvent::kMouseUp;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_CANCEL:
-    case MotionEvent::ACTION_POINTER_DOWN:
-    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::CANCEL:
+    case MotionEvent::Action::POINTER_DOWN:
+    case MotionEvent::Action::POINTER_UP:
       break;
   }
   NOTREACHED() << "Invalid MotionEvent::Action = " << action;
@@ -1051,11 +1052,11 @@ void SetWebPointerPropertiesFromMotionEventData(
     float tilt_x,
     float tilt_y,
     int android_buttons_changed,
-    int tool_type) {
+    MotionEvent::ToolType tool_type) {
   webPointerProperties.id = pointer_id;
   webPointerProperties.force = pressure;
 
-  if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
+  if (tool_type == MotionEvent::ToolType::STYLUS) {
     // A stylus points to a direction specified by orientation and tilts to
     // the opposite direction. Coordinate system is left-handed.
     webPointerProperties.tilt_x = tilt_x;

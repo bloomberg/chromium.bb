@@ -71,7 +71,7 @@ ScaleGestureDetector::~ScaleGestureDetector() {}
 bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   curr_time_ = event.GetEventTime();
 
-  const int action = event.GetAction();
+  const MotionEvent::Action action = event.GetAction();
 
   const int count = static_cast<int>(event.GetPointerCount());
   const bool is_stylus_button_down =
@@ -82,11 +82,11 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
       !is_stylus_button_down;
 
   const bool stream_complete =
-      action == MotionEvent::ACTION_UP ||
-      action == MotionEvent::ACTION_CANCEL || anchored_scale_cancelled ||
-      (action == MotionEvent::ACTION_POINTER_DOWN && InAnchoredScaleMode());
+      action == MotionEvent::Action::UP ||
+      action == MotionEvent::Action::CANCEL || anchored_scale_cancelled ||
+      (action == MotionEvent::Action::POINTER_DOWN && InAnchoredScaleMode());
 
-  if (action == MotionEvent::ACTION_DOWN || stream_complete) {
+  if (action == MotionEvent::Action::DOWN || stream_complete) {
     // Reset any scale in progress with the listener.
     // If it's an ACTION_DOWN we're beginning a new event stream.
     // This means the app probably didn't give us all the events. Shame on it.
@@ -110,12 +110,12 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     initial_span_ = 0;
   }
 
-  const bool config_changed = action == MotionEvent::ACTION_DOWN ||
-                              action == MotionEvent::ACTION_POINTER_UP ||
-                              action == MotionEvent::ACTION_POINTER_DOWN ||
+  const bool config_changed = action == MotionEvent::Action::DOWN ||
+                              action == MotionEvent::Action::POINTER_UP ||
+                              action == MotionEvent::Action::POINTER_DOWN ||
                               anchored_scale_cancelled;
 
-  const bool pointer_up = action == MotionEvent::ACTION_POINTER_UP;
+  const bool pointer_up = action == MotionEvent::Action::POINTER_UP;
   const int skip_index = pointer_up ? event.GetActionIndex() : -1;
 
   // Determine focal point.
@@ -210,7 +210,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
 
   // Handle motion; focal point and span/scale factor are changing.
-  if (action == MotionEvent::ACTION_MOVE) {
+  if (action == MotionEvent::Action::MOVE) {
     curr_span_x_ = span_x;
     curr_span_y_ = span_y;
     curr_span_ = span;

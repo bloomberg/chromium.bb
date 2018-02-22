@@ -72,7 +72,7 @@ TEST(MotionEventAndroidTest, Constructor) {
       action_index, kAndroidActionButton, kAndroidButtonPrimary,
       kAndroidAltKeyDown, raw_offset, -raw_offset, false, &p0, &p1);
 
-  EXPECT_EQ(MotionEvent::ACTION_DOWN, event.GetAction());
+  EXPECT_EQ(MotionEvent::Action::DOWN, event.GetAction());
   EXPECT_EQ(event_time, event.GetEventTime());
   EXPECT_EQ(p0.pos_x_pixels * kPixToDip, event.GetX(0));
   EXPECT_EQ(p0.pos_y_pixels * kPixToDip, event.GetY(0));
@@ -96,8 +96,8 @@ TEST(MotionEventAndroidTest, Constructor) {
               float_error);
   EXPECT_EQ(p0.id, event.GetPointerId(0));
   EXPECT_EQ(p1.id, event.GetPointerId(1));
-  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
-  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
+  EXPECT_EQ(MotionEvent::ToolType::FINGER, event.GetToolType(0));
+  EXPECT_EQ(MotionEvent::ToolType::FINGER, event.GetToolType(1));
   EXPECT_EQ(MotionEvent::BUTTON_PRIMARY, event.GetButtonState());
   EXPECT_EQ(ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON, event.GetFlags());
   EXPECT_EQ(static_cast<size_t>(pointer_count), event.GetPointerCount());
@@ -136,7 +136,7 @@ TEST(MotionEventAndroidTest, Cancel) {
                            0, false, &p0, nullptr);
 
   std::unique_ptr<MotionEvent> cancel_event = event.Cancel();
-  EXPECT_EQ(MotionEvent::ACTION_CANCEL, cancel_event->GetAction());
+  EXPECT_EQ(MotionEvent::Action::CANCEL, cancel_event->GetAction());
   EXPECT_EQ(event_time, cancel_event->GetEventTime());
   EXPECT_EQ(p0.pos_x_pixels * kPixToDip, cancel_event->GetX(0));
   EXPECT_EQ(p0.pos_y_pixels * kPixToDip, cancel_event->GetY(0));
@@ -193,7 +193,7 @@ TEST(MotionEventAndroidTest, ActionIndexForPointerDown) {
                            pointer_count, history_size, action_index, 0, 0, 0,
                            0, 0, false, &p0, &p1);
 
-  EXPECT_EQ(MotionEvent::ACTION_POINTER_DOWN, event.GetAction());
+  EXPECT_EQ(MotionEvent::Action::POINTER_DOWN, event.GetAction());
   EXPECT_EQ(action_index, event.GetActionIndex());
 }
 

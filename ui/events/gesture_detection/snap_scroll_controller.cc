@@ -51,12 +51,12 @@ void SnapScrollController::SetSnapScrollMode(
     const MotionEvent& event,
     bool is_scale_gesture_detection_in_progress) {
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       mode_ = SNAP_PENDING;
       down_position_.set_x(event.GetX());
       down_position_.set_y(event.GetY());
       break;
-    case MotionEvent::ACTION_MOVE: {
+    case MotionEvent::Action::MOVE: {
       if (is_scale_gesture_detection_in_progress)
         break;
 
@@ -80,8 +80,8 @@ void SnapScrollController::SetSnapScrollMode(
       if (mode_ == SNAP_PENDING && dx > kMaxSnapBound && dy > kMaxSnapBound)
         mode_ = SNAP_NONE;
     } break;
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::CANCEL:
       down_position_ = gfx::PointF();
       accumulated_distance_ = gfx::Vector2dF();
       break;

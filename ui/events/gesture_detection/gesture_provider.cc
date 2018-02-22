@@ -28,30 +28,30 @@ const float kDoubleTapDragZoomSpeed = 0.005f;
 
 const char* GetMotionEventActionName(MotionEvent::Action action) {
   switch (action) {
-    case MotionEvent::ACTION_NONE:
-      return "ACTION_NONE";
-    case MotionEvent::ACTION_POINTER_DOWN:
-      return "ACTION_POINTER_DOWN";
-    case MotionEvent::ACTION_POINTER_UP:
-      return "ACTION_POINTER_UP";
-    case MotionEvent::ACTION_DOWN:
-      return "ACTION_DOWN";
-    case MotionEvent::ACTION_UP:
-      return "ACTION_UP";
-    case MotionEvent::ACTION_CANCEL:
-      return "ACTION_CANCEL";
-    case MotionEvent::ACTION_MOVE:
-      return "ACTION_MOVE";
-    case MotionEvent::ACTION_HOVER_ENTER:
-      return "ACTION_HOVER_ENTER";
-    case MotionEvent::ACTION_HOVER_EXIT:
-      return "ACTION_HOVER_EXIT";
-    case MotionEvent::ACTION_HOVER_MOVE:
-      return "ACTION_HOVER_MOVE";
-    case MotionEvent::ACTION_BUTTON_PRESS:
-      return "ACTION_BUTTON_PRESS";
-    case MotionEvent::ACTION_BUTTON_RELEASE:
-      return "ACTION_BUTTON_RELEASE";
+    case MotionEvent::Action::NONE:
+      return "Action::NONE";
+    case MotionEvent::Action::POINTER_DOWN:
+      return "Action::POINTER_DOWN";
+    case MotionEvent::Action::POINTER_UP:
+      return "Action::POINTER_UP";
+    case MotionEvent::Action::DOWN:
+      return "Action::DOWN";
+    case MotionEvent::Action::UP:
+      return "Action::UP";
+    case MotionEvent::Action::CANCEL:
+      return "Action::CANCEL";
+    case MotionEvent::Action::MOVE:
+      return "Action::MOVE";
+    case MotionEvent::Action::HOVER_ENTER:
+      return "Action::HOVER_ENTER";
+    case MotionEvent::Action::HOVER_EXIT:
+      return "Action::HOVER_EXIT";
+    case MotionEvent::Action::HOVER_MOVE:
+      return "Action::HOVER_MOVE";
+    case MotionEvent::Action::BUTTON_PRESS:
+      return "Action::BUTTON_PRESS";
+    case MotionEvent::Action::BUTTON_RELEASE:
+      return "Action::BUTTON_RELEASE";
   }
   return "";
 }
@@ -118,7 +118,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       SetIgnoreSingleTap(true);
 
     const MotionEvent::Action action = event.GetAction();
-    if (action == MotionEvent::ACTION_DOWN) {
+    if (action == MotionEvent::Action::DOWN) {
       current_down_time_ = event.GetEventTime();
       current_longpress_time_ = base::TimeTicks();
       ignore_single_tap_ = false;
@@ -132,14 +132,14 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     gesture_detector_.OnTouchEvent(event);
     scale_gesture_detector_.OnTouchEvent(event);
 
-    if (action == MotionEvent::ACTION_UP ||
-        action == MotionEvent::ACTION_CANCEL) {
+    if (action == MotionEvent::Action::UP ||
+        action == MotionEvent::Action::CANCEL) {
       // Note: This call will have no effect if a fling was just generated, as
       // |Fling()| will have already signalled an end to touch-scrolling.
       if (scroll_event_sent_)
         Send(CreateGesture(ET_GESTURE_SCROLL_END, event));
       current_down_time_ = base::TimeTicks();
-    } else if (action == MotionEvent::ACTION_MOVE) {
+    } else if (action == MotionEvent::Action::MOVE) {
       if (!show_press_event_sent_ && !scroll_event_sent_) {
         max_diameter_before_show_press_ =
             std::max(max_diameter_before_show_press_, event.GetTouchMajor());
@@ -157,8 +157,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
            gesture.type() == ET_GESTURE_BEGIN ||
            gesture.type() == ET_GESTURE_END);
 
-    if (gesture.primary_tool_type == MotionEvent::TOOL_TYPE_UNKNOWN ||
-        gesture.primary_tool_type == MotionEvent::TOOL_TYPE_FINGER) {
+    if (gesture.primary_tool_type == MotionEvent::ToolType::UNKNOWN ||
+        gesture.primary_tool_type == MotionEvent::ToolType::FINGER) {
       gesture.details.set_bounding_box(
           ClampBoundingBox(gesture.details.bounding_box_f(),
                            config_.min_gesture_bounds_length,
@@ -458,7 +458,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       }
     }
 
-    if (e.GetAction() == MotionEvent::ACTION_UP &&
+    if (e.GetAction() == MotionEvent::Action::UP &&
         !current_longpress_time_.is_null() &&
         !IsScaleGestureDetectionInProgress()) {
       GestureEventDetails long_tap_details(ET_GESTURE_LONG_TAP);
@@ -481,11 +481,11 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   bool OnDoubleTapEvent(const MotionEvent& e) override {
     switch (e.GetAction()) {
-      case MotionEvent::ACTION_DOWN:
+      case MotionEvent::Action::DOWN:
         gesture_detector_.set_longpress_enabled(false);
         break;
 
-      case MotionEvent::ACTION_UP:
+      case MotionEvent::Action::UP:
         if (!IsPinchInProgress() && !IsScrollInProgress()) {
           Send(CreateTapGesture(ET_GESTURE_DOUBLE_TAP, e, 1));
           return true;
@@ -804,9 +804,8 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
 }
 
 void GestureProvider::ResetDetection() {
-  MotionEventGeneric generic_cancel_event(MotionEvent::ACTION_CANCEL,
-                                          base::TimeTicks::Now(),
-                                          PointerProperties());
+  MotionEventGeneric generic_cancel_event(
+      MotionEvent::Action::CANCEL, base::TimeTicks::Now(), PointerProperties());
   OnTouchEvent(generic_cancel_event);
 }
 
@@ -844,19 +843,20 @@ bool GestureProvider::CanHandle(const MotionEvent& event) const {
   // Aura requires one cancel event per touch point, whereas Android requires
   // one cancel event per touch sequence. Thus we need to allow extra cancel
   // events.
-  return current_down_event_ || event.GetAction() == MotionEvent::ACTION_DOWN ||
-         event.GetAction() == MotionEvent::ACTION_CANCEL;
+  return current_down_event_ ||
+         event.GetAction() == MotionEvent::Action::DOWN ||
+         event.GetAction() == MotionEvent::Action::CANCEL;
 }
 
 void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       current_down_event_ = event.Clone();
       if (gesture_begin_end_types_enabled_)
         gesture_listener_->Send(
             gesture_listener_->CreateGesture(ET_GESTURE_BEGIN, event));
       break;
-    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::Action::POINTER_DOWN:
       if (gesture_begin_end_types_enabled_) {
         const int action_index = event.GetActionIndex();
         gesture_listener_->Send(gesture_listener_->CreateGesture(
@@ -873,17 +873,17 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
             event.GetFlags()));
       }
       break;
-    case MotionEvent::ACTION_POINTER_UP:
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL:
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::POINTER_UP:
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::CANCEL:
+    case MotionEvent::Action::MOVE:
       break;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_HOVER_ENTER:
-    case MotionEvent::ACTION_HOVER_EXIT:
-    case MotionEvent::ACTION_HOVER_MOVE:
-    case MotionEvent::ACTION_BUTTON_PRESS:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::HOVER_ENTER:
+    case MotionEvent::Action::HOVER_EXIT:
+    case MotionEvent::Action::HOVER_MOVE:
+    case MotionEvent::Action::BUTTON_PRESS:
+    case MotionEvent::Action::BUTTON_RELEASE:
       NOTREACHED();
       break;
   }
@@ -891,8 +891,8 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
 
 void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL: {
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::CANCEL: {
       if (gesture_begin_end_types_enabled_)
         gesture_listener_->Send(
             gesture_listener_->CreateGesture(ET_GESTURE_END, event));
@@ -902,21 +902,21 @@ void GestureProvider::OnTouchEventHandlingEnd(const MotionEvent& event) {
       UpdateDoubleTapDetectionSupport();
       break;
     }
-    case MotionEvent::ACTION_POINTER_UP:
+    case MotionEvent::Action::POINTER_UP:
       if (gesture_begin_end_types_enabled_)
         gesture_listener_->Send(
             gesture_listener_->CreateGesture(ET_GESTURE_END, event));
       break;
-    case MotionEvent::ACTION_DOWN:
-    case MotionEvent::ACTION_POINTER_DOWN:
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::DOWN:
+    case MotionEvent::Action::POINTER_DOWN:
+    case MotionEvent::Action::MOVE:
       break;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_HOVER_ENTER:
-    case MotionEvent::ACTION_HOVER_EXIT:
-    case MotionEvent::ACTION_HOVER_MOVE:
-    case MotionEvent::ACTION_BUTTON_PRESS:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::HOVER_ENTER:
+    case MotionEvent::Action::HOVER_EXIT:
+    case MotionEvent::Action::HOVER_MOVE:
+    case MotionEvent::Action::BUTTON_PRESS:
+    case MotionEvent::Action::BUTTON_RELEASE:
       NOTREACHED();
       break;
   }

@@ -19,30 +19,23 @@ namespace ui {
 // subset of Android's MotionEvent API used in gesture detection.
 class GESTURE_DETECTION_EXPORT MotionEvent {
  public:
-  enum Action {
-    ACTION_NONE,
-    ACTION_DOWN,
-    ACTION_UP,
-    ACTION_MOVE,
-    ACTION_CANCEL,
-    ACTION_POINTER_DOWN,
-    ACTION_POINTER_UP,
-    ACTION_HOVER_ENTER,
-    ACTION_HOVER_EXIT,
-    ACTION_HOVER_MOVE,
-    ACTION_BUTTON_PRESS,
-    ACTION_BUTTON_RELEASE,
-    ACTION_LAST = ACTION_BUTTON_RELEASE
+  enum class Action {
+    NONE,
+    DOWN,
+    UP,
+    MOVE,
+    CANCEL,
+    POINTER_DOWN,
+    POINTER_UP,
+    HOVER_ENTER,
+    HOVER_EXIT,
+    HOVER_MOVE,
+    BUTTON_PRESS,
+    BUTTON_RELEASE,
+    LAST = BUTTON_RELEASE
   };
 
-  enum ToolType {
-    TOOL_TYPE_UNKNOWN,
-    TOOL_TYPE_FINGER,
-    TOOL_TYPE_STYLUS,
-    TOOL_TYPE_MOUSE,
-    TOOL_TYPE_ERASER,
-    TOOL_TYPE_LAST = TOOL_TYPE_ERASER
-  };
+  enum class ToolType { UNKNOWN, FINGER, STYLUS, MOUSE, ERASER, LAST = ERASER };
 
   enum ButtonType {
     BUTTON_PRIMARY = 1 << 0,
@@ -63,8 +56,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   // An unique identifier this motion event.
   virtual uint32_t GetUniqueEventId() const = 0;
   virtual Action GetAction() const = 0;
-  // Only valid if |GetAction()| returns ACTION_POINTER_UP or
-  // ACTION_POINTER_DOWN.
+  // Only valid if |GetAction()| returns Action::POINTER_UP or
+  // Action::POINTER_DOWN.
   virtual int GetActionIndex() const = 0;
   virtual size_t GetPointerCount() const = 0;
   virtual int GetPointerId(size_t pointer_index) const = 0;
@@ -138,6 +131,13 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   std::unique_ptr<MotionEvent> Clone() const;
   std::unique_ptr<MotionEvent> Cancel() const;
 };
+
+GESTURE_DETECTION_EXPORT std::ostream& operator<<(
+    std::ostream& stream,
+    const MotionEvent::Action action);
+GESTURE_DETECTION_EXPORT std::ostream& operator<<(
+    std::ostream& stream,
+    const MotionEvent::ToolType tool_type);
 
 }  // namespace ui
 

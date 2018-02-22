@@ -22,19 +22,19 @@ void GestureTouchUMAHistogram::RecordGestureEvent(
 }
 
 void GestureTouchUMAHistogram::RecordTouchEvent(const MotionEvent& event) {
-  if (event.GetAction() == MotionEvent::ACTION_DOWN) {
+  if (event.GetAction() == MotionEvent::Action::DOWN) {
     start_time_ = event.GetEventTime();
     start_touch_position_ = gfx::Point(event.GetX(), event.GetY());
     is_single_finger_ = true;
     max_distance_from_start_squared_ = 0;
-  } else if (event.GetAction() == MotionEvent::ACTION_MOVE &&
+  } else if (event.GetAction() == MotionEvent::Action::MOVE &&
              is_single_finger_) {
     float cur_dist = (start_touch_position_ -
                       gfx::Point(event.GetX(), event.GetY())).LengthSquared();
     if (cur_dist > max_distance_from_start_squared_)
       max_distance_from_start_squared_ = cur_dist;
   } else {
-    if (event.GetAction() == MotionEvent::ACTION_UP && is_single_finger_) {
+    if (event.GetAction() == MotionEvent::Action::UP && is_single_finger_) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.TouchMaxDistance",
           static_cast<int>(sqrt(max_distance_from_start_squared_)),

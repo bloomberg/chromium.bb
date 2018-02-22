@@ -20,7 +20,7 @@ PointerProperties::PointerProperties()
 
 PointerProperties::PointerProperties(float x, float y, float touch_major)
     : id(0),
-      tool_type(MotionEvent::TOOL_TYPE_UNKNOWN),
+      tool_type(MotionEvent::ToolType::UNKNOWN),
       x(x),
       y(y),
       raw_x(x),
@@ -119,7 +119,7 @@ MotionEvent::Action MotionEventGeneric::GetAction() const {
 }
 
 int MotionEventGeneric::GetActionIndex() const {
-  DCHECK(action_ == ACTION_POINTER_DOWN || action_ == ACTION_POINTER_UP);
+  DCHECK(action_ == Action::POINTER_DOWN || action_ == Action::POINTER_UP);
   DCHECK_GE(action_index_, 0);
   DCHECK_LT(action_index_, static_cast<int>(pointers_->size()));
   return action_index_;
@@ -244,7 +244,7 @@ std::unique_ptr<MotionEventGeneric> MotionEventGeneric::CancelEvent(
   bool with_history = false;
   std::unique_ptr<MotionEventGeneric> cancel_event(
       new MotionEventGeneric(event, with_history));
-  cancel_event->set_action(ACTION_CANCEL);
+  cancel_event->set_action(Action::CANCEL);
   cancel_event->set_unique_event_id(ui::GetNextTouchEventId());
   return cancel_event;
 }
@@ -263,7 +263,7 @@ void MotionEventGeneric::RemovePointerAt(size_t index) {
 void MotionEventGeneric::PushHistoricalEvent(
     std::unique_ptr<MotionEvent> event) {
   DCHECK(event);
-  DCHECK_EQ(event->GetAction(), ACTION_MOVE);
+  DCHECK_EQ(event->GetAction(), Action::MOVE);
   DCHECK_EQ(event->GetPointerCount(), GetPointerCount());
   DCHECK_EQ(event->GetAction(), GetAction());
   DCHECK_LE(event->GetEventTime(), GetEventTime());
@@ -271,11 +271,10 @@ void MotionEventGeneric::PushHistoricalEvent(
 }
 
 MotionEventGeneric::MotionEventGeneric()
-    : action_(ACTION_NONE),
+    : action_(Action::NONE),
       unique_event_id_(ui::GetNextTouchEventId()),
       action_index_(-1),
-      button_state_(0) {
-}
+      button_state_(0) {}
 
 MotionEventGeneric::MotionEventGeneric(const MotionEvent& event,
                                        bool with_history)
@@ -283,7 +282,7 @@ MotionEventGeneric::MotionEventGeneric(const MotionEvent& event,
       event_time_(event.GetEventTime()),
       unique_event_id_(event.GetUniqueEventId()),
       action_index_(
-          (action_ == ACTION_POINTER_UP || action_ == ACTION_POINTER_DOWN)
+          (action_ == Action::POINTER_UP || action_ == Action::POINTER_DOWN)
               ? event.GetActionIndex()
               : 0),
       button_state_(event.GetButtonState()),
@@ -299,7 +298,7 @@ MotionEventGeneric::MotionEventGeneric(const MotionEvent& event,
   for (size_t h = 0; h < history_size; ++h) {
     std::unique_ptr<MotionEventGeneric> historical_event(
         new MotionEventGeneric());
-    historical_event->set_action(ACTION_MOVE);
+    historical_event->set_action(Action::MOVE);
     historical_event->set_event_time(event.GetHistoricalEventTime(h));
     for (size_t i = 0; i < pointer_count; ++i) {
       historical_event->PushPointer(

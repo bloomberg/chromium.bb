@@ -15,8 +15,8 @@ namespace ui {
 
 TEST(MotionEventGenericTest, Basic) {
   base::TimeTicks event_time = base::TimeTicks::Now();
-  MotionEventGeneric event(
-      MotionEvent::ACTION_DOWN, event_time, PointerProperties());
+  MotionEventGeneric event(MotionEvent::Action::DOWN, event_time,
+                           PointerProperties());
   EXPECT_EQ(1U, event.GetPointerCount());
   EXPECT_EQ(0U, event.GetHistorySize());
   EXPECT_EQ(event_time, event.GetEventTime());
@@ -38,8 +38,8 @@ TEST(MotionEventGenericTest, Basic) {
   event.pointer(0).id = 3;
   EXPECT_EQ(3, event.GetPointerId(0));
 
-  event.set_action(MotionEvent::ACTION_POINTER_DOWN);
-  EXPECT_EQ(MotionEvent::ACTION_POINTER_DOWN, event.GetAction());
+  event.set_action(MotionEvent::Action::POINTER_DOWN);
+  EXPECT_EQ(MotionEvent::Action::POINTER_DOWN, event.GetAction());
 
   event_time += base::TimeDelta::FromMilliseconds(5);
   event.set_event_time(event_time);
@@ -54,16 +54,15 @@ TEST(MotionEventGenericTest, Basic) {
   event.set_action_index(1);
   EXPECT_EQ(1, event.GetActionIndex());
 
-  event.set_action(MotionEvent::ACTION_MOVE);
-  EXPECT_EQ(MotionEvent::ACTION_MOVE, event.GetAction());
+  event.set_action(MotionEvent::Action::MOVE);
+  EXPECT_EQ(MotionEvent::Action::MOVE, event.GetAction());
 
   PointerProperties historical_pointer0(1.2f, 2.4f, 1.f);
   PointerProperties historical_pointer1(2.4f, 4.8f, 2.f);
   PointerProperties historical_pointer2(4.8f, 9.6f, 3.f);
   MotionEventGeneric historical_event(
-      MotionEvent::ACTION_MOVE,
-      event_time - base::TimeDelta::FromMilliseconds(5),
-      historical_pointer0);
+      MotionEvent::Action::MOVE,
+      event_time - base::TimeDelta::FromMilliseconds(5), historical_pointer0);
   historical_event.PushPointer(historical_pointer1);
   historical_event.PushPointer(historical_pointer2);
 
@@ -83,8 +82,7 @@ TEST(MotionEventGenericTest, Basic) {
 }
 
 TEST(MotionEventGenericTest, Clone) {
-  MotionEventGeneric event(MotionEvent::ACTION_DOWN,
-                           base::TimeTicks::Now(),
+  MotionEventGeneric event(MotionEvent::Action::DOWN, base::TimeTicks::Now(),
                            PointerProperties(8.3f, 4.7f, 2.f));
   event.set_button_state(MotionEvent::BUTTON_PRIMARY);
 
@@ -100,11 +98,11 @@ TEST(MotionEventGenericTest, CloneWithHistory) {
       event_time - base::TimeDelta::FromMilliseconds(5);
 
   PointerProperties pointer(8.3f, 4.7f, 10.1f);
-  MotionEventGeneric event(MotionEvent::ACTION_MOVE, event_time, pointer);
+  MotionEventGeneric event(MotionEvent::Action::MOVE, event_time, pointer);
 
   PointerProperties historical_pointer(3.4f, -4.3f, 11.5);
   std::unique_ptr<MotionEvent> historical_event(new MotionEventGeneric(
-      MotionEvent::ACTION_MOVE, historical_event_time, historical_pointer));
+      MotionEvent::Action::MOVE, historical_event_time, historical_pointer));
 
   event.PushHistoricalEvent(std::move(historical_event));
   EXPECT_EQ(1U, event.GetHistorySize());
@@ -116,13 +114,12 @@ TEST(MotionEventGenericTest, CloneWithHistory) {
 }
 
 TEST(MotionEventGenericTest, Cancel) {
-  MotionEventGeneric event(MotionEvent::ACTION_UP,
-                           base::TimeTicks::Now(),
+  MotionEventGeneric event(MotionEvent::Action::UP, base::TimeTicks::Now(),
                            PointerProperties(8.7f, 4.3f, 1.f));
   event.set_button_state(MotionEvent::BUTTON_SECONDARY);
 
   std::unique_ptr<MotionEvent> cancel = event.Cancel();
-  event.set_action(MotionEvent::ACTION_CANCEL);
+  event.set_action(MotionEvent::Action::CANCEL);
   ASSERT_TRUE(cancel);
   EXPECT_NE(event.GetUniqueEventId(), cancel->GetUniqueEventId());
   EXPECT_EQ(test::ToString(event), test::ToString(*cancel));
@@ -132,7 +129,7 @@ TEST(MotionEventGenericTest, FindPointerIndexOfId) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   PointerProperties pointer;
   pointer.id = 0;
-  MotionEventGeneric event0(MotionEvent::ACTION_DOWN, event_time, pointer);
+  MotionEventGeneric event0(MotionEvent::Action::DOWN, event_time, pointer);
   EXPECT_EQ(0, event0.FindPointerIndexOfId(0));
   EXPECT_EQ(-1, event0.FindPointerIndexOfId(1));
   EXPECT_EQ(-1, event0.FindPointerIndexOfId(-1));
@@ -159,7 +156,7 @@ TEST(MotionEventGenericTest, RemovePointerAt) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   PointerProperties pointer;
   pointer.id = 0;
-  MotionEventGeneric event(MotionEvent::ACTION_DOWN, event_time, pointer);
+  MotionEventGeneric event(MotionEvent::Action::DOWN, event_time, pointer);
 
   pointer.id = 7;
   EXPECT_EQ(1u, event.PushPointer(pointer));
@@ -245,19 +242,19 @@ TEST(MotionEventGenericTest, ToString) {
   pointer0.touch_major = 35;
   pointer0.orientation = -1;
 
-  MotionEventGeneric event(MotionEvent::ACTION_MOVE, event_time, pointer0);
+  MotionEventGeneric event(MotionEvent::Action::MOVE, event_time, pointer0);
   event.PushPointer(pointer1);
 
   pointer0.x += 50;
   pointer1.x -= 50;
   std::unique_ptr<MotionEventGeneric> historical_event0(new MotionEventGeneric(
-      MotionEvent::ACTION_MOVE, historical_event_time0, pointer0));
+      MotionEvent::Action::MOVE, historical_event_time0, pointer0));
   historical_event0->PushPointer(pointer1);
 
   pointer0.x += 100;
   pointer1.x -= 100;
   std::unique_ptr<MotionEventGeneric> historical_event1(new MotionEventGeneric(
-      MotionEvent::ACTION_MOVE, historical_event_time1, pointer0));
+      MotionEvent::Action::MOVE, historical_event_time1, pointer0));
   historical_event1->PushPointer(pointer1);
 
   event.PushHistoricalEvent(std::move(historical_event0));

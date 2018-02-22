@@ -12,15 +12,15 @@ namespace {
 
 EventPointerType ToEventPointerType(MotionEvent::ToolType tool_type) {
   switch (tool_type) {
-    case MotionEvent::TOOL_TYPE_UNKNOWN:
+    case MotionEvent::ToolType::UNKNOWN:
       return EventPointerType::POINTER_TYPE_UNKNOWN;
-    case MotionEvent::TOOL_TYPE_FINGER:
+    case MotionEvent::ToolType::FINGER:
       return EventPointerType::POINTER_TYPE_TOUCH;
-    case MotionEvent::TOOL_TYPE_STYLUS:
+    case MotionEvent::ToolType::STYLUS:
       return EventPointerType::POINTER_TYPE_PEN;
-    case MotionEvent::TOOL_TYPE_MOUSE:
+    case MotionEvent::ToolType::MOUSE:
       return EventPointerType::POINTER_TYPE_MOUSE;
-    case MotionEvent::TOOL_TYPE_ERASER:
+    case MotionEvent::ToolType::ERASER:
       return EventPointerType::POINTER_TYPE_ERASER;
     default:
       NOTREACHED() << "Invalid ToolType = " << tool_type;
@@ -80,13 +80,12 @@ GestureEventData::GestureEventData(const GestureEventData& other) = default;
 
 GestureEventData::GestureEventData()
     : motion_event_id(0),
-      primary_tool_type(MotionEvent::TOOL_TYPE_UNKNOWN),
+      primary_tool_type(MotionEvent::ToolType::UNKNOWN),
       x(0),
       y(0),
       raw_x(0),
       raw_y(0),
       flags(EF_NONE),
-      unique_touch_event_id(0U) {
-}
+      unique_touch_event_id(0U) {}
 
 }  //  namespace ui

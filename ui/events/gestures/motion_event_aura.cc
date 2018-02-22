@@ -14,18 +14,18 @@ MotionEvent::ToolType EventPointerTypeToMotionEventToolType(
     EventPointerType type) {
   switch (type) {
     case EventPointerType::POINTER_TYPE_UNKNOWN:
-      return MotionEvent::TOOL_TYPE_UNKNOWN;
+      return MotionEvent::ToolType::UNKNOWN;
     case EventPointerType::POINTER_TYPE_MOUSE:
-      return MotionEvent::TOOL_TYPE_MOUSE;
+      return MotionEvent::ToolType::MOUSE;
     case EventPointerType::POINTER_TYPE_PEN:
-      return MotionEvent::TOOL_TYPE_STYLUS;
+      return MotionEvent::ToolType::STYLUS;
     case EventPointerType::POINTER_TYPE_TOUCH:
-      return MotionEvent::TOOL_TYPE_FINGER;
+      return MotionEvent::ToolType::FINGER;
     case EventPointerType::POINTER_TYPE_ERASER:
-      return MotionEvent::TOOL_TYPE_ERASER;
+      return MotionEvent::ToolType::ERASER;
   }
 
-  return MotionEvent::TOOL_TYPE_UNKNOWN;
+  return MotionEvent::ToolType::UNKNOWN;
 }
 
 PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
@@ -128,7 +128,7 @@ void MotionEventAura::CleanupRemovedTouchPoints(const TouchEvent& event) {
   DCHECK(GetPointerCount());
   int index_to_delete = GetIndexFromId(event.pointer_details().id);
   set_action_index(-1);
-  set_action(MotionEvent::ACTION_NONE);
+  set_action(MotionEvent::Action::NONE);
   pointer(index_to_delete) = pointer(GetPointerCount() - 1);
   PopPointer();
 }
@@ -156,25 +156,25 @@ void MotionEventAura::UpdateCachedAction(const TouchEvent& touch) {
   switch (touch.type()) {
     case ET_TOUCH_PRESSED:
       if (GetPointerCount() == 1) {
-        set_action(ACTION_DOWN);
+        set_action(Action::DOWN);
       } else {
-        set_action(ACTION_POINTER_DOWN);
+        set_action(Action::POINTER_DOWN);
         set_action_index(GetIndexFromId(touch.pointer_details().id));
       }
       break;
     case ET_TOUCH_RELEASED:
       if (GetPointerCount() == 1) {
-        set_action(ACTION_UP);
+        set_action(Action::UP);
       } else {
-        set_action(ACTION_POINTER_UP);
+        set_action(Action::POINTER_UP);
         set_action_index(GetIndexFromId(touch.pointer_details().id));
       }
       break;
     case ET_TOUCH_CANCELLED:
-      set_action(ACTION_CANCEL);
+      set_action(Action::CANCEL);
       break;
     case ET_TOUCH_MOVED:
-      set_action(ACTION_MOVE);
+      set_action(Action::MOVE);
       break;
     default:
       NOTREACHED();

@@ -20,43 +20,91 @@ using base::android::ScopedJavaLocalRef;
 namespace ui {
 namespace {
 
-#define EVENT_CASE(x)      \
-  case JNI_MotionEvent::x: \
-    return MotionEventAndroid::x
+#define ACTION_CASE(x)              \
+  case JNI_MotionEvent::ACTION_##x: \
+    return MotionEventAndroid::Action::x
+
+#define ACTION_REVERSE_CASE(x)        \
+  case MotionEventAndroid::Action::x: \
+    return JNI_MotionEvent::ACTION_##x
+
+#define TOOL_TYPE_CASE(x)              \
+  case JNI_MotionEvent::TOOL_TYPE_##x: \
+    return MotionEventAndroid::ToolType::x
+
+#define TOOL_TYPE_REVERSE_CASE(x)       \
+  case MotionEventAndroid::ToolType::x: \
+    return JNI_MotionEvent::TOOL_TYPE_##x
 
 MotionEventAndroid::Action FromAndroidAction(int android_action) {
   switch (android_action) {
-    EVENT_CASE(ACTION_DOWN);
-    EVENT_CASE(ACTION_UP);
-    EVENT_CASE(ACTION_MOVE);
-    EVENT_CASE(ACTION_CANCEL);
-    EVENT_CASE(ACTION_POINTER_DOWN);
-    EVENT_CASE(ACTION_POINTER_UP);
-    EVENT_CASE(ACTION_HOVER_ENTER);
-    EVENT_CASE(ACTION_HOVER_EXIT);
-    EVENT_CASE(ACTION_HOVER_MOVE);
-    EVENT_CASE(ACTION_BUTTON_PRESS);
-    EVENT_CASE(ACTION_BUTTON_RELEASE);
+    ACTION_CASE(DOWN);
+    ACTION_CASE(UP);
+    ACTION_CASE(MOVE);
+    ACTION_CASE(CANCEL);
+    ACTION_CASE(POINTER_DOWN);
+    ACTION_CASE(POINTER_UP);
+    ACTION_CASE(HOVER_ENTER);
+    ACTION_CASE(HOVER_EXIT);
+    ACTION_CASE(HOVER_MOVE);
+    ACTION_CASE(BUTTON_PRESS);
+    ACTION_CASE(BUTTON_RELEASE);
     default:
       NOTREACHED() << "Invalid Android MotionEvent action: " << android_action;
   };
-  return MotionEventAndroid::ACTION_CANCEL;
+  return MotionEventAndroid::Action::CANCEL;
+}
+
+int ToAndroidAction(MotionEventAndroid::Action action) {
+  switch (action) {
+    ACTION_REVERSE_CASE(DOWN);
+    ACTION_REVERSE_CASE(UP);
+    ACTION_REVERSE_CASE(MOVE);
+    ACTION_REVERSE_CASE(CANCEL);
+    ACTION_REVERSE_CASE(POINTER_DOWN);
+    ACTION_REVERSE_CASE(POINTER_UP);
+    ACTION_REVERSE_CASE(HOVER_ENTER);
+    ACTION_REVERSE_CASE(HOVER_EXIT);
+    ACTION_REVERSE_CASE(HOVER_MOVE);
+    ACTION_REVERSE_CASE(BUTTON_PRESS);
+    ACTION_REVERSE_CASE(BUTTON_RELEASE);
+    default:
+      NOTREACHED() << "Invalid MotionEvent action: " << action;
+  };
+  return JNI_MotionEvent::ACTION_CANCEL;
 }
 
 MotionEventAndroid::ToolType FromAndroidToolType(int android_tool_type) {
   switch (android_tool_type) {
-    EVENT_CASE(TOOL_TYPE_UNKNOWN);
-    EVENT_CASE(TOOL_TYPE_FINGER);
-    EVENT_CASE(TOOL_TYPE_STYLUS);
-    EVENT_CASE(TOOL_TYPE_MOUSE);
-    EVENT_CASE(TOOL_TYPE_ERASER);
+    TOOL_TYPE_CASE(UNKNOWN);
+    TOOL_TYPE_CASE(FINGER);
+    TOOL_TYPE_CASE(STYLUS);
+    TOOL_TYPE_CASE(MOUSE);
+    TOOL_TYPE_CASE(ERASER);
     default:
       NOTREACHED() << "Invalid Android MotionEvent tool type: "
                    << android_tool_type;
   };
-  return MotionEventAndroid::TOOL_TYPE_UNKNOWN;
+  return MotionEventAndroid::ToolType::UNKNOWN;
 }
-#undef EVENT_CASE
+
+int ToAndroidToolType(MotionEventAndroid::ToolType tool_type) {
+  switch (tool_type) {
+    TOOL_TYPE_REVERSE_CASE(UNKNOWN);
+    TOOL_TYPE_REVERSE_CASE(FINGER);
+    TOOL_TYPE_REVERSE_CASE(STYLUS);
+    TOOL_TYPE_REVERSE_CASE(MOUSE);
+    TOOL_TYPE_REVERSE_CASE(ERASER);
+    default:
+      NOTREACHED() << "Invalid MotionEvent tool type: " << tool_type;
+  };
+  return JNI_MotionEvent::TOOL_TYPE_UNKNOWN;
+}
+
+#undef ACTION_CASE
+#undef ACTION_REVERSE_CASE
+#undef TOOL_TYPE_CASE
+#undef TOOL_TYPE_REVERSE_CASE
 
 int FromAndroidButtonState(int button_state) {
   int result = 0;
@@ -131,11 +179,11 @@ float ToValidFloat(float x) {
 
 size_t ToValidHistorySize(jint history_size, ui::MotionEvent::Action action) {
   DCHECK_GE(history_size, 0);
-  // While the spec states that only ACTION_MOVE events should contain
+  // While the spec states that only Action::MOVE events should contain
   // historical entries, it's possible that an embedder could repurpose an
-  // ACTION_MOVE event into a different kind of event. In that case, the
+  // Action::MOVE event into a different kind of event. In that case, the
   // historical values are meaningless, and should not be exposed.
-  if (action != ui::MotionEvent::ACTION_MOVE)
+  if (action != ui::MotionEvent::Action::MOVE)
     return 0;
   return history_size;
 }
@@ -179,7 +227,7 @@ MotionEventAndroid::CachedPointer::CachedPointer()
       orientation(0),
       tilt_x(0),
       tilt_y(0),
-      tool_type(TOOL_TYPE_UNKNOWN) {}
+      tool_type(ToolType::UNKNOWN) {}
 
 MotionEventAndroid::MotionEventAndroid(JNIEnv* env,
                                        jobject event,
@@ -253,19 +301,12 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
 }
 
 //  static
-int MotionEventAndroid::GetAndroidActionForTesting(int action) {
-  int android_action = JNI_MotionEvent::ACTION_CANCEL;
-  switch (action) {
-    case ui::MotionEvent::ACTION_DOWN:
-      android_action = JNI_MotionEvent::ACTION_DOWN;
-      break;
-    case ui::MotionEvent::ACTION_UP:
-      android_action = JNI_MotionEvent::ACTION_UP;
-      break;
-    default:
-      NOTIMPLEMENTED() << "Conversion not supported: " << action;
-  }
-  return android_action;
+int MotionEventAndroid::GetAndroidAction(Action action) {
+  return ToAndroidAction(action);
+}
+
+int MotionEventAndroid::GetAndroidToolType(ToolType tool_type) {
+  return ToAndroidToolType(tool_type);
 }
 
 std::unique_ptr<MotionEventAndroid> MotionEventAndroid::CreateFor(
@@ -305,8 +346,8 @@ ScopedJavaLocalRef<jobject> MotionEventAndroid::GetJavaObject() const {
 }
 
 int MotionEventAndroid::GetActionIndex() const {
-  DCHECK(cached_action_ == MotionEvent::ACTION_POINTER_UP ||
-         cached_action_ == MotionEvent::ACTION_POINTER_DOWN)
+  DCHECK(cached_action_ == MotionEvent::Action::POINTER_UP ||
+         cached_action_ == MotionEvent::Action::POINTER_DOWN)
       << "Invalid action for GetActionIndex(): " << cached_action_;
   DCHECK_GE(cached_action_index_, 0);
   DCHECK_LT(cached_action_index_, static_cast<int>(cached_pointer_count_));
@@ -396,7 +437,7 @@ float MotionEventAndroid::GetPressure(size_t pointer_index) const {
   // accessed at most once per event instance).
   if (!event_.obj())
     return 0.f;
-  if (cached_action_ == MotionEvent::ACTION_UP)
+  if (cached_action_ == MotionEvent::Action::UP)
     return 0.f;
   return JNI_MotionEvent::Java_MotionEvent_getPressureF_I(
       AttachCurrentThread(), event_, pointer_index);
