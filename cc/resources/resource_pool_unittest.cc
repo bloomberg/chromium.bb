@@ -340,6 +340,40 @@ TEST_F(ResourcePoolTest, UpdateContentIdAndInvalidatedRect) {
   resource_pool_->ReleaseResource(std::move(reacquired_resource));
 }
 
+TEST_F(ResourcePoolTest, LargeInvalidatedRect) {
+  gfx::Size size(100, 100);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space;
+  uint64_t content_ids[] = {42, 43, 44};
+  // This rect is too large to take the area of it.
+  gfx::Rect large_invalidated_rect(0, 0, std::numeric_limits<int>::max() / 2,
+                                   std::numeric_limits<int>::max() / 2);
+
+  // Acquire a resource with the first content id.
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+  resource_pool_->OnContentReplaced(resource, content_ids[0]);
+
+  // Set an invalidated rect on the resource.
+  gfx::Rect new_invalidated_rect;
+  ResourcePool::InUsePoolResource reacquired_resource =
+      resource_pool_->TryAcquireResourceForPartialRaster(
+          content_ids[1], large_invalidated_rect, content_ids[0],
+          &new_invalidated_rect);
+  EXPECT_FALSE(!!reacquired_resource);
+
+  // Release the original resource, returning it to the unused pool.
+  resource_pool_->ReleaseResource(std::move(resource));
+
+  // Try to get the resource again, this should work even though the area was
+  // too large to compute the area for.
+  resource = resource_pool_->TryAcquireResourceForPartialRaster(
+      content_ids[2], large_invalidated_rect, content_ids[1],
+      &new_invalidated_rect);
+  EXPECT_TRUE(!!resource);
+  resource_pool_->ReleaseResource(std::move(resource));
+}
+
 TEST_F(ResourcePoolTest, ReuseResource) {
   viz::ResourceFormat format = viz::RGBA_8888;
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();

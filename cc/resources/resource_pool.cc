@@ -189,7 +189,9 @@ ResourcePool::TryAcquireResourceForPartialRaster(
                                              new_invalidated_rect);
 
       // Return the resource with the smallest invalidation.
-      int area = resource->invalidated_rect().size().GetArea();
+      int area =
+          resource->invalidated_rect().size().GetCheckedArea().ValueOrDefault(
+              std::numeric_limits<int>::max());
       if (iter_resource_to_return == unused_resources_.end() ||
           area < minimum_area) {
         iter_resource_to_return = it;
