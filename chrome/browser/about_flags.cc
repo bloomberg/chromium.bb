@@ -3737,6 +3737,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableNewOverviewAnimationsName,
      flag_descriptions::kAshEnableNewOverviewAnimationsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewOverviewAnimations)},
+    {"enable-experimental-crostini-ui",
+     flag_descriptions::kExperimentalCrostiniUIName,
+     flag_descriptions::kExperimentalCrostiniUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kExperimentalCrostiniUI)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)

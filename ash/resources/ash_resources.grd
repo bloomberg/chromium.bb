@@ -33,6 +33,9 @@
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER" file="cros/avatar_holder.png" />
       <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER_MASK" file="cros/avatar_holder_mask.png" />
 
+      <!-- Crostini terminal images -->
+      <structure type="chrome_scaled_image" name="IDR_LOGO_CROSTINI_TERMINAL" file="cros/crostini/logo_crostini_terminal.png" />
+
     </structures>
   </release>
 </grit>

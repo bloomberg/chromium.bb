@@ -27,6 +27,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/common/chrome_switches.h"
@@ -396,11 +398,17 @@ void AppListSyncableService::BuildModel() {
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
+  if (IsExperimentalCrostiniUIAvailable())
+    crostini_apps_builder_.reset(new CrostiniAppModelBuilder(controller));
+
   DCHECK(profile_);
   SyncStarted();
   apps_builder_->Initialize(this, profile_, model_updater_.get());
   if (arc_apps_builder_.get())
     arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
+
+  if (crostini_apps_builder_.get())
+    crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
 
   HandleUpdateFinished();
 }

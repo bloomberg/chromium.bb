@@ -416,6 +416,9 @@ extern const char kExperimentalAppBannersDescription[];
 extern const char kExperimentalCanvasFeaturesName[];
 extern const char kExperimentalCanvasFeaturesDescription[];
 
+extern const char kExperimentalCrostiniUIName[];
+extern const char kExperimentalCrostiniUIDescription[];
+
 extern const char kExperimentalExtensionApisName[];
 extern const char kExperimentalExtensionApisDescription[];
 
