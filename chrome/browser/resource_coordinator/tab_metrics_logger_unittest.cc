@@ -1,59 +1,59 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using metrics::TabMetricsEvent;
 
-// Sanity checks for TabMetricsLoggerImpl.
+// Sanity checks for functions in TabMetricsLogger.
 // See TabActivityWatcherTest for more thorough tab usage UKM tests.
 
 // Tests that protocol schemes are mapped to the correct enumerators.
-TEST(TabMetricsLoggerImplTest, Schemes) {
+TEST(TabMetricsLoggerTest, Schemes) {
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_BITCOIN,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("bitcoin"));
+            TabMetricsLogger::GetSchemeValueFromString("bitcoin"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_GEO,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("geo"));
+            TabMetricsLogger::GetSchemeValueFromString("geo"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IM,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("im"));
+            TabMetricsLogger::GetSchemeValueFromString("im"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IRC,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("irc"));
+            TabMetricsLogger::GetSchemeValueFromString("irc"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_IRCS,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("ircs"));
+            TabMetricsLogger::GetSchemeValueFromString("ircs"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MAGNET,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("magnet"));
+            TabMetricsLogger::GetSchemeValueFromString("magnet"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MAILTO,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("mailto"));
+            TabMetricsLogger::GetSchemeValueFromString("mailto"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_MMS,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("mms"));
+            TabMetricsLogger::GetSchemeValueFromString("mms"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_NEWS,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("news"));
+            TabMetricsLogger::GetSchemeValueFromString("news"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_NNTP,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("nntp"));
+            TabMetricsLogger::GetSchemeValueFromString("nntp"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OPENPGP4FPR,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("openpgp4fpr"));
+            TabMetricsLogger::GetSchemeValueFromString("openpgp4fpr"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SIP,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("sip"));
+            TabMetricsLogger::GetSchemeValueFromString("sip"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SMS,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("sms"));
+            TabMetricsLogger::GetSchemeValueFromString("sms"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SMSTO,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("smsto"));
+            TabMetricsLogger::GetSchemeValueFromString("smsto"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_SSH,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("ssh"));
+            TabMetricsLogger::GetSchemeValueFromString("ssh"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_TEL,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("tel"));
+            TabMetricsLogger::GetSchemeValueFromString("tel"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_URN,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("urn"));
+            TabMetricsLogger::GetSchemeValueFromString("urn"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_WEBCAL,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("webcal"));
+            TabMetricsLogger::GetSchemeValueFromString("webcal"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_WTAI,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("wtai"));
+            TabMetricsLogger::GetSchemeValueFromString("wtai"));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_XMPP,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("xmpp"));
+            TabMetricsLogger::GetSchemeValueFromString("xmpp"));
 
   static_assert(
       TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_LAST ==
@@ -64,21 +64,21 @@ TEST(TabMetricsLoggerImplTest, Schemes) {
 }
 
 // Tests non-whitelisted protocol schemes.
-TEST(TabMetricsLoggerImplTest, NonWhitelistedSchemes) {
+TEST(TabMetricsLoggerTest, NonWhitelistedSchemes) {
   // Native (non-web-based) handler.
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("foo"));
+            TabMetricsLogger::GetSchemeValueFromString("foo"));
 
   // Custom ("web+") protocol handlers.
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("web+foo"));
+            TabMetricsLogger::GetSchemeValueFromString("web+foo"));
   // "mailto" after the web+ prefix doesn't trigger any special handling.
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("web+mailto"));
+            TabMetricsLogger::GetSchemeValueFromString("web+mailto"));
 
   // Nonsense protocol handlers.
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLoggerImpl::GetSchemeValueFromString(""));
+            TabMetricsLogger::GetSchemeValueFromString(""));
   EXPECT_EQ(TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER,
-            TabMetricsLoggerImpl::GetSchemeValueFromString("mailto-xyz"));
+            TabMetricsLogger::GetSchemeValueFromString("mailto-xyz"));
 }

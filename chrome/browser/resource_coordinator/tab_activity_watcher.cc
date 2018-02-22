@@ -5,7 +5,7 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -113,7 +113,7 @@ class TabActivityWatcher::WebContentsData
 };
 
 TabActivityWatcher::TabActivityWatcher()
-    : tab_metrics_logger_(std::make_unique<TabMetricsLoggerImpl>()),
+    : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
       browser_tab_strip_tracker_(this, this, nullptr) {
   browser_tab_strip_tracker_.Init();
 
@@ -185,7 +185,7 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
 }
 
 void TabActivityWatcher::ResetForTesting() {
-  tab_metrics_logger_ = std::make_unique<TabMetricsLoggerImpl>();
+  tab_metrics_logger_ = std::make_unique<TabMetricsLogger>();
 }
 
 // static
