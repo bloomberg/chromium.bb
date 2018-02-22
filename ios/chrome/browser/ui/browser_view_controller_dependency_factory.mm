@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_adapter.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,22 +56,6 @@
 
 - (BrowserViewControllerHelper*)newBrowserViewControllerHelper {
   return [[BrowserViewControllerHelper alloc] init];
-}
-
-- (id<Toolbar>)
-newToolbarControllerWithDelegate:(id<ToolbarCoordinatorDelegate>)delegate
-                       urlLoader:(id<UrlLoader>)urlLoader
-                      dispatcher:(id<ApplicationCommands,
-                                     BrowserCommands,
-                                     OmniboxFocuser,
-                                     ToolbarCommands>)dispatcher {
-  ToolbarAdapter* adapter =
-      [[ToolbarAdapter alloc] initWithDispatcher:dispatcher
-                                    browserState:browserState_
-                                    webStateList:webStateList_];
-  adapter.delegate = delegate;
-  adapter.URLLoader = urlLoader;
-  return static_cast<id<Toolbar>>(adapter);
 }
 
 - (KeyCommandsProvider*)newKeyCommandsProvider {

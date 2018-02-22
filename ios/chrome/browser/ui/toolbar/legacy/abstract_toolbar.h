@@ -2,21 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_TOOLBAR_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_TOOLBAR_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_ABSTRACT_TOOLBAR_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_ABSTRACT_TOOLBAR_H_
 
 #import <Foundation/Foundation.h>
 
-@class ToolsMenuConfiguration;
-
 // ToolbarController public interface.
 @protocol AbstractToolbar<NSObject>
-// Triggers an animation on the tools menu button to draw the user's
-// attention.
-- (void)triggerToolsMenuButtonAnimation;
-// Sets the background to a particular alpha value. Intended for use by
-// subcleasses that need to set the opacity of the entire toolbar.
-- (void)setBackgroundAlpha:(CGFloat)alpha;
 // Updates the tab stack button (if there is one) based on the given tab
 // count. If |tabCount| > |kStackButtonMaxTabCount|, an easter egg is shown
 // instead of the actual number of tabs.
@@ -36,4 +28,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_ABSTRACT_TOOLBAR_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_ABSTRACT_TOOLBAR_H_

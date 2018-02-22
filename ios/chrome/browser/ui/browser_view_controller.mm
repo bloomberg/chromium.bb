@@ -2020,15 +2020,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
             initWithBaseViewController:self
         toolsMenuConfigurationProvider:self
                             dispatcher:self.dispatcher
-                          browserState:_browserState];
+                          browserState:_browserState
+                          webStateList:[_model webStateList]];
+    _toolbarCoordinator.delegate = self;
+    _toolbarCoordinator.URLLoader = self;
     self.primaryToolbarCoordinator = _toolbarCoordinator;
     self.toolbarInterface = _toolbarCoordinator;
-    [_toolbarCoordinator
-        setToolbarController:
-            [_dependencyFactory
-                newToolbarControllerWithDelegate:self
-                                       urlLoader:self
-                                      dispatcher:self.dispatcher]];
 
     [_toolbarCoordinator start];
   }

@@ -7,15 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-@class Tab;
+namespace web {
+class WebState;
+}  // namespace web
 
 // Protocol used by SideSwipe to get snapshot of the toolbar.
 @protocol SideSwipeToolbarSnapshotProviding
 
 // Returns a snapshot of the toolbar with the controls visibility adapted to
-// |tab|.
-// TODO(crbug.com/800266): Use WebState instead of Tab.
-- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab;
+// |webState|.
+- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState;
 
 @end
 

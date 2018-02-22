@@ -247,6 +247,10 @@
   [self.toolbarViewController deactivateFakeSafeAreaInsets];
 }
 
+- (UIColor*)toolbarBackgroundColor {
+  return self.toolbarViewController.backgroundColor;
+}
+
 // TODO(crbug.com/786940): This protocol should move to the ViewController
 // owning the Toolbar. This can wait until the omnibox and toolbar refactoring
 // is more advanced.

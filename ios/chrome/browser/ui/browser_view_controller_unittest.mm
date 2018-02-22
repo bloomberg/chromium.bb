@@ -136,54 +136,6 @@ using web::WebStateImpl;
 }
 @end
 
-// Fake WebToolbarController for testing.
-@interface TestWebToolbarController : UIViewController
-- (BOOL)isOmniboxFirstResponder;
-- (BOOL)showingOmniboxPopup;
-- (void)cancelOmniboxEdit;
-- (void)setBackgroundAlpha:(CGFloat)alpha;
-- (void)browserStateDestroyed;
-- (void)stop;
-
-- (ToolbarButtonUpdater*)buttonUpdater;
-- (void)setToolsMenuStateProvider:(id)provider;
-@property(nonatomic, readonly, weak) UIViewController* viewController;
-
-@end
-
-@implementation TestWebToolbarController
-- (BOOL)isOmniboxFirstResponder {
-  return NO;
-}
-- (BOOL)showingOmniboxPopup {
-  return NO;
-}
-- (void)cancelOmniboxEdit {
-  return;
-}
-- (UIViewController*)viewController {
-  return self;
-}
-- (ToolbarButtonUpdater*)buttonUpdater {
-  return nil;
-}
-- (void)setToolsMenuStateProvider:(id)provider {
-  return;
-}
-- (void)start {
-  return;
-}
-- (void)setBackgroundAlpha:(CGFloat)alpha {
-  return;
-}
-- (void)browserStateDestroyed {
-  return;
-}
-- (void)stop {
-  return;
-}
-@end
-
 #pragma mark -
 
 namespace {
@@ -249,17 +201,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     bvcHelper_ = [[BrowserViewControllerHelper alloc] init];
 
-    // Create fake WTC.
-    TestWebToolbarController* testWTC = [[TestWebToolbarController alloc] init];
-
     // Set up a stub dependency factory.
     id factory = [OCMockObject
         mockForClass:[BrowserViewControllerDependencyFactory class]];
     [[[factory stub] andReturn:bvcHelper_] newBrowserViewControllerHelper];
-    [[[factory stub] andReturn:testWTC]
-        newToolbarControllerWithDelegate:[OCMArg any]
-                               urlLoader:[OCMArg any]
-                              dispatcher:[OCMArg any]];
     [[[factory stub] andReturn:passKitViewController_]
         newPassKitViewControllerForPass:nil];
     [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];

@@ -49,14 +49,6 @@ class ChromeBrowserState;
 
 - (BrowserViewControllerHelper*)newBrowserViewControllerHelper;
 
-- (id<Toolbar>)newToolbarControllerWithDelegate:
-                   (id<ToolbarCoordinatorDelegate>)delegate
-                                      urlLoader:(id<UrlLoader>)urlLoader
-                                     dispatcher:(id<ApplicationCommands,
-                                                    BrowserCommands,
-                                                    OmniboxFocuser,
-                                                    ToolbarCommands>)dispatcher;
-
 // Returns a new keyboard commands coordinator to handle keyboard commands.
 - (KeyCommandsProvider*)newKeyCommandsProvider;
 
