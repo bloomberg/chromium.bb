@@ -25,6 +25,10 @@
     readonly attribute unsigned long? rowSpan;
     readonly attribute long? setSize;
 
+    readonly attribute double? valueMax;
+    readonly attribute double? valueMin;
+    readonly attribute double? valueNow;
+
     readonly attribute DOMString? autocomplete;
     readonly attribute DOMString? checked;
     readonly attribute DOMString? keyShortcuts;

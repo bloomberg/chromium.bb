@@ -32,6 +32,9 @@ class AomContentAxTree : public blink::WebComputedAXTree {
   bool GetStringAttributeForAXNode(int32_t ax_id,
                                    blink::WebAOMStringAttribute,
                                    blink::WebString* out_param) override;
+  bool GetFloatAttributeForAXNode(int32_t ax_id,
+                                  blink::WebAOMFloatAttribute,
+                                  float* out_param) override;
   bool GetRoleForAXNode(int32_t ax_id, blink::WebString* out_param) override;
   bool GetCheckedStateForAXNode(int32_t ax_id,
                                 blink::WebString* out_param) override;
