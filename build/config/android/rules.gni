@@ -2187,6 +2187,7 @@ if (enable_java_templates) {
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
+                               "apk_name",
                                "android_manifest",
                                "android_manifest_dep",
                                "apk_under_test",
@@ -2591,7 +2592,7 @@ if (enable_java_templates) {
     _apk_operations = []
     _incremental_apk_operations = []
 
-    # Generate apk opeartion related script.
+    # Generate apk operation related script.
     if (!defined(invoker.create_apk_script) || invoker.create_apk_script) {
       _apk_operations_target_name = "${target_name}__apk_operations"
       action(_apk_operations_target_name) {

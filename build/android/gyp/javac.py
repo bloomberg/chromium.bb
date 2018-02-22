@@ -233,11 +233,36 @@ def _CheckPathMatchesClassName(java_file, package_name, class_name):
                     (java_file, expected_path_suffix))
 
 
+def _ParseInfoFile(info_path):
+  info_data = dict()
+  if os.path.exists(info_path):
+    with open(info_path, 'r') as info_file:
+      for line in info_file:
+        line = line.strip()
+        if line:
+          fully_qualified_name, path = line.split(',', 1)
+          info_data[fully_qualified_name] = path
+  return info_data
+
+
+def _WriteInfoFile(info_path, info_data, srcjar_files):
+  with open(info_path, 'w') as info_file:
+    for fully_qualified_name, path in info_data.iteritems():
+      if path in srcjar_files:
+        path = srcjar_files[path]
+      assert not path.startswith('/tmp'), (
+          'Java file path should not be in temp dir: {}'.format(path))
+      info_file.write('{},{}\n'.format(fully_qualified_name, path))
+
+
 def _CreateInfoFile(java_files, options, srcjar_files):
-  """Writes a jar_path.info file.
+  """Writes a .jar.info file.
 
   This maps fully qualified names for classes to either the java file that they
   are defined in or the path of the srcjar that they came from.
+
+  For apks this also produces a coalesced .apk.jar.info file combining all the
+  .jar.info files of its transitive dependencies.
   """
   info_data = dict()
   for java_file in java_files:
@@ -253,13 +278,13 @@ def _CreateInfoFile(java_files, options, srcjar_files):
         'Chromium java files must only have one class: {}'.format(source))
     if options.chromium_code:
       _CheckPathMatchesClassName(java_file, package_name, class_names[0])
-  with open(options.jar_path + '.info', 'w') as info_file:
-    for fully_qualified_name, path in info_data.iteritems():
-      if path in srcjar_files:
-        path = srcjar_files[path]
-      assert not path.startswith('/tmp'), (
-          'Java file path should not be in temp dir: {}'.format(path))
-      info_file.write('{},{}\n'.format(fully_qualified_name, path))
+  _WriteInfoFile(options.jar_path + '.info', info_data, srcjar_files)
+
+  # Collect all the info files for transitive dependencies of the apk.
+  if options.apk_jar_info_path:
+    for jar_path in options.full_classpath:
+      info_data.update(_ParseInfoFile(jar_path + '.info'))
+    _WriteInfoFile(options.apk_jar_info_path, info_data, srcjar_files)
 
 
 def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
@@ -412,7 +437,7 @@ def _ParseOptions(argv):
       '--java-version',
       help='Java language version to use in -source and -target args to javac.')
   parser.add_option(
-      '--classpath',
+      '--full-classpath',
       action='append',
       help='Classpath to use when annotation processors are present.')
   parser.add_option(
@@ -465,12 +490,15 @@ def _ParseOptions(argv):
       action='append',
       default=[],
       help='Additional arguments to pass to javac.')
+  parser.add_option(
+      '--apk-jar-info-path',
+      help='Coalesced jar.info files for the apk')
 
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path',))
 
   options.bootclasspath = _ParseAndFlattenGnLists(options.bootclasspath)
-  options.classpath = _ParseAndFlattenGnLists(options.classpath)
+  options.full_classpath = _ParseAndFlattenGnLists(options.full_classpath)
   options.interface_classpath = _ParseAndFlattenGnLists(
       options.interface_classpath)
   options.processorpath = _ParseAndFlattenGnLists(options.processorpath)
@@ -555,7 +583,8 @@ def main(argv):
 
   # Annotation processors crash when given interface jars.
   active_classpath = (
-      options.classpath if options.processors else options.interface_classpath)
+      options.full_classpath
+      if options.processors else options.interface_classpath)
   classpath = []
   if active_classpath:
     classpath.extend(active_classpath)
@@ -581,6 +610,8 @@ def main(argv):
   ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')
+  if options.apk_jar_info_path:
+    output_paths.append(options.apk_jar_info_path)
 
   # An escape hatch to be able to check if incremental compiles are causing
   # problems.

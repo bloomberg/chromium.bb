@@ -2011,6 +2011,7 @@ if (enable_java_templates) {
     package_apk(_package_target) {
       forward_variables_from(invoker,
                              [
+                               "apk_name",
                                "assets_build_config",
                                "native_lib_placeholders",
                                "native_libs_filearg",
@@ -2028,10 +2029,6 @@ if (enable_java_templates) {
 
       if (defined(_dex_path)) {
         dex_path = _dex_path
-      }
-
-      if (defined(invoker.apk_name)) {
-        apk_name = invoker.apk_name
       }
 
       output_apk_path = _packaged_apk_path
@@ -2229,7 +2226,7 @@ if (enable_java_templates) {
         "--java-srcjars=$_rebased_java_srcjars",
         "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
         "--java-version=1.8",
-        "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+        "--full-classpath=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         "--interface-classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         "--processorpath=@FileArg($_rebased_build_config:javac:processor_classpath)",
         "--processors=@FileArg($_rebased_build_config:javac:processor_classes)",
@@ -2270,6 +2267,15 @@ if (enable_java_templates) {
           "bin/errorprone",
           "--processorpath=$_rebased_errorprone_processorpath",
         ]
+      }
+      if (defined(invoker.apk_name)) {
+        # The supersize tool will search in this directory for each apk.
+        _apk_jar_info_path = "size-info/${invoker.apk_name}.apk.jar.info"
+        args += [
+          "--apk-jar-info-path",
+          _apk_jar_info_path,
+        ]
+        outputs += [ "$root_build_dir/$_apk_jar_info_path" ]
       }
       foreach(e, _provider_configurations) {
         args += [ "--provider-configuration=" + rebase_path(e, root_build_dir) ]
@@ -2554,6 +2560,9 @@ if (enable_java_templates) {
         requires_android = _requires_android
         deps = _accumulated_deps
         javac_jar_path = _javac_jar_path
+        if (defined(invoker.apk_name)) {
+          apk_name = invoker.apk_name
+        }
       }
       _accumulated_deps += [ ":$_compile_java_target" ]
 
