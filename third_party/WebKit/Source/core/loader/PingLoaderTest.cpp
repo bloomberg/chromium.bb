@@ -7,7 +7,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoader.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/loader/fetch/SubstituteData.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -33,11 +33,11 @@ class PingLocalFrameClient : public EmptyLocalFrameClient {
   ResourceRequest ping_request_;
 };
 
-class PingLoaderTest : public ::testing::Test {
+class PingLoaderTest : public PageTestBase {
  public:
   void SetUp() override {
     client_ = new PingLocalFrameClient;
-    page_holder_ = DummyPageHolder::Create(IntSize(1, 1), nullptr, client_);
+    PageTestBase::SetupPageWithClients(nullptr, client_);
   }
 
   void TearDown() override {
@@ -49,17 +49,16 @@ class PingLoaderTest : public ::testing::Test {
   void SetDocumentURL(const KURL& url) {
     FrameLoadRequest request(nullptr, ResourceRequest(url),
                              SubstituteData(SharedBuffer::Create()));
-    page_holder_->GetFrame().Loader().Load(request);
+    GetFrame().Loader().Load(request);
     blink::testing::RunPendingTasks();
-    ASSERT_EQ(url.GetString(), page_holder_->GetDocument().Url().GetString());
+    ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }
 
   const ResourceRequest& PingAndGetRequest(const KURL& ping_url) {
     KURL destination_url("http://navigation.destination");
     URLTestHelpers::RegisterMockedURLLoad(
         ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
-    PingLoader::SendLinkAuditPing(&page_holder_->GetFrame(), ping_url,
-                                  destination_url);
+    PingLoader::SendLinkAuditPing(&GetFrame(), ping_url, destination_url);
     const ResourceRequest& ping_request = client_->PingRequest();
     if (!ping_request.IsNull()) {
       EXPECT_EQ(destination_url.GetString(),
@@ -73,7 +72,6 @@ class PingLoaderTest : public ::testing::Test {
 
  protected:
   Persistent<PingLocalFrameClient> client_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(PingLoaderTest, HTTPSToHTTPS) {
@@ -110,8 +108,7 @@ TEST_F(PingLoaderTest, LinkAuditPingPriority) {
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
-  PingLoader::SendLinkAuditPing(&page_holder_->GetFrame(), ping_url,
-                                destination_url);
+  PingLoader::SendLinkAuditPing(&GetFrame(), ping_url, destination_url);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());
@@ -125,7 +122,7 @@ TEST_F(PingLoaderTest, ViolationPriority) {
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
-  PingLoader::SendViolationReport(&page_holder_->GetFrame(), ping_url,
+  PingLoader::SendViolationReport(&GetFrame(), ping_url,
                                   EncodedFormData::Create(),
                                   PingLoader::kXSSAuditorViolationReport);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -141,7 +138,7 @@ TEST_F(PingLoaderTest, BeaconPriority) {
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
-  PingLoader::SendBeacon(&page_holder_->GetFrame(), ping_url, "hello");
+  PingLoader::SendBeacon(&GetFrame(), ping_url, "hello");
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());

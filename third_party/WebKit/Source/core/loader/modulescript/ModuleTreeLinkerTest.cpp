@@ -12,7 +12,7 @@
 #include "core/script/Modulator.h"
 #include "core/script/ModuleScript.h"
 #include "core/testing/DummyModulator.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/heap/Handle.h"
@@ -174,7 +174,7 @@ void ModuleTreeLinkerTestModulator::Trace(blink::Visitor* visitor) {
   DummyModulator::Trace(visitor);
 }
 
-class ModuleTreeLinkerTest : public ::testing::Test {
+class ModuleTreeLinkerTest : public PageTestBase {
   DISALLOW_COPY_AND_ASSIGN(ModuleTreeLinkerTest);
 
  public:
@@ -184,14 +184,13 @@ class ModuleTreeLinkerTest : public ::testing::Test {
   ModuleTreeLinkerTestModulator* GetModulator() { return modulator_.Get(); }
 
  protected:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<ModuleTreeLinkerTestModulator> modulator_;
 };
 
 void ModuleTreeLinkerTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
+  PageTestBase::SetUp(IntSize(500, 500));
   scoped_refptr<ScriptState> script_state =
-      ToScriptStateForMainWorld(&dummy_page_holder_->GetFrame());
+      ToScriptStateForMainWorld(&GetFrame());
   modulator_ = new ModuleTreeLinkerTestModulator(script_state);
 }
 
