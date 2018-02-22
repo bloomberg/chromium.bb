@@ -13,12 +13,13 @@
 #include "ui/display/types/native_display_observer.h"
 
 namespace display {
+class DisplayMode;
 class DisplaySnapshot;
 class NativeDisplayDelegate;
 }  // namespace display
 
 namespace gfx {
-class Rect;
+class Point;
 }  // namespace gfx
 
 namespace chromecast {
@@ -44,7 +45,10 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
  private:
   void OnDisplaysAcquired(
       const std::vector<display::DisplaySnapshot*>& displays);
-  void OnDisplayConfigured(const gfx::Rect& bounds, bool success);
+  void OnDisplayConfigured(display::DisplaySnapshot* display,
+                           const display::DisplayMode* mode,
+                           const gfx::Point& origin,
+                           bool success);
 
   std::unique_ptr<display::NativeDisplayDelegate> delegate_;
   CastScreen* const cast_screen_;
