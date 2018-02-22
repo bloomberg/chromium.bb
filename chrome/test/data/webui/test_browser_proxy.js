@@ -38,7 +38,7 @@ class TestBrowserProxy {
   constructor(methodNames) {
     /** @private {!Map<string, !PromiseResolver>} */
     this.resolverMap_ = new Map();
-    methodNames.forEach((methodName) => {
+    methodNames.forEach(methodName => {
       this.resolverMap_.set(methodName, new PromiseResolver());
     });
   }

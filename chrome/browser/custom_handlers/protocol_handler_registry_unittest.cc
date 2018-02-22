@@ -492,6 +492,14 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemoveHandler) {
   registry()->RemoveHandler(ph1);
   ASSERT_FALSE(registry()->IsRegistered(ph1));
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
+
+  registry()->OnIgnoreRegisterProtocolHandler(ph1);
+  ASSERT_FALSE(registry()->IsRegistered(ph1));
+  ASSERT_TRUE(registry()->IsIgnored(ph1));
+
+  registry()->RemoveHandler(ph1);
+  ASSERT_FALSE(registry()->IsRegistered(ph1));
+  ASSERT_FALSE(registry()->IsIgnored(ph1));
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestIsRegistered) {

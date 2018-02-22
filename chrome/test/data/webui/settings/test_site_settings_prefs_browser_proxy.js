@@ -32,6 +32,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'isPatternValid',
       'observeProtocolHandlers',
       'observeProtocolHandlersEnabledState',
+      'removeIgnoredHandler',
       'removeProtocolHandler',
       'removeUsbDevice',
       'removeZoomLevel',
@@ -57,6 +58,9 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {!Array<!ProtocolEntry>} */
     this.protocolHandlers_ = [];
+
+    /** @private {!Array<!HandlerEntry>} */
+    this.ignoredProtocols_ = [];
 
     /** @private {boolean} */
     this.isOriginValid_ = true;
@@ -140,6 +144,15 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   setProtocolHandlers(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
     this.protocolHandlers_ = list.slice();
+  }
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param {!Array<!HandlerEntry>}
+   */
+  setIgnoredProtocols(list) {
+    // Shallow copy of the passed-in array so mutation won't impact the source
+    this.ignoredProtocols_ = list.slice();
   }
 
   /** @override */
@@ -302,6 +315,8 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   observeProtocolHandlers() {
     cr.webUIListenerCallback('setHandlersEnabled', true);
     cr.webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
+    cr.webUIListenerCallback(
+        'setIgnoredProtocolHandlers', this.ignoredProtocols_);
     this.methodCalled('observeProtocolHandlers');
   }
 

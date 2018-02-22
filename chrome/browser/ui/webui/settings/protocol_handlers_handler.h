@@ -63,12 +63,8 @@ class ProtocolHandlersHandler : public SettingsPageUIHandler,
   // Called when the user sets a new default handler for a protocol.
   void HandleSetDefault(const base::ListValue* args);
 
-  // Called when the user clears the default handler for a protocol.
-  // |args| is the string name of the protocol to clear.
-  void HandleClearDefault(const base::ListValue* args);
-
   // Parses a ProtocolHandler out of the arguments passed back from the view.
-  // |args| is a list of [protocol, url, title].
+  // |args| is a list of [protocol, url].
   ProtocolHandler ParseHandlerFromArgs(const base::ListValue* args) const;
 
   // Returns a JSON object describing the set of protocol handlers for the
@@ -83,12 +79,8 @@ class ProtocolHandlersHandler : public SettingsPageUIHandler,
   void UpdateHandlerList();
 
   // Remove a handler.
-  // |args| is a list of [protocol, url, title].
+  // |args| is a list of [protocol, url].
   void HandleRemoveHandler(const base::ListValue* args);
-
-  // Remove an ignored handler.
-  // |args| is a list of [protocol, url, title].
-  void HandleRemoveIgnoredHandler(const base::ListValue* args);
 
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
