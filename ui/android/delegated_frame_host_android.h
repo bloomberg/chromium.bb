@@ -69,10 +69,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Should only be called when the host has a content layer. Use this for one-
   // off screen capture, not for video. Always provides RGBA_BITMAP
   // CopyOutputResults.
-  void RequestCopyOfSurface(
-      WindowAndroidCompositor* compositor,
-      const gfx::Rect& src_subrect_in_pixel,
-      viz::CopyOutputRequest::CopyOutputRequestCallback result_callback);
+  void CopyFromCompositingSurface(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& output_size,
+      base::OnceCallback<void(const SkBitmap&)> callback);
+  bool CanCopyFromCompositingSurface() const;
 
   void CompositorFrameSinkChanged();
 

@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/TabContentManager_jni.h"
 #include "ui/android/resources/ui_resource_provider.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -61,9 +62,14 @@ class TabContentManager::TabReadbackRequest {
                    weak_factory_.GetWeakPtr());
 
     SkColorType color_type = kN32_SkColorType;
-    gfx::Size view_size_on_screen = rwhv->GetViewBounds().size();
+    gfx::Size view_size_in_pixels =
+        rwhv->GetNativeView()->GetPhysicalBackingSize();
+    if (view_size_in_pixels.IsEmpty()) {
+      result_callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
+      return;
+    }
     gfx::Size thumbnail_size(
-        gfx::ScaleToCeiledSize(view_size_on_screen, thumbnail_scale_));
+        gfx::ScaleToCeiledSize(view_size_in_pixels, thumbnail_scale_));
     rwhv->CopyFromSurface(gfx::Rect(), thumbnail_size, result_callback,
                           color_type);
   }

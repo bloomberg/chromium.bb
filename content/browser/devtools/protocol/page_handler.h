@@ -153,12 +153,13 @@ class PageHandler : public DevToolsDomainHandler,
   WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
-  void ScreencastFrameCaptured(viz::CompositorFrameMetadata metadata,
-                               const SkBitmap& bitmap,
-                               ReadbackResponse response);
-  void ScreencastFrameEncoded(viz::CompositorFrameMetadata metadata,
-                              const base::Time& timestamp,
-                              const std::string& data);
+  void ScreencastFrameCaptured(
+      std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
+      const SkBitmap& bitmap,
+      ReadbackResponse response);
+  void ScreencastFrameEncoded(
+      std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
+      const std::string& data);
 
   void ScreenshotCaptured(
       std::unique_ptr<CaptureScreenshotCallback> callback,

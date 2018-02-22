@@ -347,10 +347,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void EvictFrameIfNecessary();
 
   // DevTools ScreenCast support for Android WebView.
-  void SynchronousCopyContents(const gfx::Rect& src_subrect_in_pixel,
+  void SynchronousCopyContents(const gfx::Rect& src_subrect_dip,
                                const gfx::Size& dst_size_in_pixel,
-                               const ReadbackRequestCallback& callback,
-                               const SkColorType color_type);
+                               const ReadbackRequestCallback& callback);
 
   void DestroyDelegatedContent();
   void OnLostResources();

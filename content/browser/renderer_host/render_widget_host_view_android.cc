@@ -8,10 +8,8 @@
 
 #include <utility>
 
-#include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -27,12 +25,7 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "components/viz/common/gl_helper.h"
-#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -47,8 +40,6 @@
 #include "content/browser/android/text_suggestion_host_android.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -64,7 +55,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "content/common/gpu_stream_constants.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
@@ -76,14 +66,12 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
-#include "skia/ext/image_operations.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
@@ -96,7 +84,6 @@
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
-#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -110,228 +97,6 @@ static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 static const base::TimeDelta kClickCountInterval =
     base::TimeDelta::FromSecondsD(0.5);
 static const float kClickCountRadiusSquaredDIP = 25;
-
-class PendingReadbackLock;
-
-PendingReadbackLock* g_pending_readback_lock = nullptr;
-
-class PendingReadbackLock : public base::RefCounted<PendingReadbackLock> {
- public:
-  PendingReadbackLock() {
-    DCHECK_EQ(g_pending_readback_lock, nullptr);
-    g_pending_readback_lock = this;
-  }
-
- private:
-  friend class base::RefCounted<PendingReadbackLock>;
-
-  ~PendingReadbackLock() {
-    DCHECK_EQ(g_pending_readback_lock, this);
-    g_pending_readback_lock = nullptr;
-  }
-};
-
-using base::android::ApplicationState;
-using base::android::ApplicationStatusListener;
-
-class GLHelperHolder : public viz::ContextLostObserver {
- public:
-  static GLHelperHolder* Create();
-
-  ~GLHelperHolder() override;
-
-  viz::GLHelper* gl_helper() { return gl_helper_.get(); }
-  bool IsLost() {
-    if (!gl_helper_)
-      return true;
-    return provider_->ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
-  }
-
-  void ReleaseIfPossible();
-
- private:
-  GLHelperHolder();
-
-  void Initialize();
-  void OnApplicationStatusChanged(ApplicationState new_state);
-
-  // viz::ContextLostObserver implementation.
-  void OnContextLost() override;
-
-  scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<viz::GLHelper> gl_helper_;
-
-  // Set to |false| if there are only stopped activities (or none).
-  bool has_running_or_paused_activities_;
-
-  std::unique_ptr<ApplicationStatusListener> app_status_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
-};
-
-GLHelperHolder::GLHelperHolder()
-    : has_running_or_paused_activities_(
-          (ApplicationStatusListener::GetState() ==
-           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) ||
-          (ApplicationStatusListener::GetState() ==
-           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)) {}
-
-GLHelperHolder::~GLHelperHolder() {
-  if (provider_)
-    provider_->RemoveObserver(this);
-}
-
-GLHelperHolder* GLHelperHolder::Create() {
-  GLHelperHolder* holder = new GLHelperHolder;
-  holder->Initialize();
-  return holder;
-}
-
-void GLHelperHolder::Initialize() {
-  auto* factory = BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
-
-  // The Browser Compositor is in charge of reestablishing the channel if its
-  // missing.
-  if (!gpu_channel_host)
-    return;
-
-  int32_t stream_id = kGpuStreamIdDefault;
-  gpu::SchedulingPriority stream_priority = kGpuStreamPriorityUI;
-
-  // This is for an offscreen context, so we don't need the default framebuffer
-  // to have alpha, stencil, depth, antialiasing.
-  gpu::ContextCreationAttribs attributes;
-  attributes.alpha_size = -1;
-  attributes.stencil_size = 0;
-  attributes.depth_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-
-  gpu::SharedMemoryLimits limits;
-  // The GLHelper context doesn't do a lot of stuff, so we don't expect it to
-  // need a lot of space for commands.
-  limits.command_buffer_size = 1024;
-  // The transfer buffer is used for shaders among other things, so give some
-  // reasonable but small limit.
-  limits.start_transfer_buffer_size = 4 * 1024;
-  limits.min_transfer_buffer_size = 4 * 1024;
-  limits.max_transfer_buffer_size = 128 * 1024;
-  // Very few allocations from mapped memory pool, so this can be really low.
-  limits.mapped_memory_reclaim_limit = 4 * 1024;
-
-  constexpr bool automatic_flushes = false;
-  constexpr bool support_locking = false;
-  const GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
-
-  provider_ = new ui::ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
-      stream_id, stream_priority, gpu::kNullSurfaceHandle, url,
-      automatic_flushes, support_locking, limits, attributes, nullptr,
-      ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
-  auto result = provider_->BindToCurrentThread();
-  if (result != gpu::ContextResult::kSuccess)
-    return;
-  provider_->ContextGL()->TraceBeginCHROMIUM(
-      "gpu_toplevel",
-      base::StringPrintf("CmdBufferImageTransportFactory-%p", provider_.get())
-          .c_str());
-  provider_->AddObserver(this);
-  gl_helper_.reset(
-      new viz::GLHelper(provider_->ContextGL(), provider_->ContextSupport()));
-
-  // Unretained() is safe because |this| owns the following two callbacks.
-  app_status_listener_.reset(new ApplicationStatusListener(base::Bind(
-      &GLHelperHolder::OnApplicationStatusChanged, base::Unretained(this))));
-}
-
-void GLHelperHolder::ReleaseIfPossible() {
-  if (!has_running_or_paused_activities_ && !g_pending_readback_lock) {
-    gl_helper_.reset();
-    if (provider_)
-      provider_->RemoveObserver(this);
-    provider_ = nullptr;
-    // Make sure this will get recreated on next use.
-    DCHECK(IsLost());
-  }
-}
-
-void GLHelperHolder::OnContextLost() {
-  app_status_listener_.reset();
-  gl_helper_.reset();
-  // Need to post a task because the command buffer client cannot be deleted
-  // from within this callback.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
-}
-
-void GLHelperHolder::OnApplicationStatusChanged(ApplicationState new_state) {
-  has_running_or_paused_activities_ =
-      new_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
-      new_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
-  ReleaseIfPossible();
-}
-
-GLHelperHolder* GetPostReadbackGLHelperHolder(bool create_if_necessary) {
-  static GLHelperHolder* g_readback_helper_holder = nullptr;
-
-  if (!create_if_necessary && !g_readback_helper_holder)
-    return nullptr;
-
-  if (g_readback_helper_holder && g_readback_helper_holder->IsLost()) {
-    delete g_readback_helper_holder;
-    g_readback_helper_holder = nullptr;
-  }
-
-  if (!g_readback_helper_holder)
-    g_readback_helper_holder = GLHelperHolder::Create();
-
-  return g_readback_helper_holder;
-}
-
-viz::GLHelper* GetPostReadbackGLHelper() {
-  bool create_if_necessary = true;
-  return GetPostReadbackGLHelperHolder(create_if_necessary)->gl_helper();
-}
-
-void ReleaseGLHelper() {
-  bool create_if_necessary = false;
-  GLHelperHolder* holder = GetPostReadbackGLHelperHolder(create_if_necessary);
-
-  if (holder) {
-    holder->ReleaseIfPossible();
-  }
-}
-
-void CopyFromCompositingSurfaceFinished(
-    const ReadbackRequestCallback& callback,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-    std::unique_ptr<SkBitmap> bitmap,
-    const base::TimeTicks& start_time,
-    scoped_refptr<PendingReadbackLock> readback_lock,
-    bool result) {
-  TRACE_EVENT0(
-      "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
-  gpu::SyncToken sync_token;
-  if (result) {
-    viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
-    if (gl_helper)
-      gl_helper->GenerateSyncToken(&sync_token);
-  }
-
-  // PostTask() to make sure the |readback_lock| is released. Also do this
-  // synchronous GPU operation in a clean callstack.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ReleaseGLHelper));
-
-  const bool lost_resource = !sync_token.HasData();
-  release_callback->Run(sync_token, lost_resource);
-  UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
-                      base::TimeTicks::Now() - start_time);
-  ReadbackResponse response = result ? READBACK_SUCCESS : READBACK_FAILED;
-  callback.Run(*bitmap, response);
-}
 
 std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
     ui::TouchSelectionControllerClient* client,
@@ -359,64 +124,6 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   rect.Union(controller.GetStartHandleRect());
   rect.Union(controller.GetEndHandleRect());
   return rect;
-}
-
-// TODO(wjmaclean): There is significant overlap between
-// PrepareTextureCopyOutputResult and CopyFromCompositingSurfaceFinished in
-// this file, and the versions in surface_utils.cc. They should
-// be merged. See https://crbug.com/582955
-void PrepareTextureCopyOutputResult(
-    const gfx::Size& dst_size_in_pixel,
-    SkColorType color_type,
-    const base::TimeTicks& start_time,
-    const ReadbackRequestCallback& callback,
-    scoped_refptr<PendingReadbackLock> readback_lock,
-    std::unique_ptr<viz::CopyOutputResult> result) {
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, SkBitmap(), READBACK_FAILED));
-  TRACE_EVENT0("cc",
-               "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
-  if (result->IsEmpty())
-    return;
-  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
-
-  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
-  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
-      result->TakeTextureOwnership();
-
-  viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
-  if (!gl_helper)
-    return;
-  if (!gl_helper->IsReadbackConfigSupported(color_type))
-    color_type = kRGBA_8888_SkColorType;
-
-  gfx::Size output_size_in_pixel;
-  if (dst_size_in_pixel.IsEmpty())
-    output_size_in_pixel = result->size();
-  else
-    output_size_in_pixel = dst_size_in_pixel;
-
-  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  if (!bitmap->tryAllocPixels(SkImageInfo::Make(
-          output_size_in_pixel.width(), output_size_in_pixel.height(),
-          color_type, kPremul_SkAlphaType))) {
-    scoped_callback_runner.ReplaceClosure(
-        base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
-    return;
-  }
-
-  uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
-
-  ignore_result(scoped_callback_runner.Release());
-
-  gl_helper->CropScaleReadbackAndCleanMailbox(
-      mailbox, sync_token, result->size(), output_size_in_pixel, pixels,
-      color_type,
-      base::Bind(&CopyFromCompositingSurfaceFinished, callback,
-                 base::Passed(&release_callback), base::Passed(&bitmap),
-                 start_time, readback_lock),
-      viz::GLHelper::SCALER_QUALITY_GOOD);
 }
 
 void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
@@ -645,7 +352,9 @@ bool RenderWidgetHostViewAndroid::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
-  return !using_browser_compositor_ || HasValidFrame();
+  return !using_browser_compositor_ ||
+         (delegated_frame_host_ &&
+          delegated_frame_host_->CanCopyFromCompositingSurface());
 }
 
 void RenderWidgetHostViewAndroid::Show() {
@@ -1098,51 +807,42 @@ SkColor RenderWidgetHostViewAndroid::background_color() const {
 
 void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
+    const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
+  // TODO(crbug/759310): |preferred_color_type| will be removed from this API
+  // soon.
+  DCHECK_EQ(preferred_color_type, kN32_SkColorType);
+
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromSurface");
-  if (!host_ || !IsSurfaceAvailableForCopy()) {
+  if (!IsSurfaceAvailableForCopy()) {
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
-    return;
-  }
-  if (!(view_.GetWindowAndroid())) {
-    callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
-  float device_scale_factor = view_.GetDipScale();
-  gfx::Size dst_size_in_pixel =
-      gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();
-  // Note: When |src_subrect| is empty, a conversion from the view size must be
-  // made instead of using |current_frame_size_|. The latter sometimes also
-  // includes extra height for the toolbar UI, which is not intended for
-  // capture.
-  gfx::Rect src_subrect_in_pixel = gfx::ConvertRectToPixel(
-      device_scale_factor, src_subrect.IsEmpty()
-                               ? gfx::Rect(GetVisibleViewportSize())
-                               : src_subrect);
 
   if (!using_browser_compositor_) {
-    SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,
-                            preferred_color_type);
+    SynchronousCopyContents(src_subrect, output_size, callback);
     UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
                         base::TimeTicks::Now() - start_time);
     return;
   }
 
-  ui::WindowAndroidCompositor* compositor =
-      view_.GetWindowAndroid()->GetCompositor();
-  DCHECK(compositor);
   DCHECK(delegated_frame_host_);
-  scoped_refptr<PendingReadbackLock> readback_lock(
-      g_pending_readback_lock ? g_pending_readback_lock
-                              : new PendingReadbackLock);
-  delegated_frame_host_->RequestCopyOfSurface(
-      compositor, src_subrect_in_pixel,
-      base::Bind(&PrepareTextureCopyOutputResult, dst_size_in_pixel,
-                 preferred_color_type, start_time, callback, readback_lock));
+  delegated_frame_host_->CopyFromCompositingSurface(
+      src_subrect, output_size,
+      base::BindOnce(
+          [](const ReadbackRequestCallback& callback,
+             base::TimeTicks start_time, const SkBitmap& bitmap) {
+            TRACE_EVENT0(
+                "cc", "RenderWidgetHostViewAndroid::CopyFromSurface finished");
+            UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
+                                base::TimeTicks::Now() - start_time);
+            callback.Run(bitmap, bitmap.drawsNothing() ? READBACK_FAILED
+                                                       : READBACK_SUCCESS);
+          },
+          callback, start_time));
 }
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
@@ -1427,10 +1127,18 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
 void RenderWidgetHostViewAndroid::DidScroll() {}
 
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
-    const gfx::Rect& src_subrect_in_pixel,
+    const gfx::Rect& src_subrect_dip,
     const gfx::Size& dst_size_in_pixel,
-    const ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
+    const ReadbackRequestCallback& callback) {
+  // Note: When |src_subrect| is empty, a conversion from the view size must
+  // be made instead of using |current_frame_size_|. The latter sometimes also
+  // includes extra height for the toolbar UI, which is not intended for
+  // capture.
+  const gfx::Rect src_subrect_in_pixel = gfx::ConvertRectToPixel(
+      view_.GetDipScale(), src_subrect_dip.IsEmpty()
+                               ? gfx::Rect(GetVisibleViewportSize())
+                               : src_subrect_dip);
+
   // TODO(crbug/698974): [BUG] Current implementation does not support read-back
   // of regions that do not originate at (0,0).
   const gfx::Size& input_size_in_pixel = src_subrect_in_pixel.size();
@@ -1450,10 +1158,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   }
 
   SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::Make(output_width,
-                                       output_height,
-                                       color_type,
-                                       kPremul_SkAlphaType));
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(output_width, output_height));
   SkCanvas canvas(bitmap);
   canvas.scale(
       (float)output_width / (float)input_size_in_pixel.width(),
