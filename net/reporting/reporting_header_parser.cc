@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -172,17 +173,15 @@ void ReportingHeaderParser::RecordHeaderDiscardedForCertStatusError() {
 }
 
 // static
+void ReportingHeaderParser::RecordHeaderDiscardedForInvalidJson() {
+  RecordHeaderOutcome(HeaderOutcome::DISCARDED_INVALID_JSON);
+}
+
+// static
 void ReportingHeaderParser::ParseHeader(ReportingContext* context,
                                         const GURL& url,
-                                        const std::string& json_value) {
+                                        std::unique_ptr<base::Value> value) {
   DCHECK(url.SchemeIsCryptographic());
-
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read("[" + json_value + "]");
-  if (!value) {
-    RecordHeaderOutcome(HeaderOutcome::DISCARDED_INVALID_JSON);
-    return;
-  }
 
   const base::ListValue* endpoint_list = nullptr;
   bool is_list = value->GetAsList(&endpoint_list);

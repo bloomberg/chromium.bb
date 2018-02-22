@@ -5,12 +5,16 @@
 #ifndef NET_REPORTING_REPORTING_HEADER_PARSER_H_
 #define NET_REPORTING_REPORTING_HEADER_PARSER_H_
 
-#include <string>
+#include <memory>
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
 
 class GURL;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace net {
 
@@ -21,10 +25,11 @@ class NET_EXPORT ReportingHeaderParser {
   static void RecordHeaderDiscardedForNoReportingService();
   static void RecordHeaderDiscardedForInvalidSSLInfo();
   static void RecordHeaderDiscardedForCertStatusError();
+  static void RecordHeaderDiscardedForInvalidJson();
 
   static void ParseHeader(ReportingContext* context,
                           const GURL& url,
-                          const std::string& json_value);
+                          std::unique_ptr<base::Value> value);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingHeaderParser);

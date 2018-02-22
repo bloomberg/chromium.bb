@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -22,12 +23,23 @@ namespace {
 
 class ReportingHeaderParserTest : public ReportingTestBase {
  protected:
+  void ParseHeader(const GURL& url, const std::string& json) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read("[" + json + "]");
+    if (value)
+      ReportingHeaderParser::ParseHeader(context(), url, std::move(value));
+  }
+
   const GURL kUrl_ = GURL("https://origin/path");
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
 };
+
+// TODO(juliatuttle): Ideally these tests should be expecting that JSON parsing
+// (and therefore header parsing) may happen asynchronously, but the entire
+// pipeline is also tested by NetworkErrorLoggingEndToEndTest.
 
 TEST_F(ReportingHeaderParserTest, Invalid) {
   static const struct {
@@ -65,8 +77,7 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
 
   for (size_t i = 0; i < arraysize(kInvalidHeaderTestCases); ++i) {
     auto& test_case = kInvalidHeaderTestCases[i];
-    ReportingHeaderParser::ParseHeader(context(), kUrl_,
-                                       test_case.header_value);
+    ParseHeader(kUrl_, test_case.header_value);
 
     std::vector<const ReportingClient*> clients;
     cache()->GetClients(&clients);
@@ -77,9 +88,8 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
 }
 
 TEST_F(ReportingHeaderParserTest, Valid) {
-  ReportingHeaderParser::ParseHeader(
-      context(), kUrl_,
-      "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
+  ParseHeader(kUrl_,
+              "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -98,18 +108,15 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAge) {
       tick_clock()->NowTicks() + base::TimeDelta::FromDays(1),
       ReportingClient::kDefaultPriority, ReportingClient::kDefaultWeight);
 
-  ReportingHeaderParser::ParseHeader(
-      context(), kUrl_,
-      "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":0}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":0}");
 
   EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
 }
 
 TEST_F(ReportingHeaderParserTest, Subdomains) {
-  ReportingHeaderParser::ParseHeader(context(), kUrl_,
-                                     "{\"url\":\"" + kEndpoint_.spec() +
-                                         "\",\"max-age\":86400,"
-                                         "\"includeSubdomains\":true}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"max-age\":86400,"
+                         "\"includeSubdomains\":true}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -118,10 +125,9 @@ TEST_F(ReportingHeaderParserTest, Subdomains) {
 }
 
 TEST_F(ReportingHeaderParserTest, PriorityPositive) {
-  ReportingHeaderParser::ParseHeader(context(), kUrl_,
-                                     "{\"url\":\"" + kEndpoint_.spec() +
-                                         "\",\"max-age\":86400,"
-                                         "\"priority\":2}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"max-age\":86400,"
+                         "\"priority\":2}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -130,10 +136,9 @@ TEST_F(ReportingHeaderParserTest, PriorityPositive) {
 }
 
 TEST_F(ReportingHeaderParserTest, PriorityNegative) {
-  ReportingHeaderParser::ParseHeader(context(), kUrl_,
-                                     "{\"url\":\"" + kEndpoint_.spec() +
-                                         "\",\"max-age\":86400,"
-                                         "\"priority\":-2}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"max-age\":86400,"
+                         "\"priority\":-2}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -142,10 +147,9 @@ TEST_F(ReportingHeaderParserTest, PriorityNegative) {
 }
 
 TEST_F(ReportingHeaderParserTest, Weight) {
-  ReportingHeaderParser::ParseHeader(context(), kUrl_,
-                                     "{\"url\":\"" + kEndpoint_.spec() +
-                                         "\",\"max-age\":86400,"
-                                         "\"weight\":3}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"max-age\":86400,"
+                         "\"weight\":3}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -156,15 +160,13 @@ TEST_F(ReportingHeaderParserTest, Weight) {
 TEST_F(ReportingHeaderParserTest, RemoveOld) {
   static const GURL kDifferentEndpoint_ = GURL("https://endpoint2/");
 
-  ReportingHeaderParser::ParseHeader(
-      context(), kUrl_,
-      "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
+  ParseHeader(kUrl_,
+              "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
 
   EXPECT_TRUE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
 
-  ReportingHeaderParser::ParseHeader(
-      context(), kUrl_,
-      "{\"url\":\"" + kDifferentEndpoint_.spec() + "\",\"max-age\":86400}");
+  ParseHeader(kUrl_, "{\"url\":\"" + kDifferentEndpoint_.spec() +
+                         "\",\"max-age\":86400}");
 
   EXPECT_FALSE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
   EXPECT_TRUE(FindClientInCache(cache(), kOrigin_, kDifferentEndpoint_));
