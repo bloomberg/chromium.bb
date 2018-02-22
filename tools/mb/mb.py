@@ -383,6 +383,8 @@ class MetaBuildWrapper(object):
       return []
 
     # This code is naive and just picks reasonable defaults per platform.
+    # TODO(thakis): This assumes that host platform is the same as
+    # target platform.
     if self.platform == 'darwin':
       os_dim = ('os', 'Mac-10.12')
     elif self.platform.startswith('linux'):
@@ -726,6 +728,7 @@ class MetaBuildWrapper(object):
 
     android = 'target_os="android"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
+    win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
     for target in swarming_targets:
       if android:
         # Android targets may be either android_apk or executable. The former
@@ -749,11 +752,11 @@ class MetaBuildWrapper(object):
         label = isolate_map[target]['label']
         runtime_deps_targets = [
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
-        if self.platform == 'win32':
+        if win:
           runtime_deps_targets += [ target + '.exe.runtime_deps' ]
         else:
           runtime_deps_targets += [ target + '.runtime_deps' ]
-      elif self.platform == 'win32':
+      elif win:
         runtime_deps_targets = [target + '.exe.runtime_deps']
       else:
         runtime_deps_targets = [target + '.runtime_deps']
@@ -905,6 +908,7 @@ class MetaBuildWrapper(object):
 
     is_android = 'target_os="android"' in vals['gn_args']
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
+    is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
 
     # This should be true if tests with type='windowed_test_launcher' are
     # expected to run using xvfb. For example, Linux Desktop, X11 CrOS and
@@ -923,7 +927,7 @@ class MetaBuildWrapper(object):
     test_type = isolate_map[target]['type']
 
     executable = isolate_map[target].get('executable', target)
-    executable_suffix = '.exe' if self.platform == 'win32' else ''
+    executable_suffix = '.exe' if is_win else ''
 
     cmdline = []
     extra_files = [
