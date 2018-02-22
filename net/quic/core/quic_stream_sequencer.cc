@@ -82,11 +82,8 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     }
     return;
   }
-  bool stream_unblocked = byte_offset == buffered_frames_.BytesConsumed();
-  if (buffered_frames_.allow_overlapping_data()) {
-    stream_unblocked =
-        previous_readable_bytes == 0 && buffered_frames_.ReadableBytes() > 0;
-  }
+  const bool stream_unblocked =
+      previous_readable_bytes == 0 && buffered_frames_.ReadableBytes() > 0;
   if (stream_unblocked) {
     if (ignore_read_data_) {
       FlushBufferedFrames();

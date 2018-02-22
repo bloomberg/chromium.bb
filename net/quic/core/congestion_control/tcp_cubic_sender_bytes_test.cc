@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -781,7 +782,7 @@ TEST_F(TcpCubicSenderBytesTest, DefaultMaxCwnd) {
 
 TEST_F(TcpCubicSenderBytesTest, LimitCwndIncreaseInCongestionAvoidance) {
   // Enable Cubic.
-  sender_.reset(new TcpCubicSenderBytesPeer(&clock_, false));
+  sender_ = QuicMakeUnique<TcpCubicSenderBytesPeer>(&clock_, false);
 
   int num_sent = SendAvailableSendWindow();
 

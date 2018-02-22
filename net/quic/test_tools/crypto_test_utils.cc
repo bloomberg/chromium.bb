@@ -25,6 +25,7 @@
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -117,7 +118,7 @@ QuicAsyncStatus TestChannelIDSource::GetChannelIDKey(
     const string& hostname,
     std::unique_ptr<ChannelIDKey>* channel_id_key,
     ChannelIDSourceCallback* /*callback*/) {
-  channel_id_key->reset(new TestChannelIDKey(HostnameToKey(hostname)));
+  *channel_id_key = QuicMakeUnique<TestChannelIDKey>(HostnameToKey(hostname));
   return QUIC_SUCCESS;
 }
 

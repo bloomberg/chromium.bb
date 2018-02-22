@@ -544,7 +544,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // List of streams with pending retransmissions.
   QuicLinkedHashMap<QuicStreamId, bool> streams_with_pending_retransmission_;
 
-  // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session.
+  // Latched value of quic_reloadable_flag_quic_streams_unblocked_by_session2.
   const bool session_unblocks_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);

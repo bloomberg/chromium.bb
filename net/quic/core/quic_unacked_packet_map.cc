@@ -255,6 +255,7 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {
 
 void QuicUnackedPacketMap::CancelRetransmissionsForStream(
     QuicStreamId stream_id) {
+  DCHECK(!session_decides_what_to_write_);
   QuicPacketNumber packet_number = least_unacked_;
   for (UnackedPacketMap::iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {

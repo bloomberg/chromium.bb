@@ -11,6 +11,7 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -67,10 +68,10 @@ class QuicSpdyClientStreamTest : public QuicTest {
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_.reset(new QuicSpdyClientStream(
+    stream_ = QuicMakeUnique<QuicSpdyClientStream>(
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
-        &session_));
-    stream_visitor_.reset(new StreamVisitor());
+        &session_);
+    stream_visitor_ = QuicMakeUnique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
   }
 

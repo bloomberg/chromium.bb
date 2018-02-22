@@ -181,7 +181,6 @@ class QuicHttpStructureDecoderTest : public QuicHttpRandomDecoderTest {
     return AssertionSuccess();
   }
 
-  uint32_t decode_offset_ = 0;
   S structure_;
   QuicHttpStructureDecoder structure_decoder_;
   size_t fast_decode_count_ = 0;

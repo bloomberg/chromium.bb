@@ -50,7 +50,6 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
             manager.GetSupportedTransportVersions());
 
   SetQuicReloadableFlag(quic_enable_version_42, true);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   EXPECT_EQ(QuicTransportVersionVector({QUIC_VERSION_42, QUIC_VERSION_41,
                                         QUIC_VERSION_39, QUIC_VERSION_38,
                                         QUIC_VERSION_37, QUIC_VERSION_35}),

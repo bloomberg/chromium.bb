@@ -98,7 +98,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
     return false;
   }
 
-  const QuicString url = SpdyUtils::GetPromisedUrlFromHeaderBlock(headers);
+  const QuicString url = SpdyUtils::GetPromisedUrlFromHeaders(headers);
   QuicClientPromisedInfo* old_promised = GetPromisedByUrl(url);
   if (old_promised) {
     QUIC_DVLOG(1) << "Promise for stream " << promised_id

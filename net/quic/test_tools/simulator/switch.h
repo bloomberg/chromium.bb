@@ -32,9 +32,6 @@ class Switch {
     return &ports_[port_number - 1];
   }
 
-  inline const Queue* port_queue(SwitchPortNumber port_number) const {
-    return ports_[port_number - 1].queue();
-  }
   inline Queue* port_queue(SwitchPortNumber port_number) {
     return ports_[port_number - 1].queue();
   }
@@ -61,7 +58,6 @@ class Switch {
     void Act() override;
 
     inline bool connected() const { return connected_; }
-    inline const Queue* queue() const { return &queue_; }
     inline Queue* queue() { return &queue_; }
 
    private:

@@ -39,8 +39,7 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   bool enable_version_99_;
   // FLAGS_quic_enable_version_43
   bool enable_version_43_;
-  // FLAGS_quic_reloadable_flag_quic_enable_version_42 and
-  // FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data.
+  // FLAGS_quic_reloadable_flag_quic_enable_version_42.
   bool enable_version_42_;
   // FLAGS_quic_reloadable_flag_quic_disable_version_41
   bool disable_version_41_;

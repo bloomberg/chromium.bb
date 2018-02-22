@@ -1616,7 +1616,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   // Verify that the response had a URL for us.
-  GURL gurl(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers));
+  GURL gurl(SpdyUtils::GetPromisedUrlFromHeaders(headers));
   if (!gurl.is_valid()) {
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_REFUSED_STREAM,

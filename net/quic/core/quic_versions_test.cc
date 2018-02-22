@@ -320,7 +320,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsAllVersions) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, true);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, true);
   ParsedQuicVersionVector parsed_versions;
@@ -346,7 +345,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo99) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, true);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
@@ -372,7 +370,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo43) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, true);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
@@ -398,7 +395,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo42) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, false);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
@@ -424,7 +420,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo41) {
   SetQuicReloadableFlag(quic_disable_version_38, true);
   SetQuicReloadableFlag(quic_disable_version_41, true);
   SetQuicReloadableFlag(quic_enable_version_42, false);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
@@ -449,7 +444,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo38) {
   SetQuicReloadableFlag(quic_disable_version_38, true);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, false);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;
@@ -474,7 +468,6 @@ TEST_F(QuicVersionsTest, FilterSupportedTransportVersionsNo37) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, false);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, false);
   SetQuicFlag(&FLAGS_quic_enable_version_99, false);
   ParsedQuicVersionVector parsed_versions;

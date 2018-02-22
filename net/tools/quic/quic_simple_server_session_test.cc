@@ -17,6 +17,7 @@
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_containers.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -200,9 +201,9 @@ class QuicSimpleServerSessionTest
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
-    session_.reset(new MockQuicSimpleServerSession(
+    session_ = QuicMakeUnique<MockQuicSimpleServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
-        &compressed_certs_cache_, &response_cache_));
+        &compressed_certs_cache_, &response_cache_);
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
@@ -475,9 +476,9 @@ class QuicSimpleServerSessionServerPushTest
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
-    session_.reset(new MockQuicSimpleServerSession(
+    session_ = QuicMakeUnique<MockQuicSimpleServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
-        &compressed_certs_cache_, &response_cache_));
+        &compressed_certs_cache_, &response_cache_);
     session_->Initialize();
     QuicSessionPeer::GetMutableCryptoStream(session_.get())
         ->OnSuccessfulVersionNegotiation(supported_versions.front());

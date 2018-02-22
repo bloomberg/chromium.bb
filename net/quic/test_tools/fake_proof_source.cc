@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/fake_proof_source.h"
 
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 
 using std::string;

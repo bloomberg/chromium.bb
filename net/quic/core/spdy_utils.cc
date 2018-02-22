@@ -128,7 +128,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
 }
 
 // static
-QuicString SpdyUtils::GetPromisedUrlFromHeaderBlock(
+QuicString SpdyUtils::GetPromisedUrlFromHeaders(
     const SpdyHeaderBlock& headers) {
   // RFC 7540, Section 8.1.2.3: All HTTP/2 requests MUST include exactly
   // one valid value for the ":method", ":scheme", and ":path" pseudo-header
@@ -182,16 +182,16 @@ QuicString SpdyUtils::GetPromisedUrlFromHeaderBlock(
 }
 
 // static
-QuicString SpdyUtils::GetHostNameFromHeaderBlock(
+QuicString SpdyUtils::GetPromisedHostNameFromHeaders(
     const SpdyHeaderBlock& headers) {
   // TODO(fayang): Consider just checking out the value of the ":authority" key
   // in headers.
-  return QuicUrlUtils::HostName(GetPromisedUrlFromHeaderBlock(headers));
+  return QuicUrlUtils::HostName(GetPromisedUrlFromHeaders(headers));
 }
 
 // static
-bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
-  QuicString url(GetPromisedUrlFromHeaderBlock(headers));
+bool SpdyUtils::PromisedUrlIsValid(const SpdyHeaderBlock& headers) {
+  QuicString url(GetPromisedUrlFromHeaders(headers));
   return !url.empty() && QuicUrlUtils::IsValidUrl(url);
 }
 

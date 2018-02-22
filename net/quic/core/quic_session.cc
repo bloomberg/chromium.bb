@@ -59,7 +59,7 @@ QuicSession::QuicSession(QuicConnection* connection,
       control_frame_manager_(this),
       can_use_slices_(GetQuicReloadableFlag(quic_use_mem_slices)),
       session_unblocks_stream_(
-          GetQuicReloadableFlag(quic_streams_unblocked_by_session)) {
+          GetQuicReloadableFlag(quic_streams_unblocked_by_session2)) {
   if (use_control_frame_manager()) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_use_control_frame_manager);
   }

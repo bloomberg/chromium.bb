@@ -10,6 +10,7 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -74,10 +75,10 @@ class QuicClientPromisedInfoTest : public QuicTest {
     headers_[":status"] = "200";
     headers_["content-length"] = "11";
 
-    stream_.reset(new QuicSpdyClientStream(
+    stream_ = QuicMakeUnique<QuicSpdyClientStream>(
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
-        &session_));
-    stream_visitor_.reset(new StreamVisitor());
+        &session_);
+    stream_visitor_ = QuicMakeUnique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
 
     push_promise_[":path"] = "/bar";
@@ -86,7 +87,7 @@ class QuicClientPromisedInfoTest : public QuicTest {
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
 
-    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
+    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
 
     client_request_ = push_promise_.Clone();
     promise_id_ =

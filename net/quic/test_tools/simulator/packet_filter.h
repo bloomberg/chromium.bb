@@ -42,8 +42,6 @@ class PacketFilter : public Endpoint, public ConstrainedPortInterface {
   PacketFilter(Simulator* simulator, std::string name, Endpoint* input);
   ~PacketFilter() override;
 
-  Endpoint* input() { return input_; }
-
   // Implementation of ConstrainedPortInterface.
   void AcceptPacket(std::unique_ptr<Packet> packet) override;
   QuicTime::Delta TimeUntilAvailable() override;

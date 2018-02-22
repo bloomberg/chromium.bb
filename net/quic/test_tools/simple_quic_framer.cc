@@ -31,11 +31,12 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   void OnPacket() override {}
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {
-    public_reset_packet_.reset(new QuicPublicResetPacket(packet));
+    public_reset_packet_ = QuicMakeUnique<QuicPublicResetPacket>((packet));
   }
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {
-    version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
+    version_negotiation_packet_ =
+        QuicMakeUnique<QuicVersionNegotiationPacket>((packet));
   }
 
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
@@ -175,13 +176,13 @@ SimpleQuicFramer::SimpleQuicFramer(
 SimpleQuicFramer::~SimpleQuicFramer() {}
 
 bool SimpleQuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
-  visitor_.reset(new SimpleFramerVisitor);
+  visitor_ = QuicMakeUnique<SimpleFramerVisitor>();
   framer_.set_visitor(visitor_.get());
   return framer_.ProcessPacket(packet);
 }
 
 void SimpleQuicFramer::Reset() {
-  visitor_.reset(new SimpleFramerVisitor);
+  visitor_ = QuicMakeUnique<SimpleFramerVisitor>();
 }
 
 const QuicPacketHeader& SimpleQuicFramer::header() const {

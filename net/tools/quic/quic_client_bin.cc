@@ -55,6 +55,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
@@ -271,11 +272,11 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer(new CTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
-    proof_verifier.reset(new FakeProofVerifier());
+    proof_verifier = net::QuicMakeUnique<FakeProofVerifier>();
   } else {
-    proof_verifier.reset(new ProofVerifierChromium(
+    proof_verifier = net::QuicMakeUnique<ProofVerifierChromium>(
         cert_verifier.get(), ct_policy_enforcer.get(),
-        transport_security_state.get(), ct_verifier.get()));
+        transport_security_state.get(), ct_verifier.get());
   }
   net::QuicClient client(net::QuicSocketAddress(ip_addr, port), server_id,
                          versions, &epoll_server, std::move(proof_verifier));

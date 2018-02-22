@@ -5,6 +5,7 @@
 #include "net/tools/quic/chlo_extractor.h"
 
 #include "net/quic/core/quic_framer.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -65,7 +66,7 @@ class ChloExtractorTest : public QuicTest {
         framer.EncryptPayload(ENCRYPTION_NONE, header_.packet_number, *packet,
                               buffer_, arraysize(buffer_));
     ASSERT_NE(0u, encrypted_length);
-    packet_.reset(new QuicEncryptedPacket(buffer_, encrypted_length));
+    packet_ = QuicMakeUnique<QuicEncryptedPacket>(buffer_, encrypted_length);
     EXPECT_TRUE(packet_ != nullptr);
     delete stream_frame;
   }

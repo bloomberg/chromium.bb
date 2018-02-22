@@ -86,17 +86,17 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
     connection_ = new PacketSavingConnection(&helper_, &alarm_factory_,
                                              Perspective::IS_CLIENT,
                                              SupportedVersions(GetParam()));
-    session_.reset(new TestQuicSpdyClientSession(
+    session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
         DefaultQuicConfig(), connection_,
         QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
-        &crypto_config_, &push_promise_index_));
+        &crypto_config_, &push_promise_index_);
     session_->Initialize();
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.google.com";
     push_promise_[":version"] = "HTTP/1.1";
     push_promise_[":method"] = "GET";
     push_promise_[":scheme"] = "https";
-    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_);
+    promise_url_ = SpdyUtils::GetPromisedUrlFromHeaders(push_promise_);
     promised_stream_id_ =
         QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, 0);
     associated_stream_id_ =
@@ -503,8 +503,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
         session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
     // Verify that the promise is in the unclaimed streams map.
-    QuicString promise_url(
-        SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
+    QuicString promise_url(SpdyUtils::GetPromisedUrlFromHeaders(push_promise_));
     EXPECT_NE(session_->GetPromisedByUrl(promise_url), nullptr);
     EXPECT_NE(session_->GetPromisedById(id), nullptr);
   }
@@ -524,8 +523,7 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
       session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
   // Verify that the promise was not created.
-  QuicString promise_url(
-      SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
+  QuicString promise_url(SpdyUtils::GetPromisedUrlFromHeaders(push_promise_));
   EXPECT_EQ(session_->GetPromisedById(id), nullptr);
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url), nullptr);
 }

@@ -776,7 +776,7 @@ void QuicHttpDecoderAdapter::ResetInternal() {
   CorruptFrameHeader(&frame_header_);
   CorruptFrameHeader(&hpack_first_frame_header_);
 
-  frame_decoder_.reset(new QuicHttpFrameDecoder(this));
+  frame_decoder_ = QuicMakeUnique<QuicHttpFrameDecoder>(this);
   hpack_decoder_ = nullptr;
 }
 

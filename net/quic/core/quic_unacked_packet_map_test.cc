@@ -207,7 +207,11 @@ TEST_P(QuicUnackedPacketMapTest, StopRetransmission) {
   VerifyRetransmittablePackets(retransmittable,
                                QUIC_ARRAYSIZE(retransmittable));
 
-  unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  if (unacked_packets_.session_decides_what_to_write()) {
+    EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
+  } else {
+    unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  }
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
@@ -226,7 +230,9 @@ TEST_P(QuicUnackedPacketMapTest, StopRetransmissionOnOtherStream) {
                                QUIC_ARRAYSIZE(retransmittable));
 
   // Stop retransmissions on another stream and verify the packet is unchanged.
-  unacked_packets_.CancelRetransmissionsForStream(stream_id + 2);
+  if (!unacked_packets_.session_decides_what_to_write()) {
+    unacked_packets_.CancelRetransmissionsForStream(stream_id + 2);
+  }
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(retransmittable,
@@ -250,7 +256,11 @@ TEST_P(QuicUnackedPacketMapTest, StopRetransmissionAfterRetransmission) {
   }
   VerifyRetransmittablePackets(&retransmittable[0], retransmittable.size());
 
-  unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  if (unacked_packets_.session_decides_what_to_write()) {
+    EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
+  } else {
+    unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  }
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
