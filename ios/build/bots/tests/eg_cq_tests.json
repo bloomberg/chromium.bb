@@ -5,10 +5,12 @@
   "tests": [
     {
       "app": "ios_chrome_integration_egtests",
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_web_shell_egtests",
+      "shards": 2,
       "xctest": true
     }
   ]
