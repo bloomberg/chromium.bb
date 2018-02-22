@@ -3423,10 +3423,20 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
       lab_board_name = model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME]
       if config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES in model:
+        test_suites = model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]
+        if 'bvt-arc' in test_suites:
+          # TODO(crbug.com/814793)
+          # We're tying these test suites to bvt-arc because it's not worth
+          # plumbing this all the way through the GE UI since that architecture
+          # was never fully implemented and we shouldn't have tied to it in
+          # the first place.
+          # Once test planning is properly implemented, this will fall out.
+          test_suites.append('arc-cts-qual')
+          test_suites.append('arc-gts-qual')
         models.append(config_lib.ModelTestConfig(
             name,
             lab_board_name,
-            model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]))
+            test_suites))
       else:
         no_model_test_suites = []
         models.append(config_lib.ModelTestConfig(
@@ -3445,7 +3455,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         models=models,
         important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
         active_waterfall=active_waterfall,
-        hw_tests=hw_test_list.SharedPoolCanary(pool=pool),
+        hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
+                  hw_test_list.CtsGtsQualTests()),
     )
 
     master_config.AddSlave(site_config[config_name])
