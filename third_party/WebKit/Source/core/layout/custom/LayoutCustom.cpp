@@ -97,7 +97,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     }
 
     FragmentResultOptions fragment_result_options;
-    if (!instance->Layout(&fragment_result_options))
+    if (!instance->Layout(*this, &fragment_result_options))
       return false;
 
     // TODO(ikilpatrick): Currently we need to "fail" if we have any children

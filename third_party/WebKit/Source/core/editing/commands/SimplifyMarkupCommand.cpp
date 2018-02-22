@@ -83,7 +83,7 @@ void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
       }
 
       if (!current_node->GetComputedStyle()
-               ->VisualInvalidationDiff(*starting_style)
+               ->VisualInvalidationDiff(GetDocument(), *starting_style)
                .HasDifference())
         top_node_with_starting_style = current_node;
     }

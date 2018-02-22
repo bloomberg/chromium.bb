@@ -283,7 +283,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleContentAlignmentData ResolvedJustifyContent(
       const StyleContentAlignmentData& normal_behaviour) const;
 
-  StyleDifference VisualInvalidationDiff(const ComputedStyle&) const;
+  StyleDifference VisualInvalidationDiff(const Document&,
+                                         const ComputedStyle&) const;
 
   void InheritFrom(const ComputedStyle& inherit_parent,
                    IsAtShadowBoundary = kNotAtShadowBoundary);
@@ -2448,7 +2449,9 @@ class ComputedStyle : public ComputedStyleBase,
                                             const StyleDifference&) const;
   bool DiffNeedsFullLayoutAndPaintInvalidation(
       const ComputedStyle& other) const;
-  bool DiffNeedsFullLayout(const ComputedStyle& other) const;
+  bool DiffNeedsFullLayout(const Document&, const ComputedStyle& other) const;
+  bool DiffNeedsFullLayoutForLayoutCustom(const Document&,
+                                          const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObjectForPaintImage(
@@ -2457,6 +2460,11 @@ class ComputedStyle : public ComputedStyleBase,
   bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   CORE_EXPORT void UpdatePropertySpecificDifferences(const ComputedStyle& other,
                                                      StyleDifference&) const;
+
+  bool PropertiesEqual(const Vector<CSSPropertyID>& properties,
+                       const ComputedStyle& other) const;
+  bool CustomPropertiesEqual(const Vector<AtomicString>& properties,
+                             const ComputedStyle& other) const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 

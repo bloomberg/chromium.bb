@@ -8,9 +8,11 @@
 #include "bindings/core/v8/DictionaryIterator.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8FragmentResultOptions.h"
+#include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/custom/FragmentResultOptions.h"
+#include "core/layout/custom/LayoutCustom.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
@@ -45,6 +47,7 @@ CSSLayoutDefinition::Instance::Instance(CSSLayoutDefinition* definition,
       instance_(definition->script_state_->GetIsolate(), instance) {}
 
 bool CSSLayoutDefinition::Instance::Layout(
+    const LayoutCustom& layout_custom,
     FragmentResultOptions* fragment_result_options) {
   ScriptState* script_state = definition_->GetScriptState();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -60,8 +63,25 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   v8::Local<v8::Function> layout = definition_->layout_.NewLocal(isolate);
 
-  // TODO(ikilpatrick): Build up arguments to pass into the layout function.
-  Vector<v8::Local<v8::Value>> argv = {};
+  // TODO(ikilpatrick): We can (and should) be smarter about the style map
+  // here. Instead of creating a new one each time, we should have one that
+  // lives on the layout object, and gets re-populated when various properties
+  // change. Internally this should hold onto CSSValues, instead of creating
+  // new ones each access.
+  // This should be shared with the CSS paint, but without the invalidation.
+  DCHECK(layout_custom.GetNode());
+  StylePropertyMapReadOnly* style_map =
+      FilteredComputedStylePropertyMap::Create(
+          layout_custom.GetNode(), definition_->native_invalidation_properties_,
+          definition_->custom_invalidation_properties_);
+
+  // TODO(ikilpatrick): Fill in children array, layout constraints, and edges.
+  Vector<v8::Local<v8::Value>> argv = {
+      v8::Array::New(isolate, 0),  // children array
+      v8::Undefined(isolate),      // edges
+      v8::Undefined(isolate),      // constraints
+      ToV8(style_map, script_state->GetContext()->Global(), isolate),
+  };
 
   v8::Local<v8::Value> generator_value;
   if (!V8ScriptRunner::CallFunction(layout, execution_context, instance,

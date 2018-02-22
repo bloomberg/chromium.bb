@@ -16,6 +16,7 @@
 namespace blink {
 
 class FragmentResultOptions;
+class LayoutCustom;
 class ScriptState;
 
 // Represents a javascript class registered on the LayoutWorkletGlobalScope by
@@ -45,7 +46,7 @@ class CSSLayoutDefinition final
 
     // Runs the web developer defined layout, returns true if everything
     // succeeded, and populates the FragmentResultOptions dictionary.
-    bool Layout(FragmentResultOptions*);
+    bool Layout(const LayoutCustom&, FragmentResultOptions*);
 
     void Trace(blink::Visitor*);
     void TraceWrappers(const ScriptWrappableVisitor*) const override;
