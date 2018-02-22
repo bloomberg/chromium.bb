@@ -4359,15 +4359,6 @@ TEST_F(NavigationControllerTest, DeleteNavigationEntries) {
   EXPECT_EQ(url5, controller.GetEntryAtIndex(2)->GetURL());
   EXPECT_TRUE(controller.CanGoBack());
 
-  // Deleting the currently commited entry should do nothing.
-  controller.DeleteNavigationEntries(
-      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
-        return entry.GetURL() == url5;
-      }));
-  EXPECT_EQ(1U, navigation_entries_deleted_counter_);
-  ASSERT_EQ(3, controller.GetEntryCount());
-  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
-
   // Delete url1 and url3.
   contents()->ExpectSetHistoryOffsetAndLength(0, 1);
   controller.DeleteNavigationEntries(base::BindRepeating(

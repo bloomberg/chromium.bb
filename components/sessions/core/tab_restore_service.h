@@ -143,6 +143,8 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   };
 
   typedef std::list<std::unique_ptr<Entry>> Entries;
+  typedef base::RepeatingCallback<bool(const SerializedNavigationEntry& entry)>
+      DeletionPredicate;
 
   ~TabRestoreService() override;
 
@@ -168,6 +170,10 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // Removes all entries from the list and notifies observers the list
   // of tabs has changed.
   virtual void ClearEntries() = 0;
+
+  // Removes all SerializedNavigationEntries matching |predicate| and notifies
+  // observers the list of tabs has changed.
+  virtual void DeleteNavigationEntries(const DeletionPredicate& predicate) = 0;
 
   // Returns the entries, ordered with most recently closed entries at the
   // front.

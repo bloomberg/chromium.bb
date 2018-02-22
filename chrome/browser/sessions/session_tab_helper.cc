@@ -94,6 +94,15 @@ void SessionTabHelper::NavigationListPruned(
   }
 }
 
+void SessionTabHelper::NavigationEntriesDeleted() {
+  SessionService* session_service = SessionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!session_service)
+    return;
+
+  session_service->TabNavigationPathEntriesDeleted(window_id(), session_id());
+}
+
 void SessionTabHelper::NavigationEntryChanged(
     const content::EntryChangedDetails& change_details) {
   SessionService* session_service = SessionServiceFactory::GetForProfile(

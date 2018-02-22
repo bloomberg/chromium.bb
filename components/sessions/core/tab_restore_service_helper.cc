@@ -34,6 +34,8 @@ TabRestoreServiceHelper::Observer::~Observer() {}
 
 void TabRestoreServiceHelper::Observer::OnClearEntries() {}
 
+void TabRestoreServiceHelper::Observer::OnNavigationEntriesDeleted() {}
+
 void TabRestoreServiceHelper::Observer::OnRestoreEntryById(
     SessionID::id_type id,
     Entries::const_iterator entry_iterator) {
@@ -137,6 +139,78 @@ void TabRestoreServiceHelper::ClearEntries() {
   if (observer_)
     observer_->OnClearEntries();
   entries_.clear();
+  NotifyTabsChanged();
+}
+
+bool TabRestoreServiceHelper::DeleteFromTab(const DeletionPredicate& predicate,
+                                            Tab* tab) {
+  std::vector<SerializedNavigationEntry> new_navigations;
+  int deleted_navigations = 0;
+  for (auto& navigation : tab->navigations) {
+    if (predicate.Run(navigation)) {
+      // If the current navigation is deleted, remove this tab.
+      if (tab->current_navigation_index == navigation.index())
+        return true;
+      deleted_navigations++;
+    } else {
+      // Adjust indices according to number of deleted navigations.
+      if (tab->current_navigation_index == navigation.index())
+        tab->current_navigation_index -= deleted_navigations;
+      navigation.set_index(navigation.index() - deleted_navigations);
+      new_navigations.push_back(std::move(navigation));
+    }
+  }
+  tab->navigations = std::move(new_navigations);
+  DCHECK(tab->navigations.empty() || ValidateTab(*tab));
+  return tab->navigations.empty();
+}
+
+bool TabRestoreServiceHelper::DeleteFromWindow(
+    const DeletionPredicate& predicate,
+    Window* window) {
+  std::vector<std::unique_ptr<Tab>> new_tabs;
+  int deleted_tabs = 0;
+  for (auto& tab : window->tabs) {
+    if (DeleteFromTab(predicate, tab.get())) {
+      if (window->selected_tab_index == tab->tabstrip_index)
+        window->selected_tab_index = 0;
+      deleted_tabs++;
+    } else {
+      // Adjust indices according to number of deleted tabs.
+      if (window->tabs[window->selected_tab_index] == tab)
+        window->selected_tab_index -= deleted_tabs;
+      if (tab->tabstrip_index >= 0)
+        tab->tabstrip_index -= deleted_tabs;
+      new_tabs.push_back(std::move(tab));
+    }
+  }
+  window->tabs = std::move(new_tabs);
+  DCHECK(window->tabs.empty() || ValidateWindow(*window));
+  return window->tabs.empty();
+}
+
+void TabRestoreServiceHelper::DeleteNavigationEntries(
+    const DeletionPredicate& predicate) {
+  Entries new_entries;
+  for (std::unique_ptr<Entry>& entry : entries_) {
+    switch (entry->type) {
+      case TabRestoreService::TAB: {
+        Tab* tab = static_cast<Tab*>(entry.get());
+        if (!DeleteFromTab(predicate, tab))
+          new_entries.push_back(std::move(entry));
+        break;
+      }
+      case TabRestoreService::WINDOW: {
+        Window* window = static_cast<Window*>(entry.get());
+        if (!DeleteFromWindow(predicate, window))
+          new_entries.push_back(std::move(entry));
+        break;
+      }
+    }
+  }
+  entries_ = std::move(new_entries);
+  if (observer_)
+    observer_->OnNavigationEntriesDeleted();
   NotifyTabsChanged();
 }
 

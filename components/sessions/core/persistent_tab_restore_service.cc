@@ -352,6 +352,7 @@ class PersistentTabRestoreService::Delegate
 
   // TabRestoreServiceHelper::Observer:
   void OnClearEntries() override;
+  void OnNavigationEntriesDeleted() override;
   void OnRestoreEntryById(SessionID::id_type id,
                           Entries::const_iterator entry_iterator) override;
   void OnAddEntry() override;
@@ -533,10 +534,16 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
 
   // Schedule a pending reset so that we nuke the file on next write.
   base_session_service_->set_pending_reset(true);
+  base_session_service_->StartSaveTimer();
+}
 
-  // Schedule a command, otherwise if there are no pending commands Save does
-  // nothing.
-  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(1));
+void PersistentTabRestoreService::Delegate::OnNavigationEntriesDeleted() {
+  // Rewrite all entries.
+  entries_to_write_ = tab_restore_service_helper_->entries().size();
+
+  // Schedule a pending reset so that we nuke the file on next write.
+  base_session_service_->set_pending_reset(true);
+  base_session_service_->StartSaveTimer();
 }
 
 void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
@@ -1118,6 +1125,12 @@ void PersistentTabRestoreService::BrowserClosed(LiveTabContext* context) {
 
 void PersistentTabRestoreService::ClearEntries() {
   helper_.ClearEntries();
+}
+
+void PersistentTabRestoreService::DeleteNavigationEntries(
+    const DeletionPredicate& predicate) {
+  DCHECK(IsLoaded());
+  helper_.DeleteNavigationEntries(predicate);
 }
 
 const TabRestoreService::Entries& PersistentTabRestoreService::entries() const {

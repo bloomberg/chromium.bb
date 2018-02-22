@@ -46,6 +46,11 @@ void InMemoryTabRestoreService::ClearEntries() {
   helper_.ClearEntries();
 }
 
+void InMemoryTabRestoreService::DeleteNavigationEntries(
+    const DeletionPredicate& predicate) {
+  helper_.DeleteNavigationEntries(predicate);
+}
+
 const TabRestoreService::Entries& InMemoryTabRestoreService::entries() const {
   return helper_.entries();
 }
