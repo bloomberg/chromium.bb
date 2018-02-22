@@ -45,7 +45,8 @@ class CreditCardEditorViewController : public EditorViewController,
       int next_ui_tag,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::CreditCard&)> on_added,
-      autofill::CreditCard* credit_card);
+      autofill::CreditCard* credit_card,
+      bool is_incognito);
   ~CreditCardEditorViewController() override;
 
   // EditorViewController:

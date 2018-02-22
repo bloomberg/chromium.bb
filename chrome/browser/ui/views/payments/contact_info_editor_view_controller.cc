@@ -33,8 +33,13 @@ ContactInfoEditorViewController::ContactInfoEditorViewController(
     BackNavigationType back_navigation_type,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
-    autofill::AutofillProfile* profile)
-    : EditorViewController(spec, state, dialog, back_navigation_type),
+    autofill::AutofillProfile* profile,
+    bool is_incognito)
+    : EditorViewController(spec,
+                           state,
+                           dialog,
+                           back_navigation_type,
+                           is_incognito),
       profile_to_edit_(profile),
       on_edited_(std::move(on_edited)),
       on_added_(std::move(on_added)) {}
@@ -91,7 +96,8 @@ bool ContactInfoEditorViewController::ValidateModelAndSave() {
 
   if (profile_to_edit_) {
     PopulateProfile(profile_to_edit_);
-    state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+    if (!is_incognito())
+      state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
     state()->profile_comparator()->Invalidate(*profile_to_edit_);
     std::move(on_edited_).Run();
     on_added_.Reset();
@@ -99,7 +105,8 @@ bool ContactInfoEditorViewController::ValidateModelAndSave() {
     std::unique_ptr<autofill::AutofillProfile> profile =
         std::make_unique<autofill::AutofillProfile>();
     PopulateProfile(profile.get());
-    state()->GetPersonalDataManager()->AddProfile(*profile);
+    if (!is_incognito())
+      state()->GetPersonalDataManager()->AddProfile(*profile);
     std::move(on_added_).Run(*profile);
     on_edited_.Reset();
   }
