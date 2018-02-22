@@ -338,7 +338,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (!mUpdateRequested) return false;
         mUpdateRequested = false;
 
-        boolean areAnimatorsComplete = mAnimationHandler.pushUpdate(dtMs);
+        // TODO(mdjones): Remove the time related params from this method. The new animation system
+        // has its own timer.
+        boolean areAnimatorsComplete = mAnimationHandler.pushUpdate();
 
         final Layout layout = getActiveLayout();
         if (layout != null && layout.onUpdate(timeMs, dtMs) && layout.isHiding()
