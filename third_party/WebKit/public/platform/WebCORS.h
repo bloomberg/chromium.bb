@@ -68,9 +68,8 @@ BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
 
 // Checks whether request mode 'no-cors' is allowed for a certain context and
 // service-worker mode.
-BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(
-    WebURLRequest::RequestContext,
-    WebURLRequest::ServiceWorkerMode);
+BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(WebURLRequest::RequestContext,
+                                                  bool skip_service_worker);
 
 // TODO(hintzed): The following three methods delegate to SchemeRegistry and
 // FetchUtils respectively to expose them for outofblink-CORS in CORSURLLoader.

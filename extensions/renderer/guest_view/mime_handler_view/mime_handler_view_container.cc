@@ -163,7 +163,7 @@ void MimeHandlerViewContainer::OnReady() {
   // The plugin resource request should skip service workers since "plug-ins
   // may get their security origins from their own urls".
   // https://w3c.github.io/ServiceWorker/#implementer-concerns
-  request.SetServiceWorkerMode(blink::WebURLRequest::ServiceWorkerMode::kNone);
+  request.SetSkipServiceWorker(true);
   loader_->LoadAsynchronously(request, this);
 }
 

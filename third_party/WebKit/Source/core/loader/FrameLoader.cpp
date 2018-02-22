@@ -240,10 +240,8 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
     request.SetURL(override_url);
     request.ClearHTTPReferrer();
   }
-  request.SetServiceWorkerMode(frame_load_type ==
-                                       kFrameLoadTypeReloadBypassingCache
-                                   ? WebURLRequest::ServiceWorkerMode::kNone
-                                   : WebURLRequest::ServiceWorkerMode::kAll);
+  request.SetSkipServiceWorker(frame_load_type ==
+                               kFrameLoadTypeReloadBypassingCache);
   return request;
 }
 

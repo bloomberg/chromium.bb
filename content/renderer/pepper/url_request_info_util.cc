@@ -182,7 +182,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   // origin checking logic that may get confused if service workers respond with
   // resources from another origin.
   // https://w3c.github.io/ServiceWorker/#implementer-concerns
-  dest->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+  dest->SetSkipServiceWorker(true);
 
   const std::string& headers = data->headers;
   if (!headers.empty()) {

@@ -59,8 +59,6 @@ RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
-ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
-    const blink::WebURLRequest& request);
 
 }  // namespace content
 

@@ -231,9 +231,7 @@ bool ResourceLoader::WillFollowRedirect(
       resource_->LastResourceRequest().CreateRedirectRequest(
           new_url, new_method, new_site_for_cookies, new_referrer,
           static_cast<ReferrerPolicy>(new_referrer_policy),
-          passed_redirect_response.WasFetchedViaServiceWorker()
-              ? WebURLRequest::ServiceWorkerMode::kAll
-              : WebURLRequest::ServiceWorkerMode::kNone);
+          !passed_redirect_response.WasFetchedViaServiceWorker());
 
   Resource::Type resource_type = resource_->GetType();
 
@@ -536,8 +534,7 @@ void ResourceLoader::DidReceiveResponse(
         fetch_request_mode == network::mojom::FetchRequestMode::kCORS &&
         response.WasFallbackRequiredByServiceWorker()) {
       ResourceRequest last_request = resource_->LastResourceRequest();
-      DCHECK_EQ(last_request.GetServiceWorkerMode(),
-                WebURLRequest::ServiceWorkerMode::kAll);
+      DCHECK(!last_request.GetSkipServiceWorker());
       // This code handles the case when a controlling service worker doesn't
       // handle a cross origin request.
       if (!Context().ShouldLoadNewResource(resource_type)) {
@@ -545,8 +542,7 @@ void ResourceLoader::DidReceiveResponse(
         HandleError(ResourceError::CancelledError(response.Url()));
         return;
       }
-      last_request.SetServiceWorkerMode(
-          WebURLRequest::ServiceWorkerMode::kNone);
+      last_request.SetSkipServiceWorker(true);
       Restart(last_request);
       return;
     }

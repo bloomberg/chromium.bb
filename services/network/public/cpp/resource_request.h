@@ -117,10 +117,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // The service worker mode that indicates which service workers should get
   // events for this request.
-  // Note: this is an enum of type content::ServiceWorkerMode.
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
-  int service_worker_mode = 0;
+  bool skip_service_worker = false;
 
   // The request mode passed to the ServiceWorker.
   mojom::FetchRequestMode fetch_request_mode =

@@ -225,8 +225,7 @@ WebURLRequest CreateAccessControlPreflightRequest(
   preflight_request.SetRequestContext(request.GetRequestContext());
   preflight_request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
-  preflight_request.SetServiceWorkerMode(
-      WebURLRequest::ServiceWorkerMode::kNone);
+  preflight_request.SetSkipServiceWorker(true);
   preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),
                                     request.GetReferrerPolicy());
 
@@ -296,12 +295,10 @@ bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {
       map.GetHTTPHeaderMap());
 }
 
-// No-CORS requests are allowed for all these contexts, and plugin contexts with
-// private permission when we set ServiceWorkerMode to None in
-// PepperURLLoaderHost.
-bool IsNoCORSAllowedContext(
-    WebURLRequest::RequestContext context,
-    WebURLRequest::ServiceWorkerMode service_worker_mode) {
+// No-CORS requests are allowed for all these contexts, and plugin contexts when
+// we set skip_service_worker to true in PepperURLLoaderHost.
+bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context,
+                            bool skip_service_worker) {
   switch (context) {
     case WebURLRequest::kRequestContextAudio:
     case WebURLRequest::kRequestContextFavicon:
@@ -314,7 +311,9 @@ bool IsNoCORSAllowedContext(
     case WebURLRequest::kRequestContextWorker:
       return true;
     case WebURLRequest::kRequestContextPlugin:
-      return service_worker_mode == WebURLRequest::ServiceWorkerMode::kNone;
+      // TODO(toyoshim): |skip_service_worker| must be always true here. Will
+      // change to return always true and add a DCHECK to call sites.
+      return skip_service_worker;
     default:
       return false;
   }

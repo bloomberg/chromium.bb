@@ -58,7 +58,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       keepalive_(false),
       should_reset_app_cache_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
-      service_worker_mode_(WebURLRequest::ServiceWorkerMode::kAll),
+      skip_service_worker_(false),
       priority_(ResourceLoadPriority::kLowest),
       intra_priority_value_(0),
       requestor_id_(0),
@@ -100,7 +100,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   SetUseStreamOnResponse(data->use_stream_on_response_);
   SetKeepalive(data->keepalive_);
   SetCacheMode(data->cache_mode_);
-  SetServiceWorkerMode(data->service_worker_mode_);
+  SetSkipServiceWorker(data->skip_service_worker_);
   SetShouldResetAppCache(data->should_reset_app_cache_);
   SetRequestorID(data->requestor_id_);
   SetPluginChildID(data->plugin_child_id_);
@@ -134,7 +134,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_site_for_cookies,
     const String& new_referrer,
     ReferrerPolicy new_referrer_policy,
-    WebURLRequest::ServiceWorkerMode service_worker_mode) const {
+    bool skip_service_worker) const {
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
   request->SetHTTPMethod(new_method);
@@ -143,7 +143,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   request->SetHTTPReferrer(
       Referrer(referrer, static_cast<ReferrerPolicy>(new_referrer_policy)));
-  request->SetServiceWorkerMode(service_worker_mode);
+  request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
   // Copy from parameters for |this|.
@@ -188,7 +188,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->use_stream_on_response_ = use_stream_on_response_;
   data->keepalive_ = keepalive_;
   data->cache_mode_ = GetCacheMode();
-  data->service_worker_mode_ = service_worker_mode_;
+  data->skip_service_worker_ = skip_service_worker_;
   data->should_reset_app_cache_ = should_reset_app_cache_;
   data->requestor_id_ = requestor_id_;
   data->plugin_child_id_ = plugin_child_id_;

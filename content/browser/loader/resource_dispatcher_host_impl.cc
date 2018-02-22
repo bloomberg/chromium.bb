@@ -1264,17 +1264,14 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   } else {
     // Initialize the service worker handler for the request. We don't use
     // ServiceWorker for synchronous loads to avoid renderer deadlocks.
-    const ServiceWorkerMode service_worker_mode =
-        is_sync_load
-            ? ServiceWorkerMode::NONE
-            : static_cast<ServiceWorkerMode>(request_data.service_worker_mode);
+    const bool skip_service_worker =
+        is_sync_load || request_data.skip_service_worker;
     ServiceWorkerRequestHandler::InitializeHandler(
         new_request.get(), requester_info->service_worker_context(),
         blob_context, child_id, request_data.service_worker_provider_id,
-        service_worker_mode != ServiceWorkerMode::ALL,
-        request_data.fetch_request_mode, request_data.fetch_credentials_mode,
-        request_data.fetch_redirect_mode, request_data.fetch_integrity,
-        request_data.keepalive,
+        skip_service_worker, request_data.fetch_request_mode,
+        request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
+        request_data.fetch_integrity, request_data.keepalive,
         static_cast<ResourceType>(request_data.resource_type),
         static_cast<RequestContextType>(
             request_data.fetch_request_context_type),

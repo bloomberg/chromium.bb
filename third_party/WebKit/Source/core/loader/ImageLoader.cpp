@@ -419,8 +419,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     // https://w3c.github.io/ServiceWorker/#implementer-concerns
     if (GetElement()->IsHTMLElement() &&
         ToHTMLElement(GetElement())->IsPluginElement()) {
-      resource_request.SetServiceWorkerMode(
-          WebURLRequest::ServiceWorkerMode::kNone);
+      resource_request.SetSkipServiceWorker(true);
     }
 
     FetchParameters params(resource_request, resource_loader_options);

@@ -272,13 +272,12 @@ void WebURLRequest::SetKeepalive(bool keepalive) {
   resource_request_->SetKeepalive(keepalive);
 }
 
-WebURLRequest::ServiceWorkerMode WebURLRequest::GetServiceWorkerMode() const {
-  return resource_request_->GetServiceWorkerMode();
+bool WebURLRequest::GetSkipServiceWorker() const {
+  return resource_request_->GetSkipServiceWorker();
 }
 
-void WebURLRequest::SetServiceWorkerMode(
-    WebURLRequest::ServiceWorkerMode service_worker_mode) {
-  resource_request_->SetServiceWorkerMode(service_worker_mode);
+void WebURLRequest::SetSkipServiceWorker(bool skip_service_worker) {
+  resource_request_->SetSkipServiceWorker(skip_service_worker);
 }
 
 bool WebURLRequest::ShouldResetAppCache() const {
