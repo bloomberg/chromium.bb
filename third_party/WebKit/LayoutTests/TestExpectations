@@ -2417,9 +2417,6 @@ crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple
 # Added 2016-12-12
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
 
-# Added 2016-12-15
-crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
-
 
 crbug.com/765738 [ Linux Win Mac ] virtual/enable_wasm/http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 
