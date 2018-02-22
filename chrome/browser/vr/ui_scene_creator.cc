@@ -845,6 +845,7 @@ void UiSceneCreator::CreateContentQuad() {
         if (focused) {
           e->UpdateInput(model->web_input_text_field_info);
         } else {
+          model->editing_web_input = false;
           e->UpdateInput(EditedText());
         }
       },
