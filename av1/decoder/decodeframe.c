@@ -159,10 +159,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   aom_reader *r, MB_MODE_INFO *const mbmi,
                                   int plane, BLOCK_SIZE plane_bsize,
                                   int blk_row, int blk_col, int block,
-                                  TX_SIZE tx_size, int *eob_total, int mi_row,
-                                  int mi_col) {
-  (void)mi_row;
-  (void)mi_col;
+                                  TX_SIZE tx_size, int *eob_total) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const TX_SIZE plane_tx_size =
       plane ? av1_get_uv_tx_size(mbmi, pd->subsampling_x, pd->subsampling_y)
@@ -230,8 +227,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, offsetr,
-                              offsetc, block, sub_txs, eob_total, mi_row,
-                              mi_col);
+                              offsetc, block, sub_txs, eob_total);
         block += sub_step;
       }
     }
@@ -497,7 +493,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                    blk_col += bw_var_tx) {
                 decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize,
                                       blk_row, blk_col, block, max_tx_size,
-                                      &eobtotal, mi_row, mi_col);
+                                      &eobtotal);
                 block += step;
               }
             }
