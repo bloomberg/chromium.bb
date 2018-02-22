@@ -112,11 +112,7 @@ void PasswordManagerExporter::Cancel() {
 
   // If we are currently writing to the disk, we will have to cleanup the file
   // once writing stops.
-  if (!destination_.empty()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(base::IgnoreResult(delete_function_),
-                                          destination_, false));
-  }
+  Cleanup();
 
   // TODO(crbug.com/789561) If the passwords have already been written to the
   // disk, then we've already recorded ExportPasswordsResult::SUCCESS. Ideally,
@@ -176,6 +172,8 @@ void PasswordManagerExporter::OnPasswordsExported(
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
                destination_.DirName().BaseName().AsUTF8Unsafe());
+    // Don't leave partial password files, if we tell the user we couldn't write
+    Cleanup();
 
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
                               ExportPasswordsResult::WRITE_FAILED,
@@ -188,6 +186,20 @@ void PasswordManagerExporter::OnProgress(
     const std::string& folder) {
   last_progress_status_ = status;
   on_progress_.Run(status, folder);
+}
+
+void PasswordManagerExporter::Cleanup() {
+  // The PasswordManagerExporter instance may be destroyed before the cleanup is
+  // executed, e.g. because a new export was initiated. The cleanup should be
+  // carried out regardless, so we only schedule tasks which own their
+  // arguments.
+  // TODO(crbug.com/811779) When Chrome is overwriting an existing file, cancel
+  // should restore the file rather than delete it.
+  if (!destination_.empty()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::IgnoreResult(delete_function_),
+                                          destination_, false));
+  }
 }
 
 }  // namespace password_manager
