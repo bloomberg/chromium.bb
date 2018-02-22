@@ -100,7 +100,6 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/mash_util.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -173,8 +172,8 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -790,11 +789,11 @@ void RenderThreadImpl::Init(
       base::BindRepeating(&CreateSingleSampleMetricsProvider,
                           message_loop()->task_runner(), GetConnector()));
 
-  gpu_ =
-      ui::Gpu::Create(GetConnector(),
-                      switches::IsMusHostingViz() ? ui::mojom::kServiceName
-                                                  : mojom::kBrowserServiceName,
-                      GetIOTaskRunner());
+  gpu_ = ui::Gpu::Create(GetConnector(),
+                         base::FeatureList::IsEnabled(features::kMash)
+                             ? ui::mojom::kServiceName
+                             : mojom::kBrowserServiceName,
+                         GetIOTaskRunner());
 
   viz::mojom::SharedBitmapAllocationNotifierPtr
       shared_bitmap_allocation_notifier_ptr;
@@ -897,7 +896,7 @@ void RenderThreadImpl::Init(
   AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
 
 #if defined(USE_AURA)
-  if (IsRunningWithMus())
+  if (features::IsMusEnabled())
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
 #endif
 
@@ -1065,7 +1064,7 @@ void RenderThreadImpl::Init(
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (IsRunningWithMus()) {
+  if (features::IsMusEnabled()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
         ui::mojom::kServiceName, &manager_ptr);
@@ -2117,7 +2116,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 
 #if defined(USE_AURA)
-  if (switches::IsMusHostingViz()) {
+  if (base::FeatureList::IsEnabled(features::kMash)) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       callback.Run(nullptr);
       return;

@@ -17,6 +17,12 @@
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
 
+namespace base {
+namespace test {
+class ScopedFeatureList;
+}
+}  // namespace base
+
 namespace ui {
 namespace mojom {
 class WindowTreeClient;
@@ -37,7 +43,7 @@ namespace test {
 
 class AuraTestContextFactory;
 
-enum class BackendType { CLASSIC, MUS, MUS_HOSTING_VIZ };
+enum class BackendType { CLASSIC, MUS, MASH };
 
 // A base class for aura unit tests.
 // TODO(beng): Instances of this test will create and own a RootWindow.
@@ -161,6 +167,8 @@ class AuraTestBase : public testing::Test,
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 
   // Only used for mus. Both are are initialized to this, but may be reset.
   WindowManagerDelegate* window_manager_delegate_;

@@ -169,7 +169,7 @@ ninja -C out/OzoneLinuxDesktop chrome
 Then to run for example the X11 platform:
 
 ``` shell
-./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 --mus
+./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 --enable-features=Mus
 ```
 
 ### GN Configuration notes
@@ -257,7 +257,7 @@ following commands:
 ``` shell
 gn args out/OzoneWayland --args="use_ozone=true enable_mus=true"
 ninja -C out/OzoneWayland chrome
-./out/OzoneWayland/chrome --ozone-platform=wayland --mus
+./out/OzoneWayland/chrome --ozone-platform=wayland --enable-features=Mus
 ```
 
 ### Caca

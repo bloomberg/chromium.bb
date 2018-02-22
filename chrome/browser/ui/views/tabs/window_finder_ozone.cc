@@ -12,6 +12,6 @@ gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
   if (GetLocalProcessWindowAtPointMus(screen_point, ignore, &mus_result))
     return mus_result;
 
-  NOTREACHED() << "For Ozone builds, only --mash launch is supported for now.";
+  NOTREACHED() << "For Ozone builds, only mash launch is supported for now.";
   return nullptr;
 }

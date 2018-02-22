@@ -158,7 +158,7 @@ class DrmThread : public base::Thread,
 
   // The mojo implementation of DrmDevice requires a BindingSet because the
   // DrmThread services requests from different client threads when operating in
-  // --mus mode
+  // mus mode
   mojo::BindingSet<ozone::mojom::DrmDevice> drm_bindings_;
 
   base::WeakPtrFactory<DrmThread> weak_ptr_factory_;

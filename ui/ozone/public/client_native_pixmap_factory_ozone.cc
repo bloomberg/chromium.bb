@@ -17,8 +17,8 @@ namespace {
 
 // Thread-safe owner of the gfx::ClientNativePixmapFactory. Not a LazyInstance
 // because it uses PlatformObject<>::Create() for factory construction.
-// TODO(jamescook|spang): This exists to solve a startup race for chrome --mash
-// http://crbug.com/807781. Removing the factory entirely would be better,
+// TODO(jamescook|spang): This exists to solve a startup race for chrome with
+// mash http://crbug.com/807781. Removing the factory entirely would be better,
 // with something like http://crrev.com/c/899949.
 class PixmapFactorySingleton {
  public:

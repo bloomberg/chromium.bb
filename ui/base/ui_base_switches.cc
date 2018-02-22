@@ -117,14 +117,4 @@ const char kSlowDownCompositingScaleFactor[] =
 // Tint GL-composited color.
 const char kTintGlCompositedContent[] = "tint-gl-composited-content";
 
-#if defined(USE_AURA)
-// Used to enable the mus service (aka the UI service). This makes mus run in
-// process. It is also used to notify the clients that the UI service is being
-// used.
-const char kMus[] = "mus";
-
-// If set mus is hosting Viz. Only applicable is kMus if specified.
-const char kMusHostingViz[] = "mus-hosting-viz";
-#endif
-
 }  // namespace switches

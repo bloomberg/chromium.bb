@@ -25,7 +25,6 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
@@ -42,7 +41,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -77,7 +76,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       background_color_(SK_ColorWHITE),
       scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {
-  if (switches::IsMusHostingViz()) {
+  if (base::FeatureList::IsEnabled(features::kMash)) {
     // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId
     // until then set ours invalid, as operations using it will be disregarded.
     frame_sink_id_ = viz::FrameSinkId();
@@ -96,7 +95,7 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
   if (frame_connector_)
     DetachFromTouchSelectionClientManagerIfNecessary();
 
-  if (!switches::IsMusHostingViz()) {
+  if (!base::FeatureList::IsEnabled(features::kMash)) {
     ResetCompositorFrameSinkSupport();
     if (GetHostFrameSinkManager())
       GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
@@ -151,7 +150,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 
   if (parent_view) {
     DCHECK(parent_view->GetFrameSinkId().is_valid() ||
-           switches::IsMusHostingViz());
+           base::FeatureList::IsEnabled(features::kMash));
     SetParentFrameSinkId(parent_view->GetFrameSinkId());
   }
 
@@ -172,7 +171,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
   }
 
 #if defined(USE_AURA)
-  if (IsUsingMus()) {
+  if (features::IsMusEnabled()) {
     frame_connector_->EmbedRendererWindowTreeClientInParent(
         GetWindowTreeClientFromRenderer());
   }
@@ -182,7 +181,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 #if defined(USE_AURA)
 void RenderWidgetHostViewChildFrame::SetFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
-  if (switches::IsMusHostingViz())
+  if (base::FeatureList::IsEnabled(features::kMash))
     frame_sink_id_ = frame_sink_id;
 }
 #endif  // defined(USE_AURA)
@@ -561,7 +560,7 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
 void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
     const viz::FrameSinkId& parent_frame_sink_id) {
   if (parent_frame_sink_id_ == parent_frame_sink_id ||
-      switches::IsMusHostingViz())
+      base::FeatureList::IsEnabled(features::kMash))
     return;
 
   auto* host_frame_sink_manager = GetHostFrameSinkManager();
@@ -607,7 +606,7 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
-  if (switches::IsMusHostingViz())
+  if (base::FeatureList::IsEnabled(features::kMash))
     return;
   viz::SurfaceId surface_id(frame_sink_id_, last_received_local_surface_id_);
   viz::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
@@ -1039,7 +1038,7 @@ void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
-  if (switches::IsMusHostingViz() || enable_viz_)
+  if (base::FeatureList::IsEnabled(features::kMash) || enable_viz_)
     return;
 
   DCHECK(!support_);

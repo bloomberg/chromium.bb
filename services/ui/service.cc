@@ -245,7 +245,7 @@ void Service::OnStart() {
   if (should_host_viz_) {
     // If mus is hosting viz, then it needs to set up ozone so that it can
     // connect to the gpu service through the connector.
-    // Currently mus hosting viz (i.e. --mash mode) only runs single-process.
+    // Currently mus hosting viz (i.e. mash mode) only runs single-process.
     params.connector = context()->connector();
     params.single_process = true;
     params.using_mojo = true;

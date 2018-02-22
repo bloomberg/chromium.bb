@@ -4,12 +4,11 @@
 
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 
-#include "base/command_line.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
@@ -43,11 +42,9 @@ DrmDeviceConnector::DrmDeviceConnector(
       ws_runner_(base::ThreadTaskRunnerHandle::IsSet()
                      ? base::ThreadTaskRunnerHandle::Get()
                      : nullptr) {
-  // Invariant: we only have a runner at startup if executing in --mus mode.
-  DCHECK((ws_runner_ &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMus)) ||
-         (!ws_runner_ &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMus)));
+  // Invariant: we only have a runner at startup if executing in mus mode.
+  DCHECK((ws_runner_ && features::IsMusEnabled()) ||
+         (!ws_runner_ && !features::IsMusEnabled()));
 }
 
 DrmDeviceConnector::~DrmDeviceConnector() {}

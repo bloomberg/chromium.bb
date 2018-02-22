@@ -35,6 +35,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
@@ -2959,19 +2960,19 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTest,
                         ::testing::Values(test::BackendType::CLASSIC,
                                           test::BackendType::MUS,
-                                          test::BackendType::MUS_HOSTING_VIZ));
+                                          test::BackendType::MASH));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTestWithMessageLoop,
                         ::testing::Values(test::BackendType::CLASSIC,
                                           test::BackendType::MUS,
-                                          test::BackendType::MUS_HOSTING_VIZ));
+                                          test::BackendType::MASH));
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowEventDispatcherTestInHighDPI,
                         ::testing::Values(test::BackendType::CLASSIC,
                                           test::BackendType::MUS,
-                                          test::BackendType::MUS_HOSTING_VIZ));
+                                          test::BackendType::MASH));
 
 using WindowEventDispatcherMusTest = test::AuraTestBaseMus;
 

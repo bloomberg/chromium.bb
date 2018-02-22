@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/test/fake_context_factory.h"
 #include "ui/gl/gl_switches.h"
@@ -240,11 +242,14 @@ void ViewsMusTestSuite::Initialize() {
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
 
   EnsureCommandLineSwitch(switches::kOverrideUseSoftwareGLForTests);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kMusHostingViz);
 
   ViewsTestSuite::Initialize();
+
+  // NOTE: this has to be after ViewsTestSuite::Initialize() as
+  // TestSuite::Initialize() resets kEnableFeatures and the command line.
+  feature_list_.InitAndEnableFeature(features::kMash);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableFeatures, features::kMash.name);
 
   PlatformTestHelper::set_factory(base::Bind(&CreatePlatformTestHelper));
 }

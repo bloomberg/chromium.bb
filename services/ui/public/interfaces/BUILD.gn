@@ -6,8 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 mojom("interfaces") {
-  # The window service runs in the browser process for --mus and in the
-  # ash_and_ui process for --mash. Allow IPC serialization to be skipped for
+  # The window service runs in the browser process for mus and in the
+  # ash_and_ui process for mash. Allow IPC serialization to be skipped for
   # the common case of in-process mojo calls. This causes a ~130KB size
   # increase on 64-bit Intel builds.
   if (is_chromeos) {

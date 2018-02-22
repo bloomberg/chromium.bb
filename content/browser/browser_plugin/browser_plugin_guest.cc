@@ -26,7 +26,6 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -52,7 +51,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/drop_data.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -419,7 +418,7 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 void BrowserPluginGuest::SetChildFrameSurface(
     const viz::SurfaceInfo& surface_info) {
   has_attached_since_surface_set_ = false;
-  if (!switches::IsMusHostingViz()) {
+  if (!base::FeatureList::IsEnabled(::features::kMash)) {
     SendMessageToEmbedder(
         std::make_unique<BrowserPluginMsg_SetChildFrameSurface>(
             browser_plugin_instance_id(), surface_info));
@@ -672,7 +671,7 @@ void BrowserPluginGuest::RenderViewReady() {
   // In case we've created a new guest render process after a crash, let the
   // associated BrowserPlugin know. We only need to send this if we're attached,
   // as guest_crashed_ is cleared automatically on attach anyways.
-  if (attached() && !switches::IsMusHostingViz()) {
+  if (attached() && !base::FeatureList::IsEnabled(::features::kMash)) {
     RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
         web_contents()->GetRenderWidgetHostView());
     if (rwhv) {

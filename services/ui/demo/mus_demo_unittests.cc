@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace ui {
@@ -30,14 +33,16 @@ class MusDemoTest : public service_manager::test::ServiceTest {
   ~MusDemoTest() override {}
 
   void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kMash);
     base::CommandLine::ForCurrentProcess()->AppendSwitch("use-test-config");
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMus);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kMusHostingViz);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableFeatures, features::kMash.name);
     ServiceTest::SetUp();
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MusDemoTest);
 };
 

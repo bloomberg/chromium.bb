@@ -20,10 +20,10 @@ namespace ash {
 class Shelf;
 class TrayContainer;
 
-// Adds an indicator to the status area if certain high-risk flags are enabled,
-// for example --mash. Clicking the button opens about:flags so the user can
-// reset the flag. For consistency with other status area tray views, this view
-// is always created but only made visible when the flag is set.
+// Adds an indicator to the status area if certain high-risk flags or features
+// are enabled, for example mash. Clicking the button opens about:flags so the
+// user can reset the flag. For consistency with other status area tray views,
+// this view is always created but only made visible when the flag is set.
 class ASH_EXPORT FlagWarningTray : public views::View,
                                    public views::ButtonListener {
  public:

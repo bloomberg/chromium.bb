@@ -140,7 +140,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   // Mojo implementation of the DrmDevice. Will be bound on the "main" thread.
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_;
 
-  // When running under --mus, this is the UI thread specific DrmDevice ptr for
+  // When running under mus, this is the UI thread specific DrmDevice ptr for
   // use by the compositor.
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor_;
 
@@ -153,7 +153,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   THREAD_CHECKER(on_io_thread_);  // Needs to be rebound as is allocated on the
                                   // window server  thread.
   THREAD_CHECKER(on_window_server_thread_);
-  // When running under --mus, some entry points are used from the mus thread
+  // When running under mus, some entry points are used from the mus thread
   // and some are used from the ui thread. In general. In that case, the
   // on_ui_thread_ and on_window_server_thread_ will differ. In particular,
   // entry points used by the compositor use the ui thread.

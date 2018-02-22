@@ -264,7 +264,7 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
-  // TODO(jamescook): Figure out why we have to do this when not using --mash.
+  // TODO(jamescook): Figure out why we have to do this when not using mash.
   mash_service_factory_->RegisterOutOfProcessServices(services);
 #endif
 }

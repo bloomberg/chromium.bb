@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/common/message_port/transferable_message.h"
 #include "ui/accessibility/ax_modes.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 namespace IPC {
@@ -142,7 +142,7 @@ void ParamTraits<scoped_refptr<storage::BlobHandle>>::Log(const param_type& p,
 void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
     base::Pickle* m,
     const param_type& p) {
-  DCHECK(switches::IsMusHostingViz() ||
+  DCHECK(base::FeatureList::IsEnabled(features::kMash) ||
          (p.frame_sink_id.has_value() && p.frame_sink_id->is_valid()));
   WriteParam(m, p.frame_sink_id);
 }
@@ -153,7 +153,7 @@ bool ParamTraits<content::FrameMsg_ViewChanged_Params>::Read(
     param_type* r) {
   if (!ReadParam(m, iter, &(r->frame_sink_id)))
     return false;
-  if (!switches::IsMusHostingViz() &&
+  if (!base::FeatureList::IsEnabled(features::kMash) &&
       (!r->frame_sink_id || !r->frame_sink_id->is_valid())) {
     NOTREACHED();
     return false;

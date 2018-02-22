@@ -24,6 +24,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/reflector.h"
 #include "ui/display/display_layout.h"
@@ -342,7 +343,7 @@ void MirrorWindowController::OnAcceleratedWidgetOverridden(
     aura::WindowTreeHost* host) {
   DCHECK_NE(host->GetAcceleratedWidget(), gfx::kNullAcceleratedWidget);
   DCHECK_NE(Shell::GetAshConfig(), Config::CLASSIC);
-  DCHECK(!switches::IsMusHostingViz());
+  DCHECK(!base::FeatureList::IsEnabled(features::kMash));
   MirroringHostInfo* info = mirroring_host_info_map_[host->GetDisplayId()];
   if (reflector_) {
     reflector_->AddMirroringLayer(info->mirror_window->layer());

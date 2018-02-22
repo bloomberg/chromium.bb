@@ -4,10 +4,11 @@
 
 #include "ui/aura/test/aura_test_suite_setup.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_context_factory.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(USE_OZONE)
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
@@ -40,9 +41,7 @@ AuraTestSuiteSetup::AuraTestSuiteSetup() {
   DCHECK(!Env::GetInstanceDontCreate());
 #if BUILDFLAG(ENABLE_MUS)
   const Env::Mode env_mode =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMus)
-          ? Env::Mode::MUS
-          : Env::Mode::LOCAL;
+      features::IsMusEnabled() ? Env::Mode::MUS : Env::Mode::LOCAL;
   env_ = Env::CreateInstance(env_mode);
   if (env_mode == Env::Mode::MUS)
     ConfigureMus();

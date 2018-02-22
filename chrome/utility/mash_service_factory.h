@@ -19,7 +19,7 @@ class MashServiceFactory {
   MashServiceFactory();
   ~MashServiceFactory();
 
-  // Registers out-of-process services for --mash.
+  // Registers out-of-process services for mash.
   void RegisterOutOfProcessServices(
       content::ContentUtilityClient::StaticServiceMap* services);
 

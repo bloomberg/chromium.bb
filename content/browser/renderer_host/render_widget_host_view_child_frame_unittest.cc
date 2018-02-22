@@ -38,6 +38,7 @@
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {
@@ -201,6 +202,10 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // Verify that SubmitCompositorFrame behavior is correct when a delegated
 // frame is received from a renderer process.
 TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
+  // TODO: fix for mash.
+  if (base::FeatureList::IsEnabled(features::kMash))
+    return;
+
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
@@ -233,6 +238,10 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
 
 // Check that the same local surface id can be used after frame eviction.
 TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
+  // TODO: fix for mash.
+  if (base::FeatureList::IsEnabled(features::kMash))
+    return;
+
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
