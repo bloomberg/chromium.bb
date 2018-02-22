@@ -127,12 +127,12 @@ AssociatedResourceFetcherImpl::~AssociatedResourceFetcherImpl() {
     loader_->Cancel();
 }
 
-void AssociatedResourceFetcherImpl::SetServiceWorkerMode(
-    blink::WebURLRequest::ServiceWorkerMode service_worker_mode) {
+void AssociatedResourceFetcherImpl::SetSkipServiceWorker(
+    bool skip_service_worker) {
   DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
-  request_.SetServiceWorkerMode(service_worker_mode);
+  request_.SetSkipServiceWorker(skip_service_worker);
 }
 
 void AssociatedResourceFetcherImpl::SetCacheMode(

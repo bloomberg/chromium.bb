@@ -347,7 +347,7 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   // origin checking logic that may get confused if service workers respond with
   // resources from another origin.
   // https://w3c.github.io/ServiceWorker/#implementer-concerns
-  request.SetServiceWorkerMode(blink::WebURLRequest::ServiceWorkerMode::kNone);
+  request.SetSkipServiceWorker(true);
 
   return request;
 }
@@ -1042,8 +1042,7 @@ void DownloadManifestToBuffer(PP_Instance instance,
 
   // Requests from plug-ins must skip service workers, see the comment in
   // CreateWebURLRequest.
-  DCHECK_EQ(request.GetServiceWorkerMode(),
-            blink::WebURLRequest::ServiceWorkerMode::kNone);
+  DCHECK(request.GetSkipServiceWorker());
 
   // ManifestDownloader deletes itself after invoking the callback.
   ManifestDownloader* manifest_downloader = new ManifestDownloader(

@@ -268,7 +268,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   if (request.GetFetchRequestMode() ==
       network::mojom::FetchRequestMode::kNoCORS) {
     SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(
-        request_context_, request.GetServiceWorkerMode()));
+        request_context_, request.GetSkipServiceWorker()));
   } else {
     cors_flag_ = !GetSecurityOrigin()->CanRequest(request.Url());
   }
@@ -306,7 +306,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   probe::shouldBypassServiceWorker(GetExecutionContext(),
                                    &should_bypass_service_worker);
   if (should_bypass_service_worker)
-    new_request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+    new_request.SetSkipServiceWorker(true);
 
   // Process the CORS protocol inside the DocumentThreadableLoader for the
   // following cases:
@@ -314,23 +314,21 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // - When the request is sync or the protocol is unsupported since we can
   //   assume that any service worker (SW) is skipped for such requests by
   //   content/ code.
-  // - When the ServiceWorkerMode is not kAll, any SW will be skipped.
+  // - When |skip_service_worker| is true, any SW will be skipped.
   // - If we're not yet controlled by a SW, then we're sure that this
   //   request won't be intercepted by a SW. In case we end up with
   //   sending a CORS preflight request, the actual request to be sent later
   //   may be intercepted. This is taken care of in LoadPreflightRequest() by
-  //   setting the ServiceWorkerMode to kNone.
+  //   setting |skip_service_worker| to true.
   //
   // From the above analysis, you can see that the request can never be
   // intercepted by a SW inside this if-block. It's because:
-  // - the ServiceWorkerMode needs to be kAll, and
+  // - |skip_service_worker| needs to be false, and
   // - we're controlled by a SW at this point
   // to allow a SW to intercept the request. Even when the request gets issued
   // asynchronously after performing the CORS preflight, it doesn't get
   // intercepted since LoadPreflightRequest() sets the flag to kNone in advance.
-  if (!async_ ||
-      new_request.GetServiceWorkerMode() !=
-          WebURLRequest::ServiceWorkerMode::kAll ||
+  if (!async_ || new_request.GetSkipServiceWorker() ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||
       !loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
@@ -344,8 +342,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     // request.
     fallback_request_for_service_worker_ = ResourceRequest(request);
     // Skip the service worker for the fallback request.
-    fallback_request_for_service_worker_.SetServiceWorkerMode(
-        WebURLRequest::ServiceWorkerMode::kNone);
+    fallback_request_for_service_worker_.SetSkipServiceWorker(true);
   }
 
   LoadRequest(new_request, resource_loader_options_);
@@ -397,11 +394,11 @@ void DocumentThreadableLoader::LoadPreflightRequest(
   actual_request_ = actual_request;
   actual_options_ = actual_options;
 
-  // Explicitly set the ServiceWorkerMode to None here. Although the page is
+  // Explicitly set |skip_service_worker| to true here. Although the page is
   // not controlled by a SW at this point, a new SW may be controlling the
   // page when this actual request gets sent later. We should not send the
   // actual request to the SW. See https://crbug.com/604583.
-  actual_request_.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+  actual_request_.SetSkipServiceWorker(true);
 
   // Create a ResourceLoaderOptions for preflight.
   ResourceLoaderOptions preflight_options = actual_options;
@@ -515,8 +512,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
   // We don't want any requests that could involve a CORS preflight to get
   // intercepted by a foreign SW, even if we have the result of the preflight
   // cached already. See https://crbug.com/674370.
-  cross_origin_request.SetServiceWorkerMode(
-      WebURLRequest::ServiceWorkerMode::kNone);
+  cross_origin_request.SetSkipServiceWorker(true);
 
   PrepareCrossOriginRequest(cross_origin_request);
   LoadRequest(cross_origin_request, cross_origin_options);

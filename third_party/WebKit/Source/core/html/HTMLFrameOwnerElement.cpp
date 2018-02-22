@@ -334,7 +334,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   // with resources from another origin.
   // https://w3c.github.io/ServiceWorker/#implementer-concerns
   if (IsPlugin())
-    request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+    request.SetSkipServiceWorker(true);
 
   child_frame->Loader().Load(FrameLoadRequest(&GetDocument(), request),
                              child_load_type);

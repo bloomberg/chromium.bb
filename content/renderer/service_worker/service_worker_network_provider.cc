@@ -64,20 +64,17 @@ class WebServiceWorkerNetworkProviderForFrame
     extra_data->set_service_worker_provider_id(provider_->provider_id());
 
     // If the provider does not have a controller at this point, the renderer
-    // expects the request to never be handled by a service worker,
-    // so set the ServiceWorkerMode to skip service workers here. Otherwise, a
-    // service worker that is in the process of becoming the controller (i.e.,
+    // expects the request to never be handled by a service worker, so call
+    // SetSkipServiceWorker() with true to skip service workers here. Otherwise,
+    // a service worker that is in the process of becoming the controller (i.e.,
     // via claim()) on the browser-side could handle the request and break the
     // assumptions of the renderer.
     if (request.GetFrameType() !=
             network::mojom::RequestContextFrameType::kTopLevel &&
         request.GetFrameType() !=
             network::mojom::RequestContextFrameType::kNested &&
-        !provider_->IsControlledByServiceWorker() &&
-        request.GetServiceWorkerMode() !=
-            blink::WebURLRequest::ServiceWorkerMode::kNone) {
-      request.SetServiceWorkerMode(
-          blink::WebURLRequest::ServiceWorkerMode::kNone);
+        !provider_->IsControlledByServiceWorker()) {
+      request.SetSkipServiceWorker(true);
     }
   }
 
@@ -122,11 +119,9 @@ class WebServiceWorkerNetworkProviderForFrame
       return nullptr;
 
     // S13nServiceWorker:
-    // If the service worker mode is not all, no need to intercept the request.
-    if (request.GetServiceWorkerMode() !=
-        blink::WebURLRequest::ServiceWorkerMode::kAll) {
+    // If GetSkipServiceWorker() returns true, no need to intercept the request.
+    if (request.GetSkipServiceWorker())
       return nullptr;
-    }
 
     // S13nServiceWorker:
     // Create our own SubresourceLoader to route the request

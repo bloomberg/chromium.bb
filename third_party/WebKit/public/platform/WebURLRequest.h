@@ -140,14 +140,6 @@ class WebURLRequest {
     kPreviewsStateLast = kPreviewsOff
   };
 
-  // Indicates whether service workers will receive fetch events for this
-  // request. Same as ServiceWorkerMode in
-  // content/public/common/service_worker_modes.h.
-  enum class ServiceWorkerMode : uint8_t {
-    kAll,
-    kNone
-  };
-
   class ExtraData {
    public:
     virtual ~ExtraData() = default;
@@ -259,10 +251,9 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool GetKeepalive() const;
   BLINK_PLATFORM_EXPORT void SetKeepalive(bool);
 
-  // The service worker mode indicating which service workers should get events
-  // for this request.
-  BLINK_PLATFORM_EXPORT ServiceWorkerMode GetServiceWorkerMode() const;
-  BLINK_PLATFORM_EXPORT void SetServiceWorkerMode(ServiceWorkerMode);
+  // True if the service workers should not get events for the request.
+  BLINK_PLATFORM_EXPORT bool GetSkipServiceWorker() const;
+  BLINK_PLATFORM_EXPORT void SetSkipServiceWorker(bool);
 
   // True if corresponding AppCache group should be resetted.
   BLINK_PLATFORM_EXPORT bool ShouldResetAppCache() const;

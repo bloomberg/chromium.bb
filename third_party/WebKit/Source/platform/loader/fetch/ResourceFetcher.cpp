@@ -57,7 +57,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 
 using blink::WebURLRequest;
 

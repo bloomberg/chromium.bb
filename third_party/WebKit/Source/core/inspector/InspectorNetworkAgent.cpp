@@ -845,7 +845,7 @@ void InspectorNetworkAgent::WillSendRequest(
     request.SetShouldResetAppCache(true);
   }
   if (state_->booleanProperty(NetworkAgentState::kBypassServiceWorker, false))
-    request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+    request.SetSkipServiceWorker(true);
 
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);

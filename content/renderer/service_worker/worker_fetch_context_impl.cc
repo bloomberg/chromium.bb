@@ -75,11 +75,9 @@ class WorkerFetchContextImpl::URLLoaderFactoryImpl
     if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS())
       return nullptr;
 
-    // If the service worker mode is not all, no need to intercept the request.
-    if (request.GetServiceWorkerMode() !=
-        blink::WebURLRequest::ServiceWorkerMode::kAll) {
+    // If GetSkipServiceWorker() returns true, no need to intercept the request.
+    if (request.GetSkipServiceWorker())
       return nullptr;
-    }
 
     // Create our own URLLoader to route the request to the controller service
     // worker.
@@ -180,13 +178,10 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
 
-  if (!IsControlledByServiceWorker() &&
-      request.GetServiceWorkerMode() !=
-          blink::WebURLRequest::ServiceWorkerMode::kNone) {
+  if (!IsControlledByServiceWorker()) {
     // TODO(falken): Is still this needed? It used to set kForeign for foreign
     // fetch.
-    request.SetServiceWorkerMode(
-        blink::WebURLRequest::ServiceWorkerMode::kNone);
+    request.SetSkipServiceWorker(true);
   }
 }
 

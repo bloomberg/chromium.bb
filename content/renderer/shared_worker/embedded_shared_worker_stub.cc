@@ -90,17 +90,14 @@ class WebServiceWorkerNetworkProviderForSharedWorker
     request.SetExtraData(std::move(extra_data));
     // If the provider does not have a controller at this point, the renderer
     // expects subresource requests to never be handled by a controlling service
-    // worker, so set the ServiceWorkerMode to skip service workers here.
+    // worker, so set |skip_service_worker| to skip service workers here.
     // Otherwise, a service worker that is in the process of becoming the
     // controller (i.e., via claim()) on the browser-side could handle the
     // request and break the assumptions of the renderer.
     if (request.GetRequestContext() !=
             blink::WebURLRequest::kRequestContextSharedWorker &&
-        !provider_->IsControlledByServiceWorker() &&
-        request.GetServiceWorkerMode() !=
-            blink::WebURLRequest::ServiceWorkerMode::kNone) {
-      request.SetServiceWorkerMode(
-          blink::WebURLRequest::ServiceWorkerMode::kNone);
+        !provider_->IsControlledByServiceWorker()) {
+      request.SetSkipServiceWorker(true);
     }
   }
 

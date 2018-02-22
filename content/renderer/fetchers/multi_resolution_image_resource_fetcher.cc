@@ -42,7 +42,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   // workers. This should ideally not happen or at least not all the time.
   // See https://crbug.com/448427
   if (request_context == WebURLRequest::kRequestContextFavicon)
-    fetcher_->SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+    fetcher_->SetSkipServiceWorker(true);
 
   fetcher_->SetCacheMode(cache_mode);
 

@@ -34,7 +34,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   original.SetReportUploadProgress(false);
   original.SetHasUserGesture(false);
   original.SetDownloadToFile(false);
-  original.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kAll);
+  original.SetSkipServiceWorker(false);
   original.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
   original.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kSameOrigin);
@@ -64,8 +64,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_FALSE(original.ReportUploadProgress());
   EXPECT_FALSE(original.HasUserGesture());
   EXPECT_FALSE(original.DownloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
-            original.GetServiceWorkerMode());
+  EXPECT_FALSE(original.GetSkipServiceWorker());
   EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
             original.GetFetchRequestMode());
   EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
@@ -99,8 +98,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_FALSE(copy1.ReportUploadProgress());
   EXPECT_FALSE(copy1.HasUserGesture());
   EXPECT_FALSE(copy1.DownloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kAll,
-            copy1.GetServiceWorkerMode());
+  EXPECT_FALSE(copy1.GetSkipServiceWorker());
   EXPECT_EQ(network::mojom::FetchRequestMode::kCORS,
             copy1.GetFetchRequestMode());
   EXPECT_EQ(network::mojom::FetchCredentialsMode::kSameOrigin,
@@ -119,7 +117,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   copy1.SetReportUploadProgress(true);
   copy1.SetHasUserGesture(true);
   copy1.SetDownloadToFile(true);
-  copy1.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+  copy1.SetSkipServiceWorker(true);
   copy1.SetFetchRequestMode(network::mojom::FetchRequestMode::kNoCORS);
   copy1.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kInclude);
 
@@ -129,8 +127,7 @@ TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   EXPECT_TRUE(copy2.ReportUploadProgress());
   EXPECT_TRUE(copy2.HasUserGesture());
   EXPECT_TRUE(copy2.DownloadToFile());
-  EXPECT_EQ(WebURLRequest::ServiceWorkerMode::kNone,
-            copy2.GetServiceWorkerMode());
+  EXPECT_TRUE(copy2.GetSkipServiceWorker());
   EXPECT_EQ(network::mojom::FetchRequestMode::kNoCORS,
             copy1.GetFetchRequestMode());
   EXPECT_EQ(network::mojom::FetchCredentialsMode::kInclude,

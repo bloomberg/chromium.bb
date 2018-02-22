@@ -259,8 +259,7 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
 
   // Requests from plug-ins must skip service workers, see the comment in
   // CreateWebURLRequest.
-  DCHECK_EQ(web_request.GetServiceWorkerMode(),
-            WebURLRequest::ServiceWorkerMode::kNone);
+  DCHECK(web_request.GetSkipServiceWorker());
 
   WebAssociatedURLLoaderOptions options;
   if (!has_universal_access_) {

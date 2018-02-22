@@ -6767,8 +6767,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info.url_request), load_flags,
-          info.url_request.GetServiceWorkerMode() !=
-              blink::WebURLRequest::ServiceWorkerMode::kAll,
+          info.url_request.GetSkipServiceWorker(),
           GetRequestContextTypeForWebURLRequest(info.url_request),
           GetMixedContentContextTypeForWebURLRequest(info.url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,

@@ -633,16 +633,6 @@ blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
       request.GetRequestContext(), block_mixed_plugin_content);
 }
 
-STATIC_ASSERT_ENUM(ServiceWorkerMode::NONE,
-                   WebURLRequest::ServiceWorkerMode::kNone);
-STATIC_ASSERT_ENUM(ServiceWorkerMode::ALL,
-                   WebURLRequest::ServiceWorkerMode::kAll);
-
-ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
-    const WebURLRequest& request) {
-  return static_cast<ServiceWorkerMode>(request.GetServiceWorkerMode());
-}
-
 #undef STATIC_ASSERT_ENUM
 
 }  // namespace content
