@@ -29,7 +29,7 @@
 - (UIImage*)currentPageScreenshot;
 
 // Returns the username of the account being synced.
-// Returns nil if sync is not enabled.
+// Returns nil if sync is not enabled or user is in incognito mode.
 - (NSString*)currentPageSyncedUserName;
 
 @end
