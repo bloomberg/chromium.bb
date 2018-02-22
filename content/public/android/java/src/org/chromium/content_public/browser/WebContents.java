@@ -246,15 +246,6 @@ public interface WebContents extends Parcelable {
     void exitFullscreen();
 
     /**
-     * Changes whether hiding the browser controls is enabled.
-     *
-     * @param enableHiding Whether hiding the browser controls should be enabled or not.
-     * @param enableShowing Whether showing the browser controls should be enabled or not.
-     * @param animate Whether the transition should be animated or not.
-     */
-    void updateBrowserControlsState(boolean enableHiding, boolean enableShowing, boolean animate);
-
-    /**
      * Brings the Editable to the visible area while IME is up to make easier for inputing text.
      */
     void scrollFocusedEditableNodeIntoView();

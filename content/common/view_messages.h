@@ -528,16 +528,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_ResolveTapDisambiguation,
 // Fetches complete rendered content of a web page as plain text.
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 
-#if defined(OS_ANDROID)
-// Notifies the renderer whether hiding/showing the browser controls is enabled
-// and whether or not to animate to the proper state.
-IPC_MESSAGE_ROUTED3(ViewMsg_UpdateBrowserControlsState,
-                    bool /* enable_hiding */,
-                    bool /* enable_showing */,
-                    bool /* animate */)
-
-#endif
-
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw. Robust to events that can
