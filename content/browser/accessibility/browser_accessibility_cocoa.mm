@@ -1585,14 +1585,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (([role isEqualToString:NSAccessibilityGroupRole] ||
        [role isEqualToString:NSAccessibilityRadioButtonRole]) &&
       !browserAccessibility_->IsWebAreaForPresentationalIframe()) {
-    std::string role;
-    if (browserAccessibility_->GetHtmlAttribute("role", &role)) {
+    std::string role_attribute;
+    if (browserAccessibility_->GetHtmlAttribute("role", &role_attribute)) {
       ax::mojom::Role internalRole = [self internalRole];
       if ((internalRole != ax::mojom::Role::kGroup &&
            internalRole != ax::mojom::Role::kListItem) ||
           internalRole == ax::mojom::Role::kTab) {
         // TODO(dtseng): This is not localized; see crbug/84814.
-        return base::SysUTF8ToNSString(role);
+        return base::SysUTF8ToNSString(role_attribute);
       }
     }
   }
