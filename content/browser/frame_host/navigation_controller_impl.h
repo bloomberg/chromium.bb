@@ -90,6 +90,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                              bool replace_entry) override;
   bool CanPruneAllButLastCommitted() override;
   void PruneAllButLastCommitted() override;
+  void DeleteNavigationEntries(
+      const DeletionPredicate& deletionPredicate) override;
+
   void ClearAllScreenshots() override;
 
   // Whether this is the initial navigation in an unmodified new tab.  In this

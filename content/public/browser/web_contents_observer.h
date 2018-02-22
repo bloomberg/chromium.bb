@@ -281,6 +281,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // the list to fix up after interstitials.
   virtual void NavigationListPruned(const PrunedDetails& pruned_details) {}
 
+  // Invoked when NavigationEntries have been deleted because of a history
+  // deletion. Observers should ensure that they remove all traces of the
+  // deleted entries.
+  virtual void NavigationEntriesDeleted() {}
+
   // Invoked when a NavigationEntry has changed.
   //
   // This will NOT be sent on navigation, interested parties should also

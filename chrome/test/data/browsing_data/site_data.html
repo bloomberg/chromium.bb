@@ -113,10 +113,22 @@
       domAutomationController.send(hasStore);
     }
   }
+
+  function setHistory() {
+    history.pushState({}, "foo");
+    success_();
+  }
+
+  function hasHistory() {
+    domAutomationController.send(history.length > 1);
+  }
+
 </script>
 
 <body>
   This page is used to test creation and deletion of various site data types.
+  The functions are called from BrowsingDataRemoverBrowserTest::HasDataForType
+  and BrowsingDataRemoverBrowserTest::SetDataForType.
 </body>
 
 </html>

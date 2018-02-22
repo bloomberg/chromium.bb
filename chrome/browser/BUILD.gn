@@ -223,6 +223,8 @@ jumbo_split_static_library("browser") {
     "browsing_data/counters/site_data_counting_helper.h",
     "browsing_data/local_data_container.cc",
     "browsing_data/local_data_container.h",
+    "browsing_data/navigation_entry_remover.cc",
+    "browsing_data/navigation_entry_remover.h",
     "browsing_data/site_data_size_collector.cc",
     "browsing_data/site_data_size_collector.h",
     "budget_service/budget_database.cc",

@@ -1237,6 +1237,12 @@ extern const char kRegionalLocalesAsDisplayUIDescription[] =
     "user in Language Settings. The actual locale of the system is derived "
     "from the user selection based on some simple fallback logic.";
 
+const char kRemoveNavigationHistoryName[] =
+    "Remove navigation entries on history deletion";
+const char kRemoveNavigationHistoryDescription[] =
+    "Remove a navigation entry when the corresponding history entry has been "
+    "deleted.";
+
 const char kRemoveUsageOfDeprecatedGaiaSigninEndpointName[] =
     "Remove usage of the deprecated GAIA sign-in endpoint";
 const char kRemoveUsageOfDeprecatedGaiaSigninEndpointDescription[] =
