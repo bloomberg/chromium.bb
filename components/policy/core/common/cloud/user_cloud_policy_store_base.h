@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_export.h"
 
 namespace base {
@@ -25,8 +26,9 @@ namespace policy {
 // functionality.
 class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  public:
-  explicit UserCloudPolicyStoreBase(
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+  UserCloudPolicyStoreBase(
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+      PolicyScope policy_scope);
   ~UserCloudPolicyStoreBase() override;
 
  protected:
@@ -50,6 +52,7 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
  private:
   // Task runner for background file operations.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  PolicyScope policy_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreBase);
 };

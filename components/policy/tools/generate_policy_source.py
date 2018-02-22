@@ -1168,7 +1168,8 @@ std::unique_ptr<base::Value> DecodeJson(const std::string& json) {
 
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   base::WeakPtr<CloudExternalDataManager> external_data_manager,
-                  PolicyMap* map) {
+                  PolicyMap* map,
+                  PolicyScope scope) {
 '''
 
 
@@ -1234,7 +1235,7 @@ def _WriteCloudPolicyDecoderCode(f, policy):
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
   f.write('          map->Set(key::k%s, \n' % policy.name)
   f.write('                   level, \n'
-          '                   POLICY_SCOPE_USER, \n'
+          '                   scope, \n'
           '                   POLICY_SOURCE_CLOUD, \n'
           '                   std::move(value), \n'
           '                   std::move(external_data_fetcher));\n'

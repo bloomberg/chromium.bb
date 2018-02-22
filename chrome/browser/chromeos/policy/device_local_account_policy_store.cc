@@ -29,7 +29,8 @@ DeviceLocalAccountPolicyStore::DeviceLocalAccountPolicyStore(
     chromeos::SessionManagerClient* session_manager_client,
     chromeos::DeviceSettingsService* device_settings_service,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : UserCloudPolicyStoreBase(background_task_runner),
+    : UserCloudPolicyStoreBase(background_task_runner,
+                               PolicyScope::POLICY_SCOPE_USER),
       account_id_(account_id),
       session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
