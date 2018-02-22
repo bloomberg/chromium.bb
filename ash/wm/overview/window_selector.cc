@@ -578,7 +578,7 @@ void WindowSelector::CompleteDrag(WindowSelectorItem* item,
     return;
 
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
-    grid->OnSelectorItemDragEnded(item);
+    grid->OnSelectorItemDragEnded();
 }
 
 void WindowSelector::ActivateDraggedWindow() {

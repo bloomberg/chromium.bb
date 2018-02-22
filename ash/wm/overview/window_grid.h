@@ -128,7 +128,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Called when any WindowSelectorItem on any WindowGrid has started/ended
   // being dragged.
   void OnSelectorItemDragStarted(WindowSelectorItem* item);
-  void OnSelectorItemDragEnded(WindowSelectorItem* item);
+  void OnSelectorItemDragEnded();
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
