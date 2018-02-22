@@ -76,7 +76,8 @@ NS_INLINE CGFloat BottomPadding() {
     ]];
 
     if (IsIPadIdiom()) {
-      [shadowView.topAnchor constraintEqualToAnchor:popupContainer.bottomAnchor]
+      [shadowView.bottomAnchor
+          constraintEqualToAnchor:popupContainer.bottomAnchor]
           .active = YES;
     } else {
       [shadowView.topAnchor
