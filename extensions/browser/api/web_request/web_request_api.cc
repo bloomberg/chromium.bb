@@ -431,7 +431,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   *factory_request = mojo::MakeRequest(&target_factory_info);
 
   auto proxy = base::MakeRefCounted<WebRequestProxyingURLLoaderFactory>(
-      browser_context_, info_map_);
+      frame->GetProcess()->GetBrowserContext(), info_map_);
   proxies_.emplace(proxy.get(), proxy);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
