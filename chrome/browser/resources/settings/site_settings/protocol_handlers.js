@@ -19,16 +19,14 @@ const MenuActions = {
 
 /**
  * @typedef {{host: string,
+ *            is_default: boolean,
  *            protocol: string,
  *            spec: string}}
  */
 let HandlerEntry;
 
 /**
- * @typedef {{default_handler: number,
- *            handlers: !Array<!HandlerEntry>,
- *            has_policy_recommendations: boolean,
- *            is_default_handler_set_by_user: boolean,
+ * @typedef {{handlers: !Array<!HandlerEntry>,
  *            protocol: string}}
  */
 let ProtocolEntry;
@@ -52,13 +50,19 @@ Polymer({
 
     /**
      * The targetted object for menu operations.
-     * @private {?Object}
+     * @private {?HandlerEntry}
      */
     actionMenuModel_: Object,
 
     /* Labels for the toggle on/off positions. */
     toggleOffLabel: String,
     toggleOnLabel: String,
+
+    /**
+     * Array of ignored (blocked) protocols.
+     * @type {!Array<!HandlerEntry>}
+     */
+    ignoredProtocols: Array,
 
     // <if expr="chromeos">
     /** @private */
@@ -114,17 +118,6 @@ Polymer({
   },
 
   /**
-   * Returns whether the given index matches the default handler.
-   * @param {number} index The index to evaluate.
-   * @param {number} defaultHandler The default handler index.
-   * @return {boolean} Whether the item is default.
-   * @private
-   */
-  isDefault_: function(index, defaultHandler) {
-    return defaultHandler == index;
-  },
-
-  /**
    * Updates the main toggle to set it enabled/disabled.
    * @param {boolean} enabled The state to set.
    * @private
@@ -144,13 +137,21 @@ Polymer({
 
   /**
    * Updates the list of ignored protocol handlers.
-   * @param {!Array<!ProtocolEntry>} args The new (ignored) protocol handler
-   *     list.
+   * @param {!Array<!HandlerEntry>} ignoredProtocols The new (ignored) protocol
+   *     handler list.
    * @private
    */
-  setIgnoredProtocolHandlers_: function(args) {
-    // TODO(finnur): Figure this out. Have yet to be able to trigger the C++
-    // side to send this.
+  setIgnoredProtocolHandlers_: function(ignoredProtocols) {
+    this.ignoredProtocols = ignoredProtocols;
+  },
+
+  /**
+   * Closes action menu and resets action menu model
+   * @private
+   */
+  closeActionMenu_: function() {
+    this.$$('dialog[is=cr-action-menu]').close();
+    this.actionMenuModel_ = null;
   },
 
   /**
@@ -165,45 +166,38 @@ Polymer({
    * The handler for when "Set Default" is selected in the action menu.
    * @private
    */
-  onDefaultTap_: function() {
-    const item = this.actionMenuModel_.item;
-
-    this.$$('dialog[is=cr-action-menu]').close();
-    this.actionMenuModel_ = null;
+  onDefaultClick_: function() {
+    const item = this.actionMenuModel_;
     this.browserProxy.setProtocolDefault(item.protocol, item.spec);
+    this.closeActionMenu_();
   },
 
   /**
    * The handler for when "Remove" is selected in the action menu.
    * @private
    */
-  onRemoveTap_: function() {
-    const item = this.actionMenuModel_.item;
+  onRemoveClick_: function() {
+    const item = this.actionMenuModel_;
+    this.browserProxy.removeProtocolHandler(item.protocol, item.spec);
+    this.closeActionMenu_();
+  },
 
-    this.$$('dialog[is=cr-action-menu]').close();
-    this.actionMenuModel_ = null;
+  /**
+   * Handler for removing handlers that were blocked
+   * @private
+   */
+  onRemoveIgnored_: function(event) {
+    const item = event.model.item;
     this.browserProxy.removeProtocolHandler(item.protocol, item.spec);
   },
 
   /**
-   * Checks whether or not the selected actionMenuModel is the default handler
-   * for its protocol.
-   * @return {boolean} if actionMenuModel_ is default handler of its protocol.
-   */
-  isModelDefault_: function() {
-    return !!this.actionMenuModel_ &&
-        (this.actionMenuModel_.index ==
-         this.actionMenuModel_.protocol.default_handler);
-  },
-
-  /**
    * A handler to show the action menu next to the clicked menu button.
-   * @param {!{model: !{protocol: HandlerEntry, item: ProtocolEntry,
-   *     index: number}}} event
+   * @param {!{model: !{item: HandlerEntry}}} event
    * @private
    */
   showMenu_: function(event) {
-    this.actionMenuModel_ = event.model;
+    this.actionMenuModel_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
         .showAt(
             /** @type {!Element} */ (
@@ -215,7 +209,7 @@ Polymer({
    * Opens an activity to handle App links (preferred apps).
    * @private
    */
-  onManageAndroidAppsTap_: function() {
+  onManageAndroidAppsClick_: function() {
     this.browserProxy.showAndroidManageAppLinks();
   },
   // </if>

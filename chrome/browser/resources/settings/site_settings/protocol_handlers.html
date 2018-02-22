@@ -44,7 +44,7 @@
             <div class="middle" >
               <div class="protocol-host">[[item.host]]</div>
               <div class="secondary protocol-default"
-                  hidden$="[[!isDefault_(index, protocol.default_handler)]]">
+                  hidden$="[[!item.is_default]]">
                 $i18n{handlerIsDefault}
               </div>
             </div>
@@ -53,26 +53,46 @@
                 class="icon-more-vert" title="$i18n{moreActions}">
             </button>
           </div>
-
         </template>
       </div>
     </template>
 
     <dialog is="cr-action-menu">
-      <button slot="item" class="dropdown-item" on-click="onDefaultTap_"
-          id="defaultButton" hidden$="[[isModelDefault_(actionMenuModel_)]]">
+      <button slot="item" class="dropdown-item" on-click="onDefaultClick_"
+          id="defaultButton" hidden$="[[actionMenuModel_.is_default]]">
         $i18n{handlerSetDefault}
       </button>
-      <button slot="item" class="dropdown-item" on-click="onRemoveTap_"
+      <button slot="item" class="dropdown-item" on-click="onRemoveClick_"
           id="removeButton">
         $i18n{handlerRemove}
       </button>
     </dialog>
 
+    <template is="dom-if" if="[[ignoredProtocols.length]]">
+      <div class="column-header">$i18n{siteSettingsBlocked}</div>
+      <div class="list-frame menu-content vertical-list">
+        <template is="dom-repeat" items="[[ignoredProtocols]]">
+          <div class="list-item">
+            <div class="favicon-image" style$="[[computeSiteIcon(item.host)]]">
+            </div>
+            <div class="middle" >
+              <div class="protocol-host">[[item.host]]</div>
+              <div class="secondary protocol-protocol">[[item.protocol]]</div>
+            </div>
+
+            <button is="paper-icon-button-light" on-click="onRemoveIgnored_"
+                class="icon-clear" title="$i18n{moreActions}"
+                id="removeIgnoredButton">
+            </button>
+          </div>
+        </template>
+      </div>
+    </template>
+
 <if expr="chromeos">
   <template is="dom-if" if="[[settingsAppAvailable_]]">
     <div class="settings-box first"
-        on-click="onManageAndroidAppsTap_" actionable>
+        on-click="onManageAndroidAppsClick_" actionable>
       <div class="start">
         <div>$i18n{androidAppsManageAppLinks}</div>
       </div>

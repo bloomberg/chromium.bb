@@ -374,12 +374,12 @@ cr.define('settings', function() {
 
     /** @override */
     setProtocolDefault(protocol, url) {
-      chrome.send('setDefault', [[protocol, url]]);
+      chrome.send('setDefault', [protocol, url]);
     }
 
     /** @override */
     removeProtocolHandler(protocol, url) {
-      chrome.send('removeHandler', [[protocol, url]]);
+      chrome.send('removeHandler', [protocol, url]);
     }
 
     /** @override */

@@ -567,6 +567,11 @@ bool ProtocolHandlerRegistry::IsHandledProtocol(
 
 void ProtocolHandlerRegistry::RemoveHandler(
     const ProtocolHandler& handler) {
+  if (IsIgnored(handler)) {
+    RemoveIgnoredHandler(handler);
+    return;
+  }
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProtocolHandlerList& handlers = protocol_handlers_[handler.protocol()];
   bool erase_success = false;
