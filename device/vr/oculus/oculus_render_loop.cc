@@ -84,15 +84,18 @@ void OculusRenderLoop::SubmitFrameWithTextureHandle(
       layer.ColorTexture[0] = texture_swap_chain_;
       DCHECK(source_size_.width() % 2 == 0);
       layer.Viewport[0] = {
-          {source_size_.width() * left_bounds_.x(),
-           source_size_.height() * left_bounds_.y()},
-          {source_size_.width() * left_bounds_.width(),
-           source_size_.height() * left_bounds_.height()}};  // left viewport
+          // Left viewport.
+          {static_cast<int>(source_size_.width() * left_bounds_.x()),
+           static_cast<int>(source_size_.height() * left_bounds_.y())},
+          {static_cast<int>(source_size_.width() * left_bounds_.width()),
+           static_cast<int>(source_size_.height() * left_bounds_.height())}};
+
       layer.Viewport[1] = {
-          {source_size_.width() * right_bounds_.x(),
-           source_size_.height() * right_bounds_.y()},
-          {source_size_.width() * right_bounds_.width(),
-           source_size_.height() * right_bounds_.height()}};  // right viewport
+          // Right viewport.
+          {static_cast<int>(source_size_.width() * right_bounds_.x()),
+           static_cast<int>(source_size_.height() * right_bounds_.y())},
+          {static_cast<int>(source_size_.width() * right_bounds_.width()),
+           static_cast<int>(source_size_.height() * right_bounds_.height())}};
       ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session_);
       layer.Fov[0] = hmdDesc.DefaultEyeFov[0];
       layer.Fov[1] = hmdDesc.DefaultEyeFov[1];
