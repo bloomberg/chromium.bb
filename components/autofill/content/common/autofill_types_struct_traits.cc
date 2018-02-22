@@ -467,6 +467,79 @@ bool EnumTraits<autofill::mojom::SubmissionSource, autofill::SubmissionSource>::
 }
 
 // static
+autofill::mojom::LabelSource
+EnumTraits<autofill::mojom::LabelSource, autofill::FormFieldData::LabelSource>::
+    ToMojom(autofill::FormFieldData::LabelSource input) {
+  switch (input) {
+    case autofill::FormFieldData::LabelSource::UNKNOWN:
+      return autofill::mojom::LabelSource::UNKNOWN;
+    case autofill::FormFieldData::LabelSource::LABEL_TAG:
+      return autofill::mojom::LabelSource::LABEL_TAG;
+    case autofill::FormFieldData::LabelSource::P_TAG:
+      return autofill::mojom::LabelSource::P_TAG;
+    case autofill::FormFieldData::LabelSource::DIV_TABLE:
+      return autofill::mojom::LabelSource::DIV_TABLE;
+    case autofill::FormFieldData::LabelSource::TD_TAG:
+      return autofill::mojom::LabelSource::TD_TAG;
+    case autofill::FormFieldData::LabelSource::DD_TAG:
+      return autofill::mojom::LabelSource::DD_TAG;
+    case autofill::FormFieldData::LabelSource::LI_TAG:
+      return autofill::mojom::LabelSource::LI_TAG;
+    case autofill::FormFieldData::LabelSource::PLACE_HOLDER:
+      return autofill::mojom::LabelSource::PLACE_HOLDER;
+    case autofill::FormFieldData::LabelSource::COMBINED:
+      return autofill::mojom::LabelSource::COMBINED;
+    case autofill::FormFieldData::LabelSource::VALUE:
+      return autofill::mojom::LabelSource::VALUE;
+  }
+
+  NOTREACHED();
+  return autofill::mojom::LabelSource::UNKNOWN;
+}
+
+// static
+bool EnumTraits<autofill::mojom::LabelSource,
+                autofill::FormFieldData::LabelSource>::
+    FromMojom(autofill::mojom::LabelSource input,
+              autofill::FormFieldData::LabelSource* output) {
+  switch (input) {
+    case autofill::mojom::LabelSource::UNKNOWN:
+      *output = autofill::FormFieldData::LabelSource::UNKNOWN;
+      return true;
+    case autofill::mojom::LabelSource::LABEL_TAG:
+      *output = autofill::FormFieldData::LabelSource::LABEL_TAG;
+      return true;
+    case autofill::mojom::LabelSource::P_TAG:
+      *output = autofill::FormFieldData::LabelSource::P_TAG;
+      return true;
+    case autofill::mojom::LabelSource::DIV_TABLE:
+      *output = autofill::FormFieldData::LabelSource::DIV_TABLE;
+      return true;
+    case autofill::mojom::LabelSource::TD_TAG:
+      *output = autofill::FormFieldData::LabelSource::TD_TAG;
+      return true;
+    case autofill::mojom::LabelSource::DD_TAG:
+      *output = autofill::FormFieldData::LabelSource::DD_TAG;
+      return true;
+    case autofill::mojom::LabelSource::LI_TAG:
+      *output = autofill::FormFieldData::LabelSource::LI_TAG;
+      return true;
+    case autofill::mojom::LabelSource::PLACE_HOLDER:
+      *output = autofill::FormFieldData::LabelSource::PLACE_HOLDER;
+      return true;
+    case autofill::mojom::LabelSource::COMBINED:
+      *output = autofill::FormFieldData::LabelSource::COMBINED;
+      return true;
+    case autofill::mojom::LabelSource::VALUE:
+      *output = autofill::FormFieldData::LabelSource::VALUE;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<
     autofill::mojom::FormFieldDataDataView,
     autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,
@@ -511,6 +584,9 @@ bool StructTraits<
   if (!data.ReadOptionValues(&out->option_values))
     return false;
   if (!data.ReadOptionContents(&out->option_contents))
+    return false;
+
+  if (!data.ReadLabelSource(&out->label_source))
     return false;
 
   return true;

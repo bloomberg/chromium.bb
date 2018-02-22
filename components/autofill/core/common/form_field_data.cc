@@ -7,6 +7,7 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
@@ -119,6 +120,21 @@ bool DeserializeSection10(base::PickleIterator* iter,
   return iter->ReadString16(&field_data->id);
 }
 
+bool HaveSameLabel(const FormFieldData& field1, const FormFieldData& field2) {
+  if (field1.label == field2.label &&
+      field1.label_source == field2.label_source) {
+    return true;
+  }
+  // Assume the labels same if they come from same source but not LABEL tag
+  // when kAutofillSkipComparingInferredLabels is enabled.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSkipComparingInferredLabels)) {
+    return field1.label_source == field2.label_source &&
+           field1.label_source != FormFieldData::LABEL_TAG;
+  }
+  return false;
+}
+
 }  // namespace
 
 FormFieldData::FormFieldData()
@@ -129,7 +145,8 @@ FormFieldData::FormFieldData()
       should_autocomplete(true),
       role(ROLE_ATTRIBUTE_OTHER),
       text_direction(base::i18n::UNKNOWN_DIRECTION),
-      properties_mask(0) {}
+      properties_mask(0),
+      label_source(LabelSource::UNKNOWN) {}
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
 
@@ -138,7 +155,7 @@ FormFieldData::~FormFieldData() {}
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
-  return label == field.label && name == field.name && id == field.id &&
+  return name == field.name && id == field.id &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
          placeholder == field.placeholder && max_length == field.max_length &&
@@ -148,7 +165,8 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
          IsCheckable(check_status) == IsCheckable(field.check_status) &&
          is_focusable == field.is_focusable &&
          should_autocomplete == field.should_autocomplete &&
-         role == field.role && text_direction == field.text_direction;
+         role == field.role && text_direction == field.text_direction &&
+         HaveSameLabel(*this, field);
   // The option values/contents which are the list of items in the list
   // of a drop-down are currently not considered part of the identity of
   // a form element. This is debatable, since one might base heuristics
@@ -159,7 +177,7 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
 }
 
 bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
-  return label == field.label && name == field.name && id == field.id &&
+  return HaveSameLabel(*this, field) && name == field.name && id == field.id &&
          form_control_type == field.form_control_type &&
          IsCheckable(check_status) == IsCheckable(field.check_status);
 }
@@ -235,6 +253,10 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (text_direction < field.text_direction)
     return true;
   if (text_direction > field.text_direction)
+    return false;
+  if (label_source < field.label_source)
+    return true;
+  if (label_source > field.label_source)
     return false;
   // See SameFieldAs above for why we don't check option_values/contents.
   return false;
@@ -414,7 +436,8 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
             << "should_autocomplete=" << field.should_autocomplete << " "
             << "role=" << role_str << " "
             << "text_direction=" << field.text_direction << " "
-            << "properties_mask=" << field.properties_mask;
+            << "properties_mask=" << field.properties_mask << " "
+            << "label_source=" << field.label_source;
 }
 
 }  // namespace autofill

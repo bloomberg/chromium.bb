@@ -30,6 +30,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
@@ -157,6 +158,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
                                         media::kMediaDrmPersistentLicense.name);
 
   CommandLineHelper::AddDisabledFeature(*cl, features::kMojoInputMessages.name);
+
+  CommandLineHelper::AddEnabledFeature(
+      *cl, autofill::features::kAutofillSkipComparingInferredLabels.name);
 
   android_webview::RegisterPathProvider();
 

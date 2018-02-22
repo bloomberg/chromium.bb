@@ -49,6 +49,20 @@ struct FormFieldData {
     CHECKED,
   };
 
+  // From which source the label is inferred.
+  enum LabelSource {
+    UNKNOWN,  // The source is unknown.
+    LABEL_TAG,
+    P_TAG,
+    DIV_TABLE,
+    TD_TAG,
+    DD_TAG,
+    LI_TAG,
+    PLACE_HOLDER,
+    COMBINED,  // Combined with various elements.
+    VALUE,     // label is the value of element.
+  };
+
   FormFieldData();
   FormFieldData(const FormFieldData& other);
   ~FormFieldData();
@@ -99,6 +113,10 @@ struct FormFieldData {
   // value is "US" and the contents are "United States".
   std::vector<base::string16> option_values;
   std::vector<base::string16> option_contents;
+
+  // Password Manager doesn't use labels nor client side nor server side, so
+  // label_source isn't in serialize methods.
+  LabelSource label_source;
 };
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects

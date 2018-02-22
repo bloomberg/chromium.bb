@@ -47,6 +47,11 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
 const base::Feature kAutofillShowTypePredictions{
     "AutofillShowTypePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether inferred label is considered for comparing in
+// FormFieldData.SimilarFieldAs.
+const base::Feature kAutofillSkipComparingInferredLabels{
+    "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the credit card upload bubble shows the Google Pay logo and
 // a shorter "Save card?" header message.
 const base::Feature kAutofillUpstreamUseGooglePayBranding{

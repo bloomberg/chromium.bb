@@ -85,6 +85,20 @@ enum SubmissionSource {
   FORM_SUBMISSION,
 };
 
+// autofill::FormFieldData::LabelSource
+enum LabelSource {
+  UNKNOWN,
+  LABEL_TAG,
+  P_TAG,
+  DIV_TABLE,
+  TD_TAG,
+  DD_TAG,
+  LI_TAG,
+  PLACE_HOLDER,
+  COMBINED,
+  VALUE,
+};
+
 // autofill::FormFieldData
 struct FormFieldData {
   string label;
@@ -107,6 +121,8 @@ struct FormFieldData {
 
   array<string> option_values;
   array<string> option_contents;
+
+  LabelSource label_source;
 };
 
 // autofill::FormData
