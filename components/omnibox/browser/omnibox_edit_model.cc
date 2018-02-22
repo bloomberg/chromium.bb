@@ -342,7 +342,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   *url_from_text = match_from_text.destination_url;
 
   GURL current_page_url = PermanentURL();
-  if (PopupIsOpen() && user_input_in_progress_) {
+  if (PopupIsOpen()) {
     AutocompleteMatch current_match = CurrentMatch(nullptr);
     if (!AutocompleteMatch::IsSearchType(current_match.type) &&
         current_match.destination_url.is_valid()) {
