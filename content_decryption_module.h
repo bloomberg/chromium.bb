@@ -125,6 +125,22 @@ enum Exception : uint32_t {
 };
 CHECK_TYPE(Exception, 4, 4);
 
+// The encryption scheme. The definitions are from ISO/IEC 23001-7:2016.
+enum class EncryptionScheme : uint32_t {
+  kUnencrypted = 0,
+  kCenc,  // 'cenc' subsample encryption using AES-CTR mode.
+  kCbcs   // 'cbcs' pattern encryption using AES-CBC mode.
+};
+CHECK_TYPE(EncryptionScheme, 4, 4);
+
+// The pattern used for pattern encryption. Note that ISO/IEC 23001-7:2016
+// defines each block to be 16-bytes.
+struct Pattern {
+  uint32_t crypt_byte_block;  // Count of the encrypted blocks.
+  uint32_t skip_byte_block;   // Count of the unencrypted blocks.
+};
+CHECK_TYPE(Pattern, 8, 8);
+
 // Time is defined as the number of seconds since the Epoch
 // (00:00:00 UTC, January 1, 1970), not including any added leap second.
 // Also see Time definition in spec: https://w3c.github.io/encrypted-media/#time
@@ -162,7 +178,8 @@ CHECK_TYPE(SubsampleEntry, 8, 8);
 // Represents an input buffer to be decrypted (and possibly decoded). It does
 // not own any pointers in this struct. If |iv_size| = 0, the data is
 // unencrypted.
-struct InputBuffer {
+// Deprecated: New CDM implementations should use InputBuffer_2.
+struct InputBuffer_1 {
   const uint8_t* data;  // Pointer to the beginning of the input data.
   uint32_t data_size;   // Size (in bytes) of |data|.
 
@@ -177,15 +194,44 @@ struct InputBuffer {
 
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
-CHECK_TYPE(InputBuffer, 40, 72);
+CHECK_TYPE(InputBuffer_1, 40, 72);
 
-struct AudioDecoderConfig {
-  enum AudioCodec : uint32_t {
-    kUnknownAudioCodec = 0,
-    kCodecVorbis,
-    kCodecAac
-  };
+// Represents an input buffer to be decrypted (and possibly decoded). It does
+// not own any pointers in this struct. If |encryption_scheme| = kUnencrypted,
+// the data is unencrypted.
+// Note that this struct is organized so that sizeof(InputBuffer_2)
+// equals the sum of sizeof() all members in both 32-bit and 64-bit compiles.
+// Padding has been added to keep the fields aligned.
+struct InputBuffer_2 {
+  const uint8_t* data;  // Pointer to the beginning of the input data.
+  uint32_t data_size;   // Size (in bytes) of |data|.
 
+  EncryptionScheme encryption_scheme;
+
+  const uint8_t* key_id;  // Key ID to identify the decryption key.
+  uint32_t key_id_size;   // Size (in bytes) of |key_id|.
+  uint32_t : 32;          // Padding.
+
+  const uint8_t* iv;  // Initialization vector.
+  uint32_t iv_size;   // Size (in bytes) of |iv|.
+  uint32_t : 32;      // Padding.
+
+  const struct SubsampleEntry* subsamples;
+  uint32_t num_subsamples;  // Number of subsamples in |subsamples|.
+  uint32_t : 32;            // Padding.
+
+  // |pattern| is required if |encryption_scheme| specifies pattern encryption.
+  Pattern pattern;
+
+  int64_t timestamp;  // Presentation timestamp in microseconds.
+};
+CHECK_TYPE(InputBuffer_2, 64, 80);
+
+enum AudioCodec : uint32_t { kUnknownAudioCodec = 0, kCodecVorbis, kCodecAac };
+CHECK_TYPE(AudioCodec, 4, 4);
+
+// Deprecated: New CDM implementations should use AudioDecoderConfig_2.
+struct AudioDecoderConfig_1 {
   AudioCodec codec;
   int32_t channel_count;
   int32_t bits_per_channel;
@@ -196,7 +242,23 @@ struct AudioDecoderConfig {
   uint8_t* extra_data;
   uint32_t extra_data_size;
 };
-CHECK_TYPE(AudioDecoderConfig, 24, 32);
+CHECK_TYPE(AudioDecoderConfig_1, 24, 32);
+
+struct AudioDecoderConfig_2 {
+  AudioCodec codec;
+  int32_t channel_count;
+  int32_t bits_per_channel;
+  int32_t samples_per_second;
+
+  // Optional byte data required to initialize audio decoders, such as the
+  // vorbis setup header.
+  uint8_t* extra_data;
+  uint32_t extra_data_size;
+
+  // Encryption scheme.
+  EncryptionScheme encryption_scheme;
+};
+CHECK_TYPE(AudioDecoderConfig_2, 28, 32);
 
 // Supported sample formats for AudioFrames.
 enum AudioFormat : uint32_t {
@@ -239,31 +301,34 @@ struct Size {
 };
 CHECK_TYPE(Size, 8, 8);
 
-struct VideoDecoderConfig {
-  enum VideoCodec : uint32_t {
-    kUnknownVideoCodec = 0,
-    kCodecVp8,
-    kCodecH264,
-    kCodecVp9
-  };
+enum VideoCodec : uint32_t {
+  kUnknownVideoCodec = 0,
+  kCodecVp8,
+  kCodecH264,
+  kCodecVp9
+};
+CHECK_TYPE(VideoCodec, 4, 4);
 
-  enum VideoCodecProfile : uint32_t {
-    kUnknownVideoCodecProfile = 0,
-    kProfileNotNeeded,
-    kH264ProfileBaseline,
-    kH264ProfileMain,
-    kH264ProfileExtended,
-    kH264ProfileHigh,
-    kH264ProfileHigh10,
-    kH264ProfileHigh422,
-    kH264ProfileHigh444Predictive,
-    // VP9 Profiles are only passed in starting from CDM_9.
-    kVP9Profile0,
-    kVP9Profile1,
-    kVP9Profile2,
-    kVP9Profile3
-  };
+enum VideoCodecProfile : uint32_t {
+  kUnknownVideoCodecProfile = 0,
+  kProfileNotNeeded,
+  kH264ProfileBaseline,
+  kH264ProfileMain,
+  kH264ProfileExtended,
+  kH264ProfileHigh,
+  kH264ProfileHigh10,
+  kH264ProfileHigh422,
+  kH264ProfileHigh444Predictive,
+  // VP9 Profiles are only passed in starting from CDM_9.
+  kVP9Profile0,
+  kVP9Profile1,
+  kVP9Profile2,
+  kVP9Profile3
+};
+CHECK_TYPE(VideoCodecProfile, 4, 4);
 
+// Deprecated: New CDM implementations should use VideoDecoderConfig_2.
+struct VideoDecoderConfig_1 {
   VideoCodec codec;
   VideoCodecProfile profile;
   VideoFormat format;
@@ -277,7 +342,30 @@ struct VideoDecoderConfig {
   uint8_t* extra_data;
   uint32_t extra_data_size;
 };
-CHECK_TYPE(VideoDecoderConfig, 28, 40);
+CHECK_TYPE(VideoDecoderConfig_1, 28, 40);
+
+// Note that this struct is organized so that sizeof(VideoDecoderConfig_2)
+// equals the sum of sizeof() all members in both 32-bit and 64-bit compiles.
+// Padding has been added to keep the fields aligned.
+struct VideoDecoderConfig_2 {
+  VideoCodec codec;
+  VideoCodecProfile profile;
+  VideoFormat format;
+  uint32_t : 32;  // Padding.
+
+  // Width and height of video frame immediately post-decode. Not all pixels
+  // in this region are valid.
+  Size coded_size;
+
+  // Optional byte data required to initialize video decoders, such as H.264
+  // AAVC data.
+  uint8_t* extra_data;
+  uint32_t extra_data_size;
+
+  // Encryption scheme.
+  EncryptionScheme encryption_scheme;
+};
+CHECK_TYPE(VideoDecoderConfig_2, 36, 40);
 
 enum StreamType : uint32_t { kStreamTypeAudio = 0, kStreamTypeVideo = 1 };
 CHECK_TYPE(StreamType, 4, 4);
@@ -564,7 +652,7 @@ class CDM_CLASS_API ContentDecryptionModule_8 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer_1& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM audio decoder with |audio_decoder_config|. This
@@ -578,7 +666,7 @@ class CDM_CLASS_API ContentDecryptionModule_8 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeAudioDecoder(
-      const AudioDecoderConfig& audio_decoder_config) = 0;
+      const AudioDecoderConfig_1& audio_decoder_config) = 0;
 
   // Initializes the CDM video decoder with |video_decoder_config|. This
   // function must be called before DecryptAndDecodeFrame() is called.
@@ -591,7 +679,7 @@ class CDM_CLASS_API ContentDecryptionModule_8 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeVideoDecoder(
-      const VideoDecoderConfig& video_decoder_config) = 0;
+      const VideoDecoderConfig_1& video_decoder_config) = 0;
 
   // De-initializes the CDM decoder and sets it to an uninitialized state. The
   // caller can initialize the decoder again after this call to re-initialize
@@ -619,7 +707,7 @@ class CDM_CLASS_API ContentDecryptionModule_8 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer_1& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
@@ -638,7 +726,7 @@ class CDM_CLASS_API ContentDecryptionModule_8 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeSamples(const InputBuffer_1& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
   // Called by the host after a platform challenge was initiated via
@@ -759,7 +847,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer_1& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM audio decoder with |audio_decoder_config|. This
@@ -773,7 +861,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeAudioDecoder(
-      const AudioDecoderConfig& audio_decoder_config) = 0;
+      const AudioDecoderConfig_1& audio_decoder_config) = 0;
 
   // Initializes the CDM video decoder with |video_decoder_config|. This
   // function must be called before DecryptAndDecodeFrame() is called.
@@ -786,7 +874,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeVideoDecoder(
-      const VideoDecoderConfig& video_decoder_config) = 0;
+      const VideoDecoderConfig_1& video_decoder_config) = 0;
 
   // De-initializes the CDM decoder and sets it to an uninitialized state. The
   // caller can initialize the decoder again after this call to re-initialize
@@ -814,7 +902,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer_1& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
@@ -833,7 +921,7 @@ class CDM_CLASS_API ContentDecryptionModule_9 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeSamples(const InputBuffer_1& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
   // Called by the host after a platform challenge was initiated via
@@ -980,7 +1068,7 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // Returns kDecryptError if any other error happened.
   // If the return value is not kSuccess, |decrypted_buffer| should be ignored
   // by the caller.
-  virtual Status Decrypt(const InputBuffer& encrypted_buffer,
+  virtual Status Decrypt(const InputBuffer_2& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
   // Initializes the CDM audio decoder with |audio_decoder_config|. This
@@ -994,7 +1082,7 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeAudioDecoder(
-      const AudioDecoderConfig& audio_decoder_config) = 0;
+      const AudioDecoderConfig_2& audio_decoder_config) = 0;
 
   // Initializes the CDM video decoder with |video_decoder_config|. This
   // function must be called before DecryptAndDecodeFrame() is called.
@@ -1007,7 +1095,7 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // decoder at this time. Must call Host::OnDeferredInitializationDone() once
   // initialization is complete.
   virtual Status InitializeVideoDecoder(
-      const VideoDecoderConfig& video_decoder_config) = 0;
+      const VideoDecoderConfig_2& video_decoder_config) = 0;
 
   // De-initializes the CDM decoder and sets it to an uninitialized state. The
   // caller can initialize the decoder again after this call to re-initialize
@@ -1035,7 +1123,7 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeFrame(const InputBuffer_2& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
 
   // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
@@ -1054,7 +1142,7 @@ class CDM_CLASS_API ContentDecryptionModule_10 {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+  virtual Status DecryptAndDecodeSamples(const InputBuffer_2& encrypted_buffer,
                                          AudioFrames* audio_frames) = 0;
 
   // Called by the host after a platform challenge was initiated via
