@@ -3893,29 +3893,39 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)finishFullscreenScrollWithAnimator:
     (FullscreenScrollEndAnimator*)animator {
-  BOOL showingToolbar = animator.finalProgress > animator.startProgress;
+  // If the headers are being hidden, it's possible that this will reveal a
+  // portion of the webview beyond the top of the page's rendered content.  In
+  // order to prevent that, update the top padding and content before the
+  // animation begins.
   CGFloat finalProgress = animator.finalProgress;
-  // WKWebView does not re-render its content until its model layer's bounds
-  // have been updated at the end of the animation.  If the animator is going
-  // to hide the toolbar, update the content view's top padding early so that
-  // content is correctly rendered behind the toolbar that's being animated
-  // away.
-  if (!showingToolbar)
-    [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
-  [animator addAnimations:^{
-    [self updateHeadersForFullscreenProgress:finalProgress];
-    [self updateFootersForFullscreenProgress:finalProgress];
-  }];
-  // If the toolbar is being animated to become visible, update the content view
-  // top padding in the completion block so that fixed-position elements can be
-  // properly laid out in the new viewport.
-  if (showingToolbar) {
-    __weak FullscreenScrollEndAnimator* weakAnimator = animator;
-    [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-      [self updateContentViewTopPaddingForFullscreenProgress:
-                [weakAnimator progressForAnimatingPosition:finalPosition]];
-    }];
+  BOOL hidingHeaders = animator.finalProgress < animator.startProgress;
+  if (hidingHeaders) {
+    id<CRWWebViewProxy> webProxy = self.currentWebState->GetWebViewProxy();
+    CRWWebViewScrollViewProxy* scrollProxy = webProxy.scrollViewProxy;
+    CGPoint contentOffset = scrollProxy.contentOffset;
+    if (contentOffset.y - scrollProxy.contentInset.top <
+        webProxy.topContentPadding) {
+      [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
+      contentOffset.y = -scrollProxy.contentInset.top;
+      scrollProxy.contentOffset = contentOffset;
+    }
   }
+
+  // Add animations to update the headers and footers.
+  __weak BrowserViewController* weakSelf = self;
+  [animator addAnimations:^{
+    [weakSelf updateHeadersForFullscreenProgress:finalProgress];
+    [weakSelf updateFootersForFullscreenProgress:finalProgress];
+  }];
+
+  // Animating layout changes of the rendered content in the WKWebView is not
+  // supported, so update the content padding in the completion block of the
+  // animator to trigger a rerender in the page's new viewport.
+  __weak FullscreenScrollEndAnimator* weakAnimator = animator;
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [weakSelf updateContentViewTopPaddingForFullscreenProgress:
+                  [weakAnimator progressForAnimatingPosition:finalPosition]];
+  }];
 }
 
 - (void)scrollFullscreenToTopWithAnimator:
