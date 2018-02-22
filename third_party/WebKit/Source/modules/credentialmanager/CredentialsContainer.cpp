@@ -237,16 +237,16 @@ DOMException* CredentialManagerErrorToDOMException(
       return DOMException::Create(kNotSupportedError,
                                   "The password store is unavailable.");
     case CredentialManagerError::NOT_ALLOWED:
-      return DOMException::Create(kNotAllowedError,
-                                  "The operation is not allowed.");
+      return DOMException::Create(
+          kNotAllowedError,
+          "The operation either timed out or was not allowed. See: "
+          "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
     case CredentialManagerError::NOT_SUPPORTED:
       return DOMException::Create(
           kNotSupportedError,
           "Parameters for this operation are not supported.");
     case CredentialManagerError::INVALID_DOMAIN:
       return DOMException::Create(kSecurityError, "This is an invalid domain.");
-    case CredentialManagerError::TIMED_OUT:
-      return DOMException::Create(kNotAllowedError, "Operation timed out.");
     case CredentialManagerError::NOT_IMPLEMENTED:
       return DOMException::Create(kNotSupportedError, "Not implemented");
     case CredentialManagerError::UNKNOWN:

@@ -449,7 +449,7 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::TIMED_OUT,
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
             cb.GetResponseStatus());
 }
 
@@ -505,7 +505,7 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::TIMED_OUT,
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
             cb.GetResponseStatus());
 }
 }  // namespace content
