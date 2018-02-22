@@ -65,11 +65,9 @@
                             forState:UIControlStateHighlighted];
   }
   if (self.TTSPlaying && UIAccessibilityIsVoiceOverRunning()) {
-    // Moving VoiceOver without RunBlockAfterDelay results in VoiceOver not
-    // staying on |voiceSearchButton| and instead moving to views inside the
-    // WebView.
-    // Use |voiceSearchButton| in the block to prevent |self| from being
-    // retained.
+    // Moving VoiceOver without delay results in VoiceOver not staying on
+    // |voiceSearchButton| and instead moving to views inside the WebView. Use
+    // |voiceSearchButton| in the block to prevent |self| from being retained.
     UIButton* voiceSearchButton = self.voiceSearchButton;
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,

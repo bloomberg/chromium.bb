@@ -19,10 +19,6 @@ extern const CGFloat kToolbarHeightFullscreen;
 // The time delay before non-initial button images are loaded.
 extern const int64_t kNonInitialImageAdditionDelayNanosec;
 
-// Accessibility identifier of the toolbar view.
-extern NSString* const kToolbarIdentifier;
-// Accessibility identifier of the incognito toolbar view.
-extern NSString* const kIncognitoToolbarIdentifier;
 // Accessibility identifier of the tools menu button.
 extern NSString* const kToolbarToolsMenuButtonIdentifier;
 // Accessibility identifier of the stack button.
@@ -38,12 +34,6 @@ extern NSInteger const kStackButtonMaxTabCount;
 // Font sizes for the button containing the tab count
 extern const NSInteger kFontSizeFewerThanTenTabs;
 extern const NSInteger kFontSizeTenTabsOrMore;
-
-// The initial capacity used to construct |self.transitionLayers|.  The value
-// is chosen because WebToolbarController animates 11 separate layers during
-// transitions; this value should be updated if new subviews are animated in
-// the future.
-extern const NSUInteger kTransitionLayerCapacity;
 
 // Toolbar frames shared with subclasses.
 extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
@@ -66,10 +56,6 @@ extern const LayoutRect kToolsMenuButtonFrame[INTERFACE_IDIOM_COUNT];
 
 // Distance to shift buttons when fading out.
 extern const LayoutOffset kButtonFadeOutXOffset;
-
-// The amount of horizontal padding removed from a view's frame when presenting
-// a popover anchored to it.
-extern const CGFloat kPopoverAnchorHorizontalPadding;
 
 // Height of the shadow displayed below the toolbar when the omnibox is
 // contracted.
@@ -109,11 +95,5 @@ enum ToolbarButtonName {
   ToolbarButtonNameShare,
   NumberOfToolbarButtonNames,
 };
-
-// Style used to specify the direction of the toolbar transition animations.
-typedef enum {
-  TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW,
-  TOOLBAR_TRANSITION_STYLE_TO_BVC
-} ToolbarTransitionStyle;
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_CONSTANTS_H_

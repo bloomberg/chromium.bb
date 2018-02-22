@@ -13,8 +13,6 @@ const CGFloat kToolbarHeightFullscreen = 35;
 
 const int64_t kNonInitialImageAdditionDelayNanosec = 500000LL;
 
-NSString* const kToolbarIdentifier = @"kToolbarIdentifier";
-NSString* const kIncognitoToolbarIdentifier = @"kIncognitoToolbarIdentifier";
 NSString* const kToolbarToolsMenuButtonIdentifier =
     @"kToolbarToolsMenuButtonIdentifier";
 NSString* const kToolbarStackButtonIdentifier =
@@ -28,8 +26,6 @@ const NSInteger kStackButtonMaxTabCount = 99;
 
 const NSInteger kFontSizeFewerThanTenTabs = 11;
 const NSInteger kFontSizeTenTabsOrMore = 9;
-
-const NSUInteger kTransitionLayerCapacity = 11;
 
 const CGFloat kToolbarShadowHeight = 2;
 const CGFloat kToolbarFullBleedShadowHeight = 10;
@@ -72,5 +68,3 @@ const LayoutRect kToolsMenuButtonFrame[INTERFACE_IDIOM_COUNT] = {
 // clang-format on
 
 const LayoutOffset kButtonFadeOutXOffset = 10;
-
-const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
