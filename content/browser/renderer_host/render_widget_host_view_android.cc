@@ -850,6 +850,12 @@ void RenderWidgetHostViewAndroid::SetWantsAnimateOnlyBeginFrames() {
   wants_animate_only_begin_frames_ = true;
 }
 
+viz::FrameSinkId RenderWidgetHostViewAndroid::GetRootFrameSinkId() {
+  if (view_.GetWindowAndroid() && view_.GetWindowAndroid()->GetCompositor())
+    return view_.GetWindowAndroid()->GetCompositor()->GetFrameSinkId();
+  return viz::FrameSinkId();
+}
+
 viz::SurfaceId RenderWidgetHostViewAndroid::GetCurrentSurfaceId() const {
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceId()
                                : viz::SurfaceId();
