@@ -21,21 +21,25 @@ DEFINE_WEB_STATE_USER_DATA_KEY(CaptivePortalDetectorTabHelper);
 // static
 void CaptivePortalDetectorTabHelper::CreateForWebState(
     web::WebState* web_state,
-    id<CaptivePortalDetectorTabHelperDelegate> delegate) {
+    id<CaptivePortalDetectorTabHelperDelegate> delegate,
+    network::mojom::URLLoaderFactory* loader_factory_for_testing) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new CaptivePortalDetectorTabHelper(
-                               web_state, delegate)));
+    web_state->SetUserData(
+        UserDataKey(), base::WrapUnique(new CaptivePortalDetectorTabHelper(
+                           web_state, delegate, loader_factory_for_testing)));
   }
 }
 
 CaptivePortalDetectorTabHelper::CaptivePortalDetectorTabHelper(
     web::WebState* web_state,
-    id<CaptivePortalDetectorTabHelperDelegate> delegate)
+    id<CaptivePortalDetectorTabHelperDelegate> delegate,
+    network::mojom::URLLoaderFactory* loader_factory_for_testing)
     : delegate_(delegate),
       detector_(std::make_unique<captive_portal::CaptivePortalDetector>(
-          web_state->GetBrowserState()->GetURLLoaderFactory())) {
+          loader_factory_for_testing
+              ? loader_factory_for_testing
+              : web_state->GetBrowserState()->GetURLLoaderFactory())) {
   DCHECK(delegate);
 }
 

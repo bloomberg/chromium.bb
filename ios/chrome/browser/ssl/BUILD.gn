@@ -75,6 +75,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//third_party/ocmock",
   ]
 }

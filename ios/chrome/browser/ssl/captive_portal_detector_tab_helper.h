@@ -13,6 +13,12 @@ namespace captive_portal {
 class CaptivePortalDetector;
 }
 
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
+
 namespace web {
 class WebState;
 }
@@ -27,7 +33,8 @@ class CaptivePortalDetectorTabHelper
   // retained by the CaptivePortalDetectorTabHelper and must not be nil.
   static void CreateForWebState(
       web::WebState* web_state,
-      id<CaptivePortalDetectorTabHelperDelegate> delegate);
+      id<CaptivePortalDetectorTabHelperDelegate> delegate,
+      network::mojom::URLLoaderFactory* loader_factory_for_testing = nullptr);
 
   // Returns the associated captive portal detector.
   captive_portal::CaptivePortalDetector* detector();
@@ -38,7 +45,8 @@ class CaptivePortalDetectorTabHelper
  private:
   CaptivePortalDetectorTabHelper(
       web::WebState* web_state,
-      id<CaptivePortalDetectorTabHelperDelegate> delegate);
+      id<CaptivePortalDetectorTabHelperDelegate> delegate,
+      network::mojom::URLLoaderFactory* loader_factory_for_testing);
 
   // The delegate to notify when the user performs an action in response to the
   // captive portal detector state.

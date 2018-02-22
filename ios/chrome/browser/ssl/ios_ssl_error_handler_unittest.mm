@@ -15,6 +15,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,8 +40,11 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
     web::WebTestWithWebState::SetUp();
     id captive_portal_detector_tab_helper_delegate = [OCMockObject
         mockForProtocol:@protocol(CaptivePortalDetectorTabHelperDelegate)];
+    // Use a testing URLLoaderFactory so that these tests don't attempt to make
+    // network requests.
     CaptivePortalDetectorTabHelper::CreateForWebState(
-        web_state(), captive_portal_detector_tab_helper_delegate);
+        web_state(), captive_portal_detector_tab_helper_delegate,
+        &test_loader_factory_);
     ASSERT_TRUE(cert_);
     ASSERT_FALSE(web_state()->IsShowingWebInterstitial());
 
@@ -54,6 +58,7 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
 
  private:
+  network::TestURLLoaderFactory test_loader_factory_;
   TestChromeBrowserState::Builder builder_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   scoped_refptr<net::X509Certificate> cert_;
