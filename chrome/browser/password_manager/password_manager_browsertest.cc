@@ -1904,8 +1904,16 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
+// https://crbug.com/814845 Flaky on macOS ASan.
+#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
+#define MAYBE_InFrameNavigationDoesNotClearPopupState \
+  DISABLED_InFrameNavigationDoesNotClearPopupState
+#else
+#define MAYBE_InFrameNavigationDoesNotClearPopupState \
+  InFrameNavigationDoesNotClearPopupState
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       InFrameNavigationDoesNotClearPopupState) {
+                       MAYBE_InFrameNavigationDoesNotClearPopupState) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
