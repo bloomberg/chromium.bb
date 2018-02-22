@@ -349,7 +349,6 @@ if (CONFIG_UNIT_TESTS)
   endif ()
 
   include_directories(
-    "${AOM_ROOT}/third_party/googletest/src/googletest/src"
     "${AOM_ROOT}/third_party/googletest/src/googletest/include")
 
   if (AOM_DISABLE_GTEST_CMAKE)
