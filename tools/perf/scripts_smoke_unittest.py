@@ -48,6 +48,7 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('optional arguments:', stdout)
 
+  @decorators.Disabled('chromeos')  # crbug.com/814068
   def testRunRecordWprList(self):
     return_code, stdout = self.RunPerfScript('record_wpr --list-benchmarks',
         venv=True)
