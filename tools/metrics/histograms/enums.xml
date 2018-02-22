@@ -12584,6 +12584,7 @@ Called by update_net_error_codes.py.-->
   <int value="425" label="DeviceMachinePasswordChangeRate"/>
   <int value="426" label="DeviceRollbackAllowedMilestones"/>
   <int value="427" label="DeviceRollbackToTargetVersion"/>
+  <int value="428" label="MachineLevelUserCloudPolicyEnrollmentToken"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

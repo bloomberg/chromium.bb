@@ -14,7 +14,7 @@ POLICY_EXPORT extern const char kLastPolicyStatisticsUpdate[];
 POLICY_EXPORT extern const char kUrlBlacklist[];
 POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
-
+POLICY_EXPORT extern const char kMachineLevelUserCloudPolicyEnrollmentToken[];
 }  // namespace policy_prefs
 }  // namespace policy
 
