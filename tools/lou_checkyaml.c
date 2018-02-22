@@ -207,6 +207,8 @@ read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 				*direction = 0;
 			} else if (!strcmp((const char *)event.data.scalar.value, "backward")) {
 				*direction = 1;
+			} else if (!strcmp((const char *)event.data.scalar.value, "bothDirections")) {
+				*direction = 2;
 			} else if (!strcmp((const char *)event.data.scalar.value, "hyphenate")) {
 				*hyphenation = 1;
 			} else {
