@@ -16,8 +16,13 @@ paper-checkbox {
   justify-content: space-between;
 }
 
-#buttons {
+#bar {
   align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+#buttons {
   display: flex;
   justify-content: flex-end;
 }
