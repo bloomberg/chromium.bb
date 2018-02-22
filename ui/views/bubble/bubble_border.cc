@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -65,17 +65,6 @@ namespace {
 // The border is stroked at 1px, but for the purposes of reserving space we have
 // to deal in dip coordinates, so round up to 1dip.
 const int kBorderThicknessDip = 1;
-const int kBorderStrokeThicknessPx = 1;
-
-// Blur and offset values for the two shadows drawn around each dialog. The
-// values are all in dip.
-const int kSmallShadowVerticalOffset = 2;
-const int kSmallShadowBlur = 4;
-const SkColor kSmallShadowColor = SkColorSetA(SK_ColorBLACK, 0x33);
-
-const int kLargeShadowVerticalOffset = 2;
-const int kLargeShadowBlur = 6;
-const SkColor kLargeShadowColor = SkColorSetA(SK_ColorBLACK, 0x1A);
 
 bool UseMaterialDesign() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
@@ -198,6 +187,14 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
 }
 
 BubbleBorder::~BubbleBorder() {}
+
+// static
+gfx::Insets BubbleBorder::GetBorderAndShadowInsets() {
+  constexpr gfx::Insets blur(kShadowBlur + kBorderThicknessDip);
+  constexpr gfx::Insets offset(-kShadowVerticalOffset, 0, kShadowVerticalOffset,
+                               0);
+  return blur + offset;
+}
 
 void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
   if (UseMaterialDesign())
@@ -368,15 +365,8 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
-  if (UseMaterialDesign()) {
-    if (shadow_ == NO_ASSETS)
-      return gfx::Insets();
-
-    gfx::Insets blur(kLargeShadowBlur);
-    gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
-                       kLargeShadowVerticalOffset, 0);
-    return blur + offset;
-  }
+  if (UseMaterialDesign())
+    return (shadow_ == NO_ASSETS) ? gfx::Insets() : GetBorderAndShadowInsets();
 
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
@@ -395,6 +385,33 @@ gfx::Insets BubbleBorder::GetInsets() const {
 
 gfx::Size BubbleBorder::GetMinimumSize() const {
   return GetSizeForContentsSize(gfx::Size());
+}
+
+// static
+const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags() {
+  // This object is always the same, so construct it once and cache.
+  static const base::NoDestructor<cc::PaintFlags> flags([] {
+    cc::PaintFlags f;
+    constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
+    f.setColor(kBorderColor);
+    f.setAntiAlias(true);
+
+    constexpr int kSmallShadowVerticalOffset = 2;
+    constexpr int kSmallShadowBlur = 4;
+    constexpr SkColor kSmallShadowColor = SkColorSetA(SK_ColorBLACK, 0x33);
+    constexpr SkColor kLargeShadowColor = SkColorSetA(SK_ColorBLACK, 0x1A);
+    // gfx::ShadowValue counts blur pixels both inside and outside the shape,
+    // whereas these blur values only describe the outside portion, hence they
+    // must be doubled.
+    f.setLooper(gfx::CreateShadowDrawLooper({
+        {gfx::Vector2d(0, kSmallShadowVerticalOffset), 2 * kSmallShadowBlur,
+         kSmallShadowColor},
+        {gfx::Vector2d(0, kShadowVerticalOffset), 2 * kShadowBlur,
+         kLargeShadowColor},
+    }));
+    return f;
+  }());
+  return *flags;
 }
 
 gfx::Size BubbleBorder::GetSizeForContentsSize(
@@ -526,28 +543,11 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
 
   gfx::ScopedCanvas scoped(canvas);
 
-  cc::PaintFlags flags;
-  std::vector<gfx::ShadowValue> shadows;
-  // gfx::ShadowValue counts blur pixels both inside and outside the shape,
-  // whereas these blur values only describe the outside portion, hence they
-  // must be doubled.
-  shadows.emplace_back(gfx::Vector2d(0, kSmallShadowVerticalOffset),
-                       2 * kSmallShadowBlur, kSmallShadowColor);
-  shadows.emplace_back(gfx::Vector2d(0, kLargeShadowVerticalOffset),
-                       2 * kLargeShadowBlur, kLargeShadowColor);
-  flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
-  flags.setColor(SkColorSetA(SK_ColorBLACK, 0x26));
-  flags.setAntiAlias(true);
-
   SkRRect r_rect = GetClientRect(view);
   canvas->sk_canvas()->clipRRect(r_rect, SkClipOp::kDifference,
                                  true /*doAntiAlias*/);
 
-  // The border is drawn outside the content area.
-  const SkScalar one_pixel =
-      SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
-  r_rect.inset(-one_pixel, -one_pixel);
-  canvas->sk_canvas()->drawRRect(r_rect, flags);
+  DrawBorderAndShadow(std::move(r_rect), &cc::PaintCanvas::drawRRect, canvas);
 }
 
 void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {

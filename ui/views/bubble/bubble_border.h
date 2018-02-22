@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -135,6 +136,11 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     PAINT_NONE,
   };
 
+  // Specific to MD bubbles: size of shadow blur (outside the bubble) and
+  // vertical offset, both in DIP.
+  static constexpr int kShadowBlur = 6;
+  static constexpr int kShadowVerticalOffset = 2;
+
   BubbleBorder(Arrow arrow, Shadow shadow, SkColor color);
   ~BubbleBorder() override;
 
@@ -164,6 +170,26 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   static Arrow vertical_mirror(Arrow a) {
     return (a == LEFT_CENTER || a == RIGHT_CENTER || a >= NONE) ?
         a : static_cast<Arrow>(a ^ BOTTOM);
+  }
+
+  // Returns the insets required by a border and shadow.  This is only used for
+  // MD bubbles.
+  static gfx::Insets GetBorderAndShadowInsets();
+
+  // Draws a border and shadow outside the |rect| on |canvas|, using |draw| as
+  // the draw function.  Templated so as to accept either SkRect or SkRRect.
+  template <typename T>
+  static void DrawBorderAndShadow(
+      T rect,
+      void (cc::PaintCanvas::*draw)(const T&, const cc::PaintFlags&),
+      gfx::Canvas* canvas) {
+    // Provide a 1 px border outside the bounds.
+    const int kBorderStrokeThicknessPx = 1;
+    const SkScalar one_pixel =
+        SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
+    rect.outset(one_pixel, one_pixel);
+
+    (canvas->sk_canvas()->*draw)(rect, GetBorderAndShadowFlags());
   }
 
   // Get or set the arrow type.
@@ -232,6 +258,10 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetSizeForContentsSizeTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetBoundsOriginTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, ShadowTypes);
+
+  // Returns the paint flags to use for painting the border and shadow.  This is
+  // only used for MD bubbles.
+  static const cc::PaintFlags& GetBorderAndShadowFlags();
 
   // The border and arrow stroke size used in image assets, in pixels.
   static const int kStroke;
