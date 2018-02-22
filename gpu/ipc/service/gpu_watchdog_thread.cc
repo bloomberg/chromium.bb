@@ -158,8 +158,11 @@ GpuWatchdogThread::~GpuWatchdogThread() {
 #if defined(USE_X11)
   if (tty_file_)
     fclose(tty_file_);
-  XDestroyWindow(display_, window_);
-  XCloseDisplay(display_);
+  if (display_) {
+    DCHECK(window_);
+    XDestroyWindow(display_, window_);
+    XCloseDisplay(display_);
+  }
 #endif
 
   watched_message_loop_->RemoveTaskObserver(&task_observer_);
@@ -312,46 +315,48 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #endif
 
 #if defined(USE_X11)
-  XWindowAttributes attributes;
-  XGetWindowAttributes(display_, window_, &attributes);
+  if (display_) {
+    DCHECK(window_);
+    XWindowAttributes attributes;
+    XGetWindowAttributes(display_, window_, &attributes);
 
-  XSelectInput(display_, window_, PropertyChangeMask);
-  SetupXChangeProp();
+    XSelectInput(display_, window_, PropertyChangeMask);
+    SetupXChangeProp();
 
-  XFlush(display_);
+    XFlush(display_);
 
-  // We wait for the property change event with a timeout. If it arrives we know
-  // that X is responsive and is not the cause of the watchdog trigger, so we
-  // should
-  // terminate. If it times out, it may be due to X taking a long time, but
-  // terminating won't help, so ignore the watchdog trigger.
-  XEvent event_return;
-  base::TimeTicks deadline = base::TimeTicks::Now() + timeout_;
-  while (true) {
-    base::TimeDelta delta = deadline - base::TimeTicks::Now();
-    if (delta < base::TimeDelta()) {
-      return;
-    } else {
-      while (XCheckWindowEvent(display_, window_, PropertyChangeMask,
-                               &event_return)) {
-        if (MatchXEventAtom(&event_return))
-          break;
-      }
-      struct pollfd fds[1];
-      fds[0].fd = XConnectionNumber(display_);
-      fds[0].events = POLLIN;
-      int status = poll(fds, 1, delta.InMilliseconds());
-      if (status == -1) {
-        if (errno == EINTR) {
-          continue;
-        } else {
-          LOG(FATAL) << "Lost X connection, aborting.";
-          break;
-        }
-      } else if (status == 0) {
+    // We wait for the property change event with a timeout. If it arrives we
+    // know that X is responsive and is not the cause of the watchdog trigger,
+    // so we should terminate. If it times out, it may be due to X taking a long
+    // time, but terminating won't help, so ignore the watchdog trigger.
+    XEvent event_return;
+    base::TimeTicks deadline = base::TimeTicks::Now() + timeout_;
+    while (true) {
+      base::TimeDelta delta = deadline - base::TimeTicks::Now();
+      if (delta < base::TimeDelta()) {
         return;
       } else {
-        continue;
+        while (XCheckWindowEvent(display_, window_, PropertyChangeMask,
+                                 &event_return)) {
+          if (MatchXEventAtom(&event_return))
+            break;
+        }
+        struct pollfd fds[1];
+        fds[0].fd = XConnectionNumber(display_);
+        fds[0].events = POLLIN;
+        int status = poll(fds, 1, delta.InMilliseconds());
+        if (status == -1) {
+          if (errno == EINTR) {
+            continue;
+          } else {
+            LOG(FATAL) << "Lost X connection, aborting.";
+            break;
+          }
+        } else if (status == 0) {
+          return;
+        } else {
+          continue;
+        }
       }
     }
   }
@@ -426,13 +431,17 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
 #if defined(USE_X11)
 void GpuWatchdogThread::SetupXServer() {
   display_ = XOpenDisplay(NULL);
-  window_ = XCreateWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0,
-                          CopyFromParent, InputOutput, CopyFromParent, 0, NULL);
-  atom_ = XInternAtom(display_, "CHECK", x11::False);
+  if (display_) {
+    window_ =
+        XCreateWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0,
+                      CopyFromParent, InputOutput, CopyFromParent, 0, NULL);
+    atom_ = XInternAtom(display_, "CHECK", x11::False);
+  }
   host_tty_ = GetActiveTTY();
 }
 
 void GpuWatchdogThread::SetupXChangeProp() {
+  DCHECK(display_);
   XChangeProperty(display_, window_, atom_, XA_STRING, 8, PropModeReplace, text,
                   (arraysize(text) - 1));
 }
