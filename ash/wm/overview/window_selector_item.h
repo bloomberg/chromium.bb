@@ -133,9 +133,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // Called when a WindowSelectorItem on any grid is dragged. Hides the close
   // button when a drag is started, and reshows it when a drag is finished.
-  // Additional hides the title and window icon if |item| is this.
+  // Additionally hides the title and window icon if |item| is this.
   void OnSelectorItemDragStarted(WindowSelectorItem* item);
-  void OnSelectorItemDragEnded(WindowSelectorItem* item);
+  void OnSelectorItemDragEnded();
 
   ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
@@ -168,7 +168,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void HandlePressEvent(const gfx::Point& location_in_screen);
   void HandleReleaseEvent(const gfx::Point& location_in_screen);
   void HandleDragEvent(const gfx::Point& location_in_screen);
-  void ActivateDraggedWindow();
+  void ActivateDraggedWindow(const gfx::Point& location_in_screen);
   void ResetDraggedWindowGesture();
 
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
@@ -241,6 +241,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Fades out a window caption when exiting overview mode.
   void FadeOut(std::unique_ptr<views::Widget> widget);
 
+  // Select this window if |event_location| is less than the drag threshold for
+  // clicks. This should only be called if the original event was on the title
+  // bar (|tap_down_event_on_title_| has a value).
+  void SelectWindowIfBelowDistanceThreshold(const gfx::Point& event_location);
+
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
 
@@ -276,6 +281,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // True when |this| item is visually selected. Item header is made transparent
   // when the item is selected.
   bool selected_;
+
+  // Has a value if last seen tap down event was on the title bar. Behavior of
+  // subsequent drags/tap up differ if the original event was on the overview
+  // title.
+  base::Optional<gfx::Point> tap_down_event_on_title_;
 
   // A widget that covers the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a
@@ -336,6 +346,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<::wm::Shadow> shadow_;
+
+  bool event_on_title_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };

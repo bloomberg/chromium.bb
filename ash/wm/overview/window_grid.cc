@@ -584,9 +584,9 @@ void WindowGrid::OnSelectorItemDragStarted(WindowSelectorItem* item) {
     window_selector_item->OnSelectorItemDragStarted(item);
 }
 
-void WindowGrid::OnSelectorItemDragEnded(WindowSelectorItem* item) {
+void WindowGrid::OnSelectorItemDragEnded() {
   for (auto& window_selector_item : window_list_)
-    window_selector_item->OnSelectorItemDragEnded(item);
+    window_selector_item->OnSelectorItemDragEnded();
 }
 
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
