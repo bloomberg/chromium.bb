@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -21,14 +22,17 @@
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
-static const char* kTestConfigFlags[] = {
+enum class TargetVideoCaptureImplementation {
+  DEFAULT,
 #if defined(OS_WIN)
-  NULL,
-  // Media Foundation is only available in Windows versions >= 7, below that the
-  // following flag has no effect; the test would run twice using DirectShow.
-  switches::kForceMediaFoundationVideoCapture
-#else
-  NULL
+  WIN_MEDIA_FOUNDATION
+#endif
+};
+
+const TargetVideoCaptureImplementation kTargetVideoCaptureImplementations[] = {
+    TargetVideoCaptureImplementation::DEFAULT,
+#if defined(OS_WIN)
+    TargetVideoCaptureImplementation::WIN_MEDIA_FOUNDATION
 #endif
 };
 
@@ -37,16 +41,27 @@ static const char* kTestConfigFlags[] = {
 // The webcam on the system must support up to 1080p, or the test will fail.
 // This test is excellent for testing the various capture paths of WebRTC
 // on all desktop platforms.
-class WebRtcWebcamBrowserTest : public WebRtcTestBase,
-    public testing::WithParamInterface<const char*> {
+class WebRtcWebcamBrowserTest
+    : public WebRtcTestBase,
+      public testing::WithParamInterface<TargetVideoCaptureImplementation> {
  public:
+  WebRtcWebcamBrowserTest() {
+#if defined(OS_WIN)
+    if (GetParam() == TargetVideoCaptureImplementation::WIN_MEDIA_FOUNDATION) {
+      scoped_feature_list_.InitAndEnableFeature(
+          media::kMediaFoundationVideoCapture);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          media::kMediaFoundationVideoCapture);
+    }
+#endif
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
-    if (GetParam())
-      command_line->AppendSwitch(GetParam());
   }
 
  protected:
@@ -66,6 +81,9 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     }
     return actual_stream_size;
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // This test is manual because the test results can vary heavily depending on
@@ -97,4 +115,4 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
 
 INSTANTIATE_TEST_CASE_P(WebRtcWebcamBrowserTests,
                         WebRtcWebcamBrowserTest,
-                        testing::ValuesIn(kTestConfigFlags));
+                        testing::ValuesIn(kTargetVideoCaptureImplementations));

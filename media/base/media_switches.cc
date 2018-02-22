@@ -41,11 +41,6 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 // for details.
 const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
 
-// Force the use of MediaFoundation for video capture. This is only supported in
-// Windows 7 and above. Used, like |kForceDirectShowVideoCapture|, to
-// troubleshoot problems in Windows platforms.
-const char kForceMediaFoundationVideoCapture[] = "force-mediafoundation";
-
 // Use Windows WaveOut/In audio API even if Core Audio is supported.
 const char kForceWaveAudio[] = "force-wave-audio";
 
@@ -350,6 +345,11 @@ const base::Feature kDelayCopyNV12Textures{"DelayCopyNV12Textures",
 // Enables H264 HW encode acceleration using Media Foundation for Windows.
 const base::Feature kMediaFoundationH264Encoding{
     "MediaFoundationH264Encoding", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables MediaFoundation based video capture
+const base::Feature kMediaFoundationVideoCapture{
+    "MediaFoundationVideoCapture", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // defined(OS_WIN)
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
