@@ -221,6 +221,16 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// If enabled, the Chrome OS Settings UI will include a menu for the unified
+// MultiDevice settings.
+const base::Feature kEnableUnifiedMultiDeviceSettings{
+    "EnableUnifiedMultiDeviceSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable the device to setup all MultiDevice services in a single workflow.
+const base::Feature kEnableUnifiedMultiDeviceSetup{
+    "EnableUnifiedMultiDeviceSetup", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",

@@ -1619,6 +1619,12 @@ extern const char kEnableFloatingVirtualKeyboardDescription[];
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 
+extern const char kEnableUnifiedMultiDeviceSettingsName[];
+extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
+
+extern const char kEnableUnifiedMultiDeviceSetupName[];
+extern const char kEnableUnifiedMultiDeviceSetupDescription[];
+
 extern const char kEnableZipArchiverPackerName[];
 extern const char kEnableZipArchiverPackerDescription[];
 

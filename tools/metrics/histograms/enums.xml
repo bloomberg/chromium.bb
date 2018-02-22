@@ -26260,6 +26260,7 @@ from previous Chrome versions.
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
+  <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
   <int value="-112459802" label="WebXrRenderPath:enabled"/>
   <int value="-110756896"
       label="NTPArticleSuggestionsExpandableHeader:enabled"/>
@@ -26447,6 +26448,7 @@ from previous Chrome versions.
   <int value="379428799" label="security-chip-animation"/>
   <int value="385969127" label="disable-win32k-lockdown"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
+  <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
@@ -26507,6 +26509,7 @@ from previous Chrome versions.
   <int value="538468149" label="OfflinePagesCT:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
+  <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
@@ -26738,6 +26741,7 @@ from previous Chrome versions.
   <int value="1113365156" label="tab-management-experiment-type-chive"/>
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115476442" label="PolicyTool:disabled"/>
+  <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
   <int value="1126061778" label="CaptureThumbnailOnLoadFinished:enabled"/>

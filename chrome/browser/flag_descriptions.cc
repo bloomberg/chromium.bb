@@ -2621,6 +2621,17 @@ const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
 
+const char kEnableUnifiedMultiDeviceSettingsName[] =
+    "Enable unified MultiDevice settings";
+const char kEnableUnifiedMultiDeviceSettingsDescription[] =
+    "If enabled, the Chrome OS Settings UI will include a menu for the unified "
+    "MultiDevice settings.";
+
+const char kEnableUnifiedMultiDeviceSetupName[] =
+    "Enable unified MultiDevice setup";
+const char kEnableUnifiedMultiDeviceSetupDescription[] =
+    "Enable the device to setup all MultiDevice services in a single workflow.";
+
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
     "Enable the ability to archive files on Drive in the Files app";
