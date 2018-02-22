@@ -31,6 +31,7 @@ include_rules = [
   # Content Shell can depend on more components than content/, since:
   #   1) it's an example browser
   #   2) it's not linked into the content library
+  "+components/content_view",
   "+components/crash",
   "+components/download/public/common",
   "+components/url_formatter",
