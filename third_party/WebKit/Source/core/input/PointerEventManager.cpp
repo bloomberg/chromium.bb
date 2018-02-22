@@ -27,18 +27,11 @@ namespace blink {
 
 namespace {
 
-const float kMaxAdjustmentRadiusDips = 16.f;
-
 size_t ToPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
 }
 bool HasPointerEventListener(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(EventHandlerRegistry::kPointerEvent);
-}
-
-LayoutSize GetHitTestRectForAdjustment(const IntSize& touch_area) {
-  const LayoutSize kMaxSize(kMaxAdjustmentRadiusDips, kMaxAdjustmentRadiusDips);
-  return LayoutSize(touch_area).ShrunkTo(kMaxSize);
 }
 
 }  // namespace

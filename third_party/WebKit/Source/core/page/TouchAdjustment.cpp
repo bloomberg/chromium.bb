@@ -44,6 +44,7 @@ namespace blink {
 namespace TouchAdjustment {
 
 const float kZeroTolerance = 1e-6f;
+constexpr float kMaxAdjustmentRadiusDips = 16.f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -528,6 +529,12 @@ bool FindBestContextMenuCandidate(Node*& target_node,
   return TouchAdjustment::FindNodeWithLowestDistanceMetric(
       target_node, target_point, target_area, touch_hotspot, touch_area,
       subtargets, TouchAdjustment::HybridDistanceFunction);
+}
+
+LayoutSize GetHitTestRectForAdjustment(const IntSize& touch_area) {
+  const LayoutSize max_size(TouchAdjustment::kMaxAdjustmentRadiusDips,
+                            TouchAdjustment::kMaxAdjustmentRadiusDips);
+  return LayoutSize(touch_area).ShrunkTo(max_size);
 }
 
 }  // namespace blink

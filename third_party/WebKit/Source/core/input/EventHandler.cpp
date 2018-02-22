@@ -1681,6 +1681,9 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     padding = LayoutSize(adjusted_event.TapAreaInRootFrame());
     if (!padding.IsEmpty()) {
       padding.Scale(1.f / 2);
+      // Apply the same bound as touchstart event to adjustment padding
+      if (RuntimeEnabledFeatures::UnifiedTouchAdjustmentEnabled())
+        padding = GetHitTestRectForAdjustment(FlooredIntSize(padding));
       hit_type |= HitTestRequest::kListBased;
     }
   }
