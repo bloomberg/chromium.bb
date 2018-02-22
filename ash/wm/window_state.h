@@ -86,6 +86,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Note: This only gets called when the state object gets changed.
     virtual void DetachState(WindowState* window_state) = 0;
 
+    // Called when the window is being destroyed.
+    virtual void OnWindowDestroying(WindowState* window_state) {}
+
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
   };
@@ -404,6 +407,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                const void* key,
                                intptr_t old) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // The owner of this window settings.
   aura::Window* window_;

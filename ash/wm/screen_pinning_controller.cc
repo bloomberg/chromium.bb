@@ -232,10 +232,8 @@ void ScreenPinningController::OnWindowAddedToPinnedContainer(
 void ScreenPinningController::OnWillRemoveWindowFromPinnedContainer(
     aura::Window* window) {
   window->RemoveObserver(pinned_container_child_window_observer_.get());
-  if (window == pinned_window_) {
+  if (window == pinned_window_)
     wm::GetWindowState(pinned_window_)->Restore();
-    return;
-  }
 }
 
 void ScreenPinningController::OnPinnedContainerWindowStackingChanged(

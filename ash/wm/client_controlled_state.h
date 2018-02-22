@@ -74,6 +74,7 @@ class ASH_EXPORT ClientControlledState : public BaseState {
                           const WMEvent* event) override;
   void HandleTransitionEvents(WindowState* window_state,
                               const WMEvent* event) override;
+  void OnWindowDestroying(WindowState* window_state) override;
 
   // Enters next state. This is used when the state moves from one to another
   // within the same desktop mode. Returns true if the state has changed, or
