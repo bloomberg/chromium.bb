@@ -96,7 +96,8 @@ void MojoAudioOutputStream::OnStreamCreated(
   DCHECK(socket_handle.is_valid());
 
   base::ResetAndReturn(&stream_created_callback_)
-      .Run(std::move(buffer_handle), std::move(socket_handle));
+      .Run(
+          {base::in_place, std::move(buffer_handle), std::move(socket_handle)});
 }
 
 void MojoAudioOutputStream::OnStreamError(int stream_id) {

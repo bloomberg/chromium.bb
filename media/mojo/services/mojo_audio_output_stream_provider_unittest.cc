@@ -31,7 +31,7 @@ using testing::StrictMock;
 using MockDeleter = base::MockCallback<
     base::OnceCallback<void(mojom::AudioOutputStreamProvider*)>>;
 
-void FakeAcquireCallback(mojo::ScopedSharedBufferHandle, mojo::ScopedHandle) {}
+void FakeAcquireCallback(mojom::AudioDataPipePtr data_pipe) {}
 
 class FakeObserver : public mojom::AudioOutputStreamObserver {
  public:

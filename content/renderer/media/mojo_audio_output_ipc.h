@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "media/audio/audio_output_ipc.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -68,8 +69,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
                                    const media::AudioParameters& params,
                                    const std::string& device_id) const;
 
-  void StreamCreated(mojo::ScopedSharedBufferHandle shared_memory,
-                     mojo::ScopedHandle socket);
+  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe);
 
   const FactoryAccessorCB factory_accessor_;
 

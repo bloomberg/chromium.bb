@@ -9,6 +9,7 @@ mojom("interfaces") {
   # TODO(crbug.com/676224): Conditionally add source files in this list when we
   # support EnabledIf attribute in mojom files.
   sources = [
+    "audio_data_pipe.mojom",
     "audio_decoder.mojom",
     "audio_input_stream.mojom",
     "audio_logging.mojom",

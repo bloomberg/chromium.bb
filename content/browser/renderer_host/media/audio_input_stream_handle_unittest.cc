@@ -48,8 +48,7 @@ class MockRendererAudioInputStreamFactoryClient
 
   void StreamCreated(media::mojom::AudioInputStreamPtr input_stream,
                      media::mojom::AudioInputStreamClientRequest client_request,
-                     mojo::ScopedSharedBufferHandle shared_buffer,
-                     mojo::ScopedHandle socket_descriptor,
+                     media::mojom::AudioDataPipePtr data_pipe,
                      bool initially_muted) override {
     input_stream_ = std::move(input_stream);
     client_request_ = std::move(client_request);

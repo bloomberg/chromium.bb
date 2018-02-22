@@ -72,8 +72,9 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
     base::CancelableSyncSocket foreign_socket;
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
-    std::move(callback).Run(mojo::SharedBufferHandle::Create(kMemoryLength),
-                            mojo::WrapPlatformFile(foreign_socket.Release()));
+    std::move(callback).Run({base::in_place,
+                             mojo::SharedBufferHandle::Create(kMemoryLength),
+                             mojo::WrapPlatformFile(foreign_socket.Release())});
   }
 
   media::mojom::AudioOutputStreamClient* client() {
