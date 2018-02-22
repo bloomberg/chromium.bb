@@ -49,6 +49,16 @@ class BASE_EXPORT SamplingHeapProfiler {
     virtual void SampleRemoved(uint32_t id) = 0;
   };
 
+  // This is an entry point for plugging in an external allocator.
+  // Profiler will invoke the provided callback upon initialization.
+  // The callback should install hooks onto the corresponding memory allocator
+  // and make them invoke SamplingHeapProfiler::RecordAlloc and
+  // SamplingHeapProfiler::RecordFree upon corresponding allocation events.
+  //
+  // If the method is called after profiler is initialized, the callback
+  // is invoked right away.
+  static void SetHooksInstallCallback(void (*hooks_install_callback)());
+
   void AddSamplesObserver(SamplesObserver*);
   void RemoveSamplesObserver(SamplesObserver*);
 
@@ -59,8 +69,8 @@ class BASE_EXPORT SamplingHeapProfiler {
 
   std::vector<Sample> GetSamples(uint32_t profile_id);
 
-  static inline void MaybeRecordAlloc(void* address, size_t, uint32_t);
-  static inline void MaybeRecordFree(void* address);
+  static void RecordAlloc(void* address, size_t, uint32_t skip_frames = 0);
+  static void RecordFree(void* address);
 
   static SamplingHeapProfiler* GetInstance();
 
@@ -72,11 +82,11 @@ class BASE_EXPORT SamplingHeapProfiler {
   static bool InstallAllocatorHooks();
   static size_t GetNextSampleInterval(size_t base_interval);
 
-  void RecordAlloc(size_t total_allocated,
-                   size_t allocation_size,
-                   void* address,
-                   uint32_t skip_frames);
-  void RecordFree(void* address);
+  void DoRecordAlloc(size_t total_allocated,
+                     size_t allocation_size,
+                     void* address,
+                     uint32_t skip_frames);
+  void DoRecordFree(void* address);
   void RecordStackTrace(Sample*, uint32_t skip_frames);
 
   base::ThreadLocalBoolean entered_;
