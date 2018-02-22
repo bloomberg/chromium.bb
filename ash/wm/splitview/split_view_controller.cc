@@ -89,6 +89,22 @@ aura::Window* GetWindowStackedAbove(aura::Window* window1,
   return window1_i > window2_i ? window1 : window2;
 }
 
+mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
+  switch (state) {
+    case SplitViewController::NO_SNAP:
+      return mojom::SplitViewState::NO_SNAP;
+    case SplitViewController::LEFT_SNAPPED:
+      return mojom::SplitViewState::LEFT_SNAPPED;
+    case SplitViewController::RIGHT_SNAPPED:
+      return mojom::SplitViewState::RIGHT_SNAPPED;
+    case SplitViewController::BOTH_SNAPPED:
+      return mojom::SplitViewState::BOTH_SNAPPED;
+    default:
+      NOTREACHED();
+      return mojom::SplitViewState::NO_SNAP;
+  }
+}
+
 }  // namespace
 
 SplitViewController::SplitViewController() {
@@ -123,6 +139,11 @@ bool SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(
              blink::kWebScreenOrientationLockLandscapePrimary ||
          screen_orientation ==
              blink::kWebScreenOrientationLockPortraitSecondary;
+}
+
+void SplitViewController::BindRequest(
+    mojom::SplitViewControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 bool SplitViewController::CanSnap(aura::Window* window) {
@@ -441,6 +462,12 @@ void SplitViewController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
+  mojom::SplitViewObserver* observer_ptr = observer.get();
+  mojo_observers_.AddPtr(std::move(observer));
+  observer_ptr->OnSplitViewStateChanged(ToMojomSplitViewState(state_));
+}
+
 void SplitViewController::OnWindowDestroying(aura::Window* window) {
   DCHECK(IsSplitViewModeActive());
   DCHECK(window == left_window_ || window == right_window_);
@@ -614,6 +641,10 @@ void SplitViewController::NotifySplitViewStateChanged(State previous_state,
   // should notify its observers.
   for (Observer& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state);
+  mojo_observers_.ForAllPtrs(
+      [previous_state, state](mojom::SplitViewObserver* observer) {
+        observer->OnSplitViewStateChanged(ToMojomSplitViewState(state));
+      });
 }
 
 void SplitViewController::NotifyDividerPositionChanged() {

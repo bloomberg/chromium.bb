@@ -15,7 +15,11 @@
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -37,6 +41,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
@@ -66,6 +72,27 @@ bool IsV1AppBackButtonEnabled() {
       ash::switches::kAshEnableV1AppBackButton);
 }
 
+// Returns true if |window| is currently snapped in split view mode.
+bool IsSnappedInSplitView(aura::Window* window,
+                          ash::mojom::SplitViewState state) {
+  ash::mojom::WindowStateType type =
+      window->GetProperty(ash::kWindowStateTypeKey);
+  switch (state) {
+    case ash::mojom::SplitViewState::NO_SNAP:
+      return false;
+    case ash::mojom::SplitViewState::LEFT_SNAPPED:
+      return type == ash::mojom::WindowStateType::LEFT_SNAPPED;
+    case ash::mojom::SplitViewState::RIGHT_SNAPPED:
+      return type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+    case ash::mojom::SplitViewState::BOTH_SNAPPED:
+      return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
+             type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,10 +105,21 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       caption_button_container_(nullptr),
       back_button_(nullptr),
       window_icon_(nullptr),
-      hosted_app_button_container_(nullptr) {
+      hosted_app_button_container_(nullptr),
+      observer_binding_(this) {
   ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
                                                       nullptr);
   ash::Shell::Get()->AddShellObserver(this);
+
+  // The ServiceManagerConnection may be nullptr in tests.
+  if (content::ServiceManagerConnection::GetForProcess()) {
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &split_view_controller_);
+    ash::mojom::SplitViewObserverPtr observer;
+    observer_binding_.Bind(mojo::MakeRequest(&observer));
+    split_view_controller_->AddObserver(std::move(observer));
+  }
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
@@ -128,6 +166,15 @@ void BrowserNonClientFrameViewAsh::Init() {
   // TabletModeClient may not be initialized during unit tests.
   if (TabletModeClient::Get())
     TabletModeClient::Get()->AddObserver(this);
+}
+
+ash::mojom::SplitViewObserverPtr
+BrowserNonClientFrameViewAsh::CreateInterfacePtrForTesting() {
+  if (observer_binding_.is_bound())
+    observer_binding_.Unbind();
+  ash::mojom::SplitViewObserverPtr ptr;
+  observer_binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -358,6 +405,8 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 // ash::ShellObserver:
 
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
+  in_overview_mode_ = true;
+
   // Update the window icon so that overview mode can grab the icon from
   // aura::client::kWindowIcon to display.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -367,11 +416,12 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
 
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
                                           GetFrameColor());
-  OnOverviewModeChanged(true);
+  OnOverviewOrSplitviewModeChanged();
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
-  OnOverviewModeChanged(false);
+  in_overview_mode_ = false;
+  OnOverviewOrSplitviewModeChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -436,6 +486,12 @@ void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
                                                                  bool enabled) {
   if (id == IDC_BACK && back_button_)
     back_button_->SetEnabled(enabled);
+}
+
+void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
+    ash::mojom::SplitViewState current_state) {
+  split_view_state_ = current_state;
+  OnOverviewOrSplitviewModeChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -506,13 +562,21 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   return browser_view()->IsBrowserTypeNormal() || !in_overview_mode_;
 }
 
-void BrowserNonClientFrameViewAsh::OnOverviewModeChanged(bool in_overview) {
-  in_overview_mode_ = in_overview;
-  caption_button_container_->SetVisible(!in_overview);
-  if (window_icon_)
-    window_icon_->SetVisible(!in_overview);
-  if (back_button_)
-    back_button_->SetVisible(!in_overview);
+void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
+  if (in_overview_mode_ &&
+      IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_)) {
+    caption_button_container_->SetVisible(true);
+    if (window_icon_)
+      window_icon_->SetVisible(true);
+    if (back_button_)
+      back_button_->SetVisible(true);
+  } else {
+    caption_button_container_->SetVisible(!in_overview_mode_);
+    if (window_icon_)
+      window_icon_->SetVisible(!in_overview_mode_);
+    if (back_button_)
+      back_button_->SetVisible(!in_overview_mode_);
+  }
   // Schedule a paint to show or hide the header.
   SchedulePaint();
 }

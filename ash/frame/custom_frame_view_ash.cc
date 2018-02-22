@@ -523,45 +523,24 @@ SkColor CustomFrameViewAsh::GetInactiveFrameColorForTest() const {
   return header_view_->GetInactiveFrameColor();
 }
 
-void CustomFrameViewAsh::MaybePaintHeaderForSplitview(
-    SplitViewController::State state) {
-  if (state == SplitViewController::NO_SNAP) {
-    SetShouldPaintHeader(/*paint=*/false);
-    return;
-  }
-
-  SplitViewController* controller = Shell::Get()->split_view_controller();
-  aura::Window* window = nullptr;
-  if (state == SplitViewController::LEFT_SNAPPED)
-    window = controller->left_window();
-  else if (state == SplitViewController::RIGHT_SNAPPED)
-    window = controller->right_window();
-
-  // TODO(sammiequon): This works for now, but we may have to check if
-  // |frame_|'s native window is in the overview list instead.
-  if (window && window == frame_->GetNativeWindow())
-    SetShouldPaintHeader(/*paint=*/true);
-}
-
 void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
 }
 
 void CustomFrameViewAsh::OnOverviewModeStarting() {
   in_overview_mode_ = true;
-  SetShouldPaintHeader(false);
+  OnOverviewOrSplitViewModeChanged();
 }
 
 void CustomFrameViewAsh::OnOverviewModeEnded() {
   in_overview_mode_ = false;
-  SetShouldPaintHeader(true);
+  OnOverviewOrSplitViewModeChanged();
 }
 
 void CustomFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
-    SplitViewController::State state) {
-  if (in_overview_mode_)
-    MaybePaintHeaderForSplitview(state);
+    SplitViewController::State /* current_state */) {
+  OnOverviewOrSplitViewModeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -595,6 +574,20 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
     return 0;
 
   return header_view_->GetPreferredHeight();
+}
+
+void CustomFrameViewAsh::OnOverviewOrSplitViewModeChanged() {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (in_overview_mode_ && split_view_controller->IsSplitViewModeActive() &&
+      split_view_controller->GetDefaultSnappedWindow() ==
+          frame_->GetNativeWindow()) {
+    // TODO(sammiequon): This works for now, but we may have to check if
+    // |frame_|'s native window is in the overview list instead.
+    SetShouldPaintHeader(true);
+  } else {
+    SetShouldPaintHeader(!in_overview_mode_);
+  }
 }
 
 }  // namespace ash
