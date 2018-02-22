@@ -145,9 +145,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
 #if defined(OS_MACOSX)
 #define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
   DISABLED_CaptureFromCanvas2DHandlesContextLoss
+#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
+  DISABLED_CaptureFromOpaqueCanvas2DHandlesContextLoss
 #else
 #define MAYBE_CaptureFromCanvas2DHandlesContextLoss \
   CaptureFromCanvas2DHandlesContextLoss
+#define MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss \
+  CaptureFromOpaqueCanvas2DHandlesContextLoss
 #endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                        MAYBE_CaptureFromCanvas2DHandlesContextLoss) {
@@ -156,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       CaptureFromOpaqueCanvas2DHandlesContextLoss) {
+                       MAYBE_CaptureFromOpaqueCanvas2DHandlesContextLoss) {
   MakeTypicalCall("testCanvas2DContextLoss(false);",
                   kCanvasCaptureColorTestHtmlFile);
 }
