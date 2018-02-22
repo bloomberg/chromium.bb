@@ -115,6 +115,9 @@ class AppBannerManagerAndroid
   // a PWA.
   void ShowAmbientBadge();
 
+  // Hides the ambient badge if it is showing.
+  void HideAmbientBadge();
+
   std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
 
   // The URL of the badge icon.

@@ -14,6 +14,9 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
+#include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AppBannerManager_jni.h"
@@ -196,6 +199,21 @@ void AppBannerManagerAndroid::ShowAmbientBadge() {
                                                  primary_icon_);
 }
 
+void AppBannerManagerAndroid::HideAmbientBadge() {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        InstallableAmbientBadgeInfoBarDelegate::
+            INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE) {
+      infobar_service->RemoveInfoBar(infobar);
+      break;
+    }
+  }
+}
+
 void AppBannerManagerAndroid::ResetCurrentPageData() {
   AppBannerManager::ResetCurrentPageData();
   native_app_data_.Reset();
@@ -229,6 +247,7 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 
   bool banner_shown = false;
   if (IsExperimentalAppBannersEnabled()) {
+    HideAmbientBadge();
     banner_shown = ui_delegate_->ShowDialog();
   } else {
     banner_shown = AppBannerInfoBarDelegateAndroid::Create(
