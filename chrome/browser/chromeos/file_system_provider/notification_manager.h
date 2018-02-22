@@ -11,9 +11,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ui/app_icon_loader.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
 
@@ -29,7 +31,8 @@ namespace file_system_provider {
 // up to one notification. If more than one request is unresponsive, then
 // all of them will be aborted when clicking on the notification button.
 class NotificationManager : public NotificationManagerInterface,
-                            public AppIconLoaderDelegate {
+                            public AppIconLoaderDelegate,
+                            public message_center::NotificationObserver {
  public:
   NotificationManager(Profile* profile,
                       const ProvidedFileSystemInfo& file_system_info);
@@ -41,15 +44,13 @@ class NotificationManager : public NotificationManagerInterface,
       const NotificationCallback& callback) override;
   void HideUnresponsiveNotification(int id) override;
 
-  // Invoked when a button on the notification is clicked.
-  void OnButtonClick(int button_index);
-
-  // Invoked when the notification got closed either by user or by system.
-  void OnClose();
-
   // AppIconLoaderDelegate overrides:
   void OnAppImageUpdated(const std::string& id,
                          const gfx::ImageSkia& image) override;
+
+  // message_center::NotificationObserver overrides:
+  void ButtonClick(int button_index) override;
+  void Close(bool by_user) override;
 
  private:
   typedef std::map<int, NotificationCallback> CallbackMap;
@@ -70,6 +71,7 @@ class NotificationManager : public NotificationManagerInterface,
   CallbackMap callbacks_;
   std::unique_ptr<AppIconLoader> icon_loader_;
   std::unique_ptr<gfx::Image> extension_icon_;
+  base::WeakPtrFactory<NotificationManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

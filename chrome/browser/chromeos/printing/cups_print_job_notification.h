@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
 
@@ -24,7 +26,7 @@ class CupsPrintJobNotificationManager;
 
 // CupsPrintJobNotification is used to update the notification of a print job
 // according to its state and respond to the user's action.
-class CupsPrintJobNotification {
+class CupsPrintJobNotification : public message_center::NotificationObserver {
  public:
   enum class ButtonCommand {
     CANCEL_PRINTING,
@@ -36,12 +38,13 @@ class CupsPrintJobNotification {
   CupsPrintJobNotification(CupsPrintJobNotificationManager* manager,
                            CupsPrintJob* print_job,
                            Profile* profile);
-  ~CupsPrintJobNotification();
+  virtual ~CupsPrintJobNotification();
 
   void OnPrintJobStatusUpdated();
 
-  void CloseNotificationByUser();
-  void ClickOnNotificationButton(int button_index);
+  // message_center::NotificationObserver
+  void Close(bool by_user) override;
+  void ButtonClick(int button_index) override;
 
  private:
   // Update the notification based on the print job's status.
@@ -75,6 +78,8 @@ class CupsPrintJobNotification {
   // Maintains a list of button actions according to the print job's current
   // status.
   std::vector<ButtonCommand> button_commands_;
+
+  base::WeakPtrFactory<CupsPrintJobNotification> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobNotification);
 };

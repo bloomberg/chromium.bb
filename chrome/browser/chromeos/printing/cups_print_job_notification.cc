@@ -33,30 +33,6 @@ namespace {
 const char kCupsPrintJobNotificationId[] =
     "chrome://settings/printing/cups-print-job-notification";
 
-class CupsPrintJobNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  explicit CupsPrintJobNotificationDelegate(CupsPrintJobNotification* item)
-      : item_(item) {}
-
-  // NotificationDelegate overrides:
-  void Close(bool by_user) override {
-    if (by_user)
-      item_->CloseNotificationByUser();
-  }
-
-  void ButtonClick(int button_index) override {
-    item_->ClickOnNotificationButton(button_index);
-  }
-
- private:
-  ~CupsPrintJobNotificationDelegate() override {}
-
-  CupsPrintJobNotification* item_;
-
-  DISALLOW_COPY_AND_ASSIGN(CupsPrintJobNotificationDelegate);
-};
-
 }  // namespace
 
 CupsPrintJobNotification::CupsPrintJobNotification(
@@ -66,7 +42,8 @@ CupsPrintJobNotification::CupsPrintJobNotification(
     : notification_manager_(manager),
       notification_id_(print_job->GetUniqueId()),
       print_job_(print_job),
-      profile_(profile) {
+      profile_(profile),
+      weak_factory_(this) {
   // Create a notification for the print job. The title, body, icon and buttons
   // of the notification will be updated in UpdateNotification().
   notification_ = std::make_unique<message_center::Notification>(
@@ -79,7 +56,8 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kCupsPrintJobNotificationId),
       message_center::RichNotificationData(),
-      new CupsPrintJobNotificationDelegate(this));
+      base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+          weak_factory_.GetWeakPtr()));
   notification_->set_clickable(true);
   UpdateNotification();
 }
@@ -94,7 +72,10 @@ void CupsPrintJobNotification::OnPrintJobStatusUpdated() {
   UpdateNotification();
 }
 
-void CupsPrintJobNotification::CloseNotificationByUser() {
+void CupsPrintJobNotification::Close(bool by_user) {
+  if (!by_user)
+    return;
+
   closed_in_middle_ = true;
   if (!print_job_ ||
       print_job_->state() == CupsPrintJob::State::STATE_SUSPENDED) {
@@ -102,7 +83,7 @@ void CupsPrintJobNotification::CloseNotificationByUser() {
   }
 }
 
-void CupsPrintJobNotification::ClickOnNotificationButton(int button_index) {
+void CupsPrintJobNotification::ButtonClick(int button_index) {
   DCHECK(button_index >= 0 &&
          static_cast<size_t>(button_index) < button_commands_.size());
 

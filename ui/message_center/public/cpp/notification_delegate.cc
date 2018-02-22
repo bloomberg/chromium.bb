@@ -9,22 +9,45 @@
 
 namespace message_center {
 
-// NotificationDelegate:
+// ThunkNotificationDelegate:
 
-void NotificationDelegate::Close(bool by_user) {}
+ThunkNotificationDelegate::ThunkNotificationDelegate(
+    base::WeakPtr<NotificationObserver> impl)
+    : impl_(impl) {}
 
-void NotificationDelegate::Click() {}
-
-void NotificationDelegate::ButtonClick(int button_index) {}
-
-void NotificationDelegate::ButtonClickWithReply(int button_index,
-                                                const base::string16& reply) {
-  NOTIMPLEMENTED();
+void ThunkNotificationDelegate::Close(bool by_user) {
+  if (impl_)
+    impl_->Close(by_user);
 }
 
-void NotificationDelegate::SettingsClick() {}
+void ThunkNotificationDelegate::Click() {
+  if (impl_)
+    impl_->Click();
+}
 
-void NotificationDelegate::DisableNotification() {}
+void ThunkNotificationDelegate::ButtonClick(int button_index) {
+  if (impl_)
+    impl_->ButtonClick(button_index);
+}
+
+void ThunkNotificationDelegate::ButtonClickWithReply(
+    int button_index,
+    const base::string16& reply) {
+  if (impl_)
+    impl_->ButtonClickWithReply(button_index, reply);
+}
+
+void ThunkNotificationDelegate::SettingsClick() {
+  if (impl_)
+    impl_->SettingsClick();
+}
+
+void ThunkNotificationDelegate::DisableNotification() {
+  if (impl_)
+    impl_->DisableNotification();
+}
+
+ThunkNotificationDelegate::~ThunkNotificationDelegate() = default;
 
 // HandleNotificationClickDelegate:
 
