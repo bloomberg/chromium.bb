@@ -33,6 +33,7 @@ source_set("tab_grid_ui") {
     "grid_consumer.h",
     "grid_item.h",
     "grid_item.mm",
+    "grid_theme.h",
     "grid_view_controller.h",
     "grid_view_controller.mm",
     "tab_grid_bottom_toolbar.h",
