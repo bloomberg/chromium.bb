@@ -153,6 +153,10 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
       const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int id, int error);
 
+  void LaunchConfirmationDialog(
+      const base::FilePath& path,
+      std::vector<ui::SelectedFileInfo> selected_files);
+
   // Cleans up and releases this instance. This must be called after the last
   // callback is received from the enumeration code.
   void EnumerateDirectoryEnd();

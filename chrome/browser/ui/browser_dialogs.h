@@ -28,6 +28,10 @@ class Profile;
 class WebShareTarget;
 struct WebApplicationInfo;
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
 class ColorChooser;
@@ -61,6 +65,7 @@ class TaskManagerTableModel;
 
 namespace ui {
 class WebDialogDelegate;
+struct SelectedFileInfo;
 }
 
 namespace views {
@@ -323,5 +328,11 @@ using BubbleShowPtr =
 BubbleShowPtr ShowIntentPickerBubble();
 
 #endif  // OS_CHROMEOS
+
+void ShowFolderUploadConfirmationDialog(
+    const base::FilePath& path,
+    base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)> callback,
+    std::vector<ui::SelectedFileInfo> selected_files,
+    content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
