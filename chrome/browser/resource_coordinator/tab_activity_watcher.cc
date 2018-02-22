@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -47,8 +48,12 @@ class TabActivityWatcher::WebContentsData
 
   explicit WebContentsData(content::WebContents* web_contents)
       : WebContentsObserver(web_contents) {
+    DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
     tab_metrics_.web_contents = web_contents;
     web_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+
+    // A navigation may already have completed if this is a replacement tab.
+    ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
   }
 
   // content::WebContentsObserver:
@@ -87,6 +92,10 @@ class TabActivityWatcher::WebContentsData
     TabActivityWatcher::GetInstance()->OnDidStopLoading(web_contents());
   }
   void OnVisibilityChanged(content::Visibility visibility) override {
+    // Ignore visibility changes while the WebContents is being destroyed.
+    if (web_contents()->IsBeingDestroyed())
+      return;
+
     // TODO(michaelpg): Consider tracking occluded tabs, not just background
     // tabs.
     if (visibility == content::Visibility::HIDDEN)
@@ -124,6 +133,24 @@ TabActivityWatcher::TabActivityWatcher()
 
 TabActivityWatcher::~TabActivityWatcher() = default;
 
+void TabActivityWatcher::TabInsertedAt(TabStripModel* tab_strip_model,
+                                       content::WebContents* contents,
+                                       int index,
+                                       bool foreground) {
+  // Ensure the WebContentsData is created to observe this WebContents since it
+  // may represent a newly created tab.
+  WebContentsData::CreateForWebContents(contents);
+}
+
+void TabActivityWatcher::TabReplacedAt(TabStripModel* tab_strip_model,
+                                       content::WebContents* old_contents,
+                                       content::WebContents* new_contents,
+                                       int index) {
+  // Ensure the WebContentsData is created to observe this WebContents since it
+  // likely hasn't been inserted into a tabstrip before.
+  WebContentsData::CreateForWebContents(new_contents);
+}
+
 void TabActivityWatcher::TabPinnedStateChanged(TabStripModel* tab_strip_model,
                                                content::WebContents* contents,
                                                int index) {
@@ -142,6 +169,7 @@ bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
 void TabActivityWatcher::OnWasHidden(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
+  // The tab may not be in the tabstrip if it's being moved.
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
@@ -175,8 +203,8 @@ void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
 
   DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
 
-  TabActivityWatcher::WebContentsData* web_contents_data =
-      TabActivityWatcher::WebContentsData::FromWebContents(web_contents);
+  WebContentsData* web_contents_data =
+      WebContentsData::FromWebContents(web_contents);
   DCHECK(web_contents_data);
 
   ukm::SourceId ukm_source_id = web_contents_data->ukm_source_id();
@@ -192,13 +220,6 @@ void TabActivityWatcher::ResetForTesting() {
 TabActivityWatcher* TabActivityWatcher::GetInstance() {
   CR_DEFINE_STATIC_LOCAL(TabActivityWatcher, instance, ());
   return &instance;
-}
-
-// static
-void TabActivityWatcher::WatchWebContents(content::WebContents* web_contents) {
-  // In incognito, the UKM service won't log anything.
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord())
-    TabActivityWatcher::WebContentsData::CreateForWebContents(web_contents);
 }
 
 }  // namespace resource_coordinator
