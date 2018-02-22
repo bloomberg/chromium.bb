@@ -7,8 +7,6 @@ source_set("omnibox") {
     "location_bar_controller.cc",
     "location_bar_controller.h",
     "location_bar_delegate.h",
-    "omnibox_clipping_feature.h",
-    "omnibox_clipping_feature.mm",
     "web_omnibox_edit_controller.cc",
     "web_omnibox_edit_controller.h",
   ]

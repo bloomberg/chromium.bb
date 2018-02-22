@@ -20,10 +20,6 @@ extern const char kCaptivePortalDescription[];
 extern const char kCaptivePortalMetricsName[];
 extern const char kCaptivePortalMetricsDescription[];
 
-// Title and description for the flag to enable Omnibox Clipping.
-extern const char kClippingTextfieldName[];
-extern const char kClippingTextfieldDescription[];
-
 // Title and description for the flag to enable Contextual Search.
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];
