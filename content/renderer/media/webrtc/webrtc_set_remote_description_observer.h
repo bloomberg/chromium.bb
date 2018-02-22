@@ -72,6 +72,8 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserver
 
     // The receivers at the time of the event.
     std::vector<WebRtcReceiverState> receiver_states;
+    // Check that the invariants for this structure hold.
+    void CheckInvariants() const;
 
     DISALLOW_COPY_AND_ASSIGN(States);
   };
