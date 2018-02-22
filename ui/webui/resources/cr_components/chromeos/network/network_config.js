@@ -86,6 +86,12 @@ Polymer({
       notify: true,
     },
 
+    /** Set to any error from the last configuration result. */
+    error: {
+      type: String,
+      notify: true,
+    },
+
     /** Set if |guid| is not empty once networkProperties are received. */
     propertiesReceived_: Boolean,
 
@@ -218,9 +224,6 @@ Polymer({
       type: Object,
       value: null,
     },
-
-    /** @private */
-    error_: String,
 
     /**
      * Object providing network type values for data binding. Note: Currently
@@ -361,7 +364,7 @@ Polymer({
     if (this.propertiesSent_)
       return;
     this.propertiesSent_ = true;
-    this.error_ = '';
+    this.error = '';
 
     var propertiesToSet = this.getPropertiesToSet_();
     if (this.getSource_() == CrOnc.Source.NONE) {
@@ -901,7 +904,7 @@ Polymer({
   /** @private */
   updateCertError_: function() {
     /** @const */ var certError = 'networkErrorNoUserCertificate';
-    if (this.error_ && this.error_ != certError)
+    if (this.error && this.error != certError)
       return;
 
     var requireCerts = (this.showEap_ && this.showEap_.UserCert) ||
@@ -1031,14 +1034,6 @@ Polymer({
   shareIsVisible_: function() {
     return this.getSource_() == CrOnc.Source.NONE &&
         (this.type == CrOnc.Type.WI_FI || this.type == CrOnc.Type.WI_MAX);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  connectingIsVisible_: function() {
-    return this.propertiesSent_ && !this.error_;
   },
 
   /**
@@ -1211,8 +1206,8 @@ Polymer({
   /** @private */
   setPropertiesCallback_: function() {
     this.setError_(this.getRuntimeError_());
-    if (this.error_) {
-      console.error('setProperties error: ' + this.guid + ': ' + this.error_);
+    if (this.error) {
+      console.error('setProperties error: ' + this.guid + ': ' + this.error);
       this.propertiesSent_ = false;
       return;
     }
@@ -1232,10 +1227,10 @@ Polymer({
    */
   createNetworkCallback_: function(guid) {
     this.setError_(this.getRuntimeError_());
-    if (this.error_) {
+    if (this.error) {
       console.error(
           'createNetworkError, type: ' + this.networkProperties.Type + ': ' +
-          'error: ' + this.error_);
+          'error: ' + this.error);
       this.propertiesSent_ = false;
       return;
     }
@@ -1287,38 +1282,11 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
-   * @return {!CrOnc.NetworkStateProperties}
-   * @private
-   */
-  getIconState_: function(properties) {
-    return {
-      ConnectionState: CrOnc.ConnectionState.CONNECTING,
-      GUID: properties.GUID || '',
-      Type: this.type,
-    };
-  },
-
-  /**
    * @param {string|undefined} error
    * @private
    */
   setError_: function(error) {
-    if (!error) {
-      this.error_ = '';
-      return;
-    }
-    this.error_ = error;
+    this.error = error || '';
   },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getError_: function() {
-    if (this.i18nExists(this.error_))
-      return this.i18n(this.error_);
-    return this.i18n('networkErrorUnknown');
-  }
 });
 })();
