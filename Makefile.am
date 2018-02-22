@@ -299,7 +299,8 @@ EXTRA_DIST += tests/scanner-test.sh			\
 	tests/data/small-server.h			\
 	tests/data/small-code-core.c			\
 	tests/data/small-client-core.h			\
-	tests/data/small-server-core.h
+	tests/data/small-server-core.h			\
+	tests/data/small-private-code.c
 
 tests/scanner-test.sh: $(top_builddir)/wayland-scanner
 
