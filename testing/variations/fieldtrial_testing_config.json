@@ -946,7 +946,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Expected",
+                    "name": "SuppressionExperiment",
                     "params": {
                         "contextual-search-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/contextual_search/test_ranker_model_20171109_short_words_v2.pb.bin",
                         "enable_bar_overlap_suppression": "true"
