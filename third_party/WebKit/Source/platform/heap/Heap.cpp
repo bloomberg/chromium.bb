@@ -249,8 +249,6 @@ void ThreadHeap::InvokeEphemeronIterationDoneCallbacks(Visitor* visitor) {
 }
 
 void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
-  DCHECK(thread_state_->IsInGC());
-
   CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(closure, callback);
 }
