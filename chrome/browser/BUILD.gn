@@ -2325,7 +2325,6 @@ jumbo_split_static_library("browser") {
       "sync/glue/synced_window_delegates_getter_android.h",
       "sync/profile_sync_service_android.cc",
       "sync/profile_sync_service_android.h",
-      "sync/sessions/sync_sessions_metrics_android.cc",
     ]
     deps += [
       ":client_discourse_context_proto",
@@ -4414,7 +4413,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/suggestions/SuggestionsEventReporterBridge.java",
       "../android/java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java",
       "../android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java",
-      "../android/java/src/org/chromium/chrome/browser/sync/SyncSessionsMetrics.java",
       "../android/java/src/org/chromium/chrome/browser/tab/Tab.java",
       "../android/java/src/org/chromium/chrome/browser/tab/TabWebContentsDelegateAndroid.java",
       "../android/java/src/org/chromium/chrome/browser/tabmodel/SingleTabModel.java",

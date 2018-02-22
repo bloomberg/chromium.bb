@@ -12,32 +12,13 @@
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/ntp_tiles/metrics.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
-#include "components/sync_sessions/sync_sessions_metrics.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
-
-void RecordSyncSessionMetrics(content::WebContents* contents) {
-  if (!contents)
-    return;
-  browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(contents->GetBrowserContext()));
-  if (!sync)
-    return;
-  sync_sessions::SessionsSyncManager* sessions =
-      static_cast<sync_sessions::SessionsSyncManager*>(
-          sync->GetSessionsSyncableService());
-  sync_sessions::SyncSessionsMetrics::RecordYoungestForeignTabAgeOnNTP(
-      sessions);
-}
 
 // This enum must match the numbering for NewTabPageVoiceAction in enums.xml.
 // Do not reorder or remove items, only add new items before VOICE_ACTION_MAX.
@@ -299,11 +280,6 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       has_emitted_(false),
       should_record_doodle_load_time_(true),
       during_startup_(!AfterStartupTaskUtils::IsBrowserStartupComplete()) {
-  // We record metrics about session data here because when this class typically
-  // emits metrics it is too late. This session data would theoretically have
-  // been used to populate the page, and we want to learn about its state when
-  // the NTP is being generated.
-  RecordSyncSessionMetrics(contents);
 }
 
 // content::WebContentsObserver override
