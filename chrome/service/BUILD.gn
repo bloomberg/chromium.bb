@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//printing/features/features.gni")
+import("//services/catalog/public/tools/catalog.gni")
 
 assert(!is_chromeos)
 
@@ -54,6 +55,7 @@ static_library("service") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
+    ":service_process_catalog_source",
     "//base",
     "//chrome:strings",
     "//chrome/common",
@@ -83,4 +85,16 @@ static_library("service") {
       "service_utility_process_host.h",
     ]
   }
+}
+
+catalog("service_process_catalog") {
+  embedded_services = [
+    "//content/public/app:browser_manifest",
+    "//content/public/app:utility_manifest",
+  ]
+}
+
+catalog_cpp_source("service_process_catalog_source") {
+  catalog = ":service_process_catalog"
+  generated_function_name = "CreateServiceProcessCatalog"
 }

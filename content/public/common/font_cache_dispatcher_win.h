@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "content/common/font_cache_win.mojom.h"
+#include "content/common/content_export.h"
+#include "content/public/common/font_cache_win.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -20,7 +21,7 @@ namespace content {
 // Dispatches messages used for font caching on Windows. This is needed because
 // Windows can't load fonts into its kernel cache in sandboxed processes. So the
 // sandboxed process asks the browser process to do this for it.
-class FontCacheDispatcher : public mojom::FontCacheWin {
+class CONTENT_EXPORT FontCacheDispatcher : public mojom::FontCacheWin {
  public:
   FontCacheDispatcher();
   ~FontCacheDispatcher() override;

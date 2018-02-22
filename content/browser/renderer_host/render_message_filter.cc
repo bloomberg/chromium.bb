@@ -67,7 +67,7 @@
 #include "url/origin.h"
 
 #if defined(OS_WIN)
-#include "content/common/font_cache_dispatcher_win.h"
+#include "content/public/common/font_cache_dispatcher_win.h"
 #endif
 
 #if defined(OS_POSIX)

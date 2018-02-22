@@ -24,7 +24,7 @@
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
-#include "content/common/font_cache_dispatcher_win.h"
+#include "content/public/common/font_cache_dispatcher_win.h"
 #endif
 
 namespace content {

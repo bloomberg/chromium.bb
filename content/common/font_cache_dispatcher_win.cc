@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/font_cache_dispatcher_win.h"
+#include "content/public/common/font_cache_dispatcher_win.h"
 
 #include <map>
 #include <memory>

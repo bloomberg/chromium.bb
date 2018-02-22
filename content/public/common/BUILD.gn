@@ -146,6 +146,7 @@ jumbo_source_set("common_sources") {
     "file_chooser_file_info.h",
     "file_chooser_params.cc",
     "file_chooser_params.h",
+    "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",
     "injection_test_mac.h",
@@ -371,6 +372,10 @@ mojom("interfaces") {
     "webplugininfo.mojom",
     "window_container_type.mojom",
   ]
+
+  if (is_win) {
+    sources += [ "font_cache_win.mojom" ]
+  }
 
   public_deps = [
     ":resource_type_bindings",
