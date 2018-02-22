@@ -6998,12 +6998,14 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
 }
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
-TEST_F(SpdyNetworkTransactionTest, WebsocketOpensNewConnection) {
+
+TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunPreTestSetup();
 
   // First request opens up an HTTP/2 connection.
-  SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
   MockWrite writes1[] = {CreateMockWrite(req, 0)};
 
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -7016,7 +7018,7 @@ TEST_F(SpdyNetworkTransactionTest, WebsocketOpensNewConnection) {
                             arraysize(writes1));
   helper.AddData(&data1);
 
-  // Websocket request opens a new connection with HTTP/2 disabled.
+  // WebSocket request opens a new connection with HTTP/2 disabled.
   MockWrite writes2[] = {
       MockWrite("GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
@@ -7096,13 +7098,121 @@ TEST_F(SpdyNetworkTransactionTest, WebsocketOpensNewConnection) {
   rv = callback2.WaitForResult();
   ASSERT_THAT(rv, IsOk());
 
-  // HTTP/2 connection is still open, but Websocket request did not pool to it.
+  // HTTP/2 connection is still open, but WebSocket request did not pool to it.
   ASSERT_TRUE(spdy_session);
 
   base::RunLoop().RunUntilIdle();
   data1.Resume();
   helper.VerifyDataConsumed();
 }
+
+TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->enable_websocket_over_http2 = true;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+  helper.RunPreTestSetup();
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  SpdyHeaderBlock websocket_request_headers;
+  websocket_request_headers[kHttp2MethodHeader] = "CONNECT";
+  websocket_request_headers[kHttp2AuthorityHeader] = "www.example.org:443";
+  websocket_request_headers[kHttp2SchemeHeader] = "https";
+  websocket_request_headers[kHttp2PathHeader] = "/";
+  websocket_request_headers[kHttp2ProtocolHeader] = "websocket";
+  websocket_request_headers["origin"] = "http://www.example.org";
+  websocket_request_headers["sec-websocket-version"] = "13";
+  websocket_request_headers["sec-websocket-extensions"] =
+      "permessage-deflate; client_max_window_bits";
+
+  spdy_util_.UpdateWithStreamDestruction(1);
+  SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(websocket_request_headers), DEFAULT_PRIORITY, false));
+
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 2),
+      CreateMockWrite(websocket_request, 5),
+  };
+
+  SettingsMap settings;
+  settings[SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame websocket_response(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  MockRead reads[] = {
+      CreateMockRead(settings_frame, 1),
+      CreateMockRead(resp1, 3),
+      CreateMockRead(body1, 4),
+      CreateMockRead(websocket_response, 6),
+      MockRead(ASYNC, 0, 7),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  helper.AddData(&data);
+
+  TestCompletionCallback callback1;
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  int rv = trans1.Start(&request_, callback1.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback1.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans1.GetResponseInfo();
+  ASSERT_TRUE(response->headers);
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(&trans1, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED, SocketTag());
+  base::WeakPtr<SpdySession> spdy_session =
+      helper.session()->spdy_session_pool()->FindAvailableSession(
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ true, log_);
+  ASSERT_TRUE(spdy_session);
+  EXPECT_TRUE(spdy_session->support_websocket());
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("wss://www.example.org/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(request_.url)
+                  .Equals(HostPortPair::FromURL(request2.url)));
+  request2.extra_headers.SetHeader("Origin", "http://www.example.org");
+  request2.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+  // The following two headers must be removed by WebSocketHttp2HandshakeStream.
+  request2.extra_headers.SetHeader("Connection", "Upgrade");
+  request2.extra_headers.SetHeader("Upgrade", "websocket");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request2, callback2.callback(), log_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  ASSERT_TRUE(spdy_session);
+
+  base::RunLoop().RunUntilIdle();
+  helper.VerifyDataConsumed();
+}
+
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 }  // namespace net
