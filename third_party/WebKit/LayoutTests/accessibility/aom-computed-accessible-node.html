@@ -29,7 +29,7 @@ promise_test(async t => {
     const element = document.getElementById("button1");
     let computedAXNode1 = await getComputedAccessibleNode(element);
     let computedAXNode2 = await getComputedAccessibleNode(element);
-    assert_false(computedAXNode1 === computedAXNode2);
+    assert_true(computedAXNode1 === computedAXNode2);
 }, "Multiple calls to getComputedAccessibleNode will return the same node.");
 </script>
 

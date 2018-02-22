@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
+#include "core/dom/ComputedAccessibleNode.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/editing/Forward.h"
@@ -44,6 +45,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "third_party/WebKit/Source/core/dom/AXObjectCache.h"
 #include "third_party/WebKit/common/loader/prefetch_url_loader_service.mojom-blink.h"
 
 namespace service_manager {
@@ -54,6 +56,7 @@ namespace blink {
 
 class AssociatedInterfaceProvider;
 class Color;
+class ComputedAccessibleNode;
 class ContentSettingsClient;
 class Document;
 class Editor;
@@ -83,6 +86,7 @@ class PluginData;
 class ScriptController;
 class SpellChecker;
 class TextSuggestionController;
+class WebComputedAXTree;
 class WebFrameScheduler;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
@@ -313,6 +317,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Prefetch URLLoader service. May return nullptr.
   blink::mojom::blink::PrefetchURLLoaderService* PrefetchURLLoaderService();
 
+  ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID,
+                                                            WebComputedAXTree*);
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -377,6 +384,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IntRect remote_viewport_intersection_;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
+
+  // Used to keep track of which ComputedAccessibleNodes have already been
+  // instantiated in this frame to avoid constructing duplicates.
+  HeapHashMap<AXID, Member<ComputedAccessibleNode>> computed_node_mapping_;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
