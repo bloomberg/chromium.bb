@@ -10,32 +10,24 @@
 
 import json
 import optparse
-import os
 import re
-import subprocess
 import sys
 
 from core import results_dashboard
 
 
-def _GetMainRevision(commit_pos, build_dir):
+def _GetMainRevision(commit_pos):
   """Return revision to use as the numerical x-value in the perf dashboard.
   This will be used as the value of "rev" in the data passed to
   results_dashboard.SendResults.
   In order or priority, this function could return:
     1. The value of "got_revision_cp" in build properties.
-    3. An SVN number, git commit position, or git commit hash.
   """
-  if commit_pos is not None:
-    return int(re.search(r'{#(\d+)}', commit_pos).group(1))
-  # TODO(sullivan,qyearsley): Don't fall back to _GetRevision if it returns
-  # a git commit, since this should be a numerical revision. Instead, abort
-  # and fail.
-  return _GetRevision(os.path.dirname(os.path.abspath(build_dir)))
+  return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
 
 def _GetDashboardJson(options):
-  main_revision = _GetMainRevision(options.got_revision_cp, options.build_dir)
+  main_revision = _GetMainRevision(options.got_revision_cp)
   revisions = _GetPerfDashboardRevisionsWithProperties(
     options.got_webrtc_revision, options.got_v8_revision, options.version,
     options.git_revision, main_revision)
@@ -77,8 +69,7 @@ def _GetMachineGroup(options):
 
 def _GetDashboardHistogramData(options):
   revisions = {
-      '--chromium_commit_positions': _GetMainRevision(
-          options.got_revision_cp, options.build_dir),
+      '--chromium_commit_positions': _GetMainRevision(options.got_revision_cp),
       '--chromium_revisions': options.git_revision
   }
 
@@ -91,7 +82,7 @@ def _GetDashboardHistogramData(options):
   stripped_test_name = options.name.replace('.reference', '')
 
   return results_dashboard.MakeHistogramSetWithDiagnostics(
-      options.results_file, options.chromium_checkout_dir, stripped_test_name,
+      options.results_file, stripped_test_name,
       options.configuration_name, options.buildername, options.buildnumber,
       revisions, is_reference_build,
       perf_dashboard_machine_group=_GetMachineGroup(options))
@@ -102,9 +93,9 @@ def _CreateParser():
   parser = optparse.OptionParser()
   parser.add_option('--name')
   parser.add_option('--results-file')
+  parser.add_option('--tmp-dir')
   parser.add_option('--output-json-file')
   parser.add_option('--got-revision-cp')
-  parser.add_option('--build-dir')
   parser.add_option('--configuration-name')
   parser.add_option('--results-url')
   parser.add_option('--is-luci-builder', action='store_true', default=False)
@@ -118,7 +109,6 @@ def _CreateParser():
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')
   parser.add_option('--oauth-token-file')
-  parser.add_option('--chromium-checkout-dir')
   return parser
 
 
@@ -150,7 +140,7 @@ def main(args):
     if not results_dashboard.SendResults(
         dashboard_json,
         options.results_url,
-        options.build_dir,
+        options.tmp_dir,
         options.output_json_dashboard_url,
         send_as_histograms=options.send_as_histograms,
         oauth_token=oauth_token):
@@ -164,73 +154,6 @@ def main(args):
 
 if __name__ == '__main__':
   sys.exit(main((sys.argv[1:])))
-
-
-def _GetRevision(in_directory):
-  """Returns the SVN revision, git commit position, or git hash.
-
-  Args:
-    in_directory: A directory in the repository to be checked.
-
-  Returns:
-    An SVN revision as a string if the given directory is in a SVN repository,
-    or a git commit position number, or if that's not available, a git hash.
-    If all of that fails, an empty string is returned.
-  """
-  if not os.path.exists(os.path.join(in_directory, '.svn')):
-    if _IsGitDirectory(in_directory):
-      svn_rev = _GetGitCommitPosition(in_directory)
-      if svn_rev:
-        return svn_rev
-      return _GetGitRevision(in_directory)
-    else:
-      return ''
-
-
-def _IsGitDirectory(dir_path):
-  """Checks whether the given directory is in a git repository.
-
-  Args:
-    dir_path: The directory path to be tested.
-
-  Returns:
-    True if given directory is in a git repository, False otherwise.
-  """
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  with open(os.devnull, 'w') as devnull:
-    p = subprocess.Popen([git_exe, 'rev-parse', '--git-dir'],
-                         cwd=dir_path, stdout=devnull, stderr=devnull)
-    return p.wait() == 0
-
-
-# Regex matching git comment lines containing svn revision info.
-GIT_SVN_ID_RE = re.compile(r'^git-svn-id: .*@([0-9]+) .*$')
-# Regex for the master branch commit position.
-GIT_CR_POS_RE = re.compile(r'^Cr-Commit-Position: refs/heads/master@{#(\d+)}$')
-
-
-def _GetGitCommitPositionFromLog(log):
-  """Returns either the commit position or svn rev from a git log."""
-  # Parse from the bottom up, in case the commit message embeds the message
-  # from a different commit (e.g., for a revert).
-  for r in [GIT_CR_POS_RE, GIT_SVN_ID_RE]:
-    for line in reversed(log.splitlines()):
-      m = r.match(line.strip())
-      if m:
-        return m.group(1)
-  return None
-
-
-def _GetGitCommitPosition(dir_path):
-  """Extracts the commit position or svn revision number of the HEAD commit."""
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  p = subprocess.Popen(
-      [git_exe, 'log', '-n', '1', '--pretty=format:%B', 'HEAD'],
-      cwd=dir_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  (log, _) = p.communicate()
-  if p.returncode != 0:
-    return None
-  return _GetGitCommitPositionFromLog(log)
 
 
 def _GetPerfDashboardRevisionsWithProperties(
@@ -250,20 +173,3 @@ def _GetPerfDashboardRevisionsWithProperties(
     if not versions[key] or versions[key] == 'undefined':
       del versions[key]
   return versions
-
-
-def _GetGitRevision(in_directory):
-  """Returns the git hash tag for the given directory.
-
-  Args:
-    in_directory: The directory where git is to be run.
-
-  Returns:
-    The git SHA1 hash string.
-  """
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  p = subprocess.Popen(
-      [git_exe, 'rev-parse', 'HEAD'],
-      cwd=in_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  (stdout, _) = p.communicate()
-  return stdout.strip()
