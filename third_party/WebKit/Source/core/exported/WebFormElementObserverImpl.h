@@ -11,7 +11,7 @@
 #include "platform/heap/Member.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
-#include "public/web/modules/password_manager/WebFormElementObserver.h"
+#include "public/web/modules/autofill/WebFormElementObserver.h"
 
 namespace blink {
 

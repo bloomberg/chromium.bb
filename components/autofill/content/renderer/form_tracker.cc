@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
-#include "third_party/WebKit/public/web/modules/password_manager/WebFormElementObserver.h"
-#include "third_party/WebKit/public/web/modules/password_manager/WebFormElementObserverCallback.h"
+#include "third_party/WebKit/public/web/modules/autofill/WebFormElementObserver.h"
+#include "third_party/WebKit/public/web/modules/autofill/WebFormElementObserverCallback.h"
 #include "ui/base/page_transition_types.h"
 
 using blink::WebDocumentLoader;
