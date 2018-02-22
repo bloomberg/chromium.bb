@@ -23,6 +23,7 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/query_parser/query_parser.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
