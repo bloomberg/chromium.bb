@@ -17,15 +17,12 @@
 #include "base/sequence_token.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
-#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 namespace {
-
-constexpr size_t kNumWorkerThreads = 3;
 
 // Runs a callback on another thread.
 class RunCallbackThread : public SimpleThread {
@@ -43,27 +40,6 @@ class RunCallbackThread : public SimpleThread {
   const Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RunCallbackThread);
-};
-
-class SequenceCheckerTest : public testing::Test {
- protected:
-  SequenceCheckerTest() : pool_owner_(kNumWorkerThreads, "test") {}
-
-  void PostToSequencedWorkerPool(const Closure& callback,
-                                 const std::string& token_name) {
-    pool_owner_.pool()->PostNamedSequencedWorkerTask(token_name, FROM_HERE,
-                                                     callback);
-  }
-
-  void FlushSequencedWorkerPoolForTesting() {
-    pool_owner_.pool()->FlushForTesting();
-  }
-
- private:
-  MessageLoop message_loop_;  // Needed by SequencedWorkerPool to function.
-  SequencedWorkerPoolOwner pool_owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SequenceCheckerTest);
 };
 
 void ExpectCalledOnValidSequence(SequenceCheckerImpl* sequence_checker) {
@@ -93,25 +69,25 @@ void ExpectNotCalledOnValidSequence(SequenceCheckerImpl* sequence_checker) {
 
 }  // namespace
 
-TEST_F(SequenceCheckerTest, CallsAllowedOnSameThreadNoSequenceToken) {
+TEST(SequenceCheckerTest, CallsAllowedOnSameThreadNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 }
 
-TEST_F(SequenceCheckerTest, CallsAllowedOnSameThreadSameSequenceToken) {
+TEST(SequenceCheckerTest, CallsAllowedOnSameThreadSameSequenceToken) {
   ScopedSetSequenceTokenForCurrentThread
       scoped_set_sequence_token_for_current_thread(SequenceToken::Create());
   SequenceCheckerImpl sequence_checker;
   EXPECT_TRUE(sequence_checker.CalledOnValidSequence());
 }
 
-TEST_F(SequenceCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
+TEST(SequenceCheckerTest, CallsDisallowedOnDifferentThreadsNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   RunCallbackThread thread(
       Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)));
 }
 
-TEST_F(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
+TEST(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
   const SequenceToken sequence_token(SequenceToken::Create());
 
   ScopedSetSequenceTokenForCurrentThread
@@ -123,7 +99,7 @@ TEST_F(SequenceCheckerTest, CallsAllowedOnDifferentThreadsSameSequenceToken) {
                                 Unretained(&sequence_checker), sequence_token));
 }
 
-TEST_F(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
+TEST(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
   std::unique_ptr<SequenceCheckerImpl> sequence_checker;
 
   {
@@ -143,7 +119,7 @@ TEST_F(SequenceCheckerTest, CallsDisallowedOnSameThreadDifferentSequenceToken) {
   EXPECT_FALSE(sequence_checker->CalledOnValidSequence());
 }
 
-TEST_F(SequenceCheckerTest, DetachFromSequence) {
+TEST(SequenceCheckerTest, DetachFromSequence) {
   std::unique_ptr<SequenceCheckerImpl> sequence_checker;
 
   {
@@ -163,7 +139,7 @@ TEST_F(SequenceCheckerTest, DetachFromSequence) {
   }
 }
 
-TEST_F(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
+TEST(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
   SequenceCheckerImpl sequence_checker;
   sequence_checker.DetachFromSequence();
 
@@ -175,138 +151,32 @@ TEST_F(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
   EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
 }
 
-TEST_F(SequenceCheckerTest, SequencedWorkerPool_SameSequenceTokenValid) {
-  SequenceCheckerImpl sequence_checker;
-  sequence_checker.DetachFromSequence();
+TEST(SequenceCheckerMacroTest, Macros) {
+  auto scope = std::make_unique<ScopedSetSequenceTokenForCurrentThread>(
+      SequenceToken::Create());
+  SEQUENCE_CHECKER(my_sequence_checker);
 
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  FlushSequencedWorkerPoolForTesting();
-}
+  // Don't expect a DCHECK death when a SequenceChecker is used on the right
+  // sequence.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
 
-TEST_F(SequenceCheckerTest, SequencedWorkerPool_DetachSequenceTokenValid) {
-  SequenceCheckerImpl sequence_checker;
-  sequence_checker.DetachFromSequence();
+  scope.reset();
 
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  FlushSequencedWorkerPoolForTesting();
-
-  sequence_checker.DetachFromSequence();
-
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "B");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "B");
-  FlushSequencedWorkerPoolForTesting();
-}
-
-TEST_F(SequenceCheckerTest,
-       SequencedWorkerPool_DifferentSequenceTokensInvalid) {
-  SequenceCheckerImpl sequence_checker;
-  sequence_checker.DetachFromSequence();
-
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  FlushSequencedWorkerPoolForTesting();
-
-  PostToSequencedWorkerPool(
-      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)),
-      "B");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectNotCalledOnValidSequence, Unretained(&sequence_checker)),
-      "B");
-  FlushSequencedWorkerPoolForTesting();
-}
-
-TEST_F(SequenceCheckerTest,
-       SequencedWorkerPool_WorkerPoolAndSimpleThreadInvalid) {
-  SequenceCheckerImpl sequence_checker;
-  sequence_checker.DetachFromSequence();
-
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  FlushSequencedWorkerPoolForTesting();
-
-  EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
-}
-
-TEST_F(SequenceCheckerTest,
-       SequencedWorkerPool_TwoDifferentWorkerPoolsInvalid) {
-  SequenceCheckerImpl sequence_checker;
-  sequence_checker.DetachFromSequence();
-
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  PostToSequencedWorkerPool(
-      Bind(&ExpectCalledOnValidSequence, Unretained(&sequence_checker)), "A");
-  FlushSequencedWorkerPoolForTesting();
-
-  SequencedWorkerPoolOwner second_pool_owner(kNumWorkerThreads, "test2");
-  second_pool_owner.pool()->PostNamedSequencedWorkerTask(
-      "A", FROM_HERE,
-      base::BindOnce(&ExpectNotCalledOnValidSequence,
-                     base::Unretained(&sequence_checker)));
-  second_pool_owner.pool()->FlushForTesting();
-}
-
-namespace {
-
-// This fixture is a helper for unit testing the sequence checker macros as it
-// is not possible to inline ExpectDeathOnOtherSequence() and
-// ExpectNoDeathOnOtherSequenceAfterDetach() as lambdas since binding
-// |Unretained(&my_sequence_checker)| wouldn't compile on non-dcheck builds
-// where it won't be defined.
-class SequenceCheckerMacroTest : public SequenceCheckerTest {
- public:
-  SequenceCheckerMacroTest() = default;
-
-  void ExpectDeathOnOtherSequence() {
 #if DCHECK_IS_ON()
-    EXPECT_DCHECK_DEATH({
-      DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_) << "Error message.";
-    });
+  // Expect DCHECK death when used on a different sequence.
+  EXPECT_DCHECK_DEATH({
+    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
+  });
 #else
     // Happily no-ops on non-dcheck builds.
-    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_) << "Error message.";
+    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
 #endif
-  }
 
-  void ExpectNoDeathOnOtherSequenceAfterDetach() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_) << "Error message.";
-  }
+  DETACH_FROM_SEQUENCE(my_sequence_checker);
 
- protected:
-  SEQUENCE_CHECKER(my_sequence_checker_);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SequenceCheckerMacroTest);
-};
-
-}  // namespace
-
-TEST_F(SequenceCheckerMacroTest, Macros) {
-  PostToSequencedWorkerPool(
-      Bind(&SequenceCheckerMacroTest::ExpectDeathOnOtherSequence,
-           Unretained(this)),
-      "A");
-  FlushSequencedWorkerPoolForTesting();
-
-  DETACH_FROM_SEQUENCE(my_sequence_checker_);
-
-  PostToSequencedWorkerPool(
-      Bind(&SequenceCheckerMacroTest::ExpectNoDeathOnOtherSequenceAfterDetach,
-           Unretained(this)),
-      "A");
-  FlushSequencedWorkerPoolForTesting();
+  // Don't expect a DCHECK death when a SequenceChecker is used for the first
+  // time after having been detached.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
 }
 
 }  // namespace base

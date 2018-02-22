@@ -7,33 +7,19 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequence_token.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker_impl.h"
 
 namespace base {
 
 class SequenceCheckerImpl::Core {
  public:
-  Core()
-      : sequence_token_(SequenceToken::GetForCurrentThread()),
-        sequenced_worker_pool_token_(
-            SequencedWorkerPool::GetSequenceTokenForCurrentThread()) {
-    // SequencedWorkerPool doesn't use SequenceToken and code outside of
-    // SequencedWorkerPool doesn't set a SequencedWorkerPool token.
-    DCHECK(!sequence_token_.IsValid() ||
-           !sequenced_worker_pool_token_.IsValid());
-  }
+  Core() : sequence_token_(SequenceToken::GetForCurrentThread()) {}
 
   ~Core() = default;
 
   bool CalledOnValidSequence() const {
     if (sequence_token_.IsValid())
       return sequence_token_ == SequenceToken::GetForCurrentThread();
-
-    if (sequenced_worker_pool_token_.IsValid()) {
-      return sequenced_worker_pool_token_.Equals(
-          SequencedWorkerPool::GetSequenceTokenForCurrentThread());
-    }
 
     // SequenceChecker behaves as a ThreadChecker when it is not bound to a
     // valid sequence token.
@@ -43,11 +29,7 @@ class SequenceCheckerImpl::Core {
  private:
   SequenceToken sequence_token_;
 
-  // TODO(gab): Remove this when SequencedWorkerPool is deprecated in favor of
-  // TaskScheduler. crbug.com/622400
-  SequencedWorkerPool::SequenceToken sequenced_worker_pool_token_;
-
-  // Used when |sequenced_worker_pool_token_| and |sequence_token_| are invalid.
+  // Used when |sequence_token_| is invalid.
   ThreadCheckerImpl thread_checker_;
 };
 

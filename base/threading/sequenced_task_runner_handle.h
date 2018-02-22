@@ -24,10 +24,7 @@ class BASE_EXPORT SequencedTaskRunnerHandle {
   // a) A SequencedTaskRunner has been assigned to the current thread by
   //    instantiating a SequencedTaskRunnerHandle.
   // b) The current thread has a ThreadTaskRunnerHandle (which includes any
-  //    thread that has a MessageLoop associated with it), or
-  // c) The current thread is a worker thread belonging to a SequencedWorkerPool
-  //    *and* is currently running a sequenced task (note: not supporting
-  //    unsequenced tasks is intentional: https://crbug.com/618043#c4).
+  //    thread that has a MessageLoop associated with it).
   static bool IsSet();
 
   // Binds |task_runner| to the current thread.

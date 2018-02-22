@@ -88,8 +88,6 @@ static_library("test_support") {
     "scoped_task_environment.h",
     "sequenced_task_runner_test_template.cc",
     "sequenced_task_runner_test_template.h",
-    "sequenced_worker_pool_owner.cc",
-    "sequenced_worker_pool_owner.h",
     "simple_test_clock.cc",
     "simple_test_clock.h",
     "simple_test_tick_clock.cc",

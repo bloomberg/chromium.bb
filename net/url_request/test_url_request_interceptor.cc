@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"

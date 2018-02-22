@@ -41,7 +41,6 @@
 #include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -852,25 +851,12 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 }
 
 int BrowserMainLoop::PreCreateThreads() {
-  // SequencedWorkerPool shouldn't be enabled yet. It should be enabled below by
-  // either |parts_|->PreCreateThreads() or
-  // base::SequencedWorkerPool::EnableForProcess().
-  // TODO(fdoray): Uncomment this line.
-  // DCHECK(!base::SequencedWorkerPool::IsEnabled());
-
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
 
     result_code_ = parts_->PreCreateThreads();
   }
-
-  // Enable SequencedWorkerPool if |parts_|->PreCreateThreads() hasn't enabled
-  // it.
-  // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
-  // redirection experiment concludes https://crbug.com/622400.
-  if (!base::SequencedWorkerPool::IsEnabled())
-    base::SequencedWorkerPool::EnableForProcess();
 
   InitializeMemoryManagementComponent();
 
@@ -1038,8 +1024,6 @@ int BrowserMainLoop::CreateThreads() {
     base::TaskScheduler::GetInstance()->Start(
         *task_scheduler_init_params.get());
   }
-
-  base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   TRACE_EVENT_BEGIN1("startup", "BrowserMainLoop::CreateThreads:start",
                      "Thread", "BrowserThread::PROCESS_LAUNCHER");
