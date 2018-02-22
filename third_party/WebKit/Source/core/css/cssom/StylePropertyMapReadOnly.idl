@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Spec: https://drafts.css-houdini.org/css-typed-om-1/#the-stylepropertymap
 [
-    Exposed(Window CSSTypedOM,LayoutWorklet CSSTypedOM,PaintWorklet CSSPaintAPI)
+    RuntimeEnabled=CSSTypedOM,
+    Exposed=(Window,PaintWorklet)
 ] interface StylePropertyMapReadOnly {
+    iterable<DOMString, sequence<CSSStyleValue>>;
+    /* TODO: This should return (undefined or CSSStyleValue),
+       but IDL doesn't have anything like that yet. See:
+       https://github.com/heycam/webidl/issues/60 */
     [RaisesException] CSSStyleValue? get(DOMString property);
     [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);
-    iterable<DOMString, (CSSStyleValue or sequence<CSSStyleValue>)>;
+    readonly attribute long size;
 };

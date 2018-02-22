@@ -28,6 +28,10 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
   }
 }
 
+int FilteredComputedStylePropertyMap::size() {
+  return native_properties_.size() + custom_properties_.size();
+}
+
 const CSSValue* FilteredComputedStylePropertyMap::GetProperty(
     CSSPropertyID property_id) {
   if (!native_properties_.Contains(property_id))
