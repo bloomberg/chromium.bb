@@ -23,6 +23,10 @@
 // The bottom toolbar owned by this ViewController.
 @property(nonatomic, strong) UIView* bottomToolbar;
 
+// UIBarButtonItem to be used on a Navigation Controller to dismiss this
+// ViewController.
+@property(nonatomic, strong, readonly) UIBarButtonItem* dismissButton;
+
 // The ChromeTableViewController owned by this ViewController.
 @property(nonatomic, strong) ChromeTableViewController* tableViewController;
 
