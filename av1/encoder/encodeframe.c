@@ -4278,7 +4278,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_INTRABC
 
 #if CONFIG_HASH_ME
-  if (cpi->oxcf.pass != 1 && cpi->common.allow_screen_content_tools) {
+  if (cpi->oxcf.pass != 1 && av1_use_hash_me(cm)) {
     // add to hash table
     const int pic_width = cpi->source->y_crop_width;
     const int pic_height = cpi->source->y_crop_height;

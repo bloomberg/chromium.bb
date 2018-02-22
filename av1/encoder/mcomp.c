@@ -2630,9 +2630,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
 #if CONFIG_HASH_ME
   do {
-    if (!cpi->common.allow_screen_content_tools) {
-      break;
-    }
+    if (!av1_use_hash_me(&cpi->common)) break;
+
     // already single ME
     // get block size and original buffer of current block
     const int block_height = block_size_high[bsize];
@@ -2649,8 +2648,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         // for the hashMap
         hash_table *ref_frame_hash =
             intra ? &cpi->common.cur_frame->hash_table
-                  : get_ref_frame_hash_map(cpi,
-                                           x->e_mbd.mi[0]->mbmi.ref_frame[0]);
+                  : av1_get_ref_frame_hash_map(
+                        cpi, x->e_mbd.mi[0]->mbmi.ref_frame[0]);
 
         av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
                                  &hash_value2);
