@@ -2,7 +2,6 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--ActivityLogApiTest.TriggerEvent
 -AdsPageLoadMetricsObserverBrowserTest.DocOverwritesNavigation
 -AdsPageLoadMetricsObserverBrowserTest.SubresourceFilter
 -AppBackgroundPageNaClTest.BackgroundKeepaliveActive
@@ -262,8 +261,6 @@
 
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
--DeclarativeNetRequestBrowserTest.BlockRequests_Incognito/0
--DeclarativeNetRequestBrowserTest.BlockRequests_Incognito/1
 -DeclarativeNetRequestBrowserTest.RendererCacheCleared/0
 -DeclarativeNetRequestBrowserTest.RendererCacheCleared/1
 -DevToolsFrontendInWebRequestApiTest.HiddenRequests
@@ -272,12 +269,8 @@
 -ExtensionWebRequestApiTest.WebRequestBlocking
 -ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
 -ExtensionWebRequestApiTest.WebRequestDeclarative2
--ExtensionWebRequestApiTest.WebRequestDeclarativePermissionSpanning2
--ExtensionWebRequestApiTest.WebRequestDeclarativePermissionSplit1
--ExtensionWebRequestApiTest.WebRequestDeclarativePermissionSplit2
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
--ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 -ExtensionWebRequestApiTest.WebRequestWithWithheldPermissions
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/0
 -WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/1
