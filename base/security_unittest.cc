@@ -14,7 +14,7 @@
 #include <limits>
 #include <memory>
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"

@@ -11,7 +11,7 @@
 #include <new>
 #include <vector>
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/atomicops.h"
 #include "base/process/process_metrics.h"

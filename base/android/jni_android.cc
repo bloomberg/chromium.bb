@@ -12,7 +12,7 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
-#include "base/debug/debugging_flags.h"
+#include "base/debug/debugging_buildflags.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"

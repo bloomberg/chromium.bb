@@ -5,7 +5,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 
 #include "base/android/jni_string.h"
-#include "base/android/library_loader/anchor_functions_flags.h"
+#include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/android/library_loader/library_prefetcher.h"
 #include "base/at_exit.h"

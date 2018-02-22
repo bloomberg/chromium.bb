@@ -16,7 +16,7 @@ if (!is_android) {
 
     deps = [
       "//base",
-      "//base/allocator:features",
+      "//base/allocator:buildflags",
       "//chrome/test:test_support_ui",
       "//testing/gmock",
       "//testing/gtest",

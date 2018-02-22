@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/base_export.h"
 #include "base/threading/thread_checker.h"
 

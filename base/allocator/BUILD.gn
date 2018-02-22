@@ -264,8 +264,8 @@ if (use_allocator == "tcmalloc") {
   }
 }  # use_allocator == "tcmalloc"
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "USE_ALLOCATOR_SHIM=$use_allocator_shim" ]
 }
 

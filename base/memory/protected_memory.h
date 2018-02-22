@@ -17,7 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/protected_memory_flags.h"
+#include "base/memory/protected_memory_buildflags.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 

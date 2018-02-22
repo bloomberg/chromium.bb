@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/command_line.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"

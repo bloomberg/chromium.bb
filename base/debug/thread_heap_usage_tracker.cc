@@ -11,7 +11,7 @@
 #include <type_traits>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_local_storage.h"

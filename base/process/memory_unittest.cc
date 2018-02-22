@@ -11,7 +11,7 @@
 #include <limits>
 
 #include "base/allocator/allocator_check.h"
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/memory/aligned_memory.h"

@@ -1600,7 +1600,7 @@ jumbo_split_static_library("browser") {
     ":active_use_util",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
-    "//base/allocator:features",
+    "//base/allocator:buildflags",
     "//cc",
     "//chrome:extra_resources",
     "//chrome:resources",

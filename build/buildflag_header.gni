@@ -79,8 +79,8 @@
 #
 # Example
 #
-#   buildflag_header("foo_features") {
-#     header = "foo_features.h"
+#   buildflag_header("foo_buildflags") {
+#     header = "foo_buildflags.h"
 #
 #     flags = [
 #       # This uses the GN build flag enable_doom_melon as the definition.

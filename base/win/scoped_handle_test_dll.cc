@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/win/base_features.h"
+#include "base/win/base_win_buildflags.h"
 #include "base/win/current_module.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_handle_verifier.h"

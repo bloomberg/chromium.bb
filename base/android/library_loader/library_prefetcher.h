@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "base/android/library_loader/anchor_functions_flags.h"
+#include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"

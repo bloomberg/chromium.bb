@@ -13,7 +13,7 @@
 
 #include <utility>
 
-#include "base/cfi_flags.h"
+#include "base/cfi_buildflags.h"
 #include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "build/build_config.h"

@@ -180,13 +180,14 @@ def build_gn_with_ninja_manually(tempdir, options):
 
   write_buildflag_header_manually(
       root_gen_dir,
-      'base/synchronization/synchronization_flags.h',
+      'base/synchronization/synchronization_buildflags.h',
       {'ENABLE_MUTEX_PRIORITY_INHERITANCE': 'false'})
 
-  write_buildflag_header_manually(root_gen_dir, 'base/allocator/features.h',
+  write_buildflag_header_manually(root_gen_dir, 'base/allocator/buildflags.h',
       {'USE_ALLOCATOR_SHIM': 'true' if is_linux else 'false'})
 
-  write_buildflag_header_manually(root_gen_dir, 'base/debug/debugging_flags.h',
+  write_buildflag_header_manually(root_gen_dir,
+                                  'base/debug/debugging_buildflags.h',
       {
           'ENABLE_LOCATION_SOURCE': 'false',
           'ENABLE_PROFILING': 'false',
@@ -195,10 +196,10 @@ def build_gn_with_ninja_manually(tempdir, options):
       })
 
   write_buildflag_header_manually(root_gen_dir,
-                                  'base/memory/protected_memory_flags.h',
+                                  'base/memory/protected_memory_buildflags.h',
                                   { 'USE_LLD': 'false' })
 
-  write_buildflag_header_manually(root_gen_dir, 'base/cfi_flags.h',
+  write_buildflag_header_manually(root_gen_dir, 'base/cfi_buildflags.h',
       {
           'CFI_CAST_CHECK': 'false',
           'CFI_ICALL_CHECK': 'false',
@@ -219,7 +220,8 @@ def build_gn_with_ninja_manually(tempdir, options):
     ])
 
   if is_win:
-    write_buildflag_header_manually(root_gen_dir, 'base/win/base_features.h',
+    write_buildflag_header_manually(root_gen_dir,
+                                    'base/win/base_win_buildflags.h',
         {'SINGLE_MODULE_MODE_HANDLE_VERIFIER': 'true'})
 
     write_compiled_message(root_gen_dir,

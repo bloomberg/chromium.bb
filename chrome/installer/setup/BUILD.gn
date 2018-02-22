@@ -116,7 +116,7 @@ if (is_win) {
       ":lib",
       "//base",
       "//base:i18n",
-      "//base/allocator:features",
+      "//base/allocator:buildflags",
       "//base/test:test_support",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static/test:test_support",

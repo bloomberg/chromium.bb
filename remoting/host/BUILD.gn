@@ -766,7 +766,7 @@ if (enable_me2me_host) {
         "host_main.h",
       ]
       deps = [
-        "//base:debugging_flags",
+        "//base:debugging_buildflags",
       ]
     }
     if (is_mac) {

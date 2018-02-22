@@ -4,7 +4,7 @@
 
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"

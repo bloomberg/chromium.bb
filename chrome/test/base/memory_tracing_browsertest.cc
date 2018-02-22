@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/tracing.h"
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/run_loop.h"

@@ -8,14 +8,14 @@
 #include <cmath>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/atomicops.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler_flags.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {

@@ -59,7 +59,7 @@ component("embedder") {
   if (!is_ios) {
     # deps of ServiceManager::Main and related functionality.
     deps += [
-      "//base/allocator:features",
+      "//base/allocator:buildflags",
       "//components/tracing:startup_tracing",
       "//ui/base",
     ]
