@@ -1732,7 +1732,12 @@ Output.prototype = {
       return;
     }
 
-    // Prioritized hints.
+    // Add hints by priority.
+    if (node.restriction == chrome.automation.Restriction.DISABLED) {
+      // No hints here without further context such as form validation.
+      return;
+    }
+
     if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn)
       this.format_(node, '@sticky_mode_enabled', buff);
 

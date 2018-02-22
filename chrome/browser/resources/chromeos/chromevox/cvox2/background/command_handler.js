@@ -525,6 +525,7 @@ CommandHandler.onCommand = function(command) {
       var startNode = ChromeVoxState.instance.currentRange.start.node;
       var collapsedRange = cursors.Range.fromNode(startNode);
       new Output()
+          .withoutHints()
           .withRichSpeechAndBraille(
               collapsedRange, collapsedRange, Output.EventType.NAVIGATE)
           .onSpeechEnd(continueReading)
