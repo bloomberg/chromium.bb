@@ -72,6 +72,15 @@ void DownloadBestMatchingIcon(
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
       icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       Manifest::Icon::IconPurpose::ANY);
+  if (web_contents == nullptr || !icon_url.is_valid()) {
+    // If the icon url is invalid, it's better to give the information to
+    // developers in advance unlike when fetching or decoding fails. We already
+    // checked whether they are valid in renderer side. So, if the icon url is
+    // invalid, it's something wrong.
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(std::move(callback), std::string()));
+    return;
+  }
 
   std::vector<Manifest::Icon> copy_icons;
   for (const auto& icon : icons) {
@@ -85,14 +94,7 @@ void DownloadBestMatchingIcon(
       kPaymentAppMinimumIconSize,
       base::Bind(&OnIconFetched, web_contents, copy_icons,
                  base::Passed(std::move(callback))));
-  // If the icon url is invalid, it's better to give the information to
-  // developers in advance unlike when fetching or decoding fails.
-  // We already checked whether they are valid in renderer side. So, if the
-  // icon url is invalid, it's something wrong.
-  if (!can_download_icon) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(std::move(callback), std::string()));
-  }
+  DCHECK(can_download_icon);
 }
 
 WebContents* GetWebContentsFromProviderHostIds(
