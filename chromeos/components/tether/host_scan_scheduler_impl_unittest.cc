@@ -6,13 +6,14 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/components/tether/host_scanner.h"
+#include "chromeos/components/tether/fake_host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
@@ -30,41 +31,6 @@ namespace chromeos {
 namespace tether {
 
 namespace {
-
-class FakeHostScanner : public HostScanner {
- public:
-  FakeHostScanner()
-      : HostScanner(nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr),
-        num_scans_started_(0) {}
-  ~FakeHostScanner() override = default;
-
-  void StartScan() override {
-    is_scan_active_ = true;
-    num_scans_started_++;
-  }
-
-  void StopScan() {
-    is_scan_active_ = false;
-    NotifyScanFinished();
-  }
-
-  bool IsScanActive() override { return is_scan_active_; }
-
-  int num_scans_started() { return num_scans_started_; }
-
- private:
-  bool is_scan_active_ = false;
-  int num_scans_started_ = 0;
-};
 
 const char kEthernetServiceGuid[] = "ethernetServiceGuid";
 const char kWifiServiceGuid[] = "wifiServiceGuid";
@@ -196,13 +162,13 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
 
 TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
   host_scan_scheduler_->ScheduleScan();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   test_clock_->Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
@@ -214,19 +180,19 @@ TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
 TEST_F(HostScanSchedulerImplTest, ScanRequested) {
   // Begin scanning.
   RequestScan();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   // Should not begin a new scan while a scan is active.
   RequestScan();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   test_clock_->Advance(base::TimeDelta::FromSeconds(5));
   fake_host_scanner_->StopScan();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
   mock_timer_->Fire();
@@ -234,7 +200,7 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested) {
 
   // A new scan should be allowed once a scan is not active.
   RequestScan();
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 }
@@ -313,17 +279,17 @@ TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
   // When no Tether network is present, a scan should start when the default
   // network is disconnected.
   SetEthernetNetworkConnecting();
-  EXPECT_EQ(0, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnected();
-  EXPECT_EQ(0, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkDisconnected(std::string() /* default_service_path */);
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
@@ -332,22 +298,22 @@ TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
   // When Tether is present but disconnected, a scan should start when the
   // default network is disconnected.
   std::string tether_service_path = AddTetherNetworkState();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnecting();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnected();
-  EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkDisconnected(std::string() /* default_service_path */);
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
@@ -357,22 +323,22 @@ TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
   // Ethernet network becomes the default network and then disconnects.
   network_state_handler()->SetTetherNetworkStateConnecting(kTetherGuid);
 
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnecting();
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnected();
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkDisconnected(tether_service_path);
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
@@ -383,22 +349,22 @@ TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
   base::RunLoop().RunUntilIdle();
   network_state_handler()->SetTetherNetworkStateConnected(kTetherGuid);
 
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnecting();
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkConnected();
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   SetEthernetNetworkDisconnected(tether_service_path);
-  EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 }

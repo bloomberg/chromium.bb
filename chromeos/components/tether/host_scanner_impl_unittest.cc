@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/host_scanner.h"
+#include "chromeos/components/tether/host_scanner_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -181,9 +181,9 @@ CreateFakeScannedDeviceInfos(
 
 }  // namespace
 
-class HostScannerTest : public NetworkStateTest {
+class HostScannerImplTest : public NetworkStateTest {
  protected:
-  HostScannerTest()
+  HostScannerImplTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(4)),
         test_scanned_device_infos(CreateFakeScannedDeviceInfos(test_devices_)) {
   }
@@ -217,7 +217,7 @@ class HostScannerTest : public NetworkStateTest {
 
     test_clock_ = std::make_unique<base::SimpleTestClock>();
 
-    host_scanner_ = base::WrapUnique(new HostScanner(
+    host_scanner_ = base::WrapUnique(new HostScannerImpl(
         network_state_handler(), fake_tether_host_fetcher_.get(),
         fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
@@ -275,19 +275,19 @@ class HostScannerTest : public NetworkStateTest {
         fake_notification_presenter_->GetPotentialHotspotNotificationState());
 
     if (is_final_scan_result) {
-      HostScanner::HostScanResultEventType expected_event_type =
-          HostScanner::HostScanResultEventType::NO_HOSTS_FOUND;
+      HostScannerImpl::HostScanResultEventType expected_event_type =
+          HostScannerImpl::HostScanResultEventType::NO_HOSTS_FOUND;
       if (!scanned_device_infos_from_current_scan_.empty() &&
           expected_notification_state ==
               NotificationPresenter::PotentialHotspotNotificationState::
                   NO_HOTSPOT_NOTIFICATION_SHOWN) {
-        expected_event_type = HostScanner::HostScanResultEventType::
+        expected_event_type = HostScannerImpl::HostScanResultEventType::
             HOSTS_FOUND_BUT_NO_NOTIFICATION_SHOWN;
       } else if (scanned_device_infos_from_current_scan_.size() == 1) {
-        expected_event_type = HostScanner::HostScanResultEventType::
+        expected_event_type = HostScannerImpl::HostScanResultEventType::
             NOTIFICATION_SHOWN_SINGLE_HOST;
       } else if (scanned_device_infos_from_current_scan_.size() > 1) {
-        expected_event_type = HostScanner::HostScanResultEventType::
+        expected_event_type = HostScannerImpl::HostScanResultEventType::
             NOTIFICATION_SHOWN_MULTIPLE_HOSTS;
       }
       histogram_tester_.ExpectUniqueSample("InstantTethering.HostScanResult",
@@ -407,10 +407,10 @@ class HostScannerTest : public NetworkStateTest {
   base::HistogramTester histogram_tester_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HostScannerTest);
+  DISALLOW_COPY_AND_ASSIGN(HostScannerImplTest);
 };
 
-TEST_F(HostScannerTest, TestScan_ConnectingToExistingNetwork) {
+TEST_F(HostScannerImplTest, TestScan_ConnectingToExistingNetwork) {
   StartConnectingToWifiNetwork();
   EXPECT_TRUE(network_state_handler()->DefaultNetwork());
 
@@ -447,7 +447,7 @@ TEST_F(HostScannerTest, TestScan_ConnectingToExistingNetwork) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
-TEST_F(HostScannerTest, TestNotificationNotDisplayedMultipleTimes) {
+TEST_F(HostScannerImplTest, TestNotificationNotDisplayedMultipleTimes) {
   StartConnectingToWifiNetwork();
   EXPECT_TRUE(network_state_handler()->DefaultNetwork());
 
@@ -484,7 +484,7 @@ TEST_F(HostScannerTest, TestNotificationNotDisplayedMultipleTimes) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
-TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
+TEST_F(HostScannerImplTest, TestScan_ResultsFromAllDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -518,7 +518,7 @@ TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
-TEST_F(HostScannerTest, TestScan_ResultsFromNoDevices) {
+TEST_F(HostScannerImplTest, TestScan_ResultsFromNoDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -535,10 +535,10 @@ TEST_F(HostScannerTest, TestScan_ResultsFromNoDevices) {
 
   histogram_tester_.ExpectUniqueSample(
       "InstantTethering.HostScanResult",
-      HostScanner::HostScanResultEventType::NO_HOSTS_FOUND, 1);
+      HostScannerImpl::HostScanResultEventType::NO_HOSTS_FOUND, 1);
 }
 
-TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
+TEST_F(HostScannerImplTest, TestScan_ResultsFromSomeDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -568,7 +568,7 @@ TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
-TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
+TEST_F(HostScannerImplTest, TestScan_MultipleScanCallsDuringOperation) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -611,7 +611,7 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
 }
 
-TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
+TEST_F(HostScannerImplTest, TestScan_MultipleCompleteScanSessions) {
   // Start the first scan session.
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
