@@ -86,6 +86,12 @@ TEST_F('PrintPreviewUtilsUnitTest', 'PageRanges', function() {
                     pageRangeTextToPageRanges("-", null));
   assertRangesEqual([[1, 1000000000]],
                     pageRangeTextToPageRanges("-", 0));
+
+  // https://crbug.com/806165
+  assertRangesEqual([1, 2, 3, 1, 56],
+                    pageRangeTextToPageRanges("1\u30012\u30013\u30011\u300156", 100));
+  assertRangesEqual([1, 2, 3, 1, 56],
+                    pageRangeTextToPageRanges("1,2,3\u30011\u300156", 100));
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'InvalidPageRanges', function() {
@@ -101,6 +107,11 @@ TEST_F('PrintPreviewUtilsUnitTest', 'InvalidPageRanges', function() {
       pageRangeTextToPageRanges("1,2,56-40", 100));
   assertEquals(PageRangeStatus.LIMIT_ERROR,
       pageRangeTextToPageRanges("101-110", 100));
+
+  assertEquals(PageRangeStatus.SYNTAX_ERROR,
+      pageRangeTextToPageRanges("1\u30012\u30010\u300156", 100));
+  assertEquals(PageRangeStatus.SYNTAX_ERROR,
+      pageRangeTextToPageRanges("-1,1,2\u3001\u300156", 100));
 });
 
 TEST_F('PrintPreviewUtilsUnitTest', 'PageRangeTextToPageList', function() {
