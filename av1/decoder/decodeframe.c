@@ -917,14 +917,14 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
   sgrproj_info->ep = aom_read_literal(rb, SGRPROJ_PARAMS_BITS, ACCT_STR);
   const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
 
-  if (params->r1 == 0) {
+  if (params->r0 == 0) {
     sgrproj_info->xqd[0] = 0;
     sgrproj_info->xqd[1] =
         aom_read_primitive_refsubexpfin(
             rb, SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
             ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1, ACCT_STR) +
         SGRPROJ_PRJ_MIN1;
-  } else if (params->r2 == 0) {
+  } else if (params->r1 == 0) {
     sgrproj_info->xqd[0] =
         aom_read_primitive_refsubexpfin(
             rb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,

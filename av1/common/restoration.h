@@ -176,10 +176,10 @@ extern "C" {
 #endif
 
 typedef struct {
+  int r0;
+  int e0;
   int r1;
   int e1;
-  int r2;
-  int e2;
 } sgr_params_type;
 
 typedef struct {

@@ -431,10 +431,10 @@ static __m128i cross_sum_fast_odd_row(const int32_t *buf) {
 // The final filter for the FAST_SGR self-guided restoration. Computes a
 // weighted average across A, B with "cross sums" (see cross_sum_...
 // implementations above).
-static void final_filter_fast2(int32_t *dst, int dst_stride, const int32_t *A,
-                               const int32_t *B, int buf_stride,
-                               const void *dgd8, int dgd_stride, int width,
-                               int height, int highbd) {
+static void final_filter_fast(int32_t *dst, int dst_stride, const int32_t *A,
+                              const int32_t *B, int buf_stride,
+                              const void *dgd8, int dgd_stride, int width,
+                              int height, int highbd) {
   const int nb0 = 5;
   const int nb1 = 4;
 
@@ -486,7 +486,7 @@ static void final_filter_fast2(int32_t *dst, int dst_stride, const int32_t *A,
 
 void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
                                        int height, int dgd_stride,
-                                       int32_t *flt1, int32_t *flt2,
+                                       int32_t *flt0, int32_t *flt1,
                                        int flt_stride,
                                        const sgr_params_type *params,
                                        int bit_depth, int highbd) {
@@ -538,36 +538,36 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
     integral_images(dgd0, dgd_stride, width_ext, height_ext, Ctl, Dtl,
                     buf_stride);
 
-// Write to flt1 and flt2
+// Write to flt0 and flt1
 #if CONFIG_SKIP_SGR
   // If params->r == 0 we skip the corresponding filter. We only allow one of
   // the radii to be 0, as having both equal to 0 would be equivalent to
   // skipping SGR entirely.
-  assert(!(params->r1 == 0 && params->r2 == 0));
+  assert(!(params->r0 == 0 && params->r1 == 0));
 #if CONFIG_FAST_SGR
+  assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
   assert(params->r1 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-  assert(params->r2 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
-  if (params->r1 > 0) {
-    calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
-                 params->r1);
-    final_filter_fast2(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
-                       width, height, highbd);
+  if (params->r0 > 0) {
+    calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e0, bit_depth,
+                 params->r0);
+    final_filter_fast(flt0, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
+                      width, height, highbd);
   }
 
-  if (params->r2 > 0) {
-    calc_ab(A, B, C, D, width, height, buf_stride, params->e2, bit_depth,
-            params->r2);
-    final_filter(flt2, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
+  if (params->r1 > 0) {
+    calc_ab(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
+            params->r1);
+    final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                  height, highbd);
   }
 #else   // CONFIG_FAST_SGR
   for (int i = 0; i < 2; ++i) {
-    int r = i ? params->r2 : params->r1;
-    int e = i ? params->e2 : params->e1;
+    int r = i ? params->r1 : params->r0;
+    int e = i ? params->e1 : params->e0;
     if (r == 0) continue;
 
-    int32_t *flt = i ? flt2 : flt1;
+    int32_t *flt = i ? flt1 : flt0;
 
     assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
@@ -578,26 +578,26 @@ void av1_selfguided_restoration_sse4_1(const uint8_t *dgd8, int width,
 #endif  // CONFIG_FAST_SGR
 #else   // CONFIG_SKIP_SGR
 #if CONFIG_FAST_SGR
-  assert(params->r1 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
+  assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
   // r == 2 filter
-  assert(params->r1 == 2);
-  calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
-               params->r1);
-  final_filter_fast2(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
-                     width, height, highbd);
+  assert(params->r0 == 2);
+  calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e0, bit_depth,
+               params->r0);
+  final_filter_fast(flt0, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
+                    height, highbd);
 
   // r == 1 filter
-  assert(params->r2 == 1);
-  calc_ab(A, B, C, D, width, height, buf_stride, params->e2, bit_depth,
-          params->r2);
-  final_filter(flt2, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
+  assert(params->r1 == 1);
+  calc_ab(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
+          params->r1);
+  final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                height, highbd);
 #else   // CONFIG_FAST_SGR
   for (int i = 0; i < 2; ++i) {
-    int r = i ? params->r2 : params->r1;
-    int e = i ? params->e2 : params->e1;
-    int32_t *flt = i ? flt2 : flt1;
+    int r = i ? params->r1 : params->r0;
+    int e = i ? params->e1 : params->e0;
+    int32_t *flt = i ? flt1 : flt0;
 
     assert(r + 1 <= AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
@@ -614,17 +614,17 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
                                          const int *xqd, uint8_t *dst8,
                                          int dst_stride, int32_t *tmpbuf,
                                          int bit_depth, int highbd) {
-  int32_t *flt1 = tmpbuf;
-  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
+  int32_t *flt0 = tmpbuf;
+  int32_t *flt1 = flt0 + RESTORATION_TILEPELS_MAX;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
 #if CONFIG_SKIP_SGR
   const sgr_params_type *params = &sgr_params[eps];
-  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt1, flt2,
+  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt0, flt1,
                                     width, params, bit_depth, highbd);
   int xq[2];
   decode_xq(xqd, xq, params);
 #else   // CONFIG_SKIP_SGR
-  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt1, flt2,
+  av1_selfguided_restoration_sse4_1(dat8, width, height, stride, flt0, flt1,
                                     width, &sgr_params[eps], bit_depth, highbd);
   int xq[2];
   decode_xq(xqd, xq);
@@ -655,26 +655,26 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
       __m128i v_0 = _mm_slli_epi32(u_0, SGRPROJ_PRJ_BITS);
       __m128i v_1 = _mm_slli_epi32(u_1, SGRPROJ_PRJ_BITS);
 
-      if (params->r1 > 0) {
-        const __m128i f1_0 = _mm_sub_epi32(xx_loadu_128(&flt1[k]), u_0);
+      if (params->r0 > 0) {
+        const __m128i f1_0 = _mm_sub_epi32(xx_loadu_128(&flt0[k]), u_0);
         v_0 = _mm_add_epi32(v_0, _mm_mullo_epi32(xq0, f1_0));
 
-        const __m128i f1_1 = _mm_sub_epi32(xx_loadu_128(&flt1[k + 4]), u_1);
+        const __m128i f1_1 = _mm_sub_epi32(xx_loadu_128(&flt0[k + 4]), u_1);
         v_1 = _mm_add_epi32(v_1, _mm_mullo_epi32(xq0, f1_1));
       }
 
-      if (params->r2 > 0) {
-        const __m128i f2_0 = _mm_sub_epi32(xx_loadu_128(&flt2[k]), u_0);
+      if (params->r1 > 0) {
+        const __m128i f2_0 = _mm_sub_epi32(xx_loadu_128(&flt1[k]), u_0);
         v_0 = _mm_add_epi32(v_0, _mm_mullo_epi32(xq1, f2_0));
 
-        const __m128i f2_1 = _mm_sub_epi32(xx_loadu_128(&flt2[k + 4]), u_1);
+        const __m128i f2_1 = _mm_sub_epi32(xx_loadu_128(&flt1[k + 4]), u_1);
         v_1 = _mm_add_epi32(v_1, _mm_mullo_epi32(xq1, f2_1));
       }
 #else   // CONFIG_SKIP_SGR
-      const __m128i f1_0 = _mm_sub_epi32(xx_loadu_128(&flt1[k]), u_0);
-      const __m128i f2_0 = _mm_sub_epi32(xx_loadu_128(&flt2[k]), u_0);
-      const __m128i f1_1 = _mm_sub_epi32(xx_loadu_128(&flt1[k + 4]), u_1);
-      const __m128i f2_1 = _mm_sub_epi32(xx_loadu_128(&flt2[k + 4]), u_1);
+      const __m128i f1_0 = _mm_sub_epi32(xx_loadu_128(&flt0[k]), u_0);
+      const __m128i f2_0 = _mm_sub_epi32(xx_loadu_128(&flt1[k]), u_0);
+      const __m128i f1_1 = _mm_sub_epi32(xx_loadu_128(&flt0[k + 4]), u_1);
+      const __m128i f2_1 = _mm_sub_epi32(xx_loadu_128(&flt1[k + 4]), u_1);
 
       const __m128i v_0 = _mm_add_epi32(
           _mm_add_epi32(_mm_mullo_epi32(xq0, f1_0), _mm_mullo_epi32(xq1, f2_0)),

@@ -178,8 +178,8 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
 static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
                                     int src_stride, const uint8_t *dat8,
                                     int dat_stride, int use_highbitdepth,
-                                    int32_t *flt1, int flt1_stride,
-                                    int32_t *flt2, int flt2_stride, int *xqd
+                                    int32_t *flt0, int flt0_stride,
+                                    int32_t *flt1, int flt1_stride, int *xqd
 #if CONFIG_SKIP_SGR
                                     ,
                                     const sgr_params_type *params
@@ -202,11 +202,11 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
             (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
 #if CONFIG_SKIP_SGR
         int32_t v = u << SGRPROJ_PRJ_BITS;
-        if (params->r1 > 0) v += xq[0] * (flt1[i * flt1_stride + j] - u);
-        if (params->r2 > 0) v += xq[1] * (flt2[i * flt2_stride + j] - u);
+        if (params->r0 > 0) v += xq[0] * (flt0[i * flt0_stride + j] - u);
+        if (params->r1 > 0) v += xq[1] * (flt1[i * flt1_stride + j] - u);
 #else   // CONFIG_SKIP_SGR
-        const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
-        const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
+        const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+        const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
         const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
 #endif  // CONFIG_SKIP_SGR
         const int32_t e =
@@ -224,11 +224,11 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
             (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
 #if CONFIG_SKIP_SGR
         int32_t v = u << SGRPROJ_PRJ_BITS;
-        if (params->r1 > 0) v += xq[0] * (flt1[i * flt1_stride + j] - u);
-        if (params->r2 > 0) v += xq[1] * (flt2[i * flt2_stride + j] - u);
+        if (params->r0 > 0) v += xq[0] * (flt0[i * flt0_stride + j] - u);
+        if (params->r1 > 0) v += xq[1] * (flt1[i * flt1_stride + j] - u);
 #else   // CONFIG_SKIP_SGR
-        const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
-        const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
+        const int32_t f1 = (int32_t)flt0[i * flt0_stride + j] - u;
+        const int32_t f2 = (int32_t)flt1[i * flt1_stride + j] - u;
         const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
 #endif  // CONFIG_SKIP_SGR
         const int32_t e =
@@ -244,8 +244,8 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
 #define USE_SGRPROJ_REFINEMENT_SEARCH 1
 static int64_t finer_search_pixel_proj_error(
     const uint8_t *src8, int width, int height, int src_stride,
-    const uint8_t *dat8, int dat_stride, int use_highbitdepth, int32_t *flt1,
-    int flt1_stride, int32_t *flt2, int flt2_stride, int start_step, int *xqd
+    const uint8_t *dat8, int dat_stride, int use_highbitdepth, int32_t *flt0,
+    int flt0_stride, int32_t *flt1, int flt1_stride, int start_step, int *xqd
 #if CONFIG_SKIP_SGR
     ,
     const sgr_params_type *params
@@ -253,12 +253,12 @@ static int64_t finer_search_pixel_proj_error(
 ) {
 #if CONFIG_SKIP_SGR
   int64_t err = get_pixel_proj_error(
-      src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth, flt1,
-      flt1_stride, flt2, flt2_stride, xqd, params);
+      src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth, flt0,
+      flt0_stride, flt1, flt1_stride, xqd, params);
 #else   // CONFIG_SKIP_SGR
   int64_t err = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                     dat_stride, use_highbitdepth, flt1,
-                                     flt1_stride, flt2, flt2_stride, xqd);
+                                     dat_stride, use_highbitdepth, flt0,
+                                     flt0_stride, flt1, flt1_stride, xqd);
 #endif  // CONFIG_SKIP_SGR
   (void)start_step;
 #if USE_SGRPROJ_REFINEMENT_SEARCH
@@ -268,7 +268,7 @@ static int64_t finer_search_pixel_proj_error(
   for (int s = start_step; s >= 1; s >>= 1) {
     for (int p = 0; p < 2; ++p) {
 #if CONFIG_SKIP_SGR
-      if ((params->r1 == 0 && p == 0) || (params->r2 == 0 && p == 1)) continue;
+      if ((params->r0 == 0 && p == 0) || (params->r1 == 0 && p == 1)) continue;
 #endif
       int skip = 0;
       do {
@@ -277,12 +277,12 @@ static int64_t finer_search_pixel_proj_error(
 #if CONFIG_SKIP_SGR
           err2 =
               get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                   dat_stride, use_highbitdepth, flt1,
-                                   flt1_stride, flt2, flt2_stride, xqd, params);
+                                   dat_stride, use_highbitdepth, flt0,
+                                   flt0_stride, flt1, flt1_stride, xqd, params);
 #else   // CONFIG_SKIP_SGR
           err2 = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                      dat_stride, use_highbitdepth, flt1,
-                                      flt1_stride, flt2, flt2_stride, xqd);
+                                      dat_stride, use_highbitdepth, flt0,
+                                      flt0_stride, flt1, flt1_stride, xqd);
 #endif  // CONFIG_SKIP_SGR
           if (err2 > err) {
             xqd[p] += s;
@@ -302,12 +302,12 @@ static int64_t finer_search_pixel_proj_error(
 #if CONFIG_SKIP_SGR
           err2 =
               get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                   dat_stride, use_highbitdepth, flt1,
-                                   flt1_stride, flt2, flt2_stride, xqd, params);
+                                   dat_stride, use_highbitdepth, flt0,
+                                   flt0_stride, flt1, flt1_stride, xqd, params);
 #else   // CONFIG_SKIP_SGR
           err2 = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                      dat_stride, use_highbitdepth, flt1,
-                                      flt1_stride, flt2, flt2_stride, xqd);
+                                      dat_stride, use_highbitdepth, flt0,
+                                      flt0_stride, flt1, flt1_stride, xqd);
 #endif  // CONFIG_SKIP_SGR
           if (err2 > err) {
             xqd[p] -= s;
@@ -328,8 +328,8 @@ static int64_t finer_search_pixel_proj_error(
 static void get_proj_subspace(const uint8_t *src8, int width, int height,
                               int src_stride, const uint8_t *dat8,
                               int dat_stride, int use_highbitdepth,
-                              int32_t *flt1, int flt1_stride, int32_t *flt2,
-                              int flt2_stride, int *xq
+                              int32_t *flt0, int flt0_stride, int32_t *flt1,
+                              int flt1_stride, int *xq
 #if CONFIG_SKIP_SGR
                               ,
                               const sgr_params_type *params
@@ -357,12 +357,12 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
             (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
 #if CONFIG_SKIP_SGR
         const double f1 =
-            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
+            (params->r0 > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
         const double f2 =
-            (params->r2 > 0) ? (double)flt2[i * flt2_stride + j] - u : 0;
+            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
 #else   // CONFIG_SKIP_SGR
-        const double f1 = (double)flt1[i * flt1_stride + j] - u;
-        const double f2 = (double)flt2[i * flt2_stride + j] - u;
+        const double f1 = (double)flt0[i * flt0_stride + j] - u;
+        const double f2 = (double)flt1[i * flt1_stride + j] - u;
 #endif  // CONFIG_SKIP_SGR
         H[0][0] += f1 * f1;
         H[1][1] += f2 * f2;
@@ -381,12 +381,12 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
             (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
 #if CONFIG_SKIP_SGR
         const double f1 =
-            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
+            (params->r0 > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
         const double f2 =
-            (params->r2 > 0) ? (double)flt2[i * flt2_stride + j] - u : 0;
+            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
 #else   // CONFIG_SKIP_SGR
-        const double f1 = (double)flt1[i * flt1_stride + j] - u;
-        const double f2 = (double)flt2[i * flt2_stride + j] - u;
+        const double f1 = (double)flt0[i * flt0_stride + j] - u;
+        const double f2 = (double)flt1[i * flt1_stride + j] - u;
 #endif  // CONFIG_SKIP_SGR
         H[0][0] += f1 * f1;
         H[1][1] += f2 * f2;
@@ -403,7 +403,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
   C[0] /= size;
   C[1] /= size;
 #if CONFIG_SKIP_SGR
-  if (params->r1 == 0) {
+  if (params->r0 == 0) {
     // H matrix is now only the scalar H[1][1]
     // C vector is now only the scalar C[1]
     Det = H[1][1];
@@ -413,7 +413,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
 
     xq[0] = 0;
     xq[1] = (int)rint(x[1] * (1 << SGRPROJ_PRJ_BITS));
-  } else if (params->r2 == 0) {
+  } else if (params->r1 == 0) {
     // H matrix is now only the scalar H[0][0]
     // C vector is now only the scalar C[0]
     Det = H[0][0];
@@ -444,11 +444,11 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
 
 #if CONFIG_SKIP_SGR
 void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
-  if (params->r1 == 0) {
+  if (params->r0 == 0) {
     xqd[0] = 0;
     xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xq[1], SGRPROJ_PRJ_MIN1,
                    SGRPROJ_PRJ_MAX1);
-  } else if (params->r2 == 0) {
+  } else if (params->r1 == 0) {
     xqd[0] = clamp(xq[0], SGRPROJ_PRJ_MIN0, SGRPROJ_PRJ_MAX0);
     xqd[1] = 0;
   } else {
@@ -469,19 +469,19 @@ void encode_xq(int *xq, int *xqd) {
 // Apply the self-guided filter across an entire restoration unit.
 static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
                       int width, int height, int dat_stride, int use_highbd,
-                      int bit_depth, int pu_width, int pu_height, int32_t *flt1,
-                      int32_t *flt2, int flt_stride) {
+                      int bit_depth, int pu_width, int pu_height, int32_t *flt0,
+                      int32_t *flt1, int flt_stride) {
   for (int i = 0; i < height; i += pu_height) {
     const int h = AOMMIN(pu_height, height - i);
+    int32_t *flt0_row = flt0 + i * flt_stride;
     int32_t *flt1_row = flt1 + i * flt_stride;
-    int32_t *flt2_row = flt2 + i * flt_stride;
     const uint8_t *dat8_row = dat8 + i * dat_stride;
 
     // Iterate over the stripe in blocks of width pu_width
     for (int j = 0; j < width; j += pu_width) {
       const int w = AOMMIN(pu_width, width - j);
-      av1_selfguided_restoration(dat8_row + j, w, h, dat_stride, flt1_row + j,
-                                 flt2_row + j, flt_stride, params, bit_depth,
+      av1_selfguided_restoration(dat8_row + j, w, h, dat_stride, flt0_row + j,
+                                 flt1_row + j, flt_stride, params, bit_depth,
                                  use_highbd);
     }
   }
@@ -491,8 +491,8 @@ static SgrprojInfo search_selfguided_restoration(
     const uint8_t *dat8, int width, int height, int dat_stride,
     const uint8_t *src8, int src_stride, int use_highbitdepth, int bit_depth,
     int pu_width, int pu_height, int32_t *rstbuf) {
-  int32_t *flt1 = rstbuf;
-  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
+  int32_t *flt0 = rstbuf;
+  int32_t *flt1 = flt0 + RESTORATION_TILEPELS_MAX;
   int ep, bestep = 0;
   int64_t besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
@@ -507,15 +507,15 @@ static SgrprojInfo search_selfguided_restoration(
     int exq[2];
 
     apply_sgr(params, dat8, width, height, dat_stride, use_highbitdepth,
-              bit_depth, pu_width, pu_height, flt1, flt2, flt_stride);
+              bit_depth, pu_width, pu_height, flt0, flt1, flt_stride);
     aom_clear_system_state();
 #if CONFIG_SKIP_SGR
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
-                      use_highbitdepth, flt1, flt_stride, flt2, flt_stride, exq,
+                      use_highbitdepth, flt0, flt_stride, flt1, flt_stride, exq,
                       params);
 #else   // CONFIG_SKIP_SGR
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
-                      use_highbitdepth, flt1, flt_stride, flt2, flt_stride,
+                      use_highbitdepth, flt0, flt_stride, flt1, flt_stride,
                       exq);
 #endif  // CONFIG_SKIP_SGR
     aom_clear_system_state();
@@ -523,12 +523,12 @@ static SgrprojInfo search_selfguided_restoration(
     encode_xq(exq, exqd, params);
     int64_t err = finer_search_pixel_proj_error(
         src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth,
-        flt1, flt_stride, flt2, flt_stride, 2, exqd, params);
+        flt0, flt_stride, flt1, flt_stride, 2, exqd, params);
 #else   // CONFIG_SKIP_SGR
     encode_xq(exq, exqd);
     int64_t err = finer_search_pixel_proj_error(
         src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth,
-        flt1, flt_stride, flt2, flt_stride, 2, exqd);
+        flt0, flt_stride, flt1, flt_stride, 2, exqd);
 #endif  // CONFIG_SKIP_SGR
     if (besterr == -1 || err < besterr) {
       bestep = ep;
@@ -550,12 +550,12 @@ static int count_sgrproj_bits(SgrprojInfo *sgrproj_info,
   int bits = SGRPROJ_PARAMS_BITS;
 #if CONFIG_SKIP_SGR
   const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
-  if (params->r1 > 0)
+  if (params->r0 > 0)
     bits += aom_count_primitive_refsubexpfin(
         SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
         ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0,
         sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0);
-  if (params->r2 > 0)
+  if (params->r1 > 0)
     bits += aom_count_primitive_refsubexpfin(
         SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
         ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1,
