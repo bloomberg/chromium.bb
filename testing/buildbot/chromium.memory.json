@@ -904,7 +904,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_ash_unittests",
         "swarming": {
@@ -936,7 +936,7 @@
       },
       {
         "args": [
-          "--mus",
+          "--enable-features=Mus",
           "--ozone-platform=headless",
           "--override-use-software-gl-for-tests"
         ],
@@ -997,7 +997,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_content_browsertests",
         "swarming": {
@@ -1014,7 +1014,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_content_unittests",
         "swarming": {
@@ -1239,7 +1239,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_unit_tests",
         "swarming": {

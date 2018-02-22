@@ -464,12 +464,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     ui_task_ = params.ui_task;
     created_main_parts_closure_ = params.created_main_parts_closure;
 
-    create_discardable_memory_ = params.create_discardable_memory;
-
-#if defined(USE_AURA)
-    env_mode_ = params.env_mode;
-#endif
-
 #if defined(OS_WIN)
     sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
@@ -705,10 +699,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #elif defined(OS_MACOSX)
     main_params.autorelease_pool = autorelease_pool_;
 #endif
-#if defined(USE_AURA)
-    main_params.env_mode = env_mode_;
-#endif
-    main_params.create_discardable_memory = create_discardable_memory_;
 
     return RunNamedProcessTypeMain(process_type, main_params, delegate_);
   }
@@ -764,12 +754,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   base::Closure* ui_task_ = nullptr;
 
   CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
-
-#if defined(USE_AURA)
-  aura::Env::Mode env_mode_ = aura::Env::Mode::LOCAL;
-#endif
-
-  bool create_discardable_memory_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

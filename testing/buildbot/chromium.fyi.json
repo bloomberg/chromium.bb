@@ -5898,7 +5898,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--mash",
+          "--enable-features=Mash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
         ],
         "name": "mash_ash_unittests",
@@ -5910,7 +5910,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_ash_unittests",
         "swarming": {
@@ -5920,7 +5920,7 @@
       },
       {
         "args": [
-          "--mash",
+          "--enable-features=Mash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mash.browser_tests.filter"
         ],
@@ -5934,7 +5934,7 @@
       },
       {
         "args": [
-          "--mus",
+          "--enable-features=Mus",
           "--ozone-platform=headless",
           "--override-use-software-gl-for-tests"
         ],
@@ -5970,7 +5970,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_content_browsertests",
         "swarming": {
@@ -6004,7 +6004,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_content_unittests",
         "swarming": {
@@ -6031,7 +6031,7 @@
       },
       {
         "args": [
-          "--mus"
+          "--enable-features=Mus"
         ],
         "name": "mus_unit_tests",
         "swarming": {

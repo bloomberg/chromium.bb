@@ -812,9 +812,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 
-// Enables out-of-process ash and mus (ui service). See //ash/README.md
-const char kMash[] = "mash";
-
 // Provides the name of the mojo service running in a mash utility process.
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
 // change or remove the flag please update platform2/crash_reporter.

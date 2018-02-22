@@ -133,7 +133,7 @@ bool AuraInit::InitializeResources(service_manager::Connector* connector,
                                    const std::string& resource_file,
                                    const std::string& resource_file_200,
                                    bool register_path_provider) {
-  // Resources may have already been initialized (e.g. when 'chrome --mash' is
+  // Resources may have already been initialized (e.g. when chrome with mash is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
     return true;

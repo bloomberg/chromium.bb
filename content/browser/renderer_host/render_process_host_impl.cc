@@ -99,7 +99,6 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/mime_registry_impl.h"
-#include "content/browser/mus_util.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -206,6 +205,7 @@
 #include "third_party/WebKit/public/common/page/launching_process_state.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
@@ -1361,7 +1361,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   InitializeChannelProxy();
 
-  if (!switches::IsMusHostingViz())
+  if (!base::FeatureList::IsEnabled(features::kMash))
     gpu_client_.reset(new GpuClient(GetID()));
 }
 
@@ -2685,10 +2685,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(ENABLE_IPC_FUZZER)
     switches::kIpcDumpDirectory,
     switches::kIpcFuzzerTestcase,
-#endif
-#if BUILDFLAG(ENABLE_MUS)
-    switches::kMus,
-    switches::kMusHostingViz,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,

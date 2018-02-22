@@ -1347,7 +1347,8 @@ void Shell::OnLocalStatePrefServiceInitialized(
     std::unique_ptr<::PrefService> pref_service) {
   DCHECK(!local_state_);
   // |pref_service| is null if can't connect to Chrome (as happens when
-  // running mash outside of chrome --mash and chrome isn't built).
+  // running mash outside of chrome --enable-features=Mash and chrome isn't
+  // built).
   if (!pref_service)
     return;
 

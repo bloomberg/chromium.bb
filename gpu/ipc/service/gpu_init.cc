@@ -19,7 +19,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/switches.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
@@ -328,8 +328,12 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo = switches::IsMusHostingViz() ||
+#if defined(OS_CHROMEOS)
+  params.using_mojo = base::FeatureList::IsEnabled(features::kMash) ||
                       command_line->HasSwitch(switches::kEnableDrmMojo);
+#else
+  params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);
+#endif
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif

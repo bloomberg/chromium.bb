@@ -28,7 +28,7 @@ Ash is transitioning to use the mus window server and gpu process, found in
 //services/ui. Ash continues to use aura, but aura is backed by mus. Code to
 support mus is found in the ash directory. There should be relatively few
 differences between the pure aura and the aura-mus versions of ash. Ash can by
-run in mus mode by passing the --mus command line flag.
+run in mus mode by passing the --enable-features=Mus command line flag.
 
 Ash is also transitioning to run as a mojo service in its own process. This
 means that code in chrome cannot call into ash directly, but must use the mojo
@@ -36,7 +36,7 @@ interfaces in //ash/public/interfaces.
 
 Out-of-process Ash is referred to as "mash" (mojo ash). In-process ash is
 referred to as "classic ash". Ash can run in either mode depending on the
---mash command line flag.
+--enable-features=Mash command line flag.
 
 In the few cases where chrome code is allowed to call into ash (e.g. code that
 will only ever run in classic ash) the #include lines have "// mash-ok"
@@ -45,15 +45,16 @@ have not yet been adapted to mash.
 
 Mustash Tests
 -----
-ash_unittests --mus runs the test suite in mus mode. ash_unittests --mash runs
-in mash mode. Some tests will fail because the underlying code has not yet been
-ported to work with mash. We use filter files to skip these tests, because it
-makes it easier to run the entire suite without the filter to see what passes.
+ash_unittests --enable-features=Mus runs the test suite in mus mode.
+ash_unittests --enable-features=Mash runs in mash mode. Some tests will fail
+because the underlying code has not yet been ported to work with mash. We use
+filter files to skip these tests, because it makes it easier to run the entire
+suite without the filter to see what passes.
 
 To simulate what the bots run (e.g. to check if you broke an existing test that
 works under mash) you can run:
 
-`ash_unittests --mash --test-launcher-filter-file=testing/buildbot/filters/ash_unittests_mash.filter`
+`ash_unittests --enable-features=Mash --test-launcher-filter-file=testing/buildbot/filters/ash_unittests_mash.filter`
 
 Any new feature you add (and its tests) should work under mash. If your test
 cannot pass under mash due to some dependency being broken you may add the test

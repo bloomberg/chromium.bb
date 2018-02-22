@@ -15,10 +15,6 @@
 #include <windows.h>
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 namespace base {
 namespace mac {
 class ScopedNSAutoreleasePool;
@@ -60,13 +56,6 @@ struct ContentMainParams {
   // Used by InProcessBrowserTest. If non-null this is Run() after
   // BrowserMainParts has been created and before PreEarlyInitialization().
   CreatedMainPartsClosure* created_main_parts_closure = nullptr;
-
-#if defined(USE_AURA)
-  aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
-#endif
-
-  // If true a DiscardableSharedMemoryManager is created.
-  bool create_discardable_memory = true;
 
 #if defined(OS_MACOSX)
   // The outermost autorelease pool to pass to main entry points.

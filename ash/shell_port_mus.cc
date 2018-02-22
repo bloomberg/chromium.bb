@@ -42,6 +42,7 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/forwarding_display_delegate.h"
@@ -210,9 +211,9 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMus::CreateAshWindowTreeHost(
   aura_init_params.display_init_params = std::move(display_params);
   aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
   aura_init_params.uses_real_accelerated_widget =
-      !::switches::IsMusHostingViz();
+      !base::FeatureList::IsEnabled(features::kMash);
 
-  if (!::switches::IsMusHostingViz()) {
+  if (!base::FeatureList::IsEnabled(features::kMash)) {
     if (init_params.mirroring_unified) {
       return std::make_unique<AshWindowTreeHostMusMirroringUnified>(
           std::move(aura_init_params), init_params.display_id,
@@ -278,7 +279,7 @@ ShellPortMus::CreateAcceleratorController() {
 
 void ShellPortMus::AddVideoDetectorObserver(
     viz::mojom::VideoDetectorObserverPtr observer) {
-  if (switches::IsMusHostingViz()) {
+  if (base::FeatureList::IsEnabled(features::kMash)) {
     // We may not have access to the connector in unit tests.
     if (!window_manager_->connector())
       return;

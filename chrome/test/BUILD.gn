@@ -324,11 +324,7 @@ static_library("browser_tests_runner") {
   ]
 
   if (is_chromeos) {
-    sources += [
-      "base/browser_tests_main_chromeos.cc",
-      "base/mash_browser_tests_main.cc",
-      "base/mash_browser_tests_main.h",
-    ]
+    sources += [ "base/browser_tests_main_chromeos.cc" ]
   } else {
     sources += [ "base/browser_tests_main.cc" ]
   }

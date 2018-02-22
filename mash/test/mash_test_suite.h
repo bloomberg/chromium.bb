@@ -36,6 +36,7 @@ class MashTestSuite : public base::TestSuite {
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<ui::FakeContextFactory> context_factory_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestSuite);
 };

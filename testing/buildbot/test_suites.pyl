@@ -981,14 +981,14 @@
       'test': 'ash_unittests',
       'override_isolate_target': 'ash_unittests',
       'args': [
-        '--mash',
+        '--enable-features=Mash',
         '--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter',
       ],
     },
     'mash_browser_tests': {
       'test': 'browser_tests',
       'args': [
-        '--mash',
+        '--enable-features=Mash',
         '--override-use-software-gl-for-tests',
       ],
       'swarming': {
@@ -1061,13 +1061,13 @@
   'linux_chromeos_rel_mus_specific_gtests': {
     'mus_ash_unittests': {
       'args': [
-        '--mus',
+        '--enable-features=Mus',
       ],
       'test': 'ash_unittests',
     },
     'mus_browser_tests': {
       'args': [
-        '--mus',
+        '--enable-features=Mus',
         '--ozone-platform=headless',
         '--override-use-software-gl-for-tests',
       ],
@@ -1078,13 +1078,13 @@
     },
     'mus_content_unittests': {
       'args': [
-        '--mus',
+        '--enable-features=Mus',
       ],
       'test': 'content_unittests',
     },
     'mus_content_browsertests': {
       'args': [
-        '--mus',
+        '--enable-features=Mus',
       ],
       'swarming': {
         'shards': 2,
@@ -1093,7 +1093,7 @@
     },
     'mus_unit_tests': {
       'args': [
-        '--mus',
+        '--enable-features=Mus',
       ],
       'test': 'unit_tests',
     },

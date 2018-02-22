@@ -13,6 +13,6 @@ NativeBrowserFrame* NativeBrowserFrameFactory::Create(
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
     return new BrowserFrameMus(browser_frame, browser_view);
 
-  NOTREACHED() << "For Ozone builds, only --mash launch is supported for now.";
+  NOTREACHED() << "For Ozone builds, only mash launch is supported for now.";
   return nullptr;
 }

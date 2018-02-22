@@ -23,7 +23,7 @@ void VerifyProcessGroupOnIOThread() {
 using MashServiceRegistryTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(MashServiceRegistryTest, AshAndUiInSameProcess) {
-  // Test only applies to --mash (out-of-process ash).
+  // Test only applies to mash (out-of-process ash).
   if (chromeos::GetAshConfig() != ash::Config::MASH)
     return;
 

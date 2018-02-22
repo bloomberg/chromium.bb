@@ -6,13 +6,8 @@
 #include "base/test/launcher/test_launcher.h"
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
-#include "chrome/test/base/mash_browser_tests_main.h"
 
 int main(int argc, char** argv) {
-  int exit_code = 0;
-  if (RunMashBrowserTests(argc, argv, &exit_code))
-    return exit_code;
-
   base::CommandLine::Init(argc, argv);
   size_t parallel_jobs = base::NumParallelJobs();
   if (parallel_jobs == 0U) {

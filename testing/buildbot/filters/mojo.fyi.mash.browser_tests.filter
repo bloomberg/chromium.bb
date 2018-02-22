@@ -1,4 +1,4 @@
-# These tests fail when running browser_tests --mash
+# These tests fail when running browser_tests with mash
 # http://crbug.com/678687
 
 # Unknown failure.
@@ -245,10 +245,10 @@
 -VirtualKeyboardStateTest.*
 -VirtualKeyboardWebContentTest.*
 
-# Also fails in --mus. http://crbug.com/755318.
+# Also fails with mus. http://crbug.com/755318.
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
 
-# Also fails in --mus. http://crbug.com/755328
+# Also fails with mus. http://crbug.com/755328
 -WebViewTests/WebViewFocusTest.*
 -WebViewTests/WebViewSizeTest.*
 -WebViewTests/WebViewTest.*

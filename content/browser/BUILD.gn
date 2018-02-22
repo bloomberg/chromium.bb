@@ -1152,8 +1152,6 @@ jumbo_source_set("browser") {
     "message_port_provider.cc",
     "mime_registry_impl.cc",
     "mime_registry_impl.h",
-    "mus_util.cc",
-    "mus_util.h",
     "net/browser_online_state_observer.cc",
     "net/browser_online_state_observer.h",
     "net/network_errors_listing_ui.cc",

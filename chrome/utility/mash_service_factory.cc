@@ -34,7 +34,7 @@ void RegisterMashService(
 }
 
 // Runs on the UI service main thread.
-// NOTE: For --mus the UI service is created at the //chrome/browser layer,
+// NOTE: For mus the UI service is created at the //chrome/browser layer,
 // not in //content. See ServiceManagerContext.
 std::unique_ptr<service_manager::Service> CreateUiService(
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_runner,

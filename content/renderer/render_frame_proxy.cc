@@ -26,7 +26,6 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/frame_owner_properties.h"
 #include "content/renderer/loader/web_url_request_util.h"
-#include "content/renderer/mash_util.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -44,7 +43,7 @@
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(USE_AURA)
 #include "content/renderer/mus/mus_embedded_frame.h"
@@ -241,7 +240,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   pending_resize_params_.screen_info = render_widget_->screen_info();
 
 #if defined(USE_AURA)
-  if (IsRunningWithMus()) {
+  if (features::IsMusEnabled()) {
     RendererWindowTreeClient* renderer_window_tree_client =
         RendererWindowTreeClient::Get(render_widget_->routing_id());
     // It's possible a MusEmbeddedFrame has already been scheduled for creation
@@ -466,7 +465,7 @@ void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
   crashed_ = false;
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!switches::IsMusHostingViz())
+  if (!base::FeatureList::IsEnabled(features::kMash))
     frame_sink_id_ = *params.frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
@@ -782,7 +781,7 @@ void RenderFrameProxy::OnMusEmbeddedFrameSurfaceChanged(
 void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.
-  DCHECK(switches::IsMusHostingViz());
+  DCHECK(base::FeatureList::IsEnabled(features::kMash));
   frame_sink_id_ = frame_sink_id;
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.

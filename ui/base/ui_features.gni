@@ -17,8 +17,8 @@ declare_args() {
   # Whether the message center should be included for displaying notifications.
   enable_message_center = is_win || is_mac || is_linux || is_chromeos
 
-  # Set to true to if mus (aka the UI service) is enabled. Use --mus (or --mash
-  # in chrome code) to start in mus/mash.
+  # Set to true to if mus (aka the UI service) is enabled. Use the features kMus
+  # (or kMash in chrome code) to start in mus/mash.
   enable_mus = is_chromeos
 
   # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)

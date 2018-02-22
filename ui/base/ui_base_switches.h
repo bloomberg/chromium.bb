@@ -46,11 +46,6 @@ UI_BASE_EXPORT extern const char kUseSkiaRenderer[];
 UI_BASE_EXPORT extern const char kDisallowNonExactResourceReuse[];
 UI_BASE_EXPORT extern const char kMangleLocalizedStrings[];
 
-#if defined(USE_AURA)
-UI_BASE_EXPORT extern const char kMus[];
-UI_BASE_EXPORT extern const char kMusHostingViz[];
-#endif
-
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

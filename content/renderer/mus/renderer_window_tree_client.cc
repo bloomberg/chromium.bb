@@ -14,11 +14,10 @@
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
-#include "content/renderer/mash_util.h"
 #include "content/renderer/mus/mus_embedded_frame.h"
 #include "content/renderer/mus/mus_embedded_frame_delegate.h"
 #include "content/renderer/render_frame_proxy.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 
 namespace content {
 
@@ -32,7 +31,7 @@ base::LazyInstance<ConnectionMap>::Leaky g_connections =
 
 // static
 void RendererWindowTreeClient::CreateIfNecessary(int routing_id) {
-  if (!IsRunningWithMus() || Get(routing_id))
+  if (!features::IsMusEnabled() || Get(routing_id))
     return;
   RendererWindowTreeClient* connection =
       new RendererWindowTreeClient(routing_id);
@@ -224,7 +223,7 @@ void RendererWindowTreeClient::OnFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // When mus is not hosting viz FrameSinkIds come from the browser, so we
   // ignore them here.
-  if (!switches::IsMusHostingViz())
+  if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
   for (MusEmbeddedFrame* embedded_frame : embedded_frames_) {
@@ -325,7 +324,7 @@ void RendererWindowTreeClient::OnWindowCursorChanged(ui::Id window_id,
 void RendererWindowTreeClient::OnWindowSurfaceChanged(
     ui::Id window_id,
     const viz::SurfaceInfo& surface_info) {
-  DCHECK(switches::IsMusHostingViz());
+  DCHECK(base::FeatureList::IsEnabled(features::kMash));
   for (MusEmbeddedFrame* embedded_frame : embedded_frames_) {
     if (embedded_frame->window_id_ == window_id) {
       embedded_frame->delegate_->OnMusEmbeddedFrameSurfaceChanged(surface_info);

@@ -20,7 +20,6 @@
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -70,6 +69,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -468,9 +468,9 @@ void WebContentsViewAura::InstallCreateHookForTests(
 
 WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                                          WebContentsViewDelegate* delegate)
-    : is_mus_browser_plugin_guest_(web_contents->GetBrowserPluginGuest() !=
-                                       nullptr &&
-                                   (switches::IsMusHostingViz())),
+    : is_mus_browser_plugin_guest_(
+          web_contents->GetBrowserPluginGuest() != nullptr &&
+          base::FeatureList::IsEnabled(features::kMash)),
       web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::kWebDragOperationNone),
@@ -482,8 +482,7 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
-      init_rwhv_with_null_parent_for_testing_(false) {
-}
+      init_rwhv_with_null_parent_for_testing_(false) {}
 
 void WebContentsViewAura::SetDelegateForTesting(
     WebContentsViewDelegate* delegate) {

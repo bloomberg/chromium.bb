@@ -81,9 +81,8 @@ include_rules = [
   "+third_party/libaom/av1_features.h",
   "+third_party/metrics_proto",
 
-  # Code under //ash runs out-of-process under mustash (chrome --mash) so it
-  # must be accessed via mojo interfaces in //ash/public/interfaces. See
-  # //ash/README.md.
+  # Code under //ash runs out-of-process in mash so it must be accessed via mojo
+  # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
   "+ash/components/quick_launch/public/mojom",

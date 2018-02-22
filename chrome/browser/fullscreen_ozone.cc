@@ -13,6 +13,6 @@ bool IsFullScreenMode() {
     return false;
   }
 
-  NOTREACHED() << "For Ozone builds, only --mash launch is supported for now.";
+  NOTREACHED() << "For Ozone builds, only mash launch is supported for now.";
   return false;
 }

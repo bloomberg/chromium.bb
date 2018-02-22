@@ -89,6 +89,7 @@ source_set("tests") {
   deps = [
     ":demo",
     "//base",
+    "//base/test:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/public/interfaces",

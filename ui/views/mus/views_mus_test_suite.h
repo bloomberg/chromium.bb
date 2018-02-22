@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/views/views_test_suite.h"
 
 namespace views {
@@ -22,6 +23,8 @@ class ViewsMusTestSuite : public ViewsTestSuite {
   void Initialize() override;
   void InitializeEnv() override;
   void DestroyEnv() override;
+
+  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<aura::Env> env_;
 

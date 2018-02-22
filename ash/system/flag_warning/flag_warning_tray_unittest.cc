@@ -22,10 +22,10 @@ TEST_F(FlagWarningTrayTest, Visibility) {
                               ->flag_warning_tray_for_testing();
   ASSERT_TRUE(tray);
 
-  // Warning should be visible in ash_unittests --mash, but not in regular
-  // ash_unittests. The warning does not show for Config::MUS because mus will
-  // roll out via experiment/Finch trial and showing the tray would reveal
-  // the experiment state to users.
+  // Warning should be visible in ash_unittests when mash is enabled, but not in
+  // regular ash_unittests. The warning does not show for Config::MUS because
+  // mus will roll out via experiment/Finch trial and showing the tray would
+  // reveal the experiment state to users.
   const bool is_mash = Shell::GetAshConfig() == Config::MASH;
   EXPECT_EQ(tray->visible(), is_mash);
 }

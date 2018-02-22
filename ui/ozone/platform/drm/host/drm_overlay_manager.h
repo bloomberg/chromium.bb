@@ -71,7 +71,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
   base::MRUCache<OverlaySurfaceCandidateList, OverlayValidationCacheValue>
       cache_;
   // The cache can be accessed from multiple threads in some cases (e.g. with
-  // --mus, it can be accessed from the UI thread, and the window-service
+  // mus, it can be accessed from the UI thread, and the window-service
   // thread.)
   // TODO(rjkroege): In the future (with --enable-viz), this code will not need
   // the lock, but will require farther refactoring.

@@ -10,6 +10,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -67,7 +68,7 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
       Shell::Get()->window_tree_host_manager()->mirror_window_controller();
   for (const auto& mirror :
        display_manager->software_mirroring_display_list()) {
-    if (::switches::IsMusHostingViz()) {
+    if (base::FeatureList::IsEnabled(features::kMash)) {
       // If mus is hosting viz, the window server handle mirrors internally.
       mirrors.push_back(mirror);
       metrics.push_back(GetMetricsForDisplay(mirror.id()));

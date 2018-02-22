@@ -12,10 +12,6 @@ namespace switches {
 UI_BASE_EXPORT bool IsLinkDisambiguationPopupEnabled();
 UI_BASE_EXPORT bool IsTouchDragDropEnabled();
 
-// Returns whether mus is hosting viz. Mus is hosting viz only if
-// --mus-hosting-viz is set.
-UI_BASE_EXPORT bool IsMusHostingViz();
-
 // Returns whether the touchable app context menu switch has been set. Prefer
 // features::IsTouchableAppContextMenuEnabled().
 UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();

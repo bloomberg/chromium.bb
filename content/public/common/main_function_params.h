@@ -13,10 +13,6 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 #if defined(OS_WIN)
 namespace sandbox {
 struct SandboxInterfaceInfo;
@@ -47,13 +43,6 @@ struct MainFunctionParams {
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   bool zygote_child = false;
 #endif
-
-#if defined(USE_AURA)
-  aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
-#endif
-
-  // Whether DiscardableSharedMemoryManager should be created.
-  bool create_discardable_memory = true;
 
   // TODO(sky): fix ownership of these tasks. MainFunctionParams should really
   // be passed as an r-value, at which point these can be unique_ptrs. For the

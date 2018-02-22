@@ -44,6 +44,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -114,7 +115,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ui::InitializeInputMethodForTesting();
 
-  if (config_ == Config::MUS && !::switches::IsMusHostingViz()) {
+  if (config_ == Config::MUS &&
+      !base::FeatureList::IsEnabled(features::kMash)) {
     ui::ContextFactory* context_factory = nullptr;
     ui::ContextFactoryPrivate* context_factory_private = nullptr;
     ui::InitializeContextFactoryForTests(false /* enable_pixel_output */,
@@ -264,7 +266,7 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
 void AshTestHelper::NotifyClientAboutAcceleratedWidgets() {
   if (config_ == Config::CLASSIC)
     return;
-  if (::switches::IsMusHostingViz())
+  if (base::FeatureList::IsEnabled(features::kMash))
     return;
   Shell* shell = Shell::Get();
   window_tree_client_setup_.NotifyClientAboutAcceleratedWidgets(

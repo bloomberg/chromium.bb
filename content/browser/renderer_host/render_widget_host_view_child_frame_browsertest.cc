@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/mus_util.h"
-#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
@@ -22,7 +22,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   // Only when mus hosts viz do we expect a RenderFrameProxy to provide the
   // FrameSinkId.
-  if (!switches::IsMusHostingViz())
+  if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
