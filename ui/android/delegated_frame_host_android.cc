@@ -80,7 +80,8 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
 
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   if (local_surface_id != surface_info_.id().local_surface_id()) {
     DestroyDelegatedContent();
     DCHECK(!content_layer_);
@@ -91,13 +92,15 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         viz::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);
     has_transparent_background_ = root_pass->has_transparent_background;
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                    std::move(hit_test_region_list));
 
     content_layer_ =
         CreateSurfaceLayer(surface_info_, !has_transparent_background_);
     view_->GetLayer()->AddChild(content_layer_);
   } else {
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
+                                    std::move(hit_test_region_list));
   }
   compositor_attach_until_frame_lock_.reset();
 }

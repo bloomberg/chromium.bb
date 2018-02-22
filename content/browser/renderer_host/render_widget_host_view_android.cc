@@ -1248,8 +1248,8 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     ack.has_damage = false;
     OnDidNotProduceFrame(ack);
   } else {
-    delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
-                                                 std::move(frame));
+    delegated_frame_host_->SubmitCompositorFrame(
+        local_surface_id, std::move(frame), std::move(hit_test_region_list));
     frame_evictor_->SwappedFrame(!host_->is_hidden());
     AcknowledgeBeginFrame(ack);
   }
