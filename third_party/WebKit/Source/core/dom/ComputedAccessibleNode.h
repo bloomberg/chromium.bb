@@ -11,12 +11,12 @@
 #include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "third_party/WebKit/Source/core/dom/Element.h"
+#include "third_party/WebKit/Source/core/frame/LocalFrame.h"
 #include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
 #include "third_party/WebKit/public/platform/WebComputedAXTree.h"
 
 namespace blink {
 
-class ScriptPromiseResolver;
 class ScriptState;
 
 class ComputedAccessibleNodePromiseResolver final
@@ -46,7 +46,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*);
+  static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*, LocalFrame*);
   virtual ~ComputedAccessibleNode();
 
   void Trace(Visitor*);
@@ -83,7 +83,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
-  ComputedAccessibleNode(AXID, WebComputedAXTree*);
+  ComputedAccessibleNode(AXID, WebComputedAXTree*, LocalFrame*);
 
   // content::ComputedAXTree callback.
   void OnSnapshotResponse(ScriptPromiseResolver*);
@@ -96,6 +96,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
   // This tree is owned by the RenderFrame.
   blink::WebComputedAXTree* tree_;
+  Member<LocalFrame> frame_;
 };
 
 }  // namespace blink

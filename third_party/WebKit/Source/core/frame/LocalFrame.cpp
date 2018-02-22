@@ -245,6 +245,7 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(console_);
   visitor->Trace(input_method_controller_);
   visitor->Trace(text_suggestion_controller_);
+  visitor->Trace(computed_node_mapping_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -1234,6 +1235,17 @@ bool LocalFrame::IsUsingDataSavingPreview() const {
   return previews_state &
          (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
           WebURLRequest::kNoScriptOn);
+}
+
+ComputedAccessibleNode* LocalFrame::GetOrCreateComputedAccessibleNode(
+    AXID ax_id,
+    WebComputedAXTree* tree) {
+  if (computed_node_mapping_.find(ax_id) == computed_node_mapping_.end()) {
+    ComputedAccessibleNode* node =
+        ComputedAccessibleNode::Create(ax_id, tree, this);
+    computed_node_mapping_.insert(ax_id, node);
+  }
+  return computed_node_mapping_.at(ax_id);
 }
 
 }  // namespace blink

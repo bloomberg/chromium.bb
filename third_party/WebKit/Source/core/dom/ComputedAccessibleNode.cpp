@@ -88,21 +88,20 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
   tree->ComputeAccessibilityTree();
 
   ComputedAccessibleNode* accessible_node =
-      ComputedAccessibleNode::Create(ax_id, tree);
+      local_frame->GetOrCreateComputedAccessibleNode(ax_id, tree);
   resolver_->Resolve(accessible_node);
 }
 
-ComputedAccessibleNode* ComputedAccessibleNode::Create(
-    AXID ax_id,
-    WebComputedAXTree* tree) {
-  // TODO(meredithl): Change to GetOrCreate and check cache for existing node
-  // with this ID.
-  return new ComputedAccessibleNode(ax_id, tree);
+ComputedAccessibleNode* ComputedAccessibleNode::Create(AXID ax_id,
+                                                       WebComputedAXTree* tree,
+                                                       LocalFrame* frame) {
+  return new ComputedAccessibleNode(ax_id, tree, frame);
 }
 
 ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
-                                               WebComputedAXTree* tree)
-    : ax_id_(ax_id), tree_(tree) {}
+                                               WebComputedAXTree* tree,
+                                               LocalFrame* frame)
+    : ax_id_(ax_id), tree_(tree), frame_(frame) {}
 
 ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
@@ -190,7 +189,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
   if (!tree_->GetParentIdForAXNode(ax_id_, &parent_ax_id)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(parent_ax_id, tree_);
+  return frame_->GetOrCreateComputedAccessibleNode(parent_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
@@ -198,7 +197,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
   if (!tree_->GetFirstChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(child_ax_id, tree_);
+  return frame_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
@@ -206,7 +205,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
   if (!tree_->GetLastChildIdForAXNode(ax_id_, &child_ax_id)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(child_ax_id, tree_);
+  return frame_->GetOrCreateComputedAccessibleNode(child_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
@@ -214,7 +213,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
   if (!tree_->GetPreviousSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
+  return frame_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
@@ -222,7 +221,7 @@ ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
   if (!tree_->GetNextSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
+  return frame_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
 }
 
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
@@ -279,6 +278,7 @@ const String ComputedAccessibleNode::GetStringAttribute(
 }
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {
+  visitor->Trace(frame_);
   ScriptWrappable::Trace(visitor);
 }
 
