@@ -174,9 +174,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            WebView.setWebContentsDebuggingEnabled(true);
-        }
+        WebView.setWebContentsDebuggingEnabled(true);
         setContentView(R.layout.activity_webview_browser);
         mUrlBar = (EditText) findViewById(R.id.url_field);
         mUrlBar.setOnKeyListener(new OnKeyListener() {
