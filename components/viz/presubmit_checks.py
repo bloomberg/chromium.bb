@@ -138,6 +138,34 @@ def CheckDoubleAngles(input_api, output_api, white_list,
     return [output_api.PresubmitError('Use >> instead of > >:', items=errors)]
   return []
 
+def CheckUniquePtr(input_api, output_api,
+                   white_list, black_list=None):
+  black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
+  source_file_filter = lambda x: input_api.FilterSourceFile(x,
+                                                            white_list,
+                                                            black_list)
+  errors = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    for line_number, line in f.ChangedContents():
+      # Disallow:
+      # return std::unique_ptr<T>(foo);
+      # bar = std::unique_ptr<T>(foo);
+      # But allow:
+      # return std::unique_ptr<T[]>(foo);
+      # bar = std::unique_ptr<T[]>(foo);
+      if re.search(r'(=|\breturn)\s*std::unique_ptr<.*?(?<!])>\([^)]+\)', line):
+        errors.append(output_api.PresubmitError(
+          ('%s:%d uses explicit std::unique_ptr constructor. ' +
+           'Use std::make_unique<T>() instead.') %
+          (f.LocalPath(), line_number)))
+      # Disallow:
+      # std::unique_ptr<T>()
+      if re.search(r'\bstd::unique_ptr<.*?>\(\)', line):
+        errors.append(output_api.PresubmitError(
+          '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
+          (f.LocalPath(), line_number)))
+  return errors
+
 def FindUnquotedQuote(contents, pos):
   match = re.search(r"(?<!\\)(?P<quote>\")", contents[pos:])
   return -1 if not match else match.start("quote") + pos
@@ -303,6 +331,7 @@ def RunAllChecks(input_api, output_api, white_list):
   results += CheckChangeLintsClean(input_api, output_api, white_list)
   results += CheckTodos(input_api, output_api)
   results += CheckDoubleAngles(input_api, output_api, white_list)
+  results += CheckUniquePtr(input_api, output_api, white_list)
   results += CheckNamespace(input_api, output_api)
   results += CheckMojoms(input_api, output_api)
   results += CheckForUseOfWrongClock(input_api, output_api, white_list)
