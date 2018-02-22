@@ -133,21 +133,6 @@ void V8Window::eventAttributeGetterCustom(
   V8SetReturnValue(info, js_event);
 }
 
-void V8Window::eventAttributeSetterCustom(
-    v8::Local<v8::Value> value,
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
-  v8::Isolate* isolate = info.GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
-                                 "Window", "event");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), impl,
-                                            exception_state)) {
-    return;
-  }
-
-  V8PrivateProperty::GetGlobalEvent(isolate).Set(info.Holder(), value);
-}
-
 void V8Window::frameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::ToImpl(info.Holder()));
