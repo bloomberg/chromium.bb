@@ -734,6 +734,7 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = laser_origin;
   controller_model.handedness = controller_->GetHandedness();
+  controller_model.recentered = controller_->GetRecentered();
   controller_model_ = controller_model;
 
   ReticleModel reticle_model;

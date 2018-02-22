@@ -30,6 +30,7 @@ struct ControllerModel {
   float opacity = 1.0f;
   bool quiescent = false;
   bool resting_in_viewport = false;
+  bool recentered = false;
   PlatformController::Handedness handedness = PlatformController::kRightHanded;
 };
 

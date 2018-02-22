@@ -657,6 +657,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   repositioner->AddBinding(VR_BIND_FUNC(
       gfx::Vector3dF, Model, model_, model->controller.laser_direction,
       Repositioner, repositioner.get(), set_laser_direction));
+  repositioner->AddBinding(
+      VR_BIND(bool, Model, model_, model->controller.recentered, Repositioner,
+              repositioner.get(), if (value) { view->Reset(); }));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
 
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
