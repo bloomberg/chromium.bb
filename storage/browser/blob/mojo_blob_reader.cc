@@ -33,7 +33,7 @@ MojoBlobReader::MojoBlobReader(const BlobDataHandle* handle,
   DCHECK(delegate_);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&MojoBlobReader::Start, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MojoBlobReader::Start, weak_factory_.GetWeakPtr()));
 }
 
 MojoBlobReader::~MojoBlobReader() {
@@ -48,8 +48,8 @@ void MojoBlobReader::Start() {
   }
 
   TRACE_EVENT_ASYNC_BEGIN0("Blob", "BlobReader::CountSize", this);
-  BlobReader::Status size_status = blob_reader_->CalculateSize(
-      base::Bind(&MojoBlobReader::DidCalculateSize, base::Unretained(this)));
+  BlobReader::Status size_status = blob_reader_->CalculateSize(base::BindOnce(
+      &MojoBlobReader::DidCalculateSize, base::Unretained(this)));
   switch (size_status) {
     case BlobReader::Status::NET_ERROR:
       TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::CountSize", this, "result",
@@ -175,7 +175,7 @@ void MojoBlobReader::ReadMore() {
   int bytes_read;
   BlobReader::Status read_status = blob_reader_->Read(
       buf.get(), static_cast<int>(num_bytes), &bytes_read,
-      base::Bind(&MojoBlobReader::DidRead, base::Unretained(this), false));
+      base::BindOnce(&MojoBlobReader::DidRead, base::Unretained(this), false));
   switch (read_status) {
     case BlobReader::Status::NET_ERROR:
       TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::ReadMore", this, "result",
@@ -210,7 +210,7 @@ void MojoBlobReader::DidRead(bool completed_synchronously, int num_bytes) {
   if (completed_synchronously) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&MojoBlobReader::ReadMore, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MojoBlobReader::ReadMore, weak_factory_.GetWeakPtr()));
   } else {
     ReadMore();
   }

@@ -48,8 +48,7 @@ void DidOpenFile(
     const base::Closure& on_close_callback) {
   if (!operation) {
     context->default_file_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&Destruct, base::Passed(&file)));
+        FROM_HERE, base::BindOnce(&Destruct, base::Passed(&file)));
     return;
   }
   callback.Run(std::move(file), on_close_callback);

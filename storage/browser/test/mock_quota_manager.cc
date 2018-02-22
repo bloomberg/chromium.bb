@@ -94,9 +94,9 @@ void MockQuotaManager::GetOriginsModifiedSince(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockQuotaManager::DidGetModifiedSince,
-                            weak_factory_.GetWeakPtr(), callback,
-                            base::Owned(origins_to_return), type));
+      FROM_HERE, base::BindOnce(&MockQuotaManager::DidGetModifiedSince,
+                                weak_factory_.GetWeakPtr(), callback,
+                                base::Owned(origins_to_return), type));
 }
 
 void MockQuotaManager::DeleteOriginData(
@@ -117,9 +117,9 @@ void MockQuotaManager::DeleteOriginData(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockQuotaManager::DidDeleteOriginData,
-                            weak_factory_.GetWeakPtr(), callback,
-                            blink::mojom::QuotaStatusCode::kOk));
+      FROM_HERE, base::BindOnce(&MockQuotaManager::DidDeleteOriginData,
+                                weak_factory_.GetWeakPtr(), callback,
+                                blink::mojom::QuotaStatusCode::kOk));
 }
 
 MockQuotaManager::~MockQuotaManager() = default;

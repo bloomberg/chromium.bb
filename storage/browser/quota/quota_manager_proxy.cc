@@ -27,9 +27,9 @@ void DidGetUsageAndQuota(
     int64_t quota) {
   if (!original_task_runner->RunsTasksInCurrentSequence()) {
     original_task_runner->PostTask(
-        FROM_HERE, base::Bind(&DidGetUsageAndQuota,
-                              base::RetainedRef(original_task_runner), callback,
-                              status, usage, quota));
+        FROM_HERE, base::BindOnce(&DidGetUsageAndQuota,
+                                  base::RetainedRef(original_task_runner),
+                                  callback, status, usage, quota));
     return;
   }
 
@@ -44,7 +44,7 @@ void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
   if (!io_thread_->BelongsToCurrentThread() &&
       io_thread_->PostTask(
           FROM_HERE,
-          base::Bind(&QuotaManagerProxy::RegisterClient, this, client))) {
+          base::BindOnce(&QuotaManagerProxy::RegisterClient, this, client))) {
     return;
   }
 
@@ -59,9 +59,8 @@ void QuotaManagerProxy::NotifyStorageAccessed(QuotaClient::ID client_id,
                                               blink::mojom::StorageType type) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::NotifyStorageAccessed, this, client_id,
-                   origin, type));
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::NotifyStorageAccessed,
+                                  this, client_id, origin, type));
     return;
   }
 
@@ -75,9 +74,8 @@ void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
                                               int64_t delta) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::NotifyStorageModified, this, client_id,
-                   origin, type, delta));
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::NotifyStorageModified,
+                                  this, client_id, origin, type, delta));
     return;
   }
 
@@ -90,7 +88,7 @@ void QuotaManagerProxy::NotifyOriginInUse(
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,
-        base::Bind(&QuotaManagerProxy::NotifyOriginInUse, this, origin));
+        base::BindOnce(&QuotaManagerProxy::NotifyOriginInUse, this, origin));
     return;
   }
 
@@ -102,9 +100,8 @@ void QuotaManagerProxy::NotifyOriginNoLongerInUse(
     const GURL& origin) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::NotifyOriginNoLongerInUse, this,
-                   origin));
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::NotifyOriginNoLongerInUse,
+                                  this, origin));
     return;
   }
   if (manager_)
@@ -117,9 +114,8 @@ void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
                                              bool enabled) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::SetUsageCacheEnabled, this,
-                   client_id, origin, type, enabled));
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::SetUsageCacheEnabled,
+                                  this, client_id, origin, type, enabled));
     return;
   }
   if (manager_)
@@ -133,9 +129,9 @@ void QuotaManagerProxy::GetUsageAndQuota(
     const UsageAndQuotaCallback& callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE, base::Bind(&QuotaManagerProxy::GetUsageAndQuota, this,
-                              base::RetainedRef(original_task_runner), origin,
-                              type, callback));
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::GetUsageAndQuota, this,
+                                  base::RetainedRef(original_task_runner),
+                                  origin, type, callback));
     return;
   }
   if (!manager_) {

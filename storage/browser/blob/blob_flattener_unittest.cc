@@ -206,7 +206,7 @@ TEST_F(BlobFlattenerTest, BlobWithSlices) {
     builder->AppendFutureFile(2u, 5u, 0);
     future_file_blob = context_->BuildBlob(
         std::move(builder),
-        base::Bind(&SaveBlobStatusAndFiles, &file_status, &file_handles));
+        base::BindOnce(&SaveBlobStatusAndFiles, &file_status, &file_handles));
   }
 
   BlobDataBuilder builder(kBlobUUID);

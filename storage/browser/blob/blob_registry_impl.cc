@@ -322,8 +322,8 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobUUIDs() {
     std::unique_ptr<BlobDataHandle> handle =
         context()->GetBlobDataFromUUID(blob_uuid);
     handle->RunOnConstructionBegin(
-        base::Bind(&BlobUnderConstruction::DependentBlobReady,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BlobUnderConstruction::DependentBlobReady,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -335,8 +335,8 @@ void BlobRegistryImpl::BlobUnderConstruction::DependentBlobReady(
     // iterating over |referenced_blob_uuids_|.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BlobUnderConstruction::ResolvedAllBlobDependencies,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BlobUnderConstruction::ResolvedAllBlobDependencies,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

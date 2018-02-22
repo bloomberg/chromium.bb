@@ -87,7 +87,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(result_callback, result_));
+          FROM_HERE, base::BindOnce(result_callback, result_));
     }
 
     void StartPostWriteValidation(
@@ -100,7 +100,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
       }
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(result_callback, result));
+          FROM_HERE, base::BindOnce(result_callback, result));
     }
 
    private:
@@ -155,7 +155,7 @@ class ScopedThreadStopper {
       // Give another chance for deleted streams to perform Close.
       base::RunLoop run_loop;
       thread_->task_runner()->PostTaskAndReply(
-          FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+          FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
       run_loop.Run();
       thread_->Stop();
     }
@@ -216,7 +216,7 @@ class CopyOrMoveOperationTestHelper {
     backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&ExpectOk));
+        base::BindOnce(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
     if (dest_type_ == storage::kFileSystemTypeTest) {
       TestFileSystemBackend* test_backend =
@@ -232,7 +232,7 @@ class CopyOrMoveOperationTestHelper {
     backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&ExpectOk));
+        base::BindOnce(&ExpectOk));
     scoped_task_environment_.RunUntilIdle();
 
     // Grant relatively big quota initially.
@@ -869,8 +869,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   // Call Cancel() later.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel,
-                 base::Unretained(&helper)));
+      base::BindOnce(&CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel,
+                     base::Unretained(&helper)));
 
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;

@@ -302,8 +302,8 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
     base::WeakPtr<QuotaAllocationTask> pending_request =
         memory_controller_.ReserveMemoryQuota(
             std::move(pending_copy_items),
-            base::Bind(&BlobStorageContext::OnEnoughSpaceForCopies,
-                       ptr_factory_.GetWeakPtr(), content->uuid_));
+            base::BindOnce(&BlobStorageContext::OnEnoughSpaceForCopies,
+                           ptr_factory_.GetWeakPtr(), content->uuid_));
     // Building state will be null if the blob is already finished.
     if (entry->building_state_)
       entry->building_state_->copy_quota_request = std::move(pending_request);
@@ -318,16 +318,16 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
         std::vector<BlobMemoryController::FileCreationInfo> empty_files;
         pending_request = memory_controller_.ReserveMemoryQuota(
             content->ReleasePendingTransportItems(),
-            base::Bind(&BlobStorageContext::OnEnoughSpaceForTransport,
-                       ptr_factory_.GetWeakPtr(), content->uuid_,
-                       base::Passed(&empty_files)));
+            base::BindOnce(&BlobStorageContext::OnEnoughSpaceForTransport,
+                           ptr_factory_.GetWeakPtr(), content->uuid_,
+                           base::Passed(&empty_files)));
         break;
       }
       case TransportQuotaType::FILE:
         pending_request = memory_controller_.ReserveFileQuota(
             content->ReleasePendingTransportItems(),
-            base::Bind(&BlobStorageContext::OnEnoughSpaceForTransport,
-                       ptr_factory_.GetWeakPtr(), content->uuid_));
+            base::BindOnce(&BlobStorageContext::OnEnoughSpaceForTransport,
+                           ptr_factory_.GetWeakPtr(), content->uuid_));
         break;
     }
 

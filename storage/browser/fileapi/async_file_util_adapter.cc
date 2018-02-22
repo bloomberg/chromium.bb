@@ -104,8 +104,8 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
 
   std::vector<DirectoryEntry> entries;
   if (error != base::File::FILE_OK) {
-    origin_runner->PostTask(
-        FROM_HERE, base::Bind(callback, error, entries, false /* has_more */));
+    origin_runner->PostTask(FROM_HERE, base::BindOnce(callback, error, entries,
+                                                      false /* has_more */));
     return;
   }
 
@@ -126,14 +126,14 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
 
     if (entries.size() == kResultChunkSize) {
       origin_runner->PostTask(
-          FROM_HERE, base::Bind(callback, base::File::FILE_OK, entries,
-                                true /* has_more */));
+          FROM_HERE, base::BindOnce(callback, base::File::FILE_OK, entries,
+                                    true /* has_more */));
       entries.clear();
     }
   }
-  origin_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::File::FILE_OK, entries,
-                            false /* has_more */));
+  origin_runner->PostTask(FROM_HERE,
+                          base::BindOnce(callback, base::File::FILE_OK, entries,
+                                         false /* has_more */));
 }
 
 void RunCreateOrOpenCallback(
@@ -143,7 +143,8 @@ void RunCreateOrOpenCallback(
   if (callback.IsCancelled()) {
     // If |callback| been cancelled, free |file| on the correct task runner.
     context->task_runner()->PostTask(
-        FROM_HERE, Bind([](base::File file) { file.Close(); }, Passed(&file)));
+        FROM_HERE,
+        BindOnce([](base::File file) { file.Close(); }, Passed(&file)));
     return;
   }
 
@@ -182,9 +183,9 @@ void AsyncFileUtilAdapter::EnsureFileExists(
   FileSystemOperationContext* context_ptr = context.release();
   const bool success = context_ptr->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      Bind(&EnsureFileExistsHelper::RunWork, Unretained(helper),
-           sync_file_util_.get(), base::Owned(context_ptr), url),
-      Bind(&EnsureFileExistsHelper::Reply, Owned(helper), callback));
+      BindOnce(&EnsureFileExistsHelper::RunWork, Unretained(helper),
+               sync_file_util_.get(), base::Owned(context_ptr), url),
+      BindOnce(&EnsureFileExistsHelper::Reply, Owned(helper), callback));
   DCHECK(success);
 }
 
@@ -213,9 +214,9 @@ void AsyncFileUtilAdapter::GetFileInfo(
   GetFileInfoHelper* helper = new GetFileInfoHelper;
   const bool success = context_ptr->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      Bind(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
-           sync_file_util_.get(), base::Owned(context_ptr), url),
-      Bind(&GetFileInfoHelper::ReplyFileInfo, Owned(helper), callback));
+      BindOnce(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
+               sync_file_util_.get(), base::Owned(context_ptr), url),
+      BindOnce(&GetFileInfoHelper::ReplyFileInfo, Owned(helper), callback));
   DCHECK(success);
 }
 
@@ -226,9 +227,10 @@ void AsyncFileUtilAdapter::ReadDirectory(
   FileSystemOperationContext* context_ptr = context.release();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
-      Bind(&ReadDirectoryHelper, sync_file_util_.get(),
-           base::Owned(context_ptr), url,
-           base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
+      BindOnce(&ReadDirectoryHelper, sync_file_util_.get(),
+               base::Owned(context_ptr), url,
+               base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+               callback));
   DCHECK(success);
 }
 
@@ -354,9 +356,9 @@ void AsyncFileUtilAdapter::CreateSnapshotFile(
   GetFileInfoHelper* helper = new GetFileInfoHelper;
   const bool success = context_ptr->task_runner()->PostTaskAndReply(
       FROM_HERE,
-      Bind(&GetFileInfoHelper::CreateSnapshotFile, Unretained(helper),
-           sync_file_util_.get(), base::Owned(context_ptr), url),
-      Bind(&GetFileInfoHelper::ReplySnapshotFile, Owned(helper), callback));
+      BindOnce(&GetFileInfoHelper::CreateSnapshotFile, Unretained(helper),
+               sync_file_util_.get(), base::Owned(context_ptr), url),
+      BindOnce(&GetFileInfoHelper::ReplySnapshotFile, Owned(helper), callback));
   DCHECK(success);
 }
 

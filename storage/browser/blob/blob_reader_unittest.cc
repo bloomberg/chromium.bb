@@ -250,11 +250,11 @@ class FakeFileStreamReader : public FileStreamReader {
     if (net_error_ == net::OK) {
       async_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(&FakeFileStreamReader::ReadImpl),
-                     base::Unretained(this), base::WrapRefCounted(buf),
-                     buf_length, done));
+          base::BindOnce(base::IgnoreResult(&FakeFileStreamReader::ReadImpl),
+                         base::Unretained(this), base::WrapRefCounted(buf),
+                         buf_length, done));
     } else {
-      async_task_runner_->PostTask(FROM_HERE, base::Bind(done, net_error_));
+      async_task_runner_->PostTask(FROM_HERE, base::BindOnce(done, net_error_));
     }
     return net::ERR_IO_PENDING;
   }
@@ -270,11 +270,12 @@ class FakeFileStreamReader : public FileStreamReader {
       }
     }
     if (net_error_ == net::OK) {
-      async_task_runner_->PostTask(FROM_HERE, base::Bind(size_callback, size_));
+      async_task_runner_->PostTask(FROM_HERE,
+                                   base::BindOnce(size_callback, size_));
     } else {
       async_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(size_callback, static_cast<int64_t>(net_error_)));
+          base::BindOnce(size_callback, static_cast<int64_t>(net_error_)));
     }
     return net::ERR_IO_PENDING;
   }
@@ -434,8 +435,8 @@ TEST_F(BlobReaderTest, BasicMemory) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   EXPECT_TRUE(reader_->IsInMemory());
   CheckSizeCalculatedSynchronously(kDataSize, size_result);
 
@@ -445,7 +446,7 @@ TEST_F(BlobReaderTest, BasicMemory) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kDataSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kDataSize, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -465,8 +466,8 @@ TEST_F(BlobReaderTest, BasicFile) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
@@ -476,7 +477,7 @@ TEST_F(BlobReaderTest, BasicFile) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kData.size(), static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -496,8 +497,8 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
 
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
@@ -508,7 +509,7 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kData.size(), static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -530,8 +531,8 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   EXPECT_FALSE(reader_->has_side_data());
@@ -542,7 +543,7 @@ TEST_F(BlobReaderTest, BasicDiskCache) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kData.size(), static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -567,8 +568,8 @@ TEST_F(BlobReaderTest, DiskCacheWithSideData) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   EXPECT_TRUE(reader_->has_side_data());
@@ -593,8 +594,8 @@ TEST_F(BlobReaderTest, BufferLargerThanMemory) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -603,7 +604,7 @@ TEST_F(BlobReaderTest, BufferLargerThanMemory) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kBufferSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kDataSize, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -621,8 +622,8 @@ TEST_F(BlobReaderTest, MemoryRange) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer = CreateBuffer(kReadLength);
@@ -632,7 +633,7 @@ TEST_F(BlobReaderTest, MemoryRange) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kDataSize - kSeekOffset, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kReadLength, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -648,8 +649,8 @@ TEST_F(BlobReaderTest, BufferSmallerThanMemory) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -658,7 +659,7 @@ TEST_F(BlobReaderTest, BufferSmallerThanMemory) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kBufferSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kBufferSize, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -667,7 +668,7 @@ TEST_F(BlobReaderTest, BufferSmallerThanMemory) {
   bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kBufferSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kBufferSize, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -692,8 +693,8 @@ TEST_F(BlobReaderTest, SegmentedBufferAndMemory) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kTotalSize, size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -704,7 +705,7 @@ TEST_F(BlobReaderTest, SegmentedBufferAndMemory) {
     int async_bytes_read = 0;
     EXPECT_EQ(BlobReader::Status::DONE,
               reader_->Read(buffer.get(), kBufferSize, &bytes_read,
-                            base::Bind(&SetValue<int>, &async_bytes_read)));
+                            base::BindOnce(&SetValue<int>, &async_bytes_read)));
     EXPECT_EQ(net::OK, reader_->net_error());
     EXPECT_EQ(kBufferSize, static_cast<size_t>(bytes_read));
     EXPECT_EQ(0, async_bytes_read);
@@ -730,8 +731,9 @@ TEST_F(BlobReaderTest, FileAsync) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
   CheckSizeNotCalculatedYet(size_result);
   base::RunLoop().RunUntilIdle();
@@ -743,7 +745,7 @@ TEST_F(BlobReaderTest, FileAsync) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kData.size(), static_cast<size_t>(async_bytes_read));
@@ -766,8 +768,9 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   CheckSizeNotCalculatedYet(size_result);
   EXPECT_FALSE(reader_->IsInMemory());
   base::RunLoop().RunUntilIdle();
@@ -779,7 +782,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kData.size(), static_cast<size_t>(async_bytes_read));
@@ -803,8 +806,8 @@ TEST_F(BlobReaderTest, DiskCacheAsync) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
@@ -813,7 +816,7 @@ TEST_F(BlobReaderTest, DiskCacheAsync) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_TRUE(delayed_read_entry->HasPendingReadCallbacks());
   delayed_read_entry->RunPendingReadCallbacks();
   EXPECT_EQ(net::OK, reader_->net_error());
@@ -844,8 +847,9 @@ TEST_F(BlobReaderTest, FileRange) {
   ExpectLocalFileCall(kPath, kTime, kOffset, reader.release());
 
   int size_result = -1;
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   base::RunLoop().RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer = CreateBuffer(kReadLength);
@@ -856,7 +860,7 @@ TEST_F(BlobReaderTest, FileRange) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kReadLength, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kReadLength, static_cast<size_t>(async_bytes_read));
@@ -880,8 +884,8 @@ TEST_F(BlobReaderTest, DiskCacheRange) {
   this->InitializeReader(std::move(b));
 
   int size_result = -1;
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
 
   scoped_refptr<net::IOBuffer> buffer = CreateBuffer(kReadLength);
   EXPECT_EQ(BlobReader::Status::DONE,
@@ -891,7 +895,7 @@ TEST_F(BlobReaderTest, DiskCacheRange) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kReadLength, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kReadLength, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);
@@ -945,8 +949,9 @@ TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   CheckSizeNotCalculatedYet(size_result);
   base::RunLoop().RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kTotalSize, size_result);
@@ -959,7 +964,7 @@ TEST_F(BlobReaderTest, FileSomeAsyncSegmentedOffsetsUnknownSizes) {
     int async_bytes_read = 0;
     EXPECT_EQ(BlobReader::Status::IO_PENDING,
               reader_->Read(buffer.get(), kBufferSize, &bytes_read,
-                            base::Bind(&SetValue<int>, &async_bytes_read)));
+                            base::BindOnce(&SetValue<int>, &async_bytes_read)));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(net::OK, reader_->net_error());
     EXPECT_EQ(0, bytes_read);
@@ -1005,8 +1010,9 @@ TEST_F(BlobReaderTest, MixedContent) {
 
   int size_result = -1;
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   CheckSizeNotCalculatedYet(size_result);
   base::RunLoop().RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kDataSize, size_result);
@@ -1017,7 +1023,7 @@ TEST_F(BlobReaderTest, MixedContent) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kDataSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(0, async_bytes_read);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::OK, reader_->net_error());
@@ -1036,15 +1042,16 @@ TEST_F(BlobReaderTest, StateErrors) {
 
   // Case: Blob handle is a nullptr.
   InitializeReader(nullptr);
-  EXPECT_EQ(BlobReader::Status::NET_ERROR,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::NET_ERROR,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
   EXPECT_EQ(BlobReader::Status::NET_ERROR, reader_->SetReadRange(0, 10));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
   scoped_refptr<net::IOBuffer> buffer = CreateBuffer(10);
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->Read(buffer.get(), 10, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
 
   // Case: Not calling CalculateSize before SetReadRange.
@@ -1055,7 +1062,7 @@ TEST_F(BlobReaderTest, StateErrors) {
   EXPECT_EQ(net::ERR_FAILED, reader_->net_error());
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->Read(buffer.get(), 10, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
 
   // Case: Not calling CalculateSize before Read.
   auto builder2 = std::make_unique<BlobDataBuilder>("uuid2");
@@ -1063,7 +1070,7 @@ TEST_F(BlobReaderTest, StateErrors) {
   InitializeReader(std::move(builder2));
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->Read(buffer.get(), 10, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
 }
 
 TEST_F(BlobReaderTest, FileErrorsSync) {
@@ -1080,8 +1087,9 @@ TEST_F(BlobReaderTest, FileErrorsSync) {
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
   ExpectLocalFileCall(kPath, kTime, 0, reader);
 
-  EXPECT_EQ(BlobReader::Status::NET_ERROR,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::NET_ERROR,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
 
   // Case: Error on read.
@@ -1090,8 +1098,8 @@ TEST_F(BlobReaderTest, FileErrorsSync) {
   this->InitializeReader(std::move(builder2));
   reader = new FakeFileStreamReader(kData);
   ExpectLocalFileCall(kPath, kTime, 0, reader);
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
@@ -1099,7 +1107,7 @@ TEST_F(BlobReaderTest, FileErrorsSync) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
 }
 
@@ -1118,8 +1126,9 @@ TEST_F(BlobReaderTest, FileErrorsAsync) {
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
   ExpectLocalFileCall(kPath, kTime, 0, reader);
 
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_EQ(net::OK, reader_->net_error());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, size_result);
@@ -1131,8 +1140,8 @@ TEST_F(BlobReaderTest, FileErrorsAsync) {
   this->InitializeReader(std::move(builder2));
   reader = new FakeFileStreamReader(kData);
   ExpectLocalFileCall(kPath, kTime, 0, reader);
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   reader->SetReturnError(net::ERR_FILE_NOT_FOUND);
   reader->SetAsyncRunner(base::ThreadTaskRunnerHandle::Get().get());
 
@@ -1141,7 +1150,7 @@ TEST_F(BlobReaderTest, FileErrorsAsync) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->Read(buffer.get(), kData.size(), &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, async_bytes_read);
@@ -1158,8 +1167,8 @@ TEST_F(BlobReaderTest, RangeError) {
   b->AppendData(kData);
   this->InitializeReader(std::move(b));
   int size_result = -1;
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   scoped_refptr<net::IOBuffer> buffer = CreateBuffer(kDataSize);
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->SetReadRange(kDataSize + 1, kReadLength));
@@ -1170,8 +1179,8 @@ TEST_F(BlobReaderTest, RangeError) {
   b2->AppendData(kData);
   this->InitializeReader(std::move(b2));
   size_result = -1;
-  EXPECT_EQ(BlobReader::Status::DONE,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(BlobReader::Status::DONE, reader_->CalculateSize(base::BindOnce(
+                                          &SetValue<int>, &size_result)));
   buffer = CreateBuffer(kDataSize + 1);
   EXPECT_EQ(BlobReader::Status::NET_ERROR,
             reader_->SetReadRange(0, kDataSize + 1));
@@ -1196,8 +1205,9 @@ TEST_F(BlobReaderTest, HandleBeforeAsyncCancel) {
   reader_.reset(new BlobReader(blob_handle_.get()));
   reader_->SetFileStreamProviderForTesting(base::WrapUnique(provider_));
   int size_result = -1;
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
   context_.CancelBuildingBlob(kUuid,
                               BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
@@ -1223,8 +1233,9 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
   reader_.reset(new BlobReader(blob_handle_.get()));
   reader_->SetFileStreamProviderForTesting(base::WrapUnique(provider_));
   int size_result = -1;
-  EXPECT_EQ(BlobReader::Status::IO_PENDING,
-            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_EQ(
+      BlobReader::Status::IO_PENDING,
+      reader_->CalculateSize(base::BindOnce(&SetValue<int>, &size_result)));
   EXPECT_FALSE(reader_->IsInMemory());
   future_data.Populate(base::make_span(kData.data(), kDataSize), 0);
   context_.NotifyTransportComplete(kUuid);
@@ -1236,7 +1247,7 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
   int async_bytes_read = 0;
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->Read(buffer.get(), kDataSize, &bytes_read,
-                          base::Bind(&SetValue<int>, &async_bytes_read)));
+                          base::BindOnce(&SetValue<int>, &async_bytes_read)));
   EXPECT_EQ(net::OK, reader_->net_error());
   EXPECT_EQ(kDataSize, static_cast<size_t>(bytes_read));
   EXPECT_EQ(0, async_bytes_read);

@@ -125,19 +125,19 @@ class BlobMemoryControllerTest : public testing::Test {
   void SaveMemoryRequest(bool success) { memory_quota_result_ = success; }
 
   BlobMemoryController::FileQuotaRequestCallback GetFileCreationCallback() {
-    return base::Bind(&BlobMemoryControllerTest::SaveFileCreationInfo,
-                      base::Unretained(this));
+    return base::BindOnce(&BlobMemoryControllerTest::SaveFileCreationInfo,
+                          base::Unretained(this));
   }
 
   BlobMemoryController::MemoryQuotaRequestCallback GetMemoryRequestCallback() {
-    return base::Bind(&BlobMemoryControllerTest::SaveMemoryRequest,
-                      base::Unretained(this));
+    return base::BindOnce(&BlobMemoryControllerTest::SaveMemoryRequest,
+                          base::Unretained(this));
   }
 
   BlobMemoryController::MemoryQuotaRequestCallback
   GetMemoryRequestCallbackToOutput(bool* output) {
-    return base::Bind(&BlobMemoryControllerTest::SaveMemoryRequestToOutput,
-                      base::Unretained(this), output);
+    return base::BindOnce(&BlobMemoryControllerTest::SaveMemoryRequestToOutput,
+                          base::Unretained(this), output);
   }
 
   void RunFileThreadTasks() {

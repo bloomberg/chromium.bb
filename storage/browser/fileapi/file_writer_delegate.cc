@@ -124,8 +124,8 @@ void FileWriterDelegate::Read() {
 
   if (bytes_read_ >= 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FileWriterDelegate::OnDataReceived,
-                              weak_factory_.GetWeakPtr(), bytes_read_));
+        FROM_HERE, base::BindOnce(&FileWriterDelegate::OnDataReceived,
+                                  weak_factory_.GetWeakPtr(), bytes_read_));
   } else {
     OnReadError(base::File::FILE_ERROR_FAILED);
   }
@@ -154,8 +154,8 @@ void FileWriterDelegate::Write() {
                                             weak_factory_.GetWeakPtr()));
   if (write_response > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FileWriterDelegate::OnDataWritten,
-                              weak_factory_.GetWeakPtr(), write_response));
+        FROM_HERE, base::BindOnce(&FileWriterDelegate::OnDataWritten,
+                                  weak_factory_.GetWeakPtr(), write_response));
   } else if (net::ERR_IO_PENDING != write_response) {
     OnWriteError(NetErrorToFileError(write_response));
   } else {

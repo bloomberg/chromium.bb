@@ -92,9 +92,8 @@ void LocalFileStreamReader::DidVerifyForOpen(
   stream_impl_.reset(new net::FileStream(task_runner_));
   const int result = stream_impl_->Open(
       file_path_, kOpenFlagsForRead,
-      base::Bind(&LocalFileStreamReader::DidOpenFileStream,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+      base::BindOnce(&LocalFileStreamReader::DidOpenFileStream,
+                     weak_factory_.GetWeakPtr(), callback));
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);
 }
@@ -107,8 +106,8 @@ void LocalFileStreamReader::DidOpenFileStream(
     return;
   }
   result = stream_impl_->Seek(
-      initial_offset_, base::Bind(&LocalFileStreamReader::DidSeekFileStream,
-                                  weak_factory_.GetWeakPtr(), callback));
+      initial_offset_, base::BindOnce(&LocalFileStreamReader::DidSeekFileStream,
+                                      weak_factory_.GetWeakPtr(), callback));
   if (result != net::ERR_IO_PENDING) {
     callback.Run(result);
   }

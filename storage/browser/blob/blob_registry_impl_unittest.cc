@@ -133,7 +133,7 @@ class BlobRegistryImplTest : public testing::Test {
   std::string UUIDFromBlob(blink::mojom::Blob* blob) {
     base::RunLoop loop;
     std::string received_uuid;
-    blob->GetInternalUUID(base::Bind(
+    blob->GetInternalUUID(base::BindOnce(
         [](base::Closure quit_closure, std::string* uuid_out,
            const std::string& uuid) {
           *uuid_out = uuid;
@@ -150,7 +150,7 @@ class BlobRegistryImplTest : public testing::Test {
 
   void WaitForBlobCompletion(BlobDataHandle* blob_handle) {
     base::RunLoop loop;
-    blob_handle->RunOnConstructionComplete(base::Bind(
+    blob_handle->RunOnConstructionComplete(base::BindOnce(
         [](const base::Closure& closure, BlobStatus status) { closure.Run(); },
         loop.QuitClosure()));
     loop.Run();

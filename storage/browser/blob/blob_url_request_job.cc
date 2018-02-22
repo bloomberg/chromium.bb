@@ -60,7 +60,7 @@ void BlobURLRequestJob::Start() {
   // Continue asynchronously.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }
 
 void BlobURLRequestJob::Kill() {
@@ -85,8 +85,8 @@ int BlobURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size) {
   int bytes_read = 0;
   BlobReader::Status read_status =
       blob_reader_->Read(dest, dest_size, &bytes_read,
-                         base::Bind(&BlobURLRequestJob::DidReadRawData,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&BlobURLRequestJob::DidReadRawData,
+                                        weak_factory_.GetWeakPtr()));
 
   switch (read_status) {
     case BlobReader::Status::NET_ERROR:
@@ -208,7 +208,7 @@ void BlobURLRequestJob::DidStart() {
 
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::CountSize", this, "uuid",
                            blob_handle_->uuid());
-  BlobReader::Status size_status = blob_reader_->CalculateSize(base::Bind(
+  BlobReader::Status size_status = blob_reader_->CalculateSize(base::BindOnce(
       &BlobURLRequestJob::DidCalculateSize, weak_factory_.GetWeakPtr()));
   switch (size_status) {
     case BlobReader::Status::NET_ERROR:
