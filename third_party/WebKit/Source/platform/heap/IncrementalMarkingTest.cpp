@@ -817,22 +817,26 @@ void SwapNoBarrier() {
 
 TEST(IncrementalMarkingTest, HeapHashSetInsert) {
   Insert<HeapHashSet<Member<Object>>>();
-  InsertNoBarrier<HeapHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Insert<HeapHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapHashSetCopy) {
   Copy<HeapHashSet<Member<Object>>>();
-  CopyNoBarrier<HeapHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Copy<HeapHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapHashSetMove) {
   Move<HeapHashSet<Member<Object>>>();
-  MoveNoBarrier<HeapHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Move<HeapHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapHashSetSwap) {
   Swap<HeapHashSet<Member<Object>>>();
-  SwapNoBarrier<HeapHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Swap<HeapHashSet<WeakMember<Object>>>();
 }
 
 class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
@@ -959,22 +963,26 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
 
 TEST(IncrementalMarkingTest, HeapLinkedHashSetInsert) {
   Insert<HeapLinkedHashSet<Member<Object>>>();
-  InsertNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Insert<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapLinkedHashSetCopy) {
   Copy<HeapLinkedHashSet<Member<Object>>>();
-  CopyNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Copy<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapLinkedHashSetMove) {
   Move<HeapLinkedHashSet<Member<Object>>>();
-  MoveNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Move<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
   Swap<HeapLinkedHashSet<Member<Object>>>();
-  SwapNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Move<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 // =============================================================================
@@ -985,7 +993,8 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
 
 TEST(IncrementalMarkingTest, HeapHashCountedSetInsert) {
   Insert<HeapHashCountedSet<Member<Object>>>();
-  InsertNoBarrier<HeapHashCountedSet<WeakMember<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Insert<HeapHashCountedSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapHashCountedSetSwap) {
@@ -1011,8 +1020,9 @@ TEST(IncrementalMarkingTest, HeapHashCountedSetSwap) {
     HeapHashCountedSet<WeakMember<Object>> container2;
     container2.insert(obj2);
     {
-      ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
-                                              {obj1, obj2});
+      // Weak references are strongified for the current cycle.
+      ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                            {obj1, obj2});
       container1.swap(container2);
     }
   }
@@ -1083,8 +1093,8 @@ TEST(IncrementalMarkingTest, HeapHashMapInsertWeakMember) {
   Object* obj2 = Object::Create();
   HeapHashMap<WeakMember<Object>, WeakMember<Object>> map;
   {
-    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
-                                            {obj1, obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     map.insert(obj1, obj2);
   }
 }
@@ -1094,7 +1104,8 @@ TEST(IncrementalMarkingTest, HeapHashMapInsertMemberWeakMember) {
   Object* obj2 = Object::Create();
   HeapHashMap<Member<Object>, WeakMember<Object>> map;
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     map.insert(obj1, obj2);
   }
 }
@@ -1104,7 +1115,8 @@ TEST(IncrementalMarkingTest, HeapHashMapInsertWeakMemberMember) {
   Object* obj2 = Object::Create();
   HeapHashMap<WeakMember<Object>, Member<Object>> map;
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     map.insert(obj1, obj2);
   }
 }
@@ -1183,8 +1195,8 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyWeakMemberWeakMember) {
   HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
-                                            {obj1, obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     EXPECT_TRUE(map1.Contains(obj1));
     HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2(map1);
     EXPECT_TRUE(map1.Contains(obj1));
@@ -1198,7 +1210,8 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyMemberWeakMember) {
   HeapHashMap<Member<Object>, WeakMember<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     EXPECT_TRUE(map1.Contains(obj1));
     HeapHashMap<Member<Object>, WeakMember<Object>> map2(map1);
     EXPECT_TRUE(map1.Contains(obj1));
@@ -1212,7 +1225,8 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyWeakMemberMember) {
   HeapHashMap<WeakMember<Object>, Member<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     EXPECT_TRUE(map1.Contains(obj1));
     HeapHashMap<WeakMember<Object>, Member<Object>> map2(map1);
     EXPECT_TRUE(map1.Contains(obj1));
@@ -1237,8 +1251,8 @@ TEST(IncrementalMarkingTest, HeapHashMapMoveWeakMember) {
   HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
-                                            {obj1, obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2(std::move(map1));
   }
 }
@@ -1249,7 +1263,8 @@ TEST(IncrementalMarkingTest, HeapHashMapMoveMemberWeakMember) {
   HeapHashMap<Member<Object>, WeakMember<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     HeapHashMap<Member<Object>, WeakMember<Object>> map2(std::move(map1));
   }
 }
@@ -1260,7 +1275,8 @@ TEST(IncrementalMarkingTest, HeapHashMapMoveWeakMemberMember) {
   HeapHashMap<WeakMember<Object>, Member<Object>> map1;
   map1.insert(obj1, obj2);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
     HeapHashMap<WeakMember<Object>, Member<Object>> map2(std::move(map1));
   }
 }
@@ -1291,8 +1307,9 @@ TEST(IncrementalMarkingTest, HeapHashMapSwapWeakMemberWeakMember) {
   HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2;
   map2.insert(obj3, obj4);
   {
-    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
-                                            {obj1, obj2, obj3, obj4});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                          {obj1, obj2, obj3, obj4});
     std::swap(map1, map2);
   }
 }
@@ -1307,7 +1324,9 @@ TEST(IncrementalMarkingTest, HeapHashMapSwapMemberWeakMember) {
   HeapHashMap<Member<Object>, WeakMember<Object>> map2;
   map2.insert(obj3, obj4);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj3});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                          {obj1, obj2, obj3, obj4});
     std::swap(map1, map2);
   }
 }
@@ -1322,7 +1341,9 @@ TEST(IncrementalMarkingTest, HeapHashMapSwapWeakMemberMember) {
   HeapHashMap<WeakMember<Object>, Member<Object>> map2;
   map2.insert(obj3, obj4);
   {
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2, obj4});
+    // Weak references are strongified for the current cycle.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                          {obj1, obj2, obj3, obj4});
     std::swap(map1, map2);
   }
 }
