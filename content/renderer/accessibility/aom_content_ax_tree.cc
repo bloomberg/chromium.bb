@@ -74,6 +74,18 @@ ax::mojom::StringAttribute GetCorrespondingAXAttribute(
   }
 }
 
+ax::mojom::Restriction GetCorrespondingRestrictionFlag(
+    blink::WebAOMBoolAttribute attr) {
+  switch (attr) {
+    case blink::WebAOMBoolAttribute::AOM_ATTR_DISABLED:
+      return ax::mojom::Restriction::kDisabled;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_READONLY:
+      return ax::mojom::Restriction::kReadOnly;
+    default:
+      return ax::mojom::Restriction::kNone;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -107,6 +119,10 @@ bool AomContentAxTree::GetBoolAttributeForAXNode(
   ui::AXNode* node = tree_.GetFromId(ax_id);
   if (!node)
     return false;
+  if (attr == blink::WebAOMBoolAttribute::AOM_ATTR_DISABLED ||
+      attr == blink::WebAOMBoolAttribute::AOM_ATTR_READONLY) {
+    return GetRestrictionAttributeForAXNode(ax_id, attr, out_param);
+  }
   ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
   return node->data().GetBoolAttribute(ax_attr, out_param);
 }
@@ -119,6 +135,23 @@ bool AomContentAxTree::GetIntAttributeForAXNode(int32_t ax_id,
     return false;
   ax::mojom::IntAttribute ax_attr = GetCorrespondingAXAttribute(attr);
   return node->data().GetIntAttribute(ax_attr, out_param);
+}
+
+bool AomContentAxTree::GetRestrictionAttributeForAXNode(
+    int32_t ax_id,
+    blink::WebAOMBoolAttribute attr,
+    bool* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+
+  // Disabled and readOnly are stored on the node data as an int attribute,
+  // which indicates which type of kRestriction applies.
+  ax::mojom::Restriction restriction = static_cast<ax::mojom::Restriction>(
+      node->data().GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
+  ax::mojom::Restriction ax_attr = GetCorrespondingRestrictionFlag(attr);
+  *out_param = (restriction == ax_attr);
+  return true;
 }
 
 bool AomContentAxTree::GetStringAttributeForAXNode(
