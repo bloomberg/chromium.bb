@@ -845,6 +845,7 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
 
     // Copy over the surviving active nodes.
     HeapVector<Member<AudioNode>> actives;
+    CHECK_GE(active_source_nodes_.size(), remove_count);
     actives.ReserveInitialCapacity(active_source_nodes_.size() - remove_count);
     for (unsigned i = 0; i < removables.size(); ++i) {
       if (!removables[i])
