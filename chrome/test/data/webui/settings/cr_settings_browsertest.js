@@ -1818,3 +1818,26 @@ CrSettingsChangePasswordPageTest.prototype = {
 TEST_F('CrSettingsChangePasswordPageTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsOnStartupPageTest() {}
+
+CrSettingsOnStartupPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/on_startup_page/on_startup_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'on_startup_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsOnStartupPageTest', 'All', function() {
+  mocha.run();
+});

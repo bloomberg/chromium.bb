@@ -69,14 +69,17 @@ suite('ProtocolHandlers', function() {
     testElement = document.createElement('protocol-handlers');
     document.body.appendChild(testElement);
     return browserProxy.whenCalled('observeProtocolHandlers')
-        .then(Polymer.dom.flush.bind(Polymer.dom));
+        .then(function() {
+          Polymer.dom.flush();
+        });
   }
 
   test('empty list', function() {
-    return initPage().then(function() {
-      const listFrames = testElement.root.querySelectorAll('.list-frame');
-      assertEquals(0, listFrames.length);
-    });
+    return initPage()
+        .then(function() {
+          const listFrames = testElement.root.querySelectorAll('.list-frame');
+          assertEquals(0, listFrames.length);
+        });
   });
 
   test('non-empty list', function() {
