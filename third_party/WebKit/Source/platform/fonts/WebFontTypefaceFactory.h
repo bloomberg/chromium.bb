@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef WebFontTypefaceFactory_h
+#define WebFontTypefaceFactory_h
+
 #include "third_party/skia/include/ports/SkFontMgr.h"
 
 #include "build/build_config.h"
@@ -44,3 +47,5 @@ class WebFontTypefaceFactory {
 };
 
 }  // namespace blink
+
+#endif  // WebFontTypefaceFactory_h
