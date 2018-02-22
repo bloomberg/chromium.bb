@@ -147,9 +147,9 @@ if (is_linux) {
       # we can enable ThinLTO and CFI.
       if (use_thin_lto) {
         if (use_lld) {
-          ldflags = [ "-Wl,-mllvm,-compute-dead=false" ]
+          ldflags += [ "-Wl,-mllvm,-compute-dead=false" ]
         } else {
-          ldflags = [ "-Wl,-plugin-opt,-compute-dead=false" ]
+          ldflags += [ "-Wl,-plugin-opt,-compute-dead=false" ]
         }
       }
     }
