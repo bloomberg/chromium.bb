@@ -9,7 +9,7 @@ namespace idl_properties {
     [value=42] static long first();
 
     // Double property.
-    [value=42.0] static double second();
+    [value=42.1] static double second();
 
     // String property.
     [value="hello world"] static DOMString third();
