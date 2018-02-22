@@ -19,8 +19,6 @@
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -322,10 +320,10 @@ void RecordSystemUptimeHistogram() {
 }
 
 // On Windows, records the number of hard-faults that have occurred in the
-// current chrome.exe process since it was started. This function uses an
-// expensive system call and should preferably be used in a background thread.
-#if defined(OS_WIN)
+// current chrome.exe process since it was started. This is a nop on other
+// platforms.
 void RecordHardFaultHistogram() {
+#if defined(OS_WIN)
   uint32_t hard_fault_count = 0;
 
   // Don't record histograms if unable to get the hard fault count.
@@ -376,8 +374,8 @@ void RecordHardFaultHistogram() {
         base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(g_startup_temperature);
   }
-}
 #endif  // defined(OS_WIN)
+}
 
 // Converts a base::Time value to a base::TimeTicks value. The conversion isn't
 // exact, but by capturing Time::Now() as early as possible, the likelihood of a
@@ -570,14 +568,7 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   // histograms depend on it setting |g_startup_temperature| and
   // |g_startups_with_current_version|.
   RecordSameVersionStartupCount(pref_service);
-#if defined(OS_WIN)
-  // Record the hard page fault count in a background thread as this is quite
-  // expensive to compute.
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BACKGROUND,
-                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::BindOnce(&RecordHardFaultHistogram));
-#endif
+  RecordHardFaultHistogram();
 
   // Record timing of the browser message-loop start time.
   base::StackSamplingProfiler::SetProcessMilestone(
