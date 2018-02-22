@@ -52,7 +52,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_service.h"

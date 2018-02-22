@@ -85,7 +85,6 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/net_features.h"
-#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
 //#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
@@ -115,7 +114,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
-#include "chrome/browser/android/net/external_estimate_provider_android.h"
 #include "components/data_usage/android/traffic_stats_amortizer.h"
 #include "net/cert/cert_verify_proc_android.h"
 #endif  // defined(OS_ANDROID)
@@ -538,15 +536,9 @@ void IOThread::Init() {
     }
   }
 
-  std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
-#if defined(OS_ANDROID)
-  external_estimate_provider =
-      std::make_unique<chrome::android::ExternalEstimateProviderAndroid>();
-#endif  // defined(OS_ANDROID)
   // Pass ownership.
   globals_->network_quality_estimator =
       std::make_unique<net::NetworkQualityEstimator>(
-          std::move(external_estimate_provider),
           base::MakeUnique<net::NetworkQualityEstimatorParams>(
               network_quality_estimator_params),
           net_log_);

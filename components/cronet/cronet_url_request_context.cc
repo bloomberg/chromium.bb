@@ -47,7 +47,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/proxy_service.h"
 #include "net/quic/core/quic_versions.h"
@@ -339,8 +338,7 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
     }
 
     network_quality_estimator_ = std::make_unique<net::NetworkQualityEstimator>(
-        std::unique_ptr<net::ExternalEstimateProvider>(), std::move(nqe_params),
-        g_net_log.Get().net_log());
+        std::move(nqe_params), g_net_log.Get().net_log());
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
     network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
 

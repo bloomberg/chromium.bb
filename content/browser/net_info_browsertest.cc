@@ -22,7 +22,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 
 namespace {
@@ -221,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
                        NetworkQualityEstimatorNotInitialized) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      nullptr, std::map<std::string, std::string>(), false, false, true,
+      std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
 
@@ -241,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
                        EffectiveConnectionTypeChangeNotfied) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      nullptr, std::map<std::string, std::string>(), false, false, true,
+      std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
 
@@ -283,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      nullptr, std::map<std::string, std::string>(), false, false, true,
+      std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
 
@@ -320,7 +319,6 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      std::unique_ptr<net::ExternalEstimateProvider>(),
       std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
@@ -365,7 +363,6 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeUpperLimit) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      std::unique_ptr<net::ExternalEstimateProvider>(),
       std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
@@ -387,7 +384,6 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeUpperLimit) {
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityRandomized) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      std::unique_ptr<net::ExternalEstimateProvider>(),
       std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
@@ -449,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityRandomized) {
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   base::HistogramTester histogram_tester;
   net::TestNetworkQualityEstimator estimator(
-      nullptr, std::map<std::string, std::string>(), false, false, true,
+      std::map<std::string, std::string>(), false, false, true,
       std::make_unique<net::BoundTestNetLog>());
   NetworkQualityObserverImpl impl(&estimator);
 
