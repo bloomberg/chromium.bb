@@ -209,6 +209,17 @@ bool AnyOtherBitsSet(GLbitfield bits, GLbitfield ref) {
 
 void EmptyPresentation(const gfx::PresentationFeedback&) {}
 
+void APIENTRY GLDebugMessageCallback(GLenum source,
+                                     GLenum type,
+                                     GLuint id,
+                                     GLenum severity,
+                                     GLsizei length,
+                                     const GLchar* message,
+                                     GLvoid* user_param) {
+  Logger* error_logger = static_cast<Logger*>(user_param);
+  LogGLDebugMessage(source, type, id, severity, length, message, error_logger);
+}
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -3837,7 +3848,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 
   if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
       feature_info_->feature_flags().khr_debug) {
-    InitializeGLDebugLogging(true, &logger_);
+    InitializeGLDebugLogging(true, GLDebugMessageCallback, &logger_);
   }
 
   if (feature_info_->feature_flags().chromium_texture_filtering_hint &&

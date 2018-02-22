@@ -265,15 +265,14 @@ const char* GetServiceShadingLanguageVersionString(
     return "OpenGL ES GLSL ES 1.0 Chromium";
 }
 
-static void APIENTRY LogGLDebugMessage(GLenum source,
-                                       GLenum type,
-                                       GLuint id,
-                                       GLenum severity,
-                                       GLsizei length,
-                                       const GLchar* message,
-                                       GLvoid* user_param) {
+void LogGLDebugMessage(GLenum source,
+                       GLenum type,
+                       GLuint id,
+                       GLenum severity,
+                       GLsizei length,
+                       const GLchar* message,
+                       Logger* error_logger) {
   std::string id_string = GLES2Util::GetStringEnum(id);
-  Logger* error_logger = static_cast<Logger*>(user_param);
   if (type == GL_DEBUG_TYPE_ERROR && source == GL_DEBUG_SOURCE_API) {
     error_logger->LogMessage(__FILE__, __LINE__,
                              " " + id_string + ": " + message);
@@ -286,7 +285,9 @@ static void APIENTRY LogGLDebugMessage(GLenum source,
   }
 }
 
-void InitializeGLDebugLogging(bool log_non_errors, Logger* error_logger) {
+void InitializeGLDebugLogging(bool log_non_errors,
+                              GLDEBUGPROC callback,
+                              const void* user_param) {
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
@@ -305,7 +306,7 @@ void InitializeGLDebugLogging(bool log_non_errors, Logger* error_logger) {
                           GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
   }
 
-  glDebugMessageCallback(&LogGLDebugMessage, error_logger);
+  glDebugMessageCallback(callback, user_param);
 }
 
 bool ValidContextLostReason(GLenum reason) {
