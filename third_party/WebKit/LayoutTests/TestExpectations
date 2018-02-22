@@ -1189,7 +1189,7 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
 
 crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
-crbug.com/813697 [ Win7 ] vr/getFrameData_oneframeupdate.html [ Pass Failure ]
+crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/touch/multi-touch-user-gesture.html [ Skip ]
