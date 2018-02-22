@@ -52,13 +52,23 @@ class WebFrameScheduler {
     virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
   };
 
+  class ThrottlingObserverHandle {
+   public:
+    ThrottlingObserverHandle() = default;
+    virtual ~ThrottlingObserverHandle() = default;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandle);
+  };
+
   // Adds an Observer instance to be notified on scheduling policy changed.
   // When an Observer is added, the initial state will be notified synchronously
   // through the Observer interface.
-  virtual void AddThrottlingObserver(ObserverType, Observer*) = 0;
-
-  // Removes an Observer instance.
-  virtual void RemoveThrottlingObserver(ObserverType, Observer*) = 0;
+  // A RAII handle is returned and observer is unregistered when the handle is
+  // destroyed.
+  virtual std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
+      ObserverType,
+      Observer*) = 0;
 
   // The scheduler may throttle tasks associated with offscreen frames.
   virtual void SetFrameVisible(bool) = 0;

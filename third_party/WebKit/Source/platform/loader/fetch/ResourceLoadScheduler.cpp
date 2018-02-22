@@ -417,8 +417,8 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   }
 
   is_enabled_ = true;
-  scheduler->AddThrottlingObserver(WebFrameScheduler::ObserverType::kLoader,
-                                   this);
+  scheduler_observer_handle_ = scheduler->AddThrottlingObserver(
+      WebFrameScheduler::ObserverType::kLoader, this);
 }
 
 ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
@@ -453,12 +453,7 @@ void ResourceLoadScheduler::Shutdown() {
   if (traffic_monitor_)
     traffic_monitor_.reset();
 
-  if (!is_enabled_)
-    return;
-  auto* scheduler = context_->GetFrameScheduler();
-  DCHECK(scheduler);
-  scheduler->RemoveThrottlingObserver(WebFrameScheduler::ObserverType::kLoader,
-                                      this);
+  scheduler_observer_handle_.reset();
 }
 
 void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,

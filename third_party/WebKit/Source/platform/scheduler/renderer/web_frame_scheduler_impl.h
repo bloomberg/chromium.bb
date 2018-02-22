@@ -54,8 +54,9 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   ~WebFrameSchedulerImpl() override;
 
   // WebFrameScheduler implementation:
-  void AddThrottlingObserver(ObserverType, Observer*) override;
-  void RemoveThrottlingObserver(ObserverType, Observer*) override;
+  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
+      ObserverType,
+      Observer*) override;
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
   void SetPageVisible(bool page_visible) override;
@@ -102,6 +103,19 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
   };
 
+  class ThrottlingObserverHandleImpl : public ThrottlingObserverHandle {
+   public:
+    ThrottlingObserverHandleImpl(WebFrameSchedulerImpl* frame_scheduler,
+                                 Observer* observer);
+    ~ThrottlingObserverHandleImpl() override;
+
+   private:
+    base::WeakPtr<WebFrameSchedulerImpl> frame_scheduler_;
+    Observer* observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandleImpl);
+  };
+
   void DetachFromWebViewScheduler();
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
@@ -109,6 +123,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void UpdateThrottling(bool was_throttled);
   WebFrameScheduler::ThrottlingState CalculateThrottlingState() const;
   void UpdateThrottlingState();
+  void RemoveThrottlingObserver(Observer* observer);
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
