@@ -204,7 +204,7 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
   DCHECK(owner.IsV1());
 }
 
-void SlotAssignment::ResolveAssignmentNg() {
+void SlotAssignment::RecalcAssignmentNg() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
   if (!needs_assignment_recalc_)
@@ -245,7 +245,7 @@ void SlotAssignment::ResolveAssignmentNg() {
   }
 }
 
-void SlotAssignment::ResolveAssignment() {
+void SlotAssignment::RecalcAssignment() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
   for (Member<HTMLSlotElement> slot : Slots())
@@ -286,14 +286,14 @@ void SlotAssignment::ResolveAssignment() {
   }
 }
 
-void SlotAssignment::ResolveDistribution() {
+void SlotAssignment::RecalcDistribution() {
   DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
-  ResolveAssignment();
+  RecalcAssignment();
   const HeapVector<Member<HTMLSlotElement>>& slots = Slots();
 
   for (auto slot : slots)
-    slot->ResolveDistributedNodes();
+    slot->RecalcDistributedNodes();
 
   // Update each slot's distribution in reverse tree order so that a child slot
   // is visited before its parent slot.

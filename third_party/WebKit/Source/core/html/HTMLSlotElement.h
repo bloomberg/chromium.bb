@@ -85,7 +85,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   void AppendAssignedNode(Node&);
 
-  void ResolveDistributedNodes();
+  void RecalcDistributedNodes();
   void AppendDistributedNode(Node&);
   void AppendDistributedNodesFrom(const HTMLSlotElement& other);
 

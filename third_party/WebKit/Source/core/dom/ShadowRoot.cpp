@@ -307,7 +307,7 @@ StyleSheetList& ShadowRoot::StyleSheets() {
 }
 
 void ShadowRoot::DistributeV1() {
-  EnsureSlotAssignment().ResolveDistribution();
+  EnsureSlotAssignment().RecalcDistribution();
 }
 
 void ShadowRoot::Trace(blink::Visitor* visitor) {
