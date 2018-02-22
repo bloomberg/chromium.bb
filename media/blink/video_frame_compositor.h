@@ -214,9 +214,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent> auto_open_close_;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
 
-  // Whether the use of a surface layer instead of a video layer is enabled.
-  bool surface_layer_for_video_enabled_ = false;
-
   base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);

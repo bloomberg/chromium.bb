@@ -43,8 +43,6 @@ VideoFrameCompositor::VideoFrameCompositor(
       last_interval_(base::TimeDelta::FromSecondsD(1.0 / 60)),
       callback_(nullptr),
       submitter_(std::move(submitter)),
-      surface_layer_for_video_enabled_(
-          base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)),
       weak_ptr_factory_(this) {
   background_rendering_timer_.SetTaskRunner(task_runner_);
   if (submitter_.get()) {

@@ -283,7 +283,10 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
+  bool use_surface_layer_for_video =
+      base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
+      !RenderThreadImpl::current()->IsGpuCompositingDisabled();
+  if (use_surface_layer_for_video) {
     // TODO(lethalantidote): Use a separate task_runner. https://crbug/753605.
     video_frame_compositor_task_runner =
         render_thread->GetMediaThreadTaskRunner();
@@ -321,7 +324,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),
           base::Bind(&blink::WebSurfaceLayerBridge::Create, layer_tree_view),
-          RenderThreadImpl::current()->SharedMainThreadContextProvider()));
+          RenderThreadImpl::current()->SharedMainThreadContextProvider(),
+          use_surface_layer_for_video));
 
   std::unique_ptr<media::VideoFrameCompositor> vfc =
       std::make_unique<media::VideoFrameCompositor>(

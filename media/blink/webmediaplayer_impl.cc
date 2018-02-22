@@ -260,8 +260,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params->enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
           params->embedded_media_experience_enabled()),
-      surface_layer_for_video_enabled_(
-          base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)),
+      surface_layer_for_video_enabled_(params->use_surface_layer_for_video()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()) {
