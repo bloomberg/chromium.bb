@@ -14,6 +14,7 @@
 #include "content/common/p2p_socket_type.h"
 #include "content/renderer/p2p/socket_client.h"
 #include "net/base/ip_endpoint.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +33,9 @@ class P2PSocketDispatcher;
 // thread which is specified in Init().
 class P2PSocketClientImpl : public P2PSocketClient {
  public:
-  explicit P2PSocketClientImpl(P2PSocketDispatcher* dispatcher);
+  explicit P2PSocketClientImpl(
+      P2PSocketDispatcher* dispatcher,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
@@ -122,6 +125,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
   int socket_id_;
   P2PSocketClientDelegate* delegate_;
   State state_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // These two fields are used to identify packets for tracing.
   uint32_t random_socket_id_;

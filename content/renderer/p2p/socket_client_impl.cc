@@ -14,7 +14,6 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "crypto/random.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -29,13 +28,16 @@ uint64_t GetUniqueId(uint32_t random_socket_id, uint32_t packet_id) {
 
 namespace content {
 
-P2PSocketClientImpl::P2PSocketClientImpl(P2PSocketDispatcher* dispatcher)
+P2PSocketClientImpl::P2PSocketClientImpl(
+    P2PSocketDispatcher* dispatcher,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : dispatcher_(dispatcher),
       ipc_task_runner_(dispatcher->task_runner()),
       delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       socket_id_(0),
       delegate_(nullptr),
       state_(STATE_UNINITIALIZED),
+      traffic_annotation_(traffic_annotation),
       random_socket_id_(0),
       next_packet_id_(0) {
   crypto::RandBytes(&random_socket_id_, sizeof(random_socket_id_));
@@ -101,11 +103,9 @@ void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
                                            uint64_t packet_id) {
   TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
 
-  // TODO(crbug.com/656607): Add proper annotation.
   dispatcher_->SendP2PMessage(new P2PHostMsg_Send(
       socket_id_, data, P2PPacketInfo(address, options, packet_id),
-      net::MutableNetworkTrafficAnnotationTag(
-          NO_TRAFFIC_ANNOTATION_BUG_656607)));
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation_)));
 }
 
 void P2PSocketClientImpl::SetOption(P2PSocketOption option,
@@ -181,7 +181,7 @@ void P2PSocketClientImpl::OnIncomingTcpConnection(
   DCHECK_EQ(state_, STATE_OPEN);
 
   scoped_refptr<P2PSocketClientImpl> new_client =
-      new P2PSocketClientImpl(dispatcher_);
+      new P2PSocketClientImpl(dispatcher_, traffic_annotation_);
   new_client->socket_id_ = dispatcher_->RegisterClient(new_client.get());
   new_client->state_ = STATE_OPEN;
   new_client->delegate_task_runner_ = delegate_task_runner_;
