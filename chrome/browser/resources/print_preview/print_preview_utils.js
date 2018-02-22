@@ -114,7 +114,7 @@ function pageRangeTextToPageRanges(pageRangeText, opt_totalPageCount) {
       opt_totalPageCount ? opt_totalPageCount : MAX_PAGE_NUMBER;
 
   const regex = /^\s*([0-9]*)\s*-\s*([0-9]*)\s*$/;
-  const parts = pageRangeText.split(/,/);
+  const parts = pageRangeText.split(/,|\u3001/);
 
   const pageRanges = [];
   for (let i = 0; i < parts.length; ++i) {
