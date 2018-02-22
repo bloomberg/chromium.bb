@@ -122,6 +122,7 @@ public class NavigationInfoCaptureTriggerTest {
      */
     @Test
     @Feature({"CustomTabs"})
+    @SuppressWarnings("unchecked")
     public void testResetOnNavigation() {
         testNormalFlow();
 
