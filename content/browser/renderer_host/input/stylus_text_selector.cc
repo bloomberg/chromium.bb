@@ -51,7 +51,7 @@ StylusTextSelector::~StylusTextSelector() {
 bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
   // Only trigger selection on ACTION_DOWN to prevent partial touch or gesture
   // sequences from being forwarded.
-  if (event.GetAction() == MotionEvent::ACTION_DOWN)
+  if (event.GetAction() == MotionEvent::Action::DOWN)
     text_selection_triggered_ = ShouldStartTextSelection(event);
 
   if (!text_selection_triggered_)
@@ -64,13 +64,13 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
       event.GetButtonState() == MotionEvent::BUTTON_STYLUS_PRIMARY;
 
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       drag_state_ = NO_DRAG;
       anchor_x_ = event.GetX();
       anchor_y_ = event.GetY();
       break;
 
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::MOVE:
       if (!secondary_button_pressed_) {
         if (drag_state_ == DRAGGING_WITH_BUTTON_PRESSED)
           drag_state_ = DRAGGING_WITH_BUTTON_RELEASED;
@@ -79,23 +79,23 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
       }
       break;
 
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::CANCEL:
       if (drag_state_ == DRAGGING_WITH_BUTTON_PRESSED ||
           drag_state_ == DRAGGING_WITH_BUTTON_RELEASED)
         client_->OnStylusSelectEnd(event.GetX(), event.GetY());
       drag_state_ = NO_DRAG;
       break;
 
-    case MotionEvent::ACTION_POINTER_UP:
-    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::Action::POINTER_UP:
+    case MotionEvent::Action::POINTER_DOWN:
       break;
-    case MotionEvent::ACTION_NONE:
-    case MotionEvent::ACTION_HOVER_ENTER:
-    case MotionEvent::ACTION_HOVER_EXIT:
-    case MotionEvent::ACTION_HOVER_MOVE:
-    case MotionEvent::ACTION_BUTTON_PRESS:
-    case MotionEvent::ACTION_BUTTON_RELEASE:
+    case MotionEvent::Action::NONE:
+    case MotionEvent::Action::HOVER_ENTER:
+    case MotionEvent::Action::HOVER_EXIT:
+    case MotionEvent::Action::HOVER_MOVE:
+    case MotionEvent::Action::BUTTON_PRESS:
+    case MotionEvent::Action::BUTTON_RELEASE:
       NOTREACHED();
       break;
   }
@@ -142,7 +142,7 @@ bool StylusTextSelector::OnScroll(const MotionEvent& e1,
 bool StylusTextSelector::ShouldStartTextSelection(const MotionEvent& event) {
   DCHECK_GT(event.GetPointerCount(), 0u);
   // Currently we are supporting stylus-only cases.
-  const bool is_stylus = event.GetToolType(0) == MotionEvent::TOOL_TYPE_STYLUS;
+  const bool is_stylus = event.GetToolType(0) == MotionEvent::ToolType::STYLUS;
 
   // For Android version < M, stylus button pressed state is BUTTON_SECONDARY.
   // From Android M, this state has changed to BUTTON_STYLUS_PRIMARY.

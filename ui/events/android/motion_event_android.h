@@ -27,7 +27,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
  public:
   // Returns the motion event action defined in Java layer for a given
   // MotionEvent::Action.
-  static int GetAndroidActionForTesting(int action);
+  static int GetAndroidAction(Action action);
+  static int GetAndroidToolType(ToolType tool_type);
 
   struct Pointer {
     Pointer(jint id,

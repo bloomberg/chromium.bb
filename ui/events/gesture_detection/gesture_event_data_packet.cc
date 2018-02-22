@@ -13,24 +13,24 @@ namespace {
 GestureEventDataPacket::GestureSource ToGestureSource(
     const ui::MotionEvent& event) {
   switch (event.GetAction()) {
-    case ui::MotionEvent::ACTION_DOWN:
+    case ui::MotionEvent::Action::DOWN:
       return GestureEventDataPacket::TOUCH_SEQUENCE_START;
-    case ui::MotionEvent::ACTION_UP:
+    case ui::MotionEvent::Action::UP:
       return GestureEventDataPacket::TOUCH_SEQUENCE_END;
-    case ui::MotionEvent::ACTION_MOVE:
+    case ui::MotionEvent::Action::MOVE:
       return GestureEventDataPacket::TOUCH_MOVE;
-    case ui::MotionEvent::ACTION_CANCEL:
+    case ui::MotionEvent::Action::CANCEL:
       return GestureEventDataPacket::TOUCH_SEQUENCE_CANCEL;
-    case ui::MotionEvent::ACTION_POINTER_DOWN:
+    case ui::MotionEvent::Action::POINTER_DOWN:
       return GestureEventDataPacket::TOUCH_START;
-    case ui::MotionEvent::ACTION_POINTER_UP:
+    case ui::MotionEvent::Action::POINTER_UP:
       return GestureEventDataPacket::TOUCH_END;
-    case ui::MotionEvent::ACTION_NONE:
-    case ui::MotionEvent::ACTION_HOVER_ENTER:
-    case ui::MotionEvent::ACTION_HOVER_EXIT:
-    case ui::MotionEvent::ACTION_HOVER_MOVE:
-    case ui::MotionEvent::ACTION_BUTTON_PRESS:
-    case ui::MotionEvent::ACTION_BUTTON_RELEASE:
+    case ui::MotionEvent::Action::NONE:
+    case ui::MotionEvent::Action::HOVER_ENTER:
+    case ui::MotionEvent::Action::HOVER_EXIT:
+    case ui::MotionEvent::Action::HOVER_MOVE:
+    case ui::MotionEvent::Action::BUTTON_PRESS:
+    case ui::MotionEvent::Action::BUTTON_RELEASE:
       NOTREACHED();
       return GestureEventDataPacket::INVALID;
   };

@@ -34,8 +34,7 @@ WebKeyboardEvent CreateFakeWebKeyboardEvent(JNIEnv* env,
                                             int web_modifier,
                                             int unicode_character) {
   ScopedJavaLocalRef<jobject> keydown_event =
-      ui::events::android::CreateKeyEvent(env, ui::MotionEvent::ACTION_DOWN,
-                                          key_code);
+      ui::events::android::CreateKeyEvent(env, 0, key_code);
 
   WebKeyboardEvent web_event = content::WebKeyboardEventBuilder::Build(
       env, keydown_event, WebKeyboardEvent::kKeyDown, web_modifier, 0, key_code,
@@ -206,7 +205,8 @@ TEST(WebInputEventBuilderAndroidTest, WebMouseEventCoordinates) {
   clock.SetNowTicks(event_time);
 
   ui::MotionEventAndroid::Pointer p0(1, 13.7f, -7.13f, 5.3f, 1.2f, 0.1f, 0.2f,
-                                     ui::MotionEvent::TOOL_TYPE_MOUSE);
+                                     ui::MotionEventAndroid::GetAndroidToolType(
+                                         ui::MotionEvent::ToolType::MOUSE));
   const float raw_offset_x = 11.f;
   const float raw_offset_y = 22.f;
   const float kPixToDip = 0.5f;

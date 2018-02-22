@@ -31,7 +31,7 @@ FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
 
   pending_gesture_packet_ = GestureEventDataPacket::FromTouch(event);
 
-  if (event.GetAction() == MotionEvent::ACTION_DOWN)
+  if (event.GetAction() == MotionEvent::Action::DOWN)
     any_touch_moved_beyond_slop_region_ = false;
 
   if (!gesture_provider_.OnTouchEvent(event))

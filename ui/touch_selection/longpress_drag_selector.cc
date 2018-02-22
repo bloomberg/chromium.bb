@@ -28,19 +28,19 @@ LongPressDragSelector::~LongPressDragSelector() {
 
 bool LongPressDragSelector::WillHandleTouchEvent(const MotionEvent& event) {
   switch (event.GetAction()) {
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::Action::DOWN:
       touch_down_position_.SetPoint(event.GetX(), event.GetY());
       touch_down_time_ = event.GetEventTime();
       has_longpress_drag_start_anchor_ = false;
       SetState(LONGPRESS_PENDING);
       return false;
 
-    case MotionEvent::ACTION_UP:
-    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::Action::UP:
+    case MotionEvent::Action::CANCEL:
       SetState(INACTIVE);
       return false;
 
-    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::Action::MOVE:
       break;
 
     default:

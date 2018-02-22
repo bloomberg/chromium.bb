@@ -502,7 +502,7 @@ void WebContentsViewAndroid::GestureEventAck(
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
-  if (event.GetAction() == ui::MotionEventAndroid::ACTION_DOWN)
+  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN)
     content_view_core_->OnTouchDown(event.GetJavaObject());
   return false;  // let the children handle the actual event.
 }
@@ -510,9 +510,9 @@ bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
 bool WebContentsViewAndroid::OnMouseEvent(const ui::MotionEventAndroid& event) {
   // Hover events can be intercepted when in accessibility mode.
   auto action = event.GetAction();
-  if (action != ui::MotionEventAndroid::ACTION_HOVER_ENTER &&
-      action != ui::MotionEventAndroid::ACTION_HOVER_EXIT &&
-      action != ui::MotionEventAndroid::ACTION_HOVER_MOVE)
+  if (action != ui::MotionEventAndroid::Action::HOVER_ENTER &&
+      action != ui::MotionEventAndroid::Action::HOVER_EXIT &&
+      action != ui::MotionEventAndroid::Action::HOVER_MOVE)
     return false;
 
   auto* manager = static_cast<BrowserAccessibilityManagerAndroid*>(

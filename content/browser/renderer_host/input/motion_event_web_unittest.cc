@@ -22,13 +22,13 @@ TEST(MotionEventWebTest, Constructor) {
   const float orientations[] = {-pi, -2.f * pi / 3, -pi / 2};
   const float tilts_x[] = {0.f, -180 / 4, -180 / 3};
   const float tilts_y[] = {0.5f, 180 / 2, 180 / 3};
-  const MotionEvent::ToolType tool_types[] = {MotionEvent::TOOL_TYPE_FINGER,
-                                              MotionEvent::TOOL_TYPE_STYLUS,
-                                              MotionEvent::TOOL_TYPE_MOUSE};
+  const MotionEvent::ToolType tool_types[] = {MotionEvent::ToolType::FINGER,
+                                              MotionEvent::ToolType::STYLUS,
+                                              MotionEvent::ToolType::MOUSE};
 
   base::TimeTicks event_time = base::TimeTicks::Now();
   PointerProperties pp;
-  MotionEventGeneric generic_event(MotionEvent::ACTION_MOVE, event_time, pp);
+  MotionEventGeneric generic_event(MotionEvent::Action::MOVE, event_time, pp);
   for (MotionEvent::ToolType tool_type : tool_types) {
     for (size_t i = 0; i < arraysize(tilts_x); ++i) {
       const float tilt_x = tilts_x[i];
@@ -47,7 +47,7 @@ TEST(MotionEventWebTest, Constructor) {
 
       MotionEventWeb event(web_touch_event);
       EXPECT_EQ(tool_type, event.GetToolType(pointer_index));
-      if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
+      if (tool_type == MotionEvent::ToolType::STYLUS) {
         // Web touch event touch point tilt plane angles are stored as ints,
         // thus the tilt precision is 1 degree and the error should not be
         // greater than 0.5 degrees.
@@ -59,7 +59,7 @@ TEST(MotionEventWebTest, Constructor) {
         EXPECT_EQ(0.f, event.GetTiltX(pointer_index));
         EXPECT_EQ(0.f, event.GetTiltY(pointer_index));
       }
-      if (tool_type == MotionEvent::TOOL_TYPE_STYLUS && tilt_x > 0.f) {
+      if (tool_type == MotionEvent::ToolType::STYLUS && tilt_x > 0.f) {
         // Full stylus tilt orientation information survives above event
         // conversions only if there is a non-zero stylus tilt angle.
         // See: http://crbug.com/251330

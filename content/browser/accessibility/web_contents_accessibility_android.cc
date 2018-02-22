@@ -538,15 +538,16 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
   if (obj.is_null())
     return false;
 
-  if (!Java_WebContentsAccessibilityImpl_onHoverEvent(env, obj,
-                                                      event.GetAction()))
+  if (!Java_WebContentsAccessibilityImpl_onHoverEvent(
+          env, obj,
+          ui::MotionEventAndroid::GetAndroidAction(event.GetAction())))
     return false;
 
   // |HitTest| sends an IPC to the render process to do the hit testing.
   // The response is handled by HandleHover when it returns.
   // Hover event was consumed by accessibility by now. Return true to
   // stop the event from proceeding.
-  if (event.GetAction() != ui::MotionEvent::ACTION_HOVER_EXIT &&
+  if (event.GetAction() != ui::MotionEvent::Action::HOVER_EXIT &&
       root_manager_) {
     gfx::PointF point =
         IsUseZoomForDSFEnabled() ? event.GetPointPix() : event.GetPoint();

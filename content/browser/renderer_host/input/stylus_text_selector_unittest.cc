@@ -66,23 +66,23 @@ class StylusTextSelectorTest : public testing::Test,
 TEST_F(StylusTextSelectorTest, ShouldStartTextSelection) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   {  // Touched with a finger.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::FINGER);
     e.set_button_state(0);
     EXPECT_FALSE(selector_->ShouldStartTextSelection(e));
   }
 
   {  // Touched with a stylus, but no button pressed.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::STYLUS);
     e.set_button_state(0);
     EXPECT_FALSE(selector_->ShouldStartTextSelection(e));
   }
 
   {  // Touched with a stylus, with first button (BUTTON_SECONDARY) pressed.
      // For Android version < M, this stylus state is BUTTON_SECONDARY.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::STYLUS);
     e.set_button_state(MotionEvent::BUTTON_SECONDARY);
     EXPECT_TRUE(selector_->ShouldStartTextSelection(e));
   }
@@ -90,8 +90,8 @@ TEST_F(StylusTextSelectorTest, ShouldStartTextSelection) {
   {  // Touched with a stylus, with first button (BUTTON_STYLUS_PRIMARY)
      // pressed. From Android M, this stylus state has been changed to
      // BUTTON_STYLUS_PRIMARY.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::STYLUS);
     e.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
     EXPECT_TRUE(selector_->ShouldStartTextSelection(e));
   }
@@ -99,8 +99,8 @@ TEST_F(StylusTextSelectorTest, ShouldStartTextSelection) {
   {  // Touched with a stylus, with two buttons pressed.
      // For Android version < M, these states are BUTTON_SECONDARY,
      // BUTTON_TERTIARY.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::STYLUS);
     e.set_button_state(MotionEvent::BUTTON_SECONDARY |
                        MotionEvent::BUTTON_TERTIARY);
     EXPECT_FALSE(selector_->ShouldStartTextSelection(e));
@@ -109,8 +109,8 @@ TEST_F(StylusTextSelectorTest, ShouldStartTextSelection) {
   {  // Touched with a stylus, with two buttons pressed.
      // From Android M, these state are BUTTON_STYLUS_PRIMARY,
      // BUTTON_STYLUS_SECONDARY.
-    MockMotionEvent e(MotionEvent::ACTION_DOWN, event_time, 50.0f, 50.0f);
-    e.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+    MockMotionEvent e(MotionEvent::Action::DOWN, event_time, 50.0f, 50.0f);
+    e.SetToolType(0, MotionEvent::ToolType::STYLUS);
     e.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY |
                        MotionEvent::BUTTON_STYLUS_SECONDARY);
     EXPECT_FALSE(selector_->ShouldStartTextSelection(e));
@@ -122,8 +122,8 @@ TEST_F(StylusTextSelectorTest, FingerTouch) {
   const float x = 50.0f;
   const float y = 30.0f;
   // 1. Touched with a finger: ignored
-  MockMotionEvent finger(MotionEvent::ACTION_DOWN, event_time, x, y);
-  finger.SetToolType(0, MotionEvent::TOOL_TYPE_FINGER);
+  MockMotionEvent finger(MotionEvent::Action::DOWN, event_time, x, y);
+  finger.SetToolType(0, MotionEvent::ToolType::FINGER);
   EXPECT_FALSE(selector_->OnTouchEvent(finger));
   // We do not consume finger events.
   EXPECT_TRUE(event_log_.empty());
@@ -139,35 +139,35 @@ TEST_F(StylusTextSelectorTest, PenDraggingButtonSecondary) {
   const float y2 = 90.0f;
   const float x3 = 150.0f;
   const float y3 = 150.0f;
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(1u, event_log_.size());
   EXPECT_STREQ("Begin(50, 30, 100, 90)", event_log_.back().c_str());
 
   event_time += base::TimeDelta::FromMilliseconds(10);
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x3, y3);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x3, y3);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(2u, event_log_.size());
   EXPECT_STREQ("Update(150, 150)", event_log_.back().c_str());
 
-  // 3. ACTION_UP
+  // 3. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x3, y3);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x3, y3);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   ASSERT_EQ(3u, event_log_.size());  // NO CHANGE
@@ -179,60 +179,60 @@ TEST_F(StylusTextSelectorTest, PenDraggingButtonSecondaryNotPressed) {
   float x = 50.0f;
   float y = 30.0f;
 
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x, y);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x, y);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 70
   y += 20;  // 50
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(1u, event_log_.size());
   EXPECT_STREQ("Begin(50, 30, 70, 50)", event_log_.back().c_str());
 
-  // 3. ACTION_MOVE with stylus + no button
+  // 3. Action::MOVE with stylus + no button
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 90
   y += 20;  // 70
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(1u, event_log_.size());  // NO CHANGE
 
-  // 4. ACTION_MOVE with stylus + button pressed again
+  // 4. Action::MOVE with stylus + button pressed again
   //    Note that the end action is deferred until the stylus is lifted.
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 110
   y += 20;  // 90
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(2u, event_log_.size());
   EXPECT_STREQ("Begin(90, 70, 110, 90)", event_log_.back().c_str());
 
-  // 5. ACTION_MOVE with stylus + no button
+  // 5. Action::MOVE with stylus + no button
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 130
   y += 20;  // 110
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(2u, event_log_.size());  // NO CHANGE
 
-  // 5. ACTION_UP
+  // 5. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x, y);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x, y);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   EXPECT_EQ(3u, event_log_.size());
@@ -245,26 +245,26 @@ TEST_F(StylusTextSelectorTest, TapTriggersLongPressSelection) {
   const float y1 = 30.0f;
   const float x2 = 51.0f;
   const float y2 = 31.0f;
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_SECONDARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_TRUE(event_log_.empty());
 
-  // 3. ACTION_UP
+  // 3. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x2, y2);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x2, y2);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   ASSERT_EQ(1u, event_log_.size());
@@ -282,35 +282,35 @@ TEST_F(StylusTextSelectorTest, PenDraggingButtonStylusPrimary) {
   const float y2 = 90.0f;
   const float x3 = 150.0f;
   const float y3 = 150.0f;
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(1u, event_log_.size());
   EXPECT_STREQ("Begin(50, 30, 100, 90)", event_log_.back().c_str());
 
   event_time += base::TimeDelta::FromMilliseconds(10);
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x3, y3);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x3, y3);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(2u, event_log_.size());
   EXPECT_STREQ("Update(150, 150)", event_log_.back().c_str());
 
-  // 3. ACTION_UP
+  // 3. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x3, y3);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x3, y3);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   ASSERT_EQ(3u, event_log_.size());  // NO CHANGE
@@ -322,60 +322,60 @@ TEST_F(StylusTextSelectorTest, PenDraggingButtonStylusPrimaryNotPressed) {
   float x = 50.0f;
   float y = 30.0f;
 
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x, y);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x, y);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 70
   y += 20;  // 50
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   ASSERT_EQ(1u, event_log_.size());
   EXPECT_STREQ("Begin(50, 30, 70, 50)", event_log_.back().c_str());
 
-  // 3. ACTION_MOVE with stylus + no button
+  // 3. Action::MOVE with stylus + no button
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 90
   y += 20;  // 70
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(1u, event_log_.size());  // NO CHANGE
 
-  // 4. ACTION_MOVE with stylus + button pressed again
+  // 4. Action::MOVE with stylus + button pressed again
   //    Note that the end action is deferred until the stylus is lifted.
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 110
   y += 20;  // 90
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(2u, event_log_.size());
   EXPECT_STREQ("Begin(90, 70, 110, 90)", event_log_.back().c_str());
 
-  // 5. ACTION_MOVE with stylus + no button
+  // 5. Action::MOVE with stylus + no button
   event_time += base::TimeDelta::FromMilliseconds(10);
   x += 20;  // 130
   y += 20;  // 110
-  action_move = MockMotionEvent(MotionEvent::ACTION_MOVE, event_time, x, y);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  action_move = MockMotionEvent(MotionEvent::Action::MOVE, event_time, x, y);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_EQ(2u, event_log_.size());  // NO CHANGE
 
-  // 5. ACTION_UP
+  // 5. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(10);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x, y);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x, y);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   EXPECT_EQ(3u, event_log_.size());
@@ -388,26 +388,26 @@ TEST_F(StylusTextSelectorTest, TapTriggersLongPressSelection2) {
   const float y1 = 30.0f;
   const float x2 = 51.0f;
   const float y2 = 31.0f;
-  // 1. ACTION_DOWN with stylus + button
+  // 1. Action::DOWN with stylus + button
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_down(MotionEvent::ACTION_DOWN, event_time, x1, y1);
-  action_down.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_down(MotionEvent::Action::DOWN, event_time, x1, y1);
+  action_down.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_down.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_down));
   EXPECT_TRUE(event_log_.empty());
 
-  // 2. ACTION_MOVE
+  // 2. Action::MOVE
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_move(MotionEvent::ACTION_MOVE, event_time, x2, y2);
-  action_move.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_move(MotionEvent::Action::MOVE, event_time, x2, y2);
+  action_move.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_move.set_button_state(MotionEvent::BUTTON_STYLUS_PRIMARY);
   EXPECT_TRUE(selector_->OnTouchEvent(action_move));
   EXPECT_TRUE(event_log_.empty());
 
-  // 3. ACTION_UP
+  // 3. Action::UP
   event_time += base::TimeDelta::FromMilliseconds(1);
-  MockMotionEvent action_up(MotionEvent::ACTION_UP, event_time, x2, y2);
-  action_up.SetToolType(0, MotionEvent::TOOL_TYPE_STYLUS);
+  MockMotionEvent action_up(MotionEvent::Action::UP, event_time, x2, y2);
+  action_up.SetToolType(0, MotionEvent::ToolType::STYLUS);
   action_up.set_button_state(0);
   EXPECT_TRUE(selector_->OnTouchEvent(action_up));
   ASSERT_EQ(1u, event_log_.size());

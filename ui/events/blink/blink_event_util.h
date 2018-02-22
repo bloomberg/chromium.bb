@@ -86,7 +86,7 @@ void SetWebPointerPropertiesFromMotionEventData(
     float tilt_x,
     float tilt_y,
     int android_buttons_changed,
-    int tool_type);
+    MotionEvent::ToolType tool_type);
 
 int WebEventModifiersToEventFlags(int modifiers);
 

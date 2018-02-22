@@ -139,7 +139,7 @@ TouchDispositionGestureFilter::TouchDispositionGestureFilter(
     TouchDispositionGestureFilterClient* client)
     : client_(client),
       ending_event_motion_event_id_(0),
-      ending_event_primary_tool_type_(MotionEvent::TOOL_TYPE_UNKNOWN),
+      ending_event_primary_tool_type_(MotionEvent::ToolType::UNKNOWN),
       needs_tap_ending_event_(false),
       needs_show_press_event_(false),
       needs_fling_ending_event_(false),

@@ -24,10 +24,9 @@ using ui::MotionEventGeneric;
 namespace content {
 
 TEST(WebInputEventUtilTest, MotionEventConversion) {
-
-  const MotionEvent::ToolType tool_types[] = {MotionEvent::TOOL_TYPE_FINGER,
-                                              MotionEvent::TOOL_TYPE_STYLUS,
-                                              MotionEvent::TOOL_TYPE_MOUSE};
+  const MotionEvent::ToolType tool_types[] = {MotionEvent::ToolType::FINGER,
+                                              MotionEvent::ToolType::STYLUS,
+                                              MotionEvent::ToolType::MOUSE};
   ui::PointerProperties pointer(5, 10, 40);
   pointer.id = 15;
   pointer.raw_x = 20;
@@ -39,8 +38,8 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   pointer.tilt_y = 70;
   for (MotionEvent::ToolType tool_type : tool_types) {
     pointer.tool_type = tool_type;
-    MotionEventGeneric event(
-        MotionEvent::ACTION_DOWN, base::TimeTicks::Now(), pointer);
+    MotionEventGeneric event(MotionEvent::Action::DOWN, base::TimeTicks::Now(),
+                             pointer);
     event.set_flags(ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
     event.set_unique_event_id(123456U);
 
@@ -58,7 +57,7 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
     expected_pointer.radius_y = pointer.touch_minor / 2.f;
     expected_pointer.rotation_angle = 0.f;
     expected_pointer.force = pointer.pressure;
-    if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
+    if (tool_type == MotionEvent::ToolType::STYLUS) {
       expected_pointer.tilt_x = 60;
       expected_pointer.tilt_y = 70;
     } else {
@@ -78,7 +77,7 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
 
 TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   int motion_event_id = 0;
-  MotionEvent::ToolType tool_type = MotionEvent::TOOL_TYPE_UNKNOWN;
+  MotionEvent::ToolType tool_type = MotionEvent::ToolType::UNKNOWN;
   base::TimeTicks timestamp = base::TimeTicks::Now();
   gfx::Vector2dF delta(-5.f, 10.f);
   gfx::PointF pos(1.f, 2.f);

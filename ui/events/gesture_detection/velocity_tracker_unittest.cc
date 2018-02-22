@@ -68,9 +68,9 @@ class VelocityTrackerTest : public testing::Test {
     if (!samples)
       return;
     const base::TimeDelta dt = t / samples;
-    state->AddMovement(Sample(MotionEvent::ACTION_DOWN, p0, t0, v, dt * 0));
+    state->AddMovement(Sample(MotionEvent::Action::DOWN, p0, t0, v, dt * 0));
     ApplyMovement(state, p0, v, t0, t, samples);
-    state->AddMovement(Sample(MotionEvent::ACTION_UP, p0, t0, v, t));
+    state->AddMovement(Sample(MotionEvent::Action::UP, p0, t0, v, t));
   }
 
   static void ApplyMovement(VelocityTrackerState* state,
@@ -84,7 +84,7 @@ class VelocityTrackerTest : public testing::Test {
       return;
     const base::TimeDelta dt = t / samples;
     for (size_t i = 0; i < samples; ++i)
-      state->AddMovement(Sample(MotionEvent::ACTION_MOVE, p0, t0, v, dt * i));
+      state->AddMovement(Sample(MotionEvent::Action::MOVE, p0, t0, v, dt * i));
   }
 };
 
@@ -159,7 +159,7 @@ TEST_F(VelocityTrackerTest, VaryingVelocity) {
     base::TimeTicks t0 = base::TimeTicks::Now();
     base::TimeDelta dt = kTenMillis * 10;
     state.AddMovement(
-        Sample(MotionEvent::ACTION_DOWN, p0, t0, vFast, base::TimeDelta()));
+        Sample(MotionEvent::Action::DOWN, p0, t0, vFast, base::TimeDelta()));
 
     // Apply some fast movement and compute the velocity.
     gfx::PointF pCurr = p0;
@@ -202,7 +202,7 @@ TEST_F(VelocityTrackerTest, DelayedActionUp) {
 
   VelocityTrackerState state(VelocityTracker::Strategy::LSQ2);
   state.AddMovement(
-      Sample(MotionEvent::ACTION_DOWN, p0, t0, v, base::TimeDelta()));
+      Sample(MotionEvent::Action::DOWN, p0, t0, v, base::TimeDelta()));
 
   // Apply the movement and verify a (non-zero) velocity.
   ApplyMovement(&state, p0, v, t0, dt, samples);
@@ -210,11 +210,11 @@ TEST_F(VelocityTrackerTest, DelayedActionUp) {
   EXPECT_NEAR(-1000, state.GetXVelocity(0), kEpsilson);
   EXPECT_NEAR(1000, state.GetYVelocity(0), kEpsilson);
 
-  // Apply the delayed ACTION_UP.
+  // Apply the delayed Action::UP.
   const gfx::PointF p1 = p0 + ScaleVector2d(v, dt.InSecondsF());
   const base::TimeTicks t1 = t0 + dt + kTenMillis * 10;
-  state.AddMovement(Sample(
-      MotionEvent::ACTION_UP, p1, t1, v, base::TimeDelta()));
+  state.AddMovement(
+      Sample(MotionEvent::Action::UP, p1, t1, v, base::TimeDelta()));
 
   // The tracked velocity should have been reset.
   state.ComputeCurrentVelocity(1000, 1000);
@@ -234,14 +234,14 @@ TEST_F(VelocityTrackerTest, NoDirectionReversal) {
 
   gfx::PointF p(0, 0);
 
-  MockMotionEvent m1(MotionEvent::ACTION_DOWN, t0, p.x(), p.y());
+  MockMotionEvent m1(MotionEvent::Action::DOWN, t0, p.x(), p.y());
   state_unrestricted.AddMovement(m1);
   state_restricted.AddMovement(m1);
 
   for (size_t i = 0; i < samples; ++i) {
     if (i < 50)
       p.set_y(p.y() + 10);
-    MockMotionEvent mi(MotionEvent::ACTION_MOVE, t0 + dt * i, p.x(), p.y());
+    MockMotionEvent mi(MotionEvent::Action::MOVE, t0 + dt * i, p.x(), p.y());
     state_unrestricted.AddMovement(mi);
     state_restricted.AddMovement(mi);
   }

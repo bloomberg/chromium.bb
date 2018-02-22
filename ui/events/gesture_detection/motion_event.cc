@@ -59,4 +59,13 @@ std::unique_ptr<MotionEvent> MotionEvent::Cancel() const {
   return MotionEventGeneric::CancelEvent(*this);
 }
 
+std::ostream& operator<<(std::ostream& stream,
+                         const MotionEvent::Action action) {
+  return stream << static_cast<int>(action);
+}
+std::ostream& operator<<(std::ostream& stream,
+                         const MotionEvent::ToolType tool_type) {
+  return stream << static_cast<int>(tool_type);
+}
+
 }  // namespace ui

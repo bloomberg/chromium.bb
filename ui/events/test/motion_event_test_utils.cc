@@ -32,8 +32,7 @@ PointerProperties CreatePointer(float x, float y, int id) {
 }  // namespace
 
 MockMotionEvent::MockMotionEvent()
-    : MotionEventGeneric(ACTION_CANCEL, base::TimeTicks(), CreatePointer()) {
-}
+    : MotionEventGeneric(Action::CANCEL, base::TimeTicks(), CreatePointer()) {}
 
 MockMotionEvent::MockMotionEvent(Action action)
     : MotionEventGeneric(action, base::TimeTicks(), CreatePointer()) {
@@ -54,7 +53,7 @@ MockMotionEvent::MockMotionEvent(Action action,
                                  float y1)
     : MotionEventGeneric(action, time, CreatePointer(x0, y0, 0)) {
   PushPointer(x1, y1);
-  if (action == ACTION_POINTER_UP || action == ACTION_POINTER_DOWN)
+  if (action == Action::POINTER_UP || action == Action::POINTER_DOWN)
     set_action_index(1);
 }
 
@@ -69,7 +68,7 @@ MockMotionEvent::MockMotionEvent(Action action,
     : MotionEventGeneric(action, time, CreatePointer(x0, y0, 0)) {
   PushPointer(x1, y1);
   PushPointer(x2, y2);
-  if (action == ACTION_POINTER_UP || action == ACTION_POINTER_DOWN)
+  if (action == Action::POINTER_UP || action == Action::POINTER_DOWN)
     set_action_index(2);
 }
 
@@ -79,7 +78,7 @@ MockMotionEvent::MockMotionEvent(Action action,
   set_action(action);
   set_event_time(time);
   set_unique_event_id(ui::GetNextTouchEventId());
-  if (action == ACTION_POINTER_UP || action == ACTION_POINTER_DOWN)
+  if (action == Action::POINTER_UP || action == Action::POINTER_DOWN)
     set_action_index(static_cast<int>(positions.size()) - 1);
   for (size_t i = 0; i < positions.size(); ++i)
     PushPointer(positions[i].x(), positions[i].y());
@@ -97,9 +96,9 @@ MockMotionEvent& MockMotionEvent::PressPoint(float x, float y) {
   PushPointer(x, y);
   if (GetPointerCount() > 1) {
     set_action_index(static_cast<int>(GetPointerCount()) - 1);
-    set_action(ACTION_POINTER_DOWN);
+    set_action(Action::POINTER_DOWN);
   } else {
-    set_action(ACTION_DOWN);
+    set_action(Action::DOWN);
   }
   return *this;
 }
@@ -114,7 +113,7 @@ MockMotionEvent& MockMotionEvent::MovePoint(size_t index, float x, float y) {
   p.y = y;
   p.raw_x += dx;
   p.raw_y += dy;
-  set_action(ACTION_MOVE);
+  set_action(Action::MOVE);
   return *this;
 }
 
@@ -123,9 +122,9 @@ MockMotionEvent& MockMotionEvent::ReleasePoint() {
   switch (GetAction()) {
     // If the previous action is one of those who need removing a pointer in
     // UpdatePointersAndID, then the last index will be GetPointerCount() - 2.
-    case ACTION_POINTER_UP:
-    case ACTION_UP:
-    case ACTION_CANCEL:
+    case Action::POINTER_UP:
+    case Action::UP:
+    case Action::CANCEL:
       return ReleasePointAtIndex(GetPointerCount() - 2);
       break;
     default:
@@ -139,9 +138,9 @@ MockMotionEvent& MockMotionEvent::ReleasePointAtIndex(size_t index) {
   DCHECK_LT(index, GetPointerCount());
   if (GetPointerCount() > 1) {
     set_action_index(static_cast<int>(index));
-    set_action(ACTION_POINTER_UP);
+    set_action(Action::POINTER_UP);
   } else {
-    set_action(ACTION_UP);
+    set_action(Action::UP);
   }
   return *this;
 }
@@ -149,7 +148,7 @@ MockMotionEvent& MockMotionEvent::ReleasePointAtIndex(size_t index) {
 MockMotionEvent& MockMotionEvent::CancelPoint() {
   UpdatePointersAndID();
   DCHECK_GT(GetPointerCount(), 0U);
-  set_action(ACTION_CANCEL);
+  set_action(Action::CANCEL);
   return *this;
 }
 
@@ -183,14 +182,14 @@ void MockMotionEvent::PushPointer(float x, float y) {
 void MockMotionEvent::UpdatePointersAndID() {
   set_unique_event_id(ui::GetNextTouchEventId());
   switch (GetAction()) {
-    case ACTION_POINTER_UP: {
+    case Action::POINTER_UP: {
       int index = GetActionIndex();
       DCHECK_LT(index, static_cast<int>(GetPointerCount()));
       RemovePointerAt(index);
       break;
     }
-    case ACTION_UP:
-    case ACTION_CANCEL:
+    case Action::UP:
+    case Action::CANCEL:
       PopPointer();
       break;
     default:
@@ -209,8 +208,8 @@ std::string ToString(const MotionEvent& event) {
   std::stringstream ss;
   ss << "MotionEvent {"
      << "\n Action: " << event.GetAction();
-  if (event.GetAction() == MotionEvent::ACTION_POINTER_DOWN ||
-      event.GetAction() == MotionEvent::ACTION_POINTER_UP)
+  if (event.GetAction() == MotionEvent::Action::POINTER_DOWN ||
+      event.GetAction() == MotionEvent::Action::POINTER_UP)
     ss << "\n ActionIndex: " << event.GetActionIndex();
   ss << "\n Flags: " << event.GetFlags()
      << "\n ButtonState: " << event.GetButtonState() << "\n Pointers: [";

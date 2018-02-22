@@ -18,18 +18,11 @@ const float kTouchY = 14.2f;
 const uint32_t uniqueTouchEventId = 1234U;
 
 GestureEventData CreateGesture(EventType type) {
-  return GestureEventData(GestureEventDetails(type),
-                          0,
-                          MotionEvent::TOOL_TYPE_FINGER,
-                          base::TimeTicks(),
-                          kTouchX,
-                          kTouchY,
-                          kTouchX + 5.f,
-                          kTouchY + 10.f,
-                          1,
+  return GestureEventData(GestureEventDetails(type), 0,
+                          MotionEvent::ToolType::FINGER, base::TimeTicks(),
+                          kTouchX, kTouchY, kTouchX + 5.f, kTouchY + 10.f, 1,
                           gfx::RectF(kTouchX - 1.f, kTouchY - 1.f, 2.f, 2.f),
-                          EF_NONE,
-                          uniqueTouchEventId);
+                          EF_NONE, uniqueTouchEventId);
 }
 
 }  // namespace
@@ -75,7 +68,7 @@ TEST_F(GestureEventDataPacketTest, Basic) {
   EXPECT_EQ(GestureEventDataPacket::UNDEFINED, packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_DOWN, touch_time, kTouchX, kTouchY));
+      MockMotionEvent(MotionEvent::Action::DOWN, touch_time, kTouchX, kTouchY));
   EXPECT_TRUE(touch_time == packet.timestamp());
   EXPECT_EQ(0U, packet.gesture_count());
   EXPECT_EQ(gfx::PointF(kTouchX, kTouchY), packet.touch_location());
@@ -94,7 +87,7 @@ TEST_F(GestureEventDataPacketTest, Basic) {
 
 TEST_F(GestureEventDataPacketTest, Copy) {
   GestureEventDataPacket packet0 = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_UP));
+      MockMotionEvent(MotionEvent::Action::UP));
   packet0.Push(CreateGesture(ET_GESTURE_TAP_DOWN));
   packet0.Push(CreateGesture(ET_GESTURE_SCROLL_BEGIN));
 
@@ -107,30 +100,30 @@ TEST_F(GestureEventDataPacketTest, Copy) {
 
 TEST_F(GestureEventDataPacketTest, GestureSource) {
   GestureEventDataPacket packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_DOWN));
+      MockMotionEvent(MotionEvent::Action::DOWN));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_SEQUENCE_START,
             packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_UP));
+      MockMotionEvent(MotionEvent::Action::UP));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_SEQUENCE_END,
             packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_CANCEL));
+      MockMotionEvent(MotionEvent::Action::CANCEL));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_SEQUENCE_CANCEL,
             packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_MOVE));
+      MockMotionEvent(MotionEvent::Action::MOVE));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_MOVE, packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_POINTER_DOWN));
+      MockMotionEvent(MotionEvent::Action::POINTER_DOWN));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_START, packet.gesture_source());
 
   packet = GestureEventDataPacket::FromTouch(
-      MockMotionEvent(MotionEvent::ACTION_POINTER_UP));
+      MockMotionEvent(MotionEvent::Action::POINTER_UP));
   EXPECT_EQ(GestureEventDataPacket::TOUCH_END, packet.gesture_source());
 
   GestureEventData gesture = CreateGesture(ET_GESTURE_TAP);
