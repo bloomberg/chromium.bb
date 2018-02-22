@@ -1891,7 +1891,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="Auth failed because of bad realm or network"/>
   <int value="8" label="kinit exited with unspecified error"/>
   <int value="9" label="net exited with unspecified error"/>
-  <int value="10" label="smdclient exited with unspecified error"/>
+  <int value="10" label="smbclient exited with unspecified error"/>
   <int value="11" label="authpolicy_parser exited with unknown error"/>
   <int value="12" label="Parsing GPOs failed"/>
   <int value="13" label="GPO data is bad"/>
@@ -1915,6 +1915,27 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="29"
       label="Could not store device policy since install attributes are not
              locked yet; stored policy in cache instead."/>
+  <int value="30"
+      label="Domain join failed because the computer organizational unit does
+             not exist."/>
+  <int value="31"
+      label="Domain join failed because the computer organizational unit is
+             invalid."/>
+  <int value="32"
+      label="Setting the computer organizational unit failed with
+             insufficient permissions."/>
+  <int value="33"
+      label="Setting the computer organizational unit failed with unspecified
+             error."/>
+  <int value="34"
+      label="Fetching user policy failed because device policy was
+             unavailable."/>
+  <int value="35"
+      label="Domain join failed because the device is already joined."/>
+  <int value="36"
+      label="Domain join failed because KDC does not support encryption
+             types."/>
+  <int value="37" label="kpasswd exited with unspecified error."/>
 </enum>
 
 <enum name="AutocheckoutBubble">
