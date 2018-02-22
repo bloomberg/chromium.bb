@@ -596,6 +596,47 @@ void ApplyAutoMargins(const ComputedStyle& style,
       available_inline_size - inline_size - margins->inline_start;
 }
 
+LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
+                                  TextDirection direction,
+                                  LayoutUnit space_left) {
+  bool is_ltr = IsLtr(direction);
+  if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify)
+    text_align = is_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
+  else if (text_align == ETextAlign::kEnd)
+    text_align = is_ltr ? ETextAlign::kRight : ETextAlign::kLeft;
+
+  switch (text_align) {
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft: {
+      // The direction of the block should determine what happens with wide
+      // lines. In particular with RTL blocks, wide lines should still spill
+      // out to the left.
+      if (is_ltr)
+        return LayoutUnit();
+      return space_left.ClampPositiveToZero();
+    }
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight: {
+      // Wide lines spill out of the block based off direction.
+      // So even if text-align is right, if direction is LTR, wide lines
+      // should overflow out of the right side of the block.
+      if (space_left > LayoutUnit() || !is_ltr)
+        return space_left;
+      return LayoutUnit();
+    }
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter: {
+      if (is_ltr || space_left > LayoutUnit())
+        return (space_left / 2).ClampNegativeToZero();
+      // In RTL, wide lines should spill out to the left, same as kRight.
+      return space_left;
+    }
+    default:
+      NOTREACHED();
+      return LayoutUnit();
+  }
+}
+
 LayoutUnit ConstrainByMinMax(LayoutUnit length,
                              Optional<LayoutUnit> min,
                              Optional<LayoutUnit> max) {

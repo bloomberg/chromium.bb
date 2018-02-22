@@ -196,6 +196,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
+      NGLayoutInputNode child,
       const NGFragment&,
       const NGBoxStrut& child_margins,
       const WTF::Optional<NGBfcOffset>& known_fragment_offset);
