@@ -1833,8 +1833,17 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNavigationToExternalProtocol) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewSizeTest,
-                       Shim_TestResizeWebviewWithDisplayNoneResizesContent) {
+// Flaky on Chromium OS: https://crbug.com/814040
+#if defined(OS_CHROMEOS)
+#define MAYBE_Shim_TestResizeWebviewWithDisplayNoneResizesContent \
+  DISABLED_Shim_TestResizeWebviewWithDisplayNoneResizesContent
+#else
+#define MAYBE_Shim_TestResizeWebviewWithDisplayNoneResizesContent \
+  Shim_TestResizeWebviewWithDisplayNoneResizesContent
+#endif
+IN_PROC_BROWSER_TEST_P(
+    WebViewSizeTest,
+    MAYBE_Shim_TestResizeWebviewWithDisplayNoneResizesContent) {
   TestHelper("testResizeWebviewWithDisplayNoneResizesContent",
              "web_view/shim",
              NO_TEST_SERVER);
