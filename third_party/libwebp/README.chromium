@@ -25,3 +25,4 @@ Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   296c7dc4 fix lossless decoding w/WEBP_REDUCE_SIZE
   05f6fe24 upsampling: rm asserts w/REDUCE_CSP+OMIT_C_CODE
+  6de58603 MIPS64: Fix defined-but-not-used errors with WEBP_REDUCE_CSP
