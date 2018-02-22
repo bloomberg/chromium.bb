@@ -117,7 +117,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void RunJavaScriptDialog(RenderFrameHost* render_frame_host,
                                    const base::string16& message,
                                    const base::string16& default_prompt,
-                                   const GURL& frame_url,
                                    JavaScriptDialogType type,
                                    IPC::Message* reply_msg) {}
 

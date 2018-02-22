@@ -30,7 +30,7 @@ class CONTENT_EXPORT JavaScriptDialogManager {
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
   // |true| is returned in it, the caller will handle faking the reply.
   virtual void RunJavaScriptDialog(WebContents* web_contents,
-                                   const GURL& alerting_frame_url,
+                                   RenderFrameHost* render_frame_host,
                                    JavaScriptDialogType dialog_type,
                                    const base::string16& message_text,
                                    const base::string16& default_prompt_text,

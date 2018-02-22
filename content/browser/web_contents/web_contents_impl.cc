@@ -4654,7 +4654,6 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
 void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
                                           const base::string16& message,
                                           const base::string16& default_prompt,
-                                          const GURL& frame_url,
                                           JavaScriptDialogType dialog_type,
                                           IPC::Message* reply_msg) {
   // Running a dialog causes an exit to webpage-initiated fullscreen.
@@ -4693,13 +4692,14 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
 
   for (auto* handler : page_handlers) {
     handler->DidRunJavaScriptDialog(
-        frame_url, message, default_prompt, dialog_type,
+        render_frame_host->GetLastCommittedURL(), message, default_prompt,
+        dialog_type,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false));
   }
 
   if (dialog_manager_) {
     dialog_manager_->RunJavaScriptDialog(
-        this, frame_url, dialog_type, message, default_prompt,
+        this, render_frame_host, dialog_type, message, default_prompt,
         base::BindOnce(&CloseDialogCallbackWrapper::Run, wrapper, false),
         &suppress_this_message);
   }

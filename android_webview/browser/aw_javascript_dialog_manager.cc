@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace android_webview {
@@ -18,7 +19,7 @@ AwJavaScriptDialogManager::~AwJavaScriptDialogManager() {}
 
 void AwJavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
-    const GURL& origin_url,
+    content::RenderFrameHost* render_frame_host,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -31,8 +32,9 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
     return;
   }
 
-  bridge->RunJavaScriptDialog(dialog_type, origin_url, message_text,
-                              default_prompt_text, std::move(callback));
+  bridge->RunJavaScriptDialog(
+      dialog_type, render_frame_host->GetLastCommittedURL(), message_text,
+      default_prompt_text, std::move(callback));
 }
 
 void AwJavaScriptDialogManager::RunBeforeUnloadDialog(

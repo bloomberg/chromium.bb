@@ -44,7 +44,7 @@ JavaScriptDialogHelper::~JavaScriptDialogHelper() {
 
 void JavaScriptDialogHelper::RunJavaScriptDialog(
     content::WebContents* web_contents,
-    const GURL& alerting_frame_url,
+    content::RenderFrameHost* render_frame_host,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -57,7 +57,8 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
                          base::UTF16ToUTF8(message_text));
   request_info.SetString(webview::kMessageType,
                          JavaScriptDialogTypeToString(dialog_type));
-  request_info.SetString(guest_view::kUrl, alerting_frame_url.spec());
+  request_info.SetString(guest_view::kUrl,
+                         render_frame_host->GetLastCommittedURL().spec());
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromWebContents(web_contents);
   web_view_permission_helper->RequestPermission(
