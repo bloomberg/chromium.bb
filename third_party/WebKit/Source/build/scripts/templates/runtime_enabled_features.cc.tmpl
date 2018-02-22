@@ -12,7 +12,11 @@ namespace blink {
 
 RuntimeEnabledFeatures::Backup::Backup()
   : {% for feature in standard_features -%}
+{% if feature.origin_trial_feature_name %}
+    {{feature.class_member_name}}(RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
+{% else %}
     {{feature.class_member_name}}(RuntimeEnabledFeatures::{{feature.name}}Enabled())
+{% endif %}
     {%- if not loop.last %},
     {%+ endif -%}
     {% endfor %} {}
