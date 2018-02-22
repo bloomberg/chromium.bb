@@ -2264,7 +2264,7 @@ public class ChromeTabbedActivity
         if (getFindToolbarManager() != null) getFindToolbarManager().hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
         if (getAppMenuHandler() != null) getAppMenuHandler().hideAppMenu();
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
+        setStatusBarColor(null, Color.BLACK);
         StartupMetrics.getInstance().recordOpenedTabSwitcher();
     }
 
@@ -2285,9 +2285,17 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    protected void setStatusBarColor(Tab tab, int color) {
+    protected void setStatusBarColor(@Nullable Tab tab, int color) {
         if (DeviceFormFactor.isTablet()) return;
-        super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
+
+        int tabSwitcherColor = Color.BLACK;
+        boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        if (supportsDarkStatusIcons && supportsModernDesign()
+                && FeatureUtilities.isChromeModernDesignEnabled()) {
+            tabSwitcherColor =
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+        }
+        super.setStatusBarColor(tab, isInOverviewMode() ? tabSwitcherColor : color);
     }
 
     @Override

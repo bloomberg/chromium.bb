@@ -789,9 +789,28 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @param tab The tab that is currently showing.
      * @param color The color that the status bar should be set to.
      */
-    protected void setStatusBarColor(Tab tab, int color) {
-        int statusBarColor = (tab != null && tab.isDefaultThemeColor())
-                ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
+    protected void setStatusBarColor(@Nullable Tab tab, int color) {
+        boolean useModernDesign =
+                supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled();
+        int statusBarColor = color;
+        boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        View root = getWindow().getDecorView().getRootView();
+        if (useModernDesign && supportsDarkStatusIcons) {
+            int systemUiVisibility = root.getSystemUiVisibility();
+            boolean needsDarkStatusBarIcons =
+                    !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
+            if (needsDarkStatusBarIcons) {
+                systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            } else if (!needsDarkStatusBarIcons) {
+                systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            }
+            root.setSystemUiVisibility(systemUiVisibility);
+        } else {
+            statusBarColor = (tab != null && tab.isDefaultThemeColor())
+                    ? Color.BLACK
+                    : ColorUtils.getDarkenedColorForStatusBar(color);
+        }
+
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 
