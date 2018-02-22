@@ -403,7 +403,7 @@ const base::Feature kUseMojoAudioInputStreamFactory{
 // Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
 // AudioMessageFilter and AudioRendererHost.
 const base::Feature kUseMojoAudioOutputStreamFactory{
-    "UseMojoAudioOutputStreamFactory", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseMojoAudioOutputStreamFactory", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether vibrate requires user gesture.
 const base::Feature kVibrateRequiresUserGesture{
