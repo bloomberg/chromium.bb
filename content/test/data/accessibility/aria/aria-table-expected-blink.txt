@@ -14,3 +14,7 @@ rootWebArea
 ++++++cell selectable name='Blink'
 ++++++++staticText name='Blink'
 ++++++++++inlineTextBox name='Blink'
+++++column
+++++column
+++++tableHeaderContainer
+<-- End-of-file -->

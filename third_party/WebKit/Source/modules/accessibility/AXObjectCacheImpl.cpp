@@ -306,7 +306,13 @@ static bool NodeHasRole(Node* node, const String& role) {
 }
 
 static bool NodeHasGridRole(Node* node) {
-  return NodeHasRole(node, "grid") || NodeHasRole(node, "treegrid");
+  return NodeHasRole(node, "grid") || NodeHasRole(node, "treegrid") ||
+         NodeHasRole(node, "table");
+}
+
+static bool NodeHasCellRole(Node* node) {
+  return NodeHasRole(node, "cell") || NodeHasRole(node, "gridcell") ||
+         NodeHasRole(node, "columnheader") || NodeHasRole(node, "rowheader");
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -326,8 +332,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXARIAGrid::Create(layout_object, *this);
   if (NodeHasRole(node, "row"))
     return AXARIAGridRow::Create(layout_object, *this);
-  if (NodeHasRole(node, "gridcell") || NodeHasRole(node, "columnheader") ||
-      NodeHasRole(node, "rowheader"))
+  if (NodeHasCellRole(node))
     return AXARIAGridCell::Create(layout_object, *this);
 
   // media controls
