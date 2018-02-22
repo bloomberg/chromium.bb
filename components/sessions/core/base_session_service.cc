@@ -133,7 +133,7 @@ void BaseSessionService::Save() {
   // opportunity to append more commands.
   delegate_->OnWillSaveCommands();
 
-  if (pending_commands_.empty() && !pending_reset_)
+  if (pending_commands_.empty())
     return;
 
   // We create a new vector which will receive all elements from the

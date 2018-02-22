@@ -40,6 +40,7 @@ class BrowserTabRestorer : public sessions::TabRestoreServiceObserver,
   explicit BrowserTabRestorer(Browser* browser);
 
   // TabRestoreServiceObserver:
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
   void TabRestoreServiceDestroyed(
       sessions::TabRestoreService* service) override;
   void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override;
@@ -80,6 +81,9 @@ BrowserTabRestorer::BrowserTabRestorer(Browser* browser)
                                    base::WrapUnique(this));
   tab_restore_service_->LoadTabsFromLastSession();
 }
+
+void BrowserTabRestorer::TabRestoreServiceChanged(
+    sessions::TabRestoreService* service) {}
 
 void BrowserTabRestorer::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {}

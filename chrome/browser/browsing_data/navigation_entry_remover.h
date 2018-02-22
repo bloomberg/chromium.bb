@@ -13,8 +13,6 @@ class Profile;
 namespace browsing_data {
 
 // Remove navigation entries from the tabs of all browsers of |profile|.
-// Recent tabs will be cleaned up as well and the session will be rewritten.
-// The last session will be removed as it can't be cleaned up easily.
 // If a valid time_range is supplied, all entries within this time range will be
 // removed and |deleted_rows| is ignored.
 // Otherwise entries matching |deleted_rows| will be deleted.

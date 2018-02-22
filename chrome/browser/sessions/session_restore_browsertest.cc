@@ -16,7 +16,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -850,33 +849,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(url2_,
-            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
-  GoBack(new_browser);
-  ASSERT_EQ(url1_,
-            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
-}
-
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {
-  ui_test_utils::NavigateToURL(browser(), url1_);
-  ui_test_utils::NavigateToURL(browser(), url2_);
-  ui_test_utils::NavigateToURL(browser(), url3_);
-
-  content::NavigationController& controller =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-  // Three urls and the NTP.
-  EXPECT_EQ(4, controller.GetEntryCount());
-  controller.DeleteNavigationEntries(
-      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
-        return entry.GetURL() == url2_;
-      }));
-  EXPECT_EQ(3, controller.GetEntryCount());
-
-  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
-  content::NavigationController& new_controller =
-      new_browser->tab_strip_model()->GetActiveWebContents()->GetController();
-  EXPECT_EQ(3, new_controller.GetEntryCount());
-  ASSERT_EQ(1u, active_browser_list_->size());
-  ASSERT_EQ(url3_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   GoBack(new_browser);
   ASSERT_EQ(url1_,

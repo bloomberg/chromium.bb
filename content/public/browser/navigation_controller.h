@@ -468,7 +468,7 @@ class NavigationController {
   virtual void PruneAllButLastCommitted() = 0;
 
   // Removes all navigation entries matching |deletionPredicate| except the last
-  // commited entry.
+  // committed entry.
   // Callers must ensure |CanPruneAllButLastCommitted| returns true before
   // calling this, or it will crash.
   virtual void DeleteNavigationEntries(

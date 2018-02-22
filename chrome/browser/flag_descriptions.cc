@@ -1238,7 +1238,7 @@ extern const char kRegionalLocalesAsDisplayUIDescription[] =
     "from the user selection based on some simple fallback logic.";
 
 const char kRemoveNavigationHistoryName[] =
-    "Remove navigation entry on history deletion";
+    "Remove navigation entries on history deletion";
 const char kRemoveNavigationHistoryDescription[] =
     "Remove a navigation entry when the corresponding history entry has been "
     "deleted.";
