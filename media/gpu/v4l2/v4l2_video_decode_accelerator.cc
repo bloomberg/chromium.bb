@@ -1270,11 +1270,18 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
       // change. They implicitly send a V4L2_DEC_CMD_STOP and V4L2_DEC_CMD_START
       // to the decoder.
       if (input_buffer_queued_count_ == 0) {
-        if (!SendDecoderCmdStop())
-          return;
         input_ready_queue_.pop();
         free_input_buffers_.push_back(buffer);
         input_record.input_id = -1;
+        if (coded_size_.IsEmpty()) {
+          // If coded_size_.IsEmpty(), no output buffer could have been
+          // allocated and there is nothing to flush. We can NotifyFlushDone()
+          // immediately, without requesting flush to the driver via
+          // SendDecoderCmdStop().
+          NotifyFlushDoneIfNeeded();
+        } else if (!SendDecoderCmdStop()) {
+          return;
+        }
       } else {
         break;
       }
