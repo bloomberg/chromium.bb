@@ -323,7 +323,7 @@ bool TracingControllerImpl::StopTracing(
 bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
     const std::string& agent_label) {
-  if (!IsTracing())
+  if (!IsTracing() || drainer_)
     return false;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -397,6 +397,7 @@ void TracingControllerImpl::CompleteFlush() {
   filtered_metadata_.reset(nullptr);
   trace_data_endpoint_ = nullptr;
   trace_config_ = nullptr;
+  drainer_ = nullptr;
 }
 
 void TracingControllerImpl::OnDataComplete() {
