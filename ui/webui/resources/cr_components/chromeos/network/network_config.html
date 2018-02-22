@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
@@ -13,14 +12,6 @@
 <dom-module id="network-config">
   <template>
     <style include="network-shared iron-flex">
-      #error {
-        color: red;
-        font-weight: 500;
-      }
-
-      cr-network-icon {
-        -webkit-margin-end: 10px;
-      }
     </style>
 
     <!-- SSID (WiFi) -->
@@ -165,26 +156,6 @@
                       security_, eapProperties_.*, shareAllowEnable)]]"
             aria-label="[[i18n('networkConfigShare')]]">
         </paper-toggle-button>
-      </div>
-    </template>
-
-    <template is="dom-if"
-        if="[[connectingIsVisible_(propertiesSent_, error_)]]" restamp>
-      <div class="property-box">
-        <div class="start layout horizontal center">
-          <cr-network-icon is-list-item
-              network-state="[[getIconState_(configProperties_)]]">
-          </cr-network-icon>
-          <div>[[i18n('OncConnecting')]]</div>
-        </div>
-      </div>
-    </template>
-
-    <template is="dom-if" if="[[error_]]" restamp>
-      <div class="property-box">
-        <div id="error" class="start">
-          [[getError_(error_)]]
-        </div>
       </div>
     </template>
 
