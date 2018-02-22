@@ -470,8 +470,14 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     decoder_.reset();
   }
   command_buffer_.reset();
-  context_ = nullptr;
+
+  // Destroy the surface with the context current, some surface destructors make
+  // GL calls.
+  if (context_)
+    context_->MakeCurrent(surface_.get());
   surface_ = nullptr;
+
+  context_ = nullptr;
   if (sync_point_order_data_) {
     sync_point_order_data_->Destroy();
     sync_point_order_data_ = nullptr;
