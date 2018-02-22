@@ -1833,7 +1833,8 @@ void LayoutObject::SetPseudoStyle(scoped_refptr<ComputedStyle> pseudo_style) {
 
 void LayoutObject::FirstLineStyleDidChange(const ComputedStyle& old_style,
                                            const ComputedStyle& new_style) {
-  StyleDifference diff = old_style.VisualInvalidationDiff(new_style);
+  StyleDifference diff =
+      old_style.VisualInvalidationDiff(GetDocument(), new_style);
 
   if (diff.NeedsFullPaintInvalidation() ||
       diff.TextDecorationOrColorChanged()) {
@@ -1893,7 +1894,7 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
 
   StyleDifference diff;
   if (style_)
-    diff = style_->VisualInvalidationDiff(*style);
+    diff = style_->VisualInvalidationDiff(GetDocument(), *style);
 
   diff = AdjustStyleDifference(diff);
 
