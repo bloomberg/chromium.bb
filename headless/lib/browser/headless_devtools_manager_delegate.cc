@@ -951,7 +951,7 @@ void HeadlessDevToolsManagerDelegate::BeginFrame(
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunAllCompositorStagesBeforeDraw) &&
+          ::switches::kRunAllCompositorStagesBeforeDraw) &&
       headless_contents->HasPendingFrame()) {
     LOG(WARNING) << "A BeginFrame is already in flight. In "
                     "--run-all-compositor-stages-before-draw mode, only a "
