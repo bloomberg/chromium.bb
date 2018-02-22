@@ -246,6 +246,8 @@ void PaintLayerScrollableArea::CalculateScrollbarModes(
 }
 
 PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
+  if (HasBeenDisposed())
+    return nullptr;
   if (Page* page = GetLayoutBox()->GetFrame()->GetPage())
     return &page->GetChromeClient();
   return nullptr;
@@ -713,12 +715,16 @@ IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
 }
 
 bool PaintLayerScrollableArea::ScrollAnimatorEnabled() const {
+  if (HasBeenDisposed())
+    return false;
   if (Settings* settings = GetLayoutBox()->GetFrame()->GetSettings())
     return settings->GetScrollAnimatorEnabled();
   return false;
 }
 
 bool PaintLayerScrollableArea::ShouldSuspendScrollAnimations() const {
+  if (HasBeenDisposed())
+    return true;
   LayoutView* view = GetLayoutBox()->View();
   if (!view)
     return true;
@@ -2114,6 +2120,8 @@ bool PaintLayerScrollableArea::UsesCompositedScrolling() const {
 }
 
 bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
+  if (HasBeenDisposed())
+    return true;
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (frame->View()->GetMainThreadScrollingReasons())
       return true;
