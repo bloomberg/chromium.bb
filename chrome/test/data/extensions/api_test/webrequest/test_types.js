@@ -152,6 +152,7 @@ runTests([
           // tabId 0 = tab opened by test runner;
           // tabId 1 = this tab.
           tabId: 1,
+          initiator: "null",
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -162,6 +163,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: "null",
         },
       },
       { label: 'onSendHeaders',
@@ -172,6 +174,7 @@ runTests([
           frameId: 1,
           parentFrameId: 0,
           tabId: 1,
+          initiator: "null",
         },
       },
       { label: 'onHeadersReceived',
@@ -184,6 +187,7 @@ runTests([
           tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: "null",
         },
       },
       { label: 'onResponseStarted',
@@ -198,6 +202,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: "null",
         },
       },
       { label: 'onCompleted',
@@ -212,6 +217,7 @@ runTests([
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
+          initiator: "null",
         },
       }],
       [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
