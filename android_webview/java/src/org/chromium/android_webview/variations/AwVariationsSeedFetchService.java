@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.variations;
 
-import android.annotation.TargetApi;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.ComponentName;
@@ -12,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -37,7 +35,6 @@ import java.util.ArrayList;
  * Variations Seed Fetch Service which is one part of the work of adding Variations to Android
  * WebView.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP) // JobService requires API level 21.
 public class AwVariationsSeedFetchService extends JobService {
     private static final String TAG = "AwVartnsSeedFetchSvc";
 

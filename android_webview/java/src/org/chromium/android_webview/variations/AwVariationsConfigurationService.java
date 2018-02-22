@@ -4,14 +4,12 @@
 
 package org.chromium.android_webview.variations;
 
-import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,7 +46,6 @@ import java.util.List;
  * checking if there is a current seed fetch job running, if there is pending job and if the seed is
  * expired.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP) // JobService requires API level 21.
 public class AwVariationsConfigurationService extends Service {
     private static final String TAG = "AwVariatnsConfigSvc";
 

@@ -7,8 +7,6 @@ package org.chromium.android_webview.test.variations;
 import static org.chromium.android_webview.variations.AwVariationsUtils.SEED_DATA_FILENAME;
 import static org.chromium.android_webview.variations.AwVariationsUtils.SEED_PREF_FILENAME;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -28,7 +26,6 @@ import org.chromium.android_webview.variations.AwVariationsUtils.SeedPreference;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
@@ -40,8 +37,6 @@ import java.io.IOException;
  * AwVariationsSeedFetchService which can't work under Android L.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@TargetApi(Build.VERSION_CODES.LOLLIPOP) // JobService requires API level 21.
 public class AwVariationsConfigurationServiceTest {
     private SeedInfo mSeedInfo;
 

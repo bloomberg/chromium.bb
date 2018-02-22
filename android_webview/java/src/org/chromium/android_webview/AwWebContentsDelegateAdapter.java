@@ -5,12 +5,10 @@
 package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -34,7 +32,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
  * This class also serves a secondary function of routing certain callbacks from the content layer
  * to specific listener interfaces.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private static final String TAG = "AwWebContentsDelegateAdapter";
 

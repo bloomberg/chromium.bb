@@ -144,7 +144,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @Override
     // BUG=6790250 |javaScriptInterfaces| was only ever used by the obsolete DumpRenderTree
     // so is ignored. TODO: remove it from WebViewProvider.
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void init(final Map<String, Object> javaScriptInterfaces,
             final boolean privateBrowsing) {
         if (privateBrowsing) {

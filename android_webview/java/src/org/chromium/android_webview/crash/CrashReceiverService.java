@@ -4,13 +4,11 @@
 
 package org.chromium.android_webview.crash;
 
-import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
@@ -27,7 +25,6 @@ import java.io.IOException;
 /**
  * Service that is responsible for receiving crash dumps from an application, for upload.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class CrashReceiverService extends Service {
     private static final String TAG = "CrashReceiverService";
 

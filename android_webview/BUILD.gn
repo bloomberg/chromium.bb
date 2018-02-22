@@ -987,12 +987,14 @@ android_library("android_webview_crash_services_java") {
   deps = [
     ":android_webview_commandline_java",
     ":android_webview_platform_services_java",
+    ":system_webview_manifest",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/minidump_uploader:minidump_uploader_java",
   ]
 
   srcjar_deps = [ ":crash_receiver_aidl" ]
+  android_manifest_for_lint = system_webview_android_manifest
 }
 
 android_aidl("crash_receiver_aidl") {
