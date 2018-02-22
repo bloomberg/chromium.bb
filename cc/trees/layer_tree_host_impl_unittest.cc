@@ -4338,7 +4338,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
-    EXPECT_FALSE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
   }
 
@@ -4371,7 +4370,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
-    EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
 
     host_impl_->active_tree()
@@ -4380,7 +4378,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->user_scrollable_vertical = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     metadata = host_impl_->MakeCompositorFrameMetadata();
-    EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_TRUE(metadata.root_overflow_y_hidden);
   }
 
@@ -4397,7 +4394,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
-    EXPECT_FALSE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
   }
 
@@ -4411,7 +4407,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
-    EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
 
     host_impl_->active_tree()
@@ -4420,7 +4415,6 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->user_scrollable_vertical = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     metadata = host_impl_->MakeCompositorFrameMetadata();
-    EXPECT_TRUE(metadata.root_overflow_x_hidden);
     EXPECT_TRUE(metadata.root_overflow_y_hidden);
   }
 

@@ -620,7 +620,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
   const float min_page_scale_factor = 3.5f;
   const float max_page_scale_factor = 4.6f;
-  const bool root_overflow_x_hidden = true;
   const bool root_overflow_y_hidden = true;
   const bool may_contain_video = true;
   const bool is_resourceless_software_draw_with_scroll_or_animation = true;
@@ -663,7 +662,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.root_layer_size = root_layer_size;
   input.min_page_scale_factor = min_page_scale_factor;
   input.max_page_scale_factor = max_page_scale_factor;
-  input.root_overflow_x_hidden = root_overflow_x_hidden;
   input.root_overflow_y_hidden = root_overflow_y_hidden;
   input.may_contain_video = may_contain_video;
   input.is_resourceless_software_draw_with_scroll_or_animation =
@@ -690,7 +688,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(root_layer_size, output.root_layer_size);
   EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
-  EXPECT_EQ(root_overflow_x_hidden, output.root_overflow_x_hidden);
   EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
   EXPECT_EQ(may_contain_video, output.may_contain_video);
   EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,

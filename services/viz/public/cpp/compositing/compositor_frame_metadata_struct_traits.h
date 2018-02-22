@@ -51,11 +51,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.max_page_scale_factor;
   }
 
-  static bool root_overflow_x_hidden(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.root_overflow_x_hidden;
-  }
-
   static bool root_overflow_y_hidden(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.root_overflow_y_hidden;
