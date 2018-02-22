@@ -9,7 +9,7 @@
   Exposed=(Window,LayoutWorklet,PaintWorklet),
   RaisesException=Constructor
 ] interface CSSNumericArray {
+  iterable<CSSNumericValue>;
   readonly attribute unsigned long length;
   getter CSSNumericValue(unsigned long index);
-  iterable<CSSNumericValue>;
 };
