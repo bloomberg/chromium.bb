@@ -1567,7 +1567,7 @@ int QuicChromiumClientSession::HandleWriteError(
     base::UmaHistogramSparse("Net.QuicSession.WriteError.HandshakeConfirmed",
                              -error_code);
   }
-  if (stream_factory_ == nullptr ||
+  if (error_code == ERR_MSG_TOO_BIG || stream_factory_ == nullptr ||
       !stream_factory_->migrate_sessions_on_network_change()) {
     return error_code;
   }
