@@ -2537,6 +2537,14 @@ public class Tab
     }
 
     /**
+     * Called when navigation entries were removed.
+     */
+    void notifyNavigationEntriesDeleted() {
+        mIsTabStateDirty = true;
+        for (TabObserver observer : mObservers) observer.onNavigationEntriesDeleted(this);
+    }
+
+    /**
      * Returns the SnackbarManager for the activity that owns this Tab, if any. May
      * return null.
      */

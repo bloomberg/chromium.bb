@@ -297,4 +297,10 @@ public interface TabObserver {
      * @param isInteractable Whether or not the tab is interactable.
      */
     public void onInteractabilityChanged(boolean isInteractable);
+
+    /**
+     * Called when navigation entries of a tab have been deleted.
+     * @param tab The notifying {@link Tab}.
+     */
+    public void onNavigationEntriesDeleted(Tab tab);
 }

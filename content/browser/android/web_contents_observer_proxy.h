@@ -51,6 +51,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void DocumentLoadedInFrame(RenderFrameHost* render_frame_host) override;
   void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override;
+  void NavigationEntriesDeleted() override;
   void WebContentsDestroyed() override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
