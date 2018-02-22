@@ -1866,9 +1866,6 @@ if (enable_java_templates) {
   #   keystore_password: Keystore password.
   template("finalize_apk") {
     action(target_name) {
-      deps = []
-      script = "//build/android/gyp/finalize_apk.py"
-      depfile = "$target_gen_dir/$target_name.d"
       forward_variables_from(invoker,
                              [
                                "deps",
@@ -1877,10 +1874,13 @@ if (enable_java_templates) {
                                "testonly",
                              ])
 
-      sources = [
-        invoker.input_apk_path,
-      ]
+      script = "//build/android/gyp/finalize_apk.py"
+      _apksigner = "$android_sdk_build_tools/apksigner"
+      _zipalign = "$android_sdk_build_tools/zipalign"
       inputs = [
+        _apksigner,
+        _zipalign,
+        invoker.input_apk_path,
         invoker.keystore_path,
       ]
       outputs = [
@@ -1891,14 +1891,14 @@ if (enable_java_templates) {
       ]
 
       args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--zipalign-path",
-        rebase_path(zipalign_path, root_build_dir),
         "--unsigned-apk-path",
         rebase_path(invoker.input_apk_path, root_build_dir),
         "--final-apk-path",
         rebase_path(invoker.output_apk_path, root_build_dir),
+        "--apksigner-path",
+        rebase_path(_apksigner, root_build_dir),
+        "--zipalign-path",
+        rebase_path(_zipalign, root_build_dir),
         "--key-path",
         rebase_path(invoker.keystore_path, root_build_dir),
         "--key-name",
