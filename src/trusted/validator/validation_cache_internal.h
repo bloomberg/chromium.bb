@@ -10,6 +10,7 @@
  * included by relying code.
  */
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_VALIDATION_CACHE_INTERNAL_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_VALIDATION_CACHE_INTERNAL_H__
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
