@@ -19,8 +19,10 @@ class RemotingKeychain : public Keychain {
   static RemotingKeychain* GetInstance();
 
   // Keychain overrides.
-  void SetData(Key key, const std::string& account, const Data& data) override;
-  Data GetData(Key key, const std::string& account) const override;
+  void SetData(Key key,
+               const std::string& account,
+               const std::string& data) override;
+  std::string GetData(Key key, const std::string& account) const override;
   void RemoveData(Key key, const std::string& account) override;
 
   void SetServicePrefixForTesting(const std::string& service_prefix);

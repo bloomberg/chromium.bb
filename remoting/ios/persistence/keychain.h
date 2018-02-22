@@ -5,7 +5,6 @@
 #ifndef REMOTING_IOS_PERSISTENCE_KEYCHAIN_H_
 #define REMOTING_IOS_PERSISTENCE_KEYCHAIN_H_
 
-#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -14,8 +13,6 @@ namespace remoting {
 // Interface for the iOS keychain. This allows it to be mocked out in tests.
 class Keychain {
  public:
-  using Data = std::vector<uint8_t>;
-
   enum class Key {
     REFRESH_TOKEN,
     PAIRING_INFO,
@@ -31,13 +28,14 @@ class Keychain {
   // account.
   virtual void SetData(Key key,
                        const std::string& account,
-                       const Data& data) = 0;
+                       const std::string& data) = 0;
 
   // Retrieves the data of a keychain entry that matches the key and account
   // name. Returns an empty data if no matching data is found.
-  virtual Data GetData(Key key, const std::string& account) const = 0;
+  virtual std::string GetData(Key key, const std::string& account) const = 0;
 
-  // Removes an entry that matches the key and account name.
+  // Removes an entry that matches the key and account name. Does nothing if no
+  // matching entry is found.
   virtual void RemoveData(Key key, const std::string& account) = 0;
 
   static std::string KeyToString(Key key);
