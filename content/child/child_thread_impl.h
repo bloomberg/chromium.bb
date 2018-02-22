@@ -32,7 +32,7 @@
 #include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
 
 #if defined(OS_WIN)
-#include "content/common/font_cache_win.mojom.h"
+#include "content/public/common/font_cache_win.mojom.h"
 #endif
 
 namespace base {

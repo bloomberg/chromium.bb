@@ -120,7 +120,6 @@ source_set("common") {
     "fileapi/file_system_messages.h",
     "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",
-    "font_cache_dispatcher_win.h",
     "font_config_ipc_linux.cc",
     "font_config_ipc_linux.h",
     "font_list.cc",
@@ -589,10 +588,7 @@ mojom("mojo_bindings") {
   ]
 
   if (is_win) {
-    sources += [
-      "dwrite_font_proxy.mojom",
-      "font_cache_win.mojom",
-    ]
+    sources += [ "dwrite_font_proxy.mojom" ]
   }
 
   import_dirs = [ "//mojo/services" ]
