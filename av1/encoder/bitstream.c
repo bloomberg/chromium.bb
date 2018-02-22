@@ -441,6 +441,22 @@ static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
 }
 
 #if CONFIG_SPATIAL_SEGMENTATION
+static INLINE void set_spatial_segment_id(const AV1_COMMON *const cm,
+                                          uint8_t *segment_ids,
+                                          BLOCK_SIZE bsize, int mi_row,
+                                          int mi_col, int segment_id) {
+  const int mi_offset = mi_row * cm->mi_cols + mi_col;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
+  const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
+  int x, y;
+
+  for (y = 0; y < ymis; ++y)
+    for (x = 0; x < xmis; ++x)
+      segment_ids[mi_offset + y * cm->mi_cols + x] = segment_id;
+}
+
 static int neg_interleave(int x, int ref, int max) {
   const int diff = x - ref;
   if (!ref) return x;
