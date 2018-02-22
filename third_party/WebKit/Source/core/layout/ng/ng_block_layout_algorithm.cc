@@ -240,6 +240,7 @@ Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
+    NGLayoutInputNode child,
     const NGFragment& fragment,
     const NGBoxStrut& child_margins,
     const WTF::Optional<NGBfcOffset>& known_fragment_offset) {
@@ -251,6 +252,15 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 
   LayoutUnit inline_offset =
       border_scrollbar_padding_.inline_start + child_margins.inline_start;
+
+  if (child.IsInline()) {
+    LayoutUnit offset =
+        LineOffsetForTextAlign(Style().GetTextAlign(), Style().Direction(),
+                               child_available_size_.inline_size);
+    if (IsRtl(Style().Direction()))
+      offset = child_available_size_.inline_size - offset;
+    inline_offset += offset;
+  }
 
   // If we've reached here, both the child and the current layout don't have a
   // BFC offset yet. Children in this situation are always placed at a logical
@@ -1014,8 +1024,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   const auto& physical_fragment = *layout_result->PhysicalFragment();
   NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
-  NGLogicalOffset logical_offset =
-      CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
+  NGLogicalOffset logical_offset = CalculateLogicalOffset(
+      child, fragment, child_data.margins, child_bfc_offset);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     if (BreakBeforeChild(child, *layout_result, logical_offset.block_offset,
@@ -1190,6 +1200,12 @@ NGBfcOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
           child_data.margins.LineLeft(ConstraintSpace().Direction()),
       child_data.bfc_offset_estimate.block_offset +
           layout_result.EndMarginStrut().Sum()};
+
+  if (child.IsInline()) {
+    child_bfc_offset.line_offset +=
+        LineOffsetForTextAlign(Style().GetTextAlign(), Style().Direction(),
+                               child_available_size_.inline_size);
+  }
 
   *empty_block_affected_by_clearance =
       AdjustToClearance(space.ClearanceOffset(), &child_bfc_offset);

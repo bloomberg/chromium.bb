@@ -424,51 +424,11 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
 LayoutUnit NGInlineLayoutAlgorithm::OffsetForTextAlign(
     const NGLineInfo& line_info,
     ETextAlign text_align) const {
-  bool is_base_ltr = IsLtr(line_info.BaseDirection());
-  while (true) {
-    switch (text_align) {
-      case ETextAlign::kLeft:
-      case ETextAlign::kWebkitLeft: {
-        // The direction of the block should determine what happens with wide
-        // lines. In particular with RTL blocks, wide lines should still spill
-        // out to the left.
-        if (is_base_ltr)
-          return LayoutUnit();
-        NGLineAlign align(line_info);
-        return align.space.ClampPositiveToZero();
-      }
-      case ETextAlign::kRight:
-      case ETextAlign::kWebkitRight: {
-        // Wide lines spill out of the block based off direction.
-        // So even if text-align is right, if direction is LTR, wide lines
-        // should overflow out of the right side of the block.
-        NGLineAlign align(line_info);
-        if (align.space > 0 || !is_base_ltr)
-          return align.space;
-        return LayoutUnit();
-      }
-      case ETextAlign::kCenter:
-      case ETextAlign::kWebkitCenter: {
-        NGLineAlign align(line_info);
-        if (is_base_ltr || align.space > 0)
-          return (align.space / 2).ClampNegativeToZero();
-        // In RTL, wide lines should spill out to the left, same as kRight.
-        return align.space;
-      }
-      case ETextAlign::kStart:
-        text_align = is_base_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
-        continue;
-      case ETextAlign::kEnd:
-        text_align = is_base_ltr ? ETextAlign::kRight : ETextAlign::kLeft;
-        continue;
-      case ETextAlign::kJustify:
-        // Justification is applied in earlier phase, see PlaceItems().
-        NOTREACHED();
-        return LayoutUnit();
-    }
-    NOTREACHED();
-    return LayoutUnit();
-  }
+  // Justification is applied in earlier phase, see PlaceItems().
+  DCHECK_NE(text_align, ETextAlign::kJustify);
+
+  return LineOffsetForTextAlign(text_align, line_info.BaseDirection(),
+                                NGLineAlign(line_info).space);
 }
 
 LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
