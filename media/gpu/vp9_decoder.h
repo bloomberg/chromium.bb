@@ -92,7 +92,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
     DISALLOW_COPY_AND_ASSIGN(VP9Accelerator);
   };
 
-  explicit VP9Decoder(VP9Accelerator* accelerator);
+  explicit VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator);
   ~VP9Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
@@ -140,8 +140,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   // Current coded resolution.
   gfx::Size pic_size_;
 
-  // VP9Accelerator instance owned by the client.
-  VP9Accelerator* accelerator_;
+  const std::unique_ptr<VP9Accelerator> accelerator_;
 
   Vp9Parser parser_;
 

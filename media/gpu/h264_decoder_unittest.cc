@@ -90,7 +90,7 @@ class H264DecoderTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<H264Decoder> decoder_;
-  MockH264Accelerator accelerator_;
+  MockH264Accelerator* accelerator_;
 
  private:
   base::queue<std::string> input_frame_files_;
@@ -98,14 +98,16 @@ class H264DecoderTest : public ::testing::Test {
 };
 
 void H264DecoderTest::SetUp() {
-  decoder_.reset(new H264Decoder(&accelerator_));
+  auto mock_accelerator = std::make_unique<MockH264Accelerator>();
+  accelerator_ = mock_accelerator.get();
+  decoder_.reset(new H264Decoder(std::move(mock_accelerator)));
 
   // Sets default behaviors for mock methods for convenience.
-  ON_CALL(accelerator_, CreateH264Picture()).WillByDefault(Invoke([]() {
+  ON_CALL(*accelerator_, CreateH264Picture()).WillByDefault(Invoke([]() {
     return new H264Picture();
   }));
-  ON_CALL(accelerator_, SubmitDecode(_)).WillByDefault(Return(true));
-  ON_CALL(accelerator_, OutputPicture(_)).WillByDefault(Return(true));
+  ON_CALL(*accelerator_, SubmitDecode(_)).WillByDefault(Return(true));
+  ON_CALL(*accelerator_, OutputPicture(_)).WillByDefault(Return(true));
 }
 
 void H264DecoderTest::SetInputFrameFiles(
@@ -162,15 +164,15 @@ TEST_F(H264DecoderTest, DecodeSingleFrame) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(accelerator_, CreateH264Picture()).WillOnce(Return(nullptr));
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).WillOnce(Return(nullptr));
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfSurfaces, Decode());
-  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&accelerator_));
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&*accelerator_));
 
   {
     InSequence sequence;
-    EXPECT_CALL(accelerator_, CreateH264Picture());
-    EXPECT_CALL(accelerator_, SubmitDecode(_));
-    EXPECT_CALL(accelerator_, OutputPicture(_));
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitDecode(_));
+    EXPECT_CALL(*accelerator_, OutputPicture(_));
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
@@ -183,9 +185,9 @@ TEST_F(H264DecoderTest, SkipNonIDRFrames) {
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
   {
     InSequence sequence;
-    EXPECT_CALL(accelerator_, CreateH264Picture());
-    EXPECT_CALL(accelerator_, SubmitDecode(_));
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitDecode(_));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
@@ -199,21 +201,21 @@ TEST_F(H264DecoderTest, DecodeProfileBaseline) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
-    decode_poc0 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(0)));
-    decode_poc2 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(2)));
-    decode_poc4 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(4)));
-    decode_poc6 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(6)));
+    decode_poc0 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    decode_poc2 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
+    decode_poc4 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(4)));
+    decode_poc6 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(6)));
   }
   {
     InSequence display_order;
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
@@ -227,21 +229,21 @@ TEST_F(H264DecoderTest, DecodeProfileHigh) {
 
   // Two pictures will be kept in DPB for reordering. The first picture should
   // be outputted after feeding the third frame.
-  EXPECT_CALL(accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
-    decode_poc0 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(0)));
-    decode_poc4 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(4)));
-    decode_poc2 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(2)));
-    decode_poc6 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(6)));
+    decode_poc0 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    decode_poc4 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(4)));
+    decode_poc2 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
+    decode_poc6 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(6)));
   }
   {
     InSequence display_order;
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
@@ -255,33 +257,33 @@ TEST_F(H264DecoderTest, SwitchBaselineToHigh) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(accelerator_, CreateH264Picture());
+  EXPECT_CALL(*accelerator_, CreateH264Picture());
   {
     InSequence sequence;
-    EXPECT_CALL(accelerator_, SubmitDecode(_));
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, SubmitDecode(_));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(16u, decoder_->GetRequiredNumOfPictures());
 
-  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&accelerator_));
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&*accelerator_));
 
-  EXPECT_CALL(accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
-    decode_poc0 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(0)));
-    decode_poc4 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(4)));
-    decode_poc2 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(2)));
-    decode_poc6 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(6)));
+    decode_poc0 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    decode_poc4 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(4)));
+    decode_poc2 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
+    decode_poc6 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(6)));
   }
   {
     InSequence display_order;
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
@@ -296,33 +298,33 @@ TEST_F(H264DecoderTest, SwitchHighToBaseline) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(16u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(accelerator_, CreateH264Picture());
+  EXPECT_CALL(*accelerator_, CreateH264Picture());
   {
     InSequence sequence;
-    EXPECT_CALL(accelerator_, SubmitDecode(_));
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, SubmitDecode(_));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
-  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&accelerator_));
+  ASSERT_TRUE(Mock::VerifyAndClearExpectations(&*accelerator_));
 
-  EXPECT_CALL(accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
-    decode_poc0 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(0)));
-    decode_poc2 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(2)));
-    decode_poc4 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(4)));
-    decode_poc6 = EXPECT_CALL(accelerator_, SubmitDecode(WithPoc(6)));
+    decode_poc0 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    decode_poc2 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
+    decode_poc4 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(4)));
+    decode_poc6 = EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(6)));
   }
   {
     InSequence display_order;
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
-    EXPECT_CALL(accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0))).After(decode_poc0);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2))).After(decode_poc2);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(4))).After(decode_poc4);
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(6))).After(decode_poc6);
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());

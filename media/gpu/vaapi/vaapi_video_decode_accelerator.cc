@@ -182,15 +182,14 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    h264_accelerator_.reset(
-        new VaapiH264Accelerator(this, vaapi_wrapper_.get()));
-    decoder_.reset(new H264Decoder(h264_accelerator_.get()));
+    decoder_.reset(new H264Decoder(
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_.get())));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    vp8_accelerator_.reset(new VaapiVP8Accelerator(this, vaapi_wrapper_.get()));
-    decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
+    decoder_.reset(new VP8Decoder(
+        std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    vp9_accelerator_.reset(new VaapiVP9Accelerator(this, vaapi_wrapper_.get()));
-    decoder_.reset(new VP9Decoder(vp9_accelerator_.get()));
+    decoder_.reset(new VP9Decoder(
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_.get())));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
@@ -847,7 +846,7 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   client_ptr_factory_.reset();
   weak_this_factory_.InvalidateWeakPtrs();
 
-  // TODO(mcasas): consider deleting |decoder_| and |*_accelerator_| on
+  // TODO(mcasas): consider deleting |decoder_| on
   // |decoder_thread_task_runner_|, https://crbug.com/789160.
 
   // Signal all potential waiters on the decoder_thread_, let them early-exit,

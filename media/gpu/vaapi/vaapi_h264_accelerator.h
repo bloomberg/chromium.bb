@@ -23,7 +23,7 @@ class MEDIA_GPU_EXPORT VaapiH264Accelerator
     : public H264Decoder::H264Accelerator {
  public:
   VaapiH264Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
-                       VaapiWrapper* vaapi_wrapper);
+                       const scoped_refptr<VaapiWrapper> vaapi_wrapper);
   ~VaapiH264Accelerator() override;
 
   // H264Decoder::H264Accelerator implementation.
@@ -55,7 +55,7 @@ class MEDIA_GPU_EXPORT VaapiH264Accelerator
                              VAPictureH264* va_pics,
                              int num_pics);
 
-  VaapiWrapper* vaapi_wrapper_;
+  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   VaapiVideoDecodeAccelerator* vaapi_dec_;
 
   SEQUENCE_CHECKER(sequence_checker_);
