@@ -68,9 +68,6 @@ class PLATFORM_EXPORT WebScheduler {
   virtual void PostNonNestableIdleTask(const base::Location&,
                                        WebThread::IdleTask) = 0;
 
-  // Returns a task runner for timer tasks. Can be called from any thread.
-  virtual base::SingleThreadTaskRunner* TimerTaskRunner() = 0;
-
   // Returns a task runner for kV8 tasks. Can be called from any thread.
   virtual base::SingleThreadTaskRunner* V8TaskRunner() = 0;
 

@@ -20,7 +20,6 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler)
     : WebSchedulerImpl(renderer_scheduler,
                        renderer_scheduler->IdleTaskRunner(),
-                       renderer_scheduler->TimerTaskQueue(),
                        renderer_scheduler->V8TaskQueue()),
       renderer_scheduler_(renderer_scheduler),
       compositor_task_runner_(
