@@ -47,6 +47,8 @@ POLICY_EXPORT extern const char kValueRequestActiveDirectoryEnrollPlayUser[];
 POLICY_EXPORT extern const char kValueRequestActiveDirectoryPlayActivity[];
 POLICY_EXPORT extern const char kValueRequestCheckDeviceLicense[];
 POLICY_EXPORT extern const char kValueRequestAppInstallReport[];
+POLICY_EXPORT extern const char kValueRequestTokenEnrollment[];
+POLICY_EXPORT extern const char kValueRequestChromeDesktopReport[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];
@@ -54,6 +56,8 @@ POLICY_EXPORT extern const char kChromeUserPolicyType[];
 POLICY_EXPORT extern const char kChromePublicAccountPolicyType[];
 POLICY_EXPORT extern const char kChromeExtensionPolicyType[];
 POLICY_EXPORT extern const char kChromeSigninExtensionPolicyType[];
+POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyType[];
+POLICY_EXPORT extern const char kChromeMachineLevelExtensionCloudPolicyType[];
 
 // These codes are sent in the |error_code| field of PolicyFetchResponse.
 enum PolicyFetchStatus {
