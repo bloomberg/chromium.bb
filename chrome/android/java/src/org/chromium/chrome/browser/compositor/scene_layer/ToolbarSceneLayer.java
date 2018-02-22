@@ -82,8 +82,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
         if (fullscreenManager == null) return;
         ControlContainer toolbarContainer = fullscreenManager.getControlContainer();
-        if (!isTablet && toolbarContainer != null
-                && !fullscreenManager.areBrowserControlsAtBottom()) {
+        if (!isTablet && toolbarContainer != null) {
             if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
             toolbarContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
         } else {
@@ -95,11 +94,6 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 && viewportMode != ViewportMode.ALWAYS_FULLSCREEN;
         boolean showShadow = fullscreenManager.drawControlsAsTexture()
                 || forceHideAndroidBrowserControls;
-
-        // Use either top or bottom offset depending on the browser controls state.
-        float controlsOffset = fullscreenManager.areBrowserControlsAtBottom()
-                ? fullscreenManager.getBottomControlOffset()
-                : fullscreenManager.getTopControlOffset();
 
         int textBoxColor = Color.WHITE;
         int textBoxResourceId = R.drawable.card_single;
@@ -121,7 +115,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
                 browserControlsBackgroundColor, textBoxResourceId, browserControlsUrlBarAlpha,
-                textBoxColor, controlsOffset, windowHeight, useTexture, showShadow, useModern);
+                textBoxColor, fullscreenManager.getTopControlOffset(), windowHeight, useTexture,
+                showShadow, useModern);
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr, mProgressBarDrawingInfo.progressBarRect.left,
@@ -167,20 +162,13 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 mLayoutProvider.getActiveLayout().forceHideBrowserControlsAndroidView();
         ViewportMode viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
 
-        // TODO(mdjones): Create a "theme provider" to handle cases like this.
-        int color = mRenderHost.getBrowserControlsBackgroundColor();
-        float alpha = mRenderHost.getBrowserControlsUrlBarAlpha();
-        ChromeFullscreenManager fullscreenManager = mLayoutProvider.getFullscreenManager();
-        if (fullscreenManager.areBrowserControlsAtBottom() && fullscreenManager.getTab() != null) {
-            color = fullscreenManager.getTab().getDefaultThemeColor();
-            if (!fullscreenManager.getTab().isIncognito()) alpha = 1f;
-        }
-
         // In Chrome modern design, the url bar is always opaque since it is drawn in the
         // compositor.
+        float alpha = mRenderHost.getBrowserControlsUrlBarAlpha();
         if (FeatureUtilities.isChromeModernDesignEnabled()) alpha = 1;
 
-        update(color, alpha, mLayoutProvider.getFullscreenManager(), resourceManager,
+        update(mRenderHost.getBrowserControlsBackgroundColor(), alpha,
+                mLayoutProvider.getFullscreenManager(), resourceManager,
                 forceHideBrowserControlsAndroidView, viewportMode, DeviceFormFactor.isTablet(),
                 viewport.height());
 
