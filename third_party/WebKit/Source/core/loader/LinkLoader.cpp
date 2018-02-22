@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
+#include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
@@ -42,6 +43,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLPreloadScanner.h"
+#include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/NetworkHintsInterface.h"
@@ -91,7 +93,9 @@ LinkLoadParameters::LinkLoadParameters(const LinkHeader& header,
       nonce(header.Nonce()),
       integrity(header.Integrity()),
       referrer_policy(kReferrerPolicyDefault),
-      href(KURL(base_url, header.Url())) {}
+      href(KURL(base_url, header.Url())),
+      srcset(header.Srcset()),
+      sizes(header.Imgsizes()) {}
 
 class LinkLoader::FinishObserver final
     : public GarbageCollectedFinalized<ResourceFinishObserver>,
@@ -314,11 +318,9 @@ static bool IsSupportedType(Resource::Type resource_type,
   return false;
 }
 
-static bool MediaMatches(Document& document,
-                         const String& media,
-                         ViewportDescription* viewport_description) {
-  if (media.IsEmpty())
-    return true;
+static MediaValues* CreateMediaValues(
+    Document& document,
+    ViewportDescription* viewport_description) {
   MediaValues* media_values =
       MediaValues::CreateDynamicIfFrameExists(document.GetFrame());
   if (viewport_description) {
@@ -326,21 +328,48 @@ static bool MediaMatches(Document& document,
         viewport_description->max_width.GetFloatValue(),
         viewport_description->max_height.GetFloatValue());
   }
+  return media_values;
+}
 
+static bool MediaMatches(const String& media, MediaValues* media_values) {
   scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
   MediaQueryEvaluator evaluator(*media_values);
   return evaluator.Eval(*media_queries);
 }
 
+// |base_url| is used in Link HTTP Header based preloads to resolve relative
+// URLs in srcset, which should be based on the resource's URL, not the
+// document's base URL. If |base_url| is a null URL, relative URLs are resolved
+// using |document.CompleteURL()|.
 static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
                                  Document& document,
+                                 const KURL& base_url,
                                  LinkCaller caller,
                                  ViewportDescription* viewport_description) {
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
 
+  Optional<Resource::Type> resource_type =
+      LinkLoader::GetResourceTypeFromAsAttribute(params.as);
+
+  MediaValues* media_values = nullptr;
+  KURL url;
+  if (resource_type == Resource::kImage && !params.srcset.IsEmpty() &&
+      RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()) {
+    media_values = CreateMediaValues(document, viewport_description);
+    float source_size =
+        SizesAttributeParser(media_values, params.sizes).length();
+    ImageCandidate candidate = BestFitSourceForImageAttributes(
+        media_values->DevicePixelRatio(), source_size, params.href,
+        params.srcset);
+    url = base_url.IsNull() ? document.CompleteURL(candidate.ToString())
+                            : KURL(base_url, candidate.ToString());
+  } else {
+    url = params.href;
+  }
+
   UseCounter::Count(document, WebFeature::kLinkRelPreload);
-  if (!params.href.IsValid() || params.href.IsEmpty()) {
+  if (!url.IsValid() || url.IsEmpty()) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
         String("<link rel=preload> has an invalid `href` value")));
@@ -348,13 +377,15 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
   }
 
   // Preload only if media matches
-  if (!MediaMatches(document, params.media, viewport_description))
-    return nullptr;
+  if (!params.media.IsEmpty()) {
+    if (!media_values)
+      media_values = CreateMediaValues(document, viewport_description);
+    if (!MediaMatches(params.media, media_values))
+      return nullptr;
+  }
 
   if (caller == kLinkCalledFromHeader)
     UseCounter::Count(document, WebFeature::kLinkHeaderPreload);
-  Optional<Resource::Type> resource_type =
-      LinkLoader::GetResourceTypeFromAsAttribute(params.as);
   if (resource_type == WTF::nullopt) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
@@ -368,13 +399,13 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
         String("<link rel=preload> has an unsupported `type` value")));
     return nullptr;
   }
-  ResourceRequest resource_request(params.href);
+  ResourceRequest resource_request(url);
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet, false));
 
   if (params.referrer_policy != kReferrerPolicyDefault) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        params.referrer_policy, params.href, document.OutgoingReferrer()));
+        params.referrer_policy, url, document.OutgoingReferrer()));
   }
 
   ResourceLoaderOptions options;
@@ -391,8 +422,7 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
   if (settings && settings->GetLogPreload()) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kVerboseMessageLevel,
-        String("Preload triggered for " + params.href.Host() +
-               params.href.GetPath())));
+        String("Preload triggered for " + url.Host() + url.GetPath())));
   }
   link_fetch_params.SetLinkPreload(true);
   return document.Loader()->StartPreload(resource_type.value(),
@@ -448,8 +478,12 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
 
   // Preload only if media matches.
   // https://html.spec.whatwg.org/#processing-the-media-attribute
-  if (!MediaMatches(document, params.media, viewport_description))
-    return;
+  if (!params.media.IsEmpty()) {
+    MediaValues* media_values =
+        CreateMediaValues(document, viewport_description);
+    if (!MediaMatches(params.media, media_values))
+      return;
+  }
 
   // Step 5. "Let settings object be the link element's node document's relevant
   // settings object." [spec text]
@@ -583,7 +617,7 @@ void LinkLoader::LoadLinksFromHeader(
               ? &(viewport_description_wrapper->description)
               : nullptr;
 
-      PreloadIfNeeded(params, *document, kLinkCalledFromHeader,
+      PreloadIfNeeded(params, *document, base_url, kLinkCalledFromHeader,
                       viewport_description);
       PrefetchIfNeeded(params, *document);
       ModulePreloadIfNeeded(params, *document, viewport_description, nullptr);
@@ -611,8 +645,8 @@ bool LinkLoader::LoadLink(
   PreconnectIfNeeded(params, &document, document.GetFrame(),
                      network_hints_interface, kLinkCalledFromMarkup);
 
-  Resource* resource =
-      PreloadIfNeeded(params, document, kLinkCalledFromMarkup, nullptr);
+  Resource* resource = PreloadIfNeeded(params, document, NullURL(),
+                                       kLinkCalledFromMarkup, nullptr);
   if (!resource) {
     resource = PrefetchIfNeeded(params, document);
   }

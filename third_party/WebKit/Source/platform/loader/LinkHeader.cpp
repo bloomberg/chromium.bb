@@ -40,6 +40,10 @@ static LinkHeader::LinkParameterName ParameterNameFromString(
     return LinkHeader::kLinkParameterNonce;
   if (base::EqualsCaseInsensitiveASCII(name, "integrity"))
     return LinkHeader::kLinkParameterIntegrity;
+  if (base::EqualsCaseInsensitiveASCII(name, "srcset"))
+    return LinkHeader::kLinkParameterSrcset;
+  if (base::EqualsCaseInsensitiveASCII(name, "imgsizes"))
+    return LinkHeader::kLinkParameterImgsizes;
   return LinkHeader::kLinkParameterUnknown;
 }
 
@@ -60,6 +64,10 @@ void LinkHeader::SetValue(LinkParameterName name, const String& value) {
     nonce_ = value;
   else if (name == kLinkParameterIntegrity)
     integrity_ = value;
+  else if (name == kLinkParameterSrcset)
+    srcset_ = value;
+  else if (name == kLinkParameterImgsizes)
+    imgsizes_ = value;
 }
 
 template <typename Iterator>
