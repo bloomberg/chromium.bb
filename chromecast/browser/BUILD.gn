@@ -15,6 +15,8 @@ if (is_android) {
 
 cast_source_set("browser") {
   sources = [
+    "application_media_capabilities.cc",
+    "application_media_capabilities.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -95,6 +97,7 @@ cast_source_set("browser") {
     "//chromecast/base:cast_version",
     "//chromecast/browser:resources",
     "//chromecast/common",
+    "//chromecast/common:interfaces",
     "//chromecast/common/media",
     "//chromecast/common/media:interfaces",
     "//chromecast/graphics",
@@ -154,7 +157,6 @@ cast_source_set("browser") {
     ]
 
     deps += [
-      "//chromecast/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//ui/aura",
     ]
@@ -311,6 +313,8 @@ cast_source_set("test_support") {
   sources = [
     "test/cast_browser_test.cc",
     "test/cast_browser_test.h",
+    "test/fake_web_contents_observer.cc",
+    "test/fake_web_contents_observer.h",
   ]
 
   public_deps = [
@@ -321,6 +325,7 @@ cast_source_set("test_support") {
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/common:interfaces",
     "//content/public/browser",
     "//content/public/common",
     "//testing/gtest",
