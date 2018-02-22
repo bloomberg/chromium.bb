@@ -21,7 +21,7 @@
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/mock_sync_sessions_client.h"
 
 namespace base {
 class Time;
@@ -150,7 +150,7 @@ class ProfileSyncServiceBundle {
     return &component_factory_;
   }
 
-  sync_sessions::FakeSyncSessionsClient* sync_sessions_client() {
+  sync_sessions::MockSyncSessionsClient* sync_sessions_client() {
     return &sync_sessions_client_;
   }
 
@@ -173,7 +173,8 @@ class ProfileSyncServiceBundle {
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
   syncer::SyncApiComponentFactoryMock component_factory_;
-  sync_sessions::FakeSyncSessionsClient sync_sessions_client_;
+  testing::NiceMock<sync_sessions::MockSyncSessionsClient>
+      sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   base::ScopedTempDir base_directory_;

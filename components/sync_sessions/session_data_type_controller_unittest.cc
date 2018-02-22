@@ -19,7 +19,7 @@
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
-#include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,21 +82,6 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   SyncedWindowDelegateMap delegates_;
 };
 
-class TestSyncSessionsClient : public FakeSyncSessionsClient {
- public:
-  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
-    return synced_window_getter_;
-  }
-
-  void SetSyncedWindowDelegatesGetter(
-      SyncedWindowDelegatesGetter* synced_window_getter) {
-    synced_window_getter_ = synced_window_getter;
-  }
-
- private:
-  SyncedWindowDelegatesGetter* synced_window_getter_;
-};
-
 class SessionDataTypeControllerTest : public testing::Test,
                                       public syncer::FakeSyncClient {
  public:
@@ -110,7 +95,7 @@ class SessionDataTypeControllerTest : public testing::Test,
   PrefService* GetPrefService() override { return &prefs_; }
 
   SyncSessionsClient* GetSyncSessionsClient() override {
-    return sync_sessions_client_.get();
+    return &mock_sync_sessions_client_;
   }
 
   void SetUp() override {
@@ -119,10 +104,10 @@ class SessionDataTypeControllerTest : public testing::Test,
 
     synced_window_delegate_ = std::make_unique<MockSyncedWindowDelegate>();
     synced_window_getter_ = std::make_unique<MockSyncedWindowDelegatesGetter>();
-    sync_sessions_client_ = std::make_unique<TestSyncSessionsClient>();
     synced_window_getter_->Add(synced_window_delegate_.get());
-    sync_sessions_client_->SetSyncedWindowDelegatesGetter(
-        synced_window_getter_.get());
+
+    ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
+        .WillByDefault(testing::Return(synced_window_getter_.get()));
 
     local_device_ = std::make_unique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
@@ -188,7 +173,7 @@ class SessionDataTypeControllerTest : public testing::Test,
   std::unique_ptr<MockSyncedWindowDelegate> synced_window_delegate_;
   std::unique_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
   syncer::SyncApiComponentFactoryMock profile_sync_factory_;
-  std::unique_ptr<TestSyncSessionsClient> sync_sessions_client_;
+  testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
   std::unique_ptr<SessionDataTypeController> controller_;
 

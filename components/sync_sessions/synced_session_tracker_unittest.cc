@@ -8,7 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
-#include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +21,6 @@ namespace sync_sessions {
 namespace {
 
 const char kValidUrl[] = "http://www.example.com";
-const char kInvalidUrl[] = "invalid.url";
 const char kTag[] = "tag";
 const char kTag2[] = "tag2";
 const char kTag3[] = "tag3";
@@ -101,8 +100,10 @@ class SyncedSessionTrackerTest : public testing::Test {
                      << unmapped_tab_count;
   }
 
+  MockSyncSessionsClient* GetSyncSessionsClient() { return &sessions_client_; }
+
  private:
-  FakeSyncSessionsClient sessions_client_;
+  testing::NiceMock<MockSyncSessionsClient> sessions_client_;
   SyncedSessionTracker tracker_;
 };
 
@@ -144,6 +145,10 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
+  const char kInvalidUrl[] = "invalid.url";
+  ON_CALL(*GetSyncSessionsClient(), ShouldSyncURL(GURL(kInvalidUrl)))
+      .WillByDefault(testing::Return(false));
+
   std::vector<const SyncedSession*> sessions;
   ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
       &sessions, SyncedSessionTracker::PRESENTABLE));

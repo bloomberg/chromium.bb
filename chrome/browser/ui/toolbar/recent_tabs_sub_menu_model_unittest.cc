@@ -226,7 +226,7 @@ class RecentTabsSubMenuModelTest
                 IsDataTypeControllerRunning(syncer::PROXY_TABS))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_sync_service_, GetOpenTabsUIDelegateMock())
-        .WillRepeatedly(Return(manager_.get()));
+        .WillRepeatedly(Return(manager_->GetOpenTabsUIDelegate()));
   }
 
   void NotifySyncEnabled() {

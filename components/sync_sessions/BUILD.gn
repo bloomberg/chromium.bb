@@ -11,6 +11,8 @@ static_library("sync_sessions") {
     "lost_navigations_recorder.h",
     "open_tabs_ui_delegate.cc",
     "open_tabs_ui_delegate.h",
+    "open_tabs_ui_delegate_impl.cc",
+    "open_tabs_ui_delegate_impl.h",
     "session_data_type_controller.cc",
     "session_data_type_controller.h",
     "sessions_global_id_mapper.cc",
@@ -55,8 +57,8 @@ static_library("sync_sessions") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "fake_sync_sessions_client.cc",
-    "fake_sync_sessions_client.h",
+    "mock_sync_sessions_client.cc",
+    "mock_sync_sessions_client.h",
     "session_sync_test_helper.cc",
     "session_sync_test_helper.h",
   ]
@@ -65,6 +67,7 @@ static_library("test_support") {
     ":sync_sessions",
     "//base",
     "//components/sync",
+    "//testing/gmock",
     "//testing/gtest",
     "//url",
   ]
@@ -77,6 +80,7 @@ source_set("unit_tests") {
   sources = [
     "favicon_cache_unittest.cc",
     "lost_navigations_recorder_unittest.cc",
+    "open_tabs_ui_delegate_impl_unittest.cc",
     "session_data_type_controller_unittest.cc",
     "sessions_global_id_mapper_unittest.cc",
     "sessions_sync_manager_unittest.cc",
