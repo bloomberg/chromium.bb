@@ -49,7 +49,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -63,6 +62,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -150,6 +150,8 @@ void ToolbarView::Init() {
   back_->set_tag(IDC_BACK);
   back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
+  back_->GetViewAccessibility().OverrideDescription(
+      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
   back_->Init();
 
@@ -163,6 +165,8 @@ void ToolbarView::Init() {
   forward_->set_tag(IDC_FORWARD);
   forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
+  forward_->GetViewAccessibility().OverrideDescription(
+      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_FORWARD));
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
   forward_->Init();
 
@@ -226,15 +230,6 @@ void ToolbarView::Init() {
       prefs::kShowHomeButton, browser_->profile()->GetPrefs(),
       base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
                           base::Unretained(this)));
-
-  // Accessibility specific tooltip text.
-  if (content::BrowserAccessibilityState::GetInstance()->
-          IsAccessibleBrowser()) {
-    back_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK));
-    forward_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
-  }
 
   initialized_ = true;
 }

@@ -5104,13 +5104,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
         Click to go back, hold to see history
       </message>
-      <message name="IDS_ACCNAME_TOOLTIP_BACK" desc="The tooltip for back button suited for non-mouse users">
-        Press to go back, use context menu to see history
+      <message name="IDS_ACCDESCRIPTION_BACK" desc="Help text that explains to keyboard users how to interact with the back button, similar to the tooltip presented to mouse users.">
+        Press to go back, context menu to see history
       </message>
       <message name="IDS_TOOLTIP_FORWARD" desc="The tooltip for forward button">
         Click to go forward, hold to see history
       </message>
-      <message name="IDS_ACCNAME_TOOLTIP_FORWARD" desc="The tooltip for forward button  suited for non-mouse users">
+      <message name="IDS_ACCDESCRIPTION_FORWARD" desc="Help text that explains to keyboard users how to interact with the forward button, similar to the tooltip presented to mouse users.">
         Press to go forward, context menu to see history
       </message>
       <message name="IDS_TOOLTIP_HOME" desc="The tooltip for the home button">

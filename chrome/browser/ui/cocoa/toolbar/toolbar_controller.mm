@@ -499,7 +499,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [[backButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
-  NSString* helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TOOLTIP_BACK);
+  NSString* helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCDESCRIPTION_BACK);
   [[backButton_ cell]
       accessibilitySetOverrideValue:helpTag
                        forAttribute:NSAccessibilityHelpAttribute];
@@ -508,7 +508,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [[forwardButton_ cell]
       accessibilitySetOverrideValue:description
                        forAttribute:NSAccessibilityDescriptionAttribute];
-  helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TOOLTIP_FORWARD);
+  helpTag = l10n_util::GetNSStringWithFixup(IDS_ACCDESCRIPTION_FORWARD);
   [[forwardButton_ cell]
       accessibilitySetOverrideValue:helpTag
                        forAttribute:NSAccessibilityHelpAttribute];

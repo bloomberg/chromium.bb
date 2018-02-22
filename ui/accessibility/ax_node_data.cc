@@ -469,6 +469,23 @@ void AXNodeData::SetNameExplicitlyEmpty() {
   SetNameFrom(ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 }
 
+void AXNodeData::SetDescription(const std::string& description) {
+  for (std::pair<ax::mojom::StringAttribute, std::string>& string_attribute :
+       string_attributes) {
+    if (string_attribute.first == ax::mojom::StringAttribute::kDescription) {
+      string_attribute.second = description;
+      return;
+    }
+  }
+
+  string_attributes.push_back(
+      std::make_pair(ax::mojom::StringAttribute::kDescription, description));
+}
+
+void AXNodeData::SetDescription(const base::string16& description) {
+  SetDescription(base::UTF16ToUTF8(description));
+}
+
 void AXNodeData::SetValue(const std::string& value) {
   for (size_t i = 0; i < string_attributes.size(); ++i) {
     if (string_attributes[i].first == ax::mojom::StringAttribute::kValue) {
