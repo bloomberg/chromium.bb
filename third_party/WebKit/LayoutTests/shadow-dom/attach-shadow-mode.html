@@ -15,8 +15,5 @@ test(function() {
   assert_equals(host1.shadowRoot.mode, 'open');
   assert_equals(closedShadowRoot.mode, 'closed');
   assert_equals(host3.shadowRoot.mode, 'open');
-  // Note: mode for V0 shadow and UA shadow is not specified anywhere,
-  // Blink returns reasonable default values for these.
-  assert_equals(internals.shadowRoot(input).mode, 'closed');
 }, 'ShadowRoot.mode should return open or closed, and only open if v0.');
 </script>

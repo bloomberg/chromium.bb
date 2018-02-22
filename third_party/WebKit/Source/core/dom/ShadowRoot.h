@@ -75,11 +75,24 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   ElementShadow* Owner() const { return host().Shadow(); }
   ShadowRootType GetType() const { return static_cast<ShadowRootType>(type_); }
   String mode() const {
-    return (GetType() == ShadowRootType::V0 ||
-            GetType() == ShadowRootType::kOpen)
-               ? "open"
-               : "closed";
-  };
+    switch (GetType()) {
+      case ShadowRootType::kUserAgent:
+        // UA ShadowRoot should not be exposed to the Web.
+        NOTREACHED();
+        return "";
+      case ShadowRootType::V0:
+        // v0 ShadowRoot shouldn't support |mode|, however, we must return
+        // something. Return "open" here for a historical reason.
+        return "open";
+      case ShadowRootType::kOpen:
+        return "open";
+      case ShadowRootType::kClosed:
+        return "closed";
+      default:
+        NOTREACHED();
+        return "";
+    }
+  }
 
   bool IsOpenOrV0() const {
     return GetType() == ShadowRootType::V0 ||
