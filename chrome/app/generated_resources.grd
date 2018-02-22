@@ -8425,7 +8425,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Translate Bubble -->
-      <if expr="toolkit_views or is_macosx">
+      <if expr="toolkit_views">
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
           Translate this page?
         </message>

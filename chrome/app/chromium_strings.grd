@@ -706,7 +706,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </if>
 
       <!-- Enterprise sign-in dialog -->
-      <if expr="toolkit_views or is_macosx">
+      <if expr="toolkit_views">
         <message name="IDS_ENTERPRISE_SIGNIN_TITLE" desc="The title of the dialog to confirm linking the browser profile with the signed-in enterprise account">
           Link your Chromium data to this account?
         </message>
