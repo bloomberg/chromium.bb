@@ -292,6 +292,8 @@ public class ContentViewCoreImpl
         SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
                 mContext, windowAndroid, webContents, containerView);
         controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
+        addWindowAndroidChangedObserver(controller);
+
         setContainerView(containerView);
         mRenderCoordinates = mWebContents.getRenderCoordinates();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext().get());

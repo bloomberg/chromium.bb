@@ -41,6 +41,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentClassFactory;
+import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
@@ -61,8 +62,8 @@ import java.util.List;
  */
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.M)
-public class SelectionPopupControllerImpl
-        extends ActionModeCallbackHelper implements SelectionPopupController, WindowEventObserver {
+public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
+        implements SelectionPopupController, WindowEventObserver, WindowAndroidChangedObserver {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -520,6 +521,13 @@ public class SelectionPopupControllerImpl
         if (supportsFloatingActionMode() && isActionModeValid()) {
             mActionMode.invalidateContentRect();
         }
+    }
+
+    // WindowAndroidChangedObserver
+
+    @Override
+    public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
+        mWindowAndroid = newWindowAndroid;
     }
 
     // WindowEventObserver
