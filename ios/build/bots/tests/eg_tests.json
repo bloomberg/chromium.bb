@@ -5,26 +5,33 @@
   "tests": [
     {
       "app": "ios_chrome_ui_egtests",
+      "shard size": 8,
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_adaptive_toolbar_egtests",
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_web_egtests",
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_settings_egtests",
+      "shards": 2,
       "xctest": true
     },
     {
       "app": "ios_chrome_payments_egtests",
+      "shards": 2,
       "test args": [
         "--enable-features=WebPayments"
       ],
@@ -32,6 +39,7 @@
     },
     {
       "app": "ios_chrome_reading_list_egtests",
+      "shards": 2,
       "test args": [
         "--enable-reading-list"
       ],
@@ -39,6 +47,7 @@
     },
     {
       "app": "ios_showcase_egtests",
+      "shards": 2,
       "xctest": true
     }
   ]
