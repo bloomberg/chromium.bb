@@ -763,7 +763,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
           ? 0
           : total_area_saved_in_px * 100 /
                 total_quad_area_shown_wo_occlusion_px);
-  UMA_HISTOGRAM_COUNTS_1000(
+  UMA_HISTOGRAM_COUNTS_10000(
       "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved",
       total_area_saved_in_px);
 }
