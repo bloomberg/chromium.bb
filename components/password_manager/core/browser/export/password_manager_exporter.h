@@ -86,6 +86,10 @@ class PasswordManagerExporter {
   // it can be provided by GetProgressStatus.
   void OnProgress(ExportProgressStatus status, const std::string& folder);
 
+  // Export failed or was cancelled. Restore the state of the file system by
+  // removing any partial or unwanted files from the filesystem.
+  void Cleanup();
+
   // The source of the password list which will be exported.
   CredentialProviderInterface* const credential_provider_interface_;
 

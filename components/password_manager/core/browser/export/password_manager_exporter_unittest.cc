@@ -131,7 +131,7 @@ class PasswordManagerExporterTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerExporterTest);
 };
 
-TEST_F(PasswordManagerExporterTest, SuccessfulExport) {
+TEST_F(PasswordManagerExporterTest, PasswordExportSetPasswordListFirst) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       CreatePasswordList();
   fake_credential_provider_.SetPasswordList(password_list);
@@ -161,6 +161,8 @@ TEST_F(PasswordManagerExporterTest, SuccessfulExport) {
       ExportPasswordsResult::SUCCESS, 1);
 }
 
+// When writing fails, we should notify the UI of the failure and try to cleanup
+// a possibly partial passwords file.
 TEST_F(PasswordManagerExporterTest, WriteFileFailed) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       CreatePasswordList();
@@ -169,6 +171,7 @@ TEST_F(PasswordManagerExporterTest, WriteFileFailed) {
       destination_path_.DirName().BaseName().AsUTF8Unsafe());
 
   EXPECT_CALL(mock_write_file_, Run(_, _, _)).WillOnce(Return(-1));
+  EXPECT_CALL(mock_delete_file_, Run(destination_path_, false));
   EXPECT_CALL(
       mock_on_progress_,
       Run(password_manager::ExportProgressStatus::IN_PROGRESS, IsEmpty()));
@@ -282,8 +285,8 @@ TEST_F(PasswordManagerExporterTest, CancelWhileExporting) {
       ExportPasswordsResult::USER_ABORTED, 1);
 }
 
-// The "Cancel" button may still be visible on the UI after Chrome has completed
-// exporting. If the user chooses to cancel, Chrome should clear the file.
+// The "Cancel" button may still be visible on the UI after we've completed
+// exporting. If they choose to cancel, we should clear the file.
 TEST_F(PasswordManagerExporterTest, CancelAfterExporting) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       CreatePasswordList();
