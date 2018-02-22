@@ -278,7 +278,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // This normally happens as a result of a new navigation. It will be
   // followed by a NavigationEntryCommitted() call for the new page that
   // caused the pruning. It could also be a result of removing an item from
-  // the list to delete history or fix up after interstitials.
+  // the list to fix up after interstitials.
   virtual void NavigationListPruned(const PrunedDetails& pruned_details) {}
 
   // Invoked when NavigationEntries have been deleted because of a history

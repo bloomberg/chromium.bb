@@ -16,7 +16,7 @@ class TabRestoreService;
 class SESSIONS_EXPORT TabRestoreServiceObserver {
  public:
   // Sent when the set of entries changes in some way.
-  virtual void TabRestoreServiceChanged(TabRestoreService* service) {}
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) = 0;
 
   // Sent to all remaining Observers when TabRestoreService's
   // destructor is run.

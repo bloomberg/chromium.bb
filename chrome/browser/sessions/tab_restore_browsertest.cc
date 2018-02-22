@@ -71,6 +71,8 @@ class WaitForLoadObserver : public sessions::TabRestoreServiceObserver {
 
  private:
   // Overridden from TabRestoreServiceObserver:
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override {
+  }
   void TabRestoreServiceDestroyed(
       sessions::TabRestoreService* service) override {}
   void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
