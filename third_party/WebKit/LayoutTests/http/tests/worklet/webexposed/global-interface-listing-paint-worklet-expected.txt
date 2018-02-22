@@ -257,6 +257,7 @@ CONSOLE MESSAGE: line 147:     method pipeThrough
 CONSOLE MESSAGE: line 147:     method pipeTo
 CONSOLE MESSAGE: line 147:     method tee
 CONSOLE MESSAGE: line 147: interface StylePropertyMapReadOnly
+CONSOLE MESSAGE: line 147:     getter size
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method entries
 CONSOLE MESSAGE: line 147:     method forEach
@@ -539,6 +540,7 @@ CONSOLE MESSAGE: line 147:     method pipeThrough
 CONSOLE MESSAGE: line 147:     method pipeTo
 CONSOLE MESSAGE: line 147:     method tee
 CONSOLE MESSAGE: line 147: interface StylePropertyMapReadOnly
+CONSOLE MESSAGE: line 147:     getter size
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method entries
 CONSOLE MESSAGE: line 147:     method forEach
