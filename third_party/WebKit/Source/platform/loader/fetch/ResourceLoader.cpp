@@ -285,10 +285,7 @@ bool ResourceLoader::WillFollowRedirect(
     if (options.cors_handling_by_resource_fetcher ==
             kEnableCORSHandlingByResourceFetcher &&
         fetch_request_mode == network::mojom::FetchRequestMode::kCORS) {
-      scoped_refptr<const SecurityOrigin> source_origin =
-          options.security_origin;
-      if (!source_origin.get())
-        source_origin = Context().GetSecurityOrigin();
+      scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
       WebSecurityOrigin source_web_origin(source_origin.get());
       WrappedResourceRequest new_request_wrapper(*new_request);
       WTF::Optional<network::mojom::CORSError> cors_error =
@@ -409,6 +406,15 @@ FetchContext& ResourceLoader::Context() const {
   return fetcher_->Context();
 }
 
+scoped_refptr<const SecurityOrigin> ResourceLoader::GetSourceOrigin() const {
+  scoped_refptr<const SecurityOrigin> origin =
+      resource_->Options().security_origin;
+  if (origin)
+    return origin;
+
+  return Context().GetSecurityOrigin();
+}
+
 CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
                                                StringBuilder& error_msg) const {
   // Service workers handle CORS separately.
@@ -429,12 +435,7 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   if (resource_->GetType() == Resource::Type::kMainResource)
     return CORSStatus::kNotApplicable;
 
-  const SecurityOrigin* source_origin =
-      resource_->Options().security_origin.get();
-
-  if (!source_origin)
-    source_origin = Context().GetSecurityOrigin();
-
+  scoped_refptr<const SecurityOrigin> source_origin = GetSourceOrigin();
   DCHECK(source_origin);
 
   if (source_origin->CanRequest(response.Url()))

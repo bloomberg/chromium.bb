@@ -155,6 +155,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void Restart(const ResourceRequest&);
 
   FetchContext& Context() const;
+  scoped_refptr<const SecurityOrigin> GetSourceOrigin() const;
 
   CORSStatus DetermineCORSStatus(const ResourceResponse&, StringBuilder&) const;
 
