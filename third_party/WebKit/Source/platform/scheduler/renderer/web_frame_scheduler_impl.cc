@@ -74,6 +74,17 @@ WebFrameSchedulerImpl::ActiveConnectionHandleImpl::
     frame_scheduler_->DidCloseActiveConnection();
 }
 
+WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
+    ThrottlingObserverHandleImpl(WebFrameSchedulerImpl* frame_scheduler,
+                                 Observer* observer)
+    : frame_scheduler_(frame_scheduler->AsWeakPtr()), observer_(observer) {}
+
+WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
+    ~ThrottlingObserverHandleImpl() {
+  if (frame_scheduler_)
+    frame_scheduler_->RemoveThrottlingObserver(observer_);
+}
+
 WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler,
     WebViewSchedulerImpl* parent_web_view_scheduler,
@@ -171,17 +182,17 @@ void WebFrameSchedulerImpl::
                                 throttleable_task_queue_.get());
 }
 
-void WebFrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
-                                                  Observer* observer) {
+std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
+WebFrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
+                                             Observer* observer) {
   DCHECK_EQ(ObserverType::kLoader, type);
   DCHECK(observer);
   observer->OnThrottlingStateChanged(CalculateThrottlingState());
   loader_observers_.insert(observer);
+  return std::make_unique<ThrottlingObserverHandleImpl>(this, observer);
 }
 
-void WebFrameSchedulerImpl::RemoveThrottlingObserver(ObserverType type,
-                                                     Observer* observer) {
-  DCHECK_EQ(ObserverType::kLoader, type);
+void WebFrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
   DCHECK(observer);
   const auto found = loader_observers_.find(observer);
   DCHECK(loader_observers_.end() != found);

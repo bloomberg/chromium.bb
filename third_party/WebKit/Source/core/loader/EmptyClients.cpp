@@ -68,8 +68,11 @@ class EmptyFrameScheduler : public WebFrameScheduler {
     return Platform::Current()->MainThread()->GetTaskRunner();
   }
 
-  void AddThrottlingObserver(ObserverType, Observer*) override {}
-  void RemoveThrottlingObserver(ObserverType, Observer*) override {}
+  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
+      ObserverType,
+      Observer*) override {
+    return nullptr;
+  }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return false; }
   void SetPageVisible(bool) override {}

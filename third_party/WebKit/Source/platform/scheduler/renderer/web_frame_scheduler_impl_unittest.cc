@@ -275,7 +275,7 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                stopped_count);
 
-  web_frame_scheduler_->AddThrottlingObserver(
+  auto observer_handle = web_frame_scheduler_->AddThrottlingObserver(
       WebFrameScheduler::ObserverType::kLoader, observer.get());
 
   // Initial state should be synchronously notified here.
@@ -314,8 +314,7 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
 
   // Remove from the observer list, and see if any other callback should not be
   // invoked when the condition is changed.
-  web_frame_scheduler_->RemoveThrottlingObserver(
-      WebFrameScheduler::ObserverType::kLoader, observer.get());
+  observer_handle.reset();
   web_view_scheduler_->SetPageVisible(false);
 
   // Wait 100 secs virtually and run pending tasks just in case.

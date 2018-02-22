@@ -303,6 +303,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   // Holds FetchContext reference to contact WebFrameScheduler.
   Member<FetchContext> context_;
+
+  // Handle to throttling observer.
+  std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
+      scheduler_observer_handle_;
 };
 
 }  // namespace blink

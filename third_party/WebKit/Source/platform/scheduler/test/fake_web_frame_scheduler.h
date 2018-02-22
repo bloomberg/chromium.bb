@@ -101,8 +101,11 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   };
 
   // WebFrameScheduler implementation:
-  void AddThrottlingObserver(ObserverType, Observer*) override {}
-  void RemoveThrottlingObserver(ObserverType, Observer*) override {}
+  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
+      ObserverType,
+      Observer*) override {
+    return nullptr;
+  }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return is_frame_visible_; }
   void SetPageVisible(bool) override {}
