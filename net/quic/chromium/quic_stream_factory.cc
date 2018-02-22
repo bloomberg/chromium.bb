@@ -857,6 +857,8 @@ QuicStreamFactory::QuicStreamFactory(
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
+  UMA_HISTOGRAM_COUNTS_1000("Net.NumQuicSessionsAtShutdown",
+                            all_sessions_.size());
   CloseAllSessions(ERR_ABORTED, QUIC_CONNECTION_CANCELLED);
   while (!all_sessions_.empty()) {
     delete all_sessions_.begin()->first;
