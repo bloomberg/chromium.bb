@@ -78,7 +78,7 @@ class CopyOrMoveFileValidatorTestHelper {
     src_file_system_backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&ExpectOk));
+        base::BindOnce(&ExpectOk));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(base::File::FILE_OK, CreateDirectory(SourceURL("")));
 
@@ -230,7 +230,7 @@ class TestCopyOrMoveFileValidatorFactory
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(result_callback, result_));
+          FROM_HERE, base::BindOnce(result_callback, result_));
     }
 
     void StartPostWriteValidation(
@@ -238,7 +238,7 @@ class TestCopyOrMoveFileValidatorFactory
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(result_callback, write_result_));
+          FROM_HERE, base::BindOnce(result_callback, write_result_));
     }
 
    private:

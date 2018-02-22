@@ -277,7 +277,7 @@ FileCreationInfo::~FileCreationInfo() {
   if (file.IsValid()) {
     DCHECK(file_deletion_runner);
     file_deletion_runner->PostTask(
-        FROM_HERE, base::Bind(&DestructFile, base::Passed(&file)));
+        FROM_HERE, base::BindOnce(&DestructFile, base::Passed(&file)));
   }
 }
 FileCreationInfo::FileCreationInfo(FileCreationInfo&&) = default;
@@ -412,7 +412,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       // Register the disk space accounting callback.
       DCHECK_EQ(file_info.size(), file_sizes_.size());
       for (size_t i = 0; i < file_sizes_.size(); i++) {
-        file_info[i].file_reference->AddFinalReleaseCallback(base::Bind(
+        file_info[i].file_reference->AddFinalReleaseCallback(base::BindOnce(
             &BlobMemoryController::OnBlobFileDelete,
             controller_->weak_factory_.GetWeakPtr(), file_sizes_[i]));
       }
@@ -458,7 +458,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       controller_->disk_used_ -= allocation_size_;
       controller_->AdjustDiskUsage(static_cast<uint64_t>(avail_disk_space));
       controller_->file_runner_->PostTask(
-          FROM_HERE, base::Bind(&DeleteFiles, base::Passed(&result.files)));
+          FROM_HERE, base::BindOnce(&DeleteFiles, base::Passed(&result.files)));
       std::unique_ptr<FileQuotaAllocationTask> this_object =
           std::move(*my_list_position_);
       controller_->pending_file_quota_tasks_.erase(my_list_position_);
@@ -871,8 +871,8 @@ void BlobMemoryController::MaybeScheduleEvictionUntilSystemHealthy(
             file_runner_.get());
     // Add the release callback so we decrement our disk usage on file deletion.
     file_reference->AddFinalReleaseCallback(
-        base::Bind(&BlobMemoryController::OnBlobFileDelete,
-                   weak_factory_.GetWeakPtr(), total_items_size));
+        base::BindOnce(&BlobMemoryController::OnBlobFileDelete,
+                       weak_factory_.GetWeakPtr(), total_items_size));
 
     // Post the file writing task.
     base::PostTaskAndReplyWithResult(

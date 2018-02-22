@@ -58,8 +58,8 @@ int FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest,
 
 void FileSystemDirURLRequestJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FileSystemDirURLRequestJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FileSystemDirURLRequestJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemDirURLRequestJob::Kill() {
@@ -83,10 +83,9 @@ void FileSystemDirURLRequestJob::StartAsync() {
   url_ = file_system_context_->CrackURL(request_->url());
   if (!url_.is_valid()) {
     file_system_context_->AttemptAutoMountForURLRequest(
-        request_,
-        storage_domain_,
-        base::Bind(&FileSystemDirURLRequestJob::DidAttemptAutoMount,
-                   weak_factory_.GetWeakPtr()));
+        request_, storage_domain_,
+        base::BindOnce(&FileSystemDirURLRequestJob::DidAttemptAutoMount,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
   if (!file_system_context_->CanServeURLRequest(url_)) {

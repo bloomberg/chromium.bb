@@ -213,10 +213,9 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
         &kPrepopulateTypes[0],
         &kPrepopulateTypes[arraysize(kPrepopulateTypes)]);
     file_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
-                  base::Unretained(obfuscated_file_util()),
-                  types_to_prepopulate));
+        FROM_HERE, base::BindOnce(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
+                                  base::Unretained(obfuscated_file_util()),
+                                  types_to_prepopulate));
   }
 }
 

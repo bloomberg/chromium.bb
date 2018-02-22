@@ -137,8 +137,8 @@ void CallCancelLater(storage::RecursiveOperationDelegate* operation,
                      int counter) {
   if (counter > 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&CallCancelLater, base::Unretained(operation), counter - 1));
+        FROM_HERE, base::BindOnce(&CallCancelLater, base::Unretained(operation),
+                                  counter - 1));
     return;
   }
 

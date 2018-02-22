@@ -243,8 +243,8 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
     // Gather 4 pieces of info before computing an answer:
     // settings, device_storage_capacity, host_usage, and host_quota.
     base::Closure barrier = base::BarrierClosure(
-        4, base::Bind(&UsageAndQuotaHelper::OnBarrierComplete,
-                      weak_factory_.GetWeakPtr()));
+        4, base::BindOnce(&UsageAndQuotaHelper::OnBarrierComplete,
+                          weak_factory_.GetWeakPtr()));
 
     std::string host = net::GetHostOrSpecFromURL(origin_);
 
@@ -379,8 +379,8 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
     // Gather 2 pieces of info before deciding if we need to get GlobalUsage:
     // settings and device_storage_capacity.
     base::Closure barrier = base::BarrierClosure(
-        2, base::Bind(&EvictionRoundInfoHelper::OnBarrierComplete,
-                      weak_factory_.GetWeakPtr()));
+        2, base::BindOnce(&EvictionRoundInfoHelper::OnBarrierComplete,
+                          weak_factory_.GetWeakPtr()));
 
     manager()->GetQuotaSettings(
         base::Bind(&EvictionRoundInfoHelper::OnGotSettings,

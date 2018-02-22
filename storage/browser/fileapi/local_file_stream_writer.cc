@@ -114,12 +114,10 @@ int LocalFileStreamWriter::InitiateOpen(
     break;
   }
 
-  return stream_impl_->Open(file_path_,
-                            open_flags,
-                            base::Bind(&LocalFileStreamWriter::DidOpen,
-                                       weak_factory_.GetWeakPtr(),
-                                       error_callback,
-                                       main_operation));
+  return stream_impl_->Open(file_path_, open_flags,
+                            base::BindOnce(&LocalFileStreamWriter::DidOpen,
+                                           weak_factory_.GetWeakPtr(),
+                                           error_callback, main_operation));
 }
 
 void LocalFileStreamWriter::DidOpen(
@@ -155,9 +153,9 @@ void LocalFileStreamWriter::InitiateSeek(
   }
 
   int result = stream_impl_->Seek(
-      initial_offset_,
-      base::Bind(&LocalFileStreamWriter::DidSeek, weak_factory_.GetWeakPtr(),
-                 error_callback, main_operation));
+      initial_offset_, base::BindOnce(&LocalFileStreamWriter::DidSeek,
+                                      weak_factory_.GetWeakPtr(),
+                                      error_callback, main_operation));
   if (result != net::ERR_IO_PENDING) {
     has_pending_operation_ = false;
     error_callback.Run(result);
@@ -205,10 +203,10 @@ int LocalFileStreamWriter::InitiateWrite(
   DCHECK(has_pending_operation_);
   DCHECK(stream_impl_.get());
 
-  return stream_impl_->Write(buf, buf_len,
-                             base::Bind(&LocalFileStreamWriter::DidWrite,
-                                        weak_factory_.GetWeakPtr(),
-                                        callback));
+  return stream_impl_->Write(
+      buf, buf_len,
+      base::BindOnce(&LocalFileStreamWriter::DidWrite,
+                     weak_factory_.GetWeakPtr(), callback));
 }
 
 void LocalFileStreamWriter::DidWrite(const net::CompletionCallback& callback,
@@ -226,9 +224,8 @@ int LocalFileStreamWriter::InitiateFlush(
   DCHECK(has_pending_operation_);
   DCHECK(stream_impl_.get());
 
-  return stream_impl_->Flush(base::Bind(&LocalFileStreamWriter::DidFlush,
-                                        weak_factory_.GetWeakPtr(),
-                                        callback));
+  return stream_impl_->Flush(base::BindOnce(
+      &LocalFileStreamWriter::DidFlush, weak_factory_.GetWeakPtr(), callback));
 }
 
 void LocalFileStreamWriter::DidFlush(const net::CompletionCallback& callback,

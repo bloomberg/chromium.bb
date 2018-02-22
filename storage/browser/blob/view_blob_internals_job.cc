@@ -155,8 +155,8 @@ ViewBlobInternalsJob::~ViewBlobInternalsJob() = default;
 
 void ViewBlobInternalsJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ViewBlobInternalsJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ViewBlobInternalsJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,

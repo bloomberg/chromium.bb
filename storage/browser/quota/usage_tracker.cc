@@ -125,8 +125,8 @@ void UsageTracker::GetHostUsageWithBreakdown(
   // We use BarrierClosure here instead of manually counting pending_clients.
   base::Closure barrier = base::BarrierClosure(
       client_tracker_map_.size(),
-      base::Bind(&UsageTracker::FinallySendHostUsageWithBreakdown,
-                 weak_factory_.GetWeakPtr(), base::Owned(info), host));
+      base::BindOnce(&UsageTracker::FinallySendHostUsageWithBreakdown,
+                     weak_factory_.GetWeakPtr(), base::Owned(info), host));
 
   for (const auto& client_id_and_tracker : client_tracker_map_) {
     client_id_and_tracker.second->GetHostUsage(

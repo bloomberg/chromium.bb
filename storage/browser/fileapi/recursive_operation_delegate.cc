@@ -149,10 +149,10 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
   if (!pending_files_.empty()) {
     current_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
-                   pending_files_.front(),
-                   base::Bind(&RecursiveOperationDelegate::DidProcessFile,
-                              AsWeakPtr(), pending_files_.front())));
+        base::BindOnce(&RecursiveOperationDelegate::ProcessFile, AsWeakPtr(),
+                       pending_files_.front(),
+                       base::Bind(&RecursiveOperationDelegate::DidProcessFile,
+                                  AsWeakPtr(), pending_files_.front())));
     pending_files_.pop();
   }
 }

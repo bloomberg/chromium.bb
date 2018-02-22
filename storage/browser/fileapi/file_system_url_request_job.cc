@@ -73,8 +73,8 @@ FileSystemURLRequestJob::~FileSystemURLRequestJob() = default;
 
 void FileSystemURLRequestJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FileSystemURLRequestJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FileSystemURLRequestJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemURLRequestJob::Kill() {
@@ -150,10 +150,9 @@ void FileSystemURLRequestJob::StartAsync() {
   url_ = file_system_context_->CrackURL(request_->url());
   if (!url_.is_valid()) {
     file_system_context_->AttemptAutoMountForURLRequest(
-        request_,
-        storage_domain_,
-        base::Bind(&FileSystemURLRequestJob::DidAttemptAutoMount,
-                   weak_factory_.GetWeakPtr()));
+        request_, storage_domain_,
+        base::BindOnce(&FileSystemURLRequestJob::DidAttemptAutoMount,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
   if (!file_system_context_->CanServeURLRequest(url_)) {
