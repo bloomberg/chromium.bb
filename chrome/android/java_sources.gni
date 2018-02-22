@@ -1446,7 +1446,6 @@ chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionCheckerImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApiImpl.java",
-  "java/src/org/chromium/chrome/browser/vr_shell/VrExternalNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrInputConnection.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrWindowAndroid.java",

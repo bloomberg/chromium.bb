@@ -7,6 +7,8 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -33,6 +35,9 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -150,5 +155,31 @@ public class ChromeApplication extends Application {
             mReferencePool = new DiscardableReferencePool();
         }
         return mReferencePool;
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        startActivity(intent, null);
+    }
+
+    @Override
+    public void startActivity(Intent intent, Bundle options) {
+        if (!VrShellDelegate.isInVr() || VrIntentUtils.isVrIntent(intent)) {
+            super.startActivity(intent, options);
+            return;
+        }
+
+        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                if (VrShellDelegate.isInVr()) {
+                    throw new IllegalStateException("Still in VR after having exited VR.");
+                }
+                startActivity(intent, options);
+            }
+
+            @Override
+            public void onDenied() {}
+        });
     }
 }

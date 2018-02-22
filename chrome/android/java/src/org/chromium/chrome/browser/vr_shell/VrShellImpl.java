@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -96,7 +95,6 @@ public class VrShellImpl
 
     private boolean mReprojectedRendering;
 
-    private InterceptNavigationDelegateImpl mNonVrInterceptNavigationDelegate;
     private TabRedirectHandler mNonVrTabRedirectHandler;
 
     private TabModelSelector mTabModelSelector;
@@ -390,9 +388,6 @@ public class VrShellImpl
 
     private void initializeTabForVR() {
         if (mTab == null) return;
-        mNonVrInterceptNavigationDelegate = mTab.getInterceptNavigationDelegate();
-        mTab.setInterceptNavigationDelegate(
-                new InterceptNavigationDelegateImpl(new VrExternalNavigationDelegate(mTab), mTab));
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
@@ -420,7 +415,6 @@ public class VrShellImpl
 
     private void restoreTabFromVR() {
         if (mTab == null) return;
-        mTab.setInterceptNavigationDelegate(mNonVrInterceptNavigationDelegate);
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
         uninitializeImeForVr();
