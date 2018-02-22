@@ -422,7 +422,7 @@ class IdlSchemaTest(unittest.TestCase):
         ('description', 'Double property.'),
         ('jsexterns', None),
         ('type', 'number'),
-        ('value', 42.0),
+        ('value', 42.1),
       ])),
       ('third', OrderedDict([
         ('description', 'String property.'),

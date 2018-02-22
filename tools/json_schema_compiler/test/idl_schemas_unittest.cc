@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/idl_basics.h"
 #include "tools/json_schema_compiler/test/idl_object_types.h"
+#include "tools/json_schema_compiler/test/idl_properties.h"
 
 using test::api::idl_basics::MyType1;
 using test::api::idl_object_types::BarType;
@@ -206,4 +207,10 @@ TEST(IdlCompiler, ObjectTypes) {
   std::string tmp;
   EXPECT_TRUE(params->icon.additional_properties.GetString("hello", &tmp));
   EXPECT_EQ("world", tmp);
+}
+
+TEST(IdlCompiler, PropertyValues) {
+  EXPECT_EQ(42, test::api::idl_properties::first);
+  EXPECT_EQ(42.1, test::api::idl_properties::second);
+  EXPECT_STREQ("hello world", test::api::idl_properties::third);
 }

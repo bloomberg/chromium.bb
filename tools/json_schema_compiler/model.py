@@ -375,6 +375,7 @@ class Property(object):
     is_allowed_value = (
         '$ref' not in json and
         ('type' not in json or json['type'] == 'integer'
+                            or json['type'] == 'number'
                             or json['type'] == 'string'))
 
     self.value = None
@@ -385,6 +386,8 @@ class Property(object):
         # it out for ourselves.
         if isinstance(self.value, int):
           json['type'] = 'integer'
+        elif isinstance(self.value, float):
+          json['type'] = 'double'
         elif isinstance(self.value, basestring):
           json['type'] = 'string'
         else:
