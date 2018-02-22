@@ -40,6 +40,10 @@ class DiceBubbleSyncPromoView : public views::View,
                           int accounts_promo_message_resource_id);
   ~DiceBubbleSyncPromoView() override;
 
+  // If a non-personalized signin button is shown in the promo, it is set to
+  // non-prominent. Otherwise, this function does nothing.
+  void SetSigninButtonNonProminent();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

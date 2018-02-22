@@ -74,6 +74,14 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
 
 DiceBubbleSyncPromoView::~DiceBubbleSyncPromoView() = default;
 
+void DiceBubbleSyncPromoView::SetSigninButtonNonProminent() {
+  if (!signin_button_->account()) {
+    // Only the sign-in button can be non prominent (the turn-on-sync button is
+    // always prominent).
+    signin_button_->SetProminent(false);
+  }
+}
+
 void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (sender == signin_button_) {
