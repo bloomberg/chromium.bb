@@ -42,6 +42,7 @@
 
       .flex {
         display: flex;
+        flex: 1;
         flex-direction: column;
       }
 
@@ -151,12 +152,12 @@
             </span>
             <div class="secondary">[[shownAccount_.email]]</div>
           </div>
-          <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
-          <button is="paper-icon-button-light" id="dropdown-arrow"
-              on-click="onMenuButtonTap_" title="$i18n{moreActions}"
-              class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
-          </button>
         </div>
+        <button is="paper-icon-button-light" id="dropdown-arrow"
+            on-click="onMenuButtonTap_" title="$i18n{moreActions}"
+            class="icon-arrow-dropdown" hidden="[[syncStatus.signedIn]]">
+        </button>
+        <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
         <paper-button class="action-button" on-click="onSyncButtonTap_"
             hidden="[[syncStatus.signedIn]]"
             disabled="[[syncStatus.setupInProgress]]">
