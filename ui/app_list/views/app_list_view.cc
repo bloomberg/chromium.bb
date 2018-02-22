@@ -1025,14 +1025,17 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
     }
   }
 
-  if (ShouldIgnoreScrollEvents())
+  // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
+  // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
+  // touchpad mouse moves. Those may be passed via mojo APIs and handled here.
+  if (ShouldIgnoreScrollEvents() || offset == 0)
     return true;
 
   // If the event is a mousewheel event, the offset is always large enough,
   // otherwise the offset must be larger than the scroll threshold.
   if (type == ui::ET_MOUSEWHEEL ||
       abs(offset) > kAppListMinScrollToSwitchStates) {
-    if (offset >= 0) {
+    if (offset > 0) {
       Dismiss();
     } else {
       if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS)
