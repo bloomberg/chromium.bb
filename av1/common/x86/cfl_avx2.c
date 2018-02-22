@@ -34,7 +34,7 @@ static void cfl_luma_subsampling_420_lbd_avx2(const uint8_t *input,
 
   const __m256i twos = _mm256_set1_epi8(2);  // Thirty two twos
   const int luma_stride = input_stride << 1;
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
   do {
     // Load 32 values for the top and bottom rows.
     // t_0, t_1, ... t_31

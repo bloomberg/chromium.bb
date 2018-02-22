@@ -36,18 +36,18 @@ static void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
   // Sixteen int8 values fit in one __m128i register. If this is enough to do
   // the entire row, the next value is two rows down, otherwise we move to the
   // next sixteen values.
-  const int next = (width == 16) ? 16 : input_stride << 1;
+  const int next = (width == 32) ? 16 : input_stride << 1;
 
   // Values in the prediction buffer are subsampled, so we only need to move
   // down one row or forward by eight values.
-  const int next_chroma = (width == 16) ? 8 : CFL_BUF_LINE;
+  const int next_chroma = (width == 32) ? 8 : CFL_BUF_LINE;
 
   // When the width is less than 16, we double the stride, because we process
   // four lines by iteration (instead of two).
-  const int luma_stride = input_stride << (1 + (width < 16));
-  const int chroma_stride = CFL_BUF_LINE << (width < 16);
+  const int luma_stride = input_stride << (1 + (width < 32));
+  const int chroma_stride = CFL_BUF_LINE << (width < 32);
 
-  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const int16_t *end = pred_buf_q3 + (height >> 1) * CFL_BUF_LINE;
   do {
     // Load 16 values for the top and bottom rows.
     // t_0, t_1, ... t_15

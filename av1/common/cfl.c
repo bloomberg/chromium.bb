@@ -257,12 +257,11 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 static void cfl_luma_subsampling_420_lbd_c(const uint8_t *input,
                                            int input_stride, int16_t *output_q3,
                                            int width, int height) {
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      int top = i << 1;
-      int bot = top + input_stride;
-      output_q3[i] = (input[top] + input[top + 1] + input[bot] + input[bot + 1])
-                     << 1;
+  for (int j = 0; j < height; j += 2) {
+    for (int i = 0; i < width; i += 2) {
+      const int bot = i + input_stride;
+      output_q3[i >> 1] =
+          (input[i] + input[i + 1] + input[bot] + input[bot + 1]) << 1;
     }
     input += input_stride << 1;
     output_q3 += CFL_BUF_LINE;
@@ -273,9 +272,8 @@ void cfl_luma_subsampling_422_lbd_c(const uint8_t *input, int input_stride,
                                     int16_t *output_q3, int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      int left = i << 1;
-      output_q3[i] = (input[left] + input[left + 1]) << 2;
+    for (int i = 0; i < width; i += 2) {
+      output_q3[i >> 1] = (input[i] + input[i + 1]) << 2;
     }
     input += input_stride;
     output_q3 += CFL_BUF_LINE;
@@ -296,12 +294,11 @@ void cfl_luma_subsampling_444_lbd_c(const uint8_t *input, int input_stride,
 
 void cfl_luma_subsampling_420_hbd_c(const uint16_t *input, int input_stride,
                                     int16_t *output_q3, int width, int height) {
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      int top = i << 1;
-      int bot = top + input_stride;
-      output_q3[i] = (input[top] + input[top + 1] + input[bot] + input[bot + 1])
-                     << 1;
+  for (int j = 0; j < height; j += 2) {
+    for (int i = 0; i < width; i += 2) {
+      const int bot = i + input_stride;
+      output_q3[i >> 1] =
+          (input[i] + input[i + 1] + input[bot] + input[bot + 1]) << 1;
     }
     input += input_stride << 1;
     output_q3 += CFL_BUF_LINE;
@@ -312,9 +309,8 @@ void cfl_luma_subsampling_422_hbd_c(const uint16_t *input, int input_stride,
                                     int16_t *output_q3, int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      int left = i << 1;
-      output_q3[i] = (input[left] + input[left + 1]) << 2;
+    for (int i = 0; i < width; i += 2) {
+      output_q3[i >> 1] = (input[i] + input[i + 1]) << 2;
     }
     input += input_stride;
     output_q3 += CFL_BUF_LINE;
@@ -336,7 +332,9 @@ void cfl_luma_subsampling_444_hbd_c(const uint16_t *input, int input_stride,
 CFL_GET_SUBSAMPLE_FUNCTION(c)
 
 static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
-                      int row, int col, int width, int height, int use_hbd) {
+                      int row, int col, TX_SIZE tx_size, int use_hbd) {
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
   const int tx_off_log2 = tx_size_wide_log2[0];
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
@@ -370,11 +368,11 @@ static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
   if (use_hbd) {
     const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
     get_subsample_hbd_fn(sub_x, sub_y)(input_16, input_stride, pred_buf_q3,
-                                       store_width, store_height);
+                                       width, height);
     return;
   }
-  get_subsample_lbd_fn(sub_x, sub_y)(input, input_stride, pred_buf_q3,
-                                     store_width, store_height);
+  get_subsample_lbd_fn(sub_x, sub_y)(input, input_stride, pred_buf_q3, width,
+                                     height);
 }
 
 // Adjust the row and column of blocks smaller than 8X8, as chroma-referenced
@@ -469,8 +467,8 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
     sub8x8_set_val(cfl, row, col, tx_size);
 #endif  // CONFIG_DEBUG && !CONFIG_RECT_TX_EXT_INTRA
   }
-  cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size_wide[tx_size],
-            tx_size_high[tx_size], get_bitdepth_data_path_index(xd));
+  cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size,
+            get_bitdepth_data_path_index(xd));
 }
 
 void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
@@ -493,6 +491,7 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   }
   const int width = max_intra_block_width(xd, bsize, AOM_PLANE_Y, tx_size);
   const int height = max_intra_block_height(xd, bsize, AOM_PLANE_Y, tx_size);
-  cfl_store(cfl, pd->dst.buf, pd->dst.stride, row, col, width, height,
+  tx_size = get_tx_size(width, height);
+  cfl_store(cfl, pd->dst.buf, pd->dst.stride, row, col, tx_size,
             get_bitdepth_data_path_index(xd));
 }
