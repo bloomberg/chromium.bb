@@ -351,7 +351,9 @@ void LinkStyle::Process() {
       owner_->TypeValue().DeprecatedLower(),
       owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
       owner_->nonce(), owner_->IntegrityValue(), owner_->GetReferrerPolicy(),
-      owner_->GetNonEmptyURLAttribute(hrefAttr));
+      owner_->GetNonEmptyURLAttribute(hrefAttr),
+      owner_->FastGetAttribute(srcsetAttr),
+      owner_->FastGetAttribute(imgsizesAttr));
 
   WTF::TextEncoding charset = GetCharset();
 
