@@ -391,7 +391,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
 
 // Test for NSAccessibilityHelpAttribute.
 TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
-  Label* label = new Label(base::SysNSStringToUTF16(kTestPlaceholderText));
+  Label* label = new Label(base::SysNSStringToUTF16(kTestStringValue));
   label->SetSize(GetWidgetBounds().size());
   EXPECT_NSEQ(@"", AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
   label->SetTooltipText(base::SysNSStringToUTF16(kTestPlaceholderText));

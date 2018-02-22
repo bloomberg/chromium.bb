@@ -60,19 +60,33 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   owner_view_->GetAccessibleNodeData(data);
   if (custom_data_.role != ax::mojom::Role::kUnknown)
     data->role = custom_data_.role;
+
   if (custom_data_.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
     data->SetName(
         custom_data_.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
-  data->location = gfx::RectF(owner_view_->GetBoundsInScreen());
-  if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
-    base::string16 description;
-    owner_view_->GetTooltipText(gfx::Point(), &description);
-    data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                             base::UTF16ToUTF8(description));
+  if (custom_data_.HasStringAttribute(
+          ax::mojom::StringAttribute::kDescription)) {
+    data->SetDescription(custom_data_.GetStringAttribute(
+        ax::mojom::StringAttribute::kDescription));
   }
 
+  if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
+    base::string16 tooltip;
+    owner_view_->GetTooltipText(gfx::Point(), &tooltip);
+    // Some screen readers announce the accessible description right after the
+    // accessible name. Only use the tooltip as the accessible description if
+    // it's different from the name, otherwise users might be puzzled as to why
+    // their screen reader is announcing the same thing twice.
+    if (tooltip !=
+        data->GetString16Attribute(ax::mojom::StringAttribute::kName)) {
+      data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                               base::UTF16ToUTF8(tooltip));
+    }
+  }
+
+  data->location = gfx::RectF(owner_view_->GetBoundsInScreen());
   data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                            owner_view_->GetClassName());
 
