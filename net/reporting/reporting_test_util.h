@@ -99,6 +99,10 @@ class TestReportingDelegate : public ReportingDelegate {
   bool CanUseClient(const url::Origin& origin,
                     const GURL& endpoint) const override;
 
+  void ParseJson(const std::string& unsafe_json,
+                 const JsonSuccessCallback& success_callback,
+                 const JsonFailureCallback& failure_callback) const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestReportingDelegate);
 };

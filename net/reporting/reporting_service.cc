@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -26,7 +27,7 @@ namespace {
 class ReportingServiceImpl : public ReportingService {
  public:
   ReportingServiceImpl(std::unique_ptr<ReportingContext> context)
-      : context_(std::move(context)) {}
+      : context_(std::move(context)), weak_factory_(this) {}
 
   // ReportingService implementation:
 
@@ -48,7 +49,12 @@ class ReportingServiceImpl : public ReportingService {
 
   void ProcessHeader(const GURL& url,
                      const std::string& header_value) override {
-    ReportingHeaderParser::ParseHeader(context_.get(), url, header_value);
+    context_->delegate()->ParseJson(
+        "[" + header_value + "]",
+        base::BindRepeating(&ReportingServiceImpl::ProcessHeaderValue,
+                            weak_factory_.GetWeakPtr(), url),
+        base::BindRepeating(
+            &ReportingHeaderParser::RecordHeaderDiscardedForInvalidJson));
   }
 
   void RemoveBrowsingData(int data_type_mask,
@@ -67,7 +73,12 @@ class ReportingServiceImpl : public ReportingService {
   }
 
  private:
+  void ProcessHeaderValue(const GURL& url, std::unique_ptr<base::Value> value) {
+    ReportingHeaderParser::ParseHeader(context_.get(), url, std::move(value));
+  }
+
   std::unique_ptr<ReportingContext> context_;
+  base::WeakPtrFactory<ReportingServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingServiceImpl);
 };

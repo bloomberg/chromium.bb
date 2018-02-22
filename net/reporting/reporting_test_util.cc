@@ -132,6 +132,17 @@ bool TestReportingDelegate::CanUseClient(const url::Origin& origin,
   return true;
 }
 
+void TestReportingDelegate::ParseJson(
+    const std::string& unsafe_json,
+    const JsonSuccessCallback& success_callback,
+    const JsonFailureCallback& failure_callback) const {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(unsafe_json);
+  if (value)
+    success_callback.Run(std::move(value));
+  else
+    failure_callback.Run();
+}
+
 TestReportingContext::TestReportingContext(base::Clock* clock,
                                            base::TickClock* tick_clock,
                                            const ReportingPolicy& policy)
