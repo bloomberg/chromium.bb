@@ -34,6 +34,7 @@
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/WebFontTypefaceFactory.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/Time.h"
@@ -96,6 +97,8 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
   const uint32_t kCblcTag = OTS_TAG('C', 'B', 'L', 'C');
   const uint32_t kColrTag = OTS_TAG('C', 'O', 'L', 'R');
   const uint32_t kCpalTag = OTS_TAG('C', 'P', 'A', 'L');
+  const uint32_t kCff2Tag = OTS_TAG('C', 'F', 'F', '2');
+  const uint32_t kSbixTag = OTS_TAG('s', 'b', 'i', 'x');
 #if HB_VERSION_ATLEAST(1, 0, 0)
   const uint32_t kGdefTag = OTS_TAG('G', 'D', 'E', 'F');
   const uint32_t kGposTag = OTS_TAG('G', 'P', 'O', 'S');
@@ -120,6 +123,8 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
     // Windows Color Emoji Tables
     case kColrTag:
     case kCpalTag:
+    case kCff2Tag:
+    case kSbixTag:
 #if HB_VERSION_ATLEAST(1, 0, 0)
     // Let HarfBuzz handle how to deal with broken tables.
     case kAvarTag:
@@ -209,24 +214,18 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   RecordDecodeSpeedHistogram(data, buffer->size(), CurrentTime() - start,
                              decoded_length);
 
-  // TODO(fmalita): we can avoid this copy by processing into a
-  // SkDynamicMemoryWStream-backed OTSStream.
   sk_sp<SkData> sk_data = SkData::MakeWithCopy(output.get(), decoded_length);
-  std::unique_ptr<SkStreamAsset> stream(new SkMemoryStream(sk_data));
-#if defined(OS_WIN)
-  sk_sp<SkTypeface> typeface(
-      FontCache::GetFontCache()->FontManager()->makeFromStream(
-          std::move(stream)));
-#else
-  sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(stream.release());
-#endif
-  if (!typeface) {
-    SetErrorString("Not a valid font data");
+
+  sk_sp<SkTypeface> new_typeface;
+
+  if (!WebFontTypefaceFactory::CreateTypeface(sk_data, new_typeface)) {
+    SetErrorString("Unable to instantiate font face from font data.");
     return nullptr;
   }
 
   decoded_size_ = decoded_length;
-  return typeface;
+
+  return new_typeface;
 }
 
 }  // namespace blink

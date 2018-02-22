@@ -284,6 +284,11 @@ bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
               HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present);
 }
 
+unsigned HarfBuzzFace::UnitsPerEmFromHeadTable() {
+  hb_face_t* face = hb_font_get_face(unscaled_font_);
+  return hb_face_get_upem(face);
+}
+
 static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
   hb_font_funcs_t* funcs = FontGlobalContext::GetHarfBuzzFontFuncs();
 

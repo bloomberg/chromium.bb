@@ -69,7 +69,12 @@ struct HarfBuzzFontData {
       // integer Height()
       height_fallback_ = lroundf(ascent) + lroundf(descent);
 
-      int units_per_em = paint.refTypeface()->getUnitsPerEm();
+      int units_per_em =
+          platform_data.GetHarfBuzzFace()->UnitsPerEmFromHeadTable();
+      if (!units_per_em) {
+        DLOG(ERROR)
+            << "Units per EM is 0 for font used in vertical writing mode.";
+      }
       size_per_unit_ = platform_data.size() / (units_per_em ? units_per_em : 1);
     } else {
       ascent_fallback_ = kInvalidFallbackMetricsValue;

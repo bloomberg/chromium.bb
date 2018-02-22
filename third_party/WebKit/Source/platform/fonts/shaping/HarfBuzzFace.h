@@ -66,6 +66,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
                            VerticalLayoutCallbacks) const;
 
   bool HasSpaceInLigaturesOrKerning(TypesettingFeatures);
+  unsigned UnitsPerEmFromHeadTable();
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);
