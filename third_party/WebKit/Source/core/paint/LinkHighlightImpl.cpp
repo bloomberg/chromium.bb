@@ -90,15 +90,15 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   clip_layer_->SetTransformOrigin(WebFloatPoint3D());
   clip_layer_->AddChild(content_layer_->Layer());
 
-  compositor_player_ = CompositorAnimationPlayer::Create();
-  DCHECK(compositor_player_);
-  compositor_player_->SetAnimationDelegate(this);
+  compositor_animation_ = CompositorAnimation::Create();
+  DCHECK(compositor_animation_);
+  compositor_animation_->SetAnimationDelegate(this);
   if (owning_web_view_->LinkHighlightsTimeline())
-    owning_web_view_->LinkHighlightsTimeline()->PlayerAttached(*this);
+    owning_web_view_->LinkHighlightsTimeline()->AnimationAttached(*this);
 
   CompositorElementId element_id =
       CompositorElementIdFromUniqueObjectId(unique_id_);
-  compositor_player_->AttachElement(element_id);
+  compositor_animation_->AttachElement(element_id);
   content_layer_->Layer()->SetDrawsContent(true);
   content_layer_->Layer()->SetOpacity(1);
   content_layer_->Layer()->SetElementId(element_id);
@@ -106,12 +106,12 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
 }
 
 LinkHighlightImpl::~LinkHighlightImpl() {
-  if (compositor_player_->IsElementAttached())
-    compositor_player_->DetachElement();
+  if (compositor_animation_->IsElementAttached())
+    compositor_animation_->DetachElement();
   if (owning_web_view_->LinkHighlightsTimeline())
-    owning_web_view_->LinkHighlightsTimeline()->PlayerDestroyed(*this);
-  compositor_player_->SetAnimationDelegate(nullptr);
-  compositor_player_.reset();
+    owning_web_view_->LinkHighlightsTimeline()->AnimationDestroyed(*this);
+  compositor_animation_->SetAnimationDelegate(nullptr);
+  compositor_animation_.reset();
 
   ClearGraphicsLayerLinkHighlightPointer();
   ReleaseResources();
@@ -331,7 +331,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
                                       0, 0);
 
   content_layer_->Layer()->SetDrawsContent(true);
-  compositor_player_->AddKeyframeModel(std::move(keyframe_model));
+  compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
   owning_web_view_->MainFrameImpl()->FrameWidget()->ScheduleAnimation();
@@ -407,8 +407,8 @@ WebLayer* LinkHighlightImpl::Layer() {
   return ClipLayer();
 }
 
-CompositorAnimationPlayer* LinkHighlightImpl::CompositorPlayer() const {
-  return compositor_player_.get();
+CompositorAnimation* LinkHighlightImpl::GetCompositorAnimation() const {
+  return compositor_animation_.get();
 }
 
 }  // namespace blink

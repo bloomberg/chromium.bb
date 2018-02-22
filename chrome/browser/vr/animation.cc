@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/animation_player.h"
+#include "chrome/browser/vr/animation.h"
 
 #include <algorithm>
 
@@ -137,23 +137,23 @@ DEFINE_ANIMATION_TRAITS(SkColor, Color, Color);
 
 }  // namespace
 
-int AnimationPlayer::GetNextKeyframeModelId() {
+int Animation::GetNextKeyframeModelId() {
   return s_next_keyframe_model_id++;
 }
 
-int AnimationPlayer::GetNextGroupId() {
+int Animation::GetNextGroupId() {
   return s_next_group_id++;
 }
 
-AnimationPlayer::AnimationPlayer() {}
-AnimationPlayer::~AnimationPlayer() {}
+Animation::Animation() {}
+Animation::~Animation() {}
 
-void AnimationPlayer::AddKeyframeModel(
+void Animation::AddKeyframeModel(
     std::unique_ptr<cc::KeyframeModel> keyframe_model) {
   keyframe_models_.push_back(std::move(keyframe_model));
 }
 
-void AnimationPlayer::RemoveKeyframeModel(int keyframe_model_id) {
+void Animation::RemoveKeyframeModel(int keyframe_model_id) {
   base::EraseIf(keyframe_models_,
                 [keyframe_model_id](
                     const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
@@ -161,7 +161,7 @@ void AnimationPlayer::RemoveKeyframeModel(int keyframe_model_id) {
                 });
 }
 
-void AnimationPlayer::RemoveKeyframeModels(int target_property) {
+void Animation::RemoveKeyframeModels(int target_property) {
   base::EraseIf(keyframe_models_,
                 [target_property](
                     const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
@@ -170,7 +170,7 @@ void AnimationPlayer::RemoveKeyframeModels(int target_property) {
                 });
 }
 
-void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
+void Animation::Tick(base::TimeTicks monotonic_time) {
   DCHECK(target_);
 
   StartKeyframeModels(monotonic_time);
@@ -191,23 +191,22 @@ void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   StartKeyframeModels(monotonic_time);
 }
 
-void AnimationPlayer::SetTransitionedProperties(
-    const std::set<int>& properties) {
+void Animation::SetTransitionedProperties(const std::set<int>& properties) {
   transition_.target_properties = properties;
 }
 
-void AnimationPlayer::SetTransitionDuration(base::TimeDelta delta) {
+void Animation::SetTransitionDuration(base::TimeDelta delta) {
   transition_.duration = delta;
 }
 
-void AnimationPlayer::TransitionFloatTo(base::TimeTicks monotonic_time,
-                                        int target_property,
-                                        float current,
-                                        float target) {
+void Animation::TransitionFloatTo(base::TimeTicks monotonic_time,
+                                  int target_property,
+                                  float current,
+                                  float target) {
   TransitionValueTo<float>(monotonic_time, target_property, current, target);
 }
 
-void AnimationPlayer::TransitionTransformOperationsTo(
+void Animation::TransitionTransformOperationsTo(
     base::TimeTicks monotonic_time,
     int target_property,
     const cc::TransformOperations& current,
@@ -216,22 +215,22 @@ void AnimationPlayer::TransitionTransformOperationsTo(
                                              current, target);
 }
 
-void AnimationPlayer::TransitionSizeTo(base::TimeTicks monotonic_time,
-                                       int target_property,
-                                       const gfx::SizeF& current,
-                                       const gfx::SizeF& target) {
+void Animation::TransitionSizeTo(base::TimeTicks monotonic_time,
+                                 int target_property,
+                                 const gfx::SizeF& current,
+                                 const gfx::SizeF& target) {
   TransitionValueTo<gfx::SizeF>(monotonic_time, target_property, current,
                                 target);
 }
 
-void AnimationPlayer::TransitionColorTo(base::TimeTicks monotonic_time,
-                                        int target_property,
-                                        SkColor current,
-                                        SkColor target) {
+void Animation::TransitionColorTo(base::TimeTicks monotonic_time,
+                                  int target_property,
+                                  SkColor current,
+                                  SkColor target) {
   TransitionValueTo<SkColor>(monotonic_time, target_property, current, target);
 }
 
-bool AnimationPlayer::IsAnimatingProperty(int property) const {
+bool Animation::IsAnimatingProperty(int property) const {
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->target_property_id() == property)
       return true;
@@ -239,30 +238,30 @@ bool AnimationPlayer::IsAnimatingProperty(int property) const {
   return false;
 }
 
-float AnimationPlayer::GetTargetFloatValue(int target_property,
-                                           float default_value) const {
+float Animation::GetTargetFloatValue(int target_property,
+                                     float default_value) const {
   return GetTargetValue<float>(target_property, default_value);
 }
 
-cc::TransformOperations AnimationPlayer::GetTargetTransformOperationsValue(
+cc::TransformOperations Animation::GetTargetTransformOperationsValue(
     int target_property,
     const cc::TransformOperations& default_value) const {
   return GetTargetValue<cc::TransformOperations>(target_property,
                                                  default_value);
 }
 
-gfx::SizeF AnimationPlayer::GetTargetSizeValue(
+gfx::SizeF Animation::GetTargetSizeValue(
     int target_property,
     const gfx::SizeF& default_value) const {
   return GetTargetValue<gfx::SizeF>(target_property, default_value);
 }
 
-SkColor AnimationPlayer::GetTargetColorValue(int target_property,
-                                             SkColor default_value) const {
+SkColor Animation::GetTargetColorValue(int target_property,
+                                       SkColor default_value) const {
   return GetTargetValue<SkColor>(target_property, default_value);
 }
 
-void AnimationPlayer::StartKeyframeModels(base::TimeTicks monotonic_time) {
+void Animation::StartKeyframeModels(base::TimeTicks monotonic_time) {
   cc::TargetProperties animated_properties;
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
@@ -282,10 +281,10 @@ void AnimationPlayer::StartKeyframeModels(base::TimeTicks monotonic_time) {
 }
 
 template <typename ValueType>
-void AnimationPlayer::TransitionValueTo(base::TimeTicks monotonic_time,
-                                        int target_property,
-                                        const ValueType& current,
-                                        const ValueType& target) {
+void Animation::TransitionValueTo(base::TimeTicks monotonic_time,
+                                  int target_property,
+                                  const ValueType& current,
+                                  const ValueType& target) {
   DCHECK(target_);
 
   if (transition_.target_properties.find(target_property) ==
@@ -330,7 +329,7 @@ void AnimationPlayer::TransitionValueTo(base::TimeTicks monotonic_time,
                                 GetNextGroupId(), target_property));
 }
 
-cc::KeyframeModel* AnimationPlayer::GetRunningKeyframeModelForProperty(
+cc::KeyframeModel* Animation::GetRunningKeyframeModelForProperty(
     int target_property) const {
   for (auto& keyframe_model : keyframe_models_) {
     if ((keyframe_model->run_state() == cc::KeyframeModel::RUNNING ||
@@ -342,7 +341,7 @@ cc::KeyframeModel* AnimationPlayer::GetRunningKeyframeModelForProperty(
   return nullptr;
 }
 
-cc::KeyframeModel* AnimationPlayer::GetKeyframeModelForProperty(
+cc::KeyframeModel* Animation::GetKeyframeModelForProperty(
     int target_property) const {
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->target_property_id() == target_property) {
@@ -353,9 +352,8 @@ cc::KeyframeModel* AnimationPlayer::GetKeyframeModelForProperty(
 }
 
 template <typename ValueType>
-ValueType AnimationPlayer::GetTargetValue(
-    int target_property,
-    const ValueType& default_value) const {
+ValueType Animation::GetTargetValue(int target_property,
+                                    const ValueType& default_value) const {
   cc::KeyframeModel* running_keyframe_model =
       GetKeyframeModelForProperty(target_property);
   if (!running_keyframe_model) {

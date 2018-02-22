@@ -100,16 +100,16 @@ void AnimationWorkletGlobalScope::Dispose() {
   ThreadedWorkletGlobalScope::Dispose();
 }
 
-Animator* AnimationWorkletGlobalScope::GetAnimatorFor(int player_id,
+Animator* AnimationWorkletGlobalScope::GetAnimatorFor(int animation_id,
                                                       const String& name) {
-  Animator* animator = animators_.at(player_id);
+  Animator* animator = animators_.at(animation_id);
   if (!animator) {
-    // This is a new player so we should create an animator for it.
+    // This is a new animation so we should create an animator for it.
     animator = CreateInstance(name);
     if (!animator)
       return nullptr;
 
-    animators_.Set(player_id, animator);
+    animators_.Set(animation_id, animator);
   }
 
   return animator;
@@ -131,7 +131,7 @@ AnimationWorkletGlobalScope::Mutate(
 
   for (const CompositorMutatorInputState::AnimationState& animation_input :
        mutator_input.animations) {
-    int id = animation_input.animation_player_id;
+    int id = animation_input.animation_id;
     const String name = String::FromUTF8(animation_input.name.data(),
                                          animation_input.name.size());
 
@@ -144,7 +144,7 @@ AnimationWorkletGlobalScope::Mutate(
 
     CompositorMutatorOutputState::AnimationState animation_output;
     if (animator->Animate(script_state, animation_input, &animation_output)) {
-      animation_output.animation_player_id = id;
+      animation_output.animation_id = id;
       result->animations.push_back(std::move(animation_output));
     }
   }

@@ -27,7 +27,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_effect.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/layers/layer.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -1933,43 +1933,43 @@ TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
   l2->SetAnimator(LayerAnimator::CreateImplicitAnimator());
 
-  auto* player1 = l1->GetAnimator()->GetAnimationPlayerForTesting();
-  auto* player2 = l2->GetAnimator()->GetAnimationPlayerForTesting();
+  auto* animation1 = l1->GetAnimator()->GetAnimationForTesting();
+  auto* animation2 = l2->GetAnimator()->GetAnimationForTesting();
 
-  EXPECT_FALSE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_FALSE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   // Trigger a threaded animation.
   l1->SetOpacity(0.5f);
 
-  EXPECT_TRUE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_TRUE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   // Ensure we can remove a pending threaded animation.
   l1->GetAnimator()->StopAnimating();
 
-  EXPECT_FALSE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_FALSE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   // Trigger another threaded animation.
   l1->SetOpacity(0.2f);
 
-  EXPECT_TRUE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_TRUE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   root->Add(l1.get());
   GetCompositor()->SetRootLayer(root.get());
 
   // Now l1 is part of a tree.
-  EXPECT_TRUE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_TRUE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   l1->SetOpacity(0.1f);
   // IMMEDIATELY_SET_NEW_TARGET is a default preemption strategy for conflicting
   // animations.
-  EXPECT_FALSE(player1->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_FALSE(animation1->keyframe_effect()->has_any_keyframe_model());
 
   // Adding a layer to an existing tree.
   l2->SetOpacity(0.5f);
-  EXPECT_TRUE(player2->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_TRUE(animation2->keyframe_effect()->has_any_keyframe_model());
 
   l1->Add(l2.get());
-  EXPECT_TRUE(player2->keyframe_effect()->has_any_keyframe_model());
+  EXPECT_TRUE(animation2->keyframe_effect()->has_any_keyframe_model());
 }
 
 // Tests that in-progress threaded animations complete when a Layer's

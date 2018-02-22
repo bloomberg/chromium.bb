@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_KEYFRAMEMODEL_H_
-#define CC_ANIMATION_KEYFRAMEMODEL_H_
+#ifndef CC_ANIMATION_KEYFRAME_MODEL_H_
+#define CC_ANIMATION_KEYFRAME_MODEL_H_
 
 #include <memory>
 
@@ -21,9 +21,9 @@ class AnimationCurve;
 // It represents a model of the keyframes (internally represented as a curve).
 class CC_ANIMATION_EXPORT KeyframeModel {
  public:
-  // TODO(yigu): RunState is supposed to be managed/accessed at a higher level.
-  // e.g. the counterpart of blink::Animation, which is AnimationPlayer at
-  // the moment (https://crbug.com/812652).
+  // TODO(yigu): RunState is supposed to be managed/accessed at Animation
+  // level rather than KeyframeModel level. See https://crbug.com/812652.
+  //
   // KeyframeModels begin in the 'WAITING_FOR_TARGET_AVAILABILITY' state. A
   // KeyframeModel waiting for target availibility will run as soon as its
   // target property is free (and all the KeyframeModels animating with it are
@@ -249,4 +249,4 @@ class CC_ANIMATION_EXPORT KeyframeModel {
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_KEYFRAMEMODEL_H_
+#endif  // CC_ANIMATION_KEYFRAME_MODEL_H_

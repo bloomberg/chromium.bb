@@ -188,18 +188,18 @@ void Background::SetGradientImages(
 }
 
 void Background::SetNormalFactor(float factor) {
-  animation_player().TransitionFloatTo(last_frame_time(), NORMAL_COLOR_FACTOR,
-                                       normal_factor_, factor);
+  animation().TransitionFloatTo(last_frame_time(), NORMAL_COLOR_FACTOR,
+                                normal_factor_, factor);
 }
 
 void Background::SetIncognitoFactor(float factor) {
-  animation_player().TransitionFloatTo(
-      last_frame_time(), INCOGNITO_COLOR_FACTOR, incognito_factor_, factor);
+  animation().TransitionFloatTo(last_frame_time(), INCOGNITO_COLOR_FACTOR,
+                                incognito_factor_, factor);
 }
 
 void Background::SetFullscreenFactor(float factor) {
-  animation_player().TransitionFloatTo(
-      last_frame_time(), FULLSCREEN_COLOR_FACTOR, fullscreen_factor_, factor);
+  animation().TransitionFloatTo(last_frame_time(), FULLSCREEN_COLOR_FACTOR,
+                                fullscreen_factor_, factor);
 }
 
 void Background::CreateBackgroundTexture() {

@@ -11,9 +11,9 @@
 #include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/WorkletAnimationBase.h"
 #include "modules/ModulesExport.h"
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
-#include "platform/animation/CompositorAnimationPlayerClient.h"
 
 namespace blink {
 
@@ -31,7 +31,7 @@ class AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence;
 //
 // Spec: https://wicg.github.io/animation-worklet/#worklet-animation-desc
 class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
-                                        public CompositorAnimationPlayerClient,
+                                        public CompositorAnimationClient,
                                         public CompositorAnimationDelegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(WorkletAnimation, Dispose);
@@ -53,9 +53,9 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // WorkletAnimationBase implementation.
   bool StartOnCompositor(String* failure_message) override;
 
-  // CompositorAnimationPlayerClient implementation.
-  CompositorAnimationPlayer* CompositorPlayer() const override {
-    return compositor_player_.get();
+  // CompositorAnimationClient implementation.
+  CompositorAnimation* GetCompositorAnimation() const override {
+    return compositor_animation_.get();
   }
 
   // CompositorAnimationDelegate implementation.
@@ -90,7 +90,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   DocumentTimelineOrScrollTimeline timeline_;
   scoped_refptr<SerializedScriptValue> options_;
 
-  std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
+  std::unique_ptr<CompositorAnimation> compositor_animation_;
 };
 
 }  // namespace blink

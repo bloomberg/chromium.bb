@@ -10,7 +10,7 @@ namespace cc {
 base::AtomicSequenceNumber g_next_keyframe_model_id;
 base::AtomicSequenceNumber g_next_group_id;
 base::AtomicSequenceNumber g_next_timeline_id;
-base::AtomicSequenceNumber g_next_player_id;
+base::AtomicSequenceNumber g_next_animation_id;
 
 int AnimationIdProvider::NextKeyframeModelId() {
   // Animation IDs start from 1.
@@ -26,8 +26,8 @@ int AnimationIdProvider::NextTimelineId() {
   return g_next_timeline_id.GetNext() + 1;
 }
 
-int AnimationIdProvider::NextPlayerId() {
-  return g_next_player_id.GetNext() + 1;
+int AnimationIdProvider::NextAnimationId() {
+  return g_next_animation_id.GetNext() + 1;
 }
 
 }  // namespace cc

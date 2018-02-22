@@ -42,7 +42,7 @@
 namespace blink {
 
 class Animation;
-class CompositorAnimationPlayer;
+class CompositorAnimation;
 class Element;
 class KeyframeEffectModelBase;
 
@@ -105,7 +105,7 @@ class CORE_EXPORT CompositorAnimations {
                                          double time_offset,
                                          const Timing&,
                                          const Animation*,
-                                         CompositorAnimationPlayer&,
+                                         CompositorAnimation&,
                                          const EffectModel&,
                                          Vector<int>& started_animation_ids,
                                          double animation_playback_rate);
@@ -117,7 +117,7 @@ class CORE_EXPORT CompositorAnimations {
                                                    int id,
                                                    double pause_time);
 
-  static void AttachCompositedLayers(Element&, CompositorAnimationPlayer*);
+  static void AttachCompositedLayers(Element&, CompositorAnimation*);
 
   struct CompositorTiming {
     Timing::PlaybackDirection direction;

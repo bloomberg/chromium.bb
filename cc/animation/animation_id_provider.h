@@ -16,7 +16,7 @@ class CC_ANIMATION_EXPORT AnimationIdProvider {
   static int NextKeyframeModelId();
   static int NextGroupId();
   static int NextTimelineId();
-  static int NextPlayerId();
+  static int NextAnimationId();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AnimationIdProvider);

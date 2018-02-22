@@ -13,7 +13,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
@@ -342,7 +342,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
-    for (const auto& it : animation_host()->ticking_players_for_testing()) {
+    for (const auto& it : animation_host()->ticking_animations_for_testing()) {
       if (it.get()->TickingKeyframeModelsCount()) {
         has_unfinished_animation = true;
         break;
@@ -642,31 +642,31 @@ void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
       base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
-void LayerTreeTest::PostAddAnimationToMainThreadPlayer(
-    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
+void LayerTreeTest::PostAddOpacityAnimationToMainThread(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
-                     main_thread_weak_ptr_,
-                     base::Unretained(player_to_receive_animation), 0.000004));
+      base::BindOnce(
+          &LayerTreeTest::DispatchAddOpacityAnimation, main_thread_weak_ptr_,
+          base::Unretained(animation_to_receive_animation), 0.000004));
 }
 
-void LayerTreeTest::PostAddInstantAnimationToMainThreadPlayer(
-    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
+void LayerTreeTest::PostAddOpacityAnimationToMainThreadInstantly(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
+      base::BindOnce(&LayerTreeTest::DispatchAddOpacityAnimation,
                      main_thread_weak_ptr_,
-                     base::Unretained(player_to_receive_animation), 0.0));
+                     base::Unretained(animation_to_receive_animation), 0.0));
 }
 
-void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
-    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation) {
+void LayerTreeTest::PostAddOpacityAnimationToMainThreadDelayed(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LayerTreeTest::DispatchAddAnimationToPlayer,
+      base::BindOnce(&LayerTreeTest::DispatchAddOpacityAnimation,
                      main_thread_weak_ptr_,
-                     base::Unretained(player_to_receive_animation), 1.0));
+                     base::Unretained(animation_to_receive_animation), 1.0));
 }
 
 void LayerTreeTest::PostSetLocalSurfaceIdToMainThread(
@@ -835,14 +835,14 @@ void LayerTreeTest::RealEndTest() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-void LayerTreeTest::DispatchAddAnimationToPlayer(
-    SingleKeyframeEffectAnimationPlayer* player_to_receive_animation,
+void LayerTreeTest::DispatchAddOpacityAnimation(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation,
     double animation_duration) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (player_to_receive_animation) {
-    AddOpacityTransitionToPlayer(player_to_receive_animation,
-                                 animation_duration, 0, 0.5, true);
+  if (animation_to_receive_animation) {
+    AddOpacityTransitionToAnimation(animation_to_receive_animation,
+                                    animation_duration, 0, 0.5, true);
   }
 }
 

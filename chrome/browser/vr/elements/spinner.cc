@@ -8,7 +8,7 @@
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "chrome/browser/vr/animation_player.h"
+#include "chrome/browser/vr/animation.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/target_property.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -83,8 +83,8 @@ Spinner::Spinner(int maximum_width)
       cc::FloatKeyframe::Create(kRotationDuration, 360.0f, nullptr));
 
   std::unique_ptr<cc::KeyframeModel> keyframe_model(cc::KeyframeModel::Create(
-      std::move(curve), AnimationPlayer::GetNextKeyframeModelId(),
-      AnimationPlayer::GetNextGroupId(), SPINNER_ROTATION));
+      std::move(curve), Animation::GetNextKeyframeModelId(),
+      Animation::GetNextGroupId(), SPINNER_ROTATION));
 
   keyframe_model->set_iterations(-1);
   AddKeyframeModel(std::move(keyframe_model));
@@ -98,8 +98,8 @@ Spinner::Spinner(int maximum_width)
   }
 
   keyframe_model = cc::KeyframeModel::Create(
-      std::move(curve), AnimationPlayer::GetNextKeyframeModelId(),
-      AnimationPlayer::GetNextGroupId(), SPINNER_ANGLE_SWEEP);
+      std::move(curve), Animation::GetNextKeyframeModelId(),
+      Animation::GetNextGroupId(), SPINNER_ANGLE_SWEEP);
 
   keyframe_model->set_iterations(-1);
   AddKeyframeModel(std::move(keyframe_model));
@@ -112,8 +112,8 @@ Spinner::Spinner(int maximum_width)
   }
 
   keyframe_model = cc::KeyframeModel::Create(
-      std::move(curve), AnimationPlayer::GetNextKeyframeModelId(),
-      AnimationPlayer::GetNextGroupId(), SPINNER_ANGLE_START);
+      std::move(curve), Animation::GetNextKeyframeModelId(),
+      Animation::GetNextGroupId(), SPINNER_ANGLE_START);
 
   keyframe_model->set_iterations(-1);
   AddKeyframeModel(std::move(keyframe_model));

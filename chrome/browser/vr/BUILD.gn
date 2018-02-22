@@ -15,8 +15,8 @@ assert(enable_vr)
 
 static_library("vr_common") {
   sources = [
-    "animation_player.cc",
-    "animation_player.h",
+    "animation.cc",
+    "animation.h",
     "assets_component_update_status.h",
     "assets_load_status.h",
     "assets_loader.cc",
@@ -237,7 +237,7 @@ static_library("vr_common") {
 
 test("vr_common_unittests") {
   sources = [
-    "animation_player_unittest.cc",
+    "animation_unittest.cc",
     "databinding/binding_unittest.cc",
     "databinding/vector_binding_unittest.cc",
     "elements/button_unittest.cc",

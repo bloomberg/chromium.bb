@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/animation_player.h"
+#include "cc/animation/animation.h"
 
 #include <memory>
 
@@ -19,21 +19,21 @@
 namespace cc {
 namespace {
 
-class AnimationPlayerTest : public AnimationTimelinesTest {
+class AnimationTest : public AnimationTimelinesTest {
  public:
-  AnimationPlayerTest()
-      : player_(AnimationPlayer::Create(player_id_)),
+  AnimationTest()
+      : animation_(Animation::Create(animation_id_)),
         group_id_(100),
         keyframe_model_id_(100) {
-    keyframe_effect_id_ = player_->NextKeyframeEffectId();
+    keyframe_effect_id_ = animation_->NextKeyframeEffectId();
   }
-  ~AnimationPlayerTest() override = default;
+  ~AnimationTest() override = default;
 
   int NextGroupId() { return ++group_id_; }
 
   int NextKeyframeModelId() { return ++keyframe_model_id_; }
 
-  int AddOpacityTransition(AnimationPlayer* target,
+  int AddOpacityTransition(Animation* target,
                            double duration,
                            float start_opacity,
                            float end_opacity,
@@ -63,7 +63,7 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     return id;
   }
 
-  int AddAnimatedTransform(AnimationPlayer* target,
+  int AddAnimatedTransform(Animation* target,
                            double duration,
                            TransformOperations start_operations,
                            TransformOperations operations,
@@ -90,7 +90,7 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
     return id;
   }
 
-  int AddAnimatedTransform(AnimationPlayer* target,
+  int AddAnimatedTransform(Animation* target,
                            double duration,
                            int delta_x,
                            int delta_y,
@@ -106,7 +106,7 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
                                 keyframe_effect_id);
   }
 
-  int AddAnimatedFilter(AnimationPlayer* target,
+  int AddAnimatedFilter(Animation* target,
                         double duration,
                         float start_brightness,
                         float end_brightness,
@@ -142,36 +142,36 @@ class AnimationPlayerTest : public AnimationTimelinesTest {
       bool needs_push_properties,
       KeyframeEffectId keyframe_effect_id) const {
     KeyframeEffect* keyframe_effect =
-        player_->GetKeyframeEffectById(keyframe_effect_id);
+        animation_->GetKeyframeEffectById(keyframe_effect_id);
     EXPECT_EQ(keyframe_effect->needs_push_properties(), needs_push_properties);
     EXPECT_EQ(timeline_->needs_push_properties(), needs_push_properties);
   }
 
  protected:
-  scoped_refptr<AnimationPlayer> player_;
-  scoped_refptr<AnimationPlayer> player_impl_;
+  scoped_refptr<Animation> animation_;
+  scoped_refptr<Animation> animation_impl_;
   int group_id_;
   KeyframeEffectId keyframe_effect_id_;
   int keyframe_model_id_;
 };
 // See element_animations_unittest.cc for active/pending observers tests.
 
-TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
-  player_->AddKeyframeEffect(
+TEST_F(AnimationTest, AttachDetachLayerIfTimelineAttached) {
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  timeline_->AttachPlayer(player_);
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  timeline_->AttachAnimation(animation_);
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id_));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
@@ -180,118 +180,120 @@ TEST_F(AnimationPlayerTest, AttachDetachLayerIfTimelineAttached) {
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
-  EXPECT_TRUE(player_impl_);
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
+  EXPECT_TRUE(animation_impl_);
 
-  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id_));
   EXPECT_FALSE(
-      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+      animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
   EXPECT_FALSE(timeline_->needs_push_properties());
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  EXPECT_EQ(animation_->GetKeyframeEffectById(keyframe_effect_id_),
             GetKeyframeEffectForElementId(element_id_));
-  EXPECT_TRUE(player_->element_animations(keyframe_effect_id_));
-  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id_),
+  EXPECT_TRUE(animation_->element_animations(keyframe_effect_id_));
+  EXPECT_EQ(animation_->element_id_of_keyframe_effect(keyframe_effect_id_),
             element_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+  EXPECT_EQ(animation_impl_->GetKeyframeEffectById(keyframe_effect_id_),
             GetImplKeyframeEffectForLayerId(element_id_));
-  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id_));
-  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_),
+  EXPECT_TRUE(animation_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_EQ(animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id_),
             element_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
-  player_->DetachElement();
+  animation_->DetachElement();
   EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id_));
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
   EXPECT_FALSE(GetImplKeyframeEffectForLayerId(element_id_));
-  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id_));
   EXPECT_FALSE(
-      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
+      animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id_));
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
-  timeline_->DetachPlayer(player_);
-  EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id_));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id_));
+  timeline_->DetachAnimation(animation_);
+  EXPECT_FALSE(animation_->animation_timeline());
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id_));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id_));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
   host_->PushPropertiesTo(host_impl_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 }
 
-TEST_F(AnimationPlayerTest, AttachDetachTimelineIfLayerAttached) {
+TEST_F(AnimationTest, AttachDetachTimelineIfLayerAttached) {
   host_->AddAnimationTimeline(timeline_);
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
-  EXPECT_FALSE(player_->animation_timeline());
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  EXPECT_FALSE(animation_->animation_timeline());
   EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
-            element_id_);
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      element_id_);
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
 
-  timeline_->AttachPlayer(player_);
-  EXPECT_EQ(timeline_, player_->animation_timeline());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+  timeline_->AttachAnimation(animation_);
+  EXPECT_EQ(timeline_, animation_->animation_timeline());
+  EXPECT_EQ(animation_->GetKeyframeEffectById(keyframe_effect_id_),
             GetKeyframeEffectForElementId(element_id_));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
-            element_id_);
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      element_id_);
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->needs_push_properties());
 
-  // Removing player from timeline detaches layer.
-  timeline_->DetachPlayer(player_);
-  EXPECT_FALSE(player_->animation_timeline());
+  // Removing animation from timeline detaches layer.
+  timeline_->DetachAnimation(animation_);
+  EXPECT_FALSE(animation_->animation_timeline());
   EXPECT_FALSE(GetKeyframeEffectForElementId(element_id_));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->needs_push_properties());
 }
 
-TEST_F(AnimationPlayerTest, PropertiesMutate) {
+TEST_F(AnimationTest, PropertiesMutate) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
   host_->AddAnimationTimeline(timeline_);
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
-  timeline_->AttachPlayer(player_);
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  timeline_->AttachAnimation(animation_);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
@@ -308,13 +310,13 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
+  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
                        false, keyframe_effect_id_);
 
-  AddAnimatedTransform(player_.get(), duration, transform_x, transform_y,
+  AddAnimatedTransform(animation_.get(), duration, transform_x, transform_y,
                        keyframe_effect_id_);
-  AddAnimatedFilter(player_.get(), duration, start_brightness, end_brightness,
-                    keyframe_effect_id_);
+  AddAnimatedFilter(animation_.get(), duration, start_brightness,
+                    end_brightness, keyframe_effect_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
@@ -367,7 +369,7 @@ TEST_F(AnimationPlayerTest, PropertiesMutate) {
       element_id_, ElementListType::PENDING, end_brightness);
 }
 
-TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
+TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
   TestAnimationDelegate delegate1;
   TestAnimationDelegate delegate2;
 
@@ -375,32 +377,32 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
-  scoped_refptr<AnimationPlayer> player1 = AnimationPlayer::Create(100);
-  scoped_refptr<AnimationPlayer> player2 = AnimationPlayer::Create(200);
+  scoped_refptr<Animation> animation1 = Animation::Create(100);
+  scoped_refptr<Animation> animation2 = Animation::Create(200);
 
-  KeyframeEffectId keyframe_effect_id1 = player1->NextKeyframeEffectId();
-  player1->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id1 = animation1->NextKeyframeEffectId();
+  animation1->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
-  ASSERT_TRUE(player1->GetKeyframeEffectById(keyframe_effect_id1));
-  KeyframeEffectId keyframe_effect_id2 = player2->NextKeyframeEffectId();
-  player2->AddKeyframeEffect(
+  ASSERT_TRUE(animation1->GetKeyframeEffectById(keyframe_effect_id1));
+  KeyframeEffectId keyframe_effect_id2 = animation2->NextKeyframeEffectId();
+  animation2->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
-  ASSERT_TRUE(player2->GetKeyframeEffectById(keyframe_effect_id2));
+  ASSERT_TRUE(animation2->GetKeyframeEffectById(keyframe_effect_id2));
 
   host_->AddAnimationTimeline(timeline_);
 
-  timeline_->AttachPlayer(player1);
+  timeline_->AttachAnimation(animation1);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  timeline_->AttachPlayer(player2);
+  timeline_->AttachAnimation(animation2);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  player1->set_animation_delegate(&delegate1);
-  player2->set_animation_delegate(&delegate2);
+  animation1->set_animation_delegate(&delegate1);
+  animation2->set_animation_delegate(&delegate2);
 
-  // Attach players to the same layer.
-  player1->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
-  player2->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
+  // Attach animations to the same layer.
+  animation1->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  animation2->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -410,9 +412,9 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(player1.get(), duration, start_opacity, end_opacity,
+  AddOpacityTransition(animation1.get(), duration, start_opacity, end_opacity,
                        false, keyframe_effect_id1);
-  AddAnimatedTransform(player2.get(), duration, transform_x, transform_y,
+  AddAnimatedTransform(animation2.get(), duration, transform_x, transform_y,
                        keyframe_effect_id2);
 
   host_->PushPropertiesTo(host_impl_);
@@ -434,9 +436,9 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate2.started());
   EXPECT_FALSE(delegate2.finished());
 
-  EXPECT_FALSE(player1->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation1->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
-  EXPECT_FALSE(player2->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation2->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   time += base::TimeDelta::FromSecondsD(duration);
@@ -445,9 +447,9 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
   EXPECT_TRUE(delegate1.finished());
   EXPECT_TRUE(delegate2.finished());
 
-  EXPECT_TRUE(player1->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_TRUE(animation1->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
-  EXPECT_TRUE(player2->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_TRUE(animation2->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
@@ -466,49 +468,50 @@ TEST_F(AnimationPlayerTest, AttachTwoPlayersToOneLayer) {
       element_id_, ElementListType::PENDING, transform_x, transform_y);
 }
 
-TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
+TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
   const double duration = 1.;
   const float start_opacity = .7f;
   const float end_opacity = .3f;
 
-  const int filter_id = AddAnimatedFilter(player_.get(), duration, 0.1f, 0.9f,
-                                          keyframe_effect_id_);
-  AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
+  const int filter_id = AddAnimatedFilter(animation_.get(), duration, 0.1f,
+                                          0.9f, keyframe_effect_id_);
+  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
                        false, keyframe_effect_id_);
 
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
 
   host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachPlayer(player_);
+  timeline_->AttachAnimation(animation_);
 
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations());
-  player_->RemoveKeyframeModelForKeyframeEffect(filter_id, keyframe_effect_id_);
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  animation_->RemoveKeyframeModelForKeyframeEffect(filter_id,
+                                                   keyframe_effect_id_);
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->element_animations()
                    ->HasAnyAnimationTargetingProperty(TargetProperty::FILTER));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations()
                   ->HasAnyAnimationTargetingProperty(TargetProperty::OPACITY));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
@@ -545,142 +548,147 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
       element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
 }
 
-TEST_F(AnimationPlayerTest, AddRemoveAnimationCausesSetNeedsCommit) {
+TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_));
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_));
 
-  timeline_->AttachPlayer(player_);
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  timeline_->AttachAnimation(animation_);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
   EXPECT_FALSE(client_.mutators_need_commit());
 
   const int keyframe_model_id = AddOpacityTransition(
-      player_.get(), 1., .7f, .3f, false, keyframe_effect_id_);
+      animation_.get(), 1., .7f, .3f, false, keyframe_effect_id_);
 
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  player_->PauseKeyframeModelForKeyframeEffect(keyframe_model_id, 1.,
-                                               keyframe_effect_id_);
+  animation_->PauseKeyframeModelForKeyframeEffect(keyframe_model_id, 1.,
+                                                  keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  player_->RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
-                                                keyframe_effect_id_);
+  animation_->RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
+                                                   keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 }
 
-// If main-thread player switches to another layer within one frame then
-// impl-thread player must be switched as well.
-TEST_F(AnimationPlayerTest, SwitchToLayer) {
+// If main-thread animation switches to another layer within one frame then
+// impl-thread animation must be switched as well.
+TEST_F(AnimationTest, SwitchToLayer) {
   host_->AddAnimationTimeline(timeline_);
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  timeline_->AttachPlayer(player_);
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  timeline_->AttachAnimation(animation_);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
-  EXPECT_TRUE(player_impl_);
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
+  EXPECT_TRUE(animation_impl_);
 
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+  EXPECT_EQ(animation_->GetKeyframeEffectById(keyframe_effect_id_),
             GetKeyframeEffectForElementId(element_id_));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
-            element_id_);
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      element_id_);
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
-  EXPECT_TRUE(player_impl_);
-  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
+  EXPECT_TRUE(animation_impl_);
+  EXPECT_EQ(animation_impl_->GetKeyframeEffectById(keyframe_effect_id_),
             GetImplKeyframeEffectForLayerId(element_id_));
-  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_impl_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
   EXPECT_EQ(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
       element_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   const ElementId new_element_id(NextTestLayerId());
-  player_->DetachElement();
-  player_->AttachElementForKeyframeEffect(new_element_id, keyframe_effect_id_);
+  animation_->DetachElement();
+  animation_->AttachElementForKeyframeEffect(new_element_id,
+                                             keyframe_effect_id_);
 
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_),
+  EXPECT_EQ(animation_->GetKeyframeEffectById(keyframe_effect_id_),
             GetKeyframeEffectForElementId(new_element_id));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
-            new_element_id);
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      new_element_id);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_EQ(player_impl_->GetKeyframeEffectById(keyframe_effect_id_),
+  EXPECT_EQ(animation_impl_->GetKeyframeEffectById(keyframe_effect_id_),
             GetImplKeyframeEffectForLayerId(new_element_id));
-  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id_)
+  EXPECT_TRUE(animation_impl_->GetKeyframeEffectById(keyframe_effect_id_)
                   ->element_animations());
   EXPECT_EQ(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id_)->element_id(),
       new_element_id);
 }
 
-TEST_F(AnimationPlayerTest, ToString) {
-  player_->AddKeyframeEffect(
+TEST_F(AnimationTest, ToString) {
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id_));
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
-  EXPECT_EQ(base::StringPrintf(
-                "AnimationPlayer{id=%d, element_id=%s, keyframe_models=[]}",
-                player_->id(), element_id_.ToString().c_str()),
-            player_->ToString());
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id_);
+  EXPECT_EQ(
+      base::StringPrintf("Animation{id=%d, element_id=%s, keyframe_models=[]}",
+                         animation_->id(), element_id_.ToString().c_str()),
+      animation_->ToString());
 
-  player_->AddKeyframeModelForKeyframeEffect(
+  animation_->AddKeyframeModelForKeyframeEffect(
       KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42,
                             73, TargetProperty::OPACITY),
       keyframe_effect_id_);
-  EXPECT_EQ(base::StringPrintf("AnimationPlayer{id=%d, element_id=%s, "
-                               "keyframe_models=[KeyframeModel{id=42, "
-                               "group=73, target_property_id=1, "
-                               "run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
-                               player_->id(), element_id_.ToString().c_str()),
-            player_->ToString());
+  EXPECT_EQ(
+      base::StringPrintf("Animation{id=%d, element_id=%s, "
+                         "keyframe_models=[KeyframeModel{id=42, "
+                         "group=73, target_property_id=1, "
+                         "run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
+                         animation_->id(), element_id_.ToString().c_str()),
+      animation_->ToString());
 
-  player_->AddKeyframeModelForKeyframeEffect(
+  animation_->AddKeyframeModelForKeyframeEffect(
       KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(18), 45,
                             76, TargetProperty::BOUNDS),
       keyframe_effect_id_);
   EXPECT_EQ(
       base::StringPrintf(
-          "AnimationPlayer{id=%d, element_id=%s, "
+          "Animation{id=%d, element_id=%s, "
           "keyframe_models=[KeyframeModel{id=42, "
           "group=73, target_property_id=1, "
           "run_state=WAITING_FOR_TARGET_AVAILABILITY}, KeyframeModel{id=45, "
           "group=76, "
           "target_property_id=5, run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
-          player_->id(), element_id_.ToString().c_str()),
-      player_->ToString());
+          animation_->id(), element_id_.ToString().c_str()),
+      animation_->ToString());
 
-  KeyframeEffectId second_keyframe_effect_id = player_->NextKeyframeEffectId();
+  KeyframeEffectId second_keyframe_effect_id =
+      animation_->NextKeyframeEffectId();
   ElementId second_element_id(NextTestLayerId());
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(second_keyframe_effect_id));
-  player_->AttachElementForKeyframeEffect(second_element_id,
-                                          second_keyframe_effect_id);
-  player_->AddKeyframeModelForKeyframeEffect(
+  animation_->AttachElementForKeyframeEffect(second_element_id,
+                                             second_keyframe_effect_id);
+  animation_->AddKeyframeModelForKeyframeEffect(
       KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(20), 48,
                             78, TargetProperty::OPACITY),
       second_keyframe_effect_id);
   EXPECT_EQ(
       base::StringPrintf(
-          "AnimationPlayer{id=%d, element_id=%s, "
+          "Animation{id=%d, element_id=%s, "
           "keyframe_models=[KeyframeModel{id=42, "
           "group=73, target_property_id=1, "
           "run_state=WAITING_FOR_TARGET_AVAILABILITY}, KeyframeModel{id=45, "
@@ -690,270 +698,272 @@ TEST_F(AnimationPlayerTest, ToString) {
           "keyframe_models=[KeyframeModel{id=48, "
           "group=78, target_property_id=1, "
           "run_state=WAITING_FOR_TARGET_AVAILABILITY}]}",
-          player_->id(), element_id_.ToString().c_str(),
+          animation_->id(), element_id_.ToString().c_str(),
           second_element_id.ToString().c_str()),
-      player_->ToString());
+      animation_->ToString());
 }
 
-TEST_F(AnimationPlayerTest,
-       AddTwoKeyframeEffectsFromTheSameElementToOnePlayerTest) {
+TEST_F(AnimationTest,
+       AddTwoKeyframeEffectsFromTheSameElementToOneAnimationTest) {
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
+  KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
-  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
-  player_->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
-  timeline_->AttachPlayer(player_);
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  timeline_->AttachAnimation(animation_);
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
-  EXPECT_TRUE(player_impl_);
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
+  EXPECT_TRUE(animation_impl_);
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
-  EXPECT_TRUE(player_->element_animations(keyframe_effect_id1));
-  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id1),
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  EXPECT_TRUE(animation_->element_animations(keyframe_effect_id1));
+  EXPECT_EQ(animation_->element_id_of_keyframe_effect(keyframe_effect_id1),
             element_id_);
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
 
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_NE(player_->element_id_of_keyframe_effect(keyframe_effect_id2),
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_NE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2),
             element_id_);
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id_);
   EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id1)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)));
   EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
-  EXPECT_TRUE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_EQ(player_->element_id_of_keyframe_effect(keyframe_effect_id2),
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
+  EXPECT_TRUE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_EQ(animation_->element_id_of_keyframe_effect(keyframe_effect_id2),
             element_id_);
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 
   EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
 
   const scoped_refptr<ElementAnimations> element_animations_impl =
       host_impl_->GetElementAnimationsForElementId(element_id_);
   EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
   EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id1));
-  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id1),
+  EXPECT_TRUE(animation_impl_->element_animations(keyframe_effect_id1));
+  EXPECT_EQ(animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id1),
             element_id_);
-  EXPECT_TRUE(player_impl_->element_animations(keyframe_effect_id2));
-  EXPECT_EQ(player_impl_->element_id_of_keyframe_effect(keyframe_effect_id2),
+  EXPECT_TRUE(animation_impl_->element_animations(keyframe_effect_id2));
+  EXPECT_EQ(animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id2),
             element_id_);
 
-  player_->DetachElement();
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  animation_->DetachElement();
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id1));
   EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id1)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)));
 
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
   EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id1));
   EXPECT_FALSE(
-      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id1));
+      animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id1));
   EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
-  EXPECT_FALSE(player_impl_->element_animations(keyframe_effect_id2));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
+  EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id2));
   EXPECT_FALSE(
-      player_impl_->element_id_of_keyframe_effect(keyframe_effect_id2));
+      animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
-      player_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  timeline_->DetachPlayer(player_);
-  EXPECT_FALSE(player_->animation_timeline());
+  timeline_->DetachAnimation(animation_);
+  EXPECT_FALSE(animation_->animation_timeline());
 
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2));
 
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 }
 
-TEST_F(AnimationPlayerTest,
-       AddTwoKeyframeEffectsFromDifferentElementsToOnePlayerTest) {
+TEST_F(AnimationTest,
+       AddTwoKeyframeEffectsFromDifferentElementsToOneAnimationTest) {
   host_->AddAnimationTimeline(timeline_);
 
-  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
+  KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
-  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
-  player_->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_animations(keyframe_effect_id2));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id1));
-  EXPECT_FALSE(player_->element_id_of_keyframe_effect(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   ElementId element1(NextTestLayerId());
   ElementId element2(NextTestLayerId());
 
-  player_->AttachElementForKeyframeEffect(element1, keyframe_effect_id1);
-  player_->AttachElementForKeyframeEffect(element2, keyframe_effect_id2);
+  animation_->AttachElementForKeyframeEffect(element1, keyframe_effect_id1);
+  animation_->AttachElementForKeyframeEffect(element2, keyframe_effect_id2);
 
-  EXPECT_FALSE(player_->animation_timeline());
+  EXPECT_FALSE(animation_->animation_timeline());
 
   scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element1);
   EXPECT_FALSE(element_animations);
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
-            element1);
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
+      element1);
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
-  timeline_->AttachPlayer(player_);
-  EXPECT_EQ(timeline_, player_->animation_timeline());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  timeline_->AttachAnimation(animation_);
+  EXPECT_EQ(timeline_, animation_->animation_timeline());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->element_animations());
-  EXPECT_EQ(player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
-            element1);
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_EQ(
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)->element_id(),
+      element1);
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
 
   element_animations = host_->GetElementAnimationsForElementId(element1);
   EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id1)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)));
   EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   element_animations = host_->GetElementAnimationsForElementId(element2);
   EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  player_->DetachElement();
-  EXPECT_TRUE(player_->animation_timeline());
+  animation_->DetachElement();
+  EXPECT_TRUE(animation_->animation_timeline());
   EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 
-  // Removing player from timeline detaches layer.
-  timeline_->DetachPlayer(player_);
-  EXPECT_FALSE(player_->animation_timeline());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  // Removing animation from timeline detaches layer.
+  timeline_->DetachAnimation(animation_);
+  EXPECT_FALSE(animation_->animation_timeline());
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+      animation_->GetKeyframeEffectById(keyframe_effect_id1)->element_id());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->element_animations());
   EXPECT_FALSE(
-      player_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+      animation_->GetKeyframeEffectById(keyframe_effect_id2)->element_id());
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 }
 
-TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
+TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
   TestAnimationDelegate delegate1;
 
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
   client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
   client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
 
-  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
+  KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
-  player_->AddKeyframeEffect(
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
-  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
-  player_->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
-  ASSERT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  ASSERT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   host_->AddAnimationTimeline(timeline_);
 
-  timeline_->AttachPlayer(player_);
+  timeline_->AttachAnimation(animation_);
   EXPECT_TRUE(timeline_->needs_push_properties());
 
-  player_->set_animation_delegate(&delegate1);
+  animation_->set_animation_delegate(&delegate1);
 
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
-  player_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id1);
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -963,9 +973,9 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(player_.get(), duration, start_opacity, end_opacity,
+  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
                        false, keyframe_effect_id1);
-  AddAnimatedTransform(player_.get(), duration, transform_x, transform_y,
+  AddAnimatedTransform(animation_.get(), duration, transform_x, transform_y,
                        keyframe_effect_id2);
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
@@ -980,9 +990,9 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
   EXPECT_TRUE(delegate1.started());
   EXPECT_FALSE(delegate1.finished());
 
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                    ->needs_push_properties());
 
   time += base::TimeDelta::FromSecondsD(duration);
@@ -990,9 +1000,9 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
 
   EXPECT_TRUE(delegate1.finished());
 
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                   ->needs_push_properties());
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id2)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
@@ -1011,36 +1021,36 @@ TEST_F(AnimationPlayerTest, TickingAnimationsFromTwoKeyframeEffects) {
       element_id_, ElementListType::PENDING, transform_x, transform_y);
 }
 
-TEST_F(AnimationPlayerTest, KeyframeEffectSyncToImplTest) {
+TEST_F(AnimationTest, KeyframeEffectSyncToImplTest) {
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
-  timeline_->AttachPlayer(player_);
+  timeline_->AttachAnimation(animation_);
 
-  KeyframeEffectId keyframe_effect_id1 = player_->NextKeyframeEffectId();
-  player_->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id1));
-  EXPECT_TRUE(player_->GetKeyframeEffectById(keyframe_effect_id1));
-  EXPECT_FALSE(player_->GetKeyframeEffectById(keyframe_effect_id1)
+  EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id1));
+  EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = timeline_impl_->GetPlayerById(player_id_);
-  EXPECT_TRUE(player_impl_);
-  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id1));
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
+  EXPECT_TRUE(animation_impl_);
+  EXPECT_TRUE(animation_impl_->GetKeyframeEffectById(keyframe_effect_id1));
 
   EXPECT_FALSE(timeline_->needs_push_properties());
 
-  KeyframeEffectId keyframe_effect_id2 = player_->NextKeyframeEffectId();
-  player_->AddKeyframeEffect(
+  KeyframeEffectId keyframe_effect_id2 = animation_->NextKeyframeEffectId();
+  animation_->AddKeyframeEffect(
       base::MakeUnique<KeyframeEffect>(keyframe_effect_id2));
   EXPECT_TRUE(timeline_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);
 
-  EXPECT_TRUE(player_impl_->GetKeyframeEffectById(keyframe_effect_id2));
+  EXPECT_TRUE(animation_impl_->GetKeyframeEffectById(keyframe_effect_id2));
 }
 
 }  // namespace

@@ -88,7 +88,7 @@ EventHandlers::EventHandlers() = default;
 EventHandlers::~EventHandlers() = default;
 
 UiElement::UiElement() : id_(AllocateId()) {
-  animation_player_.set_target(this);
+  animation_.set_target(this);
   layout_offset_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendTranslate(0, 0, 0);
   transform_operations_.AppendRotate(1, 0, 0, 0);
@@ -96,7 +96,7 @@ UiElement::UiElement() : id_(AllocateId()) {
 }
 
 UiElement::~UiElement() {
-  animation_player_.set_target(nullptr);
+  animation_.set_target(nullptr);
 }
 
 void UiElement::SetName(UiElementName name) {
@@ -219,9 +219,9 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
                              const gfx::Transform& head_pose) {
   // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
   // not trigger any updates, so we should refine this logic and have
-  // AnimationPlayer::Tick return a boolean.
-  bool keyframe_models_updated = animation_player_.keyframe_models().size() > 0;
-  animation_player_.Tick(time);
+  // Animation::Tick return a boolean.
+  bool keyframe_models_updated = animation_.keyframe_models().size() > 0;
+  animation_.Tick(time);
   last_frame_time_ = time;
   set_update_phase(kUpdatedAnimations);
   bool begin_frame_updated = OnBeginFrame(time, head_pose);
@@ -241,8 +241,8 @@ bool UiElement::IsHitTestable() const {
 }
 
 void UiElement::SetSize(float width, float height) {
-  animation_player_.TransitionSizeTo(last_frame_time_, BOUNDS, size_,
-                                     gfx::SizeF(width, height));
+  animation_.TransitionSizeTo(last_frame_time_, BOUNDS, size_,
+                              gfx::SizeF(width, height));
   OnSetSize(gfx::SizeF(width, height));
 }
 
@@ -254,7 +254,7 @@ void UiElement::SetVisible(bool visible) {
 
 void UiElement::SetVisibleImmediately(bool visible) {
   opacity_ = visible ? opacity_when_visible_ : 0.0;
-  animation_player_.RemoveKeyframeModels(OPACITY);
+  animation_.RemoveKeyframeModels(OPACITY);
 }
 
 bool UiElement::IsVisible() const {
@@ -281,8 +281,8 @@ void UiElement::SetLayoutOffset(float x, float y) {
   cc::TransformOperation& op = operations.at(0);
   op.translate = {x, y, 0};
   op.Bake();
-  animation_player_.TransitionTransformOperationsTo(
-      last_frame_time_, LAYOUT_OFFSET, transform_operations_, operations);
+  animation_.TransitionTransformOperationsTo(last_frame_time_, LAYOUT_OFFSET,
+                                             transform_operations_, operations);
 }
 
 void UiElement::SetTranslate(float x, float y, float z) {
@@ -290,8 +290,8 @@ void UiElement::SetTranslate(float x, float y, float z) {
   cc::TransformOperation& op = operations.at(kTranslateIndex);
   op.translate = {x, y, z};
   op.Bake();
-  animation_player_.TransitionTransformOperationsTo(
-      last_frame_time_, TRANSFORM, transform_operations_, operations);
+  animation_.TransitionTransformOperationsTo(last_frame_time_, TRANSFORM,
+                                             transform_operations_, operations);
 }
 
 void UiElement::SetRotate(float x, float y, float z, float radians) {
@@ -300,8 +300,8 @@ void UiElement::SetRotate(float x, float y, float z, float radians) {
   op.rotate.axis = {x, y, z};
   op.rotate.angle = gfx::RadToDeg(radians);
   op.Bake();
-  animation_player_.TransitionTransformOperationsTo(
-      last_frame_time_, TRANSFORM, transform_operations_, operations);
+  animation_.TransitionTransformOperationsTo(last_frame_time_, TRANSFORM,
+                                             transform_operations_, operations);
 }
 
 void UiElement::SetScale(float x, float y, float z) {
@@ -309,13 +309,12 @@ void UiElement::SetScale(float x, float y, float z) {
   cc::TransformOperation& op = operations.at(kScaleIndex);
   op.scale = {x, y, z};
   op.Bake();
-  animation_player_.TransitionTransformOperationsTo(
-      last_frame_time_, TRANSFORM, transform_operations_, operations);
+  animation_.TransitionTransformOperationsTo(last_frame_time_, TRANSFORM,
+                                             transform_operations_, operations);
 }
 
 void UiElement::SetOpacity(float opacity) {
-  animation_player_.TransitionFloatTo(last_frame_time_, OPACITY, opacity_,
-                                      opacity);
+  animation_.TransitionFloatTo(last_frame_time_, OPACITY, opacity_, opacity);
 }
 
 void UiElement::SetCornerRadii(const CornerRadii& radii) {
@@ -326,12 +325,12 @@ void UiElement::SetCornerRadii(const CornerRadii& radii) {
 void UiElement::OnSetCornerRadii(const CornerRadii& radii) {}
 
 gfx::SizeF UiElement::GetTargetSize() const {
-  return animation_player_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
+  return animation_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
 }
 
 cc::TransformOperations UiElement::GetTargetTransform() const {
-  return animation_player_.GetTargetTransformOperationsValue(
-      TargetProperty::TRANSFORM, transform_operations_);
+  return animation_.GetTargetTransformOperationsValue(TargetProperty::TRANSFORM,
+                                                      transform_operations_);
 }
 
 gfx::Transform UiElement::ComputeTargetWorldSpaceTransform() const {
@@ -343,8 +342,7 @@ gfx::Transform UiElement::ComputeTargetWorldSpaceTransform() const {
 }
 
 float UiElement::GetTargetOpacity() const {
-  return animation_player_.GetTargetFloatValue(TargetProperty::OPACITY,
-                                               opacity_);
+  return animation_.GetTargetFloatValue(TargetProperty::OPACITY, opacity_);
 }
 
 float UiElement::ComputeTargetOpacity() const {
@@ -637,24 +635,24 @@ void UiElement::NotifyClientSizeAnimated(const gfx::SizeF& size,
 void UiElement::SetTransitionedProperties(
     const std::set<TargetProperty>& properties) {
   std::set<int> converted_properties(properties.begin(), properties.end());
-  animation_player_.SetTransitionedProperties(converted_properties);
+  animation_.SetTransitionedProperties(converted_properties);
 }
 
 void UiElement::SetTransitionDuration(base::TimeDelta delta) {
-  animation_player_.SetTransitionDuration(delta);
+  animation_.SetTransitionDuration(delta);
 }
 
 void UiElement::AddKeyframeModel(
     std::unique_ptr<cc::KeyframeModel> keyframe_model) {
-  animation_player_.AddKeyframeModel(std::move(keyframe_model));
+  animation_.AddKeyframeModel(std::move(keyframe_model));
 }
 
 void UiElement::RemoveKeyframeModel(int keyframe_model_id) {
-  animation_player_.RemoveKeyframeModel(keyframe_model_id);
+  animation_.RemoveKeyframeModel(keyframe_model_id);
 }
 
 bool UiElement::IsAnimatingProperty(TargetProperty property) const {
-  return animation_player_.IsAnimatingProperty(static_cast<int>(property));
+  return animation_.IsAnimatingProperty(static_cast<int>(property));
 }
 
 void UiElement::DoLayOutChildren() {

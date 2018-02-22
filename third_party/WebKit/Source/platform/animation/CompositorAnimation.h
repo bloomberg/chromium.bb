@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorAnimationPlayer_h
-#define CompositorAnimationPlayer_h
+#ifndef CompositorAnimation_h
+#define CompositorAnimation_h
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/scroll_timeline.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
-#include "cc/animation/worklet_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
+#include "cc/animation/worklet_animation.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/wtf/Noncopyable.h"
@@ -27,24 +27,24 @@ using CompositorScrollTimeline = cc::ScrollTimeline;
 class CompositorAnimationDelegate;
 class CompositorKeyframeModel;
 
-// A compositor representation for AnimationPlayer.
-class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
-  WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
+// A compositor representation for Animation.
+class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
+  WTF_MAKE_NONCOPYABLE(CompositorAnimation);
 
  public:
-  static std::unique_ptr<CompositorAnimationPlayer> Create();
-  static std::unique_ptr<CompositorAnimationPlayer> CreateWorkletPlayer(
+  static std::unique_ptr<CompositorAnimation> Create();
+  static std::unique_ptr<CompositorAnimation> CreateWorkletAnimation(
       const String& name,
       std::unique_ptr<CompositorScrollTimeline>);
 
-  explicit CompositorAnimationPlayer(
-      scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer>);
-  ~CompositorAnimationPlayer();
+  explicit CompositorAnimation(
+      scoped_refptr<cc::SingleKeyframeEffectAnimation>);
+  ~CompositorAnimation();
 
-  cc::SingleKeyframeEffectAnimationPlayer* CcAnimationPlayer() const;
+  cc::SingleKeyframeEffectAnimation* CcAnimation() const;
 
   // An animation delegate is notified when animations are started and stopped.
-  // The CompositorAnimationPlayer does not take ownership of the delegate, and
+  // The CompositorAnimation does not take ownership of the delegate, and
   // it is the responsibility of the client to reset the layer's delegate before
   // deleting the delegate.
   void SetAnimationDelegate(CompositorAnimationDelegate*);
@@ -74,10 +74,10 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> animation_player_;
+  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation_;
   CompositorAnimationDelegate* delegate_;
 };
 
 }  // namespace blink
 
-#endif  // CompositorAnimationPlayer_h
+#endif  // CompositorAnimation_h

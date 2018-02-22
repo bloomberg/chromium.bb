@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/animation/CompositorAnimationClient.h"
 
 namespace blink {
 
-CompositorAnimationPlayerClient::~CompositorAnimationPlayerClient() = default;
+CompositorAnimationClient::~CompositorAnimationClient() = default;
 
 }  // namespace blink

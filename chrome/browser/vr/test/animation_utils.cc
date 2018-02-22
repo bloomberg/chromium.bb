@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/test/animation_utils.h"
 
-#include "chrome/browser/vr/animation_player.h"
+#include "chrome/browser/vr/animation.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 
 namespace vr {

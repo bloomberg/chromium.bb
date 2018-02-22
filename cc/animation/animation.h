@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_ANIMATION_PLAYER_H_
-#define CC_ANIMATION_ANIMATION_PLAYER_H_
+#ifndef CC_ANIMATION_ANIMATION_H_
+#define CC_ANIMATION_ANIMATION_H_
 
 #include <vector>
 
@@ -26,7 +26,7 @@ class AnimationHost;
 class AnimationTimeline;
 struct AnimationEvent;
 
-// An AnimationPlayer manages grouped sets of KeyframeModels (each set of which
+// An Animation manages grouped sets of KeyframeModels (each set of which
 // are stored in a KeyframeEffect), and handles the interaction with the
 // AnimationHost and AnimationTimeline.
 //
@@ -34,15 +34,14 @@ struct AnimationEvent;
 // relationship. Currently the blink logic is responsible for handling of
 // conflicting same-property animations.
 //
-// Each cc AnimationPlayer has a copy on the impl thread, and will take care of
+// Each cc Animation has a copy on the impl thread, and will take care of
 // synchronizing properties to/from the impl thread when requested.
 //
-// There is a 1:n relationship between AnimationPlayer and KeyframeEffect.
-class CC_ANIMATION_EXPORT AnimationPlayer
-    : public base::RefCounted<AnimationPlayer> {
+// There is a 1:n relationship between Animation and KeyframeEffect.
+class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
  public:
-  static scoped_refptr<AnimationPlayer> Create(int id);
-  virtual scoped_refptr<AnimationPlayer> CreateImplInstance() const;
+  static scoped_refptr<Animation> Create(int id);
+  virtual scoped_refptr<Animation> CreateImplInstance() const;
 
   int id() const { return id_; }
   typedef size_t KeyframeEffectId;
@@ -50,8 +49,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
       KeyframeEffectId keyframe_effect_id) const;
   bool IsElementAttached(ElementId id) const;
 
-  // Parent AnimationHost. AnimationPlayer can be detached from
-  // AnimationTimeline.
+  // Parent AnimationHost. Animation can be detached from AnimationTimeline.
   AnimationHost* animation_host() { return animation_host_; }
   const AnimationHost* animation_host() const { return animation_host_; }
   void SetAnimationHost(AnimationHost* animation_host);
@@ -92,7 +90,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void AbortKeyframeModels(TargetProperty::Type target_property,
                            bool needs_completion);
 
-  virtual void PushPropertiesTo(AnimationPlayer* player_impl);
+  virtual void PushPropertiesTo(Animation* animation_impl);
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   virtual void Tick(base::TimeTicks monotonic_time);
@@ -124,7 +122,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   void SetNeedsCommit();
 
-  virtual bool IsWorkletAnimationPlayer() const;
+  virtual bool IsWorkletAnimation() const;
   void AddKeyframeEffect(std::unique_ptr<KeyframeEffect>);
 
   KeyframeEffect* GetKeyframeEffectById(
@@ -132,7 +130,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   KeyframeEffectId NextKeyframeEffectId() { return keyframe_effects_.size(); }
 
  private:
-  friend class base::RefCounted<AnimationPlayer>;
+  friend class base::RefCounted<Animation>;
 
   void RegisterKeyframeEffect(ElementId element_id,
                               KeyframeEffectId keyframe_effect_id);
@@ -141,12 +139,12 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void RegisterKeyframeEffects();
   void UnregisterKeyframeEffects();
 
-  void PushAttachedKeyframeEffectsToImplThread(AnimationPlayer* player) const;
-  void PushPropertiesToImplThread(AnimationPlayer* player);
+  void PushAttachedKeyframeEffectsToImplThread(Animation* animation_impl) const;
+  void PushPropertiesToImplThread(Animation* animation_impl);
 
  protected:
-  explicit AnimationPlayer(int id);
-  virtual ~AnimationPlayer();
+  explicit Animation(int id);
+  virtual ~Animation();
 
   AnimationHost* animation_host_;
   AnimationTimeline* animation_timeline_;
@@ -167,9 +165,9 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   int ticking_keyframe_effects_count;
 
-  DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
+  DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_ANIMATION_PLAYER_H_
+#endif  // CC_ANIMATION_ANIMATION_H_

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -176,7 +176,7 @@ TEST_F(LayerOwnerTestWithCompositor, RecreateNonRootLayerDuringAnimation) {
 }
 
 // Tests that if LayerOwner-derived class destroys layer, then
-// LayerAnimator's player becomes detached from compositor timeline.
+// LayerAnimator's animation becomes detached from compositor timeline.
 TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   std::unique_ptr<Layer> root_layer(new Layer);
   compositor()->SetRootLayer(root_layer.get());
@@ -186,18 +186,18 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   layer->SetOpacity(0.5f);
   root_layer->Add(layer);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> player =
-      layer->GetAnimator()->GetAnimationPlayerForTesting();
-  EXPECT_TRUE(player);
-  EXPECT_TRUE(player->animation_timeline());
+  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+      layer->GetAnimator()->GetAnimationForTesting();
+  EXPECT_TRUE(animation);
+  EXPECT_TRUE(animation->animation_timeline());
 
-  // Destroying layer/animator must detach animator's player from timeline.
+  // Destroying layer/animator must detach animator's animation from timeline.
   owner.DestroyLayerForTesting();
-  EXPECT_FALSE(player->animation_timeline());
+  EXPECT_FALSE(animation->animation_timeline());
 }
 
 // Tests that if we run threaded opacity animation on already added layer
-// then LayerAnimator's player becomes attached to timeline.
+// then LayerAnimator's animation becomes attached to timeline.
 TEST_F(LayerOwnerTestWithCompositor,
        AttachTimelineIfAnimatorCreatedAfterSetCompositor) {
   std::unique_ptr<Layer> root_layer(new Layer);
@@ -209,10 +209,10 @@ TEST_F(LayerOwnerTestWithCompositor,
 
   layer->SetOpacity(0.5f);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> player =
-      layer->GetAnimator()->GetAnimationPlayerForTesting();
-  EXPECT_TRUE(player);
-  EXPECT_TRUE(player->animation_timeline());
+  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+      layer->GetAnimator()->GetAnimationForTesting();
+  EXPECT_TRUE(animation);
+  EXPECT_TRUE(animation->animation_timeline());
 }
 
 }  // namespace ui

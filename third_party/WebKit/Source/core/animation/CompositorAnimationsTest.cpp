@@ -147,10 +147,10 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
       Timing& timing,
       StringKeyframeEffectModel& effect,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
-      double player_playback_rate) {
+      double animation_playback_rate) {
     CompositorAnimations::GetAnimationOnCompositor(
         timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect,
-        keyframe_models, player_playback_rate);
+        keyframe_models, animation_playback_rate);
   }
 
   bool DuplicateSingleKeyframeAndTestIsCandidateOnResult(
@@ -278,7 +278,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   std::unique_ptr<CompositorKeyframeModel> ConvertToCompositorAnimation(
       StringKeyframeEffectModel& effect,
-      double player_playback_rate) {
+      double animation_playback_rate) {
     // As the compositor code only understands AnimatableValues, we must
     // snapshot the effect to make those available.
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
@@ -286,7 +286,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     effect.SnapshotAllCompositorKeyframes(*element_.Get(), *style, nullptr);
 
     Vector<std::unique_ptr<CompositorKeyframeModel>> result;
-    GetAnimationOnCompositor(timing_, effect, result, player_playback_rate);
+    GetAnimationOnCompositor(timing_, effect, result, animation_playback_rate);
     DCHECK_EQ(1U, result.size());
     return std::move(result[0]);
   }
@@ -1061,19 +1061,19 @@ TEST_F(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyOpacity, "0.5", 1.0));
 
   const double kPlaybackRate = 2;
-  const double kPlayerPlaybackRate = -1.5;
+  const double kAnimationPlaybackRate = -1.5;
 
   timing_.playback_rate = kPlaybackRate;
 
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      ConvertToCompositorAnimation(*effect, kPlayerPlaybackRate);
+      ConvertToCompositorAnimation(*effect, kAnimationPlaybackRate);
   EXPECT_EQ(CompositorTargetProperty::OPACITY,
             keyframe_model->TargetProperty());
   EXPECT_EQ(1.0, keyframe_model->Iterations());
   EXPECT_EQ(0, keyframe_model->TimeOffset());
   EXPECT_EQ(CompositorKeyframeModel::Direction::NORMAL,
             keyframe_model->GetDirection());
-  EXPECT_EQ(kPlaybackRate * kPlayerPlaybackRate,
+  EXPECT_EQ(kPlaybackRate * kAnimationPlaybackRate,
             keyframe_model->PlaybackRate());
 
   std::unique_ptr<CompositorFloatAnimationCurve> keyframed_float_curve =

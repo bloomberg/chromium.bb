@@ -6,7 +6,7 @@
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,14 +14,14 @@
 namespace cc {
 namespace {
 
-TEST(AnimationTimelineTest, SyncPlayersAttachDetach) {
+TEST(AnimationTimelineTest, SyncAnimationsAttachDetach) {
   std::unique_ptr<AnimationHost> host(
       AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
       AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
-  const int player_id = AnimationIdProvider::NextPlayerId();
+  const int animation_id = AnimationIdProvider::NextAnimationId();
 
   scoped_refptr<AnimationTimeline> timeline_impl(
       AnimationTimeline::Create(timeline_id));
@@ -34,42 +34,42 @@ TEST(AnimationTimelineTest, SyncPlayersAttachDetach) {
   host_impl->AddAnimationTimeline(timeline_impl.get());
   EXPECT_TRUE(timeline_impl->animation_host());
 
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player(
-      SingleKeyframeEffectAnimationPlayer::Create(player_id));
-  timeline->AttachPlayer(player.get());
-  EXPECT_TRUE(player->animation_timeline());
+  scoped_refptr<SingleKeyframeEffectAnimation> animation(
+      SingleKeyframeEffectAnimation::Create(animation_id));
+  timeline->AttachAnimation(animation.get());
+  EXPECT_TRUE(animation->animation_timeline());
 
-  EXPECT_FALSE(timeline_impl->GetPlayerById(player_id));
-
-  timeline->PushPropertiesTo(timeline_impl.get());
-
-  scoped_refptr<AnimationPlayer> player_impl =
-      timeline_impl->GetPlayerById(player_id);
-  EXPECT_TRUE(player_impl);
-  EXPECT_EQ(player_impl->id(), player_id);
-  EXPECT_TRUE(player_impl->animation_timeline());
+  EXPECT_FALSE(timeline_impl->GetAnimationById(animation_id));
 
   timeline->PushPropertiesTo(timeline_impl.get());
-  EXPECT_EQ(player_impl, timeline_impl->GetPlayerById(player_id));
 
-  timeline->DetachPlayer(player.get());
-  EXPECT_FALSE(player->animation_timeline());
+  scoped_refptr<Animation> animation_impl =
+      timeline_impl->GetAnimationById(animation_id);
+  EXPECT_TRUE(animation_impl);
+  EXPECT_EQ(animation_impl->id(), animation_id);
+  EXPECT_TRUE(animation_impl->animation_timeline());
 
   timeline->PushPropertiesTo(timeline_impl.get());
-  EXPECT_FALSE(timeline_impl->GetPlayerById(player_id));
+  EXPECT_EQ(animation_impl, timeline_impl->GetAnimationById(animation_id));
 
-  EXPECT_FALSE(player_impl->animation_timeline());
+  timeline->DetachAnimation(animation.get());
+  EXPECT_FALSE(animation->animation_timeline());
+
+  timeline->PushPropertiesTo(timeline_impl.get());
+  EXPECT_FALSE(timeline_impl->GetAnimationById(animation_id));
+
+  EXPECT_FALSE(animation_impl->animation_timeline());
 }
 
-TEST(AnimationTimelineTest, ClearPlayers) {
+TEST(AnimationTimelineTest, ClearAnimations) {
   std::unique_ptr<AnimationHost> host(
       AnimationHost::CreateForTesting(ThreadInstance::MAIN));
   std::unique_ptr<AnimationHost> host_impl(
       AnimationHost::CreateForTesting(ThreadInstance::IMPL));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
-  const int player_id1 = AnimationIdProvider::NextPlayerId();
-  const int player_id2 = AnimationIdProvider::NextPlayerId();
+  const int animation_id1 = AnimationIdProvider::NextAnimationId();
+  const int animation_id2 = AnimationIdProvider::NextAnimationId();
 
   scoped_refptr<AnimationTimeline> timeline_impl(
       AnimationTimeline::Create(timeline_id));
@@ -79,25 +79,25 @@ TEST(AnimationTimelineTest, ClearPlayers) {
   host->AddAnimationTimeline(timeline.get());
   host_impl->AddAnimationTimeline(timeline_impl.get());
 
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player1(
-      SingleKeyframeEffectAnimationPlayer::Create(player_id1));
-  timeline->AttachPlayer(player1.get());
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player2(
-      SingleKeyframeEffectAnimationPlayer::Create(player_id2));
-  timeline->AttachPlayer(player2.get());
+  scoped_refptr<SingleKeyframeEffectAnimation> animation1(
+      SingleKeyframeEffectAnimation::Create(animation_id1));
+  timeline->AttachAnimation(animation1.get());
+  scoped_refptr<SingleKeyframeEffectAnimation> animation2(
+      SingleKeyframeEffectAnimation::Create(animation_id2));
+  timeline->AttachAnimation(animation2.get());
 
   timeline->PushPropertiesTo(timeline_impl.get());
 
-  EXPECT_TRUE(timeline_impl->GetPlayerById(player_id1));
-  EXPECT_TRUE(timeline_impl->GetPlayerById(player_id2));
+  EXPECT_TRUE(timeline_impl->GetAnimationById(animation_id1));
+  EXPECT_TRUE(timeline_impl->GetAnimationById(animation_id2));
 
-  timeline->ClearPlayers();
-  EXPECT_FALSE(timeline->GetPlayerById(player_id1));
-  EXPECT_FALSE(timeline->GetPlayerById(player_id2));
+  timeline->ClearAnimations();
+  EXPECT_FALSE(timeline->GetAnimationById(animation_id1));
+  EXPECT_FALSE(timeline->GetAnimationById(animation_id2));
 
-  timeline_impl->ClearPlayers();
-  EXPECT_FALSE(timeline_impl->GetPlayerById(player_id1));
-  EXPECT_FALSE(timeline_impl->GetPlayerById(player_id2));
+  timeline_impl->ClearAnimations();
+  EXPECT_FALSE(timeline_impl->GetAnimationById(animation_id1));
+  EXPECT_FALSE(timeline_impl->GetAnimationById(animation_id2));
 }
 
 }  // namespace

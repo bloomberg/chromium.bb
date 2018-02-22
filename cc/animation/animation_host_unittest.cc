@@ -20,8 +20,8 @@ class AnimationHostTest : public AnimationTimelinesTest {
   ~AnimationHostTest() override = default;
 };
 
-// See AnimationPlayer tests on layer registration/unregistration in
-// animation_player_unittest.cc.
+// See Animation tests on layer registration/unregistration in
+// animation_unittest.cc.
 
 TEST_F(AnimationHostTest, SyncTimelinesAddRemove) {
   std::unique_ptr<AnimationHost> host(
@@ -99,7 +99,7 @@ TEST_F(AnimationHostTest, ImplOnlyScrollAnimationUpdateTargetIfDetached) {
   EXPECT_TRUE(host_impl_->ImplOnlyScrollAnimationUpdateTarget(
       element_id_, scroll_delta, max_scroll_offset, time, base::TimeDelta()));
 
-  // Detach all players from layers and timelines.
+  // Detach all animations from layers and timelines.
   host_impl_->ClearMutators();
 
   time += base::TimeDelta::FromSecondsD(0.1);

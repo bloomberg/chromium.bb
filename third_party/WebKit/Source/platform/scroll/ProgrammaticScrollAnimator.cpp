@@ -123,7 +123,7 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
 
   if (run_state_ == RunState::kWaitingToSendToCompositor) {
     if (!element_id_)
-      ReattachCompositorPlayerIfNeeded(
+      ReattachCompositorAnimationIfNeeded(
           GetScrollableArea()->GetCompositorAnimationTimeline());
 
     bool sent_to_compositor = false;
@@ -163,7 +163,7 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
 
 void ProgrammaticScrollAnimator::LayerForCompositedScrollingDidChange(
     CompositorAnimationTimeline* timeline) {
-  ReattachCompositorPlayerIfNeeded(timeline);
+  ReattachCompositorAnimationIfNeeded(timeline);
 
   // If the composited scrolling layer is lost during a composited animation,
   // continue the animation on the main thread.

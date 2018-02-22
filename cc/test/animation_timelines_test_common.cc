@@ -10,7 +10,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframe_effect.h"
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/property_tree.h"
@@ -352,7 +352,7 @@ AnimationTimelinesTest::AnimationTimelinesTest()
       host_(nullptr),
       host_impl_(nullptr),
       timeline_id_(AnimationIdProvider::NextTimelineId()),
-      player_id_(AnimationIdProvider::NextPlayerId()),
+      animation_id_(AnimationIdProvider::NextAnimationId()),
       next_test_layer_id_(0) {
   host_ = client_.host();
   host_impl_ = client_impl_.host();
@@ -395,34 +395,34 @@ void AnimationTimelinesTest::CreateTestImplLayer(
   client_impl_.RegisterElement(element_id_, element_list_type);
 }
 
-void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
+void AnimationTimelinesTest::AttachTimelineAnimationLayer() {
   host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachPlayer(player_);
-  player_->AttachElement(element_id_);
+  timeline_->AttachAnimation(animation_);
+  animation_->AttachElement(element_id_);
 
-  element_animations_ = player_->keyframe_effect()->element_animations();
+  element_animations_ = animation_->keyframe_effect()->element_animations();
 }
 
-void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
+void AnimationTimelinesTest::CreateImplTimelineAndAnimation() {
   host_->PushPropertiesTo(host_impl_);
-  GetImplTimelineAndPlayerByID();
+  GetImplTimelineAndAnimationByID();
 }
 
-void AnimationTimelinesTest::GetImplTimelineAndPlayerByID() {
+void AnimationTimelinesTest::GetImplTimelineAndAnimationByID() {
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  player_impl_ = static_cast<SingleKeyframeEffectAnimationPlayer*>(
-      timeline_impl_->GetPlayerById(player_id_));
-  EXPECT_TRUE(player_impl_);
+  animation_impl_ = static_cast<SingleKeyframeEffectAnimation*>(
+      timeline_impl_->GetAnimationById(animation_id_));
+  EXPECT_TRUE(animation_impl_);
 
   element_animations_impl_ =
-      player_impl_->keyframe_effect()->element_animations();
+      animation_impl_->keyframe_effect()->element_animations();
 }
 
 void AnimationTimelinesTest::ReleaseRefPtrs() {
-  player_ = nullptr;
+  animation_ = nullptr;
   timeline_ = nullptr;
-  player_impl_ = nullptr;
+  animation_impl_ = nullptr;
   timeline_impl_ = nullptr;
 }
 
@@ -469,12 +469,12 @@ int AnimationTimelinesTest::NextTestLayerId() {
 
 bool AnimationTimelinesTest::CheckKeyframeEffectTimelineNeedsPushProperties(
     bool needs_push_properties) const {
-  DCHECK(player_);
+  DCHECK(animation_);
   DCHECK(timeline_);
 
   bool result = true;
 
-  KeyframeEffect* keyframe_effect = player_->keyframe_effect();
+  KeyframeEffect* keyframe_effect = animation_->keyframe_effect();
   if (keyframe_effect->needs_push_properties() != needs_push_properties) {
     ADD_FAILURE() << "keyframe_effect->needs_push_properties() expected to be "
                   << needs_push_properties;

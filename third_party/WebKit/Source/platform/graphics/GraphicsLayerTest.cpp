@@ -26,9 +26,9 @@
 #include "platform/graphics/GraphicsLayer.h"
 
 #include <memory>
+#include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationPlayer.h"
-#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorKeyframeModel.h"
@@ -117,17 +117,17 @@ INSTANTIATE_TEST_CASE_P(All,
                         GraphicsLayerTest,
                         ::testing::Values(0, kSlimmingPaintV175));
 
-class AnimationPlayerForTesting : public CompositorAnimationPlayerClient {
+class AnimationForTesting : public CompositorAnimationClient {
  public:
-  AnimationPlayerForTesting() {
-    compositor_player_ = CompositorAnimationPlayer::Create();
+  AnimationForTesting() {
+    compositor_animation_ = CompositorAnimation::Create();
   }
 
-  CompositorAnimationPlayer* CompositorPlayer() const override {
-    return compositor_player_.get();
+  CompositorAnimation* GetCompositorAnimation() const override {
+    return compositor_animation_.get();
   }
 
-  std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
+  std::unique_ptr<CompositorAnimation> compositor_animation_;
 };
 
 TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
@@ -146,19 +146,21 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =
       CompositorAnimationTimeline::Create();
-  AnimationPlayerForTesting player;
+  AnimationForTesting animation;
 
   CompositorAnimationHost host(LayerTreeView()->CompositorAnimationHost());
 
   host.AddTimeline(*compositor_timeline);
-  compositor_timeline->PlayerAttached(player);
+  compositor_timeline->AnimationAttached(animation);
 
   platform_layer_->SetElementId(CompositorElementId(platform_layer_->Id()));
 
-  player.CompositorPlayer()->AttachElement(platform_layer_->GetElementId());
-  ASSERT_TRUE(player.CompositorPlayer()->IsElementAttached());
+  animation.GetCompositorAnimation()->AttachElement(
+      platform_layer_->GetElementId());
+  ASSERT_TRUE(animation.GetCompositorAnimation()->IsElementAttached());
 
-  player.CompositorPlayer()->AddKeyframeModel(std::move(float_keyframe_model));
+  animation.GetCompositorAnimation()->AddKeyframeModel(
+      std::move(float_keyframe_model));
 
   ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
 
@@ -168,7 +170,7 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   ASSERT_TRUE(platform_layer_);
 
   ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
-  player.CompositorPlayer()->RemoveKeyframeModel(keyframe_model_id);
+  animation.GetCompositorAnimation()->RemoveKeyframeModel(keyframe_model_id);
   ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
 
   graphics_layer_->SetShouldFlattenTransform(true);
@@ -178,10 +180,10 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
 
   ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
 
-  player.CompositorPlayer()->DetachElement();
-  ASSERT_FALSE(player.CompositorPlayer()->IsElementAttached());
+  animation.GetCompositorAnimation()->DetachElement();
+  ASSERT_FALSE(animation.GetCompositorAnimation()->IsElementAttached());
 
-  compositor_timeline->PlayerDestroyed(player);
+  compositor_timeline->AnimationDestroyed(animation);
   host.RemoveTimeline(*compositor_timeline.get());
 }
 

@@ -31,12 +31,12 @@
 #ifndef ScrollAnimator_h
 #define ScrollAnimator_h
 
+#include <memory>
 #include "platform/Timer.h"
+#include "platform/animation/CompositorAnimationClient.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include <memory>
 
 namespace blink {
 
@@ -74,7 +74,7 @@ class CompositorAnimationTimeline;
 //     thread.
 //
 // In scenarios (1) and (2) the animation is created as a cc::Animation with
-// TargetProperty::SCROLL_OFFSET and added to a cc::AnimationPlayer that is
+// TargetProperty::SCROLL_OFFSET and added to a cc::Animation that is
 // serviced on the compositor thread (in cc::AnimationHost::TickAnimations).
 // This lets the animation play smoothly even if the main thread is janked.
 //

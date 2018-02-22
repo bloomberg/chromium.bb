@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/single_keyframe_effect_animation_player.h"
+#include "cc/animation/single_keyframe_effect_animation.h"
 
 #include <inttypes.h>
 #include <algorithm>
@@ -20,79 +20,75 @@
 
 namespace cc {
 
-scoped_refptr<SingleKeyframeEffectAnimationPlayer>
-SingleKeyframeEffectAnimationPlayer::Create(int id) {
-  return base::WrapRefCounted(new SingleKeyframeEffectAnimationPlayer(id));
+scoped_refptr<SingleKeyframeEffectAnimation>
+SingleKeyframeEffectAnimation::Create(int id) {
+  return base::WrapRefCounted(new SingleKeyframeEffectAnimation(id));
 }
 
-SingleKeyframeEffectAnimationPlayer::SingleKeyframeEffectAnimationPlayer(int id)
-    : AnimationPlayer(id) {
+SingleKeyframeEffectAnimation::SingleKeyframeEffectAnimation(int id)
+    : Animation(id) {
   DCHECK(id_);
   AddKeyframeEffect(base::MakeUnique<KeyframeEffect>(NextKeyframeEffectId()));
 }
 
-SingleKeyframeEffectAnimationPlayer::SingleKeyframeEffectAnimationPlayer(
+SingleKeyframeEffectAnimation::SingleKeyframeEffectAnimation(
     int id,
     size_t keyframe_effect_id)
-    : AnimationPlayer(id) {
+    : Animation(id) {
   DCHECK(id_);
   AddKeyframeEffect(base::MakeUnique<KeyframeEffect>(keyframe_effect_id));
 }
 
-SingleKeyframeEffectAnimationPlayer::~SingleKeyframeEffectAnimationPlayer() {}
+SingleKeyframeEffectAnimation::~SingleKeyframeEffectAnimation() {}
 
-KeyframeEffect* SingleKeyframeEffectAnimationPlayer::GetKeyframeEffect() const {
+KeyframeEffect* SingleKeyframeEffectAnimation::GetKeyframeEffect() const {
   DCHECK_EQ(keyframe_effects_.size(), 1u);
   return keyframe_effects_[0].get();
 }
 
-scoped_refptr<AnimationPlayer>
-SingleKeyframeEffectAnimationPlayer::CreateImplInstance() const {
+scoped_refptr<Animation> SingleKeyframeEffectAnimation::CreateImplInstance()
+    const {
   DCHECK(GetKeyframeEffect());
-  scoped_refptr<SingleKeyframeEffectAnimationPlayer> player =
-      base::WrapRefCounted(new SingleKeyframeEffectAnimationPlayer(
-          id(), GetKeyframeEffect()->id()));
-  return player;
+  scoped_refptr<SingleKeyframeEffectAnimation> animation = base::WrapRefCounted(
+      new SingleKeyframeEffectAnimation(id(), GetKeyframeEffect()->id()));
+  return animation;
 }
 
-ElementId SingleKeyframeEffectAnimationPlayer::element_id() const {
+ElementId SingleKeyframeEffectAnimation::element_id() const {
   return element_id_of_keyframe_effect(GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimationPlayer::AttachElement(ElementId element_id) {
+void SingleKeyframeEffectAnimation::AttachElement(ElementId element_id) {
   AttachElementForKeyframeEffect(element_id, GetKeyframeEffect()->id());
 }
 
-KeyframeEffect* SingleKeyframeEffectAnimationPlayer::keyframe_effect() const {
+KeyframeEffect* SingleKeyframeEffectAnimation::keyframe_effect() const {
   return GetKeyframeEffect();
 }
 
-void SingleKeyframeEffectAnimationPlayer::AddKeyframeModel(
+void SingleKeyframeEffectAnimation::AddKeyframeModel(
     std::unique_ptr<KeyframeModel> keyframe_model) {
   AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
                                     GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimationPlayer::PauseKeyframeModel(
-    int keyframe_model_id,
-    double time_offset) {
+void SingleKeyframeEffectAnimation::PauseKeyframeModel(int keyframe_model_id,
+                                                       double time_offset) {
   PauseKeyframeModelForKeyframeEffect(keyframe_model_id, time_offset,
                                       GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimationPlayer::RemoveKeyframeModel(
-    int keyframe_model_id) {
+void SingleKeyframeEffectAnimation::RemoveKeyframeModel(int keyframe_model_id) {
   RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
                                        GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimationPlayer::AbortKeyframeModel(
-    int keyframe_model_id) {
+void SingleKeyframeEffectAnimation::AbortKeyframeModel(int keyframe_model_id) {
   AbortKeyframeModelForKeyframeEffect(keyframe_model_id,
                                       GetKeyframeEffect()->id());
 }
 
-bool SingleKeyframeEffectAnimationPlayer::NotifyKeyframeModelFinishedForTesting(
+bool SingleKeyframeEffectAnimation::NotifyKeyframeModelFinishedForTesting(
     TargetProperty::Type target_property,
     int group_id) {
   AnimationEvent event(AnimationEvent::FINISHED,
@@ -101,7 +97,7 @@ bool SingleKeyframeEffectAnimationPlayer::NotifyKeyframeModelFinishedForTesting(
   return GetKeyframeEffect()->NotifyKeyframeModelFinished(event);
 }
 
-KeyframeModel* SingleKeyframeEffectAnimationPlayer::GetKeyframeModel(
+KeyframeModel* SingleKeyframeEffectAnimation::GetKeyframeModel(
     TargetProperty::Type target_property) const {
   return GetKeyframeModelForKeyframeEffect(target_property,
                                            GetKeyframeEffect()->id());

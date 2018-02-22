@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_ANIMATION_PLAYER_H_
-#define CHROME_BROWSER_VR_ANIMATION_PLAYER_H_
+#ifndef CHROME_BROWSER_VR_ANIMATION_H_
+#define CHROME_BROWSER_VR_ANIMATION_H_
 
 #include <set>
 #include <vector>
@@ -24,20 +24,20 @@ class SizeF;
 
 namespace vr {
 
-// This is a simplified version of the cc::AnimationPlayer. Its sole purpose
-// is the management of its collection of KeyframeModels. Ticking them, updating
-// their state, and deleting them as required.
+// This is a simplified version of the cc::Animation. Its sole purpose is the
+// management of its collection of KeyframeModels. Ticking them, updating their
+// state, and deleting them as required.
 //
 // TODO(vollick): if cc::KeyframeModel and friends move into gfx/, then this
 // class should follow suit. As such, it should not absorb any vr-specific
 // functionality.
-class AnimationPlayer final {
+class Animation final {
  public:
   static int GetNextKeyframeModelId();
   static int GetNextGroupId();
 
-  AnimationPlayer();
-  ~AnimationPlayer();
+  Animation();
+  ~Animation();
 
   cc::AnimationTarget* target() const { return target_; }
   void set_target(cc::AnimationTarget* target) { target_ = target; }
@@ -109,9 +109,9 @@ class AnimationPlayer final {
   KeyframeModels keyframe_models_;
   Transition transition_;
 
-  DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
+  DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 }  // namespace vr
 
-#endif  //  CHROME_BROWSER_VR_ANIMATION_PLAYER_H_
+#endif  //  CHROME_BROWSER_VR_ANIMATION_H_

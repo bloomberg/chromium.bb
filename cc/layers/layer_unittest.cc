@@ -1476,8 +1476,8 @@ TEST_F(LayerTest, SetLayerTreeHostNotUsingLayerListsManagesElementId) {
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(timeline);
 
-  AddOpacityTransitionToElementWithPlayer(element_id, timeline, 10.0, 1.f, 0.f,
-                                          false);
+  AddOpacityTransitionToElementWithAnimation(element_id, timeline, 10.0, 1.f,
+                                             0.f, false);
   EXPECT_TRUE(animation_host_->IsElementAnimating(element_id));
 
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
@@ -1532,8 +1532,8 @@ TEST_F(LayerTestWithLayerLists,
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(timeline);
 
-  AddOpacityTransitionToElementWithPlayer(element_id, timeline, 10.0, 1.f, 0.f,
-                                          false);
+  AddOpacityTransitionToElementWithAnimation(element_id, timeline, 10.0, 1.f,
+                                             0.f, false);
   EXPECT_TRUE(animation_host_->IsElementAnimating(element_id));
 
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));

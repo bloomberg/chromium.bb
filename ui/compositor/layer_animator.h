@@ -26,7 +26,7 @@ namespace cc {
 class Animation;
 class AnimationTimeline;
 class Layer;
-class SingleKeyframeEffectAnimationPlayer;
+class SingleKeyframeEffectAnimation;
 }
 
 namespace gfx {
@@ -114,12 +114,12 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // Unsubscribe from |cc_layer_| and subscribe to |new_layer|.
   void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
 
-  // Attach AnimationPlayer to Layer and AnimationTimeline
+  // Attach Animation to Layer and AnimationTimeline
   void AttachLayerAndTimeline(Compositor* compositor);
-  // Detach AnimationPlayer from Layer and AnimationTimeline
+  // Detach Animation from Layer and AnimationTimeline
   void DetachLayerAndTimeline(Compositor* compositor);
 
-  cc::SingleKeyframeEffectAnimationPlayer* GetAnimationPlayerForTesting() const;
+  cc::SingleKeyframeEffectAnimation* GetAnimationForTesting() const;
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -375,8 +375,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
       std::unique_ptr<cc::KeyframeModel> keyframe_model) override;
   void RemoveThreadedAnimation(int keyframe_model_id) override;
 
-  void AttachLayerToAnimationPlayer(int layer_id);
-  void DetachLayerFromAnimationPlayer();
+  void AttachLayerToAnimation(int layer_id);
+  void DetachLayerFromAnimation();
 
   void set_animation_metrics_reporter(AnimationMetricsReporter* reporter) {
     animation_metrics_reporter_ = reporter;
@@ -389,7 +389,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   LayerAnimationDelegate* delegate_;
 
   // Plays CC animations.
-  scoped_refptr<cc::SingleKeyframeEffectAnimationPlayer> animation_player_;
+  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation_;
 
   // The currently running animations.
   RunningAnimations running_animations_;

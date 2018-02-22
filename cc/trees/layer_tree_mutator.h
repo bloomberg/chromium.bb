@@ -22,10 +22,10 @@ namespace cc {
 // name and options dictionary are used just for construction.
 struct CC_EXPORT MutatorInputState {
   struct CC_EXPORT AnimationState {
-    int animation_player_id = 0;
-    // Name associated with worklet animation player.
+    int animation_id = 0;
+    // Name associated with worklet animation.
     std::string name;
-    // Worklet animation player's current time, from its associated timeline.
+    // Worklet animation's current time, from its associated timeline.
     double current_time = 0;
   };
 
@@ -37,7 +37,7 @@ struct CC_EXPORT MutatorInputState {
 
 struct CC_EXPORT MutatorOutputState {
   struct CC_EXPORT AnimationState {
-    int animation_player_id = 0;
+    int animation_id = 0;
     // The animator effect's local time.
     // TODO(majidvp): This assumes each animator has a single output effect
     // which does not hold once we state support group effects.
