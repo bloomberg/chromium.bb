@@ -63,16 +63,31 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
   gfx::Point origin;
   delegate_->Configure(
       *display, display->native_mode(), origin,
-      base::Bind(&CastDisplayConfigurator::OnDisplayConfigured,
-                 weak_factory_.GetWeakPtr(),
-                 gfx::Rect(origin, display->native_mode()->size())));
+      base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
+                          weak_factory_.GetWeakPtr(), display,
+                          display->native_mode(), origin));
 }
 
-void CastDisplayConfigurator::OnDisplayConfigured(const gfx::Rect& bounds,
-                                                  bool success) {
+void CastDisplayConfigurator::OnDisplayConfigured(
+    display::DisplaySnapshot* display,
+    const display::DisplayMode* mode,
+    const gfx::Point& origin,
+    bool success) {
+  DCHECK(display);
+  DCHECK(mode);
+
+  const gfx::Rect bounds(origin, mode->size());
   VLOG(1) << __func__ << " success=" << success
           << " bounds=" << bounds.ToString();
-  cast_screen_->OnDisplayChanged(1.0f, bounds);
+  if (success) {
+    // Need to update the display state otherwise it becomes stale.
+    display->set_current_mode(mode);
+    display->set_origin(origin);
+
+    cast_screen_->OnDisplayChanged(1.0f, bounds);
+  } else {
+    LOG(FATAL) << "Failed to configure display";
+  }
 }
 
 }  // namespace shell
