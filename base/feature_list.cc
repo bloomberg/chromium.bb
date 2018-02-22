@@ -23,7 +23,7 @@ namespace {
 // Pointer to the FeatureList instance singleton that was set via
 // FeatureList::SetInstance(). Does not use base/memory/singleton.h in order to
 // have more control over initialization timing. Leaky.
-FeatureList* g_instance = nullptr;
+FeatureList* g_feature_list_instance = nullptr;
 
 // Tracks whether the FeatureList instance was initialized via an accessor.
 bool g_initialized_from_accessor = false;
@@ -197,20 +197,20 @@ void FeatureList::GetCommandLineFeatureOverrides(
 
 // static
 bool FeatureList::IsEnabled(const Feature& feature) {
-  if (!g_instance) {
+  if (!g_feature_list_instance) {
     g_initialized_from_accessor = true;
     return feature.default_state == FEATURE_ENABLED_BY_DEFAULT;
   }
-  return g_instance->IsFeatureEnabled(feature);
+  return g_feature_list_instance->IsFeatureEnabled(feature);
 }
 
 // static
 FieldTrial* FeatureList::GetFieldTrial(const Feature& feature) {
-  if (!g_instance) {
+  if (!g_feature_list_instance) {
     g_initialized_from_accessor = true;
     return nullptr;
   }
-  return g_instance->GetAssociatedFieldTrial(feature);
+  return g_feature_list_instance->GetAssociatedFieldTrial(feature);
 }
 
 // static
@@ -235,12 +235,12 @@ bool FeatureList::InitializeInstance(const std::string& enable_features,
   // accessor call(s) which likely returned incorrect information.
   CHECK(!g_initialized_from_accessor);
   bool instance_existed_before = false;
-  if (g_instance) {
-    if (g_instance->initialized_from_command_line_)
+  if (g_feature_list_instance) {
+    if (g_feature_list_instance->initialized_from_command_line_)
       return false;
 
-    delete g_instance;
-    g_instance = nullptr;
+    delete g_feature_list_instance;
+    g_feature_list_instance = nullptr;
     instance_existed_before = true;
   }
 
@@ -252,16 +252,16 @@ bool FeatureList::InitializeInstance(const std::string& enable_features,
 
 // static
 FeatureList* FeatureList::GetInstance() {
-  return g_instance;
+  return g_feature_list_instance;
 }
 
 // static
 void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
-  DCHECK(!g_instance);
+  DCHECK(!g_feature_list_instance);
   instance->FinalizeInitialization();
 
   // Note: Intentional leak of global singleton.
-  g_instance = instance.release();
+  g_feature_list_instance = instance.release();
 
 #if DCHECK_IS_ON() && defined(SYZYASAN)
   // Update the behaviour of LOG_DCHECK to match the Feature configuration.
@@ -280,8 +280,8 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
 
 // static
 std::unique_ptr<FeatureList> FeatureList::ClearInstanceForTesting() {
-  FeatureList* old_instance = g_instance;
-  g_instance = nullptr;
+  FeatureList* old_instance = g_feature_list_instance;
+  g_feature_list_instance = nullptr;
   g_initialized_from_accessor = false;
   return base::WrapUnique(old_instance);
 }
@@ -289,9 +289,9 @@ std::unique_ptr<FeatureList> FeatureList::ClearInstanceForTesting() {
 // static
 void FeatureList::RestoreInstanceForTesting(
     std::unique_ptr<FeatureList> instance) {
-  DCHECK(!g_instance);
+  DCHECK(!g_feature_list_instance);
   // Note: Intentional leak of global singleton.
-  g_instance = instance.release();
+  g_feature_list_instance = instance.release();
 }
 
 void FeatureList::FinalizeInitialization() {
