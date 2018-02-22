@@ -124,7 +124,6 @@ if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
     echo -e "ERROR: The only supported distros are\n" \
       "\tUbuntu 14.04 (trusty)\n" \
       "\tUbuntu 16.04 (xenial)\n" \
-      "\tUbuntu 17.04 (zesty)\n" \
       "\tUbuntu 17.10 (artful)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
@@ -143,7 +142,11 @@ if [ "x$(id -u)" != x0 ] && [ 0 -eq "${do_quick_check-0}" ]; then
 fi
 
 # Packages needed for chromeos only
-chromeos_dev_list="libbluetooth-dev libxkbcommon-dev realpath"
+chromeos_dev_list="libbluetooth-dev libxkbcommon-dev"
+
+if package_exists realpath; then
+  chromeos_dev_list="${chromeos_dev_list} realpath"
+fi
 
 # Packages needed for development
 dev_list="\
