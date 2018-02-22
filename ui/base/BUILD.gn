@@ -65,6 +65,8 @@ component("base") {
   output_name = "ui_base"
 
   sources = [
+    "accelerators/media_keys_listener.cc",
+    "accelerators/media_keys_listener.h",
     "accelerators/menu_label_accelerator_util_linux.cc",
     "accelerators/menu_label_accelerator_util_linux.h",
     "accelerators/platform_accelerator.h",
@@ -370,6 +372,12 @@ component("base") {
       "touch/touch_editing_controller.cc",
       "touch/touch_editing_controller.h",
     ]
+  }
+
+  if (is_mac) {
+    sources += [ "accelerators/media_keys_listener_mac.mm" ]
+  } else {
+    sources += [ "accelerators/media_keys_listener_stub.cc" ]
   }
 
   if (is_win) {

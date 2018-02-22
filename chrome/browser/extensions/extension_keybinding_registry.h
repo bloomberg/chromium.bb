@@ -7,6 +7,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "ui/base/accelerators/media_keys_listener.h"
 
 namespace content {
 class BrowserContext;
@@ -36,7 +38,8 @@ class ExtensionRegistry;
 // logic for keyboard accelerators. See platform-specific implementations for
 // implementation details for each platform.
 class ExtensionKeybindingRegistry : public content::NotificationObserver,
-                                    public ExtensionRegistryObserver {
+                                    public ExtensionRegistryObserver,
+                                    public ui::MediaKeysListener::Delegate {
  public:
   enum ExtensionFilter {
     ALL_EXTENSIONS,
@@ -143,6 +146,10 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  // ui::MediaKeysListener::Delegate:
+  ui::MediaKeysListener::MediaKeysHandleResult OnMediaKeysAccelerator(
+      const ui::Accelerator& accelerator) override;
+
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);
 
@@ -152,6 +159,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // executed.
   bool ExecuteCommands(const ui::Accelerator& accelerator,
                        const std::string& extension_id);
+
+  // Whether or not any media keys are currently registered.
+  bool IsAnyMediaKeyRegistered() const;
 
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;
@@ -185,6 +195,9 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // capturing then trying to assign Ctrl+F to a command would instead result
   // in the Find box opening.
   bool shortcut_handling_suspended_;
+
+  // Listen for Media keys events.
+  std::unique_ptr<ui::MediaKeysListener> media_keys_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };
