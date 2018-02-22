@@ -735,9 +735,6 @@ const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 const char kReducedReferrerGranularity[] =
   "reduced-referrer-granularity";
 
-// Handles frame scrolls via the root RenderLayer instead of the FrameView.
-const char kRootLayerScrolls[]              = "root-layer-scrolls";
-
 // Enables native memory sampling profiler with a given rate (default 128 KiB).
 const char kSamplingHeapProfiler[]          = "sampling-heap-profiler";
 
