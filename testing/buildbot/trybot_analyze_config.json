@@ -91,5 +91,10 @@
       "testing/xvfb.py",
       "third_party/binutils/Linux_x64/binutils.tar.bz2.sha1"
     ]
+  },
+  "win": {
+    "exclusions": [
+      "build/toolchain/win/rc/win/rc.exe.sha1"
+    ]
   }
 }
