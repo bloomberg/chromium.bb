@@ -166,12 +166,6 @@ specialize qw/aom_smooth_predictor_16x32 ssse3/;
 specialize qw/aom_smooth_predictor_32x16 ssse3/;
 specialize qw/aom_smooth_predictor_32x32 ssse3/;
 
-specialize qw/aom_d135_predictor_4x4 neon/;
-specialize qw/aom_d153_predictor_4x4 ssse3/;
-specialize qw/aom_d153_predictor_8x8 ssse3/;
-specialize qw/aom_d153_predictor_16x16 ssse3/;
-specialize qw/aom_d153_predictor_32x32 ssse3/;
-
 # TODO(yungingwang): optimize rectangular DC_PRED to replace division
 # by multiply and shift.
 specialize qw/aom_dc_predictor_4x4 dspr2 msa neon sse2/;
@@ -184,39 +178,6 @@ specialize qw/aom_dc_predictor_16x16 dspr2 neon msa sse2/;
 specialize qw/aom_dc_predictor_16x32 sse2/;
 specialize qw/aom_dc_predictor_32x16 sse2 avx2/;
 specialize qw/aom_dc_predictor_32x32 msa neon sse2 avx2/;
-
-specialize qw/aom_d207e_predictor_4x4 sse2/;
-specialize qw/aom_d207e_predictor_4x8 sse2/;
-specialize qw/aom_d207e_predictor_8x4 sse2/;
-specialize qw/aom_d207e_predictor_8x8 sse2/;
-specialize qw/aom_d207e_predictor_8x16 sse2/;
-specialize qw/aom_d207e_predictor_16x8 sse2/;
-specialize qw/aom_d207e_predictor_16x16 sse2/;
-specialize qw/aom_d207e_predictor_16x32 sse2/;
-specialize qw/aom_d207e_predictor_32x16 sse2/;
-specialize qw/aom_d207e_predictor_32x32 sse2/;
-
-specialize qw/aom_d63e_predictor_4x4 sse2 ssse3/;
-specialize qw/aom_d63e_predictor_4x8 sse2/;
-specialize qw/aom_d63e_predictor_8x4 sse2/;
-specialize qw/aom_d63e_predictor_8x8 sse2/;
-specialize qw/aom_d63e_predictor_8x16 sse2/;
-specialize qw/aom_d63e_predictor_16x8 sse2/;
-specialize qw/aom_d63e_predictor_16x16 sse2/;
-specialize qw/aom_d63e_predictor_16x32 sse2/;
-specialize qw/aom_d63e_predictor_32x16 sse2/;
-specialize qw/aom_d63e_predictor_32x32 sse2/;
-
-specialize qw/aom_d45e_predictor_4x4 ssse3/;
-specialize qw/aom_d45e_predictor_4x8 ssse3/;
-specialize qw/aom_d45e_predictor_8x4 ssse3/;
-specialize qw/aom_d45e_predictor_8x8 ssse3/;
-specialize qw/aom_d45e_predictor_8x16 ssse3/;
-specialize qw/aom_d45e_predictor_16x8 ssse3/;
-specialize qw/aom_d45e_predictor_16x16 ssse3/;
-specialize qw/aom_d45e_predictor_16x32 ssse3/;
-specialize qw/aom_d45e_predictor_32x16 ssse3/;
-specialize qw/aom_d45e_predictor_32x32 ssse3/;
 
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
   specialize qw/aom_highbd_v_predictor_4x8 sse2/;
@@ -282,52 +243,6 @@ specialize qw/aom_d45e_predictor_32x32 ssse3/;
   specialize qw/aom_highbd_dc_left_predictor_32x32 sse2/;
   specialize qw/aom_highbd_dc_top_predictor_32x32 sse2/;
   specialize qw/aom_highbd_dc_128_predictor_32x32 sse2/;
-
-  specialize qw/aom_highbd_d117_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d117_predictor_8x8 ssse3/;
-  specialize qw/aom_highbd_d117_predictor_16x16 ssse3/;
-  specialize qw/aom_highbd_d117_predictor_32x32 ssse3/;
-  specialize qw/aom_highbd_d135_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d135_predictor_8x8 ssse3/;
-  specialize qw/aom_highbd_d135_predictor_16x16 ssse3/;
-  specialize qw/aom_highbd_d135_predictor_32x32 ssse3/;
-  specialize qw/aom_highbd_d153_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d153_predictor_8x8 ssse3/;
-  specialize qw/aom_highbd_d153_predictor_16x16 ssse3/;
-  specialize qw/aom_highbd_d153_predictor_32x32 ssse3/;
-
-  specialize qw/aom_highbd_d45e_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d45e_predictor_4x8 sse2/;
-  specialize qw/aom_highbd_d45e_predictor_8x4 sse2/;
-  specialize qw/aom_highbd_d45e_predictor_8x8 sse2/;
-  specialize qw/aom_highbd_d45e_predictor_8x16 sse2/;
-  specialize qw/aom_highbd_d45e_predictor_16x8 avx2/;
-  specialize qw/aom_highbd_d45e_predictor_16x16 avx2/;
-  specialize qw/aom_highbd_d45e_predictor_16x32 avx2/;
-  specialize qw/aom_highbd_d45e_predictor_32x16 avx2/;
-  specialize qw/aom_highbd_d45e_predictor_32x32 avx2/;
-
-  specialize qw/aom_highbd_d207e_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_4x8 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_8x4 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_8x8 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_8x16 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_16x8 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_16x16 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_16x32 sse2/;
-  specialize qw/aom_highbd_d207e_predictor_32x16 avx2/;
-  specialize qw/aom_highbd_d207e_predictor_32x32 avx2/;
-
-  specialize qw/aom_highbd_d63e_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_d63e_predictor_4x8 sse2/;
-  specialize qw/aom_highbd_d63e_predictor_8x4 sse2/;
-  specialize qw/aom_highbd_d63e_predictor_8x8 sse2/;
-  specialize qw/aom_highbd_d63e_predictor_8x16 sse2/;
-  specialize qw/aom_highbd_d63e_predictor_16x8 avx2/;
-  specialize qw/aom_highbd_d63e_predictor_16x16 avx2/;
-  specialize qw/aom_highbd_d63e_predictor_16x32 avx2/;
-  specialize qw/aom_highbd_d63e_predictor_32x16 avx2/;
-  specialize qw/aom_highbd_d63e_predictor_32x32 avx2/;
 
 #
 # Sub Pixel Filters

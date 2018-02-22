@@ -611,18 +611,10 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred[V_PRED], v);
   INIT_ALL_SIZES(pred[H_PRED], h);
-  INIT_ALL_SIZES(pred[D203_PRED], d207e);
-  INIT_ALL_SIZES(pred[D45_PRED], d45e);
-  INIT_ALL_SIZES(pred[D67_PRED], d63e);
-  INIT_ALL_SIZES(pred[D113_PRED], d117);
-  INIT_ALL_SIZES(pred[D135_PRED], d135);
-  INIT_ALL_SIZES(pred[D157_PRED], d153);
-
   INIT_ALL_SIZES(pred[PAETH_PRED], paeth);
   INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
   INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v);
   INIT_ALL_SIZES(pred[SMOOTH_H_PRED], smooth_h);
-
   INIT_ALL_SIZES(dc_pred[0][0], dc_128);
   INIT_ALL_SIZES(dc_pred[0][1], dc_top);
   INIT_ALL_SIZES(dc_pred[1][0], dc_left);
@@ -630,18 +622,10 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred_high[V_PRED], highbd_v);
   INIT_ALL_SIZES(pred_high[H_PRED], highbd_h);
-  INIT_ALL_SIZES(pred_high[D203_PRED], highbd_d207e);
-  INIT_ALL_SIZES(pred_high[D45_PRED], highbd_d45e);
-  INIT_ALL_SIZES(pred_high[D67_PRED], highbd_d63e);
-  INIT_ALL_SIZES(pred_high[D113_PRED], highbd_d117);
-  INIT_ALL_SIZES(pred_high[D135_PRED], highbd_d135);
-  INIT_ALL_SIZES(pred_high[D157_PRED], highbd_d153);
-
   INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth);
   INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
   INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v);
   INIT_ALL_SIZES(pred_high[SMOOTH_H_PRED], highbd_smooth_h);
-
   INIT_ALL_SIZES(dc_pred_high[0][0], highbd_dc_128);
   INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);
   INIT_ALL_SIZES(dc_pred_high[1][0], highbd_dc_left);

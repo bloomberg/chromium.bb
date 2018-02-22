@@ -54,8 +54,7 @@ set(AOM_DSP_COMMON_INTRIN_SSE2
 
 set(AOM_DSP_COMMON_ASM_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.asm")
+    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm")
 
 set(AOM_DSP_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
@@ -203,14 +202,9 @@ set(AOM_DSP_COMMON_INTRIN_MSA
       "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c")
 
-  set(AOM_DSP_COMMON_INTRIN_SSSE3
-      ${AOM_DSP_COMMON_INTRIN_SSSE3}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_ssse3.c")
-
   set(AOM_DSP_COMMON_INTRIN_AVX2
       ${AOM_DSP_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_avx2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
 
 set(AOM_DSP_COMMON_SOURCES

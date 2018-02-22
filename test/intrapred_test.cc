@@ -179,146 +179,8 @@ TEST_P(LowbdIntraPredTest, Bitexact) {
       highbd_entry(type, 32, 16, opt, bd), highbd_entry(type, 32, 32, opt, bd)
 #endif
 
-#if HAVE_SSE2
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVector8[] = {
-  // highbd_intrapred(dc, sse2, 8),     highbd_intrapred(dc_left, sse2, 8),
-  // highbd_intrapred(dc_top, sse2, 8), highbd_intrapred(dc_128, sse2, 8),
-  // highbd_intrapred(h, sse2, 8),      highbd_intrapred(v, sse2, 8),
-  // highbd_entry(d117, 4, 4, sse2, 8), highbd_entry(d135, 4, 4, sse2, 8),
-  // highbd_entry(d153, 4, 4, sse2, 8), highbd_entry(d45e, 4, 4, sse2, 8),
-  // highbd_entry(d45e, 4, 8, sse2, 8), highbd_entry(d45e, 8, 4, sse2, 8),
-  // highbd_entry(d45e, 8, 8, sse2, 8), highbd_entry(d45e, 8, 16, sse2, 8),
-  // highbd_entry(d207e, 4, 4, sse2, 8),   highbd_entry(d207e, 4, 8, sse2, 8),
-  // highbd_entry(d207e, 8, 4, sse2, 8),   highbd_entry(d207e, 8, 8, sse2, 8),
-  // highbd_entry(d207e, 8, 16, sse2, 8),  highbd_entry(d207e, 16, 8, sse2, 8),
-  // highbd_entry(d207e, 16, 16, sse2, 8), highbd_entry(d207e, 16, 32, sse2, 8),
-  highbd_entry(d63e, 4, 4, sse2, 8),  highbd_entry(d63e, 4, 8, sse2, 8),
-  highbd_entry(d63e, 8, 4, sse2, 8),  highbd_entry(d63e, 8, 8, sse2, 8),
-  highbd_entry(d63e, 8, 16, sse2, 8),
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2_TO_C_8, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVector8));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVector10[] = {
-  // highbd_intrapred(dc, sse2, 10),     highbd_intrapred(dc_left, sse2, 10),
-  // highbd_intrapred(dc_top, sse2, 10), highbd_intrapred(dc_128, sse2, 10),
-  // highbd_intrapred(h, sse2, 10),      highbd_intrapred(v, sse2, 10),
-  // highbd_entry(d117, 4, 4, sse2, 10), highbd_entry(d135, 4, 4, sse2, 10),
-  // highbd_entry(d153, 4, 4, sse2, 10),
-  // highbd_entry(d45e, 4, 4, sse2, 10),
-  // highbd_entry(d45e, 4, 8, sse2, 10),
-  // highbd_entry(d45e, 8, 4, sse2, 10),
-  // highbd_entry(d45e, 8, 8, sse2, 10),
-  // highbd_entry(d45e, 8, 16, sse2, 10),
-  // highbd_entry(d207e, 4, 4, sse2, 10),   highbd_entry(d207e, 4, 8, sse2, 10),
-  // highbd_entry(d207e, 8, 4, sse2, 10),   highbd_entry(d207e, 8, 8, sse2, 10),
-  // highbd_entry(d207e, 8, 16, sse2, 10),  highbd_entry(d207e, 16, 8, sse2,
-  // 10),
-  // highbd_entry(d207e, 16, 16, sse2, 10), highbd_entry(d207e, 16, 32, sse2,
-  // 10),
-  highbd_entry(d63e, 4, 4, sse2, 10),  highbd_entry(d63e, 4, 8, sse2, 10),
-  highbd_entry(d63e, 8, 4, sse2, 10),  highbd_entry(d63e, 8, 8, sse2, 10),
-  highbd_entry(d63e, 8, 16, sse2, 10),
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2_TO_C_10, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVector10));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVector12[] = {
-  // highbd_intrapred(dc, sse2, 12),     highbd_intrapred(dc_left, sse2, 12),
-  // highbd_intrapred(dc_top, sse2, 12), highbd_intrapred(dc_128, sse2, 12),
-  // highbd_intrapred(h, sse2, 12),      highbd_intrapred(v, sse2, 12),
-  // highbd_entry(d117, 4, 4, sse2, 12), highbd_entry(d135, 4, 4, sse2, 12),
-  // highbd_entry(d153, 4, 4, sse2, 12),
-  // highbd_entry(d45e, 4, 4, sse2, 12),
-  // highbd_entry(d45e, 4, 8, sse2, 12), highbd_entry(d45e, 8, 4, sse2, 12),
-  // highbd_entry(d45e, 8, 8, sse2, 12), highbd_entry(d45e, 8, 16, sse2, 12),
-  // highbd_entry(d207e, 4, 4, sse2, 12),   highbd_entry(d207e, 4, 8, sse2, 12),
-  // highbd_entry(d207e, 8, 4, sse2, 12),   highbd_entry(d207e, 8, 8, sse2, 12),
-  // highbd_entry(d207e, 8, 16, sse2, 12),  highbd_entry(d207e, 16, 8, sse2,
-  // 12),
-  // highbd_entry(d207e, 16, 16, sse2, 12), highbd_entry(d207e, 16, 32, sse2,
-  // 12),
-  highbd_entry(d63e, 4, 4, sse2, 12),  highbd_entry(d63e, 4, 8, sse2, 12),
-  highbd_entry(d63e, 8, 4, sse2, 12),  highbd_entry(d63e, 8, 8, sse2, 12),
-  highbd_entry(d63e, 8, 16, sse2, 12),
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2_TO_C_12, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVector12));
-
-#endif  // HAVE_SSE2
-
-#if HAVE_SSSE3
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorSsse3_8[] = {
-  highbd_entry(d117, 8, 8, ssse3, 8),   highbd_entry(d117, 16, 16, ssse3, 8),
-  highbd_entry(d117, 32, 32, ssse3, 8), highbd_entry(d135, 8, 8, ssse3, 8),
-  highbd_entry(d135, 16, 16, ssse3, 8), highbd_entry(d135, 32, 32, ssse3, 8),
-  highbd_entry(d153, 8, 8, ssse3, 8),   highbd_entry(d153, 16, 16, ssse3, 8),
-  highbd_entry(d153, 32, 32, ssse3, 8),
-};
-INSTANTIATE_TEST_CASE_P(SSSE3_TO_C_8, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorSsse3_8));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorSsse3_10[] = {
-  highbd_entry(d117, 8, 8, ssse3, 10),   highbd_entry(d117, 16, 16, ssse3, 10),
-  highbd_entry(d117, 32, 32, ssse3, 10), highbd_entry(d135, 8, 8, ssse3, 10),
-  highbd_entry(d135, 16, 16, ssse3, 10), highbd_entry(d135, 32, 32, ssse3, 10),
-  highbd_entry(d153, 8, 8, ssse3, 10),   highbd_entry(d153, 16, 16, ssse3, 10),
-  highbd_entry(d153, 32, 32, ssse3, 10),
-};
-INSTANTIATE_TEST_CASE_P(SSSE3_TO_C_10, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorSsse3_10));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorSsse3_12[] = {
-  highbd_entry(d117, 8, 8, ssse3, 12),   highbd_entry(d117, 16, 16, ssse3, 12),
-  highbd_entry(d117, 32, 32, ssse3, 12), highbd_entry(d135, 8, 8, ssse3, 12),
-  highbd_entry(d135, 16, 16, ssse3, 12), highbd_entry(d135, 32, 32, ssse3, 12),
-  highbd_entry(d153, 8, 8, ssse3, 12),   highbd_entry(d153, 16, 16, ssse3, 12),
-  highbd_entry(d153, 32, 32, ssse3, 12),
-};
-INSTANTIATE_TEST_CASE_P(SSSE3_TO_C_12, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorSsse3_12));
-#endif  // HAVE_SSSE3
-
-#if HAVE_AVX2
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorAvx2_8[] = {
-  highbd_entry(d45e, 16, 8, avx2, 8),   highbd_entry(d45e, 16, 16, avx2, 8),
-  highbd_entry(d45e, 16, 32, avx2, 8),  highbd_entry(d45e, 32, 16, avx2, 8),
-  highbd_entry(d45e, 32, 32, avx2, 8),  highbd_entry(d207e, 32, 16, avx2, 8),
-  highbd_entry(d207e, 32, 32, avx2, 8), highbd_entry(d63e, 16, 8, avx2, 8),
-  highbd_entry(d63e, 16, 16, avx2, 8),  highbd_entry(d63e, 16, 32, avx2, 8),
-  highbd_entry(d63e, 32, 16, avx2, 8),  highbd_entry(d63e, 32, 32, avx2, 8),
-};
-INSTANTIATE_TEST_CASE_P(AVX2_TO_C_8, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorAvx2_8));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorAvx2_10[] = {
-  highbd_entry(d45e, 16, 8, avx2, 10),   highbd_entry(d45e, 16, 16, avx2, 10),
-  highbd_entry(d45e, 16, 32, avx2, 10),  highbd_entry(d45e, 32, 16, avx2, 10),
-  highbd_entry(d45e, 32, 32, avx2, 10),  highbd_entry(d207e, 32, 16, avx2, 10),
-  highbd_entry(d207e, 32, 32, avx2, 10), highbd_entry(d63e, 16, 8, avx2, 10),
-  highbd_entry(d63e, 16, 16, avx2, 10),  highbd_entry(d63e, 16, 32, avx2, 10),
-  highbd_entry(d63e, 32, 16, avx2, 10),  highbd_entry(d63e, 32, 32, avx2, 10),
-};
-INSTANTIATE_TEST_CASE_P(AVX2_TO_C_10, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorAvx2_10));
-
-const IntraPredFunc<HighbdIntraPred> IntraPredTestVectorAvx2_12[] = {
-  highbd_entry(d45e, 16, 8, avx2, 12),   highbd_entry(d45e, 16, 16, avx2, 12),
-  highbd_entry(d45e, 16, 32, avx2, 12),  highbd_entry(d45e, 32, 16, avx2, 12),
-  highbd_entry(d45e, 32, 32, avx2, 12),  highbd_entry(d207e, 32, 16, avx2, 12),
-  highbd_entry(d207e, 32, 32, avx2, 12), highbd_entry(d63e, 16, 8, avx2, 12),
-  highbd_entry(d63e, 16, 16, avx2, 12),  highbd_entry(d63e, 16, 32, avx2, 12),
-  highbd_entry(d63e, 32, 16, avx2, 12),  highbd_entry(d63e, 32, 32, avx2, 12),
-};
-INSTANTIATE_TEST_CASE_P(AVX2_TO_C_12, HighbdIntraPredTest,
-                        ::testing::ValuesIn(IntraPredTestVectorAvx2_12));
-#endif  // HAVE_AVX2
-
-// -----------------------------------------------------------------------------
-// Low Bit Depth Tests
+  // ---------------------------------------------------------------------------
+  // Low Bit Depth Tests
 
 #define lowbd_entry(type, width, height, opt)                                  \
   IntraPredFunc<IntraPred>(&aom_##type##_predictor_##width##x##height##_##opt, \
@@ -334,7 +196,6 @@ INSTANTIATE_TEST_CASE_P(AVX2_TO_C_12, HighbdIntraPredTest,
 
 #if HAVE_SSE2
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVector[] = {
-  lowbd_intrapred(d63e, sse2),    lowbd_intrapred(d207e, sse2),
   lowbd_intrapred(dc, sse2),      lowbd_intrapred(dc_top, sse2),
   lowbd_intrapred(dc_left, sse2), lowbd_intrapred(dc_128, sse2),
   lowbd_intrapred(v, sse2),       lowbd_intrapred(h, sse2),
@@ -347,8 +208,6 @@ INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
 
 #if HAVE_SSSE3
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
-  lowbd_entry(d63e, 4, 4, ssse3),
-  lowbd_intrapred(d45e, ssse3),
   lowbd_intrapred(paeth, ssse3),
   lowbd_intrapred(smooth, ssse3),
 };
