@@ -7,7 +7,6 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/PersistentNode.h"
-#include "platform/heap/VisitorImpl.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

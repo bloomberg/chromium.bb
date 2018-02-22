@@ -8,6 +8,7 @@
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
+#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
 #include "platform/wtf/Allocator.h"

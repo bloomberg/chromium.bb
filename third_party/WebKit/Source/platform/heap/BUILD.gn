@@ -46,6 +46,8 @@ blink_platform_sources("heap") {
     "HeapTerminatedArray.h",
     "HeapTerminatedArrayBuilder.h",
     "HeapTraits.h",
+    "MarkingVisitor.cpp",
+    "MarkingVisitor.h",
     "Member.h",
     "PageMemory.cpp",
     "PageMemory.h",
@@ -66,9 +68,7 @@ blink_platform_sources("heap") {
     "ThreadState.h",
     "ThreadingTraits.h",
     "TraceTraits.h",
-    "Visitor.cpp",
     "Visitor.h",
-    "VisitorImpl.h",
   ]
 
   deps = [
