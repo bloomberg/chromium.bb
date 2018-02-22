@@ -106,6 +106,14 @@ class ChannelWin : public Channel,
       bool write_now = !delay_writes_ && outgoing_messages_.empty();
       outgoing_messages_.emplace_back(std::move(message), 0);
 
+      // TODO(https://crbug.com/813045): Remove this. The queue should almost
+      // never be used, and then only for a handful of messages. For messages
+      // to accumulate, the sender would have to be sending faster than the
+      // receiver can read. This check is just to look for a message leak,
+      // though it may also reveal e.g. spammy malware sites exploiting some
+      // web APIs to DoS the browser.
+      CHECK_LE(outgoing_messages_.size(), 100000u);
+
       if (write_now && !WriteNoLock(outgoing_messages_.front()))
         reject_writes_ = write_error = true;
     }
