@@ -306,7 +306,8 @@ class WebMediaPlayerImplTest : public testing::Test {
         std::move(provider),
         base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                    base::Unretained(this)),
-        cc::TestContextProvider::Create());
+        cc::TestContextProvider::Create(),
+        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo));
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
