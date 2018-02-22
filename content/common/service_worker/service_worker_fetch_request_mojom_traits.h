@@ -62,20 +62,21 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.headers;
   }
 
+  // content::ServiceWorkerFetchRequest does not support the request body.
   static const std::string& blob_uuid(
       const content::ServiceWorkerFetchRequest& request) {
-    return request.blob_uuid;
+    return base::EmptyString();
   }
 
+  // content::ServiceWorkerFetchRequest does not support the request body.
   static uint64_t blob_size(const content::ServiceWorkerFetchRequest& request) {
-    return request.blob_size;
+    return 0;
   }
 
+  // content::ServiceWorkerFetchRequest does not support the request body.
   static blink::mojom::BlobPtr blob(
       const content::ServiceWorkerFetchRequest& request) {
-    if (!request.blob)
-      return nullptr;
-    return request.blob->Clone();
+    return nullptr;
   }
 
   static const content::Referrer& referrer(

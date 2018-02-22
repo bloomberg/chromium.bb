@@ -97,9 +97,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   GURL url;
   std::string method;
   ServiceWorkerHeaderMap headers;
-  std::string blob_uuid;
-  uint64_t blob_size = 0;
-  scoped_refptr<storage::BlobHandle> blob;
   Referrer referrer;
   network::mojom::FetchCredentialsMode credentials_mode =
       network::mojom::FetchCredentialsMode::kOmit;
