@@ -39,9 +39,6 @@ void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glVertexAttribPointer(position_handle_, kQuadPositionDataSize, GL_FLOAT,
                         false, 0, 0);
   glEnableVertexAttribArray(position_handle_);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 GLuint BaseQuadRenderer::vertex_buffer_ = 0;

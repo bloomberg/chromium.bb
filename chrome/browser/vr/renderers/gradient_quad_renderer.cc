@@ -125,8 +125,6 @@ void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 const gfx::SizeF& element_size,
                                 const CornerRadii& radii) {
   glUseProgram(program_handle_);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   glBindBuffer(GL_ARRAY_BUFFER, TexturedQuadRenderer::VertexBuffer());
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TexturedQuadRenderer::IndexBuffer());
