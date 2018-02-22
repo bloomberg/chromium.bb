@@ -170,6 +170,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   AXObject* GetOrCreate(AccessibilityRole);
   AXObject* GetOrCreate(AccessibleNode*);
   AXObject* GetOrCreate(LayoutObject*) override;
+  AXObject* GetOrCreate(const Node*);
   AXObject* GetOrCreate(Node*);
   AXObject* GetOrCreate(AbstractInlineTextBox*);
 

@@ -1776,10 +1776,25 @@ AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   return const_cast<AXObject*>(this);
 }
 
+const AXObject::AXObjectVector& AXObject::Children() const {
+  return const_cast<AXObject*>(this)->Children();
+}
+
 const AXObject::AXObjectVector& AXObject::Children() {
   UpdateChildrenIfNecessary();
 
   return children_;
+}
+
+bool AXObject::IsAncestorOf(const AXObject& descendant) const {
+  return descendant.IsDescendantOf(*this);
+}
+
+bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
+  const AXObject* parent = ParentObject();
+  while (parent && parent != &ancestor)
+    parent = parent->ParentObject();
+  return !!parent;
 }
 
 AXObject* AXObject::ParentObject() const {

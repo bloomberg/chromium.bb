@@ -234,6 +234,7 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "accessibility/AXObjectCacheTest.cpp",
+    "accessibility/AXObjectTest.cpp",
     "accessibility/AccessibilityObjectModelTest.cpp",
     "accessibility/testing/AccessibilityTest.cpp",
     "accessibility/testing/AccessibilityTest.h",
