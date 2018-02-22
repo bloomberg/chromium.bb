@@ -152,6 +152,10 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
                     base::Time expected_modification_time,
                     scoped_refptr<DataHandle> data_handle);
 
+  static void SetFileModificationTimes(
+      std::vector<scoped_refptr<BlobDataItem>> items,
+      std::vector<base::Time> times);
+
   Type type_;
   uint64_t offset_;
   uint64_t length_;
