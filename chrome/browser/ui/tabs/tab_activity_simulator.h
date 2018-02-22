@@ -15,6 +15,7 @@ class GURL;
 class TabStripModel;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -30,7 +31,12 @@ class TabActivitySimulator {
   // Simulates a navigation to |url| using the given transition type.
   void Navigate(content::WebContents* web_contents,
                 const GURL& url,
-                ui::PageTransition page_transition);
+                ui::PageTransition page_transition = ui::PAGE_TRANSITION_LINK);
+
+  // Creates a new WebContents suitable for testing.
+  std::unique_ptr<content::WebContents> CreateWebContents(
+      content::BrowserContext* browser_context,
+      bool initially_hidden = true);
 
   // Creates a new WebContents suitable for testing, adds it to the tab strip
   // and commits a navigation to |initial_url|. The WebContents is owned by the

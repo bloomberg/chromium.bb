@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -106,6 +107,13 @@ class WindowActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  protected:
   WindowActivityWatcherTest() = default;
   ~WindowActivityWatcherTest() override { EXPECT_FALSE(WasNewEntryRecorded()); }
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    // Start TabActivityWatcher so it logs TabMetrics UKMs.
+    resource_coordinator::TabActivityWatcher::GetInstance();
+  }
 
   // Adds a tab and simulates a basic navigation.
   void AddTab(Browser* browser) {

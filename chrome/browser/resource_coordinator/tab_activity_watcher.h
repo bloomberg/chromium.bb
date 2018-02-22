@@ -29,19 +29,21 @@ class TabActivityWatcher : public TabStripModelObserver,
   TabActivityWatcher();
   ~TabActivityWatcher() override;
 
-  // TODO(michaelpg): Track more events.
-
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();
-
-  // Begins watching the |web_contents|. The watching will stop automatically
-  // when the WebContents is destroyed.
-  static void WatchWebContents(content::WebContents* web_contents);
 
  private:
   friend class TabActivityWatcherTest;
 
   // TabStripModelObserver:
+  void TabInsertedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;

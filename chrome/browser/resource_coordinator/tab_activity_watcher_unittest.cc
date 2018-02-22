@@ -19,6 +19,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -493,6 +494,52 @@ TEST_F(TabActivityWatcherTest, Navigations) {
   {
     SCOPED_TRACE("");
     ExpectNewEntry(kTestUrls[0], expected_metrics);
+  }
+
+  tab_strip_model->CloseAllTabs();
+}
+
+// Tests that replacing a foreground tab doesn't log new tab metrics until the
+// new tab is backgrounded.
+TEST_F(TabActivityWatcherTest, ReplaceForegroundTab) {
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  content::WebContents* orig_contents =
+      tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                        GURL(kTestUrls[0]));
+  tab_strip_model->ActivateTabAt(0, false);
+  WebContentsTester::For(orig_contents)->TestSetIsLoading(false);
+
+  // Build the replacement contents.
+  std::unique_ptr<content::WebContents> new_contents =
+      tab_activity_simulator_.CreateWebContents(profile());
+
+  // Ensure the test URL gets a UKM source ID upon navigating.
+  // Normally this happens when the browser or prerenderer attaches tab helpers.
+  ukm::InitializeSourceUrlRecorderForWebContents(new_contents.get());
+
+  tab_activity_simulator_.Navigate(new_contents.get(), GURL(kTestUrls[1]));
+  WebContentsTester::For(new_contents.get())->TestSetIsLoading(false);
+
+  // Replace and delete the old contents.
+  std::unique_ptr<content::WebContents> old_contents(
+      tab_strip_model->ReplaceWebContentsAt(0, new_contents.release()));
+  ASSERT_EQ(old_contents.get(), orig_contents);
+  old_contents.reset();
+  tab_strip_model->GetWebContentsAt(0)->WasShown();
+
+  EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
+
+  // Add a new tab so the first tab is backgrounded.
+  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                    GURL(kTestUrls[2]));
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[1], kBasicMetricValues);
   }
 
   tab_strip_model->CloseAllTabs();
