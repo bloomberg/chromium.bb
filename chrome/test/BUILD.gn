@@ -2043,6 +2043,11 @@ test("browser_tests") {
     if (!is_android && !is_mac) {
       data_deps += [ "//chrome/browser/resources/media/mei_preload:component" ]
     }
+
+    if (toolkit_views && !is_chromeos) {
+      sources +=
+          [ "../browser/ui/screen_capture_notification_ui_browsertest.cc" ]
+    }
   }
 }
 
