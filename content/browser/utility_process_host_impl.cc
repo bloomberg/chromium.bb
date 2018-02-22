@@ -315,9 +315,6 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,
       switches::kUseMockCertVerifierForTesting,
-#if defined(OS_WIN)
-      switches::kForceMediaFoundationVideoCapture,
-#endif  // defined(OS_WIN)
       switches::kUtilityStartupDialog,
       switches::kUseGL,
 #if defined(OS_ANDROID)

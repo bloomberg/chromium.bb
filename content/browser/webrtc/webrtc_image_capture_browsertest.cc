@@ -140,9 +140,22 @@ class WebRtcImageCaptureSucceedsBrowserTest
                      TargetVideoCaptureImplementation>> {
  public:
   WebRtcImageCaptureSucceedsBrowserTest() {
-    if (std::get<1>(GetParam()).use_video_capture_service) {
-      scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
+    std::vector<base::Feature> features_to_enable;
+    std::vector<base::Feature> features_to_disable;
+    if (std::get<1>(GetParam()).use_video_capture_service)
+      features_to_enable.push_back(features::kMojoVideoCapture);
+    else
+      features_to_disable.push_back(features::kMojoVideoCapture);
+#if defined(OS_WIN)
+    if (std::get<2>(GetParam()) ==
+        TargetVideoCaptureImplementation::WIN_MEDIA_FOUNDATION) {
+      features_to_enable.push_back(media::kMediaFoundationVideoCapture);
+    } else {
+      features_to_disable.push_back(media::kMediaFoundationVideoCapture);
     }
+#endif
+    scoped_feature_list_.InitWithFeatures(features_to_enable,
+                                          features_to_disable);
   }
 
   ~WebRtcImageCaptureSucceedsBrowserTest() override = default;
@@ -156,16 +169,6 @@ class WebRtcImageCaptureSucceedsBrowserTest
       ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream));
     }
-
-#if defined(OS_WIN)
-    if (std::get<2>(GetParam()) ==
-        TargetVideoCaptureImplementation::WIN_MEDIA_FOUNDATION) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kForceMediaFoundationVideoCapture);
-      ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceMediaFoundationVideoCapture));
-    }
-#endif
   }
 
   bool RunImageCaptureTestCase(const std::string& command) override {

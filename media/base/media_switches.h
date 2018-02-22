@@ -39,7 +39,6 @@ MEDIA_EXPORT extern const char kAlsaOutputDevice[];
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
-MEDIA_EXPORT extern const char kForceMediaFoundationVideoCapture[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
@@ -148,6 +147,7 @@ MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoding;
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
+MEDIA_EXPORT extern const base::Feature kMediaFoundationVideoCapture;
 #endif  // defined(OS_WIN)
 
 // Based on a |command_line| and the current platform, returns the effective
