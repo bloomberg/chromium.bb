@@ -16,6 +16,7 @@
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_arraysize.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -51,8 +52,8 @@ class QuicCryptoClientStreamTest : public QuicTest {
     // Advance the time, because timers do not like uninitialized times.
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
-    session_.reset(new TestQuicSpdyClientSession(
-        connection_, DefaultQuicConfig(), server_id_, &crypto_config_));
+    session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
+        connection_, DefaultQuicConfig(), server_id_, &crypto_config_);
   }
 
   void CompleteCryptoHandshake() {

@@ -438,7 +438,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     auto* test_server = new QuicTestServer(
         crypto_test_utils::ProofSourceForTesting(), server_config_,
         server_supported_versions_, &response_cache_);
-    server_thread_.reset(new ServerThread(test_server, server_address_));
+    server_thread_ = QuicMakeUnique<ServerThread>(test_server, server_address_);
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }

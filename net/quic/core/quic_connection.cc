@@ -2802,8 +2802,7 @@ void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
   // because it needs the receiver to allow receiving overlapping stream data.
   const bool enable_session_decides_what_to_write =
       transport_version() > QUIC_VERSION_41 &&
-      GetQuicReloadableFlag(quic_allow_receiving_overlapping_data) &&
-      GetQuicReloadableFlag(quic_streams_unblocked_by_session) &&
+      GetQuicReloadableFlag(quic_streams_unblocked_by_session2) &&
       use_control_frame_manager_;
   sent_packet_manager_.SetSessionDecideWhatToWrite(
       enable_session_decides_what_to_write);

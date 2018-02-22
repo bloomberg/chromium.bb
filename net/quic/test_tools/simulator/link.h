@@ -31,9 +31,6 @@ class OneWayLink : public Actor, public ConstrainedPortInterface {
   void Act() override;
 
   inline QuicBandwidth bandwidth() const { return bandwidth_; }
-  inline QuicTime::Delta propagation_delay() const {
-    return propagation_delay_;
-  }
 
  private:
   struct QueuedPacket {
@@ -79,13 +76,7 @@ class SymmetricLink {
                 QuicBandwidth bandwidth,
                 QuicTime::Delta propagation_delay);
 
-  inline ConstrainedPortInterface* GetTxPortForA() { return &a_to_b_link_; }
-  inline ConstrainedPortInterface* GetTxPortForB() { return &b_to_a_link_; }
-
   inline QuicBandwidth bandwidth() { return a_to_b_link_.bandwidth(); }
-  inline QuicTime::Delta propagation_delay() {
-    return a_to_b_link_.propagation_delay();
-  }
 
  private:
   OneWayLink a_to_b_link_;

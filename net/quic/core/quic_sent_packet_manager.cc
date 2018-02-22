@@ -994,6 +994,9 @@ QuicByteCount QuicSentPacketManager::GetBytesInFlight() const {
 
 void QuicSentPacketManager::CancelRetransmissionsForStream(
     QuicStreamId stream_id) {
+  if (session_decides_what_to_write()) {
+    return;
+  }
   unacked_packets_.CancelRetransmissionsForStream(stream_id);
   PendingRetransmissionMap::iterator it = pending_retransmissions_.begin();
   while (it != pending_retransmissions_.end()) {

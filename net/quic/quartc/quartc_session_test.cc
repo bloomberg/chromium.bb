@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_types.h"
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/quartc/quartc_factory_interface.h"
 #include "net/quic/quartc/quartc_packet_writer.h"
@@ -373,9 +374,9 @@ class QuartcSessionForTest : public QuartcSession,
                       perspective,
                       helper,
                       clock) {
-    stream_delegate_.reset(new FakeQuartcStreamDelegate);
-    session_delegate_.reset(
-        new FakeQuartcSessionDelegate(stream_delegate_.get()));
+    stream_delegate_ = QuicMakeUnique<FakeQuartcStreamDelegate>();
+    session_delegate_ =
+        QuicMakeUnique<FakeQuartcSessionDelegate>((stream_delegate_.get()));
 
     SetDelegate(session_delegate_.get());
   }
@@ -408,20 +409,22 @@ class QuartcSessionTest : public ::testing::Test,
   void Init() {
     // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
-    client_channel_.reset(new FakeTransportChannel(&task_runner_, &clock_));
-    server_channel_.reset(new FakeTransportChannel(&task_runner_, &clock_));
+    client_channel_ =
+        QuicMakeUnique<FakeTransportChannel>(&task_runner_, &clock_);
+    server_channel_ =
+        QuicMakeUnique<FakeTransportChannel>(&task_runner_, &clock_);
     // Make the channel asynchronous so that two peer will not keep calling each
     // other when they exchange information.
     client_channel_->SetAsync(true);
     client_channel_->SetDestination(server_channel_.get());
 
-    client_transport_.reset(new FakeTransport(client_channel_.get()));
-    server_transport_.reset(new FakeTransport(server_channel_.get()));
+    client_transport_ = QuicMakeUnique<FakeTransport>(client_channel_.get());
+    server_transport_ = QuicMakeUnique<FakeTransport>(server_channel_.get());
 
-    client_writer_.reset(
-        new QuartcPacketWriter(client_transport_.get(), kDefaultMaxPacketSize));
-    server_writer_.reset(
-        new QuartcPacketWriter(server_transport_.get(), kDefaultMaxPacketSize));
+    client_writer_ = QuicMakeUnique<QuartcPacketWriter>(client_transport_.get(),
+                                                        kDefaultMaxPacketSize);
+    server_writer_ = QuicMakeUnique<QuartcPacketWriter>(server_transport_.get(),
+                                                        kDefaultMaxPacketSize);
 
     client_writer_->SetWritable();
     server_writer_->SetWritable();
@@ -481,7 +484,7 @@ class QuartcSessionTest : public ::testing::Test,
       QuartcFactoryConfig config;
       config.clock = &quartc_clock_;
       config.task_runner = &task_runner_;
-      alarm_factory_.reset(new QuartcFactory(config));
+      alarm_factory_ = QuicMakeUnique<QuartcFactory>(config);
     }
     return std::unique_ptr<QuicConnection>(new QuicConnection(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,

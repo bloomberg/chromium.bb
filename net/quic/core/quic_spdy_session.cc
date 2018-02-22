@@ -336,7 +336,7 @@ void QuicSpdySession::Initialize() {
     DCHECK_EQ(headers_stream_id, kHeadersStreamId);
   }
 
-  headers_stream_.reset(new QuicHeadersStream(this));
+  headers_stream_ = QuicMakeUnique<QuicHeadersStream>((this));
   DCHECK_EQ(kHeadersStreamId, headers_stream_->id());
   static_streams()[kHeadersStreamId] = headers_stream_.get();
 

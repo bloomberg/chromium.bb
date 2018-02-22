@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_types.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string.h"
 #include "net/quic/platform/api/quic_test.h"
@@ -23,7 +24,6 @@
 #include "net/quic/test_tools/simulator/quic_endpoint.h"
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
-
 
 namespace net {
 namespace test {
@@ -195,13 +195,13 @@ class SendAlgorithmTest : public QuicTestWithParam<TestParams> {
   void CreateSetup(const QuicBandwidth& test_bandwidth,
                    const QuicTime::Delta& test_link_delay,
                    QuicByteCount bottleneck_queue_length) {
-    switch_.reset(new simulator::Switch(&simulator_, "Switch", 8,
-                                        bottleneck_queue_length));
-    quic_sender_link_.reset(new simulator::SymmetricLink(
+    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch", 8,
+                                                bottleneck_queue_length);
+    quic_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
         &quic_sender_, switch_->port(1), kLocalLinkBandwidth,
-        kLocalPropagationDelay));
-    receiver_link_.reset(new simulator::SymmetricLink(
-        &receiver_, switch_->port(2), test_bandwidth, test_link_delay));
+        kLocalPropagationDelay);
+    receiver_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+        &receiver_, switch_->port(2), test_bandwidth, test_link_delay);
   }
 
   void DoSimpleTransfer(QuicByteCount transfer_size, QuicTime::Delta deadline) {

@@ -115,23 +115,12 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_sequencer_buffer_block_count2,
           true)
 
-// If true, fixes for the two bugs described in crbug.com/723604 will be
-// enabled.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_2rtt_drop_client_cached_certs,
-          true)
-
 // If true, limit quic stream length to be below 2^62.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
 
 // When true, enables the 1TLP connection option to configure QUIC to send one
 // TLP instead of 2.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, false)
-
-// If true, stream sequencer buffer allows receiving overlapping stream data.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data,
-          true)
 
 // If true, QuicStreamSendBuffer keeps track of the slice which next write
 // should get data from if writing new data.
@@ -140,7 +129,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, false)
 // If true, when WINDOW_UPDATE is received, add stream to session's write
 // blocked list and let session unblock it later.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_streams_unblocked_by_session,
+          FLAGS_quic_reloadable_flag_quic_streams_unblocked_by_session2,
           false)
 
 // If true, inspects CHLO packets for indicator tags to allow early session
@@ -149,7 +138,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_inspect_chlo_tags, true)
 
 // When true, ignore the specified ack delay if it causes the RTT sample to be
 // less than min_rtt.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_min_rtt_ack_delay, true)
 
 // If true, plugin control frame manager to QuicSession, and let it manage sent
 // control frames.

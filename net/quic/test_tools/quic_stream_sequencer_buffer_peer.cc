@@ -105,10 +105,7 @@ BufferBlock* QuicStreamSequencerBufferPeer::GetBlock(size_t index) {
   return buffer_->blocks_[index];
 }
 
-int QuicStreamSequencerBufferPeer::GapSize() {
-  if (!buffer_->allow_overlapping_data_) {
-    return buffer_->gaps_.size();
-  }
+int QuicStreamSequencerBufferPeer::IntervalSize() {
   if (buffer_->bytes_received_.Empty()) {
     return 1;
   }
@@ -124,10 +121,6 @@ int QuicStreamSequencerBufferPeer::GapSize() {
     --gap_size;
   }
   return gap_size;
-}
-
-std::list<Gap> QuicStreamSequencerBufferPeer::GetGaps() {
-  return buffer_->gaps_;
 }
 
 size_t QuicStreamSequencerBufferPeer::max_buffer_capacity() {
@@ -148,10 +141,6 @@ void QuicStreamSequencerBufferPeer::set_total_bytes_read(
   buffer_->total_bytes_read_ = total_bytes_read;
 }
 
-void QuicStreamSequencerBufferPeer::set_gaps(const std::list<Gap>& gaps) {
-  buffer_->gaps_ = gaps;
-}
-
 void QuicStreamSequencerBufferPeer::AddBytesReceived(QuicStreamOffset offset,
                                                      QuicByteCount length) {
   buffer_->bytes_received_.Add(offset, offset + length);
@@ -168,10 +157,6 @@ size_t QuicStreamSequencerBufferPeer::block_count() {
 const QuicIntervalSet<QuicStreamOffset>&
 QuicStreamSequencerBufferPeer::bytes_received() {
   return buffer_->bytes_received_;
-}
-
-bool QuicStreamSequencerBufferPeer::allow_overlapping_data() {
-  return buffer_->allow_overlapping_data_;
 }
 
 }  // namespace test

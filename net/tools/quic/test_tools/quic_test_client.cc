@@ -347,8 +347,8 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       // May need to retry request if asynchronous rendezvous fails.
       std::unique_ptr<SpdyHeaderBlock> new_headers(
           new SpdyHeaderBlock(headers->Clone()));
-      push_promise_data_to_resend_.reset(new TestClientDataToResend(
-          std::move(new_headers), body, fin, this, std::move(ack_listener)));
+      push_promise_data_to_resend_ = QuicMakeUnique<TestClientDataToResend>(
+          std::move(new_headers), body, fin, this, std::move(ack_listener));
       return 1;
     }
   }
@@ -377,7 +377,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   if (GetQuicReloadableFlag(enable_quic_stateless_reject_support)) {
     std::unique_ptr<SpdyHeaderBlock> new_headers;
     if (headers) {
-      new_headers.reset(new SpdyHeaderBlock(headers->Clone()));
+      new_headers = QuicMakeUnique<SpdyHeaderBlock>(headers->Clone());
     }
     std::unique_ptr<QuicSpdyClientBase::QuicDataToResend> data_to_resend(
         new TestClientDataToResend(std::move(new_headers), body, fin, this,

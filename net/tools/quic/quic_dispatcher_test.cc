@@ -601,7 +601,6 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
   SetQuicReloadableFlag(quic_disable_version_38, false);
   SetQuicReloadableFlag(quic_disable_version_41, false);
   SetQuicReloadableFlag(quic_enable_version_42, true);
-  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);

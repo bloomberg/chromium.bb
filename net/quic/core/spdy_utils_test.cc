@@ -300,58 +300,61 @@ TEST_F(CopyAndValidateTrailers, DuplicateCookies) {
           Pair("key", "value")));
 }
 
-using GetPromisedUrlFromHeaderBlock = QuicTest;
+using GetPromisedUrlFromHeaders = QuicTest;
 
-TEST_F(GetPromisedUrlFromHeaderBlock, Basic) {
+TEST_F(GetPromisedUrlFromHeaders, Basic) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":path"] = "/index.html";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers),
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers),
             "https://www.google.com/index.html");
   headers["key1"] = "value1";
   headers["key2"] = "value2";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers),
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers),
             "https://www.google.com/index.html");
 }
 
-TEST_F(GetPromisedUrlFromHeaderBlock, Connect) {
+TEST_F(GetPromisedUrlFromHeaders, Connect) {
   SpdyHeaderBlock headers;
   headers[":method"] = "CONNECT";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
   headers[":path"] = "https";
-  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedUrlFromHeaders(headers), "");
 }
 
-using GetHostNameFromHeaderBlock = QuicTest;
+using GetPromisedHostNameFromHeaders = QuicTest;
 
-TEST_F(GetHostNameFromHeaderBlock, NormalUsage) {
+TEST_F(GetPromisedHostNameFromHeaders, NormalUsage) {
   SpdyHeaderBlock headers;
   headers[":method"] = "GET";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":scheme"] = "https";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":authority"] = "www.google.com";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "");
   headers[":path"] = "/index.html";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers["key1"] = "value1";
   headers["key2"] = "value2";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers[":authority"] = "www.google.com:6666";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers),
+            "www.google.com");
   headers[":authority"] = "192.168.1.1";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "192.168.1.1");
   headers[":authority"] = "192.168.1.1:6666";
-  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+  EXPECT_EQ(SpdyUtils::GetPromisedHostNameFromHeaders(headers), "192.168.1.1");
 }
 
 using PopulateHeaderBlockFromUrl = QuicTest;

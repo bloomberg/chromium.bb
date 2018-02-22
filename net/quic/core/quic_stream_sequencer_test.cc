@@ -566,22 +566,13 @@ TEST_F(QuicStreamSequencerTest, OverlappingFramesReceived) {
   sequencer_->OnStreamFrame(frame1);
 
   QuicStreamFrame frame2(id, false, 2, QuicStringPiece("hello"));
-  if (GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
-    EXPECT_CALL(stream_,
-                CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
-        .Times(0);
-  } else {
-    EXPECT_CALL(stream_,
-                CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
-        .Times(1);
-  }
+  EXPECT_CALL(stream_,
+              CloseConnectionWithDetails(QUIC_OVERLAPPING_STREAM_DATA, _))
+      .Times(0);
   sequencer_->OnStreamFrame(frame2);
 }
 
 TEST_F(QuicStreamSequencerTest, DataAvailableOnOverlappingFrames) {
-  if (!GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
-    return;
-  }
   QuicStreamId id =
       QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0);
   const QuicString data(1000, '.');

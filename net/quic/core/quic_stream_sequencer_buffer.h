@@ -171,8 +171,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Returns number of bytes available to be read out.
   size_t ReadableBytes() const;
 
-  bool allow_overlapping_data() const { return allow_overlapping_data_; }
-
  private:
   friend class test::QuicStreamSequencerBufferPeer;
 
@@ -195,14 +193,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // should be retired.
   // Return false on success, or false otherwise.
   bool RetireBlockIfEmpty(size_t block_index);
-
-  // Called within OnStreamData() to update the gap OnStreamData() writes into
-  // (remove, split or change begin/end offset).
-  // TODO(fayang): Remove this when deprecating
-  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
-  void UpdateGapList(std::list<Gap>::iterator gap_with_new_data_written,
-                     QuicStreamOffset start_offset,
-                     size_t bytes_written);
 
   // Calculate the capacity of block at specified index.
   // Return value should be either kBlockSizeBytes for non-trailing blocks and
@@ -249,11 +239,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Number of bytes read out of buffer.
   QuicStreamOffset total_bytes_read_;
 
-  // Contains Gaps which represents currently missing data.
-  // TODO(fayang): Remove list of gaps when deprecating
-  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
-  std::list<Gap> gaps_;
-
   // An ordered, variable-length list of blocks, with the length limited
   // such that the number of blocks never exceeds blocks_count_.
   // Each list entry can hold up to kBlockSizeBytes bytes.
@@ -263,8 +248,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   size_t num_bytes_buffered_;
 
   // Stores all the buffered frames' start offset, length and arrival time.
-  // TODO(fayang): Remove this when deprecating
-  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
+  // TODO(fayang): Remove this as it is obsolete.
   std::map<QuicStreamOffset, FrameInfo> frame_arrival_time_map_;
 
   // For debugging use after free, assigned to 123456 in constructor and 654321
@@ -274,10 +258,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Currently received data.
   QuicIntervalSet<QuicStreamOffset> bytes_received_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_allow_receiving_overlapping_data.
-  const bool allow_overlapping_data_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerBuffer);
 };

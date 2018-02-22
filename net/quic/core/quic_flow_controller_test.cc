@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -38,10 +39,10 @@ class QuicFlowControllerTest : public QuicTest {
     connection_ = new MockQuicConnection(&helper_, &alarm_factory_,
                                          Perspective::IS_CLIENT);
     session_ = QuicMakeUnique<MockQuicSession>(connection_);
-    flow_controller_.reset(new QuicFlowController(
+    flow_controller_ = QuicMakeUnique<QuicFlowController>(
         session_.get(), connection_, stream_id_, Perspective::IS_CLIENT,
         send_window_, receive_window_, should_auto_tune_receive_window_,
-        &session_flow_controller_));
+        &session_flow_controller_);
   }
 
   bool ClearControlFrame(const QuicFrame& frame) {

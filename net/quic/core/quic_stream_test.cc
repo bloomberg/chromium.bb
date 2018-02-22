@@ -107,7 +107,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   void Initialize(bool stream_should_process_data) {
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions_);
-    session_.reset(new StrictMock<MockQuicSession>(connection_));
+    session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
@@ -1237,6 +1237,35 @@ TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
     EXPECT_FALSE(HasWriteBlockedStreams());
     EXPECT_FALSE(stream_->HasBufferedData());
   }
+}
+
+// Regression test for b/73282665.
+TEST_F(QuicStreamTest,
+       MarkConnectionLevelWriteBlockedOnWindowUpdateFrameWithNoBufferedData) {
+  SetQuicReloadableFlag(quic_streams_unblocked_by_session2, true);
+  // Set a small initial flow control window size.
+  const uint32_t kSmallWindow = 100;
+  set_initial_flow_control_window_bytes(kSmallWindow);
+  Initialize(kShouldProcessData);
+
+  QuicString data(kSmallWindow, '.');
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(this, &QuicStreamTest::ClearControlFrame));
+  } else {
+    EXPECT_CALL(*connection_, SendBlocked(stream_->id()));
+  }
+  stream_->WriteOrBufferData(data, false, nullptr);
+  EXPECT_FALSE(HasWriteBlockedStreams());
+
+  QuicWindowUpdateFrame window_update(kInvalidControlFrameId, stream_->id(),
+                                      120);
+  stream_->OnWindowUpdateFrame(window_update);
+  EXPECT_FALSE(stream_->HasBufferedData());
+  // Verify stream is marked as blocked although there is no buffered data.
+  EXPECT_TRUE(HasWriteBlockedStreams());
 }
 
 TEST_F(QuicStreamTest, RetransmitStreamData) {

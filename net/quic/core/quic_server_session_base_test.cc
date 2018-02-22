@@ -141,9 +141,9 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
-    session_.reset(new TestServerSession(
+    session_ = QuicMakeUnique<TestServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
-        &compressed_certs_cache_, &response_cache_));
+        &compressed_certs_cache_, &response_cache_);
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,

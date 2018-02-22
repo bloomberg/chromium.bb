@@ -51,9 +51,6 @@ class Simulator : public QuicConnectionHelperInterface {
   }
 
   inline bool enable_random_delays() const { return enable_random_delays_; }
-  inline void set_enable_random_delays(bool enable_random_delays) {
-    enable_random_delays_ = enable_random_delays;
-  }
 
   // Run the simulation until either no actors are scheduled or
   // |termination_predicate| returns true.  Returns true if terminated due to

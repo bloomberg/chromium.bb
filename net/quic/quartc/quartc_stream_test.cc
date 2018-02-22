@@ -8,6 +8,7 @@
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/quartc/quartc_clock_interface.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -163,17 +164,17 @@ class QuartcStreamTest : public ::testing::Test,
 
     // We only use QuartcFactory for its role as an alarm factory.
     QuartcFactoryConfig config;
-    alarm_factory_.reset(new QuartcFactory(config));
+    alarm_factory_ = QuicMakeUnique<QuartcFactory>(config);
 
-    connection_.reset(new QuicConnection(
+    connection_ = QuicMakeUnique<QuicConnection>(
         0, QuicSocketAddress(ip, 0), this /*QuicConnectionHelperInterface*/,
         alarm_factory_.get(), new DummyPacketWriter(), owns_writer, perspective,
-        AllSupportedVersions()));
+        AllSupportedVersions());
 
-    session_.reset(
-        new MockQuicSession(connection_.get(), QuicConfig(), &write_buffer_));
-    mock_stream_delegate_.reset(
-        new MockQuartcStreamDelegate(kStreamId, &read_buffer_));
+    session_ = QuicMakeUnique<MockQuicSession>(connection_.get(), QuicConfig(),
+                                               &write_buffer_);
+    mock_stream_delegate_ =
+        QuicMakeUnique<MockQuartcStreamDelegate>(kStreamId, &read_buffer_);
     stream_ = new QuartcStream(kStreamId, session_.get());
     stream_->SetDelegate(mock_stream_delegate_.get());
     session_->RegisterReliableStream(stream_->stream_id(), kDefaultPriority);

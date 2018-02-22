@@ -61,7 +61,7 @@ class QuicClientPushPromiseIndexTest : public QuicTest {
     request_[":version"] = "HTTP/1.1";
     request_[":method"] = "GET";
     request_[":scheme"] = "https";
-    url_ = SpdyUtils::GetPromisedUrlFromHeaderBlock(request_);
+    url_ = SpdyUtils::GetPromisedUrlFromHeaders(request_);
   }
 
   MockQuicConnectionHelper helper_;

@@ -8,6 +8,7 @@
 
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_logging.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -40,8 +41,8 @@ class PacingSenderTest : public QuicTest {
   ~PacingSenderTest() override {}
 
   void InitPacingRate(QuicPacketCount burst_size, QuicBandwidth bandwidth) {
-    mock_sender_.reset(new StrictMock<MockSendAlgorithm>());
-    pacing_sender_.reset(new PacingSender);
+    mock_sender_ = QuicMakeUnique<StrictMock<MockSendAlgorithm>>();
+    pacing_sender_ = QuicMakeUnique<PacingSender>();
     pacing_sender_->set_sender(mock_sender_.get());
     EXPECT_CALL(*mock_sender_, PacingRate(_)).WillRepeatedly(Return(bandwidth));
     if (burst_size == 0) {

@@ -5,6 +5,7 @@
 #include "net/quic/core/quic_control_frame_manager.h"
 
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 

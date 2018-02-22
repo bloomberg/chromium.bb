@@ -259,7 +259,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.host(), server_address,
         supported_versions_.front(), &clock_, signed_config_,
-        std::make_unique<ValidateCallback>(this, false, error_substr, called));
+        QuicMakeUnique<ValidateCallback>(this, false, error_substr, called));
   }
 
   class ProcessCallback : public ProcessClientHelloResultCallback {
@@ -324,8 +324,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         use_stateless_rejects_, server_designated_connection_id, &clock_, rand_,
         &compressed_certs_cache_, params_, signed_config_,
         /*total_framing_overhead=*/50, chlo_packet_size_,
-        std::make_unique<ProcessCallback>(result, should_succeed, error_substr,
-                                          &called, &out_));
+        QuicMakeUnique<ProcessCallback>(result, should_succeed, error_substr,
+                                        &called, &out_));
     EXPECT_TRUE(called);
   }
 

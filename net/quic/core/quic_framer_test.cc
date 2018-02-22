@@ -149,12 +149,13 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   void OnPacket() override {}
 
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {
-    public_reset_packet_.reset(new QuicPublicResetPacket(packet));
+    public_reset_packet_ = QuicMakeUnique<QuicPublicResetPacket>((packet));
   }
 
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {
-    version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
+    version_negotiation_packet_ =
+        QuicMakeUnique<QuicVersionNegotiationPacket>((packet));
   }
 
   bool OnProtocolVersionMismatch(ParsedQuicVersion version) override {
@@ -164,7 +165,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
-    header_.reset(new QuicPacketHeader(header));
+    header_ = QuicMakeUnique<QuicPacketHeader>((header));
     return accept_public_header_;
   }
 
@@ -176,7 +177,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnPacketHeader(const QuicPacketHeader& header) override {
     ++packet_count_;
-    header_.reset(new QuicPacketHeader(header));
+    header_ = QuicMakeUnique<QuicPacketHeader>((header));
     return accept_packet_;
   }
 
