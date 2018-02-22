@@ -2140,6 +2140,12 @@ be describing additional metrics about the same event.
       blockable document flavours: html, xml, json, plain.
     </summary>
   </metric>
+  <metric name="ContentLengthWasZero">
+    <summary>
+      ContentLengthWasZero=1 if Content-Length was available and equal to 0.
+      ContentLengthWasZero=0 otherwise.
+    </summary>
+  </metric>
   <metric name="ContentResourceType">
     <summary>
       content::ResourceType of the blocked resource (e.g. image / script / xhr /
