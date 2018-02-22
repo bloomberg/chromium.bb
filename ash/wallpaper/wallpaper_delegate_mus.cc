@@ -11,10 +11,6 @@ namespace ash {
 WallpaperDelegateMus::WallpaperDelegateMus() = default;
 WallpaperDelegateMus::~WallpaperDelegateMus() = default;
 
-int WallpaperDelegateMus::GetAnimationType() {
-  return ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
-}
-
 int WallpaperDelegateMus::GetAnimationDurationOverride() {
   return 0;
 }
@@ -23,13 +19,5 @@ void WallpaperDelegateMus::SetAnimationDurationOverride(
     int animation_duration_in_ms) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
-
-bool WallpaperDelegateMus::ShouldShowInitialAnimation() {
-  return false;
-}
-
-void WallpaperDelegateMus::OnWallpaperAnimationFinished() {}
-
-void WallpaperDelegateMus::OnWallpaperBootAnimationFinished() {}
 
 }  // namespace ash

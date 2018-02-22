@@ -87,6 +87,7 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   // ash::mojom::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
   void OnReadyToSetWallpaper() override;
+  void OnFirstWallpaperAnimationFinished() override;
 
   // WallpaperController interface in ash.
   ash::mojom::WallpaperControllerPtr wallpaper_controller_;

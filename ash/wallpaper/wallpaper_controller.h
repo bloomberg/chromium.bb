@@ -231,6 +231,14 @@ class ASH_EXPORT WallpaperController
   // no wallpaper.
   wallpaper::WallpaperType GetWallpaperType() const;
 
+  // Returns true if the slower initial animation should be shown (as opposed to
+  // the faster animation that's used e.g. when switching between different
+  // wallpapers at login screen).
+  bool ShouldShowInitialAnimation();
+
+  // Notifies the controller that the wallpaper animation has finished.
+  void OnWallpaperAnimationFinished();
+
   // Returns true if the active user is allowed to open the wallpaper picker.
   bool CanOpenWallpaperPicker();
 
@@ -602,6 +610,10 @@ class ASH_EXPORT WallpaperController
 
   // Whether the device wallpaper policy is enforced on this device.
   bool is_device_wallpaper_policy_enforced_ = false;
+
+  // Whether the current wallpaper (if any) is the first wallpaper since the
+  // controller initialization. Empty wallpapers for testing don't count.
+  bool is_first_wallpaper_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

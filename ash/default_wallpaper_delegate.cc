@@ -4,15 +4,7 @@
 
 #include "ash/default_wallpaper_delegate.h"
 
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ui/wm/core/window_animations.h"
-
 namespace ash {
-
-int DefaultWallpaperDelegate::GetAnimationType() {
-  return ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
-}
 
 int DefaultWallpaperDelegate::GetAnimationDurationOverride() {
   return 0;
@@ -20,13 +12,5 @@ int DefaultWallpaperDelegate::GetAnimationDurationOverride() {
 
 void DefaultWallpaperDelegate::SetAnimationDurationOverride(
     int animation_duration_in_ms) {}
-
-bool DefaultWallpaperDelegate::ShouldShowInitialAnimation() {
-  return false;
-}
-
-void DefaultWallpaperDelegate::OnWallpaperAnimationFinished() {}
-
-void DefaultWallpaperDelegate::OnWallpaperBootAnimationFinished() {}
 
 }  // namespace ash

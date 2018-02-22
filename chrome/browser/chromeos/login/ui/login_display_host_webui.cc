@@ -12,7 +12,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -801,13 +800,6 @@ void LoginDisplayHostWebUI::Observe(
   } else if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     VLOG(1) << "Login WebUI >> wp animation done";
     is_wallpaper_loaded_ = true;
-    if (!ash_util::IsRunningInMash()) {
-      ash::Shell::Get()
-          ->wallpaper_delegate()
-          ->OnWallpaperBootAnimationFinished();
-    } else {
-      NOTIMPLEMENTED();
-    }
     if (waiting_for_wallpaper_load_) {
       // StartWizard / StartSignInScreen could be called multiple times through
       // the lifetime of host.

@@ -13,6 +13,7 @@
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_animation_types.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -237,7 +238,6 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int container_id) {
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
-  WallpaperDelegate* wallpaper_delegate = Shell::Get()->wallpaper_delegate();
 
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(
@@ -248,7 +248,10 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(params);
   wallpaper_widget->SetContentsView(new LayerControlView(new WallpaperView()));
-  int animation_type = wallpaper_delegate->GetAnimationType();
+  int animation_type =
+      controller->ShouldShowInitialAnimation()
+          ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
+          : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
   aura::Window* wallpaper_window = wallpaper_widget->GetNativeWindow();
   ::wm::SetWindowVisibilityAnimationType(wallpaper_window, animation_type);
 
@@ -257,14 +260,15 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   // 2. Wallpaper fades in from a non empty background.
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.
-  if (wallpaper_delegate->ShouldShowInitialAnimation() ||
+  if (controller->ShouldShowInitialAnimation() ||
       RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller()
           ->IsAnimating() ||
       Shell::Get()->session_controller()->NumberOfLoggedInUsers()) {
     ::wm::SetWindowVisibilityAnimationTransition(wallpaper_window,
                                                  ::wm::ANIMATE_SHOW);
-    int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
+    int duration_override =
+        Shell::Get()->wallpaper_delegate()->GetAnimationDurationOverride();
     if (duration_override) {
       ::wm::SetWindowVisibilityAnimationDuration(
           wallpaper_window,
