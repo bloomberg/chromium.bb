@@ -109,6 +109,24 @@ CastExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
   return nullptr;
 }
 
+base::FilePath CastExtensionsBrowserClient::GetBundleResourcePath(
+    const network::ResourceRequest& request,
+    const base::FilePath& extension_resources_path,
+    int* resource_id) const {
+  return base::FilePath();
+}
+
+void CastExtensionsBrowserClient::LoadResourceFromResourceBundle(
+    const network::ResourceRequest& request,
+    network::mojom::URLLoaderRequest loader,
+    const base::FilePath& resource_relative_path,
+    int resource_id,
+    const std::string& content_security_policy,
+    network::mojom::URLLoaderClientPtr client,
+    bool send_cors_header) {
+  NOTREACHED() << "Cannot load resource from bundle w/o path";
+}
+
 bool CastExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const GURL& url,
     content::ResourceType resource_type,

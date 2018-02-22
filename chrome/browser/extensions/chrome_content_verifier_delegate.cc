@@ -184,6 +184,11 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   if (!extension)
     return;
   ExtensionSystem* system = ExtensionSystem::Get(context_);
+  if (!system->management_policy()) {
+    // Some tests will add an extension to the registry, but there is no
+    // management policy.
+    return;
+  }
   ExtensionService* service = system->extension_service();
   Mode mode = ShouldBeVerified(*extension);
   if (mode >= ContentVerifierDelegate::ENFORCE) {
