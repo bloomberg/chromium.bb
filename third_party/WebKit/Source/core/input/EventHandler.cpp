@@ -120,6 +120,14 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
          IsHTMLInputElement(ToShadowRoot(target_node)->host());
 }
 
+enum class UMATouchAdjustmentNodeRelation {
+  kSameNode = 0,
+  kTouchStartNodeIsDescendantOfTapNode = 1,
+  kTapNodeIsDescendantOfTouchStartNode = 2,
+  kOthers = 3,
+  kTouchAdjustmentNodeRelationCount = 4
+};
+
 }  // namespace
 
 using namespace HTMLNames;
@@ -1733,9 +1741,24 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
         stored_adjusted_point,
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
     if (gesture_event.GetType() == WebInputEvent::kGestureTap) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "Event.Touch.TouchAdjustment.AdjustToSameNode",
-          point_base_result.InnerNode() == hit_test_result.InnerNode());
+      if (hit_test_result.InnerNode() && point_base_result.InnerNode()) {
+        UMATouchAdjustmentNodeRelation relation =
+            UMATouchAdjustmentNodeRelation::kOthers;
+        if (hit_test_result.InnerNode() == point_base_result.InnerNode()) {
+          relation = UMATouchAdjustmentNodeRelation::kSameNode;
+        } else if (point_base_result.InnerNode()->IsDescendantOf(
+                       hit_test_result.InnerNode())) {
+          relation = UMATouchAdjustmentNodeRelation::
+              kTouchStartNodeIsDescendantOfTapNode;
+        } else if (hit_test_result.InnerNode()->IsDescendantOf(
+                       point_base_result.InnerNode())) {
+          relation = UMATouchAdjustmentNodeRelation::
+              kTapNodeIsDescendantOfTouchStartNode;
+        }
+        UMA_HISTOGRAM_ENUMERATION(
+            "Event.Touch.TouchAdjustment.AdjustedNode", relation,
+            UMATouchAdjustmentNodeRelation::kTouchAdjustmentNodeRelationCount);
+      }
     }
     adjusted_event.ApplyTouchAdjustment(
         touch_adjustment_result_.adjusted_point);

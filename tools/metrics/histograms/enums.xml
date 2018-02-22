@@ -42728,6 +42728,13 @@ would be helpful to identify which type is being sent.
   <int value="63" label="AUTO"/>
 </enum>
 
+<enum name="TouchAdjustmentNodeRelation">
+  <int value="0" label="Same node"/>
+  <int value="1" label="Touchstart node is descendant of tap node"/>
+  <int value="2" label="Tap node is descendant of TouchStart node"/>
+  <int value="3" label="Others"/>
+</enum>
+
 <enum name="TouchEventDispatchResultType">
   <int value="0" label="Unhandled touch events"/>
   <int value="1" label="Handled touch events"/>
