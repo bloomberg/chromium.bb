@@ -223,21 +223,6 @@ bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
   return box.NextLeafChild() && box.NextLeafChild()->IsLineBreak();
 }
 
-template <typename Strategy>
-const LayoutObject& GetLayoutObjectSkippingShadowRoot(
-    const PositionTemplate<Strategy>& position) {
-  // TODO(editing-dev): This function doesn't handle all types of positions. We
-  // may want to investigate callers and decide if we need to generalize it.
-  DCHECK(position.IsNotNull());
-  const Node* anchor_node = position.AnchorNode();
-  const LayoutObject* result =
-      anchor_node->IsShadowRoot()
-          ? ToShadowRoot(anchor_node)->host().GetLayoutObject()
-          : anchor_node->GetLayoutObject();
-  DCHECK(result) << position;
-  return *result;
-}
-
 InlineBoxPosition ComputeInlineBoxPositionForTextNode(
     const LayoutText* text_layout_object,
     int caret_offset,
@@ -329,8 +314,12 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& position) {
+  // TODO(yoichio): We don't assume |position| is canonicalized no longer and
+  // there are few cases failing to compute. Fix it: crbug.com/812535.
+  DCHECK(!position.AnchorNode()->IsShadowRoot()) << position;
+  DCHECK(position.GetPosition().AnchorNode()->GetLayoutObject()) << position;
   const LayoutObject& layout_object =
-      GetLayoutObjectSkippingShadowRoot(position.GetPosition());
+      *position.GetPosition().AnchorNode()->GetLayoutObject();
 
   if (layout_object.IsText())
     return position;
@@ -353,8 +342,9 @@ template <typename Strategy>
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& adjusted) {
   const PositionTemplate<Strategy>& position = adjusted.GetPosition();
-  const LayoutObject& layout_object =
-      GetLayoutObjectSkippingShadowRoot(position);
+  DCHECK(!position.AnchorNode()->IsShadowRoot()) << adjusted;
+  DCHECK(position.AnchorNode()->GetLayoutObject()) << adjusted;
+  const LayoutObject& layout_object = *position.AnchorNode()->GetLayoutObject();
   const int caret_offset = position.ComputeEditingOffset();
 
   if (layout_object.IsText()) {
