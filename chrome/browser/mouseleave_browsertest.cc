@@ -82,8 +82,9 @@ class MouseLeaveTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
+// OS_LINUX: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #elif defined(OS_WIN) && !defined(NDEBUG)
 // Flaky on Win debug; see https://crbug.com/419468.
@@ -96,20 +97,18 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   MouseLeaveTestCommon();
 }
 
-#if defined(OS_MACOSX)
-// OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
-#define MAYBE_MouseDownOnBrowserCaption DISABLED_MouseDownOnBrowserCaption
-#else
-#define MAYBE_MouseDownOnBrowserCaption MouseDownOnBrowserCaption
-#endif
-
-IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_MouseDownOnBrowserCaption) {
+#if defined(OS_WIN)
+// For MAC: Missing automation provider support: http://crbug.com/45892
+// For linux : http://crbug.com/133361. interactive mouse tests are flaky.
+IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MouseDownOnBrowserCaption) {
   gfx::Rect browser_bounds = browser()->window()->GetBounds();
-  ui_controls::SendMouseMove(browser_bounds.x() + 180, browser_bounds.y() + 10);
+  ui_controls::SendMouseMove(browser_bounds.x() + 200,
+                             browser_bounds.y() + 10);
   ui_controls::SendMouseClick(ui_controls::LEFT);
 
   MouseLeaveTestCommon();
 }
+#endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Test that a mouseleave is not triggered when showing the context menu.
