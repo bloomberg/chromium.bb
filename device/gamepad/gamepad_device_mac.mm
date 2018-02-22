@@ -124,7 +124,7 @@ bool GamepadDeviceMac::AddButtonsAndAxes(Gamepad* gamepad) {
       }
     } else if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc) {
       uint32_t axis_index = usage - kAxisMinimumUsageNumber;
-      if (axis_index < Gamepad::kAxesLengthCap) {
+      if (axis_index < Gamepad::kAxesLengthCap && !axis_elements_[axis_index]) {
         axis_elements_[axis_index] = element;
         gamepad->axes_length = std::max(gamepad->axes_length, axis_index + 1);
       } else {
