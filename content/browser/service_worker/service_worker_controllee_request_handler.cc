@@ -296,8 +296,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   provider_host_->SetDocumentUrl(stripped_url_);
   provider_host_->SetTopmostFrameUrl(site_for_cookies);
   context_->storage()->FindRegistrationForDocument(
-      stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
-                                weak_factory_.GetWeakPtr()));
+      stripped_url_, base::BindOnce(&self::DidLookupRegistrationForMainResource,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerControlleeRequestHandler::
@@ -460,8 +460,9 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.
     context_->storage()->FindRegistrationForDocument(
-        stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
-                                  weak_factory_.GetWeakPtr()));
+        stripped_url_,
+        base::BindOnce(&self::DidLookupRegistrationForMainResource,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
   DCHECK_EQ(original_registration->id(), registration_id);
@@ -491,8 +492,9 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     // continue with the incumbent version.
     // In case unregister job may have run, look up the registration again.
     context_->storage()->FindRegistrationForDocument(
-        stripped_url_, base::Bind(&self::DidLookupRegistrationForMainResource,
-                                  weak_factory_.GetWeakPtr()));
+        stripped_url_,
+        base::BindOnce(&self::DidLookupRegistrationForMainResource,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
   version->RegisterStatusChangeCallback(

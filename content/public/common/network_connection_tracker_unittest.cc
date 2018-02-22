@@ -38,8 +38,8 @@ class TestNetworkConnectionObserver
     network::mojom::ConnectionType type;
     base::RunLoop run_loop;
     bool sync = tracker_->GetConnectionType(
-        &type,
-        base::Bind(&TestNetworkConnectionObserver::GetConnectionTypeCallback,
+        &type, base::BindOnce(
+                   &TestNetworkConnectionObserver::GetConnectionTypeCallback,
                    &run_loop, &type));
     if (!sync)
       run_loop.Run();
@@ -93,8 +93,8 @@ class ConnectionTypeGetter {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return tracker_->GetConnectionType(
         &connection_type_,
-        base::Bind(&ConnectionTypeGetter::OnGetConnectionType,
-                   base::Unretained(this)));
+        base::BindOnce(&ConnectionTypeGetter::OnGetConnectionType,
+                       base::Unretained(this)));
   }
 
   void WaitForConnectionType(

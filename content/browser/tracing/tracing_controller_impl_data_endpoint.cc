@@ -68,15 +68,16 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FileTraceDataEndpoint::ReceiveTraceChunkOnBlockingThread,
-                   this, base::Passed(std::move(chunk))));
+        base::BindOnce(
+            &FileTraceDataEndpoint::ReceiveTraceChunkOnBlockingThread, this,
+            base::Passed(std::move(chunk))));
   }
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue>) override {
     background_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FileTraceDataEndpoint::CloseOnBlockingThread, this));
+        base::BindOnce(&FileTraceDataEndpoint::CloseOnBlockingThread, this));
   }
 
  private:

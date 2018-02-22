@@ -925,13 +925,12 @@ void WriteResponse(ServiceWorkerStorage* storage,
       new HttpResponseInfoIOBuffer(info.release());
 
   int rv = -1234;
-  writer->WriteInfo(info_buffer.get(), base::Bind(&OnIOComplete, &rv));
+  writer->WriteInfo(info_buffer.get(), base::BindOnce(&OnIOComplete, &rv));
   RunNestedUntilIdle();
   EXPECT_LT(0, rv);
 
   rv = -1234;
-  writer->WriteData(body, length,
-                    base::Bind(&OnIOComplete, &rv));
+  writer->WriteData(body, length, base::BindOnce(&OnIOComplete, &rv));
   RunNestedUntilIdle();
   EXPECT_EQ(length, rv);
 }

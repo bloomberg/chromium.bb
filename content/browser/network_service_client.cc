@@ -66,9 +66,9 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
         browser_context->GetResourceContext();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientAuthDelegate::CreateSSLClientAuthHandler,
-                   base::Unretained(this), resource_context,
-                   web_contents_getter));
+        base::BindOnce(&SSLClientAuthDelegate::CreateSSLClientAuthHandler,
+                       base::Unretained(this), resource_context,
+                       web_contents_getter));
   }
   ~SSLClientAuthDelegate() override {}
 

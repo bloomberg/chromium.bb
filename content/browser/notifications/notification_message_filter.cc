@@ -171,9 +171,10 @@ void NotificationMessageFilter::DidWritePersistentNotificationData(
   // Get the service worker scope.
   service_worker_context_->FindReadyRegistrationForId(
       service_worker_registration_id, origin,
-      base::Bind(&NotificationMessageFilter::DidFindServiceWorkerRegistration,
-                 weak_factory_io_.GetWeakPtr(), request_id, origin,
-                 notification_data, notification_resources, notification_id));
+      base::BindOnce(
+          &NotificationMessageFilter::DidFindServiceWorkerRegistration,
+          weak_factory_io_.GetWeakPtr(), request_id, origin, notification_data,
+          notification_resources, notification_id));
 }
 
 void NotificationMessageFilter::DidFindServiceWorkerRegistration(

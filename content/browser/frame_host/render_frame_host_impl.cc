@@ -369,8 +369,8 @@ void NotifyResourceSchedulerOfNavigation(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourceSchedulerFilter::OnDidCommitMainframeNavigation,
-                 render_process_id, params.render_view_routing_id));
+      base::BindOnce(&ResourceSchedulerFilter::OnDidCommitMainframeNavigation,
+                     render_process_id, params.render_view_routing_id));
 }
 
 bool IsOutOfProcessNetworkService() {

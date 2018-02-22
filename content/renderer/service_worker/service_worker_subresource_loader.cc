@@ -66,8 +66,8 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     network::mojom::URLLoaderClientPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     binding_.set_connection_error_handler(
-        base::Bind(&HeaderRewritingURLLoaderClient::OnClientConnectionError,
-                   base::Unretained(this)));
+        base::BindOnce(&HeaderRewritingURLLoaderClient::OnClientConnectionError,
+                       base::Unretained(this)));
     return ptr;
   }
 

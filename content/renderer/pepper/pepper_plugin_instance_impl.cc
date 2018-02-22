@@ -814,7 +814,7 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
     return;
 
   std::unique_ptr<viz::SingleReleaseCallback> callback(
-      viz::SingleReleaseCallback::Create(base::Bind(
+      viz::SingleReleaseCallback::Create(base::BindOnce(
           &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
           weak_factory_.GetWeakPtr(), committed_texture_,
           committed_texture_graphics_3d_)));

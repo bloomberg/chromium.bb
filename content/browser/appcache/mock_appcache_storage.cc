@@ -50,7 +50,7 @@ MockAppCacheStorage::~MockAppCacheStorage() {
 }
 
 void MockAppCacheStorage::GetAllInfo(Delegate* delegate) {
-  ScheduleTask(base::Bind(
+  ScheduleTask(base::BindOnce(
       &MockAppCacheStorage::ProcessGetAllInfo, weak_factory_.GetWeakPtr(),
       base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
 }
@@ -59,7 +59,7 @@ void MockAppCacheStorage::LoadCache(int64_t id, Delegate* delegate) {
   DCHECK(delegate);
   AppCache* cache = working_set_.GetCache(id);
   if (ShouldCacheLoadAppearAsync(cache)) {
-    ScheduleTask(base::Bind(
+    ScheduleTask(base::BindOnce(
         &MockAppCacheStorage::ProcessLoadCache, weak_factory_.GetWeakPtr(), id,
         base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
     return;
@@ -72,7 +72,7 @@ void MockAppCacheStorage::LoadOrCreateGroup(
   DCHECK(delegate);
   AppCacheGroup* group = working_set_.GetGroup(manifest_url);
   if (ShouldGroupLoadAppearAsync(group)) {
-    ScheduleTask(base::Bind(
+    ScheduleTask(base::BindOnce(
         &MockAppCacheStorage::ProcessLoadOrCreateGroup,
         weak_factory_.GetWeakPtr(), manifest_url,
         base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
@@ -87,11 +87,11 @@ void MockAppCacheStorage::StoreGroupAndNewestCache(
   DCHECK(group && delegate && newest_cache);
 
   // Always make this operation look async.
-  ScheduleTask(
-      base::Bind(&MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
-                 weak_factory_.GetWeakPtr(), base::WrapRefCounted(group),
-                 base::WrapRefCounted(newest_cache),
-                 base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(base::BindOnce(
+      &MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
+      weak_factory_.GetWeakPtr(), base::WrapRefCounted(group),
+      base::WrapRefCounted(newest_cache),
+      base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForMainRequest(
@@ -101,10 +101,10 @@ void MockAppCacheStorage::FindResponseForMainRequest(
   // Note: MockAppCacheStorage does not respect the preferred_manifest_url.
 
   // Always make this operation look async.
-  ScheduleTask(
-      base::Bind(&MockAppCacheStorage::ProcessFindResponseForMainRequest,
-                 weak_factory_.GetWeakPtr(), url,
-                 base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
+  ScheduleTask(base::BindOnce(
+      &MockAppCacheStorage::ProcessFindResponseForMainRequest,
+      weak_factory_.GetWeakPtr(), url,
+      base::WrapRefCounted(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForSubRequest(
@@ -147,11 +147,11 @@ void MockAppCacheStorage::MakeGroupObsolete(AppCacheGroup* group,
   DCHECK(group && delegate);
 
   // Always make this method look async.
-  ScheduleTask(
-      base::Bind(&MockAppCacheStorage::ProcessMakeGroupObsolete,
-                 weak_factory_.GetWeakPtr(), base::WrapRefCounted(group),
-                 base::WrapRefCounted(GetOrCreateDelegateReference(delegate)),
-                 response_code));
+  ScheduleTask(base::BindOnce(
+      &MockAppCacheStorage::ProcessMakeGroupObsolete,
+      weak_factory_.GetWeakPtr(), base::WrapRefCounted(group),
+      base::WrapRefCounted(GetOrCreateDelegateReference(delegate)),
+      response_code));
 }
 
 void MockAppCacheStorage::StoreEvictionTimes(AppCacheGroup* group) {

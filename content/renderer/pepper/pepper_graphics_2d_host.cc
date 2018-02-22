@@ -743,8 +743,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         std::move(gpu_mailbox), GL_LINEAR, texture_target,
         std::move(sync_token), size, overlay_candidate);
     *release_callback = viz::SingleReleaseCallback::Create(
-        base::Bind(&ReleaseTextureCallback, this->AsWeakPtr(),
-                   main_thread_context_, texture_id));
+        base::BindOnce(&ReleaseTextureCallback, this->AsWeakPtr(),
+                       main_thread_context_, texture_id));
     composited_output_modified_ = false;
     return true;
   }
@@ -771,7 +771,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
       shared_bitmap->id(), shared_bitmap->sequence_number(), pixel_image_size);
-  *release_callback = viz::SingleReleaseCallback::Create(base::Bind(
+  *release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       base::Passed(&shared_bitmap), pixel_image_size));
   composited_output_modified_ = false;

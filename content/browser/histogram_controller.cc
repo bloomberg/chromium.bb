@@ -115,9 +115,9 @@ void HistogramController::InsertChildHistogramFetcherInterface(
     content::mojom::ChildHistogramFetcherPtr child_histogram_fetcher) {
   // Broken pipe means remove this from the map. The map size is a proxy for
   // the number of known processes
-  child_histogram_fetcher.set_connection_error_handler(
-      base::Bind(&HistogramController::RemoveChildHistogramFetcherInterface<T>,
-                 base::Unretained(this), base::Unretained(host)));
+  child_histogram_fetcher.set_connection_error_handler(base::BindOnce(
+      &HistogramController::RemoveChildHistogramFetcherInterface<T>,
+      base::Unretained(this), base::Unretained(host)));
   GetChildHistogramFetcherMap<T>()[host] = std::move(child_histogram_fetcher);
 }
 

@@ -67,7 +67,8 @@ class SelfDeleteInstaller
     }
     service_worker_context->RegisterServiceWorker(
         sw_url, option,
-        base::Bind(&SelfDeleteInstaller::OnRegisterServiceWorkerResult, this));
+        base::BindOnce(&SelfDeleteInstaller::OnRegisterServiceWorkerResult,
+                       this));
   }
 
   void onServiceWorkerRegistration(
@@ -148,7 +149,7 @@ class SelfDeleteInstaller
     payment_app_context->payment_app_database()
         ->SetPaymentAppInfoForRegisteredServiceWorker(
             registration_id, instrument_key, name, enabled_methods,
-            base::Bind(&SelfDeleteInstaller::OnSetPaymentAppInfo, this));
+            base::BindOnce(&SelfDeleteInstaller::OnSetPaymentAppInfo, this));
   }
 
   void OnSetPaymentAppInfo(payments::mojom::PaymentHandlerStatus status) {

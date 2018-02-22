@@ -294,10 +294,10 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
         appcache_service_->storage()->CreateResponseReader(
             GURL(response_enquiry.manifest_url), response_enquiry.response_id));
 
-    reader->ReadData(
-        response_data.get(), amount_to_read,
-        base::Bind(&Proxy::OnResponseDataReadComplete, this, response_enquiry,
-                   response_info, base::Passed(&reader), response_data));
+    reader->ReadData(response_data.get(), amount_to_read,
+                     base::BindOnce(&Proxy::OnResponseDataReadComplete, this,
+                                    response_enquiry, response_info,
+                                    base::Passed(&reader), response_data));
   } else {
     OnResponseDataReadComplete(response_enquiry, nullptr, nullptr, nullptr, -1);
   }

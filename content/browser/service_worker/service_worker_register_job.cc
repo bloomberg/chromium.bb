@@ -227,18 +227,16 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   if (existing_registration->GetNewestVersion()->script_url() == script_url_ &&
       existing_registration->update_via_cache() == update_via_cache_) {
     // "Set registration.[[Uninstalling]] to false."
-    existing_registration->AbortPendingClear(base::Bind(
+    existing_registration->AbortPendingClear(base::BindOnce(
         &ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl,
-        weak_factory_.GetWeakPtr(),
-        existing_registration));
+        weak_factory_.GetWeakPtr(), existing_registration));
     return;
   }
 
   if (existing_registration->is_uninstalling()) {
-    existing_registration->AbortPendingClear(base::Bind(
+    existing_registration->AbortPendingClear(base::BindOnce(
         &ServiceWorkerRegisterJob::ContinueWithUninstallingRegistration,
-        weak_factory_.GetWeakPtr(),
-        existing_registration));
+        weak_factory_.GetWeakPtr(), existing_registration));
     return;
   }
 

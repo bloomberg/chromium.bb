@@ -33,8 +33,8 @@ void MarkRegistrationForDeletionTask::Start() {
       registration_id_.service_worker_registration_id(),
       {ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
        RegistrationKey(registration_id_.unique_id())},
-      base::Bind(&MarkRegistrationForDeletionTask::DidGetActiveUniqueId,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MarkRegistrationForDeletionTask::DidGetActiveUniqueId,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(

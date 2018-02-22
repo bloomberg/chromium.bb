@@ -238,12 +238,9 @@ TEST_F(ServiceWorkerContextTest, Register) {
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_OK,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -290,12 +287,9 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 false /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     false /* expect_waiting */, false /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -342,8 +336,8 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
 
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
-                 false /* expect_waiting */, true /* expect_active */));
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -373,12 +367,9 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   ASSERT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 false /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     false /* expect_waiting */, false /* expect_active */));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2u, notifications_.size());
@@ -467,34 +458,22 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   ASSERT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
-      registration_id1,
-      origin1_p1.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 false /* expect_active */));
+      registration_id1, origin1_p1.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     false /* expect_waiting */, false /* expect_active */));
   context()->storage()->FindRegistrationForId(
-      registration_id2,
-      origin1_p2.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 false /* expect_active */));
+      registration_id2, origin1_p2.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     false /* expect_waiting */, false /* expect_active */));
   context()->storage()->FindRegistrationForId(
-      registration_id3,
-      origin2_p1.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_OK,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id3, origin2_p1.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
 
   context()->storage()->FindRegistrationForId(
-      registration_id4,
-      origin3_p1.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_OK,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id4, origin3_p1.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
 
   base::RunLoop().RunUntilIdle();
 
@@ -745,12 +724,9 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   EXPECT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_OK,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
   // Next handle id should be 1 (the next call should return 2) because
@@ -763,19 +739,16 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   // operation should be aborted.
   context()->storage()->FindRegistrationForId(
       registration_id, pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_ABORT,
-                 false /* expect_waiting */, true /* expect_active */));
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_ABORT,
+                     false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
   // The context started over and the storage was re-initialized, so the
   // registration should not be found.
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_ERROR_NOT_FOUND,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_ERROR_NOT_FOUND,
+                     false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
   called = false;
@@ -787,12 +760,9 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   EXPECT_TRUE(called);
 
   context()->storage()->FindRegistrationForId(
-      registration_id,
-      pattern.GetOrigin(),
-      base::Bind(&ExpectRegisteredWorkers,
-                 SERVICE_WORKER_OK,
-                 false /* expect_waiting */,
-                 true /* expect_active */));
+      registration_id, pattern.GetOrigin(),
+      base::BindOnce(&ExpectRegisteredWorkers, SERVICE_WORKER_OK,
+                     false /* expect_waiting */, true /* expect_active */));
   content::RunAllTasksUntilIdle();
 
   // The new context should take over next handle id. ID 2 should have been

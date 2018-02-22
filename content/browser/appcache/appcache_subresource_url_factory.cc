@@ -59,7 +59,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
         host_(appcache_host),
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    remote_binding_.set_connection_error_handler(base::Bind(
+    remote_binding_.set_connection_error_handler(base::BindOnce(
         &SubresourceLoader::OnConnectionError, base::Unretained(this)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

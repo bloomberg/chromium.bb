@@ -706,8 +706,8 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
           new HttpResponseInfoIOBuffer(manifest_response_info_.release()));
       manifest_response_writer_->WriteInfo(
           io_buffer.get(),
-          base::Bind(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
-                     base::Unretained(this)));
+          base::BindOnce(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
+                         base::Unretained(this)));
     }
   } else {
     VLOG(1) << "Request error: " << net_error
@@ -737,10 +737,9 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(manifest_data_));
     manifest_response_writer_->WriteData(
-        io_buffer.get(),
-        manifest_data_.length(),
-        base::Bind(&AppCacheUpdateJob::OnManifestDataWriteComplete,
-                   base::Unretained(this)));
+        io_buffer.get(), manifest_data_.length(),
+        base::BindOnce(&AppCacheUpdateJob::OnManifestDataWriteComplete,
+                       base::Unretained(this)));
   } else {
     HandleCacheFailure(
         AppCacheErrorDetails("Failed to write the manifest headers to storage",
@@ -923,8 +922,8 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   read_manifest_buffer_ = new net::IOBuffer(kAppCacheFetchBufferSize);
   manifest_response_reader_->ReadData(
       read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
-      base::Bind(&AppCacheUpdateJob::OnManifestDataReadComplete,
-                 base::Unretained(this)));  // async read
+      base::BindOnce(&AppCacheUpdateJob::OnManifestDataReadComplete,
+                     base::Unretained(this)));  // async read
 }
 
 void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
@@ -932,8 +931,8 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
     loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
     manifest_response_reader_->ReadData(
         read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
-        base::Bind(&AppCacheUpdateJob::OnManifestDataReadComplete,
-                   base::Unretained(this)));  // read more
+        base::BindOnce(&AppCacheUpdateJob::OnManifestDataReadComplete,
+                       base::Unretained(this)));  // read more
   } else {
     read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();

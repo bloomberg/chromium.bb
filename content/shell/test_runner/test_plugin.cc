@@ -296,14 +296,14 @@ bool TestPlugin::PrepareTransferableResource(
   if (!mailbox_.IsZero()) {
     *resource = viz::TransferableResource::MakeGL(mailbox_, GL_LINEAR,
                                                   GL_TEXTURE_2D, sync_token_);
-    *release_callback =
-        viz::SingleReleaseCallback::Create(base::Bind(&IgnoreReleaseCallback));
+    *release_callback = viz::SingleReleaseCallback::Create(
+        base::BindOnce(&IgnoreReleaseCallback));
   } else if (shared_bitmap_) {
     *resource = viz::TransferableResource::MakeSoftware(
         shared_bitmap_->id(), shared_bitmap_->sequence_number(),
         gfx::Size(rect_.width, rect_.height));
     *release_callback = viz::SingleReleaseCallback::Create(
-        base::Bind(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
+        base::BindOnce(&ReleaseSharedMemory, base::Passed(&shared_bitmap_)));
   }
   content_changed_ = false;
   return true;

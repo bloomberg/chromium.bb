@@ -264,9 +264,10 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
-                   base::Unretained(this), base::Passed(&request), process_id,
-                   base::Passed(&original_factory)));
+        base::BindOnce(
+            &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+            base::Unretained(this), base::Passed(&request), process_id,
+            base::Passed(&original_factory)));
     return;
   }
 

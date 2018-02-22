@@ -260,8 +260,8 @@ void WebServiceWorkerRegistrationImpl::BindRequest(
   DCHECK(request.is_pending());
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(
-      base::Bind(&WebServiceWorkerRegistrationImpl::OnConnectionError,
-                 base::Unretained(this)));
+      base::BindOnce(&WebServiceWorkerRegistrationImpl::OnConnectionError,
+                     base::Unretained(this)));
 }
 
 void WebServiceWorkerRegistrationImpl::OnConnectionError() {

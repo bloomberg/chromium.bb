@@ -52,8 +52,8 @@ VideoCaptureGpuJpegDecoder::~VideoCaptureGpuJpegDecoder() {
     // is signaled.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&VideoCaptureGpuJpegDecoder::DestroyDecoderOnIOThread,
-                   base::Unretained(this), &event));
+        base::BindOnce(&VideoCaptureGpuJpegDecoder::DestroyDecoderOnIOThread,
+                       base::Unretained(this), &event));
     event.Wait();
   }
 }
@@ -79,10 +79,10 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RequestGPUInfoOnIOThread, base::ThreadTaskRunnerHandle::Get(),
-                 weak_ptr_factory_.GetWeakPtr()));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&RequestGPUInfoOnIOThread,
+                                         base::ThreadTaskRunnerHandle::Get(),
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 VideoCaptureGpuJpegDecoder::STATUS VideoCaptureGpuJpegDecoder::GetStatus()
@@ -191,9 +191,9 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
 
   // base::Unretained is safe because |decoder_| is deleted on the IO thread.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&media::JpegDecodeAccelerator::Decode,
-                                     base::Unretained(decoder_.get()),
-                                     in_buffer, std::move(out_frame)));
+                          base::BindOnce(&media::JpegDecodeAccelerator::Decode,
+                                         base::Unretained(decoder_.get()),
+                                         in_buffer, std::move(out_frame)));
 }
 
 void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {
@@ -274,8 +274,8 @@ void VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread(
 
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization, weak_this,
-                 base::Passed(remote_decoder.PassInterface())));
+      base::BindOnce(&VideoCaptureGpuJpegDecoder::FinishInitialization,
+                     weak_this, base::Passed(remote_decoder.PassInterface())));
 }
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(
@@ -292,11 +292,11 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
     // base::Unretained is safe because |decoder_| is deleted on the IO thread.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&media::JpegDecodeAccelerator::InitializeAsync,
-                   base::Unretained(decoder_.get()), this,
-                   media::BindToCurrentLoop(base::Bind(
-                       &VideoCaptureGpuJpegDecoder::OnInitializationDone,
-                       weak_ptr_factory_.GetWeakPtr()))));
+        base::BindOnce(&media::JpegDecodeAccelerator::InitializeAsync,
+                       base::Unretained(decoder_.get()), this,
+                       media::BindToCurrentLoop(base::Bind(
+                           &VideoCaptureGpuJpegDecoder::OnInitializationDone,
+                           weak_ptr_factory_.GetWeakPtr()))));
   } else {
     OnInitializationDone(false);
   }

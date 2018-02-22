@@ -491,8 +491,9 @@ class CacheStorageManagerTest : public testing::Test {
   int64_t GetOriginUsage(const url::Origin& origin) {
     base::RunLoop loop;
     cache_manager_->GetOriginUsage(
-        origin, base::Bind(&CacheStorageManagerTest::UsageCallback,
-                           base::Unretained(this), base::Unretained(&loop)));
+        origin,
+        base::BindOnce(&CacheStorageManagerTest::UsageCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_usage_;
   }
@@ -1717,8 +1718,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     base::RunLoop loop;
     quota_client_->GetOriginUsage(
         origin, StorageType::kTemporary,
-        base::Bind(&CacheStorageQuotaClientTest::QuotaUsageCallback,
-                   base::Unretained(this), base::Unretained(&loop)));
+        base::BindOnce(&CacheStorageQuotaClientTest::QuotaUsageCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_quota_usage_;
   }
@@ -1727,8 +1728,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     base::RunLoop loop;
     quota_client_->GetOriginsForType(
         StorageType::kTemporary,
-        base::Bind(&CacheStorageQuotaClientTest::OriginsCallback,
-                   base::Unretained(this), base::Unretained(&loop)));
+        base::BindOnce(&CacheStorageQuotaClientTest::OriginsCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_origins_.size();
   }
@@ -1737,8 +1738,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     base::RunLoop loop;
     quota_client_->GetOriginsForHost(
         StorageType::kTemporary, host,
-        base::Bind(&CacheStorageQuotaClientTest::OriginsCallback,
-                   base::Unretained(this), base::Unretained(&loop)));
+        base::BindOnce(&CacheStorageQuotaClientTest::OriginsCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_origins_.size();
   }
@@ -1747,8 +1748,8 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     base::RunLoop loop;
     quota_client_->DeleteOriginData(
         origin, StorageType::kTemporary,
-        base::Bind(&CacheStorageQuotaClientTest::DeleteOriginCallback,
-                   base::Unretained(this), base::Unretained(&loop)));
+        base::BindOnce(&CacheStorageQuotaClientTest::DeleteOriginCallback,
+                       base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     return callback_status_ == blink::mojom::QuotaStatusCode::kOk;
   }

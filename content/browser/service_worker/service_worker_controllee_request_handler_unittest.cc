@@ -179,9 +179,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
-      registration_.get(),
-      version_.get(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(), version_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
@@ -209,9 +208,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
   registration_->SetWaitingVersion(version_);
   context()->storage()->StoreRegistration(
-      registration_.get(),
-      version_.get(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(), version_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
@@ -271,9 +269,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
-      registration_.get(),
-      version_.get(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(), version_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
   version_ = nullptr;
   registration_ = nullptr;
@@ -307,7 +304,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(), version_.get(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load to set the controller.
@@ -344,7 +341,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(), version_.get(),
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   ServiceWorkerRequestTestResources main_test_resources(

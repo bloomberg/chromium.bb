@@ -286,7 +286,7 @@ void PepperCompositorHost::UpdateLayer(
           new_layer->texture->sync_token);
       texture_layer->SetTransferableResource(
           resource,
-          viz::SingleReleaseCallback::Create(base::Bind(
+          viz::SingleReleaseCallback::Create(base::BindOnce(
               &PepperCompositorHost::ResourceReleased,
               weak_factory_.GetWeakPtr(), new_layer->common.resource_id)));
       // TODO(penghuang): get a damage region from the application and
@@ -323,7 +323,7 @@ void PepperCompositorHost::UpdateLayer(
           bitmap->id(), bitmap->sequence_number(), PP_ToGfxSize(desc.size));
       image_layer->SetTransferableResource(
           resource,
-          viz::SingleReleaseCallback::Create(base::Bind(
+          viz::SingleReleaseCallback::Create(base::BindOnce(
               &PepperCompositorHost::ImageReleased, weak_factory_.GetWeakPtr(),
               new_layer->common.resource_id, base::Passed(&image_shm),
               base::Passed(&bitmap))));

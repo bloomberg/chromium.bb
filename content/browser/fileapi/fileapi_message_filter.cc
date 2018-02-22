@@ -604,7 +604,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
           context_->default_file_task_runner());
     }
     file_ref->AddFinalReleaseCallback(
-        base::Bind(&RevokeFilePermission, process_id_));
+        base::BindOnce(&RevokeFilePermission, process_id_));
   }
 
   if (file_ref.get()) {

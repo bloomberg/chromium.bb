@@ -1484,8 +1484,7 @@ void ResourceDispatcherHostImpl::RegisterDownloadedTempFile(
   // reference to the temp file that outlives the url loaded that it was
   // loaded with to keep the file (and permissions) alive.
   reference->AddFinalReleaseCallback(
-      base::Bind(&RemoveDownloadFileFromChildSecurityPolicy,
-                 child_id));
+      base::BindOnce(&RemoveDownloadFileFromChildSecurityPolicy, child_id));
 }
 
 void ResourceDispatcherHostImpl::UnregisterDownloadedTempFile(

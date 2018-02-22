@@ -159,7 +159,7 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   context_provider_->ContextSupport()->SignalSyncToken(
       sync_token,
-      base::Bind(
+      base::BindOnce(
           &OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete,
           weak_ptr_factory_.GetWeakPtr(), frame.latency_info, ++swap_id_));
 }

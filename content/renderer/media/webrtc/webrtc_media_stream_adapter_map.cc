@@ -196,7 +196,7 @@ WebRtcMediaStreamAdapterMap::GetOrCreateRemoteStreamAdapter(
     // initialized and its secondary key is set.
     main_thread_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &WebRtcMediaStreamAdapterMap::OnRemoteStreamAdapterInitialized,
             this,
             base::Passed(base::WrapUnique(new AdapterRef(

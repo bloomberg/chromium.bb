@@ -40,8 +40,8 @@ void CreateRegistrationTask::Start() {
   service_worker_context()->GetRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       {ActiveRegistrationUniqueIdKey(registration_id_.developer_id())},
-      base::Bind(&CreateRegistrationTask::DidGetUniqueId,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateRegistrationTask::DidGetUniqueId,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CreateRegistrationTask::DidGetUniqueId(

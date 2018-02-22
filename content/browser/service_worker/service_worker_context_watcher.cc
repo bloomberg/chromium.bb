@@ -60,7 +60,7 @@ void ServiceWorkerContextWatcher::GetStoredRegistrationsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_stopped_)
     return;
-  context_->GetAllRegistrations(base::Bind(
+  context_->GetAllRegistrations(base::BindOnce(
       &ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread, this));
 }
 

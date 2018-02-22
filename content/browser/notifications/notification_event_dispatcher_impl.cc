@@ -177,9 +177,9 @@ void FindServiceWorkerRegistration(
 
   service_worker_context->FindReadyRegistrationForId(
       notification_database_data.service_worker_registration_id, origin,
-      base::Bind(&DispatchNotificationEventOnRegistration,
-                 notification_database_data, notification_context,
-                 notification_action_callback, dispatch_error_callback));
+      base::BindOnce(&DispatchNotificationEventOnRegistration,
+                     notification_database_data, notification_context,
+                     notification_action_callback, dispatch_error_callback));
 }
 
 // Reads the data associated with the |notification_id| belonging to |origin|

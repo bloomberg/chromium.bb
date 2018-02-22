@@ -29,8 +29,8 @@ GetDeveloperIdsTask::~GetDeveloperIdsTask() = default;
 void GetDeveloperIdsTask::Start() {
   service_worker_context()->GetRegistrationUserKeysAndDataByKeyPrefix(
       service_worker_registration_id_, {kActiveRegistrationUniqueIdKeyPrefix},
-      base::Bind(&GetDeveloperIdsTask::DidGetUniqueIds,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&GetDeveloperIdsTask::DidGetUniqueIds,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void GetDeveloperIdsTask::DidGetUniqueIds(

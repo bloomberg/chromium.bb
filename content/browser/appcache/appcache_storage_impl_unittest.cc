@@ -1609,8 +1609,8 @@ class AppCacheStorageImplTest : public testing::Test {
     if (phase == 1) {
       // We should not find anything for the online namespace.
       PushNextTask(
-          base::Bind(&AppCacheStorageImplTest::Verify_ExclusionNotFound,
-                     base::Unretained(this), kOnlineNamespace, 2));
+          base::BindOnce(&AppCacheStorageImplTest::Verify_ExclusionNotFound,
+                         base::Unretained(this), kOnlineNamespace, 2));
       storage()->FindResponseForMainRequest(
           kOnlineNamespace, GURL(), delegate());
       return;

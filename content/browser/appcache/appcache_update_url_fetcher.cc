@@ -112,7 +112,7 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(int net_error) {
             new net::HttpResponseInfo(request_->GetResponseInfo())));
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&URLFetcher::OnWriteComplete, base::Unretained(this)));
+        base::BindOnce(&URLFetcher::OnWriteComplete, base::Unretained(this)));
   } else {
     ReadResponseData();
   }
@@ -195,7 +195,7 @@ bool AppCacheUpdateJob::URLFetcher::ConsumeResponseData(net::IOBuffer* buffer,
       DCHECK(response_writer_.get());
       response_writer_->WriteData(
           buffer, bytes_read,
-          base::Bind(&URLFetcher::OnWriteComplete, base::Unretained(this)));
+          base::BindOnce(&URLFetcher::OnWriteComplete, base::Unretained(this)));
       return false;  // wait for async write completion to continue reading
     default:
       NOTREACHED();

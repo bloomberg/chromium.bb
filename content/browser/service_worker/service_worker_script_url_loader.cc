@@ -314,8 +314,8 @@ void ServiceWorkerScriptURLLoader::WriteHeaders(
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {
   net::Error error = cache_writer_->MaybeWriteHeaders(
       info_buffer.get(),
-      base::Bind(&ServiceWorkerScriptURLLoader::OnWriteHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerScriptURLLoader::OnWriteHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
   if (error == net::ERR_IO_PENDING) {
     // OnWriteHeadersComplete() will be called asynchronously.
     return;
@@ -413,9 +413,10 @@ void ServiceWorkerScriptURLLoader::WriteData(
   // successfully wrote to the data pipe (i.e., |bytes_written|).
   net::Error error = cache_writer_->MaybeWriteData(
       buffer.get(), base::strict_cast<size_t>(bytes_written),
-      base::Bind(&ServiceWorkerScriptURLLoader::OnWriteDataComplete,
-                 weak_factory_.GetWeakPtr(),
-                 base::WrapRefCounted(pending_buffer.get()), bytes_written));
+      base::BindOnce(&ServiceWorkerScriptURLLoader::OnWriteDataComplete,
+                     weak_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(pending_buffer.get()),
+                     bytes_written));
   if (error == net::ERR_IO_PENDING) {
     // OnWriteDataComplete() will be called asynchronously.
     return;
