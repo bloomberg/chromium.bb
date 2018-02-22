@@ -249,14 +249,6 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
     web_request->SetHeader(blink::WebString::FromUTF8(pair.first),
                            blink::WebString::FromUTF8(pair.second));
   }
-  if (!request.blob_uuid.empty()) {
-    DCHECK(request.blob);
-    mojo::ScopedMessagePipeHandle blob_pipe;
-    if (request.blob)
-      blob_pipe = request.blob->Clone().PassInterface().PassHandle();
-    web_request->SetBlob(blink::WebString::FromASCII(request.blob_uuid),
-                         request.blob_size, std::move(blob_pipe));
-  }
   web_request->SetReferrer(
       blink::WebString::FromUTF8(request.referrer.url.spec()),
       request.referrer.policy);

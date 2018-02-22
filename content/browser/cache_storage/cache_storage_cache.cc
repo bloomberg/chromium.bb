@@ -535,7 +535,6 @@ void CacheStorageCache::BatchOperation(
   base::CheckedNumeric<uint64_t> safe_side_data_size = 0;
   for (const auto& operation : operations) {
     if (operation.operation_type == CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT) {
-      safe_space_required += operation.request.blob_size;
       safe_space_required += operation.response.blob_size;
       safe_side_data_size += operation.response.side_data_blob_size;
     }
