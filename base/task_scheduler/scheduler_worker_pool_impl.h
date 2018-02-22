@@ -158,8 +158,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void WakeUpOneWorker();
 
   // Performs the same action as WakeUpOneWorker() except asserts |lock_| is
-  // acquired rather than acquires it.
-  void WakeUpOneWorkerLockRequired();
+  // acquired rather than acquires it and returns true if worker wakeups are
+  // permitted.
+  bool WakeUpOneWorkerLockRequired();
 
   // Adds a worker, if needed, to maintain one idle worker, |worker_capacity_|
   // permitting.
@@ -196,8 +197,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   TimeDelta MayBlockThreshold() const;
 
   // Starts calling AdjustWorkerCapacity() periodically on
-  // |service_thread_task_runner_|.
-  void PostAdjustWorkerCapacityTaskLockRequired();
+  // |service_thread_task_runner_| if not already requested.
+  void PostAdjustWorkerCapacityTaskIfNeeded();
+
+  // Calls AdjustWorkerCapacity() and schedules it again as necessary. May only
+  // be called from the service thread.
+  void AdjustWorkerCapacityTaskFunction();
 
   // Returns true if AdjustWorkerCapacity() should periodically be called on
   // |service_thread_task_runner_|.

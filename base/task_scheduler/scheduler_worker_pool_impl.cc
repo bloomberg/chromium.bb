@@ -621,43 +621,51 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
-  AutoSchedulerLock auto_lock(outer_->lock_);
+  {
+    AutoSchedulerLock auto_lock(outer_->lock_);
 
-  DCHECK(!incremented_worker_capacity_since_blocked_);
-  DCHECK(may_block_start_time_.is_null());
-  may_block_start_time_ = TimeTicks::Now();
-  ++outer_->num_pending_may_block_workers_;
-
-  if (!outer_->polling_worker_capacity_ &&
-      outer_->ShouldPeriodicallyAdjustWorkerCapacityLockRequired()) {
-    outer_->PostAdjustWorkerCapacityTaskLockRequired();
+    DCHECK(!incremented_worker_capacity_since_blocked_);
+    DCHECK(may_block_start_time_.is_null());
+    may_block_start_time_ = TimeTicks::Now();
+    ++outer_->num_pending_may_block_workers_;
   }
+  outer_->PostAdjustWorkerCapacityTaskIfNeeded();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
-  std::unique_ptr<PriorityQueue::Transaction> shared_transaction(
-      outer_->shared_priority_queue_.BeginTransaction());
-  AutoSchedulerLock auto_lock(outer_->lock_);
+  bool wake_up_allowed = false;
+  {
+    std::unique_ptr<PriorityQueue::Transaction> shared_transaction(
+        outer_->shared_priority_queue_.BeginTransaction());
+    AutoSchedulerLock auto_lock(outer_->lock_);
 
-  DCHECK(!incremented_worker_capacity_since_blocked_);
-  DCHECK(may_block_start_time_.is_null());
-  incremented_worker_capacity_since_blocked_ = true;
-  outer_->IncrementWorkerCapacityLockRequired();
+    DCHECK(!incremented_worker_capacity_since_blocked_);
+    DCHECK(may_block_start_time_.is_null());
+    incremented_worker_capacity_since_blocked_ = true;
+    outer_->IncrementWorkerCapacityLockRequired();
 
-  // If the number of workers was less than the old worker capacity, PostTask
-  // would've handled creating extra workers during WakeUpOneWorker. Therefore,
-  // we don't need to do anything here.
-  if (outer_->workers_.size() < outer_->worker_capacity_ - 1)
-    return;
+    // If the number of workers was less than the old worker capacity, PostTask
+    // would've handled creating extra workers during WakeUpOneWorker.
+    // Therefore, we don't need to do anything here.
+    if (outer_->workers_.size() < outer_->worker_capacity_ - 1)
+      return;
 
-  if (shared_transaction->IsEmpty()) {
-    outer_->MaintainAtLeastOneIdleWorkerLockRequired();
-  } else {
-    // TODO(crbug.com/757897): We may create extra workers in this case:
-    // |workers.size()| was equal to the old |worker_capacity_|, we had multiple
-    // ScopedBlockingCalls in parallel and we had work on the PQ.
-    outer_->WakeUpOneWorkerLockRequired();
+    if (shared_transaction->IsEmpty()) {
+      outer_->MaintainAtLeastOneIdleWorkerLockRequired();
+    } else {
+      // TODO(crbug.com/757897): We may create extra workers in this case:
+      // |workers.size()| was equal to the old |worker_capacity_|, we had
+      // multiple ScopedBlockingCalls in parallel and we had work on the PQ.
+      wake_up_allowed = outer_->WakeUpOneWorkerLockRequired();
+      // |wake_up_allowed| is true when the pool is started, and a WILL_BLOCK
+      // scope cannot be entered before the pool starts.
+      DCHECK(wake_up_allowed);
+    }
   }
+  // TODO(crbug.com/813857): This can be better handled in the PostTask()
+  // codepath. We really only should do this if there are tasks pending.
+  if (wake_up_allowed)
+    outer_->PostAdjustWorkerCapacityTaskIfNeeded();
 }
 
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -687,12 +695,12 @@ void SchedulerWorkerPoolImpl::WaitForWorkersIdleLockRequiredForTesting(
     idle_workers_stack_cv_for_testing_->Wait();
 }
 
-void SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
+bool SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
   lock_.AssertAcquired();
 
   if (workers_.empty()) {
     ++num_wake_ups_before_start_;
-    return;
+    return false;
   }
 
   // Ensure that there is one worker that can run tasks on top of the idle
@@ -714,15 +722,17 @@ void SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
   // stack, capacity permitting.
   MaintainAtLeastOneIdleWorkerLockRequired();
 
-  if (!polling_worker_capacity_ &&
-      ShouldPeriodicallyAdjustWorkerCapacityLockRequired()) {
-    PostAdjustWorkerCapacityTaskLockRequired();
-  }
+  return true;
 }
 
 void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
-  AutoSchedulerLock auto_lock(lock_);
-  WakeUpOneWorkerLockRequired();
+  bool wake_up_allowed;
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    wake_up_allowed = WakeUpOneWorkerLockRequired();
+  }
+  if (wake_up_allowed)
+    PostAdjustWorkerCapacityTaskIfNeeded();
 }
 
 void SchedulerWorkerPoolImpl::MaintainAtLeastOneIdleWorkerLockRequired() {
@@ -801,6 +811,8 @@ size_t SchedulerWorkerPoolImpl::NumberOfExcessWorkersLockRequired() const {
 }
 
 void SchedulerWorkerPoolImpl::AdjustWorkerCapacity() {
+  DCHECK(service_thread_task_runner_->RunsTasksInCurrentSequence());
+
   std::unique_ptr<PriorityQueue::Transaction> shared_transaction(
       shared_priority_queue_.BeginTransaction());
   AutoSchedulerLock auto_lock(lock_);
@@ -823,8 +835,11 @@ void SchedulerWorkerPoolImpl::AdjustWorkerCapacity() {
   const size_t num_wake_ups_needed = std::min(
       worker_capacity_ - original_worker_capacity, num_pending_sequences);
 
-  for (size_t i = 0; i < num_wake_ups_needed; ++i)
+  for (size_t i = 0; i < num_wake_ups_needed; ++i) {
+    // No need to call PostAdjustWorkerCapacityTaskIfNeeded() as the caller will
+    // take care of that for us.
     WakeUpOneWorkerLockRequired();
+  }
 
   MaintainAtLeastOneIdleWorkerLockRequired();
 }
@@ -840,28 +855,39 @@ TimeDelta SchedulerWorkerPoolImpl::MayBlockThreshold() const {
   return TimeDelta::FromMilliseconds(10);
 }
 
-void SchedulerWorkerPoolImpl::PostAdjustWorkerCapacityTaskLockRequired() {
-  lock_.AssertAcquired();
-
-  polling_worker_capacity_ = true;
-
+void SchedulerWorkerPoolImpl::PostAdjustWorkerCapacityTaskIfNeeded() {
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    if (polling_worker_capacity_ ||
+        !ShouldPeriodicallyAdjustWorkerCapacityLockRequired()) {
+      return;
+    }
+    polling_worker_capacity_ = true;
+  }
   service_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          [](SchedulerWorkerPoolImpl* worker_pool) {
-            worker_pool->AdjustWorkerCapacity();
+      BindOnce(&SchedulerWorkerPoolImpl::AdjustWorkerCapacityTaskFunction,
+               Unretained(this)),
+      kBlockedWorkersPollPeriod);
+}
 
-            AutoSchedulerLock auto_lock(worker_pool->lock_);
-            DCHECK(worker_pool->polling_worker_capacity_);
+void SchedulerWorkerPoolImpl::AdjustWorkerCapacityTaskFunction() {
+  DCHECK(service_thread_task_runner_->RunsTasksInCurrentSequence());
 
-            if (worker_pool
-                    ->ShouldPeriodicallyAdjustWorkerCapacityLockRequired()) {
-              worker_pool->PostAdjustWorkerCapacityTaskLockRequired();
-            } else {
-              worker_pool->polling_worker_capacity_ = false;
-            }
-          },
-          Unretained(this)),
+  AdjustWorkerCapacity();
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    DCHECK(polling_worker_capacity_);
+
+    if (!ShouldPeriodicallyAdjustWorkerCapacityLockRequired()) {
+      polling_worker_capacity_ = false;
+      return;
+    }
+  }
+  service_thread_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&SchedulerWorkerPoolImpl::AdjustWorkerCapacityTaskFunction,
+               Unretained(this)),
       kBlockedWorkersPollPeriod);
 }
 
