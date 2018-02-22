@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "chrome/installer/zucchini/algorithm.h"
+
 namespace zucchini {
 
 BufferSource::BufferSource(ConstBufferView buffer) : ConstBufferView(buffer) {}
@@ -36,6 +38,68 @@ bool BufferSource::GetRegion(size_type count, ConstBufferView* buffer) {
   *buffer = ConstBufferView(begin(), count);
   remove_prefix(count);
   return true;
+}
+
+// [0aaaaaaa] => 00000000'00000000'00000000'0aaaaaaa
+// [1aaaaaaa 0bbbbbbb] => 00000000'00000000'00bbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 0ccccccc] => 00000000'000ccccc'ccbbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 1ccccccc 0ddddddd] => 0000dddd'dddccccc'ccbbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 1ccccccc 1ddddddd 0???eeee]
+//     => eeeedddd'dddccccc'ccbbbbbb'baaaaaaa
+// Note that "???" is discarded. Meanwhile, 1???eeee is invalid.
+bool BufferSource::GetUleb128(uint32_t* ret) {
+  int shift_lim =
+      static_cast<int>(std::min<size_type>(kMaxLeb128Size, size())) * 7;
+  const_iterator cur = cbegin();
+  uint32_t value = 0U;
+  for (int shift = 0; shift < shift_lim; shift += 7, ++cur) {
+    uint32_t b = *cur;
+    // When |shift == 28|, |(b & 0x7F) << shift| discards the "???" bits.
+    value |= static_cast<uint32_t>(b & 0x7F) << shift;
+    if (!(b & 0x80)) {
+      *ret = value;
+      seek(cur + 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+// [0Saaaaaa] => SSSSSSSS'SSSSSSSS'SSSSSSSS'SSaaaaaa
+// [1aaaaaaa 0Sbbbbbb] => SSSSSSSS'SSSSSSSS'SSSbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 0Scccccc] => SSSSSSSS'SSSScccc'ccbbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 1ccccccc 0Sdddddd] => SSSSSddd'dddccccc'ccbbbbbb'baaaaaaa
+// [1aaaaaaa 1bbbbbbb 1ccccccc 1ddddddd 0???Seee]
+//     => Seeedddd'dddccccc'ccbbbbbb'baaaaaaa
+// Note that "???" is discarded. Meanwhile, 1???eeee is invalid.
+bool BufferSource::GetSleb128(int32_t* ret) {
+  int shift_lim =
+      static_cast<int>(std::min<size_type>(kMaxLeb128Size, size())) * 7;
+  const_iterator cur = cbegin();
+  int32_t value = 0;
+  for (int shift = 0; shift < shift_lim; shift += 7, ++cur) {
+    uint32_t b = *cur;
+    // When |shift == 28|, |(b & 0x7F) << shift| discards the "???" bits.
+    value |= static_cast<int32_t>(b & 0x7F) << shift;
+    if (!(b & 0x80)) {
+      *ret = (shift == 28) ? value : SignExtend(shift + 6, value);
+      seek(cur + 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool BufferSource::SkipLeb128() {
+  int lim = static_cast<int>(std::min<size_type>(kMaxLeb128Size, size()));
+  const_iterator cur = cbegin();
+  for (int i = 0; i < lim; ++i, ++cur) {
+    if (!(*cur & 0x80)) {
+      seek(cur + 1);
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace zucchini

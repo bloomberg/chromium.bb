@@ -160,11 +160,27 @@ class BufferViewBase {
     first_ += n;
   }
 
-  // Moves the start of the view to |pos| which is in range [begin(), end()).
-  void seek(iterator pos) {
-    DCHECK_GE(pos, begin());
-    DCHECK_LE(pos, end());
-    first_ = pos;
+  // Moves the start of the view to |it|, which is in range [begin(), end()).
+  void seek(iterator it) {
+    DCHECK_GE(it, begin());
+    DCHECK_LE(it, end());
+    first_ = it;
+  }
+
+  // Given |origin| that contains |*this|, minimally increase |first_| (possibly
+  // by 0) so that |first_ <= last_|, and |first_ - origin.first_| is a multiple
+  // of |alignment|. On success, updates |first_| and returns true. Otherwise
+  // returns false.
+  bool AlignOn(BufferViewBase origin, size_type alignment) {
+    DCHECK_GT(alignment, 0U);
+    DCHECK_LE(origin.first_, first_);
+    DCHECK_GE(origin.last_, last_);
+    size_type aligned_size =
+        ceil(static_cast<size_type>(first_ - origin.first_), alignment);
+    if (aligned_size > static_cast<size_type>(last_ - origin.first_))
+      return false;
+    first_ = origin.first_ + aligned_size;
+    return true;
   }
 
  private:
