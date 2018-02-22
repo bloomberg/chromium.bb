@@ -2170,6 +2170,16 @@
     ]
   },
 
+  "MachineLevelUserCloudPolicyEnrollmentToken": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": {"MachineLevelUserCloudPolicyEnrollmentToken": ""},
+    "pref_mappings": [
+        { "pref": "policy.machine_level_user_cloud_policy_enrollment_token",
+          "local_state": true
+        }
+      ]
+  },
+
   "SSLVersionMin": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SSLVersionMin": "tls1.1" },

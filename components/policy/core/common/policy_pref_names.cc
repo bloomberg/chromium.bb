@@ -22,5 +22,9 @@ const char kUrlWhitelist[] = "policy.url_whitelist";
 // by the cloud policy subsystem.
 const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 
+// The enrollment token of machine level user cloud policy
+const char kMachineLevelUserCloudPolicyEnrollmentToken[] =
+    "policy.machine_level_user_cloud_policy_enrollment_token";
+
 }  // namespace policy_prefs
 }  // namespace policy
