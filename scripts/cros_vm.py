@@ -120,9 +120,9 @@ class VM(object):
         path_util.GetCacheDir(),
         cros_chrome_sdk.COMMAND_NAME,
         cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
-    lkgm = cros_chrome_sdk.SDKFetcher.GetChromeLKGM()
-    if lkgm:
-      cache_key = (self.board, lkgm, key)
+    sdk_version = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV)
+    if sdk_version:
+      cache_key = (self.board, sdk_version, key)
       with tarball_cache.Lookup(cache_key) as ref:
         if ref.Exists():
           return ref.path
