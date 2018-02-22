@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Spec: https://drafts.css-houdini.org/css-typed-om-1/#the-stylepropertymap
 [
     Exposed(Window CSSTypedOM,LayoutWorklet CSSTypedOM,PaintWorklet CSSPaintAPI)
 ] interface StylePropertyMapReadOnly {
     [RaisesException] CSSStyleValue? get(DOMString property);
     [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);
+    readonly attribute long size;
     iterable<DOMString, (CSSStyleValue or sequence<CSSStyleValue>)>;
 };
