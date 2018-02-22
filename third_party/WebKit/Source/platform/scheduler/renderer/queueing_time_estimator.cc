@@ -120,7 +120,6 @@ const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
     case MainThreadTaskQueue::QueueType::kFramePausable:
       return TASK_QUEUE_PREFIX "FramePausable";
     case MainThreadTaskQueue::QueueType::kControl:
-    case MainThreadTaskQueue::QueueType::kDefaultTimer:
     case MainThreadTaskQueue::QueueType::kIdle:
     case MainThreadTaskQueue::QueueType::kTest:
     case MainThreadTaskQueue::QueueType::kFrameLoadingControl:

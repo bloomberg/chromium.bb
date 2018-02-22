@@ -28,9 +28,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
     // 2 was used for default loading task runner but this was deprecated.
 
-    // kDefaultTimer is deprecated and should be replaced with appropriate
-    // per-frame task queues.
-    kDefaultTimer = 3,
+    // 3 was used for default timer task runner but this was deprecated.
+
     kUnthrottled = 4,
     kFrameLoading = 5,
     // 6 : kFrameThrottleable, replaced with FRAME_THROTTLEABLE.

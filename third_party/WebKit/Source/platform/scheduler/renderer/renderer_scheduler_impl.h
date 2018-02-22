@@ -189,7 +189,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
   scoped_refptr<MainThreadTaskQueue> InputTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> TimerTaskQueue();
   scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
 
   // Returns a new task queue created with given params.
@@ -627,7 +626,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   TaskQueueVoterMap task_runners_;
 
-  scoped_refptr<MainThreadTaskQueue> default_timer_task_queue_;
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
 
