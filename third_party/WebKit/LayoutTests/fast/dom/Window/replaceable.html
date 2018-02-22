@@ -10,4 +10,11 @@ shouldBeType('Object.getOwnPropertyDescriptor(window, "innerHeight").set',
 window.innerHeight = 42;
 shouldBe('window.innerHeight', '42');
 
+var element = document.createElement("a");
+element.onclick = function() {
+  window.event = "foo";
+};
+element.click();
+shouldBeEqualToString('window.event', "foo");
+
 </script>
