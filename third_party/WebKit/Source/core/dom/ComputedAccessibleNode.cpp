@@ -113,8 +113,28 @@ bool ComputedAccessibleNode::busy(bool& is_null) const {
   return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_BUSY, is_null);
 }
 
+bool ComputedAccessibleNode::disabled(bool& is_null) const {
+  bool out;
+  is_null = true;
+  if (tree_->GetBoolAttributeForAXNode(
+          ax_id_, WebAOMBoolAttribute::AOM_ATTR_DISABLED, &out)) {
+    is_null = false;
+  }
+  return out;
+}
+
 bool ComputedAccessibleNode::modal(bool& is_null) const {
   return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_MODAL, is_null);
+}
+
+bool ComputedAccessibleNode::readOnly(bool& is_null) const {
+  bool out;
+  is_null = true;
+  if (tree_->GetBoolAttributeForAXNode(
+          ax_id_, WebAOMBoolAttribute::AOM_ATTR_READONLY, &out)) {
+    is_null = false;
+  }
+  return out;
 }
 
 const String ComputedAccessibleNode::autocomplete() const {

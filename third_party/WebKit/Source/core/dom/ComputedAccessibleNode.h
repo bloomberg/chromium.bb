@@ -51,10 +51,12 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
   void Trace(Visitor*);
 
-  // TODO(meredithl): add accessors for state and restriction properties.
+  // TODO(meredithl): add accessors for state properties.
   bool atomic(bool& is_null) const;
   bool busy(bool& is_null) const;
+  bool disabled(bool& is_null) const;
   bool modal(bool& is_null) const;
+  bool readOnly(bool& is_null) const;
 
   int32_t colCount(bool& is_null) const;
   int32_t colIndex(bool& is_null) const;

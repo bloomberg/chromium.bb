@@ -41,6 +41,9 @@ class AomContentAxTree : public blink::WebComputedAXTree {
   bool GetNextSiblingIdForAXNode(int32_t ax_id, int32_t* out_param) override;
 
  private:
+  bool GetRestrictionAttributeForAXNode(int32_t,
+                                        blink::WebAOMBoolAttribute,
+                                        bool* out_param);
   ui::AXTree tree_;
   RenderFrameImpl* render_frame_;
   DISALLOW_COPY_AND_ASSIGN(AomContentAxTree);

@@ -11,7 +11,9 @@
 
     readonly attribute boolean? atomic;
     readonly attribute boolean? busy;
+    readonly attribute boolean? disabled;
     readonly attribute boolean? modal;
+    readonly attribute boolean? readOnly;
 
     readonly attribute long? colCount;
     readonly attribute unsigned long? colIndex;

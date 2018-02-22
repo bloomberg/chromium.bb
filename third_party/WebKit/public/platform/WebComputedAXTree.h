@@ -36,7 +36,9 @@ enum WebAOMBoolAttribute {
   AOM_BOOL_ATTRIBUTE_NONE,
   AOM_ATTR_ATOMIC,
   AOM_ATTR_BUSY,
+  AOM_ATTR_DISABLED,
   AOM_ATTR_MODAL,
+  AOM_ATTR_READONLY,
 };
 
 class WebComputedAXTree {
