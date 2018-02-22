@@ -409,6 +409,22 @@ class RemoteAccess(object):
                     old_boot_id, new_boot_id)
       return True
 
+  def AwaitReboot(self, old_boot_id, timeout_sec=REBOOT_MAX_WAIT):
+    """Await reboot away from old_boot_id.
+
+    Args:
+      old_boot_id: The boot_id that must be transitioned away from for success.
+      timeout_sec: How long to wait for reboot.
+
+    Returns:
+      True if the device has successfully rebooted.
+    """
+    try:
+      timeout_util.WaitForReturnTrue(lambda: self.CheckIfRebooted(old_boot_id),
+                                     timeout_sec, period=CHECK_INTERVAL)
+    except timeout_util.TimeoutError:
+      return False
+    return True
 
   def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT):
     """Reboot the remote device."""
@@ -418,10 +434,7 @@ class RemoteAccess(object):
     # might kill sshd before the connection completes normally.
     self.RemoteSh(['reboot'], ssh_error_ok=True, remote_sudo=True)
     time.sleep(CHECK_INTERVAL)
-    try:
-      timeout_util.WaitForReturnTrue(lambda: self.CheckIfRebooted(old_boot_id),
-                                     timeout_sec, period=CHECK_INTERVAL)
-    except timeout_util.TimeoutError:
+    if not self.AwaitReboot(old_boot_id, timeout_sec):
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (timeout_sec,))
 
@@ -1037,6 +1050,17 @@ class RemoteDevice(object):
        True if the device has successfully rebooted, false otherwise.
     """
     return self.GetAgent().CheckIfRebooted(old_boot_id)
+
+  def AwaitReboot(self, old_boot_id):
+    """Await reboot away from old_boot_id.
+
+    Args:
+      old_boot_id: The boot_id that must be transitioned away from for success.
+
+    Returns:
+      True if the device has successfully rebooted.
+    """
+    return self.GetAgent().AwaitReboot(old_boot_id)
 
 class ChromiumOSDevice(RemoteDevice):
   """Basic commands to interact with a ChromiumOS device over SSH connection."""

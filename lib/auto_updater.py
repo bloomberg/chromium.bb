@@ -1145,8 +1145,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       raise PreSetupUpdateError('%s is not in an installable state' %
                                 self.device.hostname)
 
-  def _VerifyBootExpectations(self, expected_kernel_state, rollback_message,
-                              old_boot_id=None):
+  def _VerifyBootExpectations(self, expected_kernel_state, rollback_message):
     """Verify that we fully booted given expected kernel state.
 
     It verifies that we booted using the correct kernel state, and that the
@@ -1157,14 +1156,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
         expect to be booted onto partition 4 etc. See output of _GetKernelState.
       rollback_message: string to raise as a RootfsUpdateError if we booted
         with the wrong partition.
-      old_boot_id: string of previous boot id.  If specified, will verify
-        that this is a different boot or raise RebootVerficationError if not.
     """
     logging.debug('Start verifying boot expectations...')
-
-    if old_boot_id and not self.device.CheckIfRebooted(old_boot_id):
-      raise RebootVerificationError('Device has not rebooted from %s' %
-                                    old_boot_id)
 
     # Figure out the newly active kernel
     active_kernel_state = self._GetKernelState()[0]
@@ -1390,7 +1383,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                          **self._cmd_kwargs_omit_error)
     self._Reboot('post check of rootfs update')
 
-  def PostCheckCrOSUpdate(self, old_boot_id=None):
+  def PostCheckCrOSUpdate(self):
     """Post check for the whole auto-update process."""
     logging.debug('Post check for the whole CrOS update...')
     start_time = time.time()
@@ -1408,8 +1401,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
         self._VerifyBootExpectations(
             self.inactive_kernel, rollback_message=
             'Build %s failed to boot on %s; system rolled back to previous '
-            'build' % (self.update_version, self.device.hostname),
-            old_boot_id=old_boot_id)
+            'build' % (self.update_version, self.device.hostname))
 
         # Check that we've got the build we meant to install.
         if not self._CheckVersionToConfirmInstall():
@@ -1470,3 +1462,23 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
         self._CollectDevServerHostLog(ds)
       ds.Stop()
       self._CopyHostLogFromDevice('reboot')
+
+  def AwaitReboot(self, old_boot_id):
+    """Await a reboot, ensuring that it is no longer running old_boot_id.
+
+    Args:
+      old_boot_id: The boot_id that must be transitioned away from for success.
+
+    Returns:
+      True if the device has successfully rebooted.
+
+    Raises:
+      RebootVerificationError if a successful reboot has not occurred.
+    """
+    logging.debug('Awaiting reboot from %s...', old_boot_id)
+
+    if not self.device.AwaitReboot(old_boot_id):
+      raise RebootVerificationError('Device has not rebooted from %s' %
+                                    old_boot_id)
+
+    return True
