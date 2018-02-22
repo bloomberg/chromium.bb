@@ -63,6 +63,7 @@ source_set("adaptive_ui") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fullscreen:ui",
@@ -91,6 +92,7 @@ source_set("eg_tests") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",

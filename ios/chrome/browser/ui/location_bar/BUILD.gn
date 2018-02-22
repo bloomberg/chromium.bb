@@ -17,6 +17,7 @@ source_set("location_bar") {
     "location_bar_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "//base",
     "//components/google/core/browser",
     "//components/google/core/browser",
@@ -63,6 +64,18 @@ source_set("location_bar") {
   ]
   allow_circular_includes_from =
       [ "//ios/chrome/browser/ui/omnibox:omnibox_internal" ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "location_bar_constants.h",
+    "location_bar_constants.mm",
+  ]
+  libs = [
+    "Foundation.framework",
+    "CoreGraphics.framework",
+  ]
 }
 
 source_set("unit_tests") {

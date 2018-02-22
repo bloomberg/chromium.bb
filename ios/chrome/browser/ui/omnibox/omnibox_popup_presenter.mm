@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -20,6 +19,7 @@ namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kShadowHeight = 10;
+const CGFloat kiPadVerticalOffset = 3;
 NS_INLINE CGFloat BottomPadding() {
   return IsIPadIdiom() ? kShadowHeight : 0;
 }
@@ -169,7 +169,7 @@ NS_INLINE CGFloat BottomPadding() {
   NSLayoutConstraint* topConstraint =
       [popup.topAnchor constraintEqualToAnchor:topLayout.bottomAnchor];
   if (IsIPadIdiom()) {
-    topConstraint.constant = kiPadOmniboxPopupVerticalOffset;
+    topConstraint.constant = kiPadVerticalOffset;
   }
 
   [NSLayoutConstraint activateConstraints:@[

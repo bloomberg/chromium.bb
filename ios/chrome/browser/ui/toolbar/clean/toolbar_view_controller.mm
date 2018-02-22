@@ -26,8 +26,6 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
-#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -39,6 +37,12 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Fullscreen constants.
+const CGFloat kIPadToolbarY = 53;
+const CGFloat kScrollFadeDistance = 30;
+}
 
 @interface ToolbarViewController ()<ToolbarViewFullscreenDelegate>
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;

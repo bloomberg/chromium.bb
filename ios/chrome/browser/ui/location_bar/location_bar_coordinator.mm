@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
@@ -28,7 +29,6 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
-#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -39,6 +39,14 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// The histogram recording CLAuthorizationStatus for omnibox queries.
+const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
+    "Omnibox.QueryIosLocationAuthorizationStatus";
+// The number of possible CLAuthorizationStatus values to report.
+const int kLocationAuthorizationStatusCount = 4;
+}  // namespace
 
 @interface LocationBarCoordinator ()<LocationBarConsumer, LocationBarDelegate> {
   std::unique_ptr<LocationBarControllerImpl> _locationBarController;
@@ -98,7 +106,7 @@
     // Set placeholder text color to match fakebox placeholder text color when
     // on iPhone.
     UIColor* placeholderTextColor =
-        [UIColor colorWithWhite:kiPhoneOmniboxPlaceholderColorBrightness
+        [UIColor colorWithWhite:kiPhoneLocationBarPlaceholderColorBrightness
                           alpha:1.0];
     [_locationBarView.textField setPlaceholderTextColor:placeholderTextColor];
   }

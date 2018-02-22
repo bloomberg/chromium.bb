@@ -17,6 +17,9 @@
 // Toolbar styling.
 extern const CGFloat kToolbarBackgroundColor;
 extern const CGFloat kIncognitoToolbarBackgroundColor;
+// The brightness of the toolbar's background color (visible on NTPs when the
+// background view is hidden).
+extern const CGFloat kNTPBackgroundColorBrightnessIncognito;
 
 // Stackview constraints.
 extern const CGFloat kLocationBarVerticalMargin;
@@ -64,5 +67,41 @@ extern const CGFloat kAdaptiveToolbarHorizontalMargin;
 extern const CGFloat kAdaptiveLocationBarCornerRadius;
 extern const CGFloat kIcongnitoAdaptiveLocationBackgroundColor;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
+
+// Height of the toolbar.
+extern const CGFloat kToolbarHeight;
+// Height of the toolbar when in fullscreen.
+extern const CGFloat kToolbarHeightFullscreen;
+
+// Accessibility identifier of the tools menu button.
+extern NSString* const kToolbarToolsMenuButtonIdentifier;
+// Accessibility identifier of the stack button.
+extern NSString* const kToolbarStackButtonIdentifier;
+// Accessibility identifier of the share button.
+extern NSString* const kToolbarShareButtonIdentifier;
+// Accessibility identifier of the omnibox button.
+extern NSString* const kToolbarOmniboxButtonIdentifier;
+
+// The maximum number to display in the tab switcher button.
+extern NSInteger const kStackButtonMaxTabCount;
+
+// Font sizes for the button containing the tab count
+extern const NSInteger kFontSizeFewerThanTenTabs;
+extern const NSInteger kFontSizeTenTabsOrMore;
+
+// Height of the shadow displayed below the toolbar when the omnibox is
+// contracted.
+extern const CGFloat kToolbarShadowHeight;
+// Height of the shadow displayed below the toolbar when the omnibox is
+// expanded.
+extern const CGFloat kToolbarFullBleedShadowHeight;
+
+// Toolbar style. Determines which button images are used.
+enum ToolbarControllerStyle {
+  ToolbarControllerStyleLightMode = 0,
+  ToolbarControllerStyleDarkMode,
+  ToolbarControllerStyleIncognitoMode,
+  ToolbarControllerStyleMaxStyles
+};
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_CONSTANTS_H_

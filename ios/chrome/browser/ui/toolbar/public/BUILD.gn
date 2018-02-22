@@ -10,11 +10,7 @@ source_set("public") {
     "primary_toolbar_coordinator.h",
     "side_swipe_toolbar_interacting.h",
     "side_swipe_toolbar_snapshot_providing.h",
-    "toolbar_controller_constants.h",
-    "toolbar_controller_constants.mm",
     "toolbar_coordinating.h",
-    "web_toolbar_controller_constants.h",
-    "web_toolbar_controller_constants.mm",
   ]
   deps = [
     ":toolbar_base_feature",

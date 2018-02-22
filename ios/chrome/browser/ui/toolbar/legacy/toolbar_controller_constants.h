@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_CONSTANTS_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_CONSTANTS_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_CONSTANTS_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_CONSTANTS_H_
 
 #import <Foundation/Foundation.h>
 
@@ -11,29 +11,8 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
-// Height of the toolbar.
-extern const CGFloat kToolbarHeight;
-// Height of the toolbar when in fullscreen.
-extern const CGFloat kToolbarHeightFullscreen;
-
 // The time delay before non-initial button images are loaded.
 extern const int64_t kNonInitialImageAdditionDelayNanosec;
-
-// Accessibility identifier of the tools menu button.
-extern NSString* const kToolbarToolsMenuButtonIdentifier;
-// Accessibility identifier of the stack button.
-extern NSString* const kToolbarStackButtonIdentifier;
-// Accessibility identifier of the share button.
-extern NSString* const kToolbarShareButtonIdentifier;
-// Accessibility identifier of the omnibox button.
-extern NSString* const kToolbarOmniboxButtonIdentifier;
-
-// The maximum number to display in the tab switcher button.
-extern NSInteger const kStackButtonMaxTabCount;
-
-// Font sizes for the button containing the tab count
-extern const NSInteger kFontSizeFewerThanTenTabs;
-extern const NSInteger kFontSizeTenTabsOrMore;
 
 // Toolbar frames shared with subclasses.
 extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
@@ -57,24 +36,6 @@ extern const LayoutRect kToolsMenuButtonFrame[INTERFACE_IDIOM_COUNT];
 // Distance to shift buttons when fading out.
 extern const LayoutOffset kButtonFadeOutXOffset;
 
-// Height of the shadow displayed below the toolbar when the omnibox is
-// contracted.
-extern const CGFloat kToolbarShadowHeight;
-// Height of the shadow displayed below the toolbar when the omnibox is
-// expanded.
-extern const CGFloat kToolbarFullBleedShadowHeight;
-
-// Toolbar style.  Determines which button images are used.
-enum ToolbarControllerStyle {
-  ToolbarControllerStyleLightMode = 0,
-  ToolbarControllerStyleDarkMode,
-  ToolbarControllerStyleIncognitoMode,
-  ToolbarControllerStyleMaxStyles
-};
-enum ToolbarButtonMode {
-  ToolbarButtonModeNormal,
-  ToolbarButtonModeReversed,
-};
 enum ToolbarButtonUIState {
   ToolbarButtonUIStateNormal = 0,
   ToolbarButtonUIStatePressed,
@@ -96,4 +57,4 @@ enum ToolbarButtonName {
   NumberOfToolbarButtonNames,
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_CONSTANTS_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_LEGACY_TOOLBAR_CONTROLLER_CONSTANTS_H_
