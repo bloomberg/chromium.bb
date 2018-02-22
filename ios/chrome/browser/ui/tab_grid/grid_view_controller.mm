@@ -73,7 +73,7 @@ NSString* const kCellIdentifier = @"GridCellIdentifier";
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>([collectionView
       dequeueReusableCellWithReuseIdentifier:kCellIdentifier
                                 forIndexPath:indexPath]);
-  [cell configureWithItem:self.items[indexPath.item] theme:GridCellThemeLight];
+  cell.title = self.items[indexPath.item].title;
   return cell;
 }
 

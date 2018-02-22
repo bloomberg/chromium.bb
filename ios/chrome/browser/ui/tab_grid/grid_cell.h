@@ -7,23 +7,26 @@
 
 #import <UIKit/UIKit.h>
 
-@class GridItem;
+#import "ios/chrome/browser/ui/tab_grid/grid_theme.h"
 
-// Theme describing the look of the cell.
-typedef NS_ENUM(NSUInteger, GridCellTheme) {
-  GridCellThemeInvalid = 0,
-  GridCellThemeLight,
-  GridCellThemeDark,
-};
+@class GridCell;
+
+// Informs the receiver of actions on the cell.
+@protocol GridCellDelegate
+- (void)closeButtonTappedForCell:(GridCell*)cell;
+@end
 
 // A square-ish cell in a grid. Contains an icon, title, snapshot, and close
 // button.
 @interface GridCell : UICollectionViewCell
-
-// Configures cell with contents of |item|. |theme| specifies the look of the
-// cell.
-- (void)configureWithItem:(GridItem*)item theme:(GridCellTheme)theme;
-
+// Delegate to inform the grid of actions on the cell.
+@property(nonatomic, weak) id<GridCellDelegate> delegate;
+// The look of the cell.
+@property(nonatomic, assign) GridTheme theme;
+// Settable UI elements of the cell.
+@property(nonatomic, weak) UIImage* icon;
+@property(nonatomic, weak) UIImage* snapshot;
+@property(nonatomic, copy) NSString* title;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_CELL_H_
