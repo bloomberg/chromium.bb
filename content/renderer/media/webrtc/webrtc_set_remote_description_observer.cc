@@ -37,6 +37,18 @@ WebRtcSetRemoteDescriptionObserver::States::operator=(States&& other) {
   return *this;
 }
 
+void WebRtcSetRemoteDescriptionObserver::States::CheckInvariants() const {
+  // Invariants:
+  // - All receiver states have a stream ref
+  // - All receiver states refer to streams that are non-null.
+  for (auto& receiver_state : receiver_states) {
+    for (auto& stream_ref : receiver_state.stream_refs) {
+      CHECK(stream_ref);
+      CHECK(!stream_ref->adapter().web_stream().IsNull());
+    }
+  }
+}
+
 WebRtcSetRemoteDescriptionObserver::WebRtcSetRemoteDescriptionObserver() {}
 
 WebRtcSetRemoteDescriptionObserver::~WebRtcSetRemoteDescriptionObserver() {}

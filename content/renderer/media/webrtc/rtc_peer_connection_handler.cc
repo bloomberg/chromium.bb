@@ -1148,6 +1148,7 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
   std::vector<StreamState> GetStreamStates(
       const WebRtcSetRemoteDescriptionObserver::States& states,
       const std::vector<RTCRtpReceiver*>& removed_receivers) {
+    states.CheckInvariants();
     std::vector<StreamState> stream_states;
     // The receiver's track belongs to all of its streams. A stream may be
     // associated with multiple tracks (multiple receivers).
@@ -1175,6 +1176,7 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
         GetOrAddStreamStateForStream(*stream_ref, &stream_states);
       }
     }
+    states.CheckInvariants();
     return stream_states;
   }
 
