@@ -63,10 +63,10 @@
         <div slot="title">$i18n{removeSelected}</div>
         <div slot="body">$i18n{deleteWarning}</div>
         <div slot="button-container">
-          <paper-button class="cancel-button" on-tap="onDialogCancelTap_">
+          <paper-button class="cancel-button" on-click="onDialogCancelTap_">
             $i18n{cancel}
           </paper-button>
-          <paper-button class="action-button" on-tap="onDialogConfirmTap_">
+          <paper-button class="action-button" on-click="onDialogConfirmTap_">
             $i18n{deleteConfirm}
           </paper-button>
         </div>
@@ -78,12 +78,12 @@
         <button id="menuMoreButton" slot="item" class="dropdown-item"
             hidden="[[!canSearchMoreFromSite_(
                 searchedTerm, actionMenuModel_.item.domain)]]"
-            on-tap="onMoreFromSiteTap_">
+            on-click="onMoreFromSiteTap_">
           $i18n{moreFromSite}
         </button>
         <button id="menuRemoveButton" slot="item" class="dropdown-item"
             hidden="[[!canDeleteHistory_]]"
-            on-tap="onRemoveFromHistoryTap_">
+            on-click="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}
         </button>
       </dialog>

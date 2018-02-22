@@ -278,13 +278,13 @@ cr.define('md_history', function() {
         item: this.item,
       });
 
-      // Stops the 'tap' event from closing the menu when it opens.
+      // Stops the 'click' event from closing the menu when it opens.
       e.stopPropagation();
     },
 
     /**
-     * Record metrics when a result is clicked. This is deliberately tied to
-     * on-click rather than on-tap, as on-click triggers from middle clicks.
+     * Record metrics when a result is clicked.
+     * @private
      */
     onLinkClick_: function() {
       const browserService = md_history.BrowserService.getInstance();

@@ -82,7 +82,7 @@
       <div id="sign-in-promo">$i18n{signInPromo}</div>
       <div id="sign-in-promo-desc">$i18n{signInPromoDesc}</div>
       <paper-button id="sign-in-button" class="action-button"
-          on-tap="onSignInTap_">
+          on-click="onSignInTap_">
         $i18n{signInButton}
       </paper-button>
     </div>
@@ -90,11 +90,11 @@
     <template is="cr-lazy-render" id="menu">
       <dialog is="cr-action-menu">
         <button id="menuOpenButton" slot="item" class="dropdown-item"
-            on-tap="onOpenAllTap_">
+            on-click="onOpenAllTap_">
           $i18n{openAll}
         </button>
         <button id="menuDeleteButton" slot="item" class="dropdown-item"
-            on-tap="onDeleteSessionTap_">
+            on-click="onDeleteSessionTap_">
           $i18n{deleteSession}
         </button>
       </dialog>

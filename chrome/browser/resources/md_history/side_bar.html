@@ -107,7 +107,7 @@
       <div class="separator"></div>
       <a id="clear-browsing-data"
           href="chrome://settings/clearBrowserData"
-          on-tap="onClearBrowsingDataTap_"
+          on-click="onClearBrowsingDataTap_"
           disabled$="[[guestSession_]]"
           tabindex$="[[computeClearBrowsingDataTabIndex_(guestSession_)]]">
         $i18n{clearBrowsingData}
