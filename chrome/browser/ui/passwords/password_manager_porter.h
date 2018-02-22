@@ -35,19 +35,13 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
       base::RepeatingCallback<void(password_manager::ExportProgressStatus,
                                    const std::string&)>;
 
-  explicit PasswordManagerPorter(
-      std::unique_ptr<password_manager::PasswordManagerExporter> exporter);
-  ~PasswordManagerPorter() override;
-
-  // Create an instance of PasswordManagerPorter.
   // |credential_provider_interface| provides the credentials which can be
   // exported. |on_export_progress_callback| will be called with updates to
   // the progress of exporting.
-  static std::unique_ptr<PasswordManagerPorter>
-  CreatePasswordManagerPorterWithCredentialProvider(
-      password_manager::CredentialProviderInterface*
-          credential_provider_interface,
-      ProgressCallback on_export_progress_callback);
+  PasswordManagerPorter(password_manager::CredentialProviderInterface*
+                            credential_provider_interface,
+                        ProgressCallback on_export_progress_callback);
+  ~PasswordManagerPorter() override;
 
   void set_web_contents(content::WebContents* web_contents) {
     web_contents_ = web_contents;
@@ -56,6 +50,10 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
   // password_manager::ExportFlow
   bool Store() override;
   password_manager::ExportProgressStatus GetExportProgressStatus() override;
+
+  // The next export will use |exporter|, instead of creating a new instance.
+  void SetExporterForTesting(
+      std::unique_ptr<password_manager::PasswordManagerExporter> exporter);
 
   // password_manager::ImportFlow
   void Load() override;
@@ -85,6 +83,16 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
   std::unique_ptr<password_manager::PasswordManagerExporter> exporter_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   Profile* profile_ = nullptr;
+
+  // We store |credential_provider_interface_| and
+  // |on_export_progress_callback_| to use them to create a new
+  // PasswordManagerExporter instance for each export.
+  password_manager::CredentialProviderInterface* credential_provider_interface_;
+  ProgressCallback on_export_progress_callback_;
+  // If |exporter_for_testing_| is set, the next export will make it the current
+  // exporter, instead of creating a new instance.
+  std::unique_ptr<password_manager::PasswordManagerExporter>
+      exporter_for_testing_;
 
   // Caching the current WebContents for when PresentFileSelector is called.
   content::WebContents* web_contents_ = nullptr;

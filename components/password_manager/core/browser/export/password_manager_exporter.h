@@ -20,9 +20,10 @@ namespace password_manager {
 
 class CredentialProviderInterface;
 
-// Controls the exporting of passwords. PasswordManagerExporter will perform
-// the export asynchrnously as soon as all the required info is available
-// (password list and destination), unless canceled.
+// Controls the exporting of passwords. One instance per export flow.
+// PasswordManagerExporter will perform the export asynchronously as soon as all
+// the required info is available (password list and destination), unless
+// canceled.
 class PasswordManagerExporter {
  public:
   using ProgressCallback =

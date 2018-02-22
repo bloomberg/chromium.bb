@@ -104,41 +104,48 @@ void PasswordImportConsumer::ConsumePassword(
 }  // namespace
 
 PasswordManagerPorter::PasswordManagerPorter(
-    std::unique_ptr<password_manager::PasswordManagerExporter> exporter)
-    : exporter_(std::move(exporter)) {}
-
-PasswordManagerPorter::~PasswordManagerPorter() {}
-
-// static
-std::unique_ptr<PasswordManagerPorter>
-PasswordManagerPorter::CreatePasswordManagerPorterWithCredentialProvider(
     password_manager::CredentialProviderInterface*
         credential_provider_interface,
-    ProgressCallback on_export_progress_callback) {
-  return std::make_unique<PasswordManagerPorter>(
-      std::make_unique<password_manager::PasswordManagerExporter>(
-          credential_provider_interface,
-          std::move(on_export_progress_callback)));
-}
+    ProgressCallback on_export_progress_callback)
+    : credential_provider_interface_(credential_provider_interface),
+      on_export_progress_callback_(on_export_progress_callback) {}
+
+PasswordManagerPorter::~PasswordManagerPorter() {}
 
 bool PasswordManagerPorter::Store() {
   // In unittests a null WebContents means: "Abort creating the file Selector."
   if (!web_contents_)
     return true;
 
+  if (exporter_ && exporter_->GetProgressStatus() ==
+                       password_manager::ExportProgressStatus::IN_PROGRESS) {
+    return false;
+  }
+
+  // Set a new exporter for this request.
+  exporter_ =
+      exporter_for_testing_
+          ? std::move(exporter_for_testing_)
+          : std::make_unique<password_manager::PasswordManagerExporter>(
+                credential_provider_interface_, on_export_progress_callback_);
+
   // Start serialising while the user selects a file.
   exporter_->PreparePasswordsForExport();
   PresentFileSelector(web_contents_,
                       PasswordManagerPorter::Type::PASSWORD_EXPORT);
 
-  // TODO(http://crbug/789561) Reject the request if an export is already in
-  // progress.
   return true;
 }
 
 password_manager::ExportProgressStatus
 PasswordManagerPorter::GetExportProgressStatus() {
-  return exporter_->GetProgressStatus();
+  return exporter_ ? exporter_->GetProgressStatus()
+                   : password_manager::ExportProgressStatus::NOT_STARTED;
+}
+
+void PasswordManagerPorter::SetExporterForTesting(
+    std::unique_ptr<password_manager::PasswordManagerExporter> exporter) {
+  exporter_for_testing_ = std::move(exporter);
 }
 
 void PasswordManagerPorter::Load() {

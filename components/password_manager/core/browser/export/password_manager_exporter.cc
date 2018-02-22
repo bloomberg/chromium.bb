@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
@@ -17,6 +18,16 @@
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 
 namespace {
+
+// Multiple exports should be queued in sequence. This helps avoid race
+// conditions where there are multiple simultaneous exports to the same
+// destination and one of them was cancelled and will delete the file. We use
+// TaskPriority::USER_VISIBLE, because a busy UI is displayed while the
+// passwords are being exported.
+base::LazySingleThreadTaskRunner g_task_runner =
+    LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(), base::TaskPriority::USER_VISIBLE),
+        base::SingleThreadTaskRunnerThreadMode::SHARED);
 
 // A wrapper for |write_function|, which can be bound and keep a copy of its
 // data on the closure.
@@ -44,8 +55,7 @@ PasswordManagerExporter::PasswordManagerExporter(
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(&base::WriteFile),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE, base::MayBlock()})),
+      task_runner_(g_task_runner.Get()),
       weak_factory_(this) {}
 
 PasswordManagerExporter::~PasswordManagerExporter() {}
