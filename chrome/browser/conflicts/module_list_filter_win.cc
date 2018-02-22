@@ -29,15 +29,23 @@ bool MatchesModuleGroup(const chrome::conflicts::ModuleGroup& module_group,
 
   // Now look at each module in the group in detail.
   for (const auto& module : module_group.modules()) {
-    // A valid entry contains both the basename and the code id.
-    if (!module.has_basename_hash() || !module.has_code_id_hash())
+    // A valid entry contains one of the basename and the code id.
+    if (!module.has_basename_hash() && !module.has_code_id_hash())
       continue;
 
-    // Match against the module.
-    if (module.basename_hash() == module_basename_hash &&
-        module.code_id_hash() == module_code_id_hash) {
-      return true;
+    // Skip this entry if it doesn't match the basename of the module.
+    if (module.has_basename_hash() &&
+        module.basename_hash() != module_basename_hash) {
+      continue;
     }
+
+    // Or the code id.
+    if (module.has_code_id_hash() &&
+        module.code_id_hash() != module_code_id_hash) {
+      continue;
+    }
+
+    return true;
   }
 
   return false;

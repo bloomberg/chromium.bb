@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
+#include "base/optional.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +32,10 @@ bool WriteStringToFile(const base::FilePath& file_path,
   return contents.size() == static_cast<size_t>(result);
 }
 
+std::string GetCodeId(uint32_t module_time_date_stamp, uint32_t module_size) {
+  return base::StringPrintf("%08X%x", module_time_date_stamp, module_size);
+}
+
 // Helper class to build and serialize a ModuleList.
 class ModuleListBuilder {
  public:
@@ -42,19 +47,31 @@ class ModuleListBuilder {
   }
 
   // Adds a module to the whitelist.
-  void AddWhitelistedModule(const ModuleInfoKey& module_key,
-                            const ModuleInfoData& module_data) {
+  void AddWhitelistedModule(base::Optional<base::string16> basename,
+                            base::Optional<std::string> code_id) {
+    CHECK(basename.has_value() || code_id.has_value());
+
     chrome::conflicts::ModuleGroup* module_group =
         module_list_.mutable_whitelist()->add_module_groups();
 
     chrome::conflicts::Module* module = module_group->add_modules();
 
-    module->set_basename_hash(base::SHA1HashString(base::UTF16ToUTF8(
-        base::i18n::ToLower(module_data.inspection_result->basename))));
+    if (basename.has_value()) {
+      module->set_basename_hash(base::SHA1HashString(
+          base::UTF16ToUTF8(base::i18n::ToLower(basename.value()))));
+    }
 
-    std::string code_id = base::StringPrintf(
-        "%08X%x", module_key.module_time_date_stamp, module_key.module_size);
-    module->set_code_id_hash(base::SHA1HashString(code_id));
+    if (code_id.has_value())
+      module->set_code_id_hash(base::SHA1HashString(code_id.value()));
+  }
+
+  // Adds a module to the whitelist. Used when both the Code ID and the basename
+  // must be set.
+  void AddWhitelistedModule(const ModuleInfoKey& module_key,
+                            const ModuleInfoData& module_data) {
+    AddWhitelistedModule(
+        module_data.inspection_result->basename,
+        GetCodeId(module_key.module_time_date_stamp, module_key.module_size));
   }
 
   // Adds a module to the blacklist.
@@ -79,9 +96,8 @@ class ModuleListBuilder {
     module->set_basename_hash(base::SHA1HashString(base::UTF16ToUTF8(
         base::i18n::ToLower(module_data.inspection_result->basename))));
 
-    std::string code_id = base::StringPrintf(
-        "%08X%x", module_key.module_time_date_stamp, module_key.module_size);
-    module->set_code_id_hash(base::SHA1HashString(code_id));
+    module->set_code_id_hash(base::SHA1HashString(
+        GetCodeId(module_key.module_time_date_stamp, module_key.module_size)));
   }
 
   // Serializes the |module_list_| to |module_list_path_|. Returns true on
@@ -189,4 +205,55 @@ TEST_F(ModuleListFilterTest, BlacklistedModules) {
   EXPECT_EQ(kFurtherInfoURL, blacklist_action->message_url());
   EXPECT_FALSE(
       module_list_filter().IsBlacklisted(module_2.first, module_2.second));
+}
+
+TEST_F(ModuleListFilterTest, BasenameOnly) {
+  ModuleInfo original =
+      CreateModuleInfo(base::FilePath(L"c:\\path\\basename.dll"), 1111, 0001);
+  ModuleInfo same_basename = CreateModuleInfo(
+      base::FilePath(L"c:\\wrong_path\\basename.dll"), 2222, 0002);
+  ModuleInfo same_path = CreateModuleInfo(
+      base::FilePath(L"c:\\path\\wrong_basename.dll"), 3333, 0003);
+  ModuleInfo same_code_id = CreateModuleInfo(
+      base::FilePath(L"c:\\wrong_path\\wrong_basename.dll"), 1111, 0001);
+
+  ModuleListBuilder module_list_builder(module_list_path());
+  module_list_builder.AddWhitelistedModule(
+      original.second.inspection_result->basename, base::nullopt);
+  ASSERT_TRUE(module_list_builder.Finalize());
+
+  ASSERT_TRUE(module_list_filter().Initialize(module_list_path()));
+
+  EXPECT_TRUE(
+      module_list_filter().IsWhitelisted(original.first, original.second));
+  EXPECT_TRUE(module_list_filter().IsWhitelisted(same_basename.first,
+                                                 same_basename.second));
+  EXPECT_FALSE(
+      module_list_filter().IsWhitelisted(same_path.first, same_path.second));
+  EXPECT_FALSE(module_list_filter().IsWhitelisted(same_code_id.first,
+                                                  same_code_id.second));
+}
+
+TEST_F(ModuleListFilterTest, CodeIdOnly) {
+  ModuleInfo original =
+      CreateModuleInfo(base::FilePath(L"c:\\path\\basename.dll"), 1111, 0001);
+  ModuleInfo same_basename = CreateModuleInfo(
+      base::FilePath(L"c:\\wrong_path\\basename.dll"), 2222, 0002);
+  ModuleInfo same_code_id = CreateModuleInfo(
+      base::FilePath(L"c:\\wrong_path\\wrong_basename.dll"), 1111, 0001);
+
+  ModuleListBuilder module_list_builder(module_list_path());
+  module_list_builder.AddWhitelistedModule(
+      base::nullopt, GetCodeId(original.first.module_time_date_stamp,
+                               original.first.module_size));
+  ASSERT_TRUE(module_list_builder.Finalize());
+
+  ASSERT_TRUE(module_list_filter().Initialize(module_list_path()));
+
+  EXPECT_TRUE(
+      module_list_filter().IsWhitelisted(original.first, original.second));
+  EXPECT_FALSE(module_list_filter().IsWhitelisted(same_basename.first,
+                                                  same_basename.second));
+  EXPECT_TRUE(module_list_filter().IsWhitelisted(same_code_id.first,
+                                                 same_code_id.second));
 }
