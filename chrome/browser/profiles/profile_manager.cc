@@ -490,8 +490,13 @@ Profile* ProfileManager::GetActiveUserProfile() {
 // static
 Profile* ProfileManager::CreateInitialProfile() {
   ProfileManager* const profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetProfile(profile_manager->user_data_dir().Append(
-      profile_manager->GetInitialProfileDir()));
+  Profile* profile =
+      profile_manager->GetProfile(profile_manager->user_data_dir().Append(
+          profile_manager->GetInitialProfileDir()));
+
+  if (profile_manager->ShouldGoOffTheRecord(profile))
+    return profile->GetOffTheRecordProfile();
+  return profile;
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
