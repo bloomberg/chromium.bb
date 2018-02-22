@@ -86,10 +86,6 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationDesktopGL:
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
-      // Note that with virtualization we might still be able to make current
-      // a different onscreen surface with this context later. But we should
-      // always be creating the context with an offscreen surface first.
-      DCHECK(compatible_surface->IsOffscreen());
       return InitializeGLContext(new GLContextCGL(share_group),
                                  compatible_surface, attribs);
 #if BUILDFLAG(USE_EGL_ON_MAC)
