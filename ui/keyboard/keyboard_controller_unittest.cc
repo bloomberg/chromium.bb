@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/dummy_text_input_client.h"
@@ -204,13 +204,11 @@ class SetModeCallbackInvocationCounter {
 
 }  // namespace
 
-class KeyboardControllerTest : public testing::Test,
+class KeyboardControllerTest : public aura::test::AuraTestBase,
                                public KeyboardControllerObserver {
  public:
   KeyboardControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        visible_bounds_number_of_calls_(0),
+      : visible_bounds_number_of_calls_(0),
         occluding_bounds_number_of_calls_(0),
         is_available_number_of_calls_(0),
         is_available_(false),
@@ -218,24 +216,14 @@ class KeyboardControllerTest : public testing::Test,
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {
-    // The ContextFactory must exist before any Compositors are created.
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
-
     ui::SetUpInputMethodFactoryForTesting();
-    aura_test_helper_.reset(new aura::test::AuraTestHelper());
-    aura_test_helper_->SetUp(context_factory, context_factory_private);
-    new wm::DefaultActivationClient(aura_test_helper_->root_window());
+    aura::test::AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
     layout_delegate_.reset(new TestKeyboardLayoutDelegate());
-    controller_.reset(
-        new KeyboardController(std::make_unique<TestKeyboardUI>(
-                                   aura_test_helper_->host()->GetInputMethod()),
-                               layout_delegate_.get()));
+    controller_.reset(new KeyboardController(
+        std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
+        layout_delegate_.get()));
     controller()->AddObserver(this);
   }
 
@@ -244,11 +232,9 @@ class KeyboardControllerTest : public testing::Test,
       controller()->RemoveObserver(this);
     controller_.reset();
     focus_controller_.reset();
-    aura_test_helper_->TearDown();
-    ui::TerminateContextFactoryForTests();
+    aura::test::AuraTestBase::TearDown();
   }
 
-  aura::Window* root_window() { return aura_test_helper_->root_window(); }
   KeyboardUI* ui() { return controller_->ui(); }
   KeyboardController* controller() { return controller_.get(); }
 
@@ -334,8 +320,6 @@ class KeyboardControllerTest : public testing::Test,
     run_loop->Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<TestFocusController> focus_controller_;
 
  private:
