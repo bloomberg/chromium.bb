@@ -142,7 +142,7 @@ source_set("embedder_unittests") {
   testonly = true
 
   # TODO: Figure out why this visibility check fails on Android.
-  # visibility = [ "//mojo/edk/system:mojo_system_unittests" ]
+  # visibility = [ "//mojo:mojo_unittests" ]
 
   sources = [
     "embedder_unittest.cc",

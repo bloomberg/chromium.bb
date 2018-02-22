@@ -119,17 +119,6 @@ component("system") {
   allow_circular_includes_from = [ "//mojo/edk/embedder" ]
 }
 
-group("tests") {
-  testonly = true
-  deps = [
-    ":mojo_system_unittests",
-  ]
-
-  if (!is_ios) {
-    deps += [ ":mojo_message_pipe_perftests" ]
-  }
-}
-
 source_set("test_utils") {
   testonly = true
 
@@ -151,7 +140,8 @@ source_set("test_utils") {
   ]
 }
 
-test("mojo_system_unittests") {
+source_set("test_sources") {
+  testonly = true
   sources = [
     "channel_unittest.cc",
     "core_test_base.cc",

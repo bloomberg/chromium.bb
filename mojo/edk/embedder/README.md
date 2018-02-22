@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
 
 Now you have IPC initialized between two processes. For some practical examples
 of how this is done, you can dig into the various multiprocess tests in the
-`mojo_system_unittests` test suite.
+`mojo_unittests` test suite.
 
 ## Bootstrapping Cross-Process Message Pipes
 

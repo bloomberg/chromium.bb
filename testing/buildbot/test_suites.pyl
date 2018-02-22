@@ -808,13 +808,9 @@
     },
     'mojo_common_unittests': {
     },
-    'mojo_public_bindings_unittests': {
-    },
-    'mojo_public_system_unittests': {
-    },
-    'mojo_system_unittests': {
+    'mojo_unittests': {
       'args': [
-        '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_system_unittests.filter',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',
       ],
     },
     'net_unittests': {
@@ -1351,17 +1347,7 @@
         'hard_timeout': 60,
       },
     },
-    'mojo_public_bindings_unittests': {
-      'android_swarming': {
-        'hard_timeout': 60,
-      },
-    },
-    'mojo_public_system_unittests': {
-      'android_swarming': {
-        'hard_timeout': 60,
-      },
-    },
-    'mojo_system_unittests': {
+    'mojo_unittests': {
       'android_swarming': {
         'hard_timeout': 180,
       },

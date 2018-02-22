@@ -23,7 +23,7 @@ const MojoHandleSignals kSignalAll =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
     MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
 
-TEST(CoreTest, GetTimeTicksNow) {
+TEST(CoreAPITest, GetTimeTicksNow) {
   const MojoTimeTicks start = MojoGetTimeTicksNow();
   EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
       << "MojoGetTimeTicksNow should return nonzero value";
@@ -31,7 +31,7 @@ TEST(CoreTest, GetTimeTicksNow) {
 
 // The only handle that's guaranteed to be invalid is |MOJO_HANDLE_INVALID|.
 // Tests that everything that takes a handle properly recognizes it.
-TEST(CoreTest, InvalidHandle) {
+TEST(CoreAPITest, InvalidHandle) {
   MojoHandle h0, h1;
   char buffer[10] = {0};
   uint32_t buffer_size;
@@ -75,7 +75,7 @@ TEST(CoreTest, InvalidHandle) {
             MojoMapBuffer(h0, 0, 1, &write_pointer, MOJO_MAP_BUFFER_FLAG_NONE));
 }
 
-TEST(CoreTest, BasicMessagePipe) {
+TEST(CoreAPITest, BasicMessagePipe) {
   MojoHandle h0, h1;
   MojoHandleSignals sig;
 
@@ -151,7 +151,7 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }
 
-TEST(CoreTest, BasicDataPipe) {
+TEST(CoreAPITest, BasicDataPipe) {
   MojoHandle hp, hc;
   MojoHandleSignals sig;
   char buffer[20] = {0};
@@ -264,7 +264,7 @@ TEST(CoreTest, BasicDataPipe) {
   // the producer never-writable?
 }
 
-TEST(CoreTest, BasicSharedBuffer) {
+TEST(CoreAPITest, BasicSharedBuffer) {
   MojoHandle h0, h1;
   void* pointer;
 
@@ -314,7 +314,7 @@ TEST(CoreTest, BasicSharedBuffer) {
 extern "C" const char* MinimalCTest(void);
 
 // This checks that things actually work in C (not C++).
-TEST(CoreTest, MinimalCTest) {
+TEST(CoreAPITest, MinimalCTest) {
   const char* failure = MinimalCTest();
   EXPECT_FALSE(failure) << failure;
 }
