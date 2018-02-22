@@ -42,7 +42,8 @@ class ShippingAddressEditorViewController : public EditorViewController {
       BackNavigationType back_navigation_type,
       base::OnceClosure on_edited,
       base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
-      autofill::AutofillProfile* profile);
+      autofill::AutofillProfile* profile,
+      bool is_incognito);
   ~ShippingAddressEditorViewController() override;
 
   // EditorViewController:

@@ -78,10 +78,12 @@ EditorViewController::EditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
-    BackNavigationType back_navigation_type)
+    BackNavigationType back_navigation_type,
+    bool is_incognito)
     : PaymentRequestSheetController(spec, state, dialog),
       initial_focus_field_view_(nullptr),
-      back_navigation_type_(back_navigation_type) {}
+      back_navigation_type_(back_navigation_type),
+      is_incognito_(is_incognito) {}
 
 EditorViewController::~EditorViewController() {}
 

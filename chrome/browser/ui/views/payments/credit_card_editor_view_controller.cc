@@ -162,8 +162,9 @@ CreditCardEditorViewController::CreditCardEditorViewController(
     int next_ui_tag,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::CreditCard&)> on_added,
-    autofill::CreditCard* credit_card)
-    : EditorViewController(spec, state, dialog, back_navigation),
+    autofill::CreditCard* credit_card,
+    bool is_incognito)
+    : EditorViewController(spec, state, dialog, back_navigation, is_incognito),
       on_edited_(std::move(on_edited)),
       on_added_(std::move(on_added)),
       credit_card_to_edit_(credit_card),
@@ -409,8 +410,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
 
     credit_card_to_edit_->set_billing_address_id(
         model->GetItemIdentifierAt(address_combobox->selected_index()));
-    state()->GetPersonalDataManager()->UpdateServerCardMetadata(
-        *credit_card_to_edit_);
+    if (!is_incognito()) {
+      state()->GetPersonalDataManager()->UpdateServerCardMetadata(
+          *credit_card_to_edit_);
+    }
     return true;
   }
 
@@ -455,8 +458,10 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   }
 
   if (!credit_card_to_edit_) {
-    // Add the card (will not add a duplicate).
-    state()->GetPersonalDataManager()->AddCreditCard(credit_card);
+    if (!is_incognito()) {
+      // Add the card (will not add a duplicate).
+      state()->GetPersonalDataManager()->AddCreditCard(credit_card);
+    }
     std::move(on_added_).Run(credit_card);
   } else {
     credit_card_to_edit_->set_billing_address_id(
@@ -481,7 +486,9 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
                               locale),
           locale);
     }
-    state()->GetPersonalDataManager()->UpdateCreditCard(*credit_card_to_edit_);
+    if (!is_incognito())
+      state()->GetPersonalDataManager()->UpdateCreditCard(
+          *credit_card_to_edit_);
     std::move(on_edited_).Run();
   }
 

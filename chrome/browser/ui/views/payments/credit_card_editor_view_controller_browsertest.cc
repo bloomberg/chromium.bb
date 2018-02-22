@@ -989,4 +989,51 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, DoneButtonDisabled) {
   EXPECT_FALSE(save_button->enabled());
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
+                       EnteringValidDataInIncognito) {
+  SetIncognito();
+  NavigateTo("/payment_request_no_shipping_test.html");
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(kJune2017);
+
+  InvokePaymentRequestUI();
+
+  // No instruments are available.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(0U, request->state()->available_instruments().size());
+  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+
+  // But there must be at least one address available for billing.
+  autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(billing_profile);
+
+  OpenCreditCardEditorScreen();
+
+  SetEditorTextfieldValue(base::ASCIIToUTF16("Bob Jones"),
+                          autofill::CREDIT_CARD_NAME_FULL);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(" 4111 1111-1111 1111-"),
+                          autofill::CREDIT_CARD_NUMBER);
+  SetComboboxValue(base::ASCIIToUTF16("05"), autofill::CREDIT_CARD_EXP_MONTH);
+  SetComboboxValue(base::ASCIIToUTF16("2026"),
+                   autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR);
+  SelectBillingAddress(billing_profile.guid());
+
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+
+  // Since this is incognito, the credit card shouldn't have been added to the
+  // PersonalDataManager but it should be available in available_instruments.
+  EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());
+
+  // One instrument is available and selected.
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(request->state()->available_instruments().back().get(),
+            request->state()->selected_instrument());
+}
+
 }  // namespace payments

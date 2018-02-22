@@ -348,6 +348,10 @@ void PaymentRequest::HideIfNecessary() {
   display_handle_.reset();
 }
 
+bool PaymentRequest::IsIncognito() const {
+  return delegate_->IsIncognito();
+}
+
 void PaymentRequest::RecordFirstAbortReason(
     JourneyLogger::AbortReason abort_reason) {
   if (!has_recorded_completion_) {

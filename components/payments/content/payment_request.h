@@ -101,6 +101,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Hide this Payment Request if it's already showing.
   void HideIfNecessary();
 
+  bool IsIncognito() const;
+
   content::WebContents* web_contents() { return web_contents_; }
 
   PaymentRequestSpec* spec() { return spec_.get(); }

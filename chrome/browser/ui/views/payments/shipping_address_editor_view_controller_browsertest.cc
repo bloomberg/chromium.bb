@@ -1216,4 +1216,52 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                 autofill::ADDRESS_HOME_COUNTRY, kLocale));
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       SyncDataInIncognito) {
+  SetIncognito();
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+
+  // No shipping profiles are available.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(0U, request->state()->shipping_profiles().size());
+  EXPECT_EQ(nullptr, request->state()->selected_shipping_profile());
+
+  test_region_data_loader_.set_synchronous_callback(true);
+  OpenShippingAddressEditorScreen();
+
+  std::string country_code(GetSelectedCountryCode());
+
+  SetCommonFields();
+  // We also need to set the state when no region data is provided.
+  SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
+
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
+
+  // Verifying the data is in the DB.
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+  ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
+
+  // In incognito, the profile should be available in shipping_profiles but it
+  // shouldn't be saved to the PersonalDataManager.
+  ASSERT_EQ(0UL, personal_data_manager->GetProfiles().size());
+
+  ASSERT_EQ(1UL, request->state()->shipping_profiles().size());
+  autofill::AutofillProfile* profile =
+      request->state()->shipping_profiles().back();
+  DCHECK(profile);
+  EXPECT_EQ(base::ASCIIToUTF16(country_code),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::ASCIIToUTF16(kAnyState),
+            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+  ExpectExistingRequiredFields(/*unset_types=*/nullptr,
+                               /*accept_empty_phone_number=*/false);
+}
+
 }  // namespace payments

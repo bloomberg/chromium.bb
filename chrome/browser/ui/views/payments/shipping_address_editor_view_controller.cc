@@ -51,8 +51,13 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
     BackNavigationType back_navigation_type,
     base::OnceClosure on_edited,
     base::OnceCallback<void(const autofill::AutofillProfile&)> on_added,
-    autofill::AutofillProfile* profile)
-    : EditorViewController(spec, state, dialog, back_navigation_type),
+    autofill::AutofillProfile* profile,
+    bool is_incognito)
+    : EditorViewController(spec,
+                           state,
+                           dialog,
+                           back_navigation_type,
+                           is_incognito),
       on_edited_(std::move(on_edited)),
       on_added_(std::move(on_added)),
       profile_to_edit_(profile),
@@ -121,7 +126,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
   if (!profile_to_edit_) {
     // Add the profile (will not add a duplicate).
     profile.set_origin(autofill::kSettingsOrigin);
-    state()->GetPersonalDataManager()->AddProfile(profile);
+    if (!is_incognito())
+      state()->GetPersonalDataManager()->AddProfile(profile);
     std::move(on_added_).Run(profile);
     on_edited_.Reset();
   } else {
@@ -139,7 +145,8 @@ bool ShippingAddressEditorViewController::ValidateModelAndSave() {
                                        /*ignore_errors=*/false);
     DCHECK(success);
     profile_to_edit_->set_origin(autofill::kSettingsOrigin);
-    state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
+    if (!is_incognito())
+      state()->GetPersonalDataManager()->UpdateProfile(*profile_to_edit_);
     state()->profile_comparator()->Invalidate(*profile_to_edit_);
     std::move(on_edited_).Run();
     on_added_.Reset();

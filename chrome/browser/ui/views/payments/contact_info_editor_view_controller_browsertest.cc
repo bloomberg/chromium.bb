@@ -279,4 +279,47 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   EXPECT_EQ(request->state()->contact_profiles().back(), profile);
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+                       HappyPathInIncognito) {
+  SetIncognito();
+  NavigateTo("/payment_request_contact_details_test.html");
+  InvokePaymentRequestUI();
+  OpenContactInfoEditorScreen();
+
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kNameFull), autofill::NAME_FULL);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kPhoneNumber),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+  SetEditorTextfieldValue(base::ASCIIToUTF16(kEmailAddress),
+                          autofill::EMAIL_ADDRESS);
+
+  autofill::PersonalDataManager* personal_data_manager = GetDataManager();
+  personal_data_manager->AddObserver(&personal_data_observer_);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+  ClickOnDialogViewAndWait(DialogViewID::EDITOR_SAVE_BUTTON);
+
+  // In incognito, the profile should be available in contact_profiles but it
+  // shouldn't be saved to the PersonalDataManager.
+  ASSERT_EQ(0UL, personal_data_manager->GetProfiles().size());
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1U, request->state()->contact_profiles().size());
+  EXPECT_EQ(request->state()->contact_profiles().back(),
+            request->state()->selected_contact_profile());
+
+  autofill::AutofillProfile* profile =
+      request->state()->contact_profiles().back();
+  DCHECK(profile);
+
+  EXPECT_EQ(base::ASCIIToUTF16(kNameFull),
+            profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                             GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16("16515558946"),
+            profile->GetInfo(
+                autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                GetLocale()));
+  EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
+            profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                             GetLocale()));
+}
+
 }  // namespace payments
