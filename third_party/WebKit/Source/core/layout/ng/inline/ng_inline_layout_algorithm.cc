@@ -60,7 +60,7 @@ NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
   }
 
   // An empty line, or only trailing spaces.
-  DCHECK_EQ(space, line_info.AvailableWidth());
+  DCHECK_EQ(space, line_info.AvailableWidth() - line_info.TextIndent());
   end_offset = line_info.StartOffset();
 }
 
