@@ -15,7 +15,7 @@ namespace blink {
 class {{forward_declaration}};
 {% endfor %}
 
-class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
+class {{exported}}{{cpp_class}} : public CallbackFunctionBase {
  public:
   static {{cpp_class}}* Create(v8::Local<v8::Function> callback_function) {
     return new {{cpp_class}}(callback_function);
@@ -32,6 +32,10 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   // error handler such as DevTools' console.
   void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
+
+ protected:
+  explicit {{cpp_class}}(const {{cpp_class}}& other)
+      : CallbackFunctionBase(other) {}
 
  private:
   explicit {{cpp_class}}(v8::Local<v8::Function> callback_function)

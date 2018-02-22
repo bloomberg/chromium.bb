@@ -75,9 +75,10 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   // functions as persistent handles. This is acceptable because the request
   // object will be discarded in a limited time due to success, failure, or
   // destruction of the execution context.
-  V8VoidFunction::Persistent<V8VoidFunction> success_callback_;
-  V8RTCPeerConnectionErrorCallback::Persistent<V8RTCPeerConnectionErrorCallback>
+  Member<V8PersistentCallbackFunction<V8VoidFunction>> success_callback_;
+  Member<V8PersistentCallbackFunction<V8RTCPeerConnectionErrorCallback>>
       error_callback_;
+
   Member<RTCPeerConnection> requester_;
 };
 

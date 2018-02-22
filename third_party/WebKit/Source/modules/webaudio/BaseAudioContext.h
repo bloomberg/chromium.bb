@@ -82,8 +82,6 @@ class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
-class V8DecodeErrorCallback;
-class V8DecodeSuccessCallback;
 class WaveShaperNode;
 
 // BaseAudioContext is the cornerstone of the web audio API and all AudioNodes
@@ -187,10 +185,11 @@ class MODULES_EXPORT BaseAudioContext
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
-  void HandleDecodeAudioData(AudioBuffer*,
-                             ScriptPromiseResolver*,
-                             V8DecodeSuccessCallback*,
-                             V8DecodeErrorCallback*);
+  void HandleDecodeAudioData(
+      AudioBuffer*,
+      ScriptPromiseResolver*,
+      V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
+      V8PersistentCallbackFunction<V8DecodeErrorCallback>*);
 
   AudioListener* listener() { return listener_; }
 
@@ -485,22 +484,6 @@ class MODULES_EXPORT BaseAudioContext
   AudioContextState context_state_;
 
   AsyncAudioDecoder audio_decoder_;
-
-  // Hold references to the |decodeAudioData| callbacks so that they
-  // don't get prematurely GCed by v8 before |decodeAudioData| returns
-  // and calls them.
-  //
-  // Note that BaseAudioContext has no parent object that does wrapper-tracing,
-  // and author script does not hold the V8 wrapper object in general. The only
-  // thing that makes the BaseAudioContext alive is a closure posted to a task
-  // queue, which doesn't support wrapper-tracing. So this object holds the
-  // callback functions as persistent handles. This is acceptable because it's
-  // guaranteed that each callback will be removed once their task gets done
-  // regardless of whether it's successful or not.
-  Vector<V8DecodeSuccessCallback::Persistent<V8DecodeSuccessCallback>>
-      success_callbacks_;
-  Vector<V8DecodeErrorCallback::Persistent<V8DecodeErrorCallback>>
-      error_callbacks_;
 
   // When a context is closed, the sample rate is cleared.  But decodeAudioData
   // can be called after the context has been closed and it needs the sample

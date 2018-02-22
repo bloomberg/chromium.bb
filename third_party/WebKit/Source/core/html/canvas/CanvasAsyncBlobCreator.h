@@ -124,7 +124,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // an instance gets created, ScheduleAsyncBlobCreation is invoked, and then
   // the instance is only held by a task runner (via PostTask). Thus the
   // instance has only limited lifetime. Hence, Persistent here is okay.
-  V8BlobCallback::Persistent<V8BlobCallback> callback_;
+  Member<V8PersistentCallbackFunction<V8BlobCallback>> callback_;
 
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;

@@ -185,7 +185,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       mime_type_(mime_type),
       start_time_(start_time),
       static_bitmap_image_loaded_(false),
-      callback_(callback),
+      callback_(V8PersistentCallbackFunction<V8BlobCallback>::Create(callback)),
       script_promise_resolver_(resolver) {
   DCHECK(image);
   sk_sp<SkImage> skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
@@ -402,7 +402,8 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             callback_, nullptr, WrapPersistent(result_blob)));
+                             WrapPersistent(callback_.Get()), nullptr,
+                             WrapPersistent(result_blob)));
   } else {
     script_promise_resolver_->Resolve(result_blob);
   }
@@ -416,9 +417,10 @@ void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {
     DCHECK(IsMainThread());
     RecordIdleTaskStatusHistogram(idle_task_status_);
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
-                             callback_, nullptr, nullptr));
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                      WrapPersistent(callback_.Get()), nullptr, nullptr));
   } else {
     script_promise_resolver_->Reject(DOMException::Create(
         kEncodingError, "Encoding of the source image has failed."));
@@ -543,6 +545,7 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
 void CanvasAsyncBlobCreator::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(parent_frame_task_runner_);
+  visitor->Trace(callback_);
   visitor->Trace(script_promise_resolver_);
 }
 

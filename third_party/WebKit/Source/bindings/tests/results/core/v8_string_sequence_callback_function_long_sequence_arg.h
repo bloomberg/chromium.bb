@@ -19,7 +19,7 @@ namespace blink {
 
 class ScriptWrappable;
 
-class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public CallbackFunctionBase {
+class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg : public CallbackFunctionBase {
  public:
   static V8StringSequenceCallbackFunctionLongSequenceArg* Create(v8::Local<v8::Function> callback_function) {
     return new V8StringSequenceCallbackFunctionLongSequenceArg(callback_function);
@@ -30,6 +30,10 @@ class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<Vector<String>> Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
+
+ protected:
+  explicit V8StringSequenceCallbackFunctionLongSequenceArg(const V8StringSequenceCallbackFunctionLongSequenceArg& other)
+      : CallbackFunctionBase(other) {}
 
  private:
   explicit V8StringSequenceCallbackFunctionLongSequenceArg(v8::Local<v8::Function> callback_function)

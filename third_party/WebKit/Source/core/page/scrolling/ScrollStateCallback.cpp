@@ -8,6 +8,11 @@
 
 namespace blink {
 
+void ScrollStateCallbackV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  ScrollStateCallback::Trace(visitor);
+}
+
 void ScrollStateCallbackV8Impl::Invoke(ScrollState* scroll_state) {
   callback_->InvokeAndReportException(nullptr, scroll_state);
 }

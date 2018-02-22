@@ -48,6 +48,8 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
 
   ~ScrollStateCallbackV8Impl() = default;
 
+  void Trace(blink::Visitor*) override;
+
   void Invoke(ScrollState*) override;
 
  private:
@@ -57,9 +59,11 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
   explicit ScrollStateCallbackV8Impl(
       V8ScrollStateCallback* callback,
       WebNativeScrollBehavior native_scroll_behavior)
-      : ScrollStateCallback(native_scroll_behavior), callback_(callback) {}
+      : ScrollStateCallback(native_scroll_behavior),
+        callback_(V8PersistentCallbackFunction<V8ScrollStateCallback>::Create(
+            callback)) {}
 
-  V8ScrollStateCallback::Persistent<V8ScrollStateCallback> callback_;
+  Member<V8PersistentCallbackFunction<V8ScrollStateCallback>> callback_;
 };
 
 }  // namespace blink
