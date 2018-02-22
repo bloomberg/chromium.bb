@@ -166,7 +166,8 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
   if (extension_info_map && initiator_) {
     int tab_id = -1;
     dict_.GetInteger(keys::kTabIdKey, &tab_id);
-    if (WebRequestPermissions::CanExtensionAccessInitiator(
+    if (initiator_->unique() ||
+        WebRequestPermissions::CanExtensionAccessInitiator(
             extension_info_map, extension_id, initiator_, tab_id,
             crosses_incognito)) {
       result->SetString(keys::kInitiatorKey, initiator_->Serialize());
