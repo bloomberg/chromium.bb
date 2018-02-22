@@ -115,6 +115,7 @@ class PLATFORM_EXPORT PNGImageReader final {
   // How many bytes have been read during parsing.
   size_t read_offset_;
   size_t progressive_decode_offset_;
+  size_t ihdr_offset_;
   size_t idat_offset_;
 
   bool idat_is_part_of_animation_;

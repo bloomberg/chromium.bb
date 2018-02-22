@@ -81,6 +81,7 @@ PNGImageReader::PNGImageReader(PNGImageDecoder* decoder, size_t initial_offset)
       initial_offset_(initial_offset),
       read_offset_(initial_offset),
       progressive_decode_offset_(0),
+      ihdr_offset_(0),
       idat_offset_(0),
       idat_is_part_of_animation_(false),
       expect_idats_(true),
@@ -197,32 +198,35 @@ bool PNGImageReader::Decode(SegmentReader& data, size_t index) {
 
 void PNGImageReader::StartFrameDecoding(const FastSharedBufferReader& reader,
                                         size_t index) {
-  // If the frame is the size of the whole image, just re-process all header
-  // data up to the first frame.
+  DCHECK_GT(ihdr_offset_, initial_offset_);
+  ProcessData(reader, initial_offset_, ihdr_offset_ - initial_offset_);
+
   const IntRect& frame_rect = frame_info_[index].frame_rect;
   if (frame_rect == IntRect(0, 0, width_, height_)) {
-    ProcessData(reader, initial_offset_, idat_offset_);
+    DCHECK_GT(idat_offset_, ihdr_offset_);
+    ProcessData(reader, ihdr_offset_, idat_offset_ - ihdr_offset_);
     return;
   }
 
   // Process the IHDR chunk, but change the width and height so it reflects
   // the frame's width and height. ImageDecoder will apply the x,y offset.
-  constexpr size_t kHeaderSize = kBufferSize;
+  constexpr size_t kHeaderSize = 25;
   char read_buffer[kHeaderSize];
   const png_byte* chunk =
-      ReadAsConstPngBytep(reader, initial_offset_, kHeaderSize, read_buffer);
+      ReadAsConstPngBytep(reader, ihdr_offset_, kHeaderSize, read_buffer);
   png_byte* header = reinterpret_cast<png_byte*>(read_buffer);
   if (chunk != header)
     memcpy(header, chunk, kHeaderSize);
-  png_save_uint_32(header + 16, frame_rect.Width());
-  png_save_uint_32(header + 20, frame_rect.Height());
+  png_save_uint_32(header +  8, frame_rect.Width());
+  png_save_uint_32(header + 12, frame_rect.Height());
   // IHDR has been modified, so tell libpng to ignore CRC errors.
   png_set_crc_action(png_, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
   png_process_data(png_, info_, header, kHeaderSize);
 
   // Process the rest of the header chunks.
-  ProcessData(reader, initial_offset_ + kHeaderSize,
-              idat_offset_ - kHeaderSize);
+  DCHECK_GE(idat_offset_, ihdr_offset_ + kHeaderSize);
+  ProcessData(reader, ihdr_offset_ + kHeaderSize,
+              idat_offset_ - ihdr_offset_ - kHeaderSize);
 }
 
 // Determine if the bytes 4 to 7 of |chunk| indicate that it is a |tag| chunk.
@@ -598,6 +602,7 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
       ProcessData(reader, read_offset_ + 8, length + 4);
       if (IsChunk(chunk, "IHDR")) {
         parsed_ihdr_ = true;
+        ihdr_offset_ = read_offset_;
         width_ = png_get_image_width(png_, info_);
         height_ = png_get_image_height(png_, info_);
       }
