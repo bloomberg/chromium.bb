@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.suggestions.Tile;
 import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
-import org.chromium.chrome.browser.sync.SyncSessionsMetrics;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -228,8 +227,6 @@ public class NewTabPage
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
             if (!mTab.isHidden()) recordNTPShown();
-
-            SyncSessionsMetrics.recordYoungestForeignTabAgeOnNTP();
         }
     }
 
