@@ -3054,7 +3054,6 @@ crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
 # Sheriff failures 2017-10-04
 crbug.com/770691 [ Win7 Linux Mac10.11 ] media/controls/lazy-loaded-style.html [ Failure Pass ]
 crbug.com/770691 [ Win7 Linux Mac10.11 ] virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
-crbug.com/770691 [ Mac10.11 ] media/controls/repaint-on-resize.html [ Failure Pass ]
 
 crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 
@@ -3252,8 +3251,14 @@ crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-re
 crbug.com/771643 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Failure ]
 crbug.com/813462 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.convert.to.blob.html [ Pass Timeout ]
 
+# Sheriff failures 2018-02-20
+crbug.com/770691 [ Mac10.11 ] media/controls/repaint-on-resize.html [ Failure Pass ]
+
 # Sheriff failures 2018-02-21
 crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Pass Failure ]
+
+# Sheriff failures 2018-02-22
+crbug.com/770691 [ Mac10.11 ] virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
 
 # MSAN
 crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass Failure ]
