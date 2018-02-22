@@ -646,6 +646,11 @@ class FakeWebSocketHandshakeStreamCreateHelper
       bool using_proxy) override {
     return nullptr;
   }
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp2Stream(
+      base::WeakPtr<SpdySession> session) override {
+    NOTREACHED();
+    return nullptr;
+  }
 };
 
 // Returns true if |entry| is not one of the log types paid attention to in this

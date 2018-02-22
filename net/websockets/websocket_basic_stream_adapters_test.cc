@@ -34,6 +34,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -303,23 +304,12 @@ class WebSocketSpdyStreamAdapterTest : public Test {
   ~WebSocketSpdyStreamAdapterTest() override = default;
 
   static SpdyHeaderBlock RequestHeaders() {
-    SpdyHeaderBlock request_headers;
-    request_headers[kHttp2MethodHeader] = "CONNECT";
-    request_headers[kHttp2AuthorityHeader] = "www.example.org:443";
-    request_headers[kHttp2SchemeHeader] = "https";
-    request_headers[kHttp2PathHeader] = "/";
-    request_headers[":protocol"] = "websocket";
-    request_headers["origin"] = "http://www.example.org";
-    request_headers["sec-websocket-version"] = "13";
-    request_headers["sec-websocket-extensions"] =
-        "permessage-deflate; client_max_window_bits";
-    return request_headers;
+    return WebSocketHttp2Request("/", "www.example.org:443",
+                                 "http://www.example.org", {});
   }
 
   static SpdyHeaderBlock ResponseHeaders() {
-    SpdyHeaderBlock response_headers;
-    response_headers[kHttp2StatusHeader] = "200";
-    return response_headers;
+    return WebSocketHttp2Response({});
   }
 
   void AddSocketData(SocketDataProvider* data) {
@@ -349,7 +339,7 @@ class WebSocketSpdyStreamAdapterTest : public Test {
 
  private:
   const GURL url_;
-  SpdySessionKey key_;
+  const SpdySessionKey key_;
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> session_;
   SSLSocketDataProvider ssl_;

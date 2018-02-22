@@ -336,6 +336,11 @@ class WebSocketStreamCreateHelper
     return std::make_unique<WebSocketBasicHandshakeStream>(
         std::move(connection));
   }
+  std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp2Stream(
+      base::WeakPtr<SpdySession> session) override {
+    NOTREACHED();
+    return nullptr;
+  }
 };
 
 struct TestCase {

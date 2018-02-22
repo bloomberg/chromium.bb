@@ -64,15 +64,6 @@ extern const char kSecWebSocketProtocolLowercase[];
 // "sec-websocket-extensions"
 extern const char kSecWebSocketExtensionsLowercase[];
 
-// "sec-webSocket-key"
-extern const char kSecWebSocketKeyLowercase[];
-
-// "sec-websocket-version"
-extern const char kSecWebSocketVersionLowercase[];
-
-// "upgrade"
-extern const char kUpgradeLowercase[];
-
 // "websocket", as used in the "Upgrade:" header. This is always lowercase
 // (except in obsolete versions of the protocol).
 extern const char kWebSocketLowercase[];
