@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/query_parser/snippet.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/url_constants.h"
 

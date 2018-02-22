@@ -172,7 +172,6 @@ static_library("browser") {
     "//components/search",
     "//components/search_engines",
     "//components/sessions",
-    "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
     "//components/toolbar",
