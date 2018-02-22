@@ -33,6 +33,7 @@ namespace {
 
 const int kFakeRenderProcessId = 1;
 const char kTestOrigin[] = "https://example.com";
+const int64_t kFakeServiceWorkerRegistrationId = 1234;
 
 class MockNonPersistentNotificationListener
     : public blink::mojom::NonPersistentNotificationListener {
@@ -107,6 +108,11 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     return permission_callback_result_;
   }
 
+  void DidDisplayPersistentNotification(
+      blink::mojom::PersistentNotificationError error) {
+    display_persistent_callback_result_ = error;
+  }
+
   void DidGetDisplayedNotifications(
       base::OnceClosure quit_closure,
       std::unique_ptr<std::set<std::string>> notification_ids,
@@ -138,6 +144,8 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   MockPlatformNotificationService mock_platform_service_;
 
   MockNonPersistentNotificationListener non_persistent_notification_listener_;
+
+  blink::mojom::PersistentNotificationError display_persistent_callback_result_;
 
  private:
   NotificationBrowserClient notification_browser_client_;
@@ -210,6 +218,45 @@ TEST_F(BlinkNotificationServiceImplTest,
   // DisplayNonPersistentNotification instead of waiting for all tasks to run
   // here; a callback parameter will be needed anyway to enable
   // non-persistent notification event acknowledgements - see bug.
+  RunAllTasksUntilIdle();
+
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayPersistentNotificationWithPermission) {
+  mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::GRANTED);
+
+  notification_service_->DisplayPersistentNotification(
+      kFakeServiceWorkerRegistrationId, PlatformNotificationData(),
+      NotificationResources(),
+      base::BindOnce(
+          &BlinkNotificationServiceImplTest::DidDisplayPersistentNotification,
+          base::Unretained(this)));
+  EXPECT_EQ(blink::mojom::PersistentNotificationError::NONE,
+            display_persistent_callback_result_);
+
+  // Wait for service to receive the Display call.
+  RunAllTasksUntilIdle();
+
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(BlinkNotificationServiceImplTest,
+       DisplayPersistentNotificationWithoutPermission) {
+  mock_platform_service_.SetPermission(blink::mojom::PermissionStatus::DENIED);
+
+  notification_service_->DisplayPersistentNotification(
+      kFakeServiceWorkerRegistrationId, PlatformNotificationData(),
+      NotificationResources(),
+      base::BindOnce(
+          &BlinkNotificationServiceImplTest::DidDisplayPersistentNotification,
+          base::Unretained(this)));
+
+  EXPECT_EQ(blink::mojom::PersistentNotificationError::PERMISSION_DENIED,
+            display_persistent_callback_result_);
+
+  // Give Service a chance to receive any unexpected Display calls.
   RunAllTasksUntilIdle();
 
   EXPECT_EQ(0u, GetDisplayedNotifications().size());

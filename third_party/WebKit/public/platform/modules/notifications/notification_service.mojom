@@ -21,6 +21,15 @@ interface NonPersistentNotificationListener {
   OnClose();
 };
 
+// Possible things that can go wrong when displaying a notification created by
+// a service worker, which we may wish to distinguish between on the renderer
+// side to provide a more useful error message to developers.
+enum PersistentNotificationError {
+  NONE,
+  INTERNAL_ERROR,
+  PERMISSION_DENIED,
+};
+
 // Service through which Blink can request notifications to be shown, closed or
 // retrieved from the embedder.
 interface NotificationService {
@@ -46,4 +55,15 @@ interface NotificationService {
   // Calling this without previously calling DisplayNonPersistentNotification
   // with the same token is a no-op.
   CloseNonPersistentNotification(string token);
+
+  // Shows a notification that *is* associated with a service worker.
+  // The service worker identified by |service_worker_registration_id| will be
+  // notified when the notification is clicked/closed.
+  // Responds once the notification is successfully processed or rejected.
+  DisplayPersistentNotification(
+        int64 service_worker_registration_id,
+        NotificationData notification_data,
+        NotificationResources notification_resources)
+                => (PersistentNotificationError error);
+
 };

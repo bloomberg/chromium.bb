@@ -10,6 +10,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 
 namespace blink {
 
@@ -58,10 +59,21 @@ class NotificationManager final
   // Closes the notification that was most recently displayed with this token.
   void CloseNonPersistentNotification(const String& token);
 
+  // Shows a notification from a service worker.
+  void DisplayPersistentNotification(
+      blink::WebServiceWorkerRegistration*,
+      const blink::WebNotificationData&,
+      std::unique_ptr<blink::WebNotificationResources>,
+      std::unique_ptr<blink::WebNotificationShowCallbacks>);
+
   virtual void Trace(blink::Visitor*);
 
  private:
   explicit NotificationManager(ExecutionContext&);
+
+  void DidDisplayPersistentNotification(
+      std::unique_ptr<blink::WebNotificationShowCallbacks>,
+      mojom::blink::PersistentNotificationError);
 
   // Returns an initialized NotificationServicePtr. A connection will be
   // established the first time this method is called.

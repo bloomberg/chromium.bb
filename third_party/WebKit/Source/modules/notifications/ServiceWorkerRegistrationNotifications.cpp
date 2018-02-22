@@ -189,7 +189,10 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
   DCHECK(loaders_.Contains(loader));
 
   if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    // TODO(https://crbug.com/796991): Implement this via mojo.
+    NotificationManager::From(GetExecutionContext())
+        ->DisplayPersistentNotification(registration_->WebRegistration(), data,
+                                        loader->GetResources(),
+                                        std::move(callbacks));
   } else {
     WebNotificationManager* notification_manager =
         Platform::Current()->GetWebNotificationManager();
