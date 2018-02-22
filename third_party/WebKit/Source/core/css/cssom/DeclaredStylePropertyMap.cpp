@@ -16,12 +16,6 @@ namespace blink {
 DeclaredStylePropertyMap::DeclaredStylePropertyMap(CSSStyleRule* owner_rule)
     : StylePropertyMap(), owner_rule_(owner_rule) {}
 
-int DeclaredStylePropertyMap::size() {
-  if (!GetStyleRule())
-    return 0;
-  return GetStyleRule()->Properties().PropertyCount();
-}
-
 const CSSValue* DeclaredStylePropertyMap::GetProperty(
     CSSPropertyID property_id) {
   if (!GetStyleRule())

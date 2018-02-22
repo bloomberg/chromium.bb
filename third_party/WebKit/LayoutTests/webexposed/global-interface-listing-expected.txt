@@ -6886,7 +6886,6 @@ interface StylePropertyMap : StylePropertyMapReadOnly
     method set
 interface StylePropertyMapReadOnly
     attribute @@toStringTag
-    getter size
     method @@iterator
     method constructor
     method entries
