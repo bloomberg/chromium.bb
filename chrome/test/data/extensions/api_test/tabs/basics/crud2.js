@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var newTabUrls = [
-  'chrome://newtab/',
-  // The tab URL will be redirected to the Local New Tab Page if
-  // features::kUseGoogleLocalNtp is not enabled.
-  'chrome-search://local-ntp/local-ntp.html',
-];
-
 var secondWindowId;
 var thirdWindowId;
 var testTabId;
@@ -46,7 +39,7 @@ chrome.test.runTests([
         assertEq((i == 0), tabs[i].active && tabs[i].selected);
       }
       assertEq("about:blank", tabs[0].url);
-      assertTrue(newTabUrls.includes(tabs[1].url));
+      assertEq("chrome://newtab/", tabs[1].url);
       assertEq(pageUrl("a"), tabs[2].url);
     }));
 
@@ -57,7 +50,7 @@ chrome.test.runTests([
         assertEq(thirdWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
       }
-      assertTrue(newTabUrls.includes(tabs[0].url));
+      assertEq("chrome://newtab/", tabs[0].url);
       assertEq(pageUrl("b"), tabs[1].url);
     }));
   },
