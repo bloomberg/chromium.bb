@@ -44,7 +44,6 @@ namespace blink {
 
 template <typename T>
 class GarbageCollected;
-class HeapObjectHeader;
 template <typename T>
 class TraceTrait;
 class ThreadState;
@@ -71,8 +70,8 @@ struct TraceMethodDelegate {
 // Visitor is used to traverse Oilpan's object graph.
 class PLATFORM_EXPORT Visitor {
  public:
-  Visitor(ThreadState*);
-  virtual ~Visitor();
+  explicit Visitor(ThreadState* state) : state_(state) {}
+  virtual ~Visitor() = default;
 
   inline ThreadState* GetState() const { return state_; }
   inline ThreadHeap& Heap() const { return GetState()->Heap(); }
@@ -190,11 +189,14 @@ class PLATFORM_EXPORT Visitor {
   virtual void RegisterDelayedMarkNoTracing(const void* pointer) = 0;
 
   // Used to register ephemeron callbacks.
-  virtual void RegisterWeakTable(const void* closure,
+  virtual bool RegisterWeakTable(const void* closure,
                                  EphemeronCallback iteration_callback,
-                                 EphemeronCallback iteration_done_callback) = 0;
+                                 EphemeronCallback iteration_done_callback) {
+    return false;
+  }
+
 #if DCHECK_IS_ON()
-  virtual bool WeakTableRegistered(const void* closure) = 0;
+  virtual bool WeakTableRegistered(const void* closure) { return false; }
 #endif
 
   // |WeakCallback| will usually use |ObjectAliveTrait| to figure out liveness
@@ -212,84 +214,6 @@ class PLATFORM_EXPORT Visitor {
   static void HandleWeakCell(Visitor* self, void*);
 
   ThreadState* const state_;
-};
-
-// Visitor used to mark Oilpan objects.
-class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
- public:
-  enum MarkingMode {
-    // This is a default visitor. This is used for GCType=GCWithSweep
-    // and GCType=GCWithoutSweep.
-    kGlobalMarking,
-    // This visitor just marks objects and ignores weak processing.
-    // This is used for GCType=TakeSnapshot.
-    kSnapshotMarking,
-    // This visitor is used to trace objects during weak processing.
-    // This visitor is allowed to trace only already marked objects.
-    kWeakProcessing,
-    // Perform global marking along with preparing for additional sweep
-    // compaction of heap arenas afterwards. Compared to the GlobalMarking
-    // visitor, this visitor will also register references to objects
-    // that might be moved during arena compaction -- the compaction
-    // pass will then fix up those references when the object move goes
-    // ahead.
-    kGlobalMarkingWithCompaction,
-  };
-
-  static std::unique_ptr<MarkingVisitor> Create(ThreadState*, MarkingMode);
-
-  MarkingVisitor(ThreadState*, MarkingMode);
-  virtual ~MarkingVisitor();
-
-  inline MarkingMode GetMarkingMode() const { return marking_mode_; }
-
-  // Marking implementation.
-
-  // This method marks an object and adds it to the set of objects that should
-  // have their trace method called. Since not all objects have vtables we have
-  // to have the callback as an explicit argument, but we can use the templated
-  // one-argument mark method above to automatically provide the callback
-  // function.
-  inline void Mark(const void* object_pointer, TraceCallback);
-
-  // Used to mark objects during conservative scanning.
-  inline void MarkHeader(HeapObjectHeader*, TraceCallback);
-  inline void MarkHeaderNoTracing(HeapObjectHeader*);
-
-  // Marks the header of an object. Is used for eagerly tracing of objects.
-  inline bool EnsureMarked(const void* pointer);
-
-  // Used for eagerly marking objects and for delayed marking of backing stores
-  // when the actual payload is processed differently, e.g., by weak handling.
-  inline void MarkNoTracing(const void* pointer) {
-    Mark(pointer, reinterpret_cast<TraceCallback>(0));
-  }
-
-  // Implementation of the visitor interface. See above for descriptions.
-
-  void Visit(void* object,
-             TraceCallback trace_callback,
-             TraceCallback mark_callback) final {
-    mark_callback(this, object);
-  }
-
-  void RegisterBackingStoreReference(void* slot) final;
-  void RegisterBackingStoreCallback(void* backing_store,
-                                    MovingObjectCallback,
-                                    void* callback_data) final;
-  void RegisterDelayedMarkNoTracing(const void* pointer) final;
-  void RegisterWeakTable(const void* closure,
-                         EphemeronCallback iteration_callback,
-                         EphemeronCallback iteration_done_callback) final;
-#if DCHECK_IS_ON()
-  bool WeakTableRegistered(const void* closure) final;
-#endif
-  void RegisterWeakCallback(void* closure, WeakCallback) final;
-
- private:
-  static void MarkNoTracingCallback(Visitor*, void*);
-
-  const MarkingMode marking_mode_;
 };
 
 }  // namespace blink

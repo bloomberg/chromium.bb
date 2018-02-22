@@ -2124,7 +2124,6 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     if (IsTraceableInCollectionTrait<Traits>::value) {
 #if DCHECK_IS_ON()
       DCHECK(!Allocator::WeakTableRegistered(visitor, this) || Enqueued());
-      DCHECK(!Enqueued() || Allocator::WeakTableRegistered(visitor, this));
 #endif
 
       // Mix of strong and weak fields. We use an approach similar to ephemeron
@@ -2133,15 +2132,17 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       // - http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
       // Adding the table for ephemeron marking delays marking any elements in
       // the backing until regular marking is finished.
-      if (!Enqueued()) {
-        Allocator::RegisterWeakTable(
-            visitor, this,
-            WeakProcessingHashTableHelper<
-                Traits::kWeakHandlingFlag, Key, Value, Extractor, HashFunctions,
-                Traits, KeyTraits, Allocator>::EphemeronIteration,
-            WeakProcessingHashTableHelper<
-                Traits::kWeakHandlingFlag, Key, Value, Extractor, HashFunctions,
-                Traits, KeyTraits, Allocator>::EphemeronIterationDone);
+      if (!Enqueued() &&
+          Allocator::RegisterWeakTable(
+              visitor, this,
+              WeakProcessingHashTableHelper<Traits::kWeakHandlingFlag, Key,
+                                            Value, Extractor, HashFunctions,
+                                            Traits, KeyTraits,
+                                            Allocator>::EphemeronIteration,
+              WeakProcessingHashTableHelper<
+                  Traits::kWeakHandlingFlag, Key, Value, Extractor,
+                  HashFunctions, Traits, KeyTraits,
+                  Allocator>::EphemeronIterationDone)) {
         SetEnqueued();
       }
     }

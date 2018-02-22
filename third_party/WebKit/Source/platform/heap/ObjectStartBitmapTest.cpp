@@ -4,7 +4,6 @@
 
 #include "platform/heap/HeapPage.h"
 
-#include "platform/heap/VisitorImpl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

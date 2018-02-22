@@ -752,6 +752,4 @@ void Visitor::HandleWeakCell(Visitor* self, void* object) {
 
 }  // namespace blink
 
-#include "platform/heap/VisitorImpl.h"
-
 #endif  // Heap_h

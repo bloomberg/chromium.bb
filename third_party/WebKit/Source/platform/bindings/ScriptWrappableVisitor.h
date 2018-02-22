@@ -9,7 +9,6 @@
 #include "platform/bindings/TraceWrapperBase.h"
 #include "platform/heap/HeapPage.h"
 #include "platform/heap/ThreadingTraits.h"
-#include "platform/heap/VisitorImpl.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
