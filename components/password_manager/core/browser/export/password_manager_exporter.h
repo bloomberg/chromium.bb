@@ -29,6 +29,8 @@ class PasswordManagerExporter {
   using ProgressCallback =
       base::RepeatingCallback<void(password_manager::ExportProgressStatus,
                                    const std::string&)>;
+  using DeleteCallback =
+      base::RepeatingCallback<bool(const base::FilePath&, bool)>;
 
   explicit PasswordManagerExporter(
       password_manager::CredentialProviderInterface*
@@ -40,10 +42,11 @@ class PasswordManagerExporter {
   virtual void PreparePasswordsForExport();
 
   // Set the destination, where the passwords will be written when they are
-  // ready.
+  // ready. This is expected to be called after PreparePasswordsForExport().
   virtual void SetDestination(const base::FilePath& destination);
 
-  // Best-effort canceling of any on-going task related to exporting.
+  // Cancel any pending exporting tasks and clear the file, if it was written
+  // to the disk.
   virtual void Cancel();
 
   // Returns the most recent ExportProgressStatus value, as would have been
@@ -55,6 +58,10 @@ class PasswordManagerExporter {
   void SetWriteForTesting(int (*write_function)(const base::FilePath& filename,
                                                 const char* data,
                                                 int size));
+
+  // Replace the function which writes to the filesystem with a custom action.
+  // The return value is true when deleting successfully.
+  void SetDeleteForTesting(DeleteCallback delete_callback);
 
  private:
   // Caches the serialised password list. It proceeds to export, if all the
@@ -73,9 +80,7 @@ class PasswordManagerExporter {
   // the UI and to metrics. |destination| is the folder we wrote to. |count| is
   // the number of passwords exported. |success| is whether they were actually
   // written.
-  void OnPasswordsExported(const base::FilePath& destination,
-                           int count,
-                           bool success);
+  void OnPasswordsExported(bool success);
 
   // Wrapper for the |on_progress_| callback, which caches |status|, so that
   // it can be provided by GetProgressStatus.
@@ -108,6 +113,10 @@ class PasswordManagerExporter {
   int (*write_function_)(const base::FilePath& filename,
                          const char* data,
                          int size);
+
+  // The function which does the actual deleting of a file. It should wrap
+  // base::DeleteFile, unless it's changed for testing purposes.
+  DeleteCallback delete_function_;
 
   // |task_runner_| is used for time-consuming tasks during exporting. The tasks
   // will dereference a WeakPtr to |*this|, which means they all need to run on

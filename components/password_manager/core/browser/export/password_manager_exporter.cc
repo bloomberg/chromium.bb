@@ -55,12 +55,14 @@ PasswordManagerExporter::PasswordManagerExporter(
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(&base::WriteFile),
+      delete_function_(base::BindRepeating(&base::DeleteFile)),
       task_runner_(g_task_runner.Get()),
       weak_factory_(this) {}
 
 PasswordManagerExporter::~PasswordManagerExporter() {}
 
 void PasswordManagerExporter::PreparePasswordsForExport() {
+  DCHECK_EQ(GetProgressStatus(), ExportProgressStatus::NOT_STARTED);
   export_preparation_started_ = base::Time::Now();
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
@@ -77,6 +79,8 @@ void PasswordManagerExporter::PreparePasswordsForExport() {
 
 void PasswordManagerExporter::SetDestination(
     const base::FilePath& destination) {
+  DCHECK_EQ(GetProgressStatus(), ExportProgressStatus::NOT_STARTED);
+
   destination_ = destination;
 
   if (IsReadyForExport())
@@ -102,12 +106,21 @@ void PasswordManagerExporter::Cancel() {
   // Tasks which had their pointers invalidated won't run.
   weak_factory_.InvalidateWeakPtrs();
 
-  destination_.clear();
-  serialised_password_list_.clear();
-  password_count_ = 0;
-
+  // If we are currently still serialising, Export() will see the cancellation
+  // status and won't schedule writing.
   OnProgress(ExportProgressStatus::FAILED_CANCELLED, std::string());
 
+  // If we are currently writing to the disk, we will have to cleanup the file
+  // once writing stops.
+  if (!destination_.empty()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(base::IgnoreResult(delete_function_),
+                                          destination_, false));
+  }
+
+  // TODO(crbug.com/789561) If the passwords have already been written to the
+  // disk, then we've already recorded ExportPasswordsResult::SUCCESS. Ideally,
+  // we should make different results mutually exclusive.
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
                             ExportPasswordsResult::USER_ABORTED,
                             ExportPasswordsResult::COUNT);
@@ -125,28 +138,32 @@ void PasswordManagerExporter::SetWriteForTesting(
   write_function_ = write_function;
 }
 
+void PasswordManagerExporter::SetDeleteForTesting(
+    DeleteCallback delete_callback) {
+  delete_function_ = delete_callback;
+}
+
 bool PasswordManagerExporter::IsReadyForExport() {
   return !destination_.empty() && !serialised_password_list_.empty();
 }
 
 void PasswordManagerExporter::Export() {
-  base::FilePath destination_copy_(destination_);
+  // If cancelling was requested while we were serialising the passwords, don't
+  // write anything to the disk.
+  if (GetProgressStatus() == ExportProgressStatus::FAILED_CANCELLED) {
+    serialised_password_list_.clear();
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::BindOnce(::Write, write_function_, std::move(destination_copy_),
+      base::BindOnce(::Write, write_function_, destination_,
                      std::move(serialised_password_list_)),
       base::BindOnce(&PasswordManagerExporter::OnPasswordsExported,
-                     weak_factory_.GetWeakPtr(), std::move(destination_),
-                     password_count_));
-
-  destination_.clear();
-  serialised_password_list_.clear();
-  password_count_ = 0;
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PasswordManagerExporter::OnPasswordsExported(
-    const base::FilePath& destination,
-    int count,
     bool success) {
   if (success) {
     OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
@@ -155,10 +172,10 @@ void PasswordManagerExporter::OnPasswordsExported(
                               ExportPasswordsResult::SUCCESS,
                               ExportPasswordsResult::COUNT);
     UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
-                         count);
+                         password_count_);
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
-               destination.DirName().BaseName().AsUTF8Unsafe());
+               destination_.DirName().BaseName().AsUTF8Unsafe());
 
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
                               ExportPasswordsResult::WRITE_FAILED,
