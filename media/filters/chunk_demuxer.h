@@ -346,10 +346,13 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
  private:
   enum State {
-    WAITING_FOR_INIT,
+    WAITING_FOR_INIT = 0,
     INITIALIZING,
     INITIALIZED,
     ENDED,
+
+    // Any State at or beyond PARSE_ERROR cannot be changed to a state before
+    // this. See ChangeState_Locked.
     PARSE_ERROR,
     SHUTDOWN,
   };

@@ -649,6 +649,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
     return kReachedIdLimit;
 
+  // TODO(wolenetz): Change to DCHECK once less verification in release build is
+  // needed. See https://crbug.com/786975.
+  CHECK(!init_cb_.is_null());
+
   std::vector<std::string> parsed_codec_ids;
   media::SplitCodecsToVector(codecs, &parsed_codec_ids, false);
 
@@ -700,7 +704,11 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
       base::Bind(&ChunkDemuxer::OnSourceInitDone, base::Unretained(this), id),
       expected_sbs_codecs, encrypted_media_init_data_cb_, new_text_track_cb);
 
+  // TODO(wolenetz): Change to DCHECKs once less verification in release build
+  // is needed. See https://crbug.com/786975.
+  CHECK(!IsValidId(id));
   source_state_map_[id] = std::move(source_state);
+  CHECK(IsValidId(id));
   return kOk;
 }
 
@@ -1145,6 +1153,12 @@ void ChunkDemuxer::ChangeState_Locked(State new_state) {
   lock_.AssertAcquired();
   DVLOG(1) << "ChunkDemuxer::ChangeState_Locked() : "
            << state_ << " -> " << new_state;
+
+  // TODO(wolenetz): Change to DCHECK once less verification in release build is
+  // needed. See https://crbug.com/786975.
+  // Disallow changes from at or beyond PARSE_ERROR to below PARSE_ERROR.
+  CHECK(!(state_ >= PARSE_ERROR && new_state < PARSE_ERROR));
+
   state_ = new_state;
 }
 
@@ -1199,11 +1213,15 @@ void ChunkDemuxer::OnSourceInitDone(
 
   // TODO(wolenetz): Change these to DCHECKs once less verification in release
   // build is needed. See https://crbug.com/786975.
-  const bool is_initializing = state_ == INITIALIZING;
-  const bool init_cb_is_set = !init_cb_.is_null();
-  const bool id_is_pending = pending_source_init_ids_.find(source_id) !=
-                             pending_source_init_ids_.end();
-  CHECK(is_initializing && init_cb_is_set && id_is_pending);
+  bool is_initializing = state_ == INITIALIZING;
+  bool init_cb_is_set = !init_cb_.is_null();
+  bool id_is_pending = pending_source_init_ids_.find(source_id) !=
+                       pending_source_init_ids_.end();
+  CHECK(!pending_source_init_ids_.empty());
+  CHECK(IsValidId(source_id));
+  CHECK(id_is_pending);
+  CHECK(init_cb_is_set);
+  CHECK(is_initializing);
   if (audio_streams_.empty() && video_streams_.empty()) {
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
