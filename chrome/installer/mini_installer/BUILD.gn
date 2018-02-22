@@ -21,9 +21,6 @@ declare_args() {
   skip_archive_compression = !is_official_build || is_component_build
 }
 
-assert(skip_archive_compression || !is_component_build,
-       "Archive compression is not supported in component build.")
-
 config("mini_installer_compiler_flags") {
   # Disable buffer security checking.
   cflags = [ "/GS-" ]
