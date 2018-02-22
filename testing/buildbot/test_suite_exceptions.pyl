@@ -109,9 +109,10 @@
       'Linux TSan Tests',
     ],
   },
-  'ash_unittests-mash': {
+  'mash_ash_unittests': {
     'remove_from': [
       # chromium.memory
+      # Unclear why this isn't run. http://crbug.com/814403
       'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
