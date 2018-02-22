@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -24,16 +25,18 @@ class ClientPhishingRequest;
 class PhishingClassifier;
 class Scorer;
 
-class PhishingClassifierFilter : public content::RenderThreadObserver {
+class PhishingClassifierFilter : public mojom::PhishingModelSetter {
  public:
-  static PhishingClassifierFilter* Create();
+  PhishingClassifierFilter();
   ~PhishingClassifierFilter() override;
 
-  bool OnControlMessageReceived(const IPC::Message& message) override;
+  static void Create(mojom::PhishingModelSetterRequest request);
 
  private:
-  PhishingClassifierFilter();
-  void OnSetPhishingModel(const std::string& model);
+  // mojom::PhishingModelSetter
+  void SetPhishingModel(const std::string& model) override;
+
+  mojo::StrongBindingPtr<mojom::PhishingModelSetter> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PhishingClassifierFilter);
 };

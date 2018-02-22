@@ -19,13 +19,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/constants.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -42,6 +44,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -245,7 +248,17 @@ void ClientSideDetectionService::SendModelToProcess(
     DVLOG(2) << "Disabling client-side phishing detection for "
              << "RenderProcessHost @" << process;
   }
-  process->Send(new SafeBrowsingMsg_SetPhishingModel(model));
+  safe_browsing::mojom::PhishingModelSetterPtr phishing;
+  // Null in unit tests.
+  if (!ChromeService::GetInstance()->connector()) {
+    return;
+  }
+  ChromeService::GetInstance()->connector()->BindInterface(
+      service_manager::Identity(chrome::mojom::kRendererServiceName,
+                                process->GetChildIdentity().user_id(),
+                                process->GetChildIdentity().instance()),
+      &phishing);
+  phishing->SetPhishingModel(model);
 }
 
 void ClientSideDetectionService::SendModelToRenderers() {

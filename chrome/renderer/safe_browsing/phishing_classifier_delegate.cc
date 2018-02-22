@@ -15,7 +15,6 @@
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
@@ -47,28 +46,17 @@ static base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
     DestructorAtExit g_phishing_scorer = LAZY_INSTANCE_INITIALIZER;
 
 // static
-PhishingClassifierFilter* PhishingClassifierFilter::Create() {
-  // Private constructor and public static Create() method to facilitate
-  // stubbing out this class for binary-size reduction purposes.
-  return new PhishingClassifierFilter();
+void PhishingClassifierFilter::Create(
+    mojom::PhishingModelSetterRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<PhishingClassifierFilter>(),
+                          std::move(request));
 }
 
-PhishingClassifierFilter::PhishingClassifierFilter()
-    : RenderThreadObserver() {}
+PhishingClassifierFilter::PhishingClassifierFilter() {}
 
 PhishingClassifierFilter::~PhishingClassifierFilter() {}
 
-bool PhishingClassifierFilter::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PhishingClassifierFilter, message)
-    IPC_MESSAGE_HANDLER(SafeBrowsingMsg_SetPhishingModel, OnSetPhishingModel)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PhishingClassifierFilter::OnSetPhishingModel(const std::string& model) {
+void PhishingClassifierFilter::SetPhishingModel(const std::string& model) {
   safe_browsing::Scorer* scorer = NULL;
   // An empty model string means we should disable client-side phishing
   // detection.

@@ -9,9 +9,6 @@ source_set("common") {
   sources = [
     "safebrowsing_constants.cc",
     "safebrowsing_constants.h",
-    "safebrowsing_message_generator.cc",
-    "safebrowsing_message_generator.h",
-    "safebrowsing_messages.h",
     "safebrowsing_switches.cc",
     "safebrowsing_switches.h",
     "utils.cc",
