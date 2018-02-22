@@ -22692,7 +22692,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="77" label="FRAMEBUST_BLOCK_INFOBAR_ANDROID"/>
   <int value="78" label="SURVEY_INFOBAR_ANDROID"/>
   <int value="79" label="NEAR_OOM_INFOBAR_ANDROID"/>
-  <int value="80" label="PWA_AMBIENT_BADGE_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="80" label="INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">

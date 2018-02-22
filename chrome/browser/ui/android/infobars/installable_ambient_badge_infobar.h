@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_PWA_AMBIENT_BADGE_INFOBAR_H_
-#define CHROME_BROWSER_UI_ANDROID_INFOBARS_PWA_AMBIENT_BADGE_INFOBAR_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_INSTALLABLE_AMBIENT_BADGE_INFOBAR_H_
+#define CHROME_BROWSER_UI_ANDROID_INFOBARS_INSTALLABLE_AMBIENT_BADGE_INFOBAR_H_
 
 #include <memory>
 
@@ -11,27 +11,27 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
-class PwaAmbientBadgeInfoBarDelegateAndroid;
+class InstallableAmbientBadgeInfoBarDelegate;
 
 // An infobar shown to users when they visit a progressive web app.
-class PwaAmbientBadgeInfoBar : public InfoBarAndroid {
+class InstallableAmbientBadgeInfoBar : public InfoBarAndroid {
  public:
-  explicit PwaAmbientBadgeInfoBar(
-      std::unique_ptr<PwaAmbientBadgeInfoBarDelegateAndroid> delegate);
-  ~PwaAmbientBadgeInfoBar() override;
+  explicit InstallableAmbientBadgeInfoBar(
+      std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate);
+  ~InstallableAmbientBadgeInfoBar() override;
 
   void AddToHomescreen(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  PwaAmbientBadgeInfoBarDelegateAndroid* GetDelegate();
+  InstallableAmbientBadgeInfoBarDelegate* GetDelegate();
 
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
   void ProcessButton(int action) override;
 
-  DISALLOW_COPY_AND_ASSIGN(PwaAmbientBadgeInfoBar);
+  DISALLOW_COPY_AND_ASSIGN(InstallableAmbientBadgeInfoBar);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_PWA_AMBIENT_BADGE_INFOBAR_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_INSTALLABLE_AMBIENT_BADGE_INFOBAR_H_
