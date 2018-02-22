@@ -120,7 +120,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ContentNfcDelegate.java",
     "java/src/org/chromium/content/browser/ContentVideoView.java",
     "java/src/org/chromium/content/browser/ContentVideoViewEmbedder.java",
-    "java/src/org/chromium/content/browser/ContentView.java",
     "java/src/org/chromium/content/browser/ContentViewCoreImpl.java",
     "java/src/org/chromium/content/browser/ContentViewRenderView.java",
     "java/src/org/chromium/content/browser/ContentViewStatics.java",

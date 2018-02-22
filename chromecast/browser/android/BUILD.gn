@@ -122,6 +122,7 @@ android_library("cast_shell_java") {
     ":reactive_android_java",
     "//base:base_java",
     "//chromecast/base:base_java",
+    "//components/content_view:content_view_java",
     "//components/crash/android:java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
