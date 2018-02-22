@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"

@@ -24,8 +24,8 @@ static_library("profiling") {
   ]
   deps = [
     "//base",
-    "//base:debugging_flags",
-    "//base/allocator:features",
+    "//base:debugging_buildflags",
+    "//base/allocator:buildflags",
     "//chrome/common:constants",
     "//content/public/common",
     "//mojo/edk/system",

@@ -12,7 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/synchronization/lock_impl.h"
-#include "base/win/base_features.h"
+#include "base/win/base_win_buildflags.h"
 #include "base/win/current_module.h"
 
 extern "C" {

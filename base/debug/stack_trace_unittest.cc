@@ -8,7 +8,7 @@
 #include <sstream>
 #include <string>
 
-#include "base/debug/debugging_flags.h"
+#include "base/debug/debugging_buildflags.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/process/kill.h"

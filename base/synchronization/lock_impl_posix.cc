@@ -8,7 +8,7 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/synchronization_flags.h"
+#include "base/synchronization/synchronization_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {

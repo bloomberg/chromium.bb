@@ -917,7 +917,7 @@ split_static_library("ui") {
   deps = [
     "//base",
     "//base:i18n",
-    "//base/allocator:features",
+    "//base/allocator:buildflags",
     "//cc/paint",
     "//chrome:extra_resources",
     "//chrome:resources",

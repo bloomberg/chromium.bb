@@ -4,7 +4,7 @@
 
 #include "base/allocator/allocator_check.h"
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)

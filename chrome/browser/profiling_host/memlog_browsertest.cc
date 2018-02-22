@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"

@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/process/memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

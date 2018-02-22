@@ -5,11 +5,11 @@
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 
 #include "base/allocator/allocator_shim.h"
-#include "base/allocator/features.h"
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/atomicops.h"
 #include "base/compiler_specific.h"
-#include "base/debug/debugging_flags.h"
+#include "base/debug/debugging_buildflags.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"

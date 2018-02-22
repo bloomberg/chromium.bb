@@ -55,7 +55,7 @@ source_set("main") {
     "remote_security_key_main.h",
   ]
   deps = [
-    "//base:debugging_flags",
+    "//base:debugging_buildflags",
   ]
 }
 

@@ -6,7 +6,7 @@
 #define BASE_ANDROID_LIBRARY_LOADER_ANCHOR_FUNCTIONS_H_
 
 #include <cstdint>
-#include "base/android/library_loader/anchor_functions_flags.h"
+#include "base/android/library_loader/anchor_functions_buildflags.h"
 
 #include "base/base_export.h"
 

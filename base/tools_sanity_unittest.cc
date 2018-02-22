@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #include "base/atomicops.h"
-#include "base/cfi_flags.h"
+#include "base/cfi_buildflags.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
 #include "base/message_loop/message_loop.h"
