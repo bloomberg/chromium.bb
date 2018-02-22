@@ -151,7 +151,6 @@ class PresentationServiceDelegateImpl
 
   base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 
-  void SetMediaRouterForTest(MediaRouter* router);
   bool HasScreenAvailabilityListenerForTest(
       int render_process_id,
       int render_frame_id,

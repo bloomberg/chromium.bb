@@ -44,6 +44,7 @@ class DualMediaSinkService {
 
   // Returns the lazily-created leaky singleton instance.
   static DualMediaSinkService* GetInstance();
+  static void SetInstanceForTest(DualMediaSinkService* instance_for_test);
 
   // Returns the current list of sinks, keyed by provider name.
   const base::flat_map<std::string, std::vector<MediaSinkInternal>>&
@@ -57,13 +58,20 @@ class DualMediaSinkService {
   Subscription AddSinksDiscoveredCallback(
       const OnSinksDiscoveredProviderCallback& callback);
 
-  void OnUserGesture();
+  virtual void OnUserGesture();
 
   // Starts mDNS discovery on |cast_media_sink_service_| if it is not already
   // started.
-  void StartMdnsDiscovery();
-  void RegisterMediaSinksObserver(MediaSinksObserver* observer);
-  void UnregisterMediaSinksObserver(MediaSinksObserver* observer);
+  virtual void StartMdnsDiscovery();
+  virtual void RegisterMediaSinksObserver(MediaSinksObserver* observer);
+  virtual void UnregisterMediaSinksObserver(MediaSinksObserver* observer);
+
+ protected:
+  // Used by tests.
+  DualMediaSinkService(
+      std::unique_ptr<CastMediaSinkService> cast_media_sink_service,
+      std::unique_ptr<DialMediaSinkService> dial_media_sink_service);
+  virtual ~DualMediaSinkService();
 
  private:
   friend class DualMediaSinkServiceTest;
@@ -75,14 +83,9 @@ class DualMediaSinkService {
 
   friend struct std::default_delete<DualMediaSinkService>;
 
+  static DualMediaSinkService* instance_for_test_;
+
   DualMediaSinkService();
-
-  // Used by tests.
-  DualMediaSinkService(
-      std::unique_ptr<CastMediaSinkService> cast_media_sink_service,
-      std::unique_ptr<DialMediaSinkService> dial_media_sink_service);
-
-  ~DualMediaSinkService();
 
   void OnSinksDiscovered(const std::string& provider_name,
                          std::vector<MediaSinkInternal> sinks);

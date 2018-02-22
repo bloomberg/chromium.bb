@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
@@ -26,6 +28,8 @@ class MediaRouterUIServiceFactoryUnitTest : public testing::Test {
     // requires ToolbarActionsModel.
     builder.AddTestingFactory(ToolbarActionsModelFactory::GetInstance(),
                               BuildFakeToolBarActionsModel);
+    builder.AddTestingFactory(MediaRouterFactory::GetInstance(),
+                              MockMediaRouter::Create);
     profile_ = builder.Build();
   }
 

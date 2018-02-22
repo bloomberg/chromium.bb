@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
+#include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
+#include "chrome/browser/media/router/test/noop_dual_media_sink_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -353,6 +355,16 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
       fake_url_fetcher_creator_.callback()) {
   }
   ~LocalDiscoveryUITest() override {
+  }
+
+  void SetUp() override {
+    // We need to stub out DualMediaSinkService here, because the profile setup
+    // instantiates DualMediaSinkService, which in turn sets
+    // |g_service_discovery_client| with a real instance. This causes
+    // a DCHECK during TestServiceDiscoveryClient construction.
+    media_router::DualMediaSinkService::SetInstanceForTest(
+        new media_router::NoopDualMediaSinkService());
+    WebUIBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {

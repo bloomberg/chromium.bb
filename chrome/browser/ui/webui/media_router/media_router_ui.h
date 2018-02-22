@@ -403,6 +403,9 @@ class MediaRouterUI
   // Sends the current list of enabled sinks to |handler_|.
   void UpdateSinks();
 
+  // Overridden by tests.
+  virtual MediaRouter* GetMediaRouter();
+
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
   MediaRouterWebUIMessageHandler* handler_ = nullptr;
