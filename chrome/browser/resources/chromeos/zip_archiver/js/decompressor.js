@@ -42,7 +42,8 @@ unpacker.Decompressor = function(
   this.passphraseManager = passphraseManager;
 
   /**
-   * Requests in progress.
+   * Requests in progress. No need to save them onSuspend for now as metadata
+   * reads are restarted from start.
    * @public {!Object<!unpacker.types.RequestId, !Object>}
    * @const
    */
@@ -295,6 +296,8 @@ unpacker.Decompressor.prototype.readChunk_ = function(data, requestId) {
 unpacker.Decompressor.prototype.readPassphrase_ = function(data, requestId) {
   this.passphraseManager.getPassphrase()
       .then(function(passphrase) {
+        // Update remembered password
+        unpacker.app.updateState([this.fileSystemId_]);
         this.naclModule_.postMessage(
             unpacker.request.createReadPassphraseDoneResponse(
                 this.fileSystemId_, requestId, passphrase));
