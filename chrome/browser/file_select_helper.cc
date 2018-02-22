@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/grit/generated_resources.h"
@@ -125,11 +126,13 @@ void InterpretSafeBrowsingVerdict(const base::Callback<void(bool)>& recipient,
 }  // namespace
 
 struct FileSelectHelper::ActiveDirectoryEnumeration {
-  ActiveDirectoryEnumeration() : rvh_(NULL) {}
+  explicit ActiveDirectoryEnumeration(const base::FilePath& path)
+      : rvh_(NULL), path_(path) {}
 
   std::unique_ptr<DirectoryListerDispatchDelegate> delegate_;
   std::unique_ptr<net::DirectoryLister> lister_;
   RenderViewHost* rvh_;
+  const base::FilePath path_;
   std::vector<base::FilePath> results_;
 };
 
@@ -244,8 +247,7 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
                                            int request_id,
                                            RenderViewHost* render_view_host) {
-  std::unique_ptr<ActiveDirectoryEnumeration> entry(
-      new ActiveDirectoryEnumeration);
+  auto entry = std::make_unique<ActiveDirectoryEnumeration>(path);
   entry->rvh_ = render_view_host;
   entry->delegate_.reset(new DirectoryListerDispatchDelegate(this, request_id));
   entry->lister_.reset(new net::DirectoryLister(
@@ -266,6 +268,15 @@ void FileSelectHelper::OnListFile(
   entry->results_.push_back(data.path);
 }
 
+void FileSelectHelper::LaunchConfirmationDialog(
+    const base::FilePath& path,
+    std::vector<ui::SelectedFileInfo> selected_files) {
+  ShowFolderUploadConfirmationDialog(
+      path,
+      base::BindOnce(&FileSelectHelper::NotifyRenderFrameHostAndEnd, this),
+      std::move(selected_files), web_contents_);
+}
+
 void FileSelectHelper::OnListDone(int id, int error) {
   // This entry needs to be cleaned up when this function is done.
   std::unique_ptr<ActiveDirectoryEnumeration> entry(
@@ -282,7 +293,7 @@ void FileSelectHelper::OnListDone(int id, int error) {
       FilePathListToSelectedFileInfoList(entry->results_);
 
   if (id == kFileSelectEnumerationId) {
-    NotifyRenderFrameHostAndEnd(selected_files);
+    LaunchConfirmationDialog(entry->path_, std::move(selected_files));
   } else {
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
     EnumerateDirectoryEnd();

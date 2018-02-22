@@ -2798,6 +2798,8 @@ split_static_library("ui") {
       "views/extensions/pwa_confirmation_view.h",
       "views/extensions/web_app_info_image_source.cc",
       "views/extensions/web_app_info_image_source.h",
+      "views/folder_upload_confirmation_view.cc",
+      "views/folder_upload_confirmation_view.h",
       "views/fullscreen_control/fullscreen_control_host.cc",
       "views/fullscreen_control/fullscreen_control_host.h",
       "views/fullscreen_control/fullscreen_control_popup.cc",

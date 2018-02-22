@@ -14,3 +14,15 @@ void RecordDialogCreation(DialogIdentifier identifier) {
 }
 
 }  // namespace chrome
+
+#if !defined(TOOLKIT_VIEWS)
+// There's no dialog version of this available outside views, run callback as if
+// the dialog was instantly accepted.
+void ShowFolderUploadConfirmationDialog(
+    const base::FilePath& path,
+    base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)> callback,
+    std::vector<ui::SelectedFileInfo> selected_files,
+    content::WebContents* web_contents) {
+  std::move(callback).Run(selected_files);
+}
+#endif  // !defined(TOOLKIT_VIEWS)

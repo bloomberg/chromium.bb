@@ -10973,6 +10973,19 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         Move the controller to reposition. Click to finish.
       </message>
     </if>
+
+    <message name="IDS_CONFIRM_FILE_UPLOAD_TITLE" desc="Title of dialog for confirming that many files are about to be uploaded / given to the site. [ICU Syntax]">
+      {0, plural,
+        =1 {Upload one file to this site?}
+        other {Upload # files to this site?}
+      }
+    </message>
+    <message name="IDS_CONFIRM_FILE_UPLOAD_TEXT" desc="A message warning the user that they're about upload potentially many files to the site. This mentions where the files are from. The number of files are in the dialog title.">
+      This will upload all files from "<ph name="FOLDER_PATH">$1<ex>Desktop</ex></ph>". Only do this if you trust the site.
+    </message>
+    <message name="IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON" desc="Button title confirming to upload multiple files to the site.">
+      Upload
+    </message>
   </messages>
  </release>
 </grit>
