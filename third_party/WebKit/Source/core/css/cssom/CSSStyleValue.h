@@ -51,10 +51,10 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
                               const String& property_name,
                               const String& value,
                               ExceptionState&);
-  static Optional<CSSStyleValueVector> parseAll(const ExecutionContext*,
-                                                const String& property_name,
-                                                const String& value,
-                                                ExceptionState&);
+  static CSSStyleValueVector parseAll(const ExecutionContext*,
+                                      const String& property_name,
+                                      const String& value,
+                                      ExceptionState&);
 
   virtual ~CSSStyleValue() = default;
 

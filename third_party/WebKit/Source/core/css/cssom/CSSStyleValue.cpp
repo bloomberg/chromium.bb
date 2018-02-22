@@ -54,23 +54,16 @@ CSSStyleValue* CSSStyleValue::parse(const ExecutionContext* execution_context,
                                     ExceptionState& exception_state) {
   CSSStyleValueVector style_value_vector = ParseCSSStyleValue(
       execution_context, property_name, value, exception_state);
-  if (style_value_vector.IsEmpty())
-    return nullptr;
-
-  return style_value_vector[0];
+  return style_value_vector.IsEmpty() ? nullptr : style_value_vector[0];
 }
 
-Optional<CSSStyleValueVector> CSSStyleValue::parseAll(
+CSSStyleValueVector CSSStyleValue::parseAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     const String& value,
     ExceptionState& exception_state) {
-  CSSStyleValueVector style_value_vector = ParseCSSStyleValue(
-      execution_context, property_name, value, exception_state);
-  if (style_value_vector.IsEmpty())
-    return WTF::nullopt;
-
-  return style_value_vector;
+  return ParseCSSStyleValue(execution_context, property_name, value,
+                            exception_state);
 }
 
 String CSSStyleValue::toString() const {
