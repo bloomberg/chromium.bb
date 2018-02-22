@@ -142,19 +142,6 @@ std::string TempFileName() {
 #endif
 }
 
-// Creates and opens a temporary file in |directory|, returning the
-// file descriptor. |path| is set to the temporary file path.
-// This function does NOT unlink() the file.
-int CreateAndOpenFdForTemporaryFile(FilePath directory, FilePath* path) {
-  AssertBlockingAllowed();  // For call to mkstemp().
-  *path = directory.Append(base::TempFileName());
-  const std::string& tmpdir_string = path->value();
-  // this should be OK since mkstemp just replaces characters in place
-  char* buffer = const_cast<char*>(tmpdir_string.c_str());
-
-  return HANDLE_EINTR(mkstemp(buffer));
-}
-
 #if defined(OS_LINUX) || defined(OS_AIX)
 // Determine if /dev/shm files can be mapped and then mprotect'd PROT_EXEC.
 // This depends on the mount options used for /dev/shm, which vary among
@@ -165,7 +152,8 @@ bool DetermineDevShmExecutable() {
   bool result = false;
   FilePath path;
 
-  ScopedFD fd(CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path));
+  ScopedFD fd(
+      CreateAndOpenFdForTemporaryFileInDir(FilePath("/dev/shm"), &path));
   if (fd.is_valid()) {
     DeleteFile(path, false);
     long sysconf_result = sysconf(_SC_PAGESIZE);
@@ -540,6 +528,17 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes) {
 
 #if !defined(OS_NACL_NONSFI)
 
+int CreateAndOpenFdForTemporaryFileInDir(const FilePath& directory,
+                                         FilePath* path) {
+  AssertBlockingAllowed();  // For call to mkstemp().
+  *path = directory.Append(TempFileName());
+  const std::string& tmpdir_string = path->value();
+  // this should be OK since mkstemp just replaces characters in place
+  char* buffer = const_cast<char*>(tmpdir_string.c_str());
+
+  return HANDLE_EINTR(mkstemp(buffer));
+}
+
 #if !defined(OS_FUCHSIA)
 bool CreateSymbolicLink(const FilePath& target_path,
                         const FilePath& symlink_path) {
@@ -668,7 +667,7 @@ bool CreateTemporaryFile(FilePath* path) {
   FilePath directory;
   if (!GetTempDir(&directory))
     return false;
-  int fd = CreateAndOpenFdForTemporaryFile(directory, path);
+  int fd = CreateAndOpenFdForTemporaryFileInDir(directory, path);
   if (fd < 0)
     return false;
   close(fd);
@@ -676,7 +675,7 @@ bool CreateTemporaryFile(FilePath* path) {
 }
 
 FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
-  int fd = CreateAndOpenFdForTemporaryFile(dir, path);
+  int fd = CreateAndOpenFdForTemporaryFileInDir(dir, path);
   if (fd < 0)
     return nullptr;
 
@@ -688,7 +687,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   AssertBlockingAllowed();  // For call to close().
-  int fd = CreateAndOpenFdForTemporaryFile(dir, temp_file);
+  int fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
   return ((fd >= 0) && !IGNORE_EINTR(close(fd)));
 }
 

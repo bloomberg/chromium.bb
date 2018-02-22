@@ -41,13 +41,12 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
   // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
   FilePath directory;
   ScopedPathUnlinker path_unlinker;
-  ScopedFILE fp;
   if (!GetShmemTempDir(options.executable, &directory))
     return false;
 
-  fp.reset(base::CreateAndOpenTemporaryFileInDir(directory, path));
+  fd->reset(base::CreateAndOpenFdForTemporaryFileInDir(directory, path));
 
-  if (!fp)
+  if (!fd->is_valid())
     return false;
 
   // Deleting the file prevents anyone else from mapping it in (making it
@@ -60,10 +59,10 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
     readonly_fd->reset(HANDLE_EINTR(open(path->value().c_str(), O_RDONLY)));
     if (!readonly_fd->is_valid()) {
       DPLOG(ERROR) << "open(\"" << path->value() << "\", O_RDONLY) failed";
+      fd->reset();
       return false;
     }
   }
-  fd->reset(fileno(fp.release()));
   return true;
 }
 
