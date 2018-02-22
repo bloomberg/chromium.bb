@@ -37,6 +37,7 @@ mojom("interfaces_internal") {
     "session_controller.mojom",
     "shelf.mojom",
     "shutdown.mojom",
+    "split_view.mojom",
     "system_tray.mojom",
     "tablet_mode.mojom",
     "tray_action.mojom",

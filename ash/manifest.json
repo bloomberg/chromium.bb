@@ -26,6 +26,7 @@
           "ash::mojom::SessionController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
+          "ash::mojom::SplitViewController",
           "ash::mojom::SystemTray",
           "ash::mojom::TabletModeController",
           "ash::mojom::TrayAction",

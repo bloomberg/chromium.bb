@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class HostedAppButtonContainer;
 class TabIconView;
@@ -29,12 +31,15 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
                                      public TabletModeClientObserver,
                                      public TabIconViewModel,
-                                     public CommandObserver {
+                                     public CommandObserver,
+                                     public ash::mojom::SplitViewObserver {
  public:
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameViewAsh() override;
 
   void Init();
+
+  ash::mojom::SplitViewObserverPtr CreateInterfacePtrForTesting();
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const override;
@@ -77,12 +82,15 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
 
+  // ash::mojom::SplitViewObserver:
+  void OnSplitViewStateChanged(
+      ash::mojom::SplitViewState current_state) override;
+
  protected:
   // BrowserNonClientFrameView:
   void UpdateProfileIcons() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            NonImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
@@ -91,6 +99,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleTabletModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+                           HeaderVisibilityInOverviewAndSplitview);
   FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
                            V1BackButton);
@@ -118,8 +128,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   bool ShouldPaint() const;
 
   // Helps to hide or show the header as needed when overview mode starts or
-  // ends.
-  void OnOverviewModeChanged(bool in_overview);
+  // ends or when split view state changes.
+  void OnOverviewOrSplitviewModeChanged();
 
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
@@ -139,11 +149,21 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // Owned by views hierarchy.
   HostedAppButtonContainer* hosted_app_button_container_;
 
+  // Ash's mojom::SplitViewController.
+  ash::mojom::SplitViewControllerPtr split_view_controller_;
+
+  // The binding this instance uses to implement mojom::SplitViewObserver.
+  mojo::Binding<ash::mojom::SplitViewObserver> observer_binding_;
+
   // Indicates whether overview mode is active. Hide the header for V1 apps in
   // overview mode because a fake header is added for better UX. If also in
   // immersive mode before entering overview mode, the flag will be ignored
   // because the reveal lock will determine the show/hide header.
   bool in_overview_mode_ = false;
+
+  // Maintains the current split view state.
+  ash::mojom::SplitViewState split_view_state_ =
+      ash::mojom::SplitViewState::NO_SNAP;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };

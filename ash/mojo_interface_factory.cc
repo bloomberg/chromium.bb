@@ -32,6 +32,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -164,6 +165,11 @@ void BindWallpaperRequestOnMainThread(
   Shell::Get()->wallpaper_controller()->BindRequest(std::move(request));
 }
 
+void BindSplitViewRequestOnMainThread(
+    mojom::SplitViewControllerRequest request) {
+  Shell::Get()->split_view_controller()->BindRequest(std::move(request));
+}
+
 }  // namespace
 
 void RegisterInterfaces(
@@ -234,6 +240,8 @@ void RegisterInterfaces(
   registry->AddInterface(base::Bind(&BindVpnListRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindWallpaperRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindSplitViewRequestOnMainThread),
                          main_thread_task_runner);
 
   // Inject additional optional interfaces.

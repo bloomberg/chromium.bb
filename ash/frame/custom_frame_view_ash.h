@@ -102,11 +102,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   void SchedulePaintInRect(const gfx::Rect& r) override;
   void SetVisible(bool visible) override;
 
-  // Called when splitview state changes. Depending on |state| and if the window
-  // associated with |widget_| is the snapped window, paint the header in
-  // overview mode.
-  void MaybePaintHeaderForSplitview(SplitViewController::State state);
-
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
   // header of v2 and ARC apps.
@@ -142,6 +137,12 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
+
+  // Called when overview mode or split view state changed. If overview mode and
+  // split view mode are both active at the same time, the header of the window
+  // in split view should be visible, but the headers of other windows in
+  // overview are not.
+  void OnOverviewOrSplitViewModeChanged();
 
   // Not owned.
   views::Widget* frame_;

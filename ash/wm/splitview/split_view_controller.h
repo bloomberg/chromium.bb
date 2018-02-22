@@ -6,12 +6,15 @@
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
@@ -32,7 +35,8 @@ class SplitViewWindowSelectorTest;
 // The controller for the split view. It snaps a window to left/right side of
 // the screen. It also observes the two snapped windows and decides when to exit
 // the split view mode.
-class ASH_EXPORT SplitViewController : public aura::WindowObserver,
+class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
+                                       public aura::WindowObserver,
                                        public ash::wm::WindowStateObserver,
                                        public ::wm::ActivationChangeObserver,
                                        public ShellObserver,
@@ -71,6 +75,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // the screen.
   static bool IsLeftWindowOnTopOrLeftOfScreen(
       blink::WebScreenOrientationLockType screen_orientation);
+
+  // Binds the mojom::SplitViewController interface to this object.
+  void BindRequest(mojom::SplitViewControllerRequest request);
 
   // Returns true if |window| can be activated and snapped.
   bool CanSnap(aura::Window* window);
@@ -116,6 +123,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // mojom::SplitViewObserver:
+  void AddObserver(mojom::SplitViewObserverPtr observer) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -250,6 +260,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void StartOverview();
   void EndOverview();
 
+  // Bindings for the SplitViewController interface.
+  mojo::BindingSet<mojom::SplitViewController> bindings_;
+
   // The current left/right snapped window.
   aura::Window* left_window_ = nullptr;
   aura::Window* right_window_ = nullptr;
@@ -305,6 +318,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   aura::Window* smooth_resize_window_ = nullptr;
 
   base::ObserverList<Observer> observers_;
+  mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);
 };

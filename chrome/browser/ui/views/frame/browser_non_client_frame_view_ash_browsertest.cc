@@ -15,6 +15,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -50,8 +51,10 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -670,6 +673,86 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, TopViewInset) {
   ToggleFullscreenModeAndWait(browser());
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+}
+
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       HeaderVisibilityInOverviewAndSplitview) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  Widget* widget = browser_view->GetWidget();
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+  widget->GetNativeWindow()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      ui::mojom::kResizeBehaviorCanMaximize |
+          ui::mojom::kResizeBehaviorCanResize);
+
+  // Test that the header is invisible for the browser window in overview mode
+  // and visible when not in overview mode.
+  ash::Shell* shell = ash::Shell::Get();
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+
+  // Create another browser window.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser2 = new Browser(params);
+  AddBlankTabAndShow(browser2);
+  BrowserView* browser_view2 = BrowserView::GetBrowserViewForBrowser(browser2);
+  Widget* widget2 = browser_view2->GetWidget();
+  BrowserNonClientFrameViewAsh* frame_view2 =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget2->non_client_view()->frame_view());
+  widget2->GetNativeWindow()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      ui::mojom::kResizeBehaviorCanMaximize |
+          ui::mojom::kResizeBehaviorCanResize);
+
+  // Test that when one browser window is snapped, the header is visible for the
+  // snapped browser window, but invisible for the browser window still in
+  // overview mode.
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  ash::SplitViewController* split_view_controller =
+      shell->split_view_controller();
+  split_view_controller->BindRequest(
+      mojo::MakeRequest(&frame_view->split_view_controller_));
+  split_view_controller->BindRequest(
+      mojo::MakeRequest(&frame_view2->split_view_controller_));
+  split_view_controller->AddObserver(
+      frame_view->CreateInterfacePtrForTesting());
+  split_view_controller->AddObserver(
+      frame_view2->CreateInterfacePtrForTesting());
+  frame_view->split_view_controller_.FlushForTesting();
+  frame_view2->split_view_controller_.FlushForTesting();
+
+  shell->window_selector_controller()->ToggleOverview();
+  split_view_controller->SnapWindow(widget->GetNativeWindow(),
+                                    ash::SplitViewController::LEFT);
+  frame_view->split_view_controller_.FlushForTesting();
+  frame_view2->split_view_controller_.FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
+
+  // When both browser windows are snapped, the headers are both visible.
+  split_view_controller->SnapWindow(widget2->GetNativeWindow(),
+                                    ash::SplitViewController::RIGHT);
+  frame_view->split_view_controller_.FlushForTesting();
+  frame_view2->split_view_controller_.FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view2->caption_button_container_->visible());
+
+  // Toggle overview mode while splitview mode is active. Test that the header
+  // is visible for the snapped browser window but not for the other browser
+  // window in overview mode.
+  shell->window_selector_controller()->ToggleOverview();
+  frame_view->split_view_controller_.FlushForTesting();
+  frame_view2->split_view_controller_.FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
 }
 
 // Test the V1 apps' kTopViewInset.
