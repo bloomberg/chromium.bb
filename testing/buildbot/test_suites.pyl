@@ -981,7 +981,7 @@
    },
 
   'mash_chromium_gtests': {
-    'ash_unittests-mash': {
+    'mash_ash_unittests': {
       'test': 'ash_unittests',
       'override_isolate_target': 'ash_unittests',
       'args': [

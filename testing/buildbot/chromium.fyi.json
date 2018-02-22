@@ -6063,7 +6063,7 @@
           "--mash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
         ],
-        "name": "ash_unittests-mash",
+        "name": "mash_ash_unittests",
         "override_isolate_target": "ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
