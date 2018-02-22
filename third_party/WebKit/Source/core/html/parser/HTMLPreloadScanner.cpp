@@ -154,6 +154,7 @@ class TokenPreloadScanner::StartTagScanner {
       String attribute_value = html_token_attribute.Value8BitIfNecessary();
       ProcessAttribute(attribute_name, attribute_value);
     }
+    PostProcessAfterAttributes();
   }
 
   void ProcessAttributes(
@@ -163,6 +164,14 @@ class TokenPreloadScanner::StartTagScanner {
     for (const CompactHTMLToken::Attribute& html_token_attribute : attributes)
       ProcessAttribute(html_token_attribute.GetName(),
                        html_token_attribute.Value());
+    PostProcessAfterAttributes();
+  }
+
+  void PostProcessAfterAttributes() {
+    if (Match(tag_impl_, imgTag) ||
+        (link_is_preload_ && as_attribute_value_ == "image" &&
+         RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()))
+      SetUrlFromImageAttributes();
   }
 
   void HandlePictureSourceURL(PictureData& picture_data) {
@@ -295,34 +304,13 @@ class TokenPreloadScanner::StartTagScanner {
                            const String& attribute_value) {
     if (Match(attribute_name, srcAttr) && img_src_url_.IsNull()) {
       img_src_url_ = attribute_value;
-      SetUrlToLoad(BestFitSourceForImageAttributes(
-                       media_values_->DevicePixelRatio(), source_size_,
-                       attribute_value, srcset_image_candidate_),
-                   kAllowURLReplacement);
     } else if (Match(attribute_name, crossoriginAttr)) {
       SetCrossOrigin(attribute_value);
     } else if (Match(attribute_name, srcsetAttr) &&
-               srcset_image_candidate_.IsEmpty()) {
+               srcset_attribute_value_.IsNull()) {
       srcset_attribute_value_ = attribute_value;
-      srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
-          media_values_->DevicePixelRatio(), source_size_, attribute_value);
-      SetUrlToLoad(BestFitSourceForImageAttributes(
-                       media_values_->DevicePixelRatio(), source_size_,
-                       img_src_url_, srcset_image_candidate_),
-                   kAllowURLReplacement);
     } else if (Match(attribute_name, sizesAttr) && !source_size_set_) {
-      source_size_ =
-          SizesAttributeParser(media_values_, attribute_value).length();
-      source_size_set_ = true;
-      if (!srcset_image_candidate_.IsEmpty()) {
-        srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
-            media_values_->DevicePixelRatio(), source_size_,
-            srcset_attribute_value_);
-        SetUrlToLoad(BestFitSourceForImageAttributes(
-                         media_values_->DevicePixelRatio(), source_size_,
-                         img_src_url_, srcset_image_candidate_),
-                     kAllowURLReplacement);
-      }
+      ParseSourceSize(attribute_value);
     } else if (!referrer_policy_set_ &&
                Match(attribute_name, referrerpolicyAttr) &&
                !attribute_value.IsNull()) {
@@ -333,12 +321,24 @@ class TokenPreloadScanner::StartTagScanner {
     }
   }
 
+  void SetUrlFromImageAttributes() {
+    srcset_image_candidate_ =
+        BestFitSourceForSrcsetAttribute(media_values_->DevicePixelRatio(),
+                                        source_size_, srcset_attribute_value_);
+    SetUrlToLoad(BestFitSourceForImageAttributes(
+                     media_values_->DevicePixelRatio(), source_size_,
+                     img_src_url_, srcset_image_candidate_),
+                 kAllowURLReplacement);
+  }
+
   template <typename NameType>
   void ProcessLinkAttribute(const NameType& attribute_name,
                             const String& attribute_value) {
     // FIXME - Don't set rel/media/crossorigin multiple times.
     if (Match(attribute_name, hrefAttr)) {
       SetUrlToLoad(attribute_value, kDisallowURLReplacement);
+      // Used in SetUrlFromImageAttributes() when as=image.
+      img_src_url_ = attribute_value;
     } else if (Match(attribute_name, relAttr)) {
       LinkRelAttribute rel(attribute_value);
       link_is_style_sheet_ = rel.IsStyleSheet() && !rel.IsAlternate() &&
@@ -368,6 +368,11 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (Match(attribute_name, integrityAttr)) {
       SubresourceIntegrity::ParseIntegrityAttribute(attribute_value,
                                                     integrity_metadata_);
+    } else if (Match(attribute_name, srcsetAttr) &&
+               srcset_attribute_value_.IsNull()) {
+      srcset_attribute_value_ = attribute_value;
+    } else if (Match(attribute_name, imgsizesAttr) && !source_size_set_) {
+      ParseSourceSize(attribute_value);
     }
   }
 
@@ -392,9 +397,7 @@ class TokenPreloadScanner::StartTagScanner {
       srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
           media_values_->DevicePixelRatio(), source_size_, attribute_value);
     } else if (Match(attribute_name, sizesAttr) && !source_size_set_) {
-      source_size_ =
-          SizesAttributeParser(media_values_, attribute_value).length();
-      source_size_set_ = true;
+      ParseSourceSize(attribute_value);
       if (!srcset_image_candidate_.IsEmpty()) {
         srcset_image_candidate_ = BestFitSourceForSrcsetAttribute(
             media_values_->DevicePixelRatio(), source_size_,
@@ -544,6 +547,12 @@ class TokenPreloadScanner::StartTagScanner {
       }
     }
     return true;
+  }
+
+  void ParseSourceSize(const String& attribute_value) {
+    source_size_ =
+        SizesAttributeParser(media_values_, attribute_value).length();
+    source_size_set_ = true;
   }
 
   void SetCrossOrigin(const String& cors_setting) {
