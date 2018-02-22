@@ -37,19 +37,13 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.getNtpExtension_();
-    this.addWebUIListener('update-ntp-extension', ntpExtension => {
+    const updateNtpExtension = ntpExtension => {
       // Note that |ntpExtension| is empty if there is no NTP extension.
       this.ntpExtension_ = ntpExtension;
-    });
-  },
-
-  /** @private */
-  getNtpExtension_: function() {
+    };
     settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
-        ntpExtension => {
-          this.ntpExtension_ = ntpExtension;
-        });
+        updateNtpExtension);
+    this.addWebUIListener('update-ntp-extension', updateNtpExtension);
   },
 
   /**
