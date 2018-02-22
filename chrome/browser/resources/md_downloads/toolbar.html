@@ -41,17 +41,17 @@
         spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
       <button is="paper-icon-button-light" id="moreActions"
           title="$i18n{moreActions}" class="dropdown-trigger"
-          on-tap="onMoreActionsTap_">
+          on-click="onMoreActionsTap_">
         <iron-icon icon="cr:more-vert"></iron-icon>
       </button>
     </cr-toolbar>
     <dialog is="cr-action-menu" id="moreActionsMenu">
       <button slot="item" class="dropdown-item clear-all"
-          on-tap="onClearAllTap_">
+          on-click="onClearAllTap_">
         $i18n{clearAll}
       </button>
       <button slot="item" class="dropdown-item"
-          on-tap="onOpenDownloadsFolderTap_">
+          on-click="onOpenDownloadsFolderTap_">
         $i18n{openDownloadsFolder}
       </button>
     </dialog>
