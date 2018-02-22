@@ -59,7 +59,7 @@ AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
 // Last generated sample ordinal number.
 uint32_t g_last_sample_ordinal = 0;
 
-SamplingHeapProfiler* g_instance;
+SamplingHeapProfiler* g_sampling_heap_profiler_instance;
 void (*g_hooks_install_callback)();
 Atomic32 g_hooks_installed;
 
@@ -179,7 +179,7 @@ SamplingHeapProfiler::Sample::Sample(const Sample&) = default;
 SamplingHeapProfiler::Sample::~Sample() = default;
 
 SamplingHeapProfiler::SamplingHeapProfiler() {
-  g_instance = this;
+  g_sampling_heap_profiler_instance = this;
 }
 
 // static
@@ -307,8 +307,8 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
   accumulated -=
       base::subtle::NoBarrier_AtomicExchange(&g_bytes_left, next_interval);
 
-  g_instance->DoRecordAlloc(accumulated, size, address,
-                            kSkipBaseAllocatorFrames);
+  g_sampling_heap_profiler_instance->DoRecordAlloc(accumulated, size, address,
+                                                   kSkipBaseAllocatorFrames);
 }
 
 void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
@@ -365,10 +365,10 @@ void SamplingHeapProfiler::RecordFree(void* address) {
   bool maybe_sampled = true;  // Pessimistically assume allocation was sampled.
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, 1);
   if (LIKELY(!base::subtle::NoBarrier_Load(&g_fast_path_is_closed)))
-    maybe_sampled = g_instance->samples_.count(address);
+    maybe_sampled = g_sampling_heap_profiler_instance->samples_.count(address);
   base::subtle::Barrier_AtomicIncrement(&g_operations_in_flight, -1);
   if (maybe_sampled)
-    g_instance->DoRecordFree(address);
+    g_sampling_heap_profiler_instance->DoRecordFree(address);
 }
 
 void SamplingHeapProfiler::DoRecordFree(void* address) {
