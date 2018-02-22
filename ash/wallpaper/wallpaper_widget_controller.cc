@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -241,7 +241,7 @@ void WallpaperWidgetController::SetAnimatingWidgetAsActive() {
     std::move(wallpaper_set_callback_).Run();
 
   // Notify observers that animation finished.
-  Shell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
+  Shell::Get()->wallpaper_controller()->OnWallpaperAnimationFinished();
 }
 
 }  // namespace ash

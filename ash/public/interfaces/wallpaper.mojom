@@ -186,6 +186,12 @@ interface WallpaperControllerClient {
   // Signals to the client that ash is ready to set wallpapers. The client is
   // able to decide whatever the first wallpaper it wants to display.
   OnReadyToSetWallpaper();
+
+  // TODO(crbug.com/784495, 776464): Consider removing this after views-based
+  // login is enabled.
+  // Notifies the client that the animation of the first wallpaper since
+  // the controller initialization has completed.
+  OnFirstWallpaperAnimationFinished();
 };
 
 // Used to listen for wallpaper state changed.

@@ -639,6 +639,35 @@ wallpaper::WallpaperType WallpaperController::GetWallpaperType() const {
   return wallpaper::WALLPAPER_TYPE_COUNT;
 }
 
+bool WallpaperController::ShouldShowInitialAnimation() {
+  // The slower initial animation is only applicable if:
+  // 1) It's the first run after system boot, not after user sign-out.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kFirstExecAfterBoot)) {
+    return false;
+  }
+  // 2) It's at the login screen.
+  if (Shell::Get()->session_controller()->IsActiveUserSessionStarted() ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kLoginManager)) {
+    return false;
+  }
+  // 3) It's the first wallpaper being shown, not for the switching between
+  //    multiple user pods.
+  if (!is_first_wallpaper_)
+    return false;
+
+  return true;
+}
+
+void WallpaperController::OnWallpaperAnimationFinished() {
+  // TODO(crbug.com/784495, 776464): This is used by a code path in web-UI
+  // login. Remove it if views-based login is not interested in this event.
+  if (wallpaper_controller_client_ && is_first_wallpaper_) {
+    wallpaper_controller_client_->OnFirstWallpaperAnimationFinished();
+  }
+}
+
 void WallpaperController::SetDefaultWallpaperImpl(
     const AccountId& account_id,
     const user_manager::UserType& user_type,
@@ -730,6 +759,8 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
     color_calculator_->RemoveObserver(this);
     color_calculator_.reset();
   }
+
+  is_first_wallpaper_ = !current_wallpaper_;
   current_wallpaper_.reset(new wallpaper::WallpaperResizer(
       image, GetMaxDisplaySizeInNative(), info, sequenced_task_runner_));
   current_wallpaper_->AddObserver(this);
@@ -737,6 +768,7 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
 
   for (auto& observer : observers_)
     observer.OnWallpaperDataChanged();
+
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
   wallpaper_count_for_testing_++;

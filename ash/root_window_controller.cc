@@ -37,7 +37,6 @@
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/virtual_keyboard_container_layout_manager.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/container_finder.h"

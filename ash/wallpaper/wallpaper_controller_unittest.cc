@@ -1649,4 +1649,69 @@ TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
   EXPECT_FALSE(IsDevicePolicyWallpaper());
 }
 
+TEST_F(WallpaperControllerTest, ShouldShowInitialAnimationAfterBoot) {
+  CreateDefaultWallpapers();
+
+  // Simulate the login screen after system boot.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kLoginManager);
+  ClearLogin();
+
+  // Show the first wallpaper. Verify that the slower animation should be used.
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_TRUE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+
+  // Show the second wallpaper. Verify that the slower animation should not be
+  // used. (Use a different user type to ensure a different wallpaper is shown,
+  // otherwise requests of loading the same wallpaper are ignored.)
+  controller_->ShowUserWallpaper(
+      InitializeUser(AccountId::FromUserEmail("child@test.com")));
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+
+  // Log in the user and show the wallpaper. Verify that the slower animation
+  // should not be used.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+}
+
+TEST_F(WallpaperControllerTest, ShouldNotShowInitialAnimationAfterSignOut) {
+  CreateDefaultWallpapers();
+
+  // Simulate the login screen after user sign-out. Verify that the slower
+  // animation should never be used.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kLoginManager);
+  CreateAndSaveWallpapers(account_id_1);
+  ClearLogin();
+
+  // Show the first wallpaper.
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+
+  // Show the second wallpaper.
+  controller_->ShowUserWallpaper(
+      InitializeUser(AccountId::FromUserEmail("child@test.com")));
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+
+  // Log in the user and show the wallpaper.
+  SimulateUserLogin(user_1);
+  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(controller_->ShouldShowInitialAnimation());
+  EXPECT_EQ(1, GetWallpaperCount());
+}
+
 }  // namespace ash

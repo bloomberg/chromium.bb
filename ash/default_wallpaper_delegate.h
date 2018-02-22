@@ -17,12 +17,8 @@ class ASH_EXPORT DefaultWallpaperDelegate : public WallpaperDelegate {
   ~DefaultWallpaperDelegate() override {}
 
   // WallpaperDelegate overrides:
-  int GetAnimationType() override;
   int GetAnimationDurationOverride() override;
   void SetAnimationDurationOverride(int animation_duration_in_ms) override;
-  bool ShouldShowInitialAnimation() override;
-  void OnWallpaperAnimationFinished() override;
-  void OnWallpaperBootAnimationFinished() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultWallpaperDelegate);
