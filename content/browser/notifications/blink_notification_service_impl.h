@@ -43,6 +43,11 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const NotificationResources& notification_resources,
       blink::mojom::NonPersistentNotificationListenerPtr listener_ptr) override;
   void CloseNonPersistentNotification(const std::string& token) override;
+  void DisplayPersistentNotification(
+      int64_t service_worker_registration_id,
+      const PlatformNotificationData& platform_notification_data,
+      const NotificationResources& notification_resources,
+      DisplayPersistentNotificationCallback) override;
 
  private:
   // Called when an error is detected on binding_.

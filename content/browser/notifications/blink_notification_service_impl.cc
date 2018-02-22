@@ -145,4 +145,39 @@ BlinkNotificationServiceImpl::CheckPermissionStatus() {
       resource_context_, origin_.GetURL(), render_process_id_);
 }
 
+void BlinkNotificationServiceImpl::DisplayPersistentNotification(
+    int64_t service_worker_registration_id,
+    const PlatformNotificationData& platform_notification_data,
+    const NotificationResources& notification_resources,
+    DisplayPersistentNotificationCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!Service()) {
+    std::move(callback).Run(
+        blink::mojom::PersistentNotificationError::INTERNAL_ERROR);
+    return;
+  }
+  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        blink::mojom::PersistentNotificationError::PERMISSION_DENIED);
+    return;
+  }
+
+  // TODO(https://crbug.com/796991): Write notification data to the database,
+  // and get back a real notification ID to use here.
+  std::string notification_id = "FIXME";
+
+  // Using base::Unretained here is safe because Service() returns a singleton.
+  // TODO(https://crbug.com/796991): Get service worker registration from its
+  // ID, and pass the service worker scope (instead of the origin twice) below.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &PlatformNotificationService::DisplayPersistentNotification,
+          base::Unretained(Service()), browser_context_, notification_id,
+          origin_.GetURL() /* service_worker_scope */,
+          origin_.GetURL() /* origin */, platform_notification_data,
+          notification_resources));
+  std::move(callback).Run(blink::mojom::PersistentNotificationError::NONE);
+}
+
 }  // namespace content

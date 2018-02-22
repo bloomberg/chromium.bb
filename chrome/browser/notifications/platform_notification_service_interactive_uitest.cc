@@ -985,3 +985,30 @@ IN_PROC_BROWSER_TEST_F(
   // notification should be shown without an image.
   EXPECT_TRUE(notifications[0].image().IsEmpty());
 }
+
+class PlatformNotificationServiceMojoEnabledBrowserTest
+    : public PlatformNotificationServiceBrowserTest {
+ public:
+  // InProcessBrowserTest overrides.
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitWithFeatures({features::kNotificationsWithMojo},
+                                          {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
+                       DisplayPersistentNotificationWithPermission) {
+  RequestAndAcceptPermission();
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_none')",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications(true /* is_persistent */);
+  ASSERT_EQ(1u, notifications.size());
+}

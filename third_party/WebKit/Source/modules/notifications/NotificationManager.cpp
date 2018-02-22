@@ -10,7 +10,9 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/notifications/Notification.h"
 #include "modules/permissions/PermissionUtils.h"
+#include "platform/Histogram.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/heap/Persistent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/InterfaceProvider.h"
@@ -19,6 +21,7 @@
 #include "public/platform/modules/notifications/notification.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -122,6 +125,42 @@ void NotificationManager::DisplayNonPersistentNotification(
 void NotificationManager::CloseNonPersistentNotification(const String& token) {
   DCHECK(!token.IsEmpty());
   GetNotificationService()->CloseNonPersistentNotification(token);
+}
+
+void NotificationManager::DisplayPersistentNotification(
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    const blink::WebNotificationData& notification_data,
+    std::unique_ptr<blink::WebNotificationResources> notification_resources,
+    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) {
+  DCHECK(notification_resources);
+  DCHECK_EQ(notification_data.actions.size(),
+            notification_resources->action_icons.size());
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, notification_data_size_histogram,
+      ("Notifications.AuthorDataSize", 1, 1000, 50));
+  notification_data_size_histogram.Count(notification_data.data.size());
+
+  GetNotificationService()->DisplayPersistentNotification(
+      service_worker_registration->RegistrationId(), notification_data,
+      *notification_resources,
+      WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
+                WrapPersistent(this), std::move(callbacks)));
+}
+
+void NotificationManager::DidDisplayPersistentNotification(
+    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
+    mojom::blink::PersistentNotificationError error) {
+  switch (error) {
+    case mojom::blink::PersistentNotificationError::NONE:
+      callbacks->OnSuccess();
+      return;
+    case mojom::blink::PersistentNotificationError::INTERNAL_ERROR:
+    case mojom::blink::PersistentNotificationError::PERMISSION_DENIED:
+      callbacks->OnError();
+      return;
+  }
+  NOTREACHED();
 }
 
 const mojom::blink::NotificationServicePtr&
