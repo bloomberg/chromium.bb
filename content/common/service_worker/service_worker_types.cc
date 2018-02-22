@@ -4,7 +4,6 @@
 
 #include "content/common/service_worker/service_worker_types.h"
 
-#include "content/public/common/service_worker_modes.h"
 #include "net/base/load_flags.h"
 #include "storage/common/blob_storage/blob_handle.h"
 
