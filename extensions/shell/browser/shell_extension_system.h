@@ -5,10 +5,12 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
@@ -23,6 +25,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class ShellExtensionLoader;
 class ValueStoreFactory;
 
 // A simplified version of ExtensionSystem for app_shell. Allows
@@ -47,7 +50,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   void FinishInitialization();
 
   // Launch the app with id |extension_id|.
-  void LaunchApp(const std::string& extension_id);
+  void LaunchApp(const ExtensionId& extension_id);
 
   // KeyedService implementation:
   void Shutdown() override;
@@ -95,6 +98,8 @@ class ShellExtensionSystem : public ExtensionSystem {
   std::unique_ptr<RuntimeData> runtime_data_;
   std::unique_ptr<QuotaService> quota_service_;
   std::unique_ptr<AppSorting> app_sorting_;
+
+  std::unique_ptr<ShellExtensionLoader> extension_loader_;
 
   scoped_refptr<ValueStoreFactory> store_factory_;
 
