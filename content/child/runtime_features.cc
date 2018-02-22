@@ -196,10 +196,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::EnableReducedReferrerGranularity(true);
 
-  if (base::FeatureList::IsEnabled(features::kRootLayerScrolling) ||
-      command_line.HasSwitch(switches::kRootLayerScrolls)) {
-    WebRuntimeFeatures::EnableRootLayerScrolling(true);
-  }
+  WebRuntimeFeatures::EnableRootLayerScrolling(
+      base::FeatureList::IsEnabled(features::kRootLayerScrolling) ||
+      enableExperimentalWebPlatformFeatures);
 
   if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
     WebRuntimeFeatures::EnablePermissionsAPI(false);
