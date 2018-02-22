@@ -136,6 +136,14 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                          const base::FilePath& target_path,
                          StatusCallback callback) = 0;
 
+  // Calls CopyEntry. Using the corresponding |mount_id|, this copies the entry
+  // at |source_path| to |target_path|. This operation will fail if the
+  // target already exists.
+  virtual void CopyEntry(int32_t mount_id,
+                         const base::FilePath& source_path,
+                         const base::FilePath& target_path,
+                         StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();

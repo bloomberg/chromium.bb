@@ -197,6 +197,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
     CallDefaultMethod(smbprovider::kMoveEntryMethod, options, &callback);
   }
 
+  void CopyEntry(int32_t mount_id,
+                 const base::FilePath& source_path,
+                 const base::FilePath& target_path,
+                 StatusCallback callback) override {
+    smbprovider::CopyEntryOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_source_path(source_path.value());
+    options.set_target_path(target_path.value());
+    CallDefaultMethod(smbprovider::kCopyEntryMethod, options, &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
