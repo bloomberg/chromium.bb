@@ -4,6 +4,7 @@
 
 #include "net/http/http_stream_parser.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -867,7 +868,7 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
   DCHECK_GT(result, 0);
 
-  int end_of_header_offset = FindAndParseResponseHeaders();
+  int end_of_header_offset = FindAndParseResponseHeaders(result);
 
   // Note: -1 is special, it indicates we haven't found the end of headers.
   // Anything less than -1 is a net::Error, so we bail out.
@@ -925,9 +926,10 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   return OK;
 }
 
-int HttpStreamParser::FindAndParseResponseHeaders() {
-  int end_offset = -1;
+int HttpStreamParser::FindAndParseResponseHeaders(int new_bytes) {
+  DCHECK_GT(new_bytes, 0);
   DCHECK_EQ(0, read_buf_unused_offset_);
+  int end_offset = -1;
 
   // Look for the start of the status line, if it hasn't been found yet.
   if (response_header_start_offset_ < 0) {
@@ -936,9 +938,16 @@ int HttpStreamParser::FindAndParseResponseHeaders() {
   }
 
   if (response_header_start_offset_ >= 0) {
-    end_offset = HttpUtil::LocateEndOfHeaders(read_buf_->StartOfBuffer(),
-                                              read_buf_->offset(),
-                                              response_header_start_offset_);
+    // LocateEndOfHeaders looks for two line breaks in a row (With or without
+    // carriage returns). So the end of the headers includes at most the last 3
+    // bytes of the buffer from the past read. This optimization avoids O(n^2)
+    // performance in the case each read only returns a couple bytes. It's not
+    // too important in production, but for fuzzers with memory instrumentation,
+    // it's needed to avoid timing out.
+    int search_start = std::max(response_header_start_offset_,
+                                read_buf_->offset() - new_bytes - 3);
+    end_offset = HttpUtil::LocateEndOfHeaders(
+        read_buf_->StartOfBuffer(), read_buf_->offset(), search_start);
   } else if (read_buf_->offset() >= 8) {
     // Enough data to decide that this is an HTTP/0.9 response.
     // 8 bytes = (4 bytes of junk) + "http".length()

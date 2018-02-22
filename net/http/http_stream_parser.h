@@ -189,7 +189,11 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // found, parse them with DoParseResponseHeaders().  Return the offset for
   // the end of the headers, or -1 if the complete headers were not found, or
   // with a net::Error if we encountered an error during parsing.
-  int FindAndParseResponseHeaders();
+  //
+  // |new_bytes| is the number of new bytes that have been appended to the end
+  // of |read_buf_| since the last call to this method (which must have returned
+  // -1).
+  int FindAndParseResponseHeaders(int new_bytes);
 
   // Parse the headers into response_.  Returns OK on success or a net::Error on
   // failure.
