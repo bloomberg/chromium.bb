@@ -63,7 +63,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
     DISALLOW_COPY_AND_ASSIGN(VP8Accelerator);
   };
 
-  VP8Decoder(VP8Accelerator* accelerator);
+  explicit VP8Decoder(std::unique_ptr<VP8Accelerator> accelerator);
   ~VP8Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
@@ -102,7 +102,7 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   int horizontal_scale_;
   int vertical_scale_;
 
-  VP8Accelerator* accelerator_;
+  const std::unique_ptr<VP8Accelerator> accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(VP8Decoder);
 };

@@ -11,15 +11,15 @@ VP8Decoder::VP8Accelerator::VP8Accelerator() {}
 
 VP8Decoder::VP8Accelerator::~VP8Accelerator() {}
 
-VP8Decoder::VP8Decoder(VP8Accelerator* accelerator)
+VP8Decoder::VP8Decoder(std::unique_ptr<VP8Accelerator> accelerator)
     : state_(kNeedStreamMetadata),
       curr_frame_start_(nullptr),
       frame_size_(0),
-      accelerator_(accelerator) {
+      accelerator_(std::move(accelerator)) {
   DCHECK(accelerator_);
 }
 
-VP8Decoder::~VP8Decoder() {}
+VP8Decoder::~VP8Decoder() = default;
 
 bool VP8Decoder::Flush() {
   DVLOG(2) << "Decoder flush";

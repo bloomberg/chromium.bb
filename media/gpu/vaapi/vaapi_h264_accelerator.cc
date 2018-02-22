@@ -55,7 +55,7 @@ class VaapiH264Picture : public H264Picture {
 
 VaapiH264Accelerator::VaapiH264Accelerator(
     VaapiVideoDecodeAccelerator* vaapi_dec,
-    VaapiWrapper* vaapi_wrapper)
+    scoped_refptr<VaapiWrapper> vaapi_wrapper)
     : vaapi_wrapper_(vaapi_wrapper), vaapi_dec_(vaapi_dec) {
   DCHECK(vaapi_wrapper_);
   DCHECK(vaapi_dec_);

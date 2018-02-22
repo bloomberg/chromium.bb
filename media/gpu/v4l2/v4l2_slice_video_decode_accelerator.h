@@ -431,12 +431,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   bool decoder_resetting_;
   bool surface_set_change_pending_;
 
-  // Hardware accelerators.
-  // TODO(posciak): Try to have a superclass here if possible.
-  std::unique_ptr<V4L2H264Accelerator> h264_accelerator_;
-  std::unique_ptr<V4L2VP8Accelerator> vp8_accelerator_;
-  std::unique_ptr<V4L2VP9Accelerator> vp9_accelerator_;
-
   // Codec-specific software decoder in use.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 

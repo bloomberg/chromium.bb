@@ -576,18 +576,16 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
-    h264_accelerator_.reset(new V4L2H264Accelerator(this));
-    decoder_.reset(new H264Decoder(h264_accelerator_.get()));
+    decoder_.reset(
+        new H264Decoder(std::make_unique<V4L2H264Accelerator>(this)));
   } else if (video_profile_ >= VP8PROFILE_MIN &&
              video_profile_ <= VP8PROFILE_MAX) {
-    vp8_accelerator_.reset(new V4L2VP8Accelerator(this));
-    decoder_.reset(new VP8Decoder(vp8_accelerator_.get()));
+    decoder_.reset(new VP8Decoder(std::make_unique<V4L2VP8Accelerator>(this)));
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
-    vp9_accelerator_.reset(new V4L2VP9Accelerator(this));
-    decoder_.reset(new VP9Decoder(vp9_accelerator_.get()));
+    decoder_.reset(new VP9Decoder(std::make_unique<V4L2VP9Accelerator>(this)));
   } else {
-    NOTREACHED() << "Unsupported profile " << video_profile_;
+    NOTREACHED() << "Unsupported profile " << GetProfileName(video_profile_);
     return false;
   }
 

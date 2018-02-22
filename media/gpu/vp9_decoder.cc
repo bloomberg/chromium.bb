@@ -17,14 +17,14 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
-VP9Decoder::VP9Decoder(VP9Accelerator* accelerator)
+VP9Decoder::VP9Decoder(std::unique_ptr<VP9Accelerator> accelerator)
     : state_(kNeedStreamMetadata),
-      accelerator_(accelerator),
-      parser_(accelerator->IsFrameContextRequired()) {
+      accelerator_(std::move(accelerator)),
+      parser_(accelerator_->IsFrameContextRequired()) {
   ref_frames_.resize(kVp9NumRefFrames);
 }
 
-VP9Decoder::~VP9Decoder() {}
+VP9Decoder::~VP9Decoder() = default;
 
 void VP9Decoder::SetStream(const uint8_t* ptr, size_t size) {
   DCHECK(ptr);

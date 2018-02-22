@@ -20,7 +20,7 @@ class VaapiWrapper;
 class MEDIA_GPU_EXPORT VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
  public:
   VaapiVP8Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
-                      VaapiWrapper* vaapi_wrapper);
+                      scoped_refptr<VaapiWrapper> vaapi_wrapper);
   ~VaapiVP8Accelerator() override;
 
   // VP8Decoder::VP8Accelerator implementation.
@@ -36,7 +36,7 @@ class MEDIA_GPU_EXPORT VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
   scoped_refptr<VaapiDecodeSurface> VP8PictureToVaapiDecodeSurface(
       const scoped_refptr<VP8Picture>& pic);
 
-  VaapiWrapper* vaapi_wrapper_;
+  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   VaapiVideoDecodeAccelerator* vaapi_dec_;
 
   SEQUENCE_CHECKER(sequence_checker_);

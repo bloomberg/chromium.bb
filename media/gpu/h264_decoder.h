@@ -101,7 +101,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     DISALLOW_COPY_AND_ASSIGN(H264Accelerator);
   };
 
-  H264Decoder(H264Accelerator* accelerator);
+  explicit H264Decoder(std::unique_ptr<H264Accelerator> accelerator);
   ~H264Decoder() override;
 
   // AcceleratedVideoDecoder implementation.
@@ -273,7 +273,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;
 
-  H264Accelerator* accelerator_;
+  const std::unique_ptr<H264Accelerator> accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(H264Decoder);
 };
