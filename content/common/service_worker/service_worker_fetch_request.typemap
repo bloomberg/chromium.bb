@@ -7,7 +7,6 @@ mojom =
 public_headers = [
   "//content/common/service_worker/service_worker_types.h",
   "//content/public/common/request_context_type.h",
-  "//content/public/common/service_worker_modes.h",
   "//storage/common/blob_storage/blob_handle.h",
   "//storage/common/storage_common_export.h",
 ]

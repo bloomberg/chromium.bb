@@ -17,7 +17,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
-#include "content/public/common/service_worker_modes.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
@@ -50,8 +49,9 @@ extern const char kServiceWorkerGetRegistrationsErrorPrefix[];
 extern const char kFetchScriptError[];
 
 // Constants for invalid identifiers.
-static const int64_t kInvalidServiceWorkerResourceId = -1;
 static const int kInvalidEmbeddedWorkerThreadId = -1;
+static const int kInvalidServiceWorkerProviderId = -1;
+static const int64_t kInvalidServiceWorkerResourceId = -1;
 
 // The HTTP cache is bypassed for Service Worker scripts if the last network
 // fetch occurred over 24 hours ago.

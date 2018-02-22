@@ -23,7 +23,6 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"

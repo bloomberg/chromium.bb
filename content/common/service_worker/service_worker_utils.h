@@ -12,7 +12,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/service_worker_modes.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "url/gurl.h"

@@ -5,7 +5,6 @@
 #include "content/renderer/loader/request_extra_data.h"
 
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/service_worker_modes.h"
 #include "services/network/public/cpp/resource_request.h"
 
 using blink::WebString;

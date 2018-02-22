@@ -8,7 +8,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_worker_modes.h"
 
 namespace content {
 

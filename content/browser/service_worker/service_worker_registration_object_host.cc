@@ -10,7 +10,6 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/service_worker_modes.h"
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
 
