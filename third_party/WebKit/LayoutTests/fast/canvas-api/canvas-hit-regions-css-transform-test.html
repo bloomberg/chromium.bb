@@ -24,7 +24,7 @@ function transformX(x, y, degree)
   var paddingLeft = parseInt(canvas.style.paddingLeft) || 0;
   var borderLeft = parseInt(canvas.style.borderLeft) || 0;
   var cssWidth = parseInt(canvas.style.width) || canvas.width;
-  var scale = cssWidth / canvas.width;
+  var scale = canvas.width == 0 ? 1 : cssWidth / canvas.width;
   var tx = x;
   if (degree) {
     var cos = Math.cos(degree * Math.PI / 180);
@@ -41,7 +41,7 @@ function transformY(x, y, degree)
   var paddingTop = parseInt(canvas.style.paddingTop) || 0;
   var borderTop = parseInt(canvas.style.borderTop) || 0;
   var cssHeight = parseInt(canvas.style.height) || canvas.height;
-  var scale = cssHeight / canvas.height;
+  var scale = canvas.height == 0 ? 1 : cssHeight / canvas.height;
   var ty = y;
   if (degree) {
     var cos = Math.cos(degree * Math.PI / 180);
@@ -130,6 +130,15 @@ coroutine(function*() {
   ];
   canvas.style.transform = 'rotate(72deg)';
   yield hit_region_with_css_test(test_set_with_rotate);
+
+  canvas.width = '0';
+  canvas.height = '0';
+  canvas.style.width = "0px";
+  canvas.style.height = "0px";
+  var test_divide_zero = [
+      { id : null, x : 20, y : 10, name: 'null' }
+  ];
+  yield hit_region_with_css_test(test_divide_zero);
 
   done();
 });
