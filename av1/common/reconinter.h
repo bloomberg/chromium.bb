@@ -123,7 +123,7 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                                     interp_filters, subpel_x, xs, subpel_y, ys,
-                                    1, conv_params, bd);
+                                    1, conv_params, sf, bd);
     } else {
       av1_highbd_convolve_scale(src, src_stride, dst, dst_stride, w, h,
                                 interp_filters, subpel_x, xs, subpel_y, ys, avg,
@@ -141,7 +141,7 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     if (conv_params->round == CONVOLVE_OPT_NO_ROUND) {
       av1_highbd_convolve_2d_facade(src, src_stride, dst, dst_stride, w, h,
                                     interp_filters, subpel_x, xs, subpel_y, ys,
-                                    0, conv_params, bd);
+                                    0, conv_params, sf, bd);
     } else {
       InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER

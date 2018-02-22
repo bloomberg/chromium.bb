@@ -57,6 +57,12 @@ typedef void (*aom_convolve_fn_t)(const uint8_t *src, int src_stride,
                                   const int subpel_x_q4, const int subpel_y_q4,
                                   ConvolveParams *conv_params);
 
+typedef void (*aom_highbd_convolve_fn_t)(
+    const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
+    int h, InterpFilterParams *filter_params_x,
+    InterpFilterParams *filter_params_y, const int subpel_x_q4,
+    const int subpel_y_q4, ConvolveParams *conv_params, int bd);
+
 static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
                                                   InterpFilterParams *params_x,
                                                   InterpFilterParams *params_y
@@ -153,7 +159,7 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    const int subpel_x_q4, int x_step_q4,
                                    const int subpel_y_q4, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
-                                   int bd);
+                                   const struct scale_factors *sf, int bd);
 
 void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                   int dst_stride, int w, int h, InterpFilters interp_filters,

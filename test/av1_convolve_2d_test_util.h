@@ -83,20 +83,36 @@ class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
 namespace AV1HighbdConvolve2D {
 typedef void (*highbd_convolve_2d_func)(
-    const uint16_t *src, int src_stride, CONV_BUF_TYPE *dst, int dst_stride,
-    int w, int h, InterpFilterParams *filter_params_x,
+    const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
+    int h, InterpFilterParams *filter_params_x,
     InterpFilterParams *filter_params_y, const int subpel_x_q4,
     const int subpel_y_q4, ConvolveParams *conv_params, int bd);
 
-typedef std::tr1::tuple<int, highbd_convolve_2d_func> HighbdConvolve2DParam;
+typedef std::tr1::tuple<int, highbd_convolve_2d_func, int, int, int>
+    HighbdConvolve2DParam;
 
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
-    highbd_convolve_2d_func filter);
+    highbd_convolve_2d_func filter, int subx_exist, int suby_exist,
+    int is_compound);
 
 class AV1HighbdConvolve2DTest
     : public ::testing::TestWithParam<HighbdConvolve2DParam> {
  public:
   virtual ~AV1HighbdConvolve2DTest();
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+ protected:
+  void RunCheckOutput(highbd_convolve_2d_func test_impl);
+
+  libaom_test::ACMRandom rnd_;
+};
+
+class AV1HighbdConvolve2DSrTest
+    : public ::testing::TestWithParam<HighbdConvolve2DParam> {
+ public:
+  virtual ~AV1HighbdConvolve2DSrTest();
   virtual void SetUp();
 
   virtual void TearDown();

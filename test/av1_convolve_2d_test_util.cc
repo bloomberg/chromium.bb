@@ -397,9 +397,12 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
 namespace AV1HighbdConvolve2D {
 
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
-    highbd_convolve_2d_func filter) {
-  return ::testing::Values(make_tuple(8, filter), make_tuple(10, filter),
-                           make_tuple(12, filter));
+    highbd_convolve_2d_func filter, int has_subx, int has_suby,
+    int is_compound) {
+  return ::testing::Values(
+      make_tuple(8, filter, has_subx, has_suby, is_compound),
+      make_tuple(10, filter, has_subx, has_suby, is_compound),
+      make_tuple(12, filter, has_subx, has_suby, is_compound));
 }
 
 AV1HighbdConvolve2DTest::~AV1HighbdConvolve2DTest() {}
@@ -413,10 +416,14 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
     highbd_convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int bd = GET_PARAM(0);
+  const int has_subx = GET_PARAM(2);
+  const int has_suby = GET_PARAM(3);
+  const int is_compound = GET_PARAM(4);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output2[MAX_SB_SQUARE]);
+  (void)is_compound;
 
   for (int i = 0; i < h; ++i)
     for (int j = 0; j < w; ++j)
@@ -440,18 +447,20 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
           ConvolveParams conv_params2 = get_conv_params_no_round(
               0, do_average, 0, output2, MAX_SB_SIZE, 1, bd);
 
-          for (subx = 0; subx < 16; ++subx) {
-            for (suby = 0; suby < 16; ++suby) {
+          const int subx_range = has_subx ? 16 : 1;
+          const int suby_range = has_suby ? 16 : 1;
+          for (subx = 0; subx < subx_range; ++subx) {
+            for (suby = 0; suby < suby_range; ++suby) {
               // Choose random locations within the source block
               const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
               const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-              av1_highbd_convolve_2d_c(input + offset_r * w + offset_c, w,
-                                       output, MAX_SB_SIZE, out_w, out_h,
-                                       &filter_params_x, &filter_params_y, subx,
-                                       suby, &conv_params1, bd);
-              test_impl(input + offset_r * w + offset_c, w, output2,
-                        MAX_SB_SIZE, out_w, out_h, &filter_params_x,
-                        &filter_params_y, subx, suby, &conv_params2, bd);
+              av1_highbd_convolve_2d_c(input + offset_r * w + offset_c, w, NULL,
+                                       0, out_w, out_h, &filter_params_x,
+                                       &filter_params_y, subx, suby,
+                                       &conv_params1, bd);
+              test_impl(input + offset_r * w + offset_c, w, NULL, 0, out_w,
+                        out_h, &filter_params_x, &filter_params_y, subx, suby,
+                        &conv_params2, bd);
 
               for (int i = 0; i < out_h; ++i) {
                 for (int j = 0; j < out_w; ++j) {
@@ -461,6 +470,91 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
                       << idx << " = (" << i << ", " << j
                       << "), sub pixel offset = (" << suby << ", " << subx
                       << ")";
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+AV1HighbdConvolve2DSrTest::~AV1HighbdConvolve2DSrTest() {}
+void AV1HighbdConvolve2DSrTest::SetUp() {
+  rnd_.Reset(ACMRandom::DeterministicSeed());
+}
+
+void AV1HighbdConvolve2DSrTest::TearDown() { libaom_test::ClearSystemState(); }
+
+void AV1HighbdConvolve2DSrTest::RunCheckOutput(
+    highbd_convolve_2d_func test_impl) {
+  const int w = kMaxSize, h = kMaxSize;
+  const int bd = GET_PARAM(0);
+  const int has_subx = GET_PARAM(2);
+  const int has_suby = GET_PARAM(3);
+  const int is_compound = GET_PARAM(4);
+  int hfilter, vfilter, subx, suby;
+  uint16_t input[kMaxSize * kMaxSize];
+  DECLARE_ALIGNED(32, uint16_t, output[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(32, uint16_t, output2[MAX_SB_SQUARE]);
+  (void)is_compound;
+
+  for (int i = 0; i < h; ++i)
+    for (int j = 0; j < w; ++j)
+      input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
+  for (int i = 0; i < MAX_SB_SQUARE; ++i)
+    output[i] = output2[i] = rnd_.Rand31();
+
+  for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
+    // Make sure that sizes 2xN and Nx2 are also tested for chroma.
+    const int num_sizes =
+        (block_size_wide[block_idx] == 4 || block_size_high[block_idx] == 4)
+            ? 2
+            : 1;
+    for (int shift = 0; shift < num_sizes; ++shift) {  // luma and chroma
+      const int out_w = block_size_wide[block_idx] >> shift;
+      const int out_h = block_size_high[block_idx] >> shift;
+      for (hfilter = EIGHTTAP_REGULAR; hfilter < INTERP_FILTERS_ALL;
+           ++hfilter) {
+        for (vfilter = EIGHTTAP_REGULAR; vfilter < INTERP_FILTERS_ALL;
+             ++vfilter) {
+          InterpFilterParams filter_params_x =
+              av1_get_interp_filter_params((InterpFilter)hfilter);
+          InterpFilterParams filter_params_y =
+              av1_get_interp_filter_params((InterpFilter)vfilter);
+          for (int do_average = 0; do_average < 1; ++do_average) {
+            ConvolveParams conv_params1 =
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
+            ConvolveParams conv_params2 =
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 0, bd);
+
+            const int subx_range = has_subx ? 16 : 1;
+            const int suby_range = has_suby ? 16 : 1;
+            for (subx = 0; subx < subx_range; ++subx) {
+              for (suby = 0; suby < suby_range; ++suby) {
+                // Choose random locations within the source block
+                const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
+                const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
+                av1_highbd_convolve_2d_sr_c(input + offset_r * w + offset_c, w,
+                                            output, MAX_SB_SIZE, out_w, out_h,
+                                            &filter_params_x, &filter_params_y,
+                                            subx, suby, &conv_params1, bd);
+                test_impl(input + offset_r * w + offset_c, w, output2,
+                          MAX_SB_SIZE, out_w, out_h, &filter_params_x,
+                          &filter_params_y, subx, suby, &conv_params2, bd);
+
+                if (memcmp(output, output2, sizeof(output))) {
+                  for (int i = 0; i < MAX_SB_SIZE; ++i) {
+                    for (int j = 0; j < MAX_SB_SIZE; ++j) {
+                      int idx = i * MAX_SB_SIZE + j;
+                      ASSERT_EQ(output[idx], output2[idx])
+                          << out_w << "x" << out_h
+                          << " Pixel mismatch at index " << idx << " = (" << i
+                          << ", " << j << "), sub pixel offset = (" << suby
+                          << ", " << subx << ")";
+                    }
+                  }
                 }
               }
             }
@@ -520,12 +614,12 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
               const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
               const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
               av1_highbd_jnt_convolve_2d_c(input + offset_r * w + offset_c, w,
-                                           output, MAX_SB_SIZE, out_w, out_h,
+                                           NULL, 0, out_w, out_h,
                                            &filter_params_x, &filter_params_y,
                                            subx, suby, &conv_params1, bd);
-              test_impl(input + offset_r * w + offset_c, w, output2,
-                        MAX_SB_SIZE, out_w, out_h, &filter_params_x,
-                        &filter_params_y, subx, suby, &conv_params2, bd);
+              test_impl(input + offset_r * w + offset_c, w, NULL, 0, out_w,
+                        out_h, &filter_params_x, &filter_params_y, subx, suby,
+                        &conv_params2, bd);
 
               for (int i = 0; i < out_h; ++i) {
                 for (int j = 0; j < out_w; ++j) {
@@ -556,12 +650,12 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
                   const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
                   const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
                   av1_highbd_jnt_convolve_2d_c(
-                      input + offset_r * w + offset_c, w, output, MAX_SB_SIZE,
-                      out_w, out_h, &filter_params_x, &filter_params_y, subx,
-                      suby, &conv_params1, bd);
-                  test_impl(input + offset_r * w + offset_c, w, output2,
-                            MAX_SB_SIZE, out_w, out_h, &filter_params_x,
-                            &filter_params_y, subx, suby, &conv_params2, bd);
+                      input + offset_r * w + offset_c, w, NULL, 0, out_w, out_h,
+                      &filter_params_x, &filter_params_y, subx, suby,
+                      &conv_params1, bd);
+                  test_impl(input + offset_r * w + offset_c, w, NULL, 0, out_w,
+                            out_h, &filter_params_x, &filter_params_y, subx,
+                            suby, &conv_params2, bd);
 
                   for (int i = 0; i < out_h; ++i) {
                     for (int j = 0; j < out_w; ++j) {

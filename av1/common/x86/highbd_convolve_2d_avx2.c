@@ -19,13 +19,15 @@
 #include "av1/common/convolve.h"
 
 void av1_highbd_convolve_2d_avx2(const uint16_t *src, int src_stride,
-                                 CONV_BUF_TYPE *dst, int dst_stride, int w,
-                                 int h, InterpFilterParams *filter_params_x,
+                                 uint16_t *dst0, int dst_stride0, int w, int h,
+                                 InterpFilterParams *filter_params_x,
                                  InterpFilterParams *filter_params_y,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params, int bd) {
   DECLARE_ALIGNED(32, int16_t,
                   im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE]);
+  CONV_BUF_TYPE *dst = conv_params->dst;
+  int dst_stride = conv_params->dst_stride;
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = MAX_SB_SIZE;
   int i, j;
@@ -33,7 +35,8 @@ void av1_highbd_convolve_2d_avx2(const uint16_t *src, int src_stride,
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_vert * src_stride - fo_horiz;
-
+  (void)dst0;
+  (void)dst_stride0;
   // Check that, even with 12-bit input, the intermediate values will fit
   // into an unsigned 16-bit intermediate array.
   assert(bd + FILTER_BITS + 2 - conv_params->round_0 <= 16);
