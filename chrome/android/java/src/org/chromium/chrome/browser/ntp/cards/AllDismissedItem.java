@@ -64,7 +64,7 @@ public class AllDismissedItem extends OptionalLeaf {
             super(LayoutInflater.from(root.getContext()).inflate(getLayout(), root, false));
             mBodyTextView = itemView.findViewById(R.id.body_text);
 
-            if (!FeatureUtilities.isChromeHomeEnabled()) {
+            if (!SuggestionsConfig.useModernLayout()) {
                 itemView.findViewById(R.id.action_button).setOnClickListener(v -> {
                     NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_ALL_DISMISSED_REFRESH);
                     sections.restoreDismissedSections();
