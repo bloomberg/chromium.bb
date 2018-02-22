@@ -7,6 +7,7 @@ import argparse
 import json
 import sys
 
+from core import oauth_api
 from core import upload_results_to_perf_dashboard
 from core import results_merger
 from os import listdir
@@ -16,7 +17,7 @@ from os.path import isfile, join
 RESULTS_URL = 'https://chromeperf.appspot.com'
 
 def _upload_perf_results(json_to_upload, name, configuration_name,
-    build_properties):
+    build_properties, oauth_file):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   build_properties = json.loads(build_properties)
   args = [
@@ -31,6 +32,7 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--got-v8-revision', build_properties['got_v8_revision'],
       '--got-webrtc-revision', build_properties['got_webrtc_revision'],
       '--chromium-checkout-dir', '/b/c/b/obbs_fyi',
+      '--oauth-token-file', oauth_file,
   ]
   if _is_histogram(json_to_upload):
     args.append('--send-as-histograms')
@@ -62,6 +64,7 @@ def _merge_json_output(output_json, jsons_to_merge):
 
 
 def _process_perf_results(output_json, configuration_name,
+                          service_account_file,
                           build_properties, task_output_dir):
   """Process one or more perf JSON results.
 
@@ -96,10 +99,10 @@ def _process_perf_results(output_json, configuration_name,
       test_results_list.append(json.load(json_data))
   _merge_json_output(output_json, test_results_list)
 
-  for directory in benchmark_directory_list:
-    _upload_perf_results(join(directory, 'perf_results.json'),
-        directory, configuration_name, build_properties)
-
+  with oauth_api.with_access_token(service_account_file) as oauth_file:
+    for directory in benchmark_directory_list:
+      _upload_perf_results(join(directory, 'perf_results.json'),
+          directory, configuration_name, build_properties, oauth_file)
   return 0
 
 
@@ -111,6 +114,7 @@ def main():
   # configuration-name and results-url are set in the json file which is going
   # away tools/perf/core/chromium.perf.fyi.extras.json
   parser.add_argument('--configuration-name', help=argparse.SUPPRESS)
+  parser.add_argument('--service-account-file', help=argparse.SUPPRESS)
 
   parser.add_argument('--build-properties', help=argparse.SUPPRESS)
   parser.add_argument('--summary-json', help=argparse.SUPPRESS)
@@ -123,6 +127,7 @@ def main():
 
   return _process_perf_results(
       args.output_json, args.configuration_name,
+      args.service_account_file,
       args.build_properties, args.task_output_dir)
 
 
