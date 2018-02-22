@@ -178,6 +178,14 @@ img {
   margin-left: 6px;
 }
 
+.browser-fallback-note {
+  display: flex;
+  flex-flow: row wrap;
+  margin-left: 4px;
+  margin-top: 5px;
+  min-height: 15px;
+}
+
 .used-for-port-forwarding {
   background-image: url(../../../../ui/webui/resources/images/info.svg);
   height: 15px;

@@ -92,6 +92,8 @@ static const char kWorkerFrontendURL[] =
     "chrome-devtools://devtools/bundled/worker_app.html";
 static const char kJSFrontendURL[] =
     "chrome-devtools://devtools/bundled/js_app.html";
+static const char kFallbackFrontendURL[] =
+    "chrome-devtools://devtools/bundled/inspector.html";
 
 bool FindInspectedBrowserAndTabIndex(
     WebContents* inspected_web_contents, Browser** browser, int* tab) {
@@ -532,6 +534,21 @@ void DevToolsWindow::OpenDevToolsWindow(
 void DevToolsWindow::OpenDevToolsWindow(
     scoped_refptr<content::DevToolsAgentHost> agent_host,
     Profile* profile) {
+  OpenDevToolsWindow(agent_host, profile, false /* use_bundled_frontend */);
+}
+
+// static
+void DevToolsWindow::OpenDevToolsWindowWithBundledFrontend(
+    scoped_refptr<content::DevToolsAgentHost> agent_host,
+    Profile* profile) {
+  OpenDevToolsWindow(agent_host, profile, true /* use_bundled_frontend */);
+}
+
+// static
+void DevToolsWindow::OpenDevToolsWindow(
+    scoped_refptr<content::DevToolsAgentHost> agent_host,
+    Profile* profile,
+    bool use_bundled_frontend) {
   if (!profile)
     profile = Profile::FromBrowserContext(agent_host->GetBrowserContext());
 
@@ -545,7 +562,7 @@ void DevToolsWindow::OpenDevToolsWindow(
 
   if (!agent_host->GetFrontendURL().empty()) {
     DevToolsWindow::OpenExternalFrontend(profile, agent_host->GetFrontendURL(),
-                                         agent_host);
+                                         agent_host, use_bundled_frontend);
     return;
   }
 
@@ -607,7 +624,8 @@ void DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::OpenExternalFrontend(
     Profile* profile,
     const std::string& frontend_url,
-    const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
+    const scoped_refptr<content::DevToolsAgentHost>& agent_host,
+    bool use_bundled_frontend) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (window) {
     window->ScheduleShow(DevToolsToggleAction::Show());
@@ -625,9 +643,12 @@ void DevToolsWindow::OpenExternalFrontend(
 
     FrontendType frontend_type =
         is_worker ? kFrontendRemoteWorker : kFrontendRemote;
-    window = Create(profile, nullptr, frontend_type,
-                    DevToolsUI::GetProxyURL(frontend_url).spec(), false,
-                    std::string(), std::string(), agent_host->IsAttached());
+    std::string effective_frontend_url =
+        use_bundled_frontend ? kFallbackFrontendURL
+                             : DevToolsUI::GetProxyURL(frontend_url).spec();
+    window =
+        Create(profile, nullptr, frontend_type, effective_frontend_url, false,
+               std::string(), std::string(), agent_host->IsAttached());
   }
   if (!window)
     return;

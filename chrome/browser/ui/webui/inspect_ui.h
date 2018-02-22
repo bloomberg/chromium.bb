@@ -38,6 +38,8 @@ class InspectUI : public content::WebUIController,
 
   void InitUI();
   void Inspect(const std::string& source_id, const std::string& target_id);
+  void InspectFallback(const std::string& source_id,
+                       const std::string& target_id);
   void Activate(const std::string& source_id, const std::string& target_id);
   void Close(const std::string& source_id, const std::string& target_id);
   void Reload(const std::string& source_id, const std::string& target_id);
