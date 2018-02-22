@@ -26632,7 +26632,6 @@ from previous Chrome versions.
   <int value="909439558" label="disable-device-discovery"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
   <int value="918046854" label="NtlmV2Enabled:disabled"/>
-  <int value="924038134" label="Oculus-VR:enabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="935655516" label="password-import-export:disabled"/>
@@ -26740,6 +26739,7 @@ from previous Chrome versions.
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
+  <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
   <int value="1183431946" label="v8-cache-options"/>
   <int value="1185424279" label="enable-media-router"/>
@@ -27042,6 +27042,7 @@ from previous Chrome versions.
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1907859249" label="ash-disable-trilinear-filtering"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
+  <int value="1913263516" label="OculusVR:enabled"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
   <int value="1915178511" label="disable-blink-features"/>
   <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
@@ -27052,7 +27053,6 @@ from previous Chrome versions.
   <int value="1932732886" label="OpenVR:enabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
-  <int value="1939691262" label="Oculus-VR:disabled"/>
   <int value="1942911276" label="enable-grouped-history"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1947350992" label="drop-sync-credential:disabled"/>
