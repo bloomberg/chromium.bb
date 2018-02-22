@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -511,27 +510,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return newBounds;
 }
 
-// Enumerate url components (host, path) and draw each one in different rect.
-- (void)drawTextInRect:(CGRect)rect {
-  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
-    // With the new clipping logic, this override is unnecessary.
-    [super drawTextInRect:rect];
-    return;
-  }
-
-  if (base::ios::IsRunningOnOrLater(11, 1, 0)) {
-    // -[UITextField drawTextInRect:] ignores the argument, so we can't do
-    // anything on 11.1 and up.
-    [super drawTextInRect:rect];
-    return;
-  }
-
-  // Save and restore the graphics state because rectForDrawTextInRect may
-  // apply an image mask to fade out beginning and/or end of the URL.
-  gfx::ScopedCGContextSaveGState saver(UIGraphicsGetCurrentContext());
-  [super drawTextInRect:[self rectForDrawTextInRect:rect]];
-}
-
 // Overriding this method to offset the rightView property
 // (containing a clear text button).
 - (CGRect)rightViewRectForBounds:(CGRect)bounds {
@@ -822,74 +800,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)hideTextAndCursor {
   [self setTintColor:[UIColor clearColor]];
   [self setTextColor:[UIColor clearColor]];
-}
-
-- (CGRect)rectForDrawTextInRect:(CGRect)rect {
-  if (base::FeatureList::IsEnabled(kClippingTextfield)) {
-    // With the new clipping logic, this override is unnecessary.
-    return rect;
-  }
-
-  // The goal is to always show the most significant part of the hostname
-  // (i.e. the end of the TLD).
-  //
-  //                     --------------------
-  // www.somereallyreally|longdomainname.com|/path/gets/clipped
-  //                     --------------------
-  // {  clipped prefix  } {  visible text  } { clipped suffix }
-
-  // First find how much (if any) of the scheme/host needs to be clipped so that
-  // the end of the TLD fits in |rect|. Note that if the omnibox is currently
-  // displaying a search query the prefix is not clipped.
-
-  CGFloat widthOfClippedPrefix = 0;
-  url::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(
-      base::SysNSStringToUTF16(self.text), AutocompleteSchemeClassifierImpl(),
-      &scheme, &host);
-  if (host.len < 0) {
-    return rect;
-  }
-  NSRange hostRange = NSMakeRange(0, host.begin + host.len);
-  NSAttributedString* hostString =
-      [self.attributedText attributedSubstringFromRange:hostRange];
-  CGFloat widthOfHost = ceil([hostString size].width);
-  widthOfClippedPrefix = MAX(widthOfHost - rect.size.width, 0);
-
-  // Now determine if there is any text that will need to be truncated because
-  // there's not enough room.
-  int textWidth = ceil([self.attributedText size].width);
-  CGFloat widthOfClippedSuffix =
-      MAX(textWidth - rect.size.width - widthOfClippedPrefix, 0);
-  BOOL suffixClipped = widthOfClippedSuffix > 0;
-
-  // Fade the beginning and/or end of the visible string to indicate to the user
-  // that the URL has been clipped.
-  BOOL prefixClipped = widthOfClippedPrefix > 0;
-  if (prefixClipped || suffixClipped) {
-    UIImage* fade = nil;
-    if ([self textAlignment] == NSTextAlignmentRight) {
-      // Swap prefix and suffix for RTL.
-      fade = [GTMFadeTruncatingLabel getLinearGradient:rect
-                                              fadeHead:suffixClipped
-                                              fadeTail:prefixClipped];
-    } else {
-      fade = [GTMFadeTruncatingLabel getLinearGradient:rect
-                                              fadeHead:prefixClipped
-                                              fadeTail:suffixClipped];
-    }
-    CGContextClipToMask(UIGraphicsGetCurrentContext(), rect, fade.CGImage);
-  }
-
-  // If necessary, expand the rect so the entire string fits and shift it to the
-  // left (right for RTL) so the clipped prefix is not shown.
-  if ([self textAlignment] == NSTextAlignmentRight) {
-    rect.origin.x -= widthOfClippedSuffix;
-  } else {
-    rect.origin.x -= widthOfClippedPrefix;
-  }
-  rect.size.width = MAX(rect.size.width, textWidth);
-  return rect;
 }
 
 - (NSArray*)fadeAnimationLayers {

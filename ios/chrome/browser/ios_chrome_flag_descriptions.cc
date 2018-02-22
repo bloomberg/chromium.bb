@@ -25,11 +25,6 @@ const char kCaptivePortalMetricsDescription[] =
     "When enabled, some network issues will trigger a test to check if a "
     "Captive Portal network is the cause of the issue.";
 
-const char kClippingTextfieldName[] = "Clipping Textfield";
-const char kClippingTextfieldDescription[] =
-    "When enabled, the new URL clipping implementation compatible with iOS 11 "
-    "is used.";
-
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";

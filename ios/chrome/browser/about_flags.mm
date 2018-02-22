@@ -46,7 +46,6 @@
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_feature.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/user_feedback_features.h"
@@ -211,9 +210,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
      flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
-    {"clipping-textfield", flag_descriptions::kClippingTextfieldName,
-     flag_descriptions::kClippingTextfieldDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kClippingTextfield)},
     {"PasswordExport", flag_descriptions::kPasswordExportName,
      flag_descriptions::kPasswordExportDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordExport)},

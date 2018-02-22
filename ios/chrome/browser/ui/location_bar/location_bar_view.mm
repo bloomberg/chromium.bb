@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -28,8 +27,6 @@ const CGFloat kLeadingButtonEdgeOffset = 9;
 const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 // Space between the leading button and the textfield when a button is shown.
 const CGFloat kTextFieldLeadingOffsetImage = 6;
-// Offset from the trailing edge to the textfield.
-const CGFloat kTextFieldTrailingOffset = 3;
 }  // namespace
 
 @interface OmniboxTextFieldIOS ()
@@ -108,57 +105,38 @@ const CGFloat kTextFieldTrailingOffset = 3;
                                                   textColor:textColor
                                                   tintColor:tintColor];
 
-    if (base::FeatureList::IsEnabled(kClippingTextfield)) {
-      // When clipping is enabled, the text field is put into a container.
+    // The text field is put into a container.
 
-      // TODO(crbug.com/789968): remove these insets when the location bar
-      // background is managed by this view and not toolbar controller. These
-      // insets allow the gradient masking of the omnibox to not extend beyond
-      // the omnibox background's visible frame.
-      self.layoutMargins = UIEdgeInsetsMake(3, 3, 3, 3);
+    // TODO(crbug.com/789968): remove these insets when the location bar
+    // background is managed by this view and not toolbar controller. These
+    // insets allow the gradient masking of the omnibox to not extend beyond
+    // the omnibox background's visible frame.
+    self.layoutMargins = UIEdgeInsetsMake(3, 3, 3, 3);
 
-      _textFieldContainer = [[ClippingTextFieldContainer alloc]
-          initWithClippingTextField:_textField];
-      [self addSubview:_textFieldContainer];
+    _textFieldContainer = [[ClippingTextFieldContainer alloc]
+        initWithClippingTextField:_textField];
+    [self addSubview:_textFieldContainer];
 
-      _leadingTextfieldConstraint = [_textFieldContainer.leadingAnchor
-          constraintEqualToAnchor:self.leadingAnchor
-                         constant:kTextFieldLeadingOffsetNoImage];
+    _leadingTextfieldConstraint = [_textFieldContainer.leadingAnchor
+        constraintEqualToAnchor:self.leadingAnchor
+                       constant:kTextFieldLeadingOffsetNoImage];
 
-      [NSLayoutConstraint activateConstraints:@[
-        [_textFieldContainer.trailingAnchor
-            constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
-        [_textFieldContainer.topAnchor
-            constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
-        [_textFieldContainer.bottomAnchor
-            constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
-        _leadingTextfieldConstraint,
-      ]];
+    [NSLayoutConstraint activateConstraints:@[
+      [_textFieldContainer.trailingAnchor
+          constraintEqualToAnchor:self.layoutMarginsGuide.trailingAnchor],
+      [_textFieldContainer.topAnchor
+          constraintEqualToAnchor:self.layoutMarginsGuide.topAnchor],
+      [_textFieldContainer.bottomAnchor
+          constraintEqualToAnchor:self.layoutMarginsGuide.bottomAnchor],
+      _leadingTextfieldConstraint,
+    ]];
 
-      _textFieldContainer.translatesAutoresizingMaskIntoConstraints = NO;
-      [_textFieldContainer
-          setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
-                                          forAxis:
-                                              UILayoutConstraintAxisHorizontal];
-    } else {
-      // Contain the text field directly, with no clipping container.
-      [self addSubview:_textField];
-      _leadingTextfieldConstraint = [_textField.leadingAnchor
-          constraintEqualToAnchor:self.leadingAnchor
-                         constant:kTextFieldLeadingOffsetNoImage];
-
-      [NSLayoutConstraint activateConstraints:@[
-        [_textField.trailingAnchor
-            constraintEqualToAnchor:self.trailingAnchor
-                           constant:-kTextFieldTrailingOffset],
-        [_textField.topAnchor constraintEqualToAnchor:self.topAnchor],
-        [_textField.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-        _leadingTextfieldConstraint,
-      ]];
-
-      _textField.translatesAutoresizingMaskIntoConstraints = NO;
+    _textFieldContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    [_textFieldContainer
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
     }
-  }
   return self;
 }
 
@@ -178,15 +156,9 @@ const CGFloat kTextFieldTrailingOffset = 3;
                        constant:-kLeadingButtonEdgeOffset];
 
     NSLayoutConstraint* leadingButtonToTextField = nil;
-    if (base::FeatureList::IsEnabled(kClippingTextfield)) {
       leadingButtonToTextField = [self.leadingButton.trailingAnchor
           constraintEqualToAnchor:self.textFieldContainer.leadingAnchor
                          constant:-kTextFieldLeadingOffsetImage];
-    } else {
-      leadingButtonToTextField = [self.leadingButton.trailingAnchor
-          constraintEqualToAnchor:self.textField.leadingAnchor
-                         constant:-kTextFieldLeadingOffsetImage];
-    }
 
     [NSLayoutConstraint activateConstraints:@[
       [_leadingButton.centerYAnchor
