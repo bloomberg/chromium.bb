@@ -207,8 +207,6 @@ void TexturedQuadRenderer::Flush() {
 
   // Set up GL state that doesn't change between draw calls.
   glUseProgram(program_handle_);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);

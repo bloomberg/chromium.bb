@@ -117,9 +117,6 @@ void Stars::Renderer::Draw(float t, const gfx::Transform& view_proj_matrix) {
                         VOID_OFFSET(kPhaseDataOffset));
   glEnableVertexAttribArray(phase_handle_);
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
 

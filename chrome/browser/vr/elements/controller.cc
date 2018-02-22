@@ -365,9 +365,6 @@ void Controller::Renderer::Draw(float opacity,
   glVertexAttribPointer(color_handle_, 4, GL_FLOAT, false, 4 * sizeof(float),
                         VOID_OFFSET(0));
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
   glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_SHORT, 0);
 

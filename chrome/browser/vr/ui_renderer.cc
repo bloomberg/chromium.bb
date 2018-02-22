@@ -68,6 +68,11 @@ void UiRenderer::DrawElements(const CameraModel& camera_model,
 void UiRenderer::DrawElement(const CameraModel& camera_model,
                              const UiElement& element) {
   DCHECK_GE(element.draw_phase(), 0);
+
+  // Set default GL parameters for each element.
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
   element.Render(ui_element_renderer_, camera_model);
 }
 
