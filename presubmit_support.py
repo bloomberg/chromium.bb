@@ -137,8 +137,6 @@ class _PresubmitResult(object):
     """
     self._message = message
     self._items = items or []
-    if items:
-      self._items = items
     self._long_text = long_text.rstrip()
 
   def handle(self, output):
