@@ -44,6 +44,8 @@ const base::Feature kAutofillDeleteDisusedCreditCards{
     "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillExpandedPopupViews{
     "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillPreferServerNamePredictions{
+    "AutofillPreferServerNamePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
