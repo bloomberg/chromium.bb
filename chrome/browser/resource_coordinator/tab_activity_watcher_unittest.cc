@@ -12,7 +12,6 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
-#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -97,7 +96,6 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
   TabActivitySimulator tab_activity_simulator_;
 
  private:
-  TabMetricsLoggerImpl tab_metrics_logger_;
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcherTest);
 };
 

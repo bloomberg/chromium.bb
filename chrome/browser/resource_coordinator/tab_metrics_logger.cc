@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 
 #include <algorithm>
 #include <string>
@@ -26,7 +26,6 @@
 #include "content/public/common/page_importance_signals.h"
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
 #include "url/gurl.h"
 
@@ -42,59 +41,8 @@ const char* kWhitelistedSchemes[] = {
     "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
 };
 
-// Returns the ContentType that matches |mime_type|.
-TabMetricsEvent::ContentType GetContentTypeFromMimeType(
-    const std::string& mime_type) {
-  // Test for special cases before testing wildcard types.
-  if (mime_type.empty())
-    return TabMetricsEvent::CONTENT_TYPE_UNKNOWN;
-  if (net::MatchesMimeType("text/html", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
-  if (net::MatchesMimeType("application/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_APPLICATION;
-  if (net::MatchesMimeType("audio/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_AUDIO;
-  if (net::MatchesMimeType("image/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_IMAGE;
-  if (net::MatchesMimeType("text/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_TEXT;
-  if (net::MatchesMimeType("video/*", mime_type))
-    return TabMetricsEvent::CONTENT_TYPE_VIDEO;
-  return TabMetricsEvent::CONTENT_TYPE_OTHER;
-}
-
-// Returns the ProtocolHandlerScheme enumerator matching the string.
-// The enumerator value is used in the UKM entry, since UKM entries can't
-// store strings.
-TabMetricsEvent::ProtocolHandlerScheme GetSchemeValueFromString(
-    const std::string& scheme) {
-  const char* const* const scheme_ptr = std::find(
-      std::begin(kWhitelistedSchemes), std::end(kWhitelistedSchemes), scheme);
-  if (scheme_ptr == std::end(kWhitelistedSchemes))
-    return TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER;
-
-  size_t index = scheme_ptr - std::begin(kWhitelistedSchemes);
-  return static_cast<TabMetricsEvent::ProtocolHandlerScheme>(index);
-}
-
-// Returns the site engagement score for the WebContents, rounded down to 10s
-// to limit granularity.
-int GetSiteEngagementScore(const content::WebContents* web_contents) {
-  SiteEngagementService* service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  DCHECK(service);
-
-  // Scores range from 0 to 100. Round down to a multiple of 10 to conform to
-  // privacy guidelines.
-  double raw_score = service->GetScore(web_contents->GetVisibleURL());
-  int rounded_score = static_cast<int>(raw_score / 10) * 10;
-  DCHECK_LE(0, rounded_score);
-  DCHECK_GE(100, rounded_score);
-  return rounded_score;
-}
-
-// Adds a DefaultProtocolHandler metric with the handler's scheme to |entry| if
-// the protocol handler is a default protocol handler.
+// Adds a DefaultProtocolHandler metric with the handler's scheme to |entry|
+// if the protocol handler is a default protocol handler.
 void PopulateSchemeForHandler(ProtocolHandlerRegistry* registry,
                               const ProtocolHandler& handler,
                               ukm::builders::TabManager_TabMetrics* entry) {
@@ -103,7 +51,7 @@ void PopulateSchemeForHandler(ProtocolHandlerRegistry* registry,
     // Note that multiple DefaultProtocolHandler metrics may be added, one for
     // each scheme the entry's origin handles by default.
     entry->SetDefaultProtocolHandler(
-        GetSchemeValueFromString(handler.protocol()));
+        TabMetricsLogger::GetSchemeValueFromString(handler.protocol()));
   }
 }
 
@@ -164,11 +112,63 @@ void PopulatePageTransitionMetrics(ukm::builders::TabManager_TabMetrics* entry,
 
 }  // namespace
 
-TabMetricsLoggerImpl::TabMetricsLoggerImpl() = default;
-TabMetricsLoggerImpl::~TabMetricsLoggerImpl() = default;
+TabMetricsLogger::TabMetricsLogger() = default;
+TabMetricsLogger::~TabMetricsLogger() = default;
 
-void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
-                                            const TabMetrics& tab_metrics) {
+// static
+TabMetricsEvent::ContentType TabMetricsLogger::GetContentTypeFromMimeType(
+    const std::string& mime_type) {
+  // Test for special cases before testing wildcard types.
+  if (mime_type.empty())
+    return TabMetricsEvent::CONTENT_TYPE_UNKNOWN;
+  if (net::MatchesMimeType("text/html", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_TEXT_HTML;
+  if (net::MatchesMimeType("application/*", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_APPLICATION;
+  if (net::MatchesMimeType("audio/*", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_AUDIO;
+  if (net::MatchesMimeType("image/*", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_IMAGE;
+  if (net::MatchesMimeType("text/*", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_TEXT;
+  if (net::MatchesMimeType("video/*", mime_type))
+    return TabMetricsEvent::CONTENT_TYPE_VIDEO;
+  return TabMetricsEvent::CONTENT_TYPE_OTHER;
+}
+
+// static
+TabMetricsEvent::ProtocolHandlerScheme
+TabMetricsLogger::GetSchemeValueFromString(const std::string& scheme) {
+  const char* const* const scheme_ptr = std::find(
+      std::begin(kWhitelistedSchemes), std::end(kWhitelistedSchemes), scheme);
+  if (scheme_ptr == std::end(kWhitelistedSchemes))
+    return TabMetricsEvent::PROTOCOL_HANDLER_SCHEME_OTHER;
+
+  size_t index = scheme_ptr - std::begin(kWhitelistedSchemes);
+  return static_cast<TabMetricsEvent::ProtocolHandlerScheme>(index);
+}
+
+// static
+int TabMetricsLogger::GetSiteEngagementScore(
+    const content::WebContents* web_contents) {
+  if (!SiteEngagementService::IsEnabled())
+    return -1;
+
+  SiteEngagementService* service = SiteEngagementService::Get(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  DCHECK(service);
+
+  // Scores range from 0 to 100. Round down to a multiple of 10 to conform to
+  // privacy guidelines.
+  double raw_score = service->GetScore(web_contents->GetVisibleURL());
+  int rounded_score = static_cast<int>(raw_score / 10) * 10;
+  DCHECK_LE(0, rounded_score);
+  DCHECK_GE(100, rounded_score);
+  return rounded_score;
+}
+
+void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
+                                        const TabMetrics& tab_metrics) {
   if (!ukm_source_id)
     return;
 
@@ -208,8 +208,10 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
 
   PopulateProtocolHandlers(web_contents, &entry);
 
-  if (SiteEngagementService::IsEnabled())
-    entry.SetSiteEngagementScore(GetSiteEngagementScore(web_contents));
+  const int engagement_score = GetSiteEngagementScore(web_contents);
+  if (engagement_score >= 0) {
+    entry.SetSiteEngagementScore(engagement_score);
+  }
 
   TabMetricsEvent::ContentType content_type =
       GetContentTypeFromMimeType(web_contents->GetContentsMimeType());
@@ -239,11 +241,4 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
       .SetNavigationEntryCount(web_contents->GetController().GetEntryCount())
       .SetSequenceId(++sequence_id_)
       .Record(ukm_recorder);
-}
-
-// static
-TabMetricsEvent::ProtocolHandlerScheme
-TabMetricsLoggerImpl::GetSchemeValueFromString(const std::string& scheme) {
-  // Exposes GetSchemeValueFromString for testing.
-  return ::GetSchemeValueFromString(scheme);
 }

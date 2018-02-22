@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 
@@ -40,12 +41,34 @@ class TabMetricsLogger {
     PageMetrics page_metrics = {};
   };
 
-  virtual ~TabMetricsLogger() = default;
+  TabMetricsLogger();
+  ~TabMetricsLogger();
 
   // Logs metrics for the tab with the given main frame WebContents. Does
   // nothing if |ukm_source_id| is zero.
-  virtual void LogBackgroundTab(ukm::SourceId ukm_source_id,
-                                const TabMetrics& tab_metrics) = 0;
+  void LogBackgroundTab(ukm::SourceId ukm_source_id,
+                        const TabMetrics& tab_metrics);
+
+  // Returns the ContentType that matches |mime_type|.
+  static metrics::TabMetricsEvent::ContentType GetContentTypeFromMimeType(
+      const std::string& mime_type);
+
+  // Returns the ProtocolHandlerScheme enumerator matching the string.
+  // The enumerator value is used in the UKM entry, since UKM entries can't
+  // store strings.
+  static metrics::TabMetricsEvent::ProtocolHandlerScheme
+  GetSchemeValueFromString(const std::string& scheme);
+
+  // Returns the site engagement score for the WebContents, rounded down to 10s
+  // to limit granularity. Returns -1 if site engagement service is disabled.
+  static int GetSiteEngagementScore(const content::WebContents* web_contents);
+
+ private:
+  // A counter to be incremented and logged with each UKM entry, used to
+  // indicate the order that events within the same report were logged.
+  int sequence_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TabMetricsLogger);
 };
 
 #endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_METRICS_LOGGER_H_
