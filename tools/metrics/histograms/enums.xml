@@ -34899,6 +34899,53 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PARSE_ERROR">Data could not be parsed.</int>
 </enum>
 
+<enum name="PlatformTPMHardwareAlerts">
+  <int value="1" label="camo0/breach"/>
+  <int value="2" label="crypto0/dmem_parity"/>
+  <int value="3" label="crypto0/drf_parity"/>
+  <int value="4" label="crypto0/imem_parity"/>
+  <int value="5" label="crypto0/pgm_fault"/>
+  <int value="6" label="dbctrl_cpu0_D_if/bus_err"/>
+  <int value="7" label="dbctrl_cpu0_D_if/update_watchdog"/>
+  <int value="8" label="dbctrl_cpu0_I_if/bus_err"/>
+  <int value="9" label="dbctrl_cpu0_I_if/update_watchdog"/>
+  <int value="10" label="dbctrl_cpu0_S_if/bus_err"/>
+  <int value="11" label="dbctrl_cpu0_S_if/update_watchdog"/>
+  <int value="12" label="dbctrl_ddma0_if/bus_err"/>
+  <int value="13" label="dbctrl_ddma0_if/update_watchdog"/>
+  <int value="14" label="dbctrl_dsps0_if/bus_err"/>
+  <int value="15" label="dbctrl_dsps0_if/update_watchdog"/>
+  <int value="16" label="dbctrl_dusb0_if/bus_err"/>
+  <int value="17" label="dbctrl_dusb0_if/update_watchdog"/>
+  <int value="18" label="fuse0/fuse_defaults"/>
+  <int value="19" label="globalsec/diff_fail"/>
+  <int value="20" label="globalsec/fw0"/>
+  <int value="21" label="globalsec/fw1"/>
+  <int value="22" label="globalsec/fw2"/>
+  <int value="23" label="globalsec/fw3"/>
+  <int value="24" label="globalsec/heartbeat_fail"/>
+  <int value="25" label="globalsec/proc_opcode_hash"/>
+  <int value="26" label="globalsec/sram_parity_scrub"/>
+  <int value="27" label="keymgr0/aes_exec_ctr_max"/>
+  <int value="28" label="keymgr0/aes_hkey"/>
+  <int value="29" label="keymgr0/cert_lookup"/>
+  <int value="30" label="keymgr0/flash_entry"/>
+  <int value="31" label="keymgr0/pw"/>
+  <int value="32" label="keymgr0/sha_exec_ctr_max"/>
+  <int value="33" label="keymgr0/sha_fault"/>
+  <int value="34" label="keymgr0/sha_hkey"/>
+  <int value="35" label="pmu/battery_mon"/>
+  <int value="36" label="pmu/pmu_wdog"/>
+  <int value="37" label="rtc0/rtc_dead"/>
+  <int value="38" label="temp0/max_temp"/>
+  <int value="39" label="temp0/max_temp_diff"/>
+  <int value="40" label="temp0/min_temp"/>
+  <int value="41" label="trng0/out_of_spec"/>
+  <int value="42" label="trng0/timeout"/>
+  <int value="43" label="volt0/volt_err"/>
+  <int value="44" label="xo0/jittery_trim_dis"/>
+</enum>
+
 <enum name="PlayPromiseRejectReason">
   <int value="0" label="Failed autoplay policy"/>
   <int value="1" label="Sources not supported"/>
