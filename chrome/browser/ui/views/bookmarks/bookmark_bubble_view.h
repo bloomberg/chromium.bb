@@ -82,7 +82,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   bool Close() override;
   void UpdateButton(views::LabelButton* button, ui::DialogButton type) override;
   const char* GetClassName() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

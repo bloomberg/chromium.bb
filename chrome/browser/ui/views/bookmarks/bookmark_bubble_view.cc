@@ -26,7 +26,6 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_features.h"
 #include "components/strings/grit/components_strings.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -256,13 +255,6 @@ void BookmarkBubbleView::UpdateButton(views::LabelButton* button,
 
 const char* BookmarkBubbleView::GetClassName() const {
   return "BookmarkBubbleView";
-}
-
-void BookmarkBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  LocationBarBubbleDelegateView::GetAccessibleNodeData(node_data);
-  node_data->SetName(l10n_util::GetStringUTF8(
-      newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                        : IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK));
 }
 
 // views::ButtonListener -------------------------------------------------------
