@@ -122,6 +122,7 @@ public class SafeBrowsingTest {
     // These URLs will be CTS-tested and should not be changed.
     private static final String WEB_UI_MALWARE_URL = "chrome://safe-browsing/match?type=malware";
     private static final String WEB_UI_PHISHING_URL = "chrome://safe-browsing/match?type=phishing";
+    private static final String WEB_UI_HOST = "safe-browsing";
 
     /**
      * A fake SafeBrowsingApiHandler which treats URLs ending in MALWARE_HTML_PATH as malicious URLs
@@ -499,15 +500,24 @@ public class SafeBrowsingTest {
     public void testSafeBrowsingWhitelistedUnsafePagesDontShowInterstitial() throws Throwable {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            String host = Uri.parse(responseUrl).getHost();
-            ArrayList<String> s = new ArrayList<String>();
-            s.add(host);
-            AwContentsStatics.setSafeBrowsingWhitelist(s, null);
-        });
+        verifyWhiteListRule(Uri.parse(responseUrl).getHost(), true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingWhitelistHardcodedWebUiPages() throws Throwable {
+        loadGreenPage();
+        verifyWhiteListRule(WEB_UI_HOST, true);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_MALWARE_URL);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_PHISHING_URL);
+
+        // Assume the pages are whitelisted, since we successfully loaded them.
     }
 
     @Test
