@@ -79,7 +79,6 @@ def main():
 
     write_jumbo_files(inputs, outputs, written_input_set, written_output_set)
 
-  header_files = set([x for x in all_inputs if x.endswith(".h")])
   assert set(args.outputs) == written_output_set, "Did not fill all outputs"
   if args.verbose:
     print("Generated %s (%d files) based on %s" % (
