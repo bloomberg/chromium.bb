@@ -12,6 +12,7 @@
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableRow.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

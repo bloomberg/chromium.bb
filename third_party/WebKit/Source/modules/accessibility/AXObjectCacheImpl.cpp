@@ -412,6 +412,10 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibleNode* accessible_node) {
   return new_obj;
 }
 
+AXObject* AXObjectCacheImpl::GetOrCreate(const Node* node) {
+  return GetOrCreate(const_cast<Node*>(node));
+}
+
 AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   if (!node)
     return nullptr;

@@ -636,7 +636,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
+  const AXObjectVector& Children() const;
   const AXObjectVector& Children();
+  bool IsAncestorOf(const AXObject&) const;
+  bool IsDescendantOf(const AXObject&) const;
   AXObject* ParentObject() const;
   AXObject* ParentObjectIfExists() const;
   virtual AXObject* ComputeParent() const = 0;
