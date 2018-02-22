@@ -460,13 +460,6 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
   }
 
 #if defined(COMPONENT_BUILD)
-
-#if !defined(SKIP_ARCHIVE_COMPRESSION)
-// Component modules are assumed to always be uncompressed
-// per usage of kBinResourceType.
-#error Unsupported config
-#endif  // defined(SKIP_ARCHIVE_COMPRESSION)
-
   if (exit_code.IsSuccess()) {
     // Extract the modules in component build required by setup.exe.
     if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
