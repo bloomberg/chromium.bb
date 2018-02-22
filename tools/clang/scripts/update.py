@@ -870,6 +870,8 @@ def main():
   parser.add_argument('--use-system-cmake', action='store_true',
                       help='use the cmake from PATH instead of downloading '
                       'and using prebuilt cmake binaries')
+  parser.add_argument('--verify-version',
+                      help='verify that clang has the passed-in version')
   parser.add_argument('--without-android', action='store_false',
                       help='don\'t build Android ASan runtime (linux only)',
                       dest='with_android',
@@ -887,6 +889,12 @@ def main():
   if (use_head_revision or args.llvm_force_head_revision or
       args.force_local_build):
     AddSvnToPathOnWin()
+
+  if args.verify_version and args.verify_version != VERSION:
+    print 'VERSION is %s but --verify-version argument was %s, exiting.' % (
+        VERSION, args.verify_version)
+    print 'clang_version in build/toolchain/toolchain.gni is likely outdated.'
+    return 1
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:

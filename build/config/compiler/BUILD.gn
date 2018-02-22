@@ -1000,7 +1000,10 @@ config("clang_stackrealign") {
 
 config("clang_revision") {
   if (is_clang && clang_base_path == default_clang_base_path) {
-    update_args = [ "--print-revision" ]
+    update_args = [
+      "--print-revision",
+      "--verify-version=$clang_version",
+    ]
     if (llvm_force_head_revision) {
       update_args += [ "--llvm-force-head-revision" ]
     }
