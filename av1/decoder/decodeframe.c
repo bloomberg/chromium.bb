@@ -2700,9 +2700,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
     ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
 #if CONFIG_FWD_KF
-    // TODO(zoeliu@google.com): To explore whether reset_decoder_state is only
-    //                          present for INTRA_ONLY_FRAME.
-    const int is_intra_only = frame_bufs[frame_to_show].intra_only;
+    cm->reset_decoder_state = frame_bufs[frame_to_show].frame_type == KEY_FRAME;
 #endif  // CONFIG_FWD_KF
     unlock_buffer_pool(pool);
 
@@ -2719,13 +2717,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_FWD_KF
-    cm->reset_decoder_state = aom_rb_read_bit(rb);
     if (cm->reset_decoder_state) {
-      if (!is_intra_only) {
-        aom_internal_error(
-            &cm->error, AOM_CODEC_CORRUPT_FRAME,
-            "Decoder reset on non-intra-only show existing frame");
-      }
       show_existing_frame_reset(pbi);
     } else {
 #endif  // CONFIG_FWD_KF
@@ -3052,6 +3044,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->frame_type != S_FRAME) av1_setup_frame_sign_bias(cm);
 
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
+  cm->cur_frame->frame_type = cm->frame_type;
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {

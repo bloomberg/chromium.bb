@@ -166,6 +166,7 @@ typedef struct {
   hash_table hash_table;
 #endif
   uint8_t intra_only;
+  FRAME_TYPE frame_type;
   // The Following variables will only be used in frame parallel decode.
 
   // frame_worker_owner indicates which FrameWorker owns this buffer. NULL means
