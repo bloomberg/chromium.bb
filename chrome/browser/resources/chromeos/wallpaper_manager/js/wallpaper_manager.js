@@ -1028,7 +1028,7 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
           var xhr = new XMLHttpRequest();
           xhr.open(
               'GET',
-              self.dataItem.baseURL +
+              selectedItem.baseURL +
                   WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
               true);
           xhr.responseType = 'arraybuffer';
