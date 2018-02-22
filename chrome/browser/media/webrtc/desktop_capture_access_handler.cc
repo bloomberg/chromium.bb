@@ -39,6 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
+#include "chrome/browser/chromeos/ash_config.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -269,6 +270,15 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   // probably a new one.
   content::MediaStreamRequestResult result =
       content::MEDIA_DEVICE_INVALID_STATE;
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    // TODO(crbug.com/806366): Screen capture support for mash.
+    NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
+    screen_capture_enabled = false;
+    result = content::MEDIA_DEVICE_NOT_SUPPORTED;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   // Approve request only when the following conditions are met:
   //  1. Screen capturing is enabled via command line switch or white-listed for
