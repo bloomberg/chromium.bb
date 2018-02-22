@@ -25760,6 +25760,7 @@ from previous Chrome versions.
   <int value="-1337185440" label="enable-webvr"/>
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
+  <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
@@ -27115,6 +27116,7 @@ from previous Chrome versions.
   <int value="2085186092" label="BulkPrinters:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
   <int value="2089897928" label="enable-audio-focus"/>
+  <int value="2091002949" label="RemoveNavigationHistory:disabled"/>
   <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2093949489" label="ArrayPrototypeValues:enabled"/>

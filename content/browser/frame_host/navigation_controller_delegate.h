@@ -49,6 +49,7 @@ class NavigationControllerDelegate {
       const EntryChangedDetails& change_details) = 0;
   virtual void NotifyNavigationListPruned(
       const PrunedDetails& pruned_details) = 0;
+  virtual void NotifyNavigationEntriesDeleted() = 0;
   virtual void SetHistoryOffsetAndLength(int history_offset,
                                          int history_length) = 0;
   virtual void ActivateAndShowRepostFormWarningDialog() = 0;

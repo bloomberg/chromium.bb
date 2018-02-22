@@ -1,0 +1,240 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/files/file_path.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "chrome/browser/browsing_data/navigation_entry_remover.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/core/features.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "url/gurl.h"
+
+class NavigationEntryRemoverTest : public InProcessBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    feature_list_.InitWithFeatures(
+        {browsing_data::features::kRemoveNavigationHistory}, {});
+    auto path = base::FilePath(FILE_PATH_LITERAL("browsing_data"));
+    url_a_ = ui_test_utils::GetTestUrl(
+        path, base::FilePath(FILE_PATH_LITERAL("a.html")));
+    url_b_ = ui_test_utils::GetTestUrl(
+        path, base::FilePath(FILE_PATH_LITERAL("b.html")));
+    url_c_ = ui_test_utils::GetTestUrl(
+        path, base::FilePath(FILE_PATH_LITERAL("c.html")));
+    url_d_ = ui_test_utils::GetTestUrl(
+        path, base::FilePath(FILE_PATH_LITERAL("d.html")));
+    about_blank_ = GURL("about:blank");
+  }
+
+  void AddNavigations(Browser* browser, const std::vector<GURL>& urls) {
+    for (const GURL& url : urls) {
+      ui_test_utils::NavigateToURLWithDisposition(
+          browser, url, WindowOpenDisposition::CURRENT_TAB,
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    }
+  }
+
+  void AddTab(Browser* browser, const std::vector<GURL>& urls) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser, urls[0], WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+            ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    AddNavigations(browser, {urls.begin() + 1, urls.end()});
+  }
+
+  void AddBrowser(Browser* browser, const std::vector<GURL>& urls) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser, urls[0], WindowOpenDisposition::NEW_WINDOW,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+    AddNavigations(BrowserList::GetInstance()->GetLastActive(),
+                   {urls.begin() + 1, urls.end()});
+  }
+
+  void GoBack(content::WebContents* web_contents) {
+    content::WindowedNotificationObserver load_stop_observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    web_contents->GetController().GoBack();
+    load_stop_observer.Wait();
+  }
+
+  std::vector<GURL> GetEntries() {
+    std::vector<GURL> urls;
+    for (Browser* browser : *BrowserList::GetInstance()) {
+      for (int j = 0; j < browser->tab_strip_model()->count(); j++) {
+        content::NavigationController* controller =
+            &browser->tab_strip_model()->GetWebContentsAt(j)->GetController();
+        for (int i = 0; i < controller->GetEntryCount(); i++)
+          urls.push_back(controller->GetEntryAtIndex(i)->GetURL());
+      }
+    }
+    return urls;
+  }
+
+  // Helper to compare vectors. The macro gets confused by EXPECT_EQ(v, {a,b}).
+  void ExpectEntries(const std::vector<GURL>& expected,
+                     const std::vector<GURL>& actual) {
+    EXPECT_EQ(expected, actual);
+  }
+
+  GURL url_a_;
+  GURL url_b_;
+  GURL url_c_;
+  GURL url_d_;
+  GURL about_blank_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// === Tests for helper functions ===
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, AddNavigation) {
+  // A new browser starts with about:blank. Add a,b,c and check.
+  ExpectEntries({about_blank_}, GetEntries());
+  AddNavigations(browser(), {url_a_, url_b_, url_c_});
+  ExpectEntries({about_blank_, url_a_, url_b_, url_c_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, AddTab) {
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  AddTab(browser(), {url_a_});
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ExpectEntries({about_blank_, url_a_}, GetEntries());
+
+  AddTab(browser(), {url_b_, url_c_});
+  EXPECT_EQ(3, browser()->tab_strip_model()->count());
+  ExpectEntries({about_blank_, url_a_, url_b_, url_c_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, AddWindow) {
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
+
+  AddBrowser(browser(), {url_a_, url_b_});
+  EXPECT_EQ(2U, BrowserList::GetInstance()->size());
+  ExpectEntries({about_blank_, url_a_, url_b_}, GetEntries());
+
+  AddBrowser(browser(), {url_c_, url_d_});
+  EXPECT_EQ(3U, BrowserList::GetInstance()->size());
+  ExpectEntries({about_blank_, url_a_, url_b_, url_c_, url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, GoBack) {
+  AddNavigations(browser(), {url_a_, url_b_, url_c_});
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url_c_, web_contents->GetLastCommittedURL());
+  GoBack(web_contents);
+  EXPECT_EQ(url_b_, web_contents->GetLastCommittedURL());
+  ExpectEntries({about_blank_, url_a_, url_b_, url_c_}, GetEntries());
+}
+
+// === The actual tests ===
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, DeleteIndividual) {
+  AddNavigations(browser(), {url_a_, url_b_, url_c_, url_d_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_b_, base::Time())});
+  ExpectEntries({about_blank_, url_a_, url_c_, url_d_}, GetEntries());
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_c_, base::Time())});
+  ExpectEntries({about_blank_, url_a_, url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, DeleteAfterNavigation) {
+  AddNavigations(browser(), {url_a_, url_b_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_b_, base::Time())});
+  // The commited entry can't be removed.
+  ExpectEntries({about_blank_, url_a_, url_b_}, GetEntries());
+
+  AddNavigations(browser(), {url_c_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_b_, base::Time())});
+  ExpectEntries({about_blank_, url_a_, url_c_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, DeleteAll) {
+  AddNavigations(browser(), {url_a_, url_b_, url_c_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+  ExpectEntries({url_c_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, DeleteRange) {
+  base::Time t1 = base::Time::Now();
+  AddNavigations(browser(), {url_a_});
+  base::Time t2 = base::Time::Now();
+  AddNavigations(browser(), {url_b_});
+  base::Time t3 = base::Time::Now();
+  AddNavigations(browser(), {url_c_, url_d_});
+  ASSERT_NE(t1, t2);
+  ASSERT_NE(t2, t3);
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange(t2, t3), {});
+  ExpectEntries({about_blank_, url_a_, url_c_, url_d_}, GetEntries());
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange(base::Time(), t1), {});
+  ExpectEntries({url_a_, url_c_, url_d_}, GetEntries());
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange(t3, base::Time()), {});
+  ExpectEntries({url_a_, url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, DeleteAllAfterNavigation) {
+  AddNavigations(browser(), {url_a_, url_b_, url_c_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+  ExpectEntries({url_c_}, GetEntries());
+
+  AddNavigations(browser(), {url_d_});
+  ExpectEntries({url_c_, url_d_}, GetEntries());
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+  ExpectEntries({url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, TwoTabsDeletion) {
+  AddNavigations(browser(), {url_a_, url_b_});
+  AddTab(browser(), {url_c_, url_d_});
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+
+  ExpectEntries({url_b_, url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, TwoWindowsDeletion) {
+  AddNavigations(browser(), {url_a_, url_b_});
+  AddBrowser(browser(), {url_c_, url_d_});
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+
+  ExpectEntries({url_b_, url_d_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, GoBackAndDelete) {
+  AddNavigations(browser(), {url_a_, url_b_, url_c_});
+
+  GoBack(browser()->tab_strip_model()->GetActiveWebContents());
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::AllTime(), {});
+
+  ExpectEntries({url_b_}, GetEntries());
+}

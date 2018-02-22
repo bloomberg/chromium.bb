@@ -283,7 +283,7 @@ Polymer({
 
   /** @private */
   onDialogClosed_: function() {
-    settings.navigateToPreviousRoute();
+    settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA.parent);
     cr.ui.focusWithoutInk(assert(this.$.clearBrowsingDataTrigger));
   },
 

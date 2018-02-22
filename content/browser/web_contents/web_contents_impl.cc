@@ -4573,6 +4573,11 @@ void WebContentsImpl::NotifyNavigationListPruned(
     observer.NavigationListPruned(pruned_details);
 }
 
+void WebContentsImpl::NotifyNavigationEntriesDeleted() {
+  for (auto& observer : observers_)
+    observer.NavigationEntriesDeleted();
+}
+
 void WebContentsImpl::OnAssociatedInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,

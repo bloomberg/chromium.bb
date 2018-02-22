@@ -805,6 +805,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyNavigationEntryChanged(
       const EntryChangedDetails& change_details) override;
   void NotifyNavigationListPruned(const PrunedDetails& pruned_details) override;
+  void NotifyNavigationEntriesDeleted() override;
 
   // Invoked before a form repost warning is shown.
   void NotifyBeforeFormRepostWarningShow() override;

@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -229,6 +230,10 @@ class NavigationControllerTest
     last_navigation_entry_pruned_details_ = details;
   }
 
+  void NavigationEntriesDeleted() override {
+    navigation_entries_deleted_counter_++;
+  }
+
   const GURL& navigated_url() const {
     return navigated_url_;
   }
@@ -260,6 +265,7 @@ class NavigationControllerTest
   size_t navigation_entry_committed_counter_ = 0;
   size_t navigation_entry_changed_counter_ = 0;
   size_t navigation_list_pruned_counter_ = 0;
+  size_t navigation_entries_deleted_counter_ = 0;
   PrunedDetails last_navigation_entry_pruned_details_;
   ReloadType last_reload_type_;
 };
@@ -4314,6 +4320,66 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneSourcePending) {
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->GetURL());
+}
+
+// Tests DeleteNavigationEntries.
+TEST_F(NavigationControllerTest, DeleteNavigationEntries) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
+  const GURL url4("http://foo/4");
+  const GURL url5("http://foo/5");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  NavigateAndCommit(url3);
+  NavigateAndCommit(url4);
+  NavigateAndCommit(url5);
+
+  // Delete nothing.
+  controller.DeleteNavigationEntries(base::BindRepeating(
+      [](const content::NavigationEntry& entry) { return false; }));
+  EXPECT_EQ(0U, navigation_entries_deleted_counter_);
+  ASSERT_EQ(5, controller.GetEntryCount());
+  ASSERT_EQ(4, controller.GetCurrentEntryIndex());
+
+  // Delete url2 and url4.
+  contents()->ExpectSetHistoryOffsetAndLength(2, 3);
+  controller.DeleteNavigationEntries(
+      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
+        return entry.GetURL() == url2 || entry.GetURL() == url4;
+      }));
+  EXPECT_EQ(1U, navigation_entries_deleted_counter_);
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url5, controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_TRUE(controller.CanGoBack());
+
+  // Deleting the currently commited entry should do nothing.
+  controller.DeleteNavigationEntries(
+      base::BindLambdaForTesting([&](const content::NavigationEntry& entry) {
+        return entry.GetURL() == url5;
+      }));
+  EXPECT_EQ(1U, navigation_entries_deleted_counter_);
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
+
+  // Delete url1 and url3.
+  contents()->ExpectSetHistoryOffsetAndLength(0, 1);
+  controller.DeleteNavigationEntries(base::BindRepeating(
+      [](const content::NavigationEntry& entry) { return true; }));
+  EXPECT_EQ(2U, navigation_entries_deleted_counter_);
+  ASSERT_EQ(1, controller.GetEntryCount());
+  ASSERT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url5, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_FALSE(controller.CanGoBack());
+
+  // No pruned notifications should be send.
+  EXPECT_EQ(0U, navigation_list_pruned_counter_);
 }
 
 // Tests CopyStateFromAndPrune with 3 urls in source, 1 in dest,
