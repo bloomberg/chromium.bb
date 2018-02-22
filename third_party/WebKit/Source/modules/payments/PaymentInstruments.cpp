@@ -45,10 +45,13 @@ bool rejectError(ScriptPromiseResolver* resolver,
                                             "Storage operation is failed"));
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::
-        FETCH_INSTRUMENT_ICON_FAILED:
-      resolver->Reject(DOMException::Create(
-          kNotFoundError, "Fetch or decode instrument icon failed"));
+        FETCH_INSTRUMENT_ICON_FAILED: {
+      ScriptState::Scope scope(resolver->GetScriptState());
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(),
+          "Fetch or decode instrument icon failed"));
       return true;
+    }
     case payments::mojom::blink::PaymentHandlerStatus::
         FETCH_PAYMENT_APP_INFO_FAILED:
       // FETCH_PAYMENT_APP_INFO_FAILED indicates everything works well except
