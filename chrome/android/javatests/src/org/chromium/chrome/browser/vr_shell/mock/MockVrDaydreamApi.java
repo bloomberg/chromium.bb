@@ -55,7 +55,7 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
         mExitFromVrCalled = true;
-        return true;
+        return false;
     }
 
     @Override

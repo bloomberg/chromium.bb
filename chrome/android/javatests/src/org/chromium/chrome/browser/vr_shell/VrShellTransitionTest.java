@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import static org.chromium.chrome.browser.vr_shell.TestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
@@ -13,6 +14,8 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_D
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -32,6 +35,9 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.util.NfcSimUtils;
@@ -39,6 +45,7 @@ import org.chromium.chrome.browser.vr_shell.util.TransitionUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -354,5 +361,101 @@ public class VrShellTransitionTest {
         Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
         Assert.assertFalse(mockApi.getExitFromVrCalled());
         Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
+    }
+
+    /**
+     * Tests that attempting to start an Activity through the Activity context in VR triggers DOFF.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testStartActivityTriggersDoffChromeActivity()
+            throws InterruptedException, TimeoutException {
+        testStartActivityTriggersDoffImpl(mTestRule.getActivity());
+    }
+
+    /**
+     * Tests that attempting to start an Activity through the Application context in VR triggers
+     * DOFF.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testStartActivityTriggersDoffAppContext()
+            throws InterruptedException, TimeoutException {
+        testStartActivityTriggersDoffImpl(mTestRule.getActivity().getApplicationContext());
+    }
+
+    private void testStartActivityTriggersDoffImpl(Context context)
+            throws InterruptedException, TimeoutException {
+        Assert.assertTrue(TransitionUtils.forceEnterVr());
+        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi() {
+            @Override
+            public Boolean isDaydreamCurrentViewer() {
+                return true;
+            }
+        };
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                        context, SingleWebsitePreferences.class.getName());
+                context.startActivity(preferencesIntent);
+                Assert.assertTrue(mockApi.getExitFromVrCalled());
+                Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
+            }
+        });
+
+        MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi() {
+            @Override
+            public boolean exitFromVr(int requestCode, final Intent intent) {
+                return true;
+            }
+
+            @Override
+            public Boolean isDaydreamCurrentViewer() {
+                return true;
+            }
+        };
+
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PreferencesLauncher.launchSettingsPage(context, null);
+                mTestRule.getActivity().onActivityResult(
+                        VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
+            }
+        });
+
+        ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), Preferences.class);
+    }
+
+    /**
+     * Tests that attempting to start an Activity through the Activity context in VR triggers DOFF.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testStartActivityIfNeeded() throws InterruptedException, TimeoutException {
+        Activity context = mTestRule.getActivity();
+        Assert.assertTrue(TransitionUtils.forceEnterVr());
+        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                        context, SingleWebsitePreferences.class.getName());
+                Assert.assertFalse(context.startActivityIfNeeded(preferencesIntent, 0));
+            }
+        });
     }
 }
