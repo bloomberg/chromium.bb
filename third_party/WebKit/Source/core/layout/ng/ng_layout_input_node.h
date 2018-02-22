@@ -98,7 +98,7 @@ class CORE_EXPORT NGLayoutInputNode {
 
   String ToString() const;
 
-  explicit operator bool() { return box_ != nullptr; }
+  explicit operator bool() const { return box_ != nullptr; }
 
   bool operator==(const NGLayoutInputNode& other) const {
     return box_ == other.box_;
