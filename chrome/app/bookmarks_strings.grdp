@@ -188,9 +188,6 @@
     Bookmark added
   </message>
   <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
-    Bookmark
-  </message>
-  <message name="IDS_BOOKMARK_AX_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark, read by spoken feedback">
     Edit bookmark
   </message>
   <message name="IDS_BOOKMARK_BUBBLE_NAME_LABEL" desc="Text preceding the title of the page that was bookmarked">
@@ -206,16 +203,16 @@
     Bookmark folder
   </message>
   <if expr="not use_titlecase">
-    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
-      Edit...
+    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to go to a more advanced bookmark editor">
+      Advanced
     </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up the editor).">
       Choose another folder...
     </message>
   </if>
   <if expr="use_titlecase">
-    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="In Title Case: Title of the button the user can click to edit details of the bookmark">
-      Edit...
+    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="In Title Case: Title of the button the user can click to go to a more advanced bookmark editor">
+      Advanced
     </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up the editor).">
       Choose Another Folder...
