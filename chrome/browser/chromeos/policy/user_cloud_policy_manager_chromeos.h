@@ -37,6 +37,7 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class AppInstallEventLogUploader;
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
@@ -125,6 +126,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // is available.
   void EnableWildcardLoginCheck(const std::string& username);
 
+  // Return the AppInstallEventLogUploader used to send app push-install event
+  // logs to the policy server.
+  AppInstallEventLogUploader* GetAppInstallEventLogUploader();
+
   // ConfigurationPolicyProvider:
   void Shutdown() override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
@@ -195,6 +200,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Manages external data referenced by policies.
   std::unique_ptr<CloudExternalDataManager> external_data_manager_;
+
+  // Helper used to send app push-install event logs to the policy server.
+  std::unique_ptr<AppInstallEventLogUploader> app_install_event_log_uploader_;
 
   // Username for the wildcard login check if applicable, empty otherwise.
   std::string wildcard_username_;

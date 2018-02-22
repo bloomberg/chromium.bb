@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
+#include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
@@ -192,6 +193,9 @@ void UserCloudPolicyManagerChromeOS::Connect(
     // Wait for the CloudPolicyStore to finish initializing.
     service()->AddObserver(this);
   }
+
+  app_install_event_log_uploader_ =
+      std::make_unique<AppInstallEventLogUploader>(client());
 }
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
@@ -245,7 +249,13 @@ void UserCloudPolicyManagerChromeOS::EnableWildcardLoginCheck(
   wildcard_username_ = username;
 }
 
+AppInstallEventLogUploader*
+UserCloudPolicyManagerChromeOS::GetAppInstallEventLogUploader() {
+  return app_install_event_log_uploader_.get();
+}
+
 void UserCloudPolicyManagerChromeOS::Shutdown() {
+  app_install_event_log_uploader_.reset();
   if (client())
     client()->RemoveObserver(this);
   if (service())

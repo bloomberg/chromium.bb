@@ -788,4 +788,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestLifetimeReportingEphemeralUser) {
             register_request.register_request().lifetime());
 }
 
+TEST_F(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
+      base::TimeDelta(), PolicyEnforcement::kPolicyRequired));
+  EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
+}
+
 }  // namespace policy
