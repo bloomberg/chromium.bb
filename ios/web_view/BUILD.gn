@@ -261,6 +261,8 @@ test("ios_web_view_unittests") {
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
+    "internal/translate/cwv_translation_language_unittest.mm",
+    "internal/translate/cwv_translation_policy_unittest.mm",
     "internal/web_view_web_client_unittest.mm",
   ]
   sources += ios_web_view_sources
