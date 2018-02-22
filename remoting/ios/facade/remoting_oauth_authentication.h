@@ -7,7 +7,8 @@
 
 #import "remoting/ios/facade/remoting_authentication.h"
 
-// The OAuth implementation for RemotingAuthentication.
+// The OAuth implementation for RemotingAuthentication. Note that this is only
+// used by the open source app variant. The official app uses SSO to sign in.
 @interface RemotingOAuthAuthentication : NSObject<RemotingAuthentication>
 
 // Provide an |authorizationCode| to authenticate a user as the first time user

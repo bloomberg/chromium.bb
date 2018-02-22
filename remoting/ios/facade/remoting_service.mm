@@ -19,7 +19,6 @@
 #import "remoting/ios/facade/host_list_fetcher.h"
 #import "remoting/ios/facade/ios_client_runtime_delegate.h"
 #import "remoting/ios/facade/remoting_authentication.h"
-#import "remoting/ios/keychain_wrapper.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"

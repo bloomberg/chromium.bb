@@ -8,6 +8,8 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("persistence") {
   sources = [
+    "host_pairing_info.cc",
+    "host_pairing_info.h",
     "keychain.cc",
     "keychain.h",
     "remoting_keychain.cc",
@@ -24,13 +26,30 @@ source_set("persistence") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "mock_keychain.cc",
+    "mock_keychain.h",
+  ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "host_pairing_info_unittest.cc",
     "remoting_keychain_unittest.mm",
   ]
   deps = [
     ":persistence",
+    ":test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 

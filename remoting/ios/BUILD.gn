@@ -27,8 +27,6 @@ source_set("ios_core") {
     "client_gestures.mm",
     "client_keyboard.h",
     "client_keyboard.mm",
-    "keychain_wrapper.h",
-    "keychain_wrapper.mm",
   ]
 
   public_deps = [

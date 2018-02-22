@@ -27,8 +27,9 @@ CFStringRef WrapStdString(const std::string& str) {
                                          kCFAllocatorNull);
 }
 
-CFDataRef WrapVectorData(const Keychain::Data& data) {
-  return CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, data.data(),
+CFDataRef WrapStringToData(const std::string& data) {
+  const UInt8* data_pointer = reinterpret_cast<const UInt8*>(data.data());
+  return CFDataCreateWithBytesNoCopy(kCFAllocatorDefault, data_pointer,
                                      data.size(), kCFAllocatorNull);
 }
 
@@ -58,12 +59,11 @@ ScopedMutableDictionary CreateQueryForLookup(const std::string& service,
   return dictionary;
 }
 
-ScopedMutableDictionary CreateDictionaryForInsertion(
-    const std::string& service,
-    const std::string& account,
-    const Keychain::Data& data) {
+ScopedMutableDictionary CreateDictionaryForInsertion(const std::string& service,
+                                                     const std::string& account,
+                                                     const std::string& data) {
   ScopedMutableDictionary dictionary = CreateQueryForUpdate(service, account);
-  CFDictionarySetValue(dictionary.get(), kSecValueData, WrapVectorData(data));
+  CFDictionarySetValue(dictionary.get(), kSecValueData, WrapStringToData(data));
   return dictionary;
 }
 
@@ -81,12 +81,12 @@ RemotingKeychain* RemotingKeychain::GetInstance() {
 
 void RemotingKeychain::SetData(Key key,
                                const std::string& account,
-                               const Data& data) {
+                               const std::string& data) {
   DCHECK(data.size());
 
   std::string service = KeyToService(key);
 
-  Data existing_data = GetData(key, account);
+  std::string existing_data = GetData(key, account);
   if (!existing_data.empty()) {
     // Item already exists. Update it.
 
@@ -96,7 +96,7 @@ void RemotingKeychain::SetData(Key key,
     ScopedMutableDictionary updated_attributes =
         CreateScopedMutableDictionary();
     CFDictionarySetValue(updated_attributes.get(), kSecValueData,
-                         WrapVectorData(data));
+                         WrapStringToData(data));
     OSStatus status = SecItemUpdate(update_query, updated_attributes);
     if (status != errSecSuccess) {
       LOG(FATAL) << "Failed to update keychain item. Status: " << status;
@@ -113,8 +113,8 @@ void RemotingKeychain::SetData(Key key,
   }
 }
 
-Keychain::Data RemotingKeychain::GetData(Key key,
-                                         const std::string& account) const {
+std::string RemotingKeychain::GetData(Key key,
+                                      const std::string& account) const {
   std::string service = KeyToService(key);
 
   ScopedMutableDictionary query = CreateQueryForLookup(service, account);
@@ -122,16 +122,16 @@ Keychain::Data RemotingKeychain::GetData(Key key,
   OSStatus status =
       SecItemCopyMatching(query, (CFTypeRef*)cf_result.InitializeInto());
   if (status == errSecItemNotFound) {
-    return Data();
+    return "";
   }
   if (status != errSecSuccess) {
     LOG(FATAL) << "Failed to query keychain data. Status: " << status;
-    return Data();
+    return "";
   }
+  const char* data_pointer =
+      reinterpret_cast<const char*>(CFDataGetBytePtr(cf_result.get()));
   CFIndex data_size = CFDataGetLength(cf_result.get());
-  Data result(data_size);
-  CFDataGetBytes(cf_result.get(), CFRangeMake(0, data_size), result.data());
-  return result;
+  return std::string(data_pointer, data_size);
 }
 
 void RemotingKeychain::RemoveData(Key key, const std::string& account) {
@@ -139,7 +139,7 @@ void RemotingKeychain::RemoveData(Key key, const std::string& account) {
 
   ScopedMutableDictionary query = CreateQueryForUpdate(service, account);
   OSStatus status = SecItemDelete(query);
-  if (status != errSecSuccess) {
+  if (status != errSecSuccess && status != errSecItemNotFound) {
     LOG(FATAL) << "Failed to delete a keychain item. Status: " << status;
   }
 }

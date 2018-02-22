@@ -31,12 +31,6 @@ std::string RandomBase64String(int byte_length) {
   return random_string;
 }
 
-Keychain::Data RandomData(int size) {
-  Keychain::Data data(size);
-  base::RandBytes(data.data(), data.size());
-  return data;
-}
-
 NSString* KeyToService(Keychain::Key key) {
   return [NSString stringWithFormat:@"%s%s", kTestServicePrefix,
                                     Keychain::KeyToString(key).c_str()];
@@ -73,10 +67,10 @@ class RemotingKeychainTest : public testing::Test {
  protected:
   void SetKeychainAndVerify(Keychain::Key key,
                             const std::string& account,
-                            const Keychain::Data& data);
+                            const std::string& data);
   void VerifyKeychain(Keychain::Key key,
                       const std::string& account,
-                      const Keychain::Data& expected_data);
+                      const std::string& expected_data);
   void RemoveKeychainAndVerify(Keychain::Key key, const std::string& account);
 
   RemotingKeychain* keychain_;
@@ -97,22 +91,22 @@ void RemotingKeychainTest::TearDown() {
 
 void RemotingKeychainTest::SetKeychainAndVerify(Keychain::Key key,
                                                 const std::string& account,
-                                                const Keychain::Data& data) {
+                                                const std::string& data) {
   keychain_->SetData(key, account, data);
   VerifyKeychain(key, account, data);
 }
 
 void RemotingKeychainTest::VerifyKeychain(Keychain::Key key,
                                           const std::string& account,
-                                          const Keychain::Data& expected_data) {
-  Keychain::Data data = keychain_->GetData(key, account);
+                                          const std::string& expected_data) {
+  std::string data = keychain_->GetData(key, account);
   EXPECT_EQ(expected_data, data);
 }
 
 void RemotingKeychainTest::RemoveKeychainAndVerify(Keychain::Key key,
                                                    const std::string& account) {
   keychain_->RemoveData(key, account);
-  VerifyKeychain(key, account, Keychain::Data());
+  VerifyKeychain(key, account, "");
 }
 
 #pragma mark - Tests
@@ -122,8 +116,10 @@ void RemotingKeychainTest::RemoveKeychainAndVerify(Keychain::Key key,
 TEST_F(RemotingKeychainTest,
        AddThenUpdateAndRemoveOneKeychain_dataAddedThenDeleted) {
   std::string account = RandomBase64String(16);
-  SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account, RandomData(128));
-  SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account, RandomData(128));
+  SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account,
+                       base::RandBytesAsString(128));
+  SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account,
+                       base::RandBytesAsString(128));
   RemoveKeychainAndVerify(Keychain::Key::PAIRING_INFO, account);
 }
 
@@ -131,9 +127,11 @@ TEST_F(
     RemotingKeychainTest,
     AddThenUpdateAndRemoveOneKeychainWithUnspecifiedAccount_dataAddedThenDeleted) {
   SetKeychainAndVerify(Keychain::Key::PAIRING_INFO,
-                       Keychain::kUnspecifiedAccount, RandomData(128));
+                       Keychain::kUnspecifiedAccount,
+                       base::RandBytesAsString(128));
   SetKeychainAndVerify(Keychain::Key::PAIRING_INFO,
-                       Keychain::kUnspecifiedAccount, RandomData(128));
+                       Keychain::kUnspecifiedAccount,
+                       base::RandBytesAsString(128));
   RemoveKeychainAndVerify(Keychain::Key::PAIRING_INFO,
                           Keychain::kUnspecifiedAccount);
 }
@@ -142,8 +140,8 @@ TEST_F(
     RemotingKeychainTest,
     AddAndRemoveTwoKeychainsWithSameAccountButDifferentKey_rightDataIsReturned) {
   std::string account = RandomBase64String(16);
-  Keychain::Data data_1 = RandomData(128);
-  Keychain::Data data_2 = RandomData(128);
+  std::string data_1 = base::RandBytesAsString(128);
+  std::string data_2 = base::RandBytesAsString(128);
   SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account, data_1);
   SetKeychainAndVerify(Keychain::Key::REFRESH_TOKEN, account, data_2);
 
@@ -159,8 +157,8 @@ TEST_F(
     AddAndRemoveTwoKeychainsWithSameKeyButDifferentAccount_rightDataIsReturned) {
   std::string account_1 = RandomBase64String(16);
   std::string account_2 = RandomBase64String(16);
-  Keychain::Data data_1 = RandomData(128);
-  Keychain::Data data_2 = RandomData(128);
+  std::string data_1 = base::RandBytesAsString(128);
+  std::string data_2 = base::RandBytesAsString(128);
   SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account_1, data_1);
   SetKeychainAndVerify(Keychain::Key::PAIRING_INFO, account_2, data_2);
 
