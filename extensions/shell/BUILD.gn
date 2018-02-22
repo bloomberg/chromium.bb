@@ -131,6 +131,8 @@ source_set("app_shell_lib") {
     "browser/shell_display_info_provider.h",
     "browser/shell_extension_host_delegate.cc",
     "browser/shell_extension_host_delegate.h",
+    "browser/shell_extension_loader.cc",
+    "browser/shell_extension_loader.h",
     "browser/shell_extension_system.cc",
     "browser/shell_extension_system.h",
     "browser/shell_extension_system_factory.cc",
@@ -290,6 +292,7 @@ test("app_shell_unittests") {
   sources = [
     "../test/extensions_unittests_main.cc",
     "browser/api/identity/identity_api_unittest.cc",
+    "browser/shell_extension_loader_unittest.cc",
     "browser/shell_keep_alive_requester_unittest.cc",
     "browser/shell_oauth2_token_service_unittest.cc",
     "browser/shell_prefs_unittest.cc",
