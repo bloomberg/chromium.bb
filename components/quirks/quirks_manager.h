@@ -78,7 +78,6 @@ class QUIRKS_EXPORT QuirksManager {
 
   static void Initialize(
       std::unique_ptr<Delegate> delegate,
-      scoped_refptr<base::TaskRunner> task_runner,
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter);
   static void Shutdown();
@@ -118,7 +117,6 @@ class QUIRKS_EXPORT QuirksManager {
 
  private:
   QuirksManager(std::unique_ptr<Delegate> delegate,
-                scoped_refptr<base::TaskRunner> task_runner,
                 PrefService* local_state,
                 scoped_refptr<net::URLRequestContextGetter> url_context_getter);
   ~QuirksManager();
