@@ -227,6 +227,24 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                               alpha_q3);
 }
 
+// Null function used for invalid tx_sizes
+void cfl_subsample_lbd_null(const uint8_t *input, int input_stride,
+                            int16_t *output_q3) {
+  (void)input;
+  (void)input_stride;
+  (void)output_q3;
+  assert(0);
+}
+
+// Null function used for invalid tx_sizes
+void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
+                            int16_t *output_q3) {
+  (void)input;
+  (void)input_stride;
+  (void)output_q3;
+  assert(0);
+}
+
 static void cfl_luma_subsampling_420_lbd_c(const uint8_t *input,
                                            int input_stride, int16_t *output_q3,
                                            int width, int height) {
@@ -241,8 +259,9 @@ static void cfl_luma_subsampling_420_lbd_c(const uint8_t *input,
   }
 }
 
-void cfl_luma_subsampling_422_lbd_c(const uint8_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height) {
+static void cfl_luma_subsampling_422_lbd_c(const uint8_t *input,
+                                           int input_stride, int16_t *output_q3,
+                                           int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i += 2) {
@@ -253,8 +272,9 @@ void cfl_luma_subsampling_422_lbd_c(const uint8_t *input, int input_stride,
   }
 }
 
-void cfl_luma_subsampling_444_lbd_c(const uint8_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height) {
+static void cfl_luma_subsampling_444_lbd_c(const uint8_t *input,
+                                           int input_stride, int16_t *output_q3,
+                                           int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -265,8 +285,9 @@ void cfl_luma_subsampling_444_lbd_c(const uint8_t *input, int input_stride,
   }
 }
 
-void cfl_luma_subsampling_420_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height) {
+static void cfl_luma_subsampling_420_hbd_c(const uint16_t *input,
+                                           int input_stride, int16_t *output_q3,
+                                           int width, int height) {
   for (int j = 0; j < height; j += 2) {
     for (int i = 0; i < width; i += 2) {
       const int bot = i + input_stride;
@@ -278,8 +299,9 @@ void cfl_luma_subsampling_420_hbd_c(const uint16_t *input, int input_stride,
   }
 }
 
-void cfl_luma_subsampling_422_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height) {
+static void cfl_luma_subsampling_422_hbd_c(const uint16_t *input,
+                                           int input_stride, int16_t *output_q3,
+                                           int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i += 2) {
@@ -290,8 +312,9 @@ void cfl_luma_subsampling_422_hbd_c(const uint16_t *input, int input_stride,
   }
 }
 
-void cfl_luma_subsampling_444_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height) {
+static void cfl_luma_subsampling_444_hbd_c(const uint16_t *input,
+                                           int input_stride, int16_t *output_q3,
+                                           int width, int height) {
   assert((height - 1) * CFL_BUF_LINE + width <= CFL_BUF_SQUARE);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -302,7 +325,89 @@ void cfl_luma_subsampling_444_hbd_c(const uint16_t *input, int input_stride,
   }
 }
 
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 422 SIMD
+// will be implemented
+CFL_SUBSAMPLE_FUNCTIONS(c, 422, lbd)
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+CFL_SUBSAMPLE_FUNCTIONS(c, 444, lbd)
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+CFL_SUBSAMPLE_FUNCTIONS(c, 420, hbd)
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+CFL_SUBSAMPLE_FUNCTIONS(c, 422, hbd)
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+CFL_SUBSAMPLE_FUNCTIONS(c, 444, hbd)
+
 CFL_GET_SUBSAMPLE_FUNCTION(c)
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+cfl_subsample_hbd_fn cfl_get_luma_subsampling_420_hbd_c(TX_SIZE tx_size) {
+  CFL_SUBSAMPLE_FUNCTION_ARRAY(c, 420, hbd)
+  return subfn_420[tx_size];
+}
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+cfl_subsample_hbd_fn cfl_get_luma_subsampling_422_hbd_c(TX_SIZE tx_size) {
+  CFL_SUBSAMPLE_FUNCTION_ARRAY(c, 422, hbd)
+  return subfn_422[tx_size];
+}
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+cfl_subsample_hbd_fn cfl_get_luma_subsampling_444_hbd_c(TX_SIZE tx_size) {
+  CFL_SUBSAMPLE_FUNCTION_ARRAY(c, 444, hbd)
+  return subfn_444[tx_size];
+}
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 422 SIMD
+// will be implemented
+cfl_subsample_lbd_fn cfl_get_luma_subsampling_422_lbd_c(TX_SIZE tx_size) {
+  CFL_SUBSAMPLE_FUNCTION_ARRAY(c, 422, lbd)
+  return subfn_422[tx_size];
+}
+
+// TODO(ltrudeau) Move into the CFL_GET_SUBSAMPLE_FUNCTION when LBD 444 SIMD
+// will be implemented
+cfl_subsample_lbd_fn cfl_get_luma_subsampling_444_lbd_c(TX_SIZE tx_size) {
+  CFL_SUBSAMPLE_FUNCTION_ARRAY(c, 444, lbd)
+  return subfn_444[tx_size];
+}
+
+static inline cfl_subsample_hbd_fn cfl_subsampling_hbd(TX_SIZE tx_size,
+                                                       int sub_x, int sub_y) {
+  if (sub_x == 1) {
+    if (sub_y == 1) {
+      // TODO(ltrudeau) Remove _c when HBD 420 SIMD is added
+      return cfl_get_luma_subsampling_420_hbd_c(tx_size);
+    }
+    // TODO(ltrudeau) Remove _c when HBD 422 SIMD is added
+    return cfl_get_luma_subsampling_422_hbd_c(tx_size);
+  }
+  // TODO(ltrudeau) Remove _c when HBD 444 SIMD is added
+  return cfl_get_luma_subsampling_444_hbd_c(tx_size);
+}
+
+static inline cfl_subsample_lbd_fn cfl_subsampling_lbd(TX_SIZE tx_size,
+                                                       int sub_x, int sub_y) {
+  if (sub_x == 1) {
+    if (sub_y == 1) {
+      return cfl_get_luma_subsampling_420_lbd(tx_size);
+    }
+    // TODO(ltrudeau) Remove _c when LBD 422 SIMD is added
+    return cfl_get_luma_subsampling_422_lbd_c(tx_size);
+  }
+  // TODO(ltrudeau) Remove _c when LBD 444 SIMD is added
+  return cfl_get_luma_subsampling_444_lbd_c(tx_size);
+}
 
 static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
                       int row, int col, TX_SIZE tx_size, int use_hbd) {
@@ -339,13 +444,12 @@ static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
       cfl->pred_buf_q3 + (store_row * CFL_BUF_LINE + store_col);
 
   if (use_hbd) {
-    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
-    get_subsample_hbd_fn(sub_x, sub_y)(input_16, input_stride, pred_buf_q3,
-                                       width, height);
-    return;
+    cfl_subsampling_hbd(tx_size, sub_x, sub_y)(CONVERT_TO_SHORTPTR(input),
+                                               input_stride, pred_buf_q3);
+  } else {
+    cfl_subsampling_lbd(tx_size, sub_x, sub_y)(input, input_stride,
+                                               pred_buf_q3);
   }
-  get_subsample_lbd_fn(sub_x, sub_y)(input, input_stride, pred_buf_q3, width,
-                                     height);
 }
 
 // Adjust the row and column of blocks smaller than 8X8, as chroma-referenced

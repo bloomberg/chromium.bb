@@ -45,37 +45,80 @@ void cfl_store_dc_pred(MACROBLOCKD *const xd, const uint8_t *input,
 void cfl_load_dc_pred(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                       TX_SIZE tx_size, CFL_PRED_TYPE pred_plane);
 
-// TODO(ltrudeau) Remove this when HBD 420 SIMD is added
-void cfl_luma_subsampling_420_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height);
+// Null function used for invalid tx_sizes
+void cfl_subsample_lbd_null(const uint8_t *input, int input_stride,
+                            int16_t *output_q3);
 
-// TODO(ltrudeau) Remove this when HBD 422 SIMD is added
-void cfl_luma_subsampling_422_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height);
+// Null function used for invalid tx_sizes
+void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
+                            int16_t *output_q3);
 
-// TODO(ltrudeau) Remove this when HBD 444 SIMD is added
-void cfl_luma_subsampling_444_hbd_c(const uint16_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height);
+// Allows the CFL_SUBSAMPLE function to switch types depending on the bitdepth.
+#define CFL_SUBSAMPLE_INPUT_TYPE_lbd_ const uint8_t *input
+#define CFL_SUBSAMPLE_INPUT_TYPE_hbd_ const uint16_t *input
 
-// TODO(ltrudeau) Remove this when LBD 422 SIMD is added
-void cfl_luma_subsampling_422_lbd_c(const uint8_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height);
-// TODO(ltrudeau) Remove this when LBD 444 SIMD is added
-void cfl_luma_subsampling_444_lbd_c(const uint8_t *input, int input_stride,
-                                    int16_t *output_q3, int width, int height);
+// Declare a size-specific wrapper for the size-generic function. The compiler
+// will inline the size generic function in here, the advantage is that the size
+// will be constant allowing for loop unrolling and other constant propagated
+// goodness.
+#define CFL_SUBSAMPLE(arch, sub, bd, width, height)                            \
+  void subsample_##bd##_##sub##_##width##x##height##_##arch(                   \
+      CFL_SUBSAMPLE_INPUT_TYPE_##bd##_, int input_stride,                      \
+      int16_t *output_q3) {                                                    \
+    cfl_luma_subsampling_##sub##_##bd##_##arch(input, input_stride, output_q3, \
+                                               width, height);                 \
+  }
 
-#define CFL_GET_SUBSAMPLE_FUNCTION(arch)                                   \
-  cfl_subsample_lbd_fn get_subsample_lbd_fn_##arch(int sub_x, int sub_y) { \
-    if (sub_x == 1)                                                        \
-      return (sub_y == 1) ? cfl_luma_subsampling_420_lbd_##arch            \
-                          : cfl_luma_subsampling_422_lbd_c;                \
-    return cfl_luma_subsampling_444_lbd_c;                                 \
-  }                                                                        \
-  cfl_subsample_hbd_fn get_subsample_hbd_fn_##arch(int sub_x, int sub_y) { \
-    if (sub_x == 1)                                                        \
-      return (sub_y == 1) ? cfl_luma_subsampling_420_hbd_c                 \
-                          : cfl_luma_subsampling_422_hbd_c;                \
-    return cfl_luma_subsampling_444_hbd_c;                                 \
+// Declare size-specific wrappers for all valid CfL sizes.
+#define CFL_SUBSAMPLE_FUNCTIONS(arch, sub, bd) \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 4)           \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 8)           \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 16)         \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 32)         \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 8)           \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 4)           \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 16)          \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 8)          \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 32)         \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 16)         \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 16)          \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 4)          \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 32)          \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 8)
+
+// Declare an architecture-specific array of function pointers for size-specific
+// wrappers.
+#define CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, sub, bd)                       \
+  static const cfl_subsample_##bd##_fn subfn_##sub[TX_SIZES_ALL] = {      \
+    subsample_##bd##_##sub##_4x4_##arch,   /* 4x4 */                      \
+    subsample_##bd##_##sub##_8x8_##arch,   /* 8x8 */                      \
+    subsample_##bd##_##sub##_16x16_##arch, /* 16x16 */                    \
+    subsample_##bd##_##sub##_32x32_##arch, /* 32x32 */                    \
+    cfl_subsample_##bd##_null,             /* 64x64 (invalid CFL size) */ \
+    subsample_##bd##_##sub##_4x8_##arch,   /* 4x8 */                      \
+    subsample_##bd##_##sub##_8x4_##arch,   /* 8x4 */                      \
+    subsample_##bd##_##sub##_8x16_##arch,  /* 8x16 */                     \
+    subsample_##bd##_##sub##_16x8_##arch,  /* 16x8 */                     \
+    subsample_##bd##_##sub##_16x32_##arch, /* 16x32 */                    \
+    subsample_##bd##_##sub##_32x16_##arch, /* 32x16 */                    \
+    cfl_subsample_##bd##_null,             /* 32x64 (invalid CFL size) */ \
+    cfl_subsample_##bd##_null,             /* 64x32 (invalid CFL size) */ \
+    subsample_##bd##_##sub##_4x16_##arch,  /* 4x16  */                    \
+    subsample_##bd##_##sub##_16x4_##arch,  /* 16x4  */                    \
+    subsample_##bd##_##sub##_8x32_##arch,  /* 8x32  */                    \
+    subsample_##bd##_##sub##_32x8_##arch,  /* 32x8  */                    \
+    cfl_subsample_##bd##_null,             /* 16x64 (invalid CFL size) */ \
+    cfl_subsample_##bd##_null,             /* 64x16 (invalid CFL size) */ \
+  };
+
+// The RTCD script does not support passing in the an array, so we wrap it in
+// this function.
+#define CFL_GET_SUBSAMPLE_FUNCTION(arch)                        \
+  CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd)                       \
+  cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd_##arch( \
+      TX_SIZE tx_size) {                                        \
+    CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, 420, lbd)                \
+    return subfn_420[tx_size];                                  \
   }
 
 // Null function used for invalid tx_sizes
