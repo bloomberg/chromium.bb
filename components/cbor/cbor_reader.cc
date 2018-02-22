@@ -281,9 +281,10 @@ base::Optional<CBORValue> CBORReader::ReadByteStringContent(
 base::Optional<CBORValue> CBORReader::ReadArrayContent(
     const CBORReader::DataItemHeader& header,
     int max_nesting_level) {
-  int64_t length = base::checked_cast<int64_t>(header.value);
+  uint64_t length = header.value;
+
   CBORValue::ArrayValue cbor_array;
-  while (length-- > 0) {
+  for (uint64_t i = 0; i < length; ++i) {
     base::Optional<CBORValue> cbor_element =
         DecodeCompleteDataItem(max_nesting_level - 1);
     if (!cbor_element.has_value())
@@ -296,9 +297,10 @@ base::Optional<CBORValue> CBORReader::ReadArrayContent(
 base::Optional<CBORValue> CBORReader::ReadMapContent(
     const CBORReader::DataItemHeader& header,
     int max_nesting_level) {
-  int64_t length = base::checked_cast<int64_t>(header.value);
+  uint64_t length = header.value;
+
   CBORValue::MapValue cbor_map;
-  while (length-- > 0) {
+  for (uint64_t i = 0; i < length; ++i) {
     base::Optional<CBORValue> key =
         DecodeCompleteDataItem(max_nesting_level - 1);
     base::Optional<CBORValue> value =
