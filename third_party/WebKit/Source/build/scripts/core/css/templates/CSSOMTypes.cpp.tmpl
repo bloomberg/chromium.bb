@@ -25,6 +25,13 @@ bool IsCSSStyleValueLength(const CSSStyleValue& value) {
     MatchesBaseType(CSSNumericValueType::BaseType::kLength);
 }
 
+bool IsCSSStyleValueNumber(const CSSStyleValue& value) {
+  if (!value.IsNumericValue())
+    return false;
+  return static_cast<const CSSNumericValue&>(value).Type().
+    MatchesNumber();
+}
+
 bool IsCSSStyleValueTime(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;

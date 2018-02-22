@@ -5,6 +5,7 @@ FAIL Can set 'transform' to a transform assert_equals: expected "CSSTransformVal
 PASS Setting 'transform' to a length throws TypeError
 PASS Setting 'transform' to a percent throws TypeError
 PASS Setting 'transform' to a time throws TypeError
+PASS Setting 'transform' to a number throws TypeError
 PASS Setting 'transform' to a position throws TypeError
 PASS Setting 'transform' to an image throws TypeError
 Harness: the test ran to completion.
