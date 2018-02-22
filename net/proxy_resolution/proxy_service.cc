@@ -285,14 +285,14 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 
 // Returns NetLog parameters describing a proxy configuration change.
 std::unique_ptr<base::Value> NetLogProxyConfigChangedCallback(
-    const ProxyConfig* old_config,
+    const base::Optional<ProxyConfig>* old_config,
     const ProxyConfig* new_config,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
-  if (old_config->is_valid())
-    dict->Set("old_config", old_config->ToValue());
+  if (old_config->has_value())
+    dict->Set("old_config", (*old_config)->ToValue());
   dict->Set("new_config", new_config->ToValue());
   return std::move(dict);
 }
@@ -795,7 +795,6 @@ class ProxyResolutionService::Request
         method_(method),
         proxy_delegate_(proxy_delegate),
         resolve_job_(nullptr),
-        config_id_(ProxyConfig::kInvalidConfigID),
         config_source_(PROXY_CONFIG_SOURCE_UNKNOWN),
         net_log_(net_log),
         creation_time_(TimeTicks::Now()) {
@@ -807,10 +806,8 @@ class ProxyResolutionService::Request
     DCHECK(!was_cancelled());
     DCHECK(!is_started());
 
-    DCHECK(service_->config_.is_valid());
-
-    config_id_ = service_->config_.id();
-    config_source_ = service_->config_.source();
+    DCHECK(service_->config_);
+    config_source_ = service_->config_->source();
 
     return resolver()->GetProxyForURL(
         url_, results_,
@@ -873,14 +870,12 @@ class ProxyResolutionService::Request
 
     // Make a note in the results which configuration was in use at the
     // time of the resolve.
-    results_->config_id_ = config_id_;
     results_->config_source_ = config_source_;
     results_->did_use_pac_script_ = true;
     results_->proxy_resolve_start_time_ = creation_time_;
     results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
     // Reset the state associated with in-progress-resolve.
-    config_id_ = ProxyConfig::kInvalidConfigID;
     config_source_ = PROXY_CONFIG_SOURCE_UNKNOWN;
 
     return rv;
@@ -924,7 +919,6 @@ class ProxyResolutionService::Request
   std::string method_;
   ProxyDelegate* proxy_delegate_;
   std::unique_ptr<ProxyResolver::Request> resolve_job_;
-  ProxyConfig::ID config_id_;  // The config id when the resolve was started.
   ProxyConfigSource config_source_;  // The source of proxy settings.
   NetLogWithSource net_log_;
   // Time when the request was created.  Stored here rather than in |results_|
@@ -939,7 +933,6 @@ ProxyResolutionService::ProxyResolutionService(
     std::unique_ptr<ProxyResolverFactory> resolver_factory,
     NetLog* net_log)
     : resolver_factory_(std::move(resolver_factory)),
-      next_config_id_(1),
       current_state_(STATE_NONE),
       net_log_(net_log),
       stall_proxy_auto_config_delay_(
@@ -1119,20 +1112,18 @@ int ProxyResolutionService::TryToCompleteSynchronously(
   if (current_state_ != STATE_READY)
     return ERR_IO_PENDING;  // Still initializing.
 
-  DCHECK_NE(config_.id(), ProxyConfig::kInvalidConfigID);
-
+  DCHECK(config_);
   // If it was impossible to fetch or parse the PAC script, we cannot complete
   // the request here and bail out.
   if (permanent_error_ != OK)
     return permanent_error_;
 
-  if (config_.HasAutomaticSettings())
+  if (config_->HasAutomaticSettings())
     return ERR_IO_PENDING;  // Must submit the request to the proxy resolver.
 
   // Use the manual proxy settings.
-  config_.proxy_rules().Apply(url, result);
-  result->config_source_ = config_.source();
-  result->config_id_ = config_.id();
+  config_->proxy_rules().Apply(url, result);
+  result->config_source_ = config_->source();
 
   return OK;
 }
@@ -1195,7 +1186,7 @@ void ProxyResolutionService::ApplyProxyConfigIfAvailable() {
   config_service_->OnLazyPoll();
 
   // If we have already fetched the configuration, start applying it.
-  if (fetched_config_.is_valid()) {
+  if (fetched_config_) {
     InitializeUsingLastFetchedConfig();
     return;
   }
@@ -1216,7 +1207,8 @@ void ProxyResolutionService::ApplyProxyConfigIfAvailable() {
 void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
   DCHECK_EQ(STATE_WAITING_FOR_INIT_PROXY_RESOLVER, current_state_);
   DCHECK(init_proxy_resolver_.get());
-  DCHECK(fetched_config_.HasAutomaticSettings());
+  DCHECK(fetched_config_);
+  DCHECK(fetched_config_->HasAutomaticSettings());
   config_ = init_proxy_resolver_->effective_config();
 
   // At this point we have decided which proxy settings to use (i.e. which PAC
@@ -1227,7 +1219,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
   script_poller_.reset(new ProxyScriptDeciderPoller(
       base::Bind(&ProxyResolutionService::InitializeUsingDecidedConfig,
                  base::Unretained(this)),
-      fetched_config_, resolver_factory_->expects_pac_bytes(),
+      fetched_config_.value(), resolver_factory_->expects_pac_bytes(),
       proxy_script_fetcher_.get(), dhcp_proxy_script_fetcher_.get(), result,
       init_proxy_resolver_->script_data(), NULL));
   script_poller_->set_quick_check_enabled(quick_check_enabled_);
@@ -1235,7 +1227,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
   init_proxy_resolver_.reset();
 
   if (result != OK) {
-    if (fetched_config_.pac_mandatory()) {
+    if (fetched_config_->pac_mandatory()) {
       VLOG(1) << "Failed configuring with mandatory PAC script, blocking all "
                  "traffic.";
       config_ = fetched_config_;
@@ -1244,58 +1236,17 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
       VLOG(1) << "Failed configuring with PAC script, falling-back to manual "
                  "proxy servers.";
       config_ = fetched_config_;
-      config_.ClearAutomaticSettings();
+      config_->ClearAutomaticSettings();
       result = OK;
     }
   }
   permanent_error_ = result;
 
-  // TODO(eroman): Make this ID unique in the case where configuration changed
-  //               due to ProxyScriptDeciderPoller.
-  config_.set_id(fetched_config_.id());
-  config_.set_source(fetched_config_.source());
+  config_->set_source(fetched_config_->source());
 
   // Resume any requests which we had to defer until the PAC script was
   // downloaded.
   SetReady();
-}
-
-int ProxyResolutionService::ReconsiderProxyAfterError(
-    const GURL& url,
-    const std::string& method,
-    int net_error,
-    ProxyInfo* result,
-    const CompletionCallback& callback,
-    Request** pac_request,
-    ProxyDelegate* proxy_delegate,
-    const NetLogWithSource& net_log) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Check to see if we have a new config since ResolveProxy was called.  We
-  // want to re-run ResolveProxy in two cases: 1) we have a new config, or 2) a
-  // direct connection failed and we never tried the current config.
-
-  DCHECK(result);
-  bool re_resolve = result->config_id_ != config_.id();
-
-  if (re_resolve) {
-    // If we have a new config or the config was never tried, we delete the
-    // list of bad proxies and we try again.
-    proxy_retry_info_.clear();
-    return ResolveProxy(url, method, result, callback, pac_request,
-                        proxy_delegate, net_log);
-  }
-
-  DCHECK(!result->is_empty());
-  ProxyServer bad_proxy = result->proxy_server();
-
-  // We don't have new proxy settings to try, try to fallback to the next proxy
-  // in the list.
-  bool did_fallback = result->Fallback(net_error, net_log);
-
-  // Return synchronous failure if there is nothing left to fall-back to.
-  // TODO(eroman): This is a yucky API, clean it up.
-  return did_fallback ? OK : ERR_FAILED;
 }
 
 bool ProxyResolutionService::MarkProxiesAsBadUntil(
@@ -1392,7 +1343,7 @@ int ProxyResolutionService::DidFinishResolvingProxy(
         NetLogEventType::PROXY_SERVICE_RESOLVED_PROXY_LIST, result_code);
 
     bool reset_config = result_code == ERR_PAC_SCRIPT_TERMINATED;
-    if (!config_.pac_mandatory()) {
+    if (!config_->pac_mandatory()) {
       // Fall-back to direct when the proxy resolver fails. This corresponds
       // with a javascript runtime error in the PAC script.
       //
@@ -1462,9 +1413,9 @@ ProxyResolutionService::State ProxyResolutionService::ResetProxyConfig(
   init_proxy_resolver_.reset();
   SuspendAllPendingRequests();
   resolver_.reset();
-  config_ = ProxyConfig();
+  config_ = base::Optional<ProxyConfig>();
   if (reset_fetched_config)
-    fetched_config_ = ProxyConfig();
+    fetched_config_ = base::Optional<ProxyConfig>();
   current_state_ = STATE_NONE;
 
   return previous_state;
@@ -1578,7 +1529,6 @@ void ProxyResolutionService::OnProxyConfigChanged(
 
   // Set the new configuration as the most recently fetched one.
   fetched_config_ = effective_config;
-  fetched_config_.set_id(1);  // Needed for a later DCHECK of is_valid().
 
   InitializeUsingLastFetchedConfig();
 }
@@ -1586,12 +1536,8 @@ void ProxyResolutionService::OnProxyConfigChanged(
 void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
   ResetProxyConfig(false);
 
-  DCHECK(fetched_config_.is_valid());
-
-  // Increment the ID to reflect that the config has changed.
-  fetched_config_.set_id(next_config_id_++);
-
-  if (!fetched_config_.HasAutomaticSettings()) {
+  DCHECK(fetched_config_);
+  if (!fetched_config_->HasAutomaticSettings()) {
     config_ = fetched_config_;
     SetReady();
     return;
@@ -1608,7 +1554,8 @@ void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
   init_proxy_resolver_->set_quick_check_enabled(quick_check_enabled_);
   int rv = init_proxy_resolver_->Start(
       &resolver_, resolver_factory_.get(), proxy_script_fetcher_.get(),
-      dhcp_proxy_script_fetcher_.get(), net_log_, fetched_config_, wait_delay,
+      dhcp_proxy_script_fetcher_.get(), net_log_, fetched_config_.value(),
+      wait_delay,
       base::Bind(&ProxyResolutionService::OnInitProxyResolverComplete,
                  base::Unretained(this)));
 
@@ -1620,8 +1567,8 @@ void ProxyResolutionService::InitializeUsingDecidedConfig(
     int decider_result,
     ProxyResolverScriptData* script_data,
     const ProxyConfig& effective_config) {
-  DCHECK(fetched_config_.is_valid());
-  DCHECK(fetched_config_.HasAutomaticSettings());
+  DCHECK(fetched_config_);
+  DCHECK(fetched_config_->HasAutomaticSettings());
 
   ResetProxyConfig(false);
 

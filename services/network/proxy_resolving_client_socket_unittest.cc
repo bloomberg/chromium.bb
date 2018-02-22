@@ -569,49 +569,6 @@ TEST_F(ProxyResolvingClientSocketTest, URLSanitized) {
             resolver.pending_jobs()[0]->url());
 }
 
-TEST_F(ProxyResolvingClientSocketTest, ProxyConfigChanged) {
-  auto context = std::make_unique<net::TestURLRequestContext>(true);
-  // Use direct connection.
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service =
-      net::ProxyResolutionService::CreateDirect();
-  context->set_proxy_resolution_service(proxy_resolution_service.get());
-  context->Init();
-
-  net::MockClientSocketFactory socket_factory;
-
-  // There should be two connection attempts because ProxyConfig has changed
-  // midway through connect.
-  net::StaticSocketDataProvider data_1;
-  data_1.set_connect_data(
-      net::MockConnect(net::SYNCHRONOUS, net::ERR_CONNECTION_REFUSED));
-  socket_factory.AddSocketDataProvider(&data_1);
-
-  net::StaticSocketDataProvider data_2;
-  data_2.set_connect_data(net::MockConnect(net::SYNCHRONOUS, net::OK));
-  socket_factory.AddSocketDataProvider(&data_2);
-
-  GURL url("http://www.example.com");
-  ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
-      &socket_factory, context.get());
-  std::unique_ptr<ProxyResolvingClientSocket> socket =
-      proxy_resolving_socket_factory.CreateSocket(net::SSLConfig(), url);
-
-  net::TestCompletionCallback callback;
-  int status = socket->Connect(callback.callback());
-  EXPECT_EQ(net::ERR_IO_PENDING, status);
-
-  // Calling ForceReloadProxyConfig will cause the proxy configuration to
-  // change. It will still be the direct connection but the configuration
-  // version will be bumped. That is enough for the job controller to restart
-  // the jobs.
-  proxy_resolution_service->ForceReloadProxyConfig();
-  EXPECT_EQ(net::OK, callback.WaitForResult());
-  EXPECT_TRUE(data_1.AllReadDataConsumed());
-  EXPECT_TRUE(data_1.AllWriteDataConsumed());
-  EXPECT_TRUE(data_2.AllReadDataConsumed());
-  EXPECT_TRUE(data_2.AllWriteDataConsumed());
-}
-
 class ReconsiderProxyAfterErrorTest
     : public testing::Test,
       public testing::WithParamInterface<::testing::tuple<bool, int>> {

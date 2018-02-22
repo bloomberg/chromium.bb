@@ -583,31 +583,20 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
         proxy_info_.proxy_server().host_port_pair());
   }
 
-  int status = gcm_network_session_->proxy_resolution_service()
-                                   ->ReconsiderProxyAfterError(
-      GetCurrentEndpoint(), std::string(), error, &proxy_info_,
-      base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
-                 weak_ptr_factory_.GetWeakPtr()),
-      &proxy_resolve_request_, NULL, net_log_);
-  if (status == net::OK || status == net::ERR_IO_PENDING) {
-    CloseSocket();
-  } else {
-    // If ReconsiderProxyAfterError() failed synchronously, it means
-    // there was nothing left to fall-back to, so fail the transaction
+  if (!proxy_info_.Fallback(error, net_log_)) {
+    // There was nothing left to fall-back to, so fail the transaction
     // with the last connection error we got.
-    status = error;
+    return error;
   }
 
-  // If there is new proxy info, post OnProxyResolveDone to retry it. Otherwise,
-  // if there was an error falling back, fail synchronously.
-  if (status == net::OK) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
-                   weak_ptr_factory_.GetWeakPtr(), status));
-    status = net::ERR_IO_PENDING;
-  }
-  return status;
+  CloseSocket();
+
+  // If there is new proxy info, post OnProxyResolveDone to retry it.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
+                            weak_ptr_factory_.GetWeakPtr(), net::OK));
+
+  return net::ERR_IO_PENDING;
 }
 
 void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {

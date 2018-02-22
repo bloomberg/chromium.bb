@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -222,22 +223,22 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // As above but with scheme set to HTTP, for convenience.
     bool GetProxyFromEnvVar(base::StringPiece variable,
                             ProxyServer* result_server);
-    // Fills proxy config from environment variables. Returns true if
-    // variables were found and the configuration is valid.
-    bool GetConfigFromEnv(ProxyConfig* config);
+    // Returns a proxy config based on the environment variables, or empty value
+    // on failure.
+    base::Optional<ProxyConfig> GetConfigFromEnv();
 
     // Obtains host and port config settings and parses a proxy server
     // specification from it and puts it in result. Returns true if the
     // requested variable is defined and the value valid.
     bool GetProxyFromSettings(SettingGetter::StringSetting host_key,
                               ProxyServer* result_server);
-    // Fills proxy config from settings. Returns true if settings were found
-    // and the configuration is valid.
-    bool GetConfigFromSettings(ProxyConfig* config);
+    // Returns a proxy config based on the settings, or empty value
+    // on failure.
+    base::Optional<ProxyConfig> GetConfigFromSettings();
 
     // This method is posted from the glib thread to the main TaskRunner to
     // carry the new config information.
-    void SetNewProxyConfig(const ProxyConfig& new_config);
+    void SetNewProxyConfig(const base::Optional<ProxyConfig>& new_config);
 
     // This method is run on the getter's notification thread.
     void SetUpNotifications();
@@ -248,12 +249,12 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // Cached proxy configuration, to be returned by
     // GetLatestProxyConfig. Initially populated from the glib thread, but
     // afterwards only accessed from the main TaskRunner.
-    ProxyConfig cached_config_;
+    base::Optional<ProxyConfig> cached_config_;
 
     // A copy kept on the glib thread of the last seen proxy config, so as
     // to avoid posting a call to SetNewProxyConfig when we get a
     // notification but the config has not actually changed.
-    ProxyConfig reference_config_;
+    base::Optional<ProxyConfig> reference_config_;
 
     // The task runner for the glib thread, aka main browser thread. This thread
     // is where we run the glib main loop (see

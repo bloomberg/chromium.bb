@@ -55,8 +55,6 @@ struct ProxyConfig {
   bool pac_mandatory;
   ProxyRules proxy_rules;
   ProxyConfigSource source;
-  // TODO(mmenke): This is a historical wart. Remove it.
-  int32 id;
 };
 
 // Interface for pushing proxy configuration updates to a NetworkContext.

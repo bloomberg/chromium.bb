@@ -48,15 +48,12 @@ TEST(ProxyInfoTest, ProxyInfoIsDirectOnly) {
 
 TEST(ProxyInfoTest, UseVsOverrideProxyList) {
   ProxyInfo info;
-  info.config_id_ = 99;
   ProxyList proxy_list;
   proxy_list.Set("http://foo.com");
   info.OverrideProxyList(proxy_list);
-  EXPECT_EQ(99, info.config_id_);
   EXPECT_EQ("PROXY foo.com:80", info.proxy_list().ToPacString());
   proxy_list.Set("http://bar.com");
   info.UseProxyList(proxy_list);
-  EXPECT_EQ(0, info.config_id_);
   EXPECT_EQ("PROXY bar.com:80", info.proxy_list().ToPacString());
 }
 

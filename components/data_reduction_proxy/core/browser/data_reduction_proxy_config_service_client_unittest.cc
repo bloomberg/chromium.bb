@@ -548,12 +548,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
 #if defined(OS_ANDROID)
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
 #endif
@@ -790,14 +790,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   AddMockPreviousSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
   // First remote config should be fetched.
   VerifyRemoteSuccessWithOldConfig();
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
   EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectUniqueSample(
@@ -817,7 +817,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
 
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
@@ -947,14 +947,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
   // First remote config should be fetched.
   VerifyRemoteSuccessWithOldConfig();
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
   EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectUniqueSample(
@@ -974,7 +974,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
 
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
@@ -1046,7 +1046,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
@@ -1054,7 +1054,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   RunUntilIdle();
   // First remote config should be fetched.
   VerifyRemoteSuccessWithOldConfig();
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
   EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectUniqueSample(
@@ -1065,7 +1065,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockPreviousSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
   config_client()->RetrieveConfig();
 
   // Trigger an auth failure.
@@ -1082,7 +1082,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
       request_headers, parsed.get(), origin, load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
 
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
@@ -1091,7 +1091,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.ConfigService.AuthExpired", true, 1);
 
-  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
 
@@ -1099,7 +1099,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   RunUntilIdle();
   VerifyRemoteSuccess(true);
 
-  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
   // Persisted config on pref should be cleared.
   EXPECT_FALSE(persisted_config().empty());
   EXPECT_FALSE(persisted_config_retrieval_time().is_null());

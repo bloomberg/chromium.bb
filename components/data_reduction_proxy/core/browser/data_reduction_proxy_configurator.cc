@@ -51,7 +51,7 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   net::ProxyConfig config;
-  DCHECK(!config.is_valid() && config.proxy_rules().proxies_for_http.IsEmpty());
+  DCHECK(config.proxy_rules().proxies_for_http.IsEmpty());
   config.proxy_rules().type =
       net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
 
@@ -97,16 +97,11 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
   }
 
   if (config.proxy_rules().proxies_for_http.IsEmpty()) {
-    // Return an invalid net config so that data reduction proxy is not used.
-    return config;
+    // Return a DIRECT net config so that data reduction proxy is not used.
+    return net::ProxyConfig::CreateDirect();
   }
 
   config.proxy_rules().bypass_rules = bypass_rules_;
-  // The ID is set to a bogus value. It cannot be left uninitialized, else the
-  // config will return invalid.
-  net::ProxyConfig::ID unused_id = 1;
-  config.set_id(unused_id);
-
   return config;
 }
 

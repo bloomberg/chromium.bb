@@ -191,9 +191,9 @@ const ProxyList* ProxyConfig::ProxyRules::GetProxyListForWebSocketScheme()
 }
 
 ProxyConfig::ProxyConfig()
-    : auto_detect_(false), pac_mandatory_(false),
-      source_(PROXY_CONFIG_SOURCE_UNKNOWN), id_(kInvalidConfigID)  {
-}
+    : auto_detect_(false),
+      pac_mandatory_(false),
+      source_(PROXY_CONFIG_SOURCE_UNKNOWN) {}
 
 ProxyConfig::ProxyConfig(const ProxyConfig& config) = default;
 

@@ -115,7 +115,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static net::ProxyConfigSource source(const net::ProxyConfig& r) {
     return r.source();
   }
-  static int32_t id(const net::ProxyConfig& r) { return r.id(); }
   static bool Read(network::mojom::ProxyConfigDataView data,
                    net::ProxyConfig* out_proxy_config);
 };
