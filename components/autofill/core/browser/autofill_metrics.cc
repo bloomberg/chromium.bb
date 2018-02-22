@@ -1534,8 +1534,6 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   }
 
   // Logging again in a different histogram for segmentation purposes.
-  // TODO(waltercacau): Re-evaluate if we still need such fine grained
-  // segmentation. http://crbug.com/454018
   if (server_record_type_count_ == 0 && local_record_type_count_ == 0)
     name += ".WithNoData";
   else if (server_record_type_count_ > 0 && local_record_type_count_ == 0)
