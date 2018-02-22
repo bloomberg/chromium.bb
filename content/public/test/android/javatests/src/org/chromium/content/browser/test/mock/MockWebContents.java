@@ -160,10 +160,6 @@ public class MockWebContents implements WebContents {
     public void exitFullscreen() {}
 
     @Override
-    public void updateBrowserControlsState(
-            boolean enableHiding, boolean enableShowing, boolean animate) {}
-
-    @Override
     public void scrollFocusedEditableNodeIntoView() {}
 
     @Override

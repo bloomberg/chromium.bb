@@ -544,11 +544,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void OnForceRedraw(const ui::LatencyInfo& latency_info);
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
-#if defined(OS_ANDROID)
-  void OnUpdateBrowserControlsState(bool enable_hiding,
-                                    bool enable_showing,
-                                    bool animate);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   void OnGetRenderedText();
 #endif
 

@@ -399,13 +399,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @Override
-    public void updateBrowserControlsState(
-            boolean enableHiding, boolean enableShowing, boolean animate) {
-        nativeUpdateBrowserControlsState(
-                mNativeWebContentsAndroid, enableHiding, enableShowing, animate);
-    }
-
-    @Override
     public void scrollFocusedEditableNodeIntoView() {
         // The native side keeps track of whether the zoom and scroll actually occurred. It is
         // more efficient to do it this way and sometimes fire an unnecessary message rather
@@ -779,8 +772,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
     private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);
-    private native void nativeUpdateBrowserControlsState(long nativeWebContentsAndroid,
-            boolean enableHiding, boolean enableShowing, boolean animate);
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);
     private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
     private native void nativeAdjustSelectionByCharacterOffset(long nativeWebContentsAndroid,

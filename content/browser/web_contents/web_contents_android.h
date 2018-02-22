@@ -107,12 +107,6 @@ class CONTENT_EXPORT WebContentsAndroid
       const base::android::JavaParamRef<jobject>& obj);
   void ExitFullscreen(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
-  void UpdateBrowserControlsState(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      bool enable_hiding,
-      bool enable_showing,
-      bool animate);
   void ScrollFocusedEditableNodeIntoView(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
