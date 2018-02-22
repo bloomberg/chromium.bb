@@ -60,7 +60,7 @@ class SliderThumbElement final : public HTMLDivElement {
  private:
   SliderThumbElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  Element* CloneWithoutAttributesAndChildren(Document&) override;
+  Element* CloneWithoutAttributesAndChildren(Document&) const override;
   bool IsDisabledFormControl() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
@@ -72,7 +72,7 @@ class SliderThumbElement final : public HTMLDivElement {
 };
 
 inline Element* SliderThumbElement::CloneWithoutAttributesAndChildren(
-    Document& factory) {
+    Document& factory) const {
   return Create(factory);
 }
 

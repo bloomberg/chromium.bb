@@ -98,7 +98,7 @@ class SVGScriptElement final : public SVGElement,
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
-  Element* CloneWithoutAttributesAndChildren(Document&) override;
+  Element* CloneWithoutAttributesAndChildren(Document&) const override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
   TraceWrapperMember<ScriptLoader> loader_;

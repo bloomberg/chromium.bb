@@ -59,7 +59,7 @@ bool DocumentFragment::ChildTypeAllowed(NodeType type) const {
   }
 }
 
-Node* DocumentFragment::Clone(Document& factory, CloneChildrenFlag flag) {
+Node* DocumentFragment::Clone(Document& factory, CloneChildrenFlag flag) const {
   DocumentFragment* clone = Create(factory);
   if (flag == CloneChildrenFlag::kClone)
     clone->CloneChildNodesFrom(*this);

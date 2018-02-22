@@ -99,7 +99,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
-  Element* CloneWithoutAttributesAndChildren(Document&) override;
+  Element* CloneWithoutAttributesAndChildren(Document&) const override;
 
   TraceWrapperMember<ScriptLoader> loader_;
 };

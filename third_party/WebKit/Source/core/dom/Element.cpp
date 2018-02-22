@@ -261,12 +261,12 @@ bool Element::IsFocusableStyle() const {
          GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible;
 }
 
-Node* Element::Clone(Document& factory, CloneChildrenFlag flag) {
+Node* Element::Clone(Document& factory, CloneChildrenFlag flag) const {
   return flag == CloneChildrenFlag::kClone ? CloneWithChildren(&factory)
                                            : CloneWithoutChildren(&factory);
 }
 
-Element* Element::CloneWithChildren(Document* nullable_factory) {
+Element* Element::CloneWithChildren(Document* nullable_factory) const {
   Element* clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
@@ -279,7 +279,7 @@ Element* Element::CloneWithChildren(Document* nullable_factory) {
   return clone;
 }
 
-Element* Element::CloneWithoutChildren(Document* nullable_factory) {
+Element* Element::CloneWithoutChildren(Document* nullable_factory) const {
   Element* clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
@@ -291,7 +291,7 @@ Element* Element::CloneWithoutChildren(Document* nullable_factory) {
   return clone;
 }
 
-Element* Element::CloneWithoutAttributesAndChildren(Document& factory) {
+Element* Element::CloneWithoutAttributesAndChildren(Document& factory) const {
   return factory.CreateElement(TagQName(), CreateElementFlags::ByCloneNode(),
                                IsValue());
 }

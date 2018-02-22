@@ -238,7 +238,7 @@ Node::NodeType Text::getNodeType() const {
   return kTextNode;
 }
 
-Node* Text::Clone(Document& factory, CloneChildrenFlag) {
+Node* Text::Clone(Document& factory, CloneChildrenFlag) const {
   return CloneWithData(factory, data());
 }
 
@@ -463,7 +463,7 @@ void Text::UpdateTextLayoutObject(unsigned offset_of_replaced_data,
                                         length_of_replaced_data);
 }
 
-Text* Text::CloneWithData(Document& factory, const String& data) {
+Text* Text::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 

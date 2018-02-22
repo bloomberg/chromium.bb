@@ -48,7 +48,7 @@ class VTTElement final : public Element {
   static VTTElement* Create(const QualifiedName&, Document*);
   HTMLElement* CreateEquivalentHTMLElement(Document&);
 
-  Element* CloneWithoutAttributesAndChildren(Document&) override;
+  Element* CloneWithoutAttributesAndChildren(Document&) const override;
 
   void SetVTTNodeType(VTTNodeType type) {
     web_vtt_node_type_ = static_cast<unsigned>(type);

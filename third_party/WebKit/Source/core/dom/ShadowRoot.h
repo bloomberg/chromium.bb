@@ -149,7 +149,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void innerHTML(StringOrTrustedHTML&) const;
   void setInnerHTML(const StringOrTrustedHTML&, ExceptionState&);
 
-  Node* Clone(Document&, CloneChildrenFlag) override;
+  Node* Clone(Document&, CloneChildrenFlag) const override;
 
   void SetDelegatesFocus(bool flag) { delegates_focus_ = flag; }
   bool delegatesFocus() const { return delegates_focus_; }

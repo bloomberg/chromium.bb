@@ -219,7 +219,7 @@ void HTMLScriptElement::SetScriptElementForBinding(
 }
 
 Element* HTMLScriptElement::CloneWithoutAttributesAndChildren(
-    Document& factory) {
+    Document& factory) const {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());

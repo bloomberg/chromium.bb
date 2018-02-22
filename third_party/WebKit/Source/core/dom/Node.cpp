@@ -606,7 +606,7 @@ void Node::remove() {
   remove(ASSERT_NO_EXCEPTION);
 }
 
-Node* Node::cloneNode(bool deep, ExceptionState& exception_state) {
+Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
   // https://dom.spec.whatwg.org/#dom-node-clonenode
 
   // 1. If context object is a shadow root, then throw a
@@ -623,7 +623,7 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) {
                deep ? CloneChildrenFlag::kClone : CloneChildrenFlag::kSkip);
 }
 
-Node* Node::cloneNode(bool deep) {
+Node* Node::cloneNode(bool deep) const {
   return cloneNode(deep, ASSERT_NO_EXCEPTION);
 }
 

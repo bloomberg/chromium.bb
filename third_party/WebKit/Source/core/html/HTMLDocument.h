@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLDocument : public Document {
 
   static bool IsCaseSensitiveAttribute(const QualifiedName&);
 
-  Document* CloneDocumentWithoutChildren() final;
+  Document* CloneDocumentWithoutChildren() const final;
 
  protected:
   HTMLDocument(

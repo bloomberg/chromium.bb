@@ -974,7 +974,7 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
-  for (Node& child : NodeTraversal::ChildrenOf(node))
+  for (const Node& child : NodeTraversal::ChildrenOf(node))
     AppendChild(child.Clone(GetDocument(), CloneChildrenFlag::kClone));
 }
 

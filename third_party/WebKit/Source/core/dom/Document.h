@@ -990,7 +990,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // The document of the parent frame.
   Document* ParentDocument() const;
   Document& TopDocument() const;
-  Document* ContextDocument();
+  Document* ContextDocument() const;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
 
@@ -1202,7 +1202,7 @@ class CORE_EXPORT Document : public ContainerNode,
       const ElementRegistrationOptions&,
       ExceptionState&,
       V0CustomElement::NameSet valid_names = V0CustomElement::kStandardNames);
-  V0CustomElementRegistrationContext* RegistrationContext() {
+  V0CustomElementRegistrationContext* RegistrationContext() const {
     return registration_context_.Get();
   }
   V0CustomElementMicrotaskRunQueue* CustomElementMicrotaskRunQueue();
@@ -1425,7 +1425,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ClearXMLVersion() { xml_version_ = String(); }
 
-  virtual Document* CloneDocumentWithoutChildren();
+  virtual Document* CloneDocumentWithoutChildren() const;
 
   void LockCompatibilityMode() { compatibility_mode_locked_ = true; }
   ParserSynchronizationPolicy GetParserSynchronizationPolicy() const {
@@ -1485,7 +1485,7 @@ class CORE_EXPORT Document : public ContainerNode,
   String nodeName() const final;
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
-  Node* Clone(Document&, CloneChildrenFlag) override;
+  Node* Clone(Document&, CloneChildrenFlag) const override;
   void CloneDataFromDocument(const Document&);
 
   ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;

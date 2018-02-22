@@ -258,11 +258,11 @@ class CORE_EXPORT Node : public EventTarget {
   Node* appendChild(Node* new_child);
 
   bool hasChildren() const { return firstChild(); }
-  Node* cloneNode(bool deep, ExceptionState&);
+  Node* cloneNode(bool deep, ExceptionState&) const;
   // https://dom.spec.whatwg.org/#concept-node-clone
-  virtual Node* Clone(Document&, CloneChildrenFlag) = 0;
+  virtual Node* Clone(Document&, CloneChildrenFlag) const = 0;
   // This is not web-exposed. We should rename it or remove it.
-  Node* cloneNode(bool deep);
+  Node* cloneNode(bool deep) const;
   void normalize();
 
   bool isEqualNode(Node*) const;
