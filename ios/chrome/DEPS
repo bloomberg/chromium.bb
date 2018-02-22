@@ -3,6 +3,7 @@ include_rules = [
   "+ios/shared/chrome/common",
   "+ios/third_party",
   "+net",
+  "+services/network/test",
   "+sql",
   "+ui/base",
   "+ui/gfx",
