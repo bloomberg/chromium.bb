@@ -19,7 +19,7 @@ namespace blink {
 
 class ScriptWrappable;
 
-class CORE_EXPORT V8VoidCallbackFunctionEnumArg final : public CallbackFunctionBase {
+class CORE_EXPORT V8VoidCallbackFunctionEnumArg : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionEnumArg* Create(v8::Local<v8::Function> callback_function) {
     return new V8VoidCallbackFunctionEnumArg(callback_function);
@@ -34,6 +34,10 @@ class CORE_EXPORT V8VoidCallbackFunctionEnumArg final : public CallbackFunctionB
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg);
+
+ protected:
+  explicit V8VoidCallbackFunctionEnumArg(const V8VoidCallbackFunctionEnumArg& other)
+      : CallbackFunctionBase(other) {}
 
  private:
   explicit V8VoidCallbackFunctionEnumArg(v8::Local<v8::Function> callback_function)

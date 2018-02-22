@@ -19,7 +19,7 @@ namespace blink {
 
 class ScriptWrappable;
 
-class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFunctionBase {
+class MODULES_EXPORT V8VoidCallbackFunctionModules : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionModules* Create(v8::Local<v8::Function> callback_function) {
     return new V8VoidCallbackFunctionModules(callback_function);
@@ -34,6 +34,10 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value);
+
+ protected:
+  explicit V8VoidCallbackFunctionModules(const V8VoidCallbackFunctionModules& other)
+      : CallbackFunctionBase(other) {}
 
  private:
   explicit V8VoidCallbackFunctionModules(v8::Local<v8::Function> callback_function)

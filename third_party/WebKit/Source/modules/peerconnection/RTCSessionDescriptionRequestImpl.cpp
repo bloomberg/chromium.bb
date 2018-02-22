@@ -54,8 +54,12 @@ RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
     V8RTCSessionDescriptionCallback* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
-      success_callback_(success_callback),
-      error_callback_(error_callback),
+      success_callback_(
+          V8PersistentCallbackFunction<V8RTCSessionDescriptionCallback>::Create(
+              success_callback)),
+      error_callback_(
+          V8PersistentCallbackFunction<
+              V8RTCPeerConnectionErrorCallback>::Create(error_callback)),
       requester_(requester) {
   DCHECK(requester_);
 }
@@ -94,6 +98,8 @@ void RTCSessionDescriptionRequestImpl::Clear() {
 }
 
 void RTCSessionDescriptionRequestImpl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(success_callback_);
+  visitor->Trace(error_callback_);
   visitor->Trace(requester_);
   RTCSessionDescriptionRequest::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

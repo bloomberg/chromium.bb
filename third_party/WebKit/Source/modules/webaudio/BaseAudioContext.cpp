@@ -311,18 +311,13 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 
     decode_audio_resolvers_.insert(resolver);
 
-    // Add a reference to success_callback and error_callback so that
-    // they don't get collected prematurely before decodeAudioData
-    // calls them.
-    if (success_callback) {
-      success_callbacks_.emplace_back(success_callback);
-    }
-    if (error_callback) {
-      error_callbacks_.emplace_back(error_callback);
-    }
-
-    audio_decoder_.DecodeAsync(audio, rate, success_callback, error_callback,
-                               resolver, this);
+    audio_decoder_.DecodeAsync(
+        audio, rate,
+        V8PersistentCallbackFunction<V8DecodeSuccessCallback>::Create(
+            success_callback),
+        V8PersistentCallbackFunction<V8DecodeErrorCallback>::Create(
+            error_callback),
+        resolver, this);
   } else {
     // If audioData is already detached (neutered) we need to reject the
     // promise with an error.
@@ -340,8 +335,8 @@ ScriptPromise BaseAudioContext::decodeAudioData(
 void BaseAudioContext::HandleDecodeAudioData(
     AudioBuffer* audio_buffer,
     ScriptPromiseResolver* resolver,
-    V8DecodeSuccessCallback* success_callback,
-    V8DecodeErrorCallback* error_callback) {
+    V8PersistentCallbackFunction<V8DecodeSuccessCallback>* success_callback,
+    V8PersistentCallbackFunction<V8DecodeErrorCallback>* error_callback) {
   DCHECK(IsMainThread());
 
   if (audio_buffer) {
@@ -361,24 +356,6 @@ void BaseAudioContext::HandleDecodeAudioData(
   // We've resolved the promise.  Remove it now.
   DCHECK(decode_audio_resolvers_.Contains(resolver));
   decode_audio_resolvers_.erase(resolver);
-
-  // Find the success_callback and error_callback and remove it from
-  // our list so that it can be collected.  Remove any matching entry
-  // found (callback methods could be duplicated) which should be ok
-  // because we're only using this to hold a reference to the
-  // callback.
-
-  if (success_callback) {
-    size_t index = success_callbacks_.Find(success_callback);
-    DCHECK_NE(index, kNotFound);
-    success_callbacks_.EraseAt(index);
-  }
-
-  if (error_callback) {
-    size_t index = error_callbacks_.Find(error_callback);
-    DCHECK_NE(index, kNotFound);
-    error_callbacks_.EraseAt(index);
-  }
 }
 
 AudioBufferSourceNode* BaseAudioContext::createBufferSource(

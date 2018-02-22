@@ -18,6 +18,11 @@ CallbackFunctionBase::CallbackFunctionBase(
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
+CallbackFunctionBase::CallbackFunctionBase(const CallbackFunctionBase& other)
+    : callback_function_(other.GetIsolate(), other.CallbackFunction()),
+      callback_relevant_script_state_(other.callback_relevant_script_state_),
+      incumbent_script_state_(other.incumbent_script_state_) {}
+
 void CallbackFunctionBase::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_function_);

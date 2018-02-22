@@ -73,7 +73,8 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   // functions as persistent handles. This is acceptable because the request
   // object will be discarded in a limited time due to success, failure, or
   // destruction of the execution context.
-  V8RTCStatsCallback::Persistent<V8RTCStatsCallback> success_callback_;
+  Member<V8PersistentCallbackFunction<V8RTCStatsCallback>> success_callback_;
+
   Member<MediaStreamComponent> component_;
   Member<RTCPeerConnection> requester_;
 };

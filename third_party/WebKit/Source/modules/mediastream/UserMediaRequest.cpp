@@ -337,6 +337,12 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
 
   ~V8Callbacks() override = default;
 
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(success_callback_);
+    visitor->Trace(error_callback_);
+    UserMediaRequest::Callbacks::Trace(visitor);
+  }
+
   void OnSuccess(ScriptWrappable* callback_this_value,
                  MediaStream* stream) override {
     success_callback_->InvokeAndReportException(callback_this_value, stream);
@@ -349,18 +355,21 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
  private:
   V8Callbacks(V8NavigatorUserMediaSuccessCallback* success_callback,
               V8NavigatorUserMediaErrorCallback* error_callback)
-      : success_callback_(success_callback), error_callback_(error_callback) {}
+      : success_callback_(
+            V8PersistentCallbackFunction<
+                V8NavigatorUserMediaSuccessCallback>::Create(success_callback)),
+        error_callback_(
+            V8PersistentCallbackFunction<
+                V8NavigatorUserMediaErrorCallback>::Create(error_callback)) {}
 
   // As Blink does not hold a UserMediaRequest and lets content/ hold it,
   // we cannot use wrapper-tracing to keep the underlying callback functions.
   // Plus, it's guaranteed that the callbacks are one-shot type (not repeated
   // type) and the owner UserMediaRequest will be discarded in a limited
   // timeframe. Thus these persistent handles are okay.
-  V8NavigatorUserMediaSuccessCallback::Persistent<
-      V8NavigatorUserMediaSuccessCallback>
+  Member<V8PersistentCallbackFunction<V8NavigatorUserMediaSuccessCallback>>
       success_callback_;
-  V8NavigatorUserMediaErrorCallback::Persistent<
-      V8NavigatorUserMediaErrorCallback>
+  Member<V8PersistentCallbackFunction<V8NavigatorUserMediaErrorCallback>>
       error_callback_;
 };
 

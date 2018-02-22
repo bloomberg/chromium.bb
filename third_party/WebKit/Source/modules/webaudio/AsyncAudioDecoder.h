@@ -29,7 +29,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "bindings/modules/v8/v8_decode_error_callback.h"
+#include "bindings/modules/v8/v8_decode_success_callback.h"
 
 namespace blink {
 
@@ -38,8 +39,6 @@ class AudioBus;
 class BaseAudioContext;
 class DOMArrayBuffer;
 class ScriptPromiseResolver;
-class V8DecodeErrorCallback;
-class V8DecodeSuccessCallback;
 
 // AsyncAudioDecoder asynchronously decodes audio file data from a
 // DOMArrayBuffer in the background thread. Upon successful decoding, a
@@ -59,25 +58,27 @@ class AsyncAudioDecoder {
   // appropriately when finished.
   void DecodeAsync(DOMArrayBuffer* audio_data,
                    float sample_rate,
-                   V8DecodeSuccessCallback*,
-                   V8DecodeErrorCallback*,
+                   V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
+                   V8PersistentCallbackFunction<V8DecodeErrorCallback>*,
                    ScriptPromiseResolver*,
                    BaseAudioContext*);
 
  private:
   AudioBuffer* CreateAudioBufferFromAudioBus(AudioBus*);
-  static void DecodeOnBackgroundThread(DOMArrayBuffer* audio_data,
-                                       float sample_rate,
-                                       V8DecodeSuccessCallback*,
-                                       V8DecodeErrorCallback*,
-                                       ScriptPromiseResolver*,
-                                       BaseAudioContext*);
-  static void NotifyComplete(DOMArrayBuffer* audio_data,
-                             V8DecodeSuccessCallback*,
-                             V8DecodeErrorCallback*,
-                             AudioBus*,
-                             ScriptPromiseResolver*,
-                             BaseAudioContext*);
+  static void DecodeOnBackgroundThread(
+      DOMArrayBuffer* audio_data,
+      float sample_rate,
+      V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
+      V8PersistentCallbackFunction<V8DecodeErrorCallback>*,
+      ScriptPromiseResolver*,
+      BaseAudioContext*);
+  static void NotifyComplete(
+      DOMArrayBuffer* audio_data,
+      V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
+      V8PersistentCallbackFunction<V8DecodeErrorCallback>*,
+      AudioBus*,
+      ScriptPromiseResolver*,
+      BaseAudioContext*);
 
   DISALLOW_COPY_AND_ASSIGN(AsyncAudioDecoder);
 };

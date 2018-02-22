@@ -77,10 +77,11 @@ class RTCSessionDescriptionRequestImpl final
   // functions as persistent handles. This is acceptable because the request
   // object will be discarded in a limited time due to success, failure, or
   // destruction of the execution context.
-  V8RTCSessionDescriptionCallback::Persistent<V8RTCSessionDescriptionCallback>
+  Member<V8PersistentCallbackFunction<V8RTCSessionDescriptionCallback>>
       success_callback_;
-  V8RTCPeerConnectionErrorCallback::Persistent<V8RTCPeerConnectionErrorCallback>
+  Member<V8PersistentCallbackFunction<V8RTCPeerConnectionErrorCallback>>
       error_callback_;
+
   Member<RTCPeerConnection> requester_;
 };
 
