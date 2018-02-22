@@ -39,7 +39,8 @@ public class PaymentRequestContactDetailsSectionUnitTest {
 
     private void createContactDetailsSectionWithProfiles(List<AutofillProfile> autofillProfiles,
             boolean requestPayerName, boolean requestPayerPhone, boolean requestPayerEmail) {
-        mContactEditor = new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail);
+        mContactEditor = new ContactEditor(
+                requestPayerName, requestPayerPhone, requestPayerEmail, /*saveToDisk=*/true);
         mContactDetailsSection = new ContactDetailsSection(
                 InstrumentationRegistry.getTargetContext(), autofillProfiles, mContactEditor, null);
     }
