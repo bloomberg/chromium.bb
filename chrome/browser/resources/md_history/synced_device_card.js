@@ -68,8 +68,7 @@ Polymer({
   },
 
   /**
-   * Open a single synced tab. Listens to 'click' rather than 'tap'
-   * to determine what modifier keys were pressed.
+   * Open a single synced tab.
    * @param {DomRepeatClickEvent} e
    * @private
    */
