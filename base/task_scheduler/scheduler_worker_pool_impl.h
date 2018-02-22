@@ -112,9 +112,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void WaitForAllWorkersIdleForTesting();
 
   // Disallows worker cleanup. If the suggested reclaim time is not
-  // TimeDelta::Max(), the test must call this before JoinForTesting() to reduce
-  // the chance of thread detachment during the process of joining all of the
-  // threads, and as a result, threads running after JoinForTesting().
+  // TimeDelta::Max(), the test must call this before JoinForTesting() to
+  // prevent thread detachment during the process of joining all of the threads,
+  // and as a result, threads running after JoinForTesting().
   void DisallowWorkerCleanupForTesting();
 
   // Returns the number of workers in this worker pool.
@@ -176,7 +176,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void RemoveFromIdleWorkersStackLockRequired(SchedulerWorker* worker);
 
   // Returns true if worker cleanup is permitted.
-  bool CanWorkerCleanupForTesting();
+  bool CanWorkerCleanupForTestingLockRequired();
 
   // Tries to add a new SchedulerWorker to the pool. Returns the new
   // SchedulerWorker on success, nullptr otherwise. Cannot be called before
@@ -227,6 +227,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |num_pending_may_block_workers_|, |idle_workers_stack_|,
   // |idle_workers_stack_cv_for_testing_|, |num_wake_ups_before_start_|,
   // |cleanup_timestamps_|, |polling_worker_capacity_|,
+  // |worker_cleanup_disallowed_for_testing_|,
   // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|,
   // |SchedulerWorkerDelegateImpl::incremented_worker_capacity_since_blocked_|
   // and |SchedulerWorkerDelegateImpl::may_block_start_time_|. Has
@@ -274,15 +275,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |worker_capacity_|.
   bool polling_worker_capacity_ = false;
 
+  // Indicates to the delegates that workers are not permitted to cleanup.
+  bool worker_cleanup_disallowed_for_testing_ = false;
+
   // Used for testing and makes MayBlockThreshold() return the maximum
   // TimeDelta.
   AtomicFlag maximum_blocked_threshold_for_testing_;
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
-
-  // Indicates to the delegates that workers are not permitted to cleanup.
-  AtomicFlag worker_cleanup_disallowed_;
 
 #if DCHECK_IS_ON()
   // Set at the start of JoinForTesting().
