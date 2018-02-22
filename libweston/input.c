@@ -1460,6 +1460,14 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 	uint32_t serial;
 	struct wl_list *focus_resource_list;
 
+	/* Keyboard focus on a surface without a client is equivalent to NULL
+	 * focus as nothing would react to the keyboard events anyway.
+	 * Just set focus to NULL instead - the destroy listener hangs on the
+	 * wl_resource anyway.
+	 */
+	if (surface && !surface->resource)
+		surface = NULL;
+
 	focus_resource_list = &keyboard->focus_resource_list;
 
 	if (!wl_list_empty(focus_resource_list) && keyboard->focus != surface) {
@@ -1495,7 +1503,7 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 
 	wl_list_remove(&keyboard->focus_resource_listener.link);
 	wl_list_init(&keyboard->focus_resource_listener.link);
-	if (surface && surface->resource)
+	if (surface)
 		wl_resource_add_destroy_listener(surface->resource,
 						 &keyboard->focus_resource_listener);
 
