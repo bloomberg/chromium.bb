@@ -51,6 +51,7 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_framer.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -5085,6 +5086,36 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
   // Backoff should take between 4 - 5 seconds.
   EXPECT_TRUE(clock_.Now() - start > QuicTime::Delta::FromSeconds(4));
   EXPECT_TRUE(clock_.Now() - start < QuicTime::Delta::FromSeconds(5));
+}
+
+TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
+  session_params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+  const QuicString error_details =
+      QuicStrCat("Write failed with error: ", ERR_MSG_TOO_BIG, " (",
+                 strerror(ERR_MSG_TOO_BIG), ")");
+
+  MockQuicData socket_data;
+  QuicStreamOffset offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructInitialSettingsPacket(1, &offset));
+  socket_data.AddWrite(SYNCHRONOUS, ERR_MSG_TOO_BIG);
+  // Connection close packet will be sent for MSG_TOO_BIG.
+  socket_data.AddWrite(client_maker_.MakeConnectionClosePacket(
+      3, true, QUIC_PACKET_WRITE_ERROR, error_details));
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  CreateSession();
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 // Adds coverage to catch regression such as https://crbug.com/622043
