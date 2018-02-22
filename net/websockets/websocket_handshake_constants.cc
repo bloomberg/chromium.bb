@@ -24,9 +24,6 @@ const char kWebSocketGuid[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 const char kSecWebSocketProtocolLowercase[] = "sec-websocket-protocol";
 const char kSecWebSocketExtensionsLowercase[] = "sec-websocket-extensions";
-const char kSecWebSocketKeyLowercase[] = "sec-websocket-key";
-const char kSecWebSocketVersionLowercase[] = "sec-websocket-version";
-const char kUpgradeLowercase[] = "upgrade";
 const char kWebSocketLowercase[] = "websocket";
 
 }  // namespace websockets

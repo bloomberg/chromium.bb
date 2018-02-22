@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/core/spdy_protocol.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "url/origin.h"
 
@@ -88,6 +90,42 @@ std::string WebSocketStandardResponse(const std::string& extra_headers) {
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "%s\r\n",
       extra_headers.c_str());
+}
+
+SpdyHeaderBlock WebSocketHttp2Request(
+    const std::string& path,
+    const std::string& authority,
+    const std::string& origin,
+    const WebSocketExtraHeaders& extra_headers) {
+  SpdyHeaderBlock request_headers;
+  request_headers[kHttp2MethodHeader] = "CONNECT";
+  request_headers[kHttp2AuthorityHeader] = authority;
+  request_headers[kHttp2SchemeHeader] = "https";
+  request_headers[kHttp2PathHeader] = path;
+  request_headers[kHttp2ProtocolHeader] = "websocket";
+  request_headers["pragma"] = "no-cache";
+  request_headers["cache-control"] = "no-cache";
+  request_headers["origin"] = origin;
+  request_headers["sec-websocket-version"] = "13";
+  request_headers["user-agent"] = "";
+  request_headers["accept-encoding"] = "gzip, deflate";
+  request_headers["accept-language"] = "en-us,fr";
+  request_headers["sec-websocket-extensions"] =
+      "permessage-deflate; client_max_window_bits";
+  for (const auto& header : extra_headers) {
+    request_headers[base::ToLowerASCII(header.first)] = header.second;
+  }
+  return request_headers;
+}
+
+SpdyHeaderBlock WebSocketHttp2Response(
+    const WebSocketExtraHeaders& extra_headers) {
+  SpdyHeaderBlock response_headers;
+  response_headers[kHttp2StatusHeader] = "200";
+  for (const auto& header : extra_headers) {
+    response_headers[base::ToLowerASCII(header.first)] = header.second;
+  }
+  return response_headers;
 }
 
 struct WebSocketMockClientSocketFactoryMaker::Detail {

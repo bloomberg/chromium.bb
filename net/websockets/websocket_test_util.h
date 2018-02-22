@@ -9,12 +9,14 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "net/http/http_basic_state.h"
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/spdy/core/spdy_header_block.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
@@ -25,6 +27,8 @@ class Origin;
 }  // namespace url
 
 namespace net {
+
+using WebSocketExtraHeaders = std::vector<std::pair<std::string, std::string>>;
 
 class MockClientSocketFactory;
 class WebSocketBasicHandshakeStream;
@@ -65,6 +69,18 @@ std::string WebSocketStandardRequestWithCookies(
 // A response with the appropriate accept header to match the above challenge
 // key. Each header in |extra_headers| must be terminated with "\r\n".
 std::string WebSocketStandardResponse(const std::string& extra_headers);
+
+// Generates a handshake request header block when using WebSockets over HTTP/2.
+SpdyHeaderBlock WebSocketHttp2Request(
+    const std::string& path,
+    const std::string& authority,
+    const std::string& origin,
+    const WebSocketExtraHeaders& extra_headers);
+
+// Generates a handshake response header block when using WebSockets over
+// HTTP/2.
+SpdyHeaderBlock WebSocketHttp2Response(
+    const WebSocketExtraHeaders& extra_headers);
 
 // This class provides a convenient way to construct a MockClientSocketFactory
 // for WebSocket tests.
