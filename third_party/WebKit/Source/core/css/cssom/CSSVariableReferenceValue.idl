@@ -5,7 +5,7 @@
 // Represents a CSS var() reference in a CSS value.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssvariablereferencevalue
 [
-    Constructor(DOMString variable, optional CSSUnparsedValue fallback),
+    Constructor(DOMString variable, optional CSSUnparsedValue? fallback),
     RuntimeEnabled=CSSTypedOM,
     Exposed=(Window,LayoutWorklet,PaintWorklet),
     RaisesException=Constructor,
