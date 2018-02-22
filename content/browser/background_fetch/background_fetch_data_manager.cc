@@ -159,8 +159,8 @@ BackgroundFetchDataManager::BackgroundFetchDataManager(
       FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       // Normally weak pointers must be obtained on the IO thread, but it's ok
       // here as the factory cannot be destroyed before the constructor ends.
-      base::Bind(&BackgroundFetchDataManager::Cleanup,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundFetchDataManager::Cleanup,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundFetchDataManager::Cleanup() {

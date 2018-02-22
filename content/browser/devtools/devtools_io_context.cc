@@ -305,7 +305,7 @@ void BlobStream::OpenOnIO(scoped_refptr<ChromeBlobStorageContext> blob_context,
   is_binary_ = !IsTextMimeType(blob_handle_->content_type());
   open_callback_ = std::move(callback);
   blob_handle_->RunOnConstructionComplete(
-      base::Bind(&BlobStream::OnBlobConstructionComplete, this));
+      base::BindOnce(&BlobStream::OnBlobConstructionComplete, this));
 }
 
 void BlobStream::OnBlobConstructionComplete(storage::BlobStatus status) {
@@ -380,7 +380,7 @@ void BlobStream::BeginRead() {
   int bytes_read;
   BlobReader::Status status =
       blob_reader_->Read(io_buf_.get(), request.max_size, &bytes_read,
-                         base::Bind(&BlobStream::OnReadComplete, this));
+                         base::BindOnce(&BlobStream::OnReadComplete, this));
   if (status == BlobReader::Status::IO_PENDING)
     return;
   // This is for uniformity with the asynchronous case.
@@ -429,7 +429,7 @@ void BlobStream::CreateReader() {
   DCHECK(!blob_reader_);
   blob_reader_ = blob_handle_->CreateReader();
   BlobReader::Status status = blob_reader_->CalculateSize(
-      base::Bind(&BlobStream::OnCalculateSizeComplete, this));
+      base::BindOnce(&BlobStream::OnCalculateSizeComplete, this));
   if (status != BlobReader::Status::IO_PENDING) {
     OnCalculateSizeComplete(status == BlobReader::Status::NET_ERROR
                                 ? blob_reader_->net_error()

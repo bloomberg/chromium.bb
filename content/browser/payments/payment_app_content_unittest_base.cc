@@ -162,7 +162,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   EXPECT_FALSE(registration->waiting_version());
   EXPECT_FALSE(registration->installing_version());
   registration->active_version()->StopWorker(
-      base::Bind(&StopWorkerCallback, &called));
+      base::BindOnce(&StopWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 

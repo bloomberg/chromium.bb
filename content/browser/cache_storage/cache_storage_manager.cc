@@ -410,7 +410,7 @@ void CacheStorageManager::DeleteOriginData(
 
 void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DeleteOriginData(origin, base::Bind(&EmptyQuotaStatusCallback));
+  DeleteOriginData(origin, base::BindOnce(&EmptyQuotaStatusCallback));
 }
 
 void CacheStorageManager::DeleteOriginDidClose(

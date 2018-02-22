@@ -613,9 +613,8 @@ class ShareableFileReleaseWaiter {
   explicit ShareableFileReleaseWaiter(const base::FilePath& path) {
     scoped_refptr<ShareableFileReference> file =
         ShareableFileReference::Get(path);
-    file->AddFinalReleaseCallback(
-        base::Bind(&ShareableFileReleaseWaiter::Released,
-                   base::Unretained(this)));
+    file->AddFinalReleaseCallback(base::BindOnce(
+        &ShareableFileReleaseWaiter::Released, base::Unretained(this)));
   }
 
   void Wait() {

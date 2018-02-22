@@ -147,8 +147,8 @@ void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
                            bool last_chance) {
   context->FindReadyRegistrationForId(
       registration_id, origin,
-      base::Bind(&DidFindRegistrationForDispatchSyncEventOnIO, sync_context,
-                 tag, last_chance));
+      base::BindOnce(&DidFindRegistrationForDispatchSyncEventOnIO, sync_context,
+                     tag, last_chance));
 }
 
 }  // namespace
@@ -221,7 +221,8 @@ Response ServiceWorkerHandler::Unregister(const std::string& scope_url) {
     return CreateDomainNotEnabledErrorResponse();
   if (!context_)
     return CreateContextErrorResponse();
-  context_->UnregisterServiceWorker(GURL(scope_url), base::Bind(&ResultNoOp));
+  context_->UnregisterServiceWorker(GURL(scope_url),
+                                    base::BindOnce(&ResultNoOp));
   return Response::OK();
 }
 

@@ -203,8 +203,8 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
   } else {
     // Wait for the command to complete on the GPU to allow for throttling.
     command_buffer_->SignalSyncToken(
-        sync_token, base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
-                               weak_ptr_factory_.GetWeakPtr()));
+        sync_token, base::BindOnce(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   return PP_OK_COMPLETIONPENDING;

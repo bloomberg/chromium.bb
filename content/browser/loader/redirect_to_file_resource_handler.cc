@@ -77,7 +77,7 @@ class RedirectToFileResourceHandler::Writer {
     DCHECK(handler_);
     int result = file_stream_->Write(
         buf, buf_len,
-        base::Bind(&Writer::DidWriteToFile, base::Unretained(this)));
+        base::BindOnce(&Writer::DidWriteToFile, base::Unretained(this)));
     if (result == net::ERR_IO_PENDING)
       is_writing_ = true;
     return result;
@@ -106,8 +106,8 @@ class RedirectToFileResourceHandler::Writer {
 
   void CloseAndDelete() {
     DCHECK(!is_writing_);
-    int result = file_stream_->Close(base::Bind(&Writer::DidClose,
-                                                base::Unretained(this)));
+    int result = file_stream_->Close(
+        base::BindOnce(&Writer::DidClose, base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)
       DidClose(result);
   }

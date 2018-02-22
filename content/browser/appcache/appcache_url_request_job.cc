@@ -287,8 +287,8 @@ int AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!reader_->IsReadPending());
   reader_->ReadData(buf, buf_size,
-                    base::Bind(&AppCacheURLRequestJob::OnReadComplete,
-                               base::Unretained(this)));
+                    base::BindOnce(&AppCacheURLRequestJob::OnReadComplete,
+                                   base::Unretained(this)));
   return net::ERR_IO_PENDING;
 }
 

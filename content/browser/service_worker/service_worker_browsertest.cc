@@ -1435,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   const base::string16 title1 = base::ASCIIToUTF16("save-data=on");
@@ -1449,7 +1449,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       embedded_test_server()->GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -1479,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("PASS");
@@ -1498,7 +1498,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       embedded_test_server()->GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -1524,7 +1524,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   NavigateToURLBlockUntilNavigationsComplete(
@@ -1536,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       embedded_test_server()->GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -1552,7 +1552,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   const base::string16 title1 = base::ASCIIToUTF16("reload=false");
@@ -1570,7 +1570,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       embedded_test_server()->GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -1622,7 +1622,8 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
         scope, blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         worker_url, options,
-        base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true,
+                       base::Bind(&base::DoNothing)));
     observer->Wait();
   }
 
@@ -2331,7 +2332,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       https_server.GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("Title");
@@ -2352,7 +2353,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       https_server.GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -2369,7 +2370,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("Title");
@@ -2388,7 +2389,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   base::RunLoop run_loop;
   public_context()->UnregisterServiceWorker(
       embedded_test_server()->GetURL(kPageUrl),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -2469,8 +2470,8 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
                             const base::Closure& continuation) {
     wrapper()->FindReadyRegistrationForDocument(
         document_url,
-        base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
-                   base::Unretained(this), status, continuation));
+        base::BindOnce(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
+                       base::Unretained(this), status, continuation));
   }
 
   void FindRegistrationOnIO2(
@@ -2509,7 +2510,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
         embedded_test_server()->GetURL("/"),
-        base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun, false, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -2521,7 +2522,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL("/does/not/exist"), options,
-        base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun, false, run_loop.QuitClosure()));
     run_loop.Run();
   }
   EXPECT_EQ(0, CountRenderProcessHosts());
@@ -2534,7 +2535,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
-        base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
   }
   EXPECT_EQ(1, CountRenderProcessHosts());
@@ -2548,7 +2549,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
-        base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -2561,7 +2562,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     public_context()->UnregisterServiceWorker(
         embedded_test_server()->GetURL(kScope),
-        base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+        base::BindOnce(&ExpectResultAndRun, true, run_loop.QuitClosure()));
     run_loop.Run();
   }
   EXPECT_GE(1, CountRenderProcessHosts()) << "Unregistering doesn't stop the "
@@ -2824,8 +2825,8 @@ class CacheStorageSideDataSizeChecker
     blob_data_handle_ = std::move(blob_data_handle);
     blob_reader_ = blob_data_handle_->CreateReader();
     const storage::BlobReader::Status status = blob_reader_->CalculateSize(
-        base::Bind(&self::OnBlobReaderCalculateSizeCallback, this, result,
-                   continuation));
+        base::BindOnce(&self::OnBlobReaderCalculateSizeCallback, this, result,
+                       continuation));
 
     ASSERT_NE(storage::BlobReader::Status::NET_ERROR, status);
     if (status == storage::BlobReader::Status::DONE)
@@ -2891,7 +2892,8 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
-        base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true,
+                       base::Bind(&base::DoNothing)));
     observer->Wait();
   }
 
@@ -3013,7 +3015,8 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         cross_origin_server_.GetURL(script), options,
-        base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true,
+                       base::Bind(&base::DoNothing)));
     observer->Wait();
   }
 

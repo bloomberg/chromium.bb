@@ -34,8 +34,8 @@ void InProcessUtilityThread::Init() {
   // We need to return right away or else the main thread that started us will
   // hang.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&InProcessUtilityThread::InitInternal,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&InProcessUtilityThread::InitInternal,
+                                base::Unretained(this)));
 }
 
 void InProcessUtilityThread::CleanUp() {

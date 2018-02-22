@@ -100,9 +100,9 @@ void StopServiceWorkerForPattern(ServiceWorkerContext* context,
   }
   auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);
   context_wrapper->FindReadyRegistrationForPattern(
-      pattern,
-      base::Bind(&FoundReadyRegistration, base::RetainedRef(context_wrapper),
-                 base::Passed(&completion_callback_ui)));
+      pattern, base::BindOnce(&FoundReadyRegistration,
+                              base::RetainedRef(context_wrapper),
+                              base::Passed(&completion_callback_ui)));
 }
 
 }  // namespace content

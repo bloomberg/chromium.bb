@@ -345,8 +345,8 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
   service_worker_context_->GetRegistrationUserData(
       registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
-      base::Bind(&PushMessagingManager::DidCheckForExistingRegistration,
-                 weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data)));
+      base::BindOnce(&PushMessagingManager::DidCheckForExistingRegistration,
+                     weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data)));
 }
 
 void PushMessagingManager::DidCheckForExistingRegistration(
@@ -399,8 +399,9 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     int64_t registration_id = data.service_worker_registration_id;
     service_worker_context_->GetRegistrationUserData(
         registration_id, {kPushSenderIdServiceWorkerKey},
-        base::Bind(&PushMessagingManager::DidGetSenderIdFromStorage,
-                   weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data)));
+        base::BindOnce(&PushMessagingManager::DidGetSenderIdFromStorage,
+                       weak_factory_io_to_io_.GetWeakPtr(),
+                       base::Passed(&data)));
   }
 }
 
@@ -692,10 +693,10 @@ void PushMessagingManager::Unsubscribe(int64_t service_worker_registration_id,
 
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
-      base::Bind(&PushMessagingManager::UnsubscribeHavingGottenSenderId,
-                 weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&callback),
-                 service_worker_registration_id,
-                 service_worker_registration->pattern().GetOrigin()));
+      base::BindOnce(&PushMessagingManager::UnsubscribeHavingGottenSenderId,
+                     weak_factory_io_to_io_.GetWeakPtr(),
+                     base::Passed(&callback), service_worker_registration_id,
+                     service_worker_registration->pattern().GetOrigin()));
 }
 
 void PushMessagingManager::UnsubscribeHavingGottenSenderId(
@@ -802,9 +803,9 @@ void PushMessagingManager::GetSubscription(
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
-      base::Bind(&PushMessagingManager::DidGetSubscription,
-                 weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&callback),
-                 service_worker_registration_id));
+      base::BindOnce(&PushMessagingManager::DidGetSubscription,
+                     weak_factory_io_to_io_.GetWeakPtr(),
+                     base::Passed(&callback), service_worker_registration_id));
 }
 
 void PushMessagingManager::DidGetSubscription(

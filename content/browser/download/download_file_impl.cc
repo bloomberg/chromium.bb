@@ -79,9 +79,9 @@ void DownloadFileImpl::SourceStream::Initialize() {
       std::make_unique<mojo::Binding<download::mojom::DownloadStreamClient>>(
           this, std::move(stream_handle_->client_request));
   binding_->set_connection_error_handler(
-      base::Bind(&DownloadFileImpl::SourceStream::OnStreamCompleted,
-                 base::Unretained(this),
-                 download::mojom::NetworkRequestStatus::USER_CANCELED));
+      base::BindOnce(&DownloadFileImpl::SourceStream::OnStreamCompleted,
+                     base::Unretained(this),
+                     download::mojom::NetworkRequestStatus::USER_CANCELED));
   handle_watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
 }

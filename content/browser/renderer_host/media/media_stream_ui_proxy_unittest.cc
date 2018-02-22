@@ -295,7 +295,7 @@ class MediaStreamUIProxyFeaturePolicyTest
     quit_closure_ = run_loop.QuitClosure();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
             base::Unretained(this), base::Passed(&request)));
     run_loop.Run();
@@ -337,7 +337,7 @@ class MediaStreamUIProxyFeaturePolicyTest
     proxy_ = MediaStreamUIProxy::CreateForTests(&delegate_);
     proxy_->RequestAccess(
         std::move(request),
-        base::Bind(
+        base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::FinishedGetResultOnIOThread,
             base::Unretained(this)));
   }
@@ -348,8 +348,8 @@ class MediaStreamUIProxyFeaturePolicyTest
     proxy_.reset();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
-                   base::Unretained(this), devices, result));
+        base::BindOnce(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
+                       base::Unretained(this), devices, result));
   }
 
   void FinishedGetResult(const MediaStreamDevices& devices,

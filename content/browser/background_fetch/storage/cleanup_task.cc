@@ -27,8 +27,8 @@ CleanupTask::~CleanupTask() = default;
 
 void CleanupTask::Start() {
   service_worker_context()->GetUserDataForAllRegistrationsByKeyPrefix(
-      kRegistrationKeyPrefix, base::Bind(&CleanupTask::DidGetRegistrations,
-                                         weak_factory_.GetWeakPtr()));
+      kRegistrationKeyPrefix, base::BindOnce(&CleanupTask::DidGetRegistrations,
+                                             weak_factory_.GetWeakPtr()));
 }
 
 void CleanupTask::DidGetRegistrations(
@@ -42,8 +42,8 @@ void CleanupTask::DidGetRegistrations(
 
   service_worker_context()->GetUserDataForAllRegistrationsByKeyPrefix(
       kActiveRegistrationUniqueIdKeyPrefix,
-      base::Bind(&CleanupTask::DidGetActiveUniqueIds,
-                 weak_factory_.GetWeakPtr(), registration_data));
+      base::BindOnce(&CleanupTask::DidGetActiveUniqueIds,
+                     weak_factory_.GetWeakPtr(), registration_data));
 }
 
 void CleanupTask::DidGetActiveUniqueIds(

@@ -55,8 +55,8 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheServiceImpl*
   origins_ = origins;
   appcache_service->GetAllAppCacheInfo(
       appcache_info_.get(),
-      base::Bind(&AppCacheTestHelper::OnGotAppCacheInfo,
-                 base::Unretained(this)));
+      base::BindOnce(&AppCacheTestHelper::OnGotAppCacheInfo,
+                     base::Unretained(this)));
 
   // OnGotAppCacheInfo will quit the message loop.
   base::RunLoop().Run();

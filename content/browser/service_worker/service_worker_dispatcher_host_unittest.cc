@@ -217,7 +217,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
     context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
-        base::Bind(&SaveStatusCallback, &called, &status));
+        base::BindOnce(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
     EXPECT_EQ(SERVICE_WORKER_OK, status);
@@ -333,7 +333,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&SaveStatusCallback, &called, &status));
+                        base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(called);
@@ -388,13 +388,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&SaveStatusCallback, &called, &status));
+                        base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::ACTIVATE,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback),
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   // Advance clock by a couple seconds.

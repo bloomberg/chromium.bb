@@ -164,7 +164,7 @@ void ReflectorImpl::UpdateTexture(ReflectorImpl::LayerData* layer_data,
                                           mailbox_->holder().texture_target,
                                           mailbox_->holder().sync_token),
         viz::SingleReleaseCallback::Create(
-            base::Bind(ReleaseMailbox, mailbox_)),
+            base::BindOnce(ReleaseMailbox, mailbox_)),
         source_size);
     layer_data->needs_set_mailbox = false;
   } else {

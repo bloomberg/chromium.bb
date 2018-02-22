@@ -737,8 +737,8 @@ void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
     return;
   was_service_worker_registered_ = false;
   storage()->GetAllRegistrationsInfos(
-      base::Bind(&ClearAllServiceWorkersHelper::DidGetAllRegistrations, helper,
-                 AsWeakPtr()));
+      base::BindOnce(&ClearAllServiceWorkersHelper::DidGetAllRegistrations,
+                     helper, AsWeakPtr()));
 }
 
 void ServiceWorkerContextCore::CheckHasServiceWorker(
@@ -746,10 +746,10 @@ void ServiceWorkerContextCore::CheckHasServiceWorker(
     const GURL& other_url,
     ServiceWorkerContext::CheckHasServiceWorkerCallback callback) {
   storage()->FindRegistrationForDocument(
-      url,
-      base::Bind(&ServiceWorkerContextCore::
-                     DidFindRegistrationForCheckHasServiceWorker,
-                 AsWeakPtr(), other_url, base::Passed(std::move(callback))));
+      url, base::BindOnce(&ServiceWorkerContextCore::
+                              DidFindRegistrationForCheckHasServiceWorker,
+                          AsWeakPtr(), other_url,
+                          base::Passed(std::move(callback))));
 }
 
 void ServiceWorkerContextCore::UpdateVersionFailureCount(

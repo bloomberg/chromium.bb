@@ -221,7 +221,7 @@ void GetRegistrationsOnIOThread(
     const GetRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context->GetAllRegistrations(
-      base::Bind(DidGetStoredRegistrationsOnIOThread, context, callback));
+      base::BindOnce(DidGetStoredRegistrationsOnIOThread, context, callback));
 }
 
 void DidGetRegistrations(
@@ -499,7 +499,7 @@ void ServiceWorkerInternalsUI::StopWorker(const ListValue* args) {
   }
 
   base::OnceCallback<void(ServiceWorkerStatusCode)> callback =
-      base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
+      base::BindOnce(OperationCompleteCallback, AsWeakPtr(), callback_id);
   StopWorkerWithId(context, version_id, std::move(callback));
 }
 

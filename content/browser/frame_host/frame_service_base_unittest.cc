@@ -79,8 +79,8 @@ class FrameServiceBaseTest : public RenderViewHostTestHarness {
   void CreateEchoImpl(RenderFrameHost* rfh) {
     DCHECK(!is_echo_impl_alive_);
     new EchoImpl(rfh, mojo::MakeRequest(&echo_ptr_),
-                 base::Bind(&FrameServiceBaseTest::OnEchoImplDestructed,
-                            base::Unretained(this)));
+                 base::BindOnce(&FrameServiceBaseTest::OnEchoImplDestructed,
+                                base::Unretained(this)));
     is_echo_impl_alive_ = true;
   }
 

@@ -41,7 +41,7 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
         binding_(this, std::move(request)) {
     // |this| owns |binding_|, so unretained is safe.
     binding_.set_connection_error_handler(
-        base::Bind(&FrameServiceBase::Close, base::Unretained(this)));
+        base::BindOnce(&FrameServiceBase::Close, base::Unretained(this)));
   }
 
  protected:

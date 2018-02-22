@@ -250,7 +250,7 @@ void ThrottlingURLLoader::StartNow(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
-  client_binding_.set_connection_error_handler(base::Bind(
+  client_binding_.set_connection_error_handler(base::BindOnce(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 
   DCHECK(factory);

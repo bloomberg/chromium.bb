@@ -34,8 +34,8 @@ void GetRegistrationTask::Start() {
   service_worker_context()->GetRegistrationUserData(
       service_worker_registration_id_,
       {ActiveRegistrationUniqueIdKey(developer_id_)},
-      base::Bind(&GetRegistrationTask::DidGetUniqueId,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&GetRegistrationTask::DidGetUniqueId,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void GetRegistrationTask::DidGetUniqueId(const std::vector<std::string>& data,
@@ -50,8 +50,8 @@ void GetRegistrationTask::DidGetUniqueId(const std::vector<std::string>& data,
       DCHECK_EQ(1u, data.size());
       service_worker_context()->GetRegistrationUserData(
           service_worker_registration_id_, {RegistrationKey(data[0])},
-          base::Bind(&GetRegistrationTask::DidGetRegistration,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&GetRegistrationTask::DidGetRegistration,
+                         weak_factory_.GetWeakPtr()));
       return;
     case DatabaseStatus::kFailed:
       std::move(callback_).Run(

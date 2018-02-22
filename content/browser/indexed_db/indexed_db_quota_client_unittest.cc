@@ -82,8 +82,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     usage_ = -1;
     client->GetOriginUsage(
         origin, type,
-        base::Bind(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&IndexedDBQuotaClientTest::OnGetOriginUsageComplete,
+                       weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
     EXPECT_GT(usage_, -1);
     return usage_;
@@ -93,9 +93,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
                                                  StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
-        type,
-        base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
-                   weak_factory_.GetWeakPtr()));
+        type, base::BindOnce(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
+                             weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
     return origins_;
   }
@@ -105,10 +104,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
                                                  const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
-        type,
-        host,
-        base::Bind(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
-                   weak_factory_.GetWeakPtr()));
+        type, host,
+        base::BindOnce(&IndexedDBQuotaClientTest::OnGetOriginsComplete,
+                       weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
     return origins_;
   }
@@ -119,8 +117,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
         origin, type,
-        base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
+                       weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
     return delete_status_;
   }

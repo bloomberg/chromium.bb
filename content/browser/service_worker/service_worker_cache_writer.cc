@@ -435,8 +435,8 @@ int ServiceWorkerCacheWriter::ReadInfoHelper(
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(run_callback));
   reader->ReadInfo(
-      buf, base::Bind(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                      adaptor));
+      buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
+                          adaptor));
   adaptor->set_async(true);
   return adaptor->result();
 }
@@ -451,8 +451,8 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
       new AsyncOnlyCompletionCallbackAdaptor(run_callback));
   reader->ReadData(
       buf, buf_len,
-      base::Bind(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                 adaptor));
+      base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
+                     adaptor));
   adaptor->set_async(true);
   return adaptor->result();
 }
@@ -466,8 +466,8 @@ int ServiceWorkerCacheWriter::WriteInfoHelper(
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(run_callback));
   writer->WriteInfo(
-      buf, base::Bind(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                      adaptor));
+      buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
+                          adaptor));
   adaptor->set_async(true);
   return adaptor->result();
 }
@@ -482,8 +482,8 @@ int ServiceWorkerCacheWriter::WriteDataHelper(
       new AsyncOnlyCompletionCallbackAdaptor(run_callback));
   writer->WriteData(
       buf, buf_len,
-      base::Bind(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                 adaptor));
+      base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
+                     adaptor));
   adaptor->set_async(true);
   return adaptor->result();
 }

@@ -81,15 +81,14 @@ class AppCacheQuotaClientTest : public testing::Test {
                            StorageType type) {
     client->GetOriginUsage(
         origin, type,
-        base::Bind(&AppCacheQuotaClientTest::OnGetOriginUsageComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AppCacheQuotaClientTest::OnGetOriginUsageComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void AsyncGetOriginsForType(storage::QuotaClient* client, StorageType type) {
     client->GetOriginsForType(
-        type,
-        base::Bind(&AppCacheQuotaClientTest::OnGetOriginsComplete,
-                   weak_factory_.GetWeakPtr()));
+        type, base::BindOnce(&AppCacheQuotaClientTest::OnGetOriginsComplete,
+                             weak_factory_.GetWeakPtr()));
   }
 
   void AsyncGetOriginsForHost(storage::QuotaClient* client,
@@ -97,8 +96,8 @@ class AppCacheQuotaClientTest : public testing::Test {
                               const std::string& host) {
     client->GetOriginsForHost(
         type, host,
-        base::Bind(&AppCacheQuotaClientTest::OnGetOriginsComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AppCacheQuotaClientTest::OnGetOriginsComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void AsyncDeleteOriginData(storage::QuotaClient* client,
@@ -106,8 +105,8 @@ class AppCacheQuotaClientTest : public testing::Test {
                              const url::Origin& origin) {
     client->DeleteOriginData(
         origin, type,
-        base::Bind(&AppCacheQuotaClientTest::OnDeleteOriginDataComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AppCacheQuotaClientTest::OnDeleteOriginDataComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void SetUsageMapEntry(const url::Origin& origin, int64_t usage) {

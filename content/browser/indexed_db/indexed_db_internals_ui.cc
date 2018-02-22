@@ -363,8 +363,8 @@ FileDeleter::~FileDeleter() {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BACKGROUND,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::Bind(base::IgnoreResult(&base::DeleteFile),
-                                      std::move(temp_dir_), true));
+                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                          std::move(temp_dir_), true));
 }
 
 void IndexedDBInternalsUI::OnDownloadStarted(

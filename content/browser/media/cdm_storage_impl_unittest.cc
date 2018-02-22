@@ -78,8 +78,8 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     DVLOG(3) << __func__;
 
     cdm_storage_->Open(
-        name, base::Bind(&CdmStorageTest::OpenDone, base::Unretained(this),
-                         status, file, cdm_file));
+        name, base::BindOnce(&CdmStorageTest::OpenDone, base::Unretained(this),
+                             status, file, cdm_file));
     RunAndWaitForResult();
     return file->IsValid();
   }
@@ -88,9 +88,9 @@ class CdmStorageTest : public RenderViewHostTestHarness {
              const std::vector<uint8_t>& data,
              base::File* file) {
     bool status;
-    cdm_file->OpenFileForWriting(base::Bind(&CdmStorageTest::FileOpenedForWrite,
-                                            base::Unretained(this), cdm_file,
-                                            data, file, &status));
+    cdm_file->OpenFileForWriting(
+        base::BindOnce(&CdmStorageTest::FileOpenedForWrite,
+                       base::Unretained(this), cdm_file, data, file, &status));
     RunAndWaitForResult();
     return status;
   }
@@ -123,8 +123,8 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     int bytes_written = file_to_write.Write(
         0, reinterpret_cast<const char*>(data.data()), bytes_to_write);
     *status = bytes_to_write == bytes_written;
-    cdm_file->CommitWrite(
-        base::Bind(&CdmStorageTest::WriteDone, base::Unretained(this), file));
+    cdm_file->CommitWrite(base::BindOnce(&CdmStorageTest::WriteDone,
+                                         base::Unretained(this), file));
   }
 
   void WriteDone(base::File* file, base::File new_file_for_reading) {

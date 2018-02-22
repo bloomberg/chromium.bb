@@ -337,16 +337,17 @@ class NonChunkedUploadDataStream : public net::UploadDataStream {
  private:
   int InitInternal(const net::NetLogWithSource& net_log) override {
     SetSize(size_);
-    stream_.Init(base::Bind(&NonChunkedUploadDataStream::OnInitCompleted,
-                            base::Unretained(this)),
+    stream_.Init(base::BindOnce(&NonChunkedUploadDataStream::OnInitCompleted,
+                                base::Unretained(this)),
                  net_log);
     return net::OK;
   }
 
   int ReadInternal(net::IOBuffer* buf, int buf_len) override {
-    return stream_.Read(buf, buf_len,
-                        base::Bind(&NonChunkedUploadDataStream::OnReadCompleted,
-                                   base::Unretained(this)));
+    return stream_.Read(
+        buf, buf_len,
+        base::BindOnce(&NonChunkedUploadDataStream::OnReadCompleted,
+                       base::Unretained(this)));
   }
 
   void ResetInternal() override { stream_.Reset(); }

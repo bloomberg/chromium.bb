@@ -45,7 +45,7 @@ void GetUserDataOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_wrapper->GetRegistrationUserData(
       service_worker_registration_id, {key},
-      base::Bind(&CallStringCallbackFromIO, callback));
+      base::BindOnce(&CallStringCallbackFromIO, callback));
 }
 
 void ClearPushSubscriptionIdOnIO(

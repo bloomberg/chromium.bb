@@ -53,7 +53,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   }
   void SetRunning(bool is_running) {
     blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-        FROM_HERE, base::Bind(running_cb_, is_running));
+        FROM_HERE, base::BindOnce(running_cb_, is_running));
   }
   const media::VideoCaptureParams& capture_params() const {
     return capture_params_;

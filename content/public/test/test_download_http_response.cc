@@ -77,18 +77,19 @@ void PauseResponsesAndWaitForResumption(
   params.on_pause_handler.Reset();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(parameters.on_pause_handler,
-                 base::Bind(&OnResume, base::ThreadTaskRunnerHandle::Get(),
-                            base::Bind(&SendResponses, header, body,
-                                       starting_body_offset, std::move(params),
-                                       completion_callback, send))));
+      base::BindOnce(
+          parameters.on_pause_handler,
+          base::Bind(
+              &OnResume, base::ThreadTaskRunnerHandle::Get(),
+              base::Bind(&SendResponses, header, body, starting_body_offset,
+                         std::move(params), completion_callback, send))));
 }
 
 void OnResponseSentOnServerIOThread(
     const TestDownloadHttpResponse::OnResponseSentCallback& callback,
     std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, base::Passed(&request)));
+                          base::BindOnce(callback, base::Passed(&request)));
 }
 
 // Send all responses to the client.
@@ -366,9 +367,10 @@ void TestDownloadHttpResponse::SendResponse(
   if (!parameters_.injected_errors.empty() &&
       parameters_.injected_errors.front() < requested_range_end_ &&
       !parameters_.inject_error_cb.is_null()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(parameters_.inject_error_cb,
-                                       requested_range_begin_, body.size()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(parameters_.inject_error_cb, requested_range_begin_,
+                       body.size()));
   }
 
   SendResponses(header, body, requested_range_begin_, std::move(parameters_),

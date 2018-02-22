@@ -250,7 +250,7 @@ void BackgroundFetchContext::DidMarkForDeletion(
     CleanupRegistration(registration_id, {});
 
     event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-        registration_id, base::Bind(&base::DoNothing));
+        registration_id, base::BindOnce(&base::DoNothing));
   } else {
     data_manager_.GetSettledFetchesForRegistration(
         registration_id,
@@ -278,21 +278,23 @@ void BackgroundFetchContext::DidGetSettledFetches(
   if (background_fetch_succeeded) {
     event_dispatcher_.DispatchBackgroundFetchedEvent(
         registration_id, std::move(settled_fetches),
-        base::Bind(&BackgroundFetchContext::CleanupRegistration,
-                   weak_factory_.GetWeakPtr(), registration_id,
-                   // The blob uuid is sent as part of |settled_fetches|. Bind
-                   // |blob_data_handles| to the callback to keep them alive
-                   // until the waitUntil event is resolved.
-                   std::move(blob_data_handles)));
+        base::BindOnce(
+            &BackgroundFetchContext::CleanupRegistration,
+            weak_factory_.GetWeakPtr(), registration_id,
+            // The blob uuid is sent as part of |settled_fetches|. Bind
+            // |blob_data_handles| to the callback to keep them alive
+            // until the waitUntil event is resolved.
+            std::move(blob_data_handles)));
   } else {
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(settled_fetches),
-        base::Bind(&BackgroundFetchContext::CleanupRegistration,
-                   weak_factory_.GetWeakPtr(), registration_id,
-                   // The blob uuid is sent as part of |settled_fetches|. Bind
-                   // |blob_data_handles| to the callback to keep them alive
-                   // until the waitUntil event is resolved.
-                   std::move(blob_data_handles)));
+        base::BindOnce(
+            &BackgroundFetchContext::CleanupRegistration,
+            weak_factory_.GetWeakPtr(), registration_id,
+            // The blob uuid is sent as part of |settled_fetches|. Bind
+            // |blob_data_handles| to the callback to keep them alive
+            // until the waitUntil event is resolved.
+            std::move(blob_data_handles)));
   }
 }
 
@@ -317,8 +319,8 @@ void BackgroundFetchContext::CleanupRegistration(
   // as a fallback in that case, and deletes the registration on next startup.
   registration_notifier_->AddGarbageCollectionCallback(
       registration_id.unique_id(),
-      base::Bind(&BackgroundFetchContext::LastObserverGarbageCollected,
-                 weak_factory_.GetWeakPtr(), registration_id));
+      base::BindOnce(&BackgroundFetchContext::LastObserverGarbageCollected,
+                     weak_factory_.GetWeakPtr(), registration_id));
 }
 
 void BackgroundFetchContext::LastObserverGarbageCollected(

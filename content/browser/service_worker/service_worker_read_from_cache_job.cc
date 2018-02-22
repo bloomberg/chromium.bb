@@ -117,9 +117,10 @@ int ServiceWorkerReadFromCacheJob::ReadRawData(net::IOBuffer* buf,
   DCHECK(!reader_->IsReadPending());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "ReadRawData", this,
                                     "buf_size", buf_size);
-  reader_->ReadData(buf, buf_size,
-                    base::Bind(&ServiceWorkerReadFromCacheJob::OnReadComplete,
-                               weak_factory_.GetWeakPtr()));
+  reader_->ReadData(
+      buf, buf_size,
+      base::BindOnce(&ServiceWorkerReadFromCacheJob::OnReadComplete,
+                     weak_factory_.GetWeakPtr()));
   return net::ERR_IO_PENDING;
 }
 
@@ -140,8 +141,8 @@ void ServiceWorkerReadFromCacheJob::StartAsync() {
   http_info_io_buffer_ = new HttpResponseInfoIOBuffer;
   reader_->ReadInfo(
       http_info_io_buffer_.get(),
-      base::Bind(&ServiceWorkerReadFromCacheJob::OnReadInfoComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerReadFromCacheJob::OnReadInfoComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 const net::HttpResponseInfo* ServiceWorkerReadFromCacheJob::http_info() const {

@@ -40,11 +40,11 @@ constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
 
 int CreateInflightRequest(ServiceWorkerVersion* version) {
   version->StartWorker(ServiceWorkerMetrics::EventType::PUSH,
-                       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+                       base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
   return version->StartRequest(
       ServiceWorkerMetrics::EventType::PUSH,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 
 static void SaveStatusCallback(bool* called,
@@ -395,8 +395,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_2->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetWaitingVersion(version_2);
-    version_2->StartWorker(ServiceWorkerMetrics::EventType::INSTALL,
-                           base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+    version_2->StartWorker(
+        ServiceWorkerMetrics::EventType::INSTALL,
+        base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
     version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 
     // Set it to activate when ready. The original version should still be

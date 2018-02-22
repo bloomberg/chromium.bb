@@ -97,8 +97,9 @@ class ServiceWorkerInstalledScriptsSender::Sender {
 
   void Start() {
     auto info_buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
-    reader_->ReadInfo(info_buf.get(), base::Bind(&Sender::OnReadInfoComplete,
-                                                 AsWeakPtr(), info_buf));
+    reader_->ReadInfo(
+        info_buf.get(),
+        base::BindOnce(&Sender::OnReadInfoComplete, AsWeakPtr(), info_buf));
   }
 
  private:
@@ -203,7 +204,7 @@ class ServiceWorkerInstalledScriptsSender::Sender {
         base::MakeRefCounted<network::NetToMojoIOBuffer>(
             body_pending_write_.get());
     reader_->ReadData(buffer.get(), num_bytes,
-                      base::Bind(&Sender::OnResponseDataRead, AsWeakPtr()));
+                      base::BindOnce(&Sender::OnResponseDataRead, AsWeakPtr()));
   }
 
   void OnResponseDataRead(int read_bytes) {

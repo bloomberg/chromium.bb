@@ -246,9 +246,8 @@ void ClearSessionStorageOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   dom_storage_context->GetSessionStorageUsage(
-      base::Bind(&OnSessionStorageUsageInfo, dom_storage_context,
-                 special_storage_policy, origin_matcher,
-                 callback));
+      base::BindOnce(&OnSessionStorageUsageInfo, dom_storage_context,
+                     special_storage_policy, origin_matcher, callback));
 }
 
 base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForStorage(

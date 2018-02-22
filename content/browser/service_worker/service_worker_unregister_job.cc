@@ -35,9 +35,8 @@ void ServiceWorkerUnregisterJob::AddCallback(
 
 void ServiceWorkerUnregisterJob::Start() {
   context_->storage()->FindRegistrationForPattern(
-      pattern_,
-      base::Bind(&ServiceWorkerUnregisterJob::OnRegistrationFound,
-                 weak_factory_.GetWeakPtr()));
+      pattern_, base::BindOnce(&ServiceWorkerUnregisterJob::OnRegistrationFound,
+                               weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerUnregisterJob::Abort() {

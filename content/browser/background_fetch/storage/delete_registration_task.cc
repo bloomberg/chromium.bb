@@ -55,8 +55,8 @@ void DeleteRegistrationTask::Start() {
   // Get the registration |developer_id| to check it was deactivated.
   service_worker_context()->GetRegistrationUserData(
       service_worker_registration_id_, {RegistrationKey(unique_id_)},
-      base::Bind(&DeleteRegistrationTask::DidGetRegistration,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&DeleteRegistrationTask::DidGetRegistration,
+                     weak_factory_.GetWeakPtr()));
 #else
   DidGetRegistration({}, SERVICE_WORKER_OK);
 #endif  // DCHECK_IS_ON()
@@ -74,7 +74,7 @@ void DeleteRegistrationTask::DidGetRegistration(
       service_worker_context()->GetRegistrationUserData(
           service_worker_registration_id_,
           {ActiveRegistrationUniqueIdKey(registration_proto.developer_id())},
-          base::Bind(&DCheckRegistrationNotActive, unique_id_));
+          base::BindOnce(&DCheckRegistrationNotActive, unique_id_));
     } else {
       NOTREACHED()
           << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.

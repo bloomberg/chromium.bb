@@ -197,8 +197,8 @@ class BackgroundFetchDataManagerTest
         ->context_wrapper()
         ->GetRegistrationUserDataByKeyPrefix(
             service_worker_registration_id, key_prefix,
-            base::Bind(&DidGetRegistrationUserDataByKeyPrefix,
-                       run_loop.QuitClosure(), &data));
+            base::BindOnce(&DidGetRegistrationUserDataByKeyPrefix,
+                           run_loop.QuitClosure(), &data));
     run_loop.Run();
 
     return data;

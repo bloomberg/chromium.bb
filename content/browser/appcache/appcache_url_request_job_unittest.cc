@@ -358,28 +358,27 @@ class AppCacheURLRequestJobTest : public testing::Test {
     write_info_buffer_ = new HttpResponseInfoIOBuffer(head);
     writer_->WriteInfo(
         write_info_buffer_.get(),
-        base::Bind(&AppCacheURLRequestJobTest::OnWriteInfoComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheURLRequestJobTest::OnWriteInfoComplete,
+                       base::Unretained(this)));
   }
 
   void WriteResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(writer_->IsWritePending());
     write_buffer_ = io_buffer;
     expected_write_result_ = buf_len;
-    writer_->WriteData(write_buffer_.get(),
-                       buf_len,
-                       base::Bind(&AppCacheURLRequestJobTest::OnWriteComplete,
-                                  base::Unretained(this)));
+    writer_->WriteData(
+        write_buffer_.get(), buf_len,
+        base::BindOnce(&AppCacheURLRequestJobTest::OnWriteComplete,
+                       base::Unretained(this)));
   }
 
   void ReadResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(reader_->IsReadPending());
     read_buffer_ = io_buffer;
     expected_read_result_ = buf_len;
-    reader_->ReadData(read_buffer_.get(),
-                      buf_len,
-                      base::Bind(&AppCacheURLRequestJobTest::OnReadComplete,
-                                 base::Unretained(this)));
+    reader_->ReadData(read_buffer_.get(), buf_len,
+                      base::BindOnce(&AppCacheURLRequestJobTest::OnReadComplete,
+                                     base::Unretained(this)));
   }
 
   // AppCacheResponseReader / Writer completion callbacks

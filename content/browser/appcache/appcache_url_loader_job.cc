@@ -313,9 +313,9 @@ void AppCacheURLLoaderJob::ReadMore() {
   uint32_t bytes_to_read =
       std::min<uint32_t>(num_bytes, info_->response_data_size());
 
-  reader_->ReadData(
-      buffer.get(), bytes_to_read,
-      base::Bind(&AppCacheURLLoaderJob::OnReadComplete, GetDerivedWeakPtr()));
+  reader_->ReadData(buffer.get(), bytes_to_read,
+                    base::BindOnce(&AppCacheURLLoaderJob::OnReadComplete,
+                                   GetDerivedWeakPtr()));
 }
 
 void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
