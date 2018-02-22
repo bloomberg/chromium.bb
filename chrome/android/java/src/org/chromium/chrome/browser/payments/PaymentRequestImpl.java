@@ -389,12 +389,14 @@ public class PaymentRequestImpl
 
         mApps = new ArrayList<>();
 
-        mAddressEditor = new AddressEditor(/*emailFieldIncluded=*/false);
-        mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
-
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
                 && activity.getCurrentTabModel().isIncognito();
+
+        // Do not persist changes on disk in incognito mode.
+        mAddressEditor =
+                new AddressEditor(/*emailFieldIncluded=*/false, /*saveToDisk=*/!mIsIncognito);
+        mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
 
         mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents.getLastCommittedUrl());
 
@@ -525,8 +527,9 @@ public class PaymentRequestImpl
         }
 
         if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            mContactEditor =
-                    new ContactEditor(mRequestPayerName, mRequestPayerPhone, mRequestPayerEmail);
+            // Do not persist changes on disk in incognito mode.
+            mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
+                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
             mContactSection = new ContactDetailsSection(activity,
                     Collections.unmodifiableList(profiles), mContactEditor, mJourneyLogger);
         }
