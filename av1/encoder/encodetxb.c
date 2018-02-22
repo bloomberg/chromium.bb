@@ -1308,10 +1308,6 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
                               txb_ctx->dc_sign_ctx);
 
     if (abs_qc > NUM_BASE_LEVELS) {
-      const int row = pos >> txb_info->bwl;
-      const int col = pos - (row << txb_info->bwl);
-
-      (void)col;
       const int ctx =
           get_br_ctx(txb_info->levels, pos, txb_info->bwl, txb_info->tx_type);
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
