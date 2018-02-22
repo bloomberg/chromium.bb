@@ -161,7 +161,6 @@ void RecordEffectiveConnectionTypeAccuracy(
 }  // namespace
 
 NetworkQualityEstimator::NetworkQualityEstimator(
-    std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
     std::unique_ptr<NetworkQualityEstimatorParams> params,
     NetLog* net_log)
     : params_(std::move(params)),

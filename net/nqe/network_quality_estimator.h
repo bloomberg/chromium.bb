@@ -28,7 +28,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/event_creator.h"
-#include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_id.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator_params.h"
@@ -105,11 +104,10 @@ class NET_EXPORT NetworkQualityEstimator
   };
 
   // Creates a new NetworkQualityEstimator.
-  // |external_estimates_provider| may be NULL. |params| contains the
+  // |params| contains the
   // configuration parameters relevant to network quality estimator. The caller
   // must guarantee that |net_log| outlives |this|.
   NetworkQualityEstimator(
-      std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
       std::unique_ptr<NetworkQualityEstimatorParams> params,
       NetLog* net_log);
 
