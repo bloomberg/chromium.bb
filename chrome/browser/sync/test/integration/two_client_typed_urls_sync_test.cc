@@ -241,8 +241,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
 }
 
-// flaky, see crbug.com/108511
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddOneDeleteOther) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-one-delete-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -266,9 +265,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DISABLED_AddOneDeleteOther) {
   ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
 }
 
-// flaky, see crbug.com/108511
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       DISABLED_AddOneDeleteOtherAddAgain) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOtherAddAgain) {
   const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
