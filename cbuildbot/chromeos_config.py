@@ -492,6 +492,7 @@ _arm_internal_release_boards = frozenset([
     'gru',
     'hana',
     'kevin',
+    'kevin-arcnext',
     'lasilla-ground',
     'lasilla-sky',
     'macchiato-ground',
