@@ -13,7 +13,7 @@ bluetooth_test(() => getMeasurementIntervalCharacteristic()
     .then(() => assert_promise_rejects_with_message(
         characteristic.CALLS([
           getDescriptor(user_description.name)|
-          getDescriptors(user_description.name)[UUID]|
+          getDescriptors(user_description.uuid)[UUID]|
           getDescriptors(user_description.name)]),
         expected,
         'Service got removed.')),
