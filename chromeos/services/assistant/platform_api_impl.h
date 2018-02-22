@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/services/assistant/platform/system_provider_impl.h"
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
 #include "libassistant/contrib/core/macros.h"
@@ -19,7 +20,6 @@
 #include "libassistant/contrib/platform/file/file_provider_impl.h"
 #include "libassistant/contrib/platform/net/network_provider_impl.h"
 #include "libassistant/contrib/platform/resources/resource_provider.h"
-#include "libassistant/contrib/platform/system/system_provider.h"
 #include "libassistant/shared/public/platform_api.h"
 
 namespace chromeos {
@@ -79,7 +79,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   assistant_contrib::FileProviderImpl file_provider_;
   assistant_contrib::NetworkProviderImpl network_provider_;
   assistant_contrib::ResourceProviderImpl resource_provider_;
-  assistant_contrib::SystemProviderImpl system_provider_;
+  SystemProviderImpl system_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
 };
