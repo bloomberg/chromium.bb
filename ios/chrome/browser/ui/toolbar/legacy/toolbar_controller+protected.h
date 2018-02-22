@@ -10,16 +10,9 @@
 
 @interface ToolbarController (Protected)
 
-// An array of CALayers that are currently animating under
-// kToolbarTransitionAnimationKey.
-@property(nonatomic, readonly) NSMutableArray* transitionLayers;
-
 // The view containing all the content of the toolbar. It respects the trailing
 // and leading anchors of the safe area.
 @property(nonatomic, readonly, strong) UIView* contentView;
-
-// Update share button visibility and |standardButtons_| array.
-- (void)updateStandardButtons;
 
 // Called when buttons are pressed. Records action metrics.
 // Subclasses must call |super| if they override this method.
@@ -29,28 +22,9 @@
 // set display or dismiss target-actions.
 - (UIButton*)stackButton;
 
-// Called whenever one of the standard controls is triggered. Does nothing,
-// but can be overridden by subclasses to clear any state (e.g., close menus).
-- (void)standardButtonPressed:(UIButton*)sender;
-
 // Returns the area that subclasses should use for adding their own
-// controls. Nothing should be added outside this frame without first
-// calling |setStandardControlsVisible:NO|.
+// controls.
 - (CGRect)specificControlsArea;
-
-// Sets the standard control set to be visible or invisible. Uses alpha, so it
-// can be animated if called from an animation context. Intended for use by
-// subclasses that need to temporarily take over the entire toolbar.
-- (void)setStandardControlsVisible:(BOOL)visible;
-
-// Sets the standard control to a particular alpha value. Intended for use by
-// subclasses that need to temporarily take over the entire toolbar.
-- (void)setStandardControlsAlpha:(CGFloat)alpha;
-
-// Returns the UIImage from the resources bundle for the |imageEnum| and
-// |state|.  Uses the toolbar's current style.
-- (UIImage*)imageForImageEnum:(int)imageEnum
-                     forState:(ToolbarButtonUIState)state;
 
 // Returns the image enum for a given button object.  If the user taps a
 // button before its secondary images have been loaded, the image(s) will be
@@ -64,26 +38,6 @@
 - (int)imageIdForImageEnum:(int)index
                      style:(ToolbarControllerStyle)style
                   forState:(ToolbarButtonUIState)state;
-
-// Adds transition animations to every UIButton in |containerView| with a
-// nonzero opacity.
-- (void)animateTransitionForButtonsInView:(UIView*)containerView
-                     containerBeginBounds:(CGRect)containerBeginBounds
-                       containerEndBounds:(CGRect)containerEndBounds
-                          transitionStyle:(ToolbarTransitionStyle)style;
-
-// Add position and opacity animations to |view|'s layer. The opacity
-// animation goes from 0 to 1. The position animation goes from
-// [view.layer.position offset in the leading direction by |leadingOffset|)
-// to view.layer.position. Both animations occur after |delay| seconds.
-- (void)fadeInView:(UIView*)view
-    fromLeadingOffset:(LayoutOffset)leadingOffset
-         withDuration:(NSTimeInterval)duration
-           afterDelay:(NSTimeInterval)delay;
-
-// Animates the tools menu button and stack button for full bleed omnibox
-// animation used for Material.
-- (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox;
 
 // Sets up |button| with images named by the given |imageEnum| and the current
 // toolbar style.  Sets images synchronously for |initialState|, and

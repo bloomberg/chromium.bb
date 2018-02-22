@@ -76,9 +76,6 @@ using ios::material::TimingFunction;
   // The shadow view. Only used on iPhone.
   UIImageView* fullBleedShadowView_;
 
-  // The backing object for |self.transitionLayers|.
-  NSMutableArray* transitionLayers_;
-
   ToolbarToolsMenuButton* toolsMenuButton_;
   UIButton* stackButton_;
   UIButton* shareButton_;
@@ -252,9 +249,6 @@ using ios::material::TimingFunction;
           setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
     }
 
-    transitionLayers_ =
-        [[NSMutableArray alloc] initWithCapacity:kTransitionLayerCapacity];
-
     // UIImageViews do not default to userInteractionEnabled:YES.
     [self.view setUserInteractionEnabled:YES];
     [backgroundView_ setUserInteractionEnabled:YES];
@@ -288,10 +282,6 @@ using ios::material::TimingFunction;
     }
     [self registerEventsForButton:toolsMenuButton_];
 
-    self.view.accessibilityIdentifier =
-        style == ToolbarControllerStyleIncognitoMode
-            ? kIncognitoToolbarIdentifier
-            : kToolbarIdentifier;
     SetA11yLabelAndUiAutomationName(stackButton_, IDS_IOS_TOOLBAR_SHOW_TABS,
                                     kToolbarStackButtonIdentifier);
     SetA11yLabelAndUiAutomationName(toolsMenuButton_, IDS_IOS_TOOLBAR_SETTINGS,
@@ -448,22 +438,6 @@ using ios::material::TimingFunction;
 
 #pragma mark - Protected API
 
-- (void)updateStandardButtons {
-  BOOL shareButtonShouldBeVisible = [self shareButtonShouldBeVisible];
-  [shareButton_ setHidden:!shareButtonShouldBeVisible];
-  NSMutableArray* standardButtons = [NSMutableArray array];
-  [standardButtons addObject:toolsMenuButton_];
-  if (stackButton_)
-    [standardButtons addObject:stackButton_];
-  if (shareButtonShouldBeVisible)
-    [standardButtons addObject:shareButton_];
-  standardButtons_ = standardButtons;
-}
-
-- (CGFloat)statusBarOffset {
-  return StatusBarHeight();
-}
-
 - (IBAction)recordUserMetrics:(id)sender {
   if (sender == toolsMenuButton_)
     base::RecordAction(UserMetricsAction("MobileToolbarShowMenu"));
@@ -473,6 +447,10 @@ using ios::material::TimingFunction;
     base::RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
   else
     NOTREACHED();
+}
+
+- (CGFloat)statusBarOffset {
+  return StatusBarHeight();
 }
 
 - (UIButton*)stackButton {
@@ -498,33 +476,6 @@ using ios::material::TimingFunction;
     controlsFrame.size.height -= StatusBarHeight();
   }
   return controlsFrame;
-}
-
-- (void)setStandardControlsVisible:(BOOL)visible {
-  if (visible) {
-    for (UIButton* button in standardButtons_) {
-      [button setAlpha:1.0];
-    }
-  } else {
-    for (UIButton* button in standardButtons_) {
-      [button setAlpha:0.0];
-    }
-  }
-}
-
-- (void)setStandardControlsAlpha:(CGFloat)alpha {
-  for (UIButton* button in standardButtons_) {
-    if (![button isHidden])
-      [button setAlpha:alpha];
-  }
-}
-
-- (UIImage*)imageForImageEnum:(int)imageEnum
-                     forState:(ToolbarButtonUIState)state {
-  int imageID =
-      [self imageIdForImageEnum:imageEnum style:[self style] forState:state];
-  return NativeReversableImage(
-      imageID, [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum]);
 }
 
 - (int)imageEnumForButton:(UIButton*)button {
@@ -554,12 +505,20 @@ using ios::material::TimingFunction;
   return buttonImageIds[index][style][state];
 }
 
-- (NSMutableArray*)transitionLayers {
-  return transitionLayers_;
+#pragma mark - ToolsMenuPresentationProvider
+
+- (UIButton*)presentingButtonForToolsMenuCoordinator:
+    (ToolsMenuCoordinator*)coordinator {
+  return toolsMenuButton_;
 }
 
+#pragma mark - Private Methods
 #pragma mark Animations
 
+// Add position and opacity animations to |view|'s layer. The opacity
+// animation goes from 0 to 1. The position animation goes from
+// [view.layer.position offset in the leading direction by |leadingOffset|)
+// to view.layer.position. Both animations occur after |delay| seconds.
 - (void)fadeInView:(UIView*)view
     fromLeadingOffset:(LayoutOffset)leadingOffset
          withDuration:(NSTimeInterval)duration
@@ -592,22 +551,6 @@ using ios::material::TimingFunction;
   [CATransaction commit];
 }
 
-- (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox {
-  if (growOmnibox)
-    [self fadeOutStandardControls];
-  else
-    [self fadeInStandardControls];
-}
-
-#pragma mark - ToolsMenuPresentationProvider
-
-- (UIButton*)presentingButtonForToolsMenuCoordinator:
-    (ToolsMenuCoordinator*)coordinator {
-  return toolsMenuButton_;
-}
-
-#pragma mark - Private Methods
-#pragma mark Animations
 - (void)fadeOutStandardControls {
   // The opacity animation has a different duration from the position animation.
   // Thus they require separate CATransations.
@@ -675,20 +618,18 @@ using ios::material::TimingFunction;
 
 #pragma mark Helpers
 
-- (UIFont*)fontForSize:(NSInteger)size {
-  return [[MDCTypography fontLoader] boldFontOfSize:size];
+// Returns the UIImage from the resources bundle for the |imageEnum| and
+// |state|.  Uses the toolbar's current style.
+- (UIImage*)imageForImageEnum:(int)imageEnum
+                     forState:(ToolbarButtonUIState)state {
+  int imageID =
+      [self imageIdForImageEnum:imageEnum style:[self style] forState:state];
+  return NativeReversableImage(
+      imageID, [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum]);
 }
 
-- (BOOL)shareButtonShouldBeVisible {
-  // The share button only exists on iPad, and when some tabs are visible
-  // (i.e. when not in DarkMode), and when the width is greater than
-  // the tablet mini view.
-  if (!IsIPadIdiom() || style_ == ToolbarControllerStyleDarkMode ||
-      IsCompactTablet(self.view))
-    return NO;
-  return YES;
-}
-
+// Called whenever one of the standard controls is triggered. Does nothing,
+// but can be overridden by subclasses to clear any state (e.g., close menus).
 - (void)standardButtonPressed:(UIButton*)sender {
   // This check for valid button images assumes that the buttons all have a
   // different image for the highlighted state as for the normal state.
@@ -703,6 +644,33 @@ using ios::material::TimingFunction;
         hasDisabledImage:NO
            synchronously:YES];
   }
+}
+
+// Update share button visibility and |standardButtons_| array.
+- (void)updateStandardButtons {
+  BOOL shareButtonShouldBeVisible = [self shareButtonShouldBeVisible];
+  [shareButton_ setHidden:!shareButtonShouldBeVisible];
+  NSMutableArray* standardButtons = [NSMutableArray array];
+  [standardButtons addObject:toolsMenuButton_];
+  if (stackButton_)
+    [standardButtons addObject:stackButton_];
+  if (shareButtonShouldBeVisible)
+    [standardButtons addObject:shareButton_];
+  standardButtons_ = standardButtons;
+}
+
+- (UIFont*)fontForSize:(NSInteger)size {
+  return [[MDCTypography fontLoader] boldFontOfSize:size];
+}
+
+- (BOOL)shareButtonShouldBeVisible {
+  // The share button only exists on iPad, and when some tabs are visible
+  // (i.e. when not in DarkMode), and when the width is greater than
+  // the tablet mini view.
+  if (!IsIPadIdiom() || style_ == ToolbarControllerStyleDarkMode ||
+      IsCompactTablet(self.view))
+    return NO;
+  return YES;
 }
 
 - (void)registerEventsForButton:(UIButton*)button {
