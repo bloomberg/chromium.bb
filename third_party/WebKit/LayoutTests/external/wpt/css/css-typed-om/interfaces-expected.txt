@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 243 tests; 233 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 237 tests; 226 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS CSS Typed OM IDL test
 PASS CSSStyleValue interface: existence and properties of interface object
 PASS CSSStyleValue interface object length
@@ -14,16 +14,10 @@ PASS StylePropertyMapReadOnly interface object length
 PASS StylePropertyMapReadOnly interface object name
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object
 PASS StylePropertyMapReadOnly interface: existence and properties of interface prototype object's "constructor" property
-PASS Testing Symbol.iterator property of iterable interface StylePropertyMapReadOnly
-PASS Testing pair iterable interface StylePropertyMapReadOnly
 PASS StylePropertyMapReadOnly interface: operation get(DOMString)
 PASS StylePropertyMapReadOnly interface: operation getAll(DOMString)
 PASS StylePropertyMapReadOnly interface: operation has(DOMString)
-PASS StylePropertyMapReadOnly interface: attribute size
-PASS StylePropertyMapReadOnly interface: operation entries()
-PASS StylePropertyMapReadOnly interface: operation keys()
-PASS StylePropertyMapReadOnly interface: operation values()
-PASS StylePropertyMapReadOnly interface: operation forEach(function, any)
+FAIL StylePropertyMapReadOnly interface: stringifier assert_own_property: interface prototype object missing non-static operation expected property "toString" missing
 PASS StylePropertyMap interface: existence and properties of interface object
 PASS StylePropertyMap interface object length
 PASS StylePropertyMap interface object name

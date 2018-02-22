@@ -32,8 +32,6 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadOnly {
     StylePropertyMapReadOnly::Trace(visitor);
   }
 
-  int size() override;
-
  protected:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
       : StylePropertyMapReadOnly(),

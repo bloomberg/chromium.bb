@@ -31,8 +31,6 @@ class CORE_EXPORT DeclaredStylePropertyMap final : public StylePropertyMap {
     StylePropertyMap::Trace(visitor);
   }
 
-  int size() final;
-
  protected:
   const CSSValue* GetProperty(CSSPropertyID) override;
   const CSSValue* GetCustomProperty(AtomicString) override;
