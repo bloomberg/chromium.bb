@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 config("libovr-config") {
-  if (is_clang)
+  if (is_clang) {
     cflags = [ "-Wno-unused-function" ]
+  }
 }
 
 static_library("libovr") {
