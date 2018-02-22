@@ -439,7 +439,8 @@
         "args": [
           "-v",
           "--xvfb",
-          "--browser=reference"
+          "--browser=reference",
+          "--testing=True"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

@@ -62,21 +62,21 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
 CURRENT_DESKTOP_NUM_SHARDS = 5
 CURRENT_ANDROID_NUM_SHARDS = 21
 
-def get_sharding_map_path(total_shards):
-  """
-  UNCOMMENT WHEN WE HAVE PROVED THE BASE CASE IN benchmark_bot_map.json
-  # Note: <= for testing purposes until we have all shards running
-  if int(total_shards) <= CURRENT_DESKTOP_NUM_SHARDS:
-    return os.path.join(
-        os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-        'benchmark_desktop_bot_map.json')
+def get_sharding_map_path(total_shards, testing):
+  # Determine if we want to do a test run of the benchmarks or run the
+  # full suite.
+  if not testing:
+    # Note: <= for testing purposes until we have all shards running
+    if int(total_shards) <= CURRENT_DESKTOP_NUM_SHARDS:
+      return os.path.join(
+          os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
+          'benchmark_desktop_bot_map.json')
+    else:
+      return os.path.join(
+          os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
+          'benchmark_android_bot_map.json')
   else:
     return os.path.join(
-        os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-        'benchmark_android_bot_map.json')
-  """
-  del total_shards #unused
-  return os.path.join(
       os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
       'benchmark_bot_map.json')
 
@@ -110,6 +110,9 @@ def execute_benchmark(benchmark, isolated_out_dir,
         break
       browser_index = browser_index + 1
     per_benchmark_args[browser_index] = '--browser=reference'
+    # Now we need to add in the rest of the reference build args
+    per_benchmark_args.append('--max-failures=5')
+    per_benchmark_args.append('--output-trace-tag=_ref')
     benchmark_path = os.path.join(isolated_out_dir, benchmark + '.reference')
   else:
     benchmark_path = os.path.join(isolated_out_dir, benchmark)
@@ -145,6 +148,8 @@ def main():
   parser.add_argument(
       '--isolated-script-test-filter', type=str, required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
+  parser.add_argument('--testing', help='Testing instance',
+                      type=bool, default=False)
 
   args, rest_args = parser.parse_known_args()
   isolated_out_dir = os.path.dirname(args.isolated_script_test_output)
@@ -163,7 +168,7 @@ def main():
   if not (total_shards or shard_index):
     raise Exception('Shard indicators must be present for perf tests')
 
-  sharding_map_path = get_sharding_map_path(total_shards)
+  sharding_map_path = get_sharding_map_path(total_shards, args.testing or False)
   with open(sharding_map_path) as f:
     sharding_map = json.load(f)
   sharding = None
