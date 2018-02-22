@@ -9,7 +9,10 @@ import("//ppapi/features/features.gni")
 # Applied by targets internal to content.
 config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
-  configs = [ "//build/config/compiler:wexit_time_destructors" ]
+  configs = [
+    "//build/config/compiler:wexit_time_destructors",
+    "//build/config/compiler:noshadowing",
+  ]
 }
 
 # When targets depend on, e.g. //content/public/browser, what happens? To
