@@ -182,9 +182,7 @@ Polymer({
   onMenuButtonTap_: function() {
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('#menu'));
-    actionMenu.showAt(assert(this.$$('#dropdown-arrow')), {
-      anchorAlignmentY: AnchorAlignment.AFTER_END,
-    });
+    actionMenu.showAt(assert(this.$$('#dropdown-arrow')));
   },
 
   /** @private */
