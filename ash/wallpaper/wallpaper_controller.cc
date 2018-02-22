@@ -424,17 +424,6 @@ base::FilePath WallpaperController::GetCustomWallpaperDir(
 }
 
 // static
-base::FilePath WallpaperController::GetDeviceWallpaperDir() {
-  DCHECK(!dir_chrome_os_wallpapers_path_.empty());
-  return dir_chrome_os_wallpapers_path_.Append(kDeviceWallpaperDir);
-}
-
-// static
-base::FilePath WallpaperController::GetDeviceWallpaperFilePath() {
-  return GetDeviceWallpaperDir().Append(kDeviceWallpaperFile);
-}
-
-// static
 bool WallpaperController::ResizeImage(
     const gfx::ImageSkia& image,
     wallpaper::WallpaperLayout layout,
@@ -508,6 +497,13 @@ bool WallpaperController::ResizeAndSaveWallpaper(
         path, reinterpret_cast<const char*>(data->front()), data->size());
   }
   return false;
+}
+
+// static
+base::FilePath WallpaperController::GetDevicePolicyWallpaperFilePath() {
+  DCHECK(!dir_chrome_os_wallpapers_path_.empty());
+  return dir_chrome_os_wallpapers_path_.Append(kDeviceWallpaperDir)
+      .Append(kDeviceWallpaperFile);
 }
 
 // static
@@ -586,13 +582,6 @@ bool WallpaperController::WriteJPEGFileForTesting(const base::FilePath& path,
     return false;
   }
   return true;
-}
-
-// static
-base::FilePath WallpaperController::GetDevicePolicyWallpaperFilePath() {
-  DCHECK(!dir_chrome_os_wallpapers_path_.empty());
-  return dir_chrome_os_wallpapers_path_.Append(kDeviceWallpaperDir)
-      .Append(kDeviceWallpaperFile);
 }
 
 void WallpaperController::BindRequest(
@@ -1306,7 +1295,7 @@ void WallpaperController::ShowUserWallpaper(
 
   base::FilePath wallpaper_path;
   if (info.type == wallpaper::DEVICE) {
-    wallpaper_path = GetDeviceWallpaperFilePath();
+    wallpaper_path = GetDevicePolicyWallpaperFilePath();
   } else {
     std::string sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
     // Wallpaper is not resized when layout is

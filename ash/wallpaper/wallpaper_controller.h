@@ -162,13 +162,8 @@ class ASH_EXPORT WallpaperController
                                      int preferred_height,
                                      gfx::ImageSkia* output_skia);
 
-  // TODO(crbug.com/776464): These utility functions for device policy wallpaper
-  // are temporary during the refactoring.
-  // Returns the file directory where the downloaded device wallpaper is saved.
-  static base::FilePath GetDeviceWallpaperDir();
-
-  // Returns the full path for the downloaded device wallpaper.
-  static base::FilePath GetDeviceWallpaperFilePath();
+  // Returns the file path of the device policy wallpaper.
+  static base::FilePath GetDevicePolicyWallpaperFilePath();
 
   // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back to the
   // original custom wallpaper. When |show_wallpaper| is true, shows the
@@ -201,9 +196,6 @@ class ASH_EXPORT WallpaperController
                                       int width,
                                       int height,
                                       SkColor color);
-
-  // Returns the expected file path of the device policy wallpaper.
-  static base::FilePath GetDevicePolicyWallpaperFilePath();
 
   // Binds the mojom::WallpaperController interface request to this object.
   void BindRequest(mojom::WallpaperControllerRequest request);
