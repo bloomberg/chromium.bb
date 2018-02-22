@@ -12,66 +12,72 @@
 #include <vector>
 
 #include "base/test/gtest_util.h"
+#include "chrome/installer/zucchini/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
 
 class BufferViewTest : public testing::Test {
  protected:
-  enum : size_t { kLen = 10 };
-
   // Some tests might modify this.
-  uint8_t bytes_[kLen] = {0x10, 0x32, 0x54, 0x76, 0x98,
-                          0xBA, 0xDC, 0xFE, 0x10, 0x00};
+  std::vector<uint8_t> bytes_ = ParseHexString("10 32 54 76 98 BA DC FE 10 00");
 };
 
 TEST_F(BufferViewTest, Size) {
-  for (size_t len = 0; len <= kLen; ++len) {
-    EXPECT_EQ(len, ConstBufferView(std::begin(bytes_), len).size());
-    EXPECT_EQ(len, MutableBufferView(std::begin(bytes_), len).size());
+  for (size_t len = 0; len <= bytes_.size(); ++len) {
+    EXPECT_EQ(len, ConstBufferView(bytes_.data(), len).size());
+    EXPECT_EQ(len, MutableBufferView(bytes_.data(), len).size());
   }
 }
 
 TEST_F(BufferViewTest, Empty) {
   // Empty view.
-  EXPECT_TRUE(ConstBufferView(std::begin(bytes_), 0).empty());
-  EXPECT_TRUE(MutableBufferView(std::begin(bytes_), 0).empty());
+  EXPECT_TRUE(ConstBufferView(bytes_.data(), 0).empty());
+  EXPECT_TRUE(MutableBufferView(bytes_.data(), 0).empty());
 
-  for (size_t len = 1; len <= kLen; ++len) {
-    EXPECT_FALSE(ConstBufferView(std::begin(bytes_), len).empty());
-    EXPECT_FALSE(MutableBufferView(std::begin(bytes_), len).empty());
+  for (size_t len = 1; len <= bytes_.size(); ++len) {
+    EXPECT_FALSE(ConstBufferView(bytes_.data(), len).empty());
+    EXPECT_FALSE(MutableBufferView(bytes_.data(), len).empty());
   }
 }
 
 TEST_F(BufferViewTest, FromRange) {
+  constexpr size_t kSize = 10;
+  uint8_t raw_data[kSize] = {0x10, 0x32, 0x54, 0x76, 0x98,
+                             0xBA, 0xDC, 0xFE, 0x10, 0x00};
   ConstBufferView buffer =
-      ConstBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
-  EXPECT_EQ(kLen, buffer.size());
-  EXPECT_EQ(std::begin(bytes_), buffer.begin());
+      ConstBufferView::FromRange(std::begin(raw_data), std::end(raw_data));
+  EXPECT_EQ(bytes_.size(), buffer.size());
+  EXPECT_EQ(std::begin(raw_data), buffer.begin());
+
+  MutableBufferView mutable_buffer =
+      MutableBufferView::FromRange(std::begin(raw_data), std::end(raw_data));
+  EXPECT_EQ(bytes_.size(), mutable_buffer.size());
+  EXPECT_EQ(std::begin(raw_data), mutable_buffer.begin());
 
   EXPECT_DCHECK_DEATH(
-      ConstBufferView::FromRange(std::end(bytes_), std::begin(bytes_)));
+      ConstBufferView::FromRange(std::end(raw_data), std::begin(raw_data)));
 
-  EXPECT_DCHECK_DEATH(
-      ConstBufferView::FromRange(std::begin(bytes_) + 1, std::begin(bytes_)));
+  EXPECT_DCHECK_DEATH(MutableBufferView::FromRange(std::begin(raw_data) + 1,
+                                                   std::begin(raw_data)));
 }
 
 TEST_F(BufferViewTest, Subscript) {
-  ConstBufferView view(std::begin(bytes_), kLen);
+  ConstBufferView view(bytes_.data(), bytes_.size());
 
   EXPECT_EQ(0x10, view[0]);
   static_assert(!std::is_assignable<decltype(view[0]), uint8_t>::value,
                 "BufferView values should not be mutable.");
 
-  MutableBufferView mutable_view(std::begin(bytes_), kLen);
+  MutableBufferView mutable_view(bytes_.data(), bytes_.size());
 
-  EXPECT_EQ(&bytes_[0], &mutable_view[0]);
+  EXPECT_EQ(bytes_.data(), &mutable_view[0]);
   mutable_view[0] = 42;
   EXPECT_EQ(42, mutable_view[0]);
 }
 
 TEST_F(BufferViewTest, SubRegion) {
-  ConstBufferView view(std::begin(bytes_), kLen);
+  ConstBufferView view(bytes_.data(), bytes_.size());
 
   ConstBufferView sub_view = view[{2, 4}];
   EXPECT_EQ(view.begin() + 2, sub_view.begin());
@@ -79,19 +85,17 @@ TEST_F(BufferViewTest, SubRegion) {
 }
 
 TEST_F(BufferViewTest, Shrink) {
-  ConstBufferView buffer =
-      ConstBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
+  ConstBufferView buffer(bytes_.data(), bytes_.size());
 
-  buffer.shrink(kLen);
-  EXPECT_EQ(kLen, buffer.size());
+  buffer.shrink(bytes_.size());
+  EXPECT_EQ(bytes_.size(), buffer.size());
   buffer.shrink(2);
   EXPECT_EQ(size_t(2), buffer.size());
-  EXPECT_DCHECK_DEATH(buffer.shrink(kLen));
+  EXPECT_DCHECK_DEATH(buffer.shrink(bytes_.size()));
 }
 
 TEST_F(BufferViewTest, Read) {
-  ConstBufferView buffer =
-      ConstBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
+  ConstBufferView buffer(bytes_.data(), bytes_.size());
 
   EXPECT_EQ(0x10U, buffer.read<uint8_t>(0));
   EXPECT_EQ(0x54U, buffer.read<uint8_t>(2));
@@ -112,13 +116,11 @@ TEST_F(BufferViewTest, Read) {
 }
 
 TEST_F(BufferViewTest, Write) {
-  MutableBufferView buffer =
-      MutableBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
+  MutableBufferView buffer(bytes_.data(), bytes_.size());
 
   buffer.write<uint32_t>(0, 0x01234567);
   buffer.write<uint32_t>(4, 0x89ABCDEF);
-  EXPECT_EQ(std::vector<uint8_t>(
-                {0x67, 0x45, 0x23, 0x01, 0xEF, 0xCD, 0xAB, 0x89, 0x10, 0x00}),
+  EXPECT_EQ(ParseHexString("67 45 23 01 EF CD AB 89 10 00"),
             std::vector<uint8_t>(buffer.begin(), buffer.end()));
 
   buffer.write<uint8_t>(9, 0xFF);
@@ -129,8 +131,7 @@ TEST_F(BufferViewTest, Write) {
 }
 
 TEST_F(BufferViewTest, CanAccess) {
-  MutableBufferView buffer =
-      MutableBufferView::FromRange(std::begin(bytes_), std::end(bytes_));
+  MutableBufferView buffer(bytes_.data(), bytes_.size());
   EXPECT_TRUE(buffer.can_access<uint32_t>(0));
   EXPECT_TRUE(buffer.can_access<uint32_t>(6));
   EXPECT_FALSE(buffer.can_access<uint32_t>(7));
@@ -145,30 +146,30 @@ TEST_F(BufferViewTest, CanAccess) {
 }
 
 TEST_F(BufferViewTest, LocalRegion) {
-  ConstBufferView view(std::begin(bytes_), kLen);
+  ConstBufferView view(bytes_.data(), bytes_.size());
 
   BufferRegion region = view.local_region();
   EXPECT_EQ(0U, region.offset);
-  EXPECT_EQ(kLen, region.size);
+  EXPECT_EQ(bytes_.size(), region.size);
 }
 
 TEST_F(BufferViewTest, Covers) {
   EXPECT_FALSE(ConstBufferView().covers({0, 0}));
   EXPECT_FALSE(ConstBufferView().covers({0, 1}));
 
-  ConstBufferView view(std::begin(bytes_), kLen);
+  ConstBufferView view(bytes_.data(), bytes_.size());
 
   EXPECT_TRUE(view.covers({0, 0}));
   EXPECT_TRUE(view.covers({0, 1}));
-  EXPECT_TRUE(view.covers({0, kLen}));
-  EXPECT_FALSE(view.covers({0, kLen + 1}));
-  EXPECT_FALSE(view.covers({1, kLen}));
+  EXPECT_TRUE(view.covers({0, bytes_.size()}));
+  EXPECT_FALSE(view.covers({0, bytes_.size() + 1}));
+  EXPECT_FALSE(view.covers({1, bytes_.size()}));
 
-  EXPECT_TRUE(view.covers({kLen - 1, 0}));
-  EXPECT_TRUE(view.covers({kLen - 1, 1}));
-  EXPECT_FALSE(view.covers({kLen - 1, 2}));
-  EXPECT_FALSE(view.covers({kLen, 0}));
-  EXPECT_FALSE(view.covers({kLen, 1}));
+  EXPECT_TRUE(view.covers({bytes_.size() - 1, 0}));
+  EXPECT_TRUE(view.covers({bytes_.size() - 1, 1}));
+  EXPECT_FALSE(view.covers({bytes_.size() - 1, 2}));
+  EXPECT_FALSE(view.covers({bytes_.size(), 0}));
+  EXPECT_FALSE(view.covers({bytes_.size(), 1}));
 
   EXPECT_FALSE(view.covers({1, size_t(-1)}));
   EXPECT_FALSE(view.covers({size_t(-1), 1}));
@@ -176,11 +177,10 @@ TEST_F(BufferViewTest, Covers) {
 }
 
 TEST_F(BufferViewTest, Equals) {
-  // Almost identical to |bytes_|, except at [5] and [6].
-  uint8_t bytes2[kLen] = {0x10, 0x32, 0x54, 0x76, 0x98,
-                          0xAB, 0xCD, 0xFE, 0x10, 0x00};
-  ConstBufferView view1(std::begin(bytes_), kLen);
-  ConstBufferView view2(std::begin(bytes2), kLen);
+  // Almost identical to |bytes_|, except at 2 places:         v  v
+  std::vector<uint8_t> bytes2 = ParseHexString("10 32 54 76 98 AB CD FE 10 00");
+  ConstBufferView view1(bytes_.data(), bytes_.size());
+  ConstBufferView view2(&bytes2[0], bytes2.size());
 
   EXPECT_TRUE(view1.equals(view1));
   EXPECT_TRUE(view2.equals(view2));
@@ -196,6 +196,47 @@ TEST_F(BufferViewTest, Equals) {
   EXPECT_FALSE((view1[{5, 1}]).equals(view1[{5, 3}]));
   EXPECT_TRUE((view2[{0, 1}]).equals(view2[{8, 1}]));
   EXPECT_FALSE((view2[{1, 1}]).equals(view2[{8, 1}]));
+}
+
+TEST_F(BufferViewTest, AlignOn) {
+  using size_type = ConstBufferView::size_type;
+  ConstBufferView image(bytes_.data(), bytes_.size());
+  ConstBufferView view = image;
+  ASSERT_EQ(10U, view.size());
+
+  auto get_pos = [&image, &view]() -> size_type {
+    EXPECT_TRUE(view.begin() >= image.begin());  // Iterator compare.
+    return static_cast<size_type>(view.begin() - image.begin());
+  };
+
+  EXPECT_EQ(0U, get_pos());
+  view.remove_prefix(1U);
+  EXPECT_EQ(1U, get_pos());
+  view.remove_prefix(4U);
+  EXPECT_EQ(5U, get_pos());
+
+  // Align.
+  EXPECT_TRUE(view.AlignOn(image, 1U));  // Trival case.
+  EXPECT_EQ(5U, get_pos());
+
+  EXPECT_TRUE(view.AlignOn(image, 2U));
+  EXPECT_EQ(6U, get_pos());
+  EXPECT_TRUE(view.AlignOn(image, 2U));
+  EXPECT_EQ(6U, get_pos());
+
+  EXPECT_TRUE(view.AlignOn(image, 4U));
+  EXPECT_EQ(8U, get_pos());
+  EXPECT_TRUE(view.AlignOn(image, 2U));
+  EXPECT_EQ(8U, get_pos());
+
+  view.remove_prefix(1U);
+  EXPECT_EQ(9U, get_pos());
+
+  // Pos is at 9, align to 4 would yield 12, but size is 10, so this fails.
+  EXPECT_FALSE(view.AlignOn(image, 4U));
+  EXPECT_EQ(9U, get_pos());
+  EXPECT_TRUE(view.AlignOn(image, 2U));
+  EXPECT_EQ(10U, get_pos());
 }
 
 }  // namespace zucchini

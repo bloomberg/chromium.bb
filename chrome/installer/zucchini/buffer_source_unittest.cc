@@ -8,27 +8,28 @@
 #include <stdint.h>
 
 #include <iterator>
+#include <string>
+#include <tuple>
 #include <vector>
 
+#include "chrome/installer/zucchini/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
 
 using vec = std::vector<uint8_t>;
 
-constexpr size_t kLen = 10;
-constexpr uint8_t bytes[kLen] = {0x10, 0x32, 0x54, 0x76, 0x98,
-                                 0xBA, 0xDC, 0xFE, 0x10, 0x00};
-
 class BufferSourceTest : public testing::Test {
  protected:
-  BufferSource source_ = {std::begin(bytes), kLen};
+  std::vector<uint8_t> bytes_ = ParseHexString("10 32 54 76 98 BA DC FE 10 00");
+
+  BufferSource source_ = {bytes_.data(), bytes_.size()};
 };
 
 TEST_F(BufferSourceTest, Skip) {
-  EXPECT_EQ(kLen, source_.Remaining());
+  EXPECT_EQ(bytes_.size(), source_.Remaining());
   source_.Skip(2);
-  EXPECT_EQ(kLen - 2, source_.Remaining());
+  EXPECT_EQ(bytes_.size() - 2, source_.Remaining());
   source_.Skip(10);  // Skipping past end just moves cursor to end.
   EXPECT_EQ(size_t(0), source_.Remaining());
 }
@@ -51,7 +52,7 @@ TEST_F(BufferSourceTest, CheckNextBytes) {
 
 TEST_F(BufferSourceTest, ConsumeBytes) {
   EXPECT_FALSE(source_.ConsumeBytes({0x10, 0x00}));
-  EXPECT_EQ(kLen, source_.Remaining());
+  EXPECT_EQ(bytes_.size(), source_.Remaining());
   EXPECT_TRUE(source_.ConsumeBytes({0x10, 0x32, 0x54, 0x76}));
   EXPECT_EQ(size_t(6), source_.Remaining());
   EXPECT_TRUE(source_.ConsumeBytes({0x98, 0xBA, 0xDC, 0xFE}));
@@ -109,7 +110,7 @@ TEST_F(BufferSourceTest, GetValueAggregate) {
 TEST_F(BufferSourceTest, GetRegion) {
   ConstBufferView region;
   EXPECT_TRUE(source_.GetRegion(0, &region));
-  EXPECT_EQ(kLen, source_.Remaining());
+  EXPECT_EQ(bytes_.size(), source_.Remaining());
   EXPECT_TRUE(region.empty());
 
   EXPECT_TRUE(source_.GetRegion(2, &region));
@@ -117,7 +118,7 @@ TEST_F(BufferSourceTest, GetRegion) {
   EXPECT_EQ(vec({0x10, 0x32}), vec(region.begin(), region.end()));
   EXPECT_EQ(size_t(8), source_.Remaining());
 
-  EXPECT_FALSE(source_.GetRegion(kLen, &region));
+  EXPECT_FALSE(source_.GetRegion(bytes_.size(), &region));
   EXPECT_EQ(size_t(8), source_.Remaining());
   // |region| is left untouched.
   EXPECT_EQ(vec({0x10, 0x32}), vec(region.begin(), region.end()));
@@ -167,6 +168,180 @@ TEST_F(BufferSourceTest, GetArrayAggregate) {
   EXPECT_EQ(uint32_t(0x76543210), ptr[0].a);
   EXPECT_EQ(uint32_t(0xBA98), ptr[0].b);
   EXPECT_EQ(size_t(4), source_.Remaining());
+}
+
+TEST_F(BufferSourceTest, GetUleb128) {
+  using size_type = BufferSource::size_type;
+  // Result = {success, value, bytes_consumed}.
+  using Result = std::tuple<bool, uint32_t, size_type>;
+
+  constexpr uint32_t kUnInit = 0xCCCCCCCC;  // Arbitrary value.
+  constexpr Result kBad{false, kUnInit, 0U};
+
+  auto run = [kUnInit](const std::string hex_string) -> Result {
+    std::vector<uint8_t> bytes = ParseHexString(hex_string);
+    BufferSource source(ConstBufferView{bytes.data(), bytes.size()});
+    BufferSource::iterator base = source.begin();
+    // Initialize |value| to |kUnInit| to ensure no write on failure.
+    uint32_t value = kUnInit;
+    bool success = source.GetUleb128(&value);
+    return {success, value, source.begin() - base};
+  };
+
+  auto good = [](uint32_t value, size_type bytes_consumed) -> Result {
+    return Result{true, value, bytes_consumed};
+  };
+
+  EXPECT_EQ(good(0x0U, 1U), run("00"));
+  EXPECT_EQ(good(0x20U, 1U), run("20"));
+  EXPECT_EQ(good(0x42U, 1U), run("42"));
+  EXPECT_EQ(good(0x7FU, 1U), run("7F"));
+  EXPECT_EQ(kBad, run("80"));               // Out of data.
+  EXPECT_EQ(good(0x0U, 2U), run("80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x80U, 2U), run("80 01"));
+  EXPECT_EQ(good(0x7FU, 2U), run("FF 00"));  // Redundant (unsigned).
+  EXPECT_EQ(good(0x3FFFU, 2U), run("FF 7F"));
+  EXPECT_EQ(good(0x0U, 1U), run("00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80"));               // Out of data.
+  EXPECT_EQ(kBad, run("F1 88"));               // Out of data.
+  EXPECT_EQ(good(0x0U, 3U), run("80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x4000U, 3U), run("80 80 01"));
+  EXPECT_EQ(good(0x00100000U, 3U), run("80 80 40"));
+  EXPECT_EQ(good(0x001FFFFFU, 3U), run("FF FF 7F"));
+  EXPECT_EQ(good(0x0U, 1U), run("00 00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80 80"));               // Out of data.
+  EXPECT_EQ(kBad, run("AB CD EF"));               // Out of data.
+  EXPECT_EQ(good(0x0U, 4U), run("80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x00100000U, 4U), run("80 80 C0 00"));
+  EXPECT_EQ(good(0x00200000U, 4U), run("80 80 80 01"));
+  EXPECT_EQ(good(0x08000000U, 4U), run("80 80 80 40"));
+  EXPECT_EQ(good(0x001FC07FU, 4U), run("FF 80 FF 00"));
+  EXPECT_EQ(good(0x0U, 5U), run("80 80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x10000000U, 5U), run("80 80 80 80 01"));
+  EXPECT_EQ(good(0x10204081U, 5U), run("81 81 81 81 01"));
+  EXPECT_EQ(good(0x7FFFFFFFU, 5U), run("FF FF FF FF 07"));
+  EXPECT_EQ(good(0x80000000U, 5U), run("80 80 80 80 08"));
+  EXPECT_EQ(good(0xFFFFFFFFU, 5U), run("FF FF FF FF 0F"));
+  EXPECT_EQ(kBad, run("FF FF FF FF 80"));  // Too long / out of data.
+  EXPECT_EQ(good(0x0FFFFFFFU, 5U), run("FF FF FF FF 10"));  // "1" discarded.
+  EXPECT_EQ(good(0x00000000U, 5U), run("80 80 80 80 20"));  // "2" discarded.
+  EXPECT_EQ(good(0xA54A952AU, 5U), run("AA AA AA AA 7A"));  // "7" discarded.
+  EXPECT_EQ(kBad, run("FF FF FF FF FF 00"));                // Too long.
+}
+
+TEST_F(BufferSourceTest, GetSleb128) {
+  using size_type = BufferSource::size_type;
+  // Result = {success, value, bytes_consumed}.
+  using Result = std::tuple<bool, int32_t, size_type>;
+
+  constexpr int32_t kUnInit = 0xCCCCCCCC;  // Arbitrary value.
+  constexpr Result kBad{false, kUnInit, 0U};
+
+  auto run = [kUnInit](const std::string hex_string) -> Result {
+    std::vector<uint8_t> bytes = ParseHexString(hex_string);
+    BufferSource source(ConstBufferView{bytes.data(), bytes.size()});
+    BufferSource::iterator base = source.begin();
+    // Initialize |value| to |kUnInit| to ensure no write on failure.
+    int32_t value = kUnInit;
+    bool success = source.GetSleb128(&value);
+    return {success, value, source.begin() - base};
+  };
+
+  auto good = [](int32_t value, size_type bytes_consumed) -> Result {
+    return Result{true, value, bytes_consumed};
+  };
+
+  EXPECT_EQ(good(0x0, 1U), run("00"));
+  EXPECT_EQ(good(0x20U, 1U), run("20"));
+  EXPECT_EQ(good(-0x3E, 1U), run("42"));
+  EXPECT_EQ(good(-0x1, 1U), run("7F"));
+  EXPECT_EQ(kBad, run("80"));              // Out of data.
+  EXPECT_EQ(good(0x0, 2U), run("80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x80, 2U), run("80 01"));
+  EXPECT_EQ(good(0x7F, 2U), run("FF 00"));    // Not redudnant.
+  EXPECT_EQ(good(-0x1, 2U), run("FF 7F"));    // Redundant code.
+  EXPECT_EQ(good(0x0, 1U), run("00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80"));              // Out of data.
+  EXPECT_EQ(kBad, run("F1 88"));              // Out of data.
+  EXPECT_EQ(good(0x0, 3U), run("80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x4000, 3U), run("80 80 01"));
+  EXPECT_EQ(good(-0x100000, 3U), run("80 80 40"));
+  EXPECT_EQ(good(-0x1, 3U), run("FF FF 7F"));    // Redundant code.
+  EXPECT_EQ(good(0x0, 1U), run("00 00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80 80"));              // Out of data.
+  EXPECT_EQ(kBad, run("AB CD EF"));              // Out of data.
+  EXPECT_EQ(good(0x0, 4U), run("80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x00100000, 4U), run("80 80 C0 00"));
+  EXPECT_EQ(good(0x00200000, 4U), run("80 80 80 01"));
+  EXPECT_EQ(good(-static_cast<int32_t>(0x08000000), 4U), run("80 80 80 40"));
+  EXPECT_EQ(good(0x001FC07F, 4U), run("FF 80 FF 00"));
+  EXPECT_EQ(good(0x0, 5U), run("80 80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(0x10000000, 5U), run("80 80 80 80 01"));
+  EXPECT_EQ(good(0x10204081, 5U), run("81 81 81 81 01"));
+  EXPECT_EQ(good(0x7FFFFFFF, 5U), run("FF FF FF FF 07"));
+  EXPECT_EQ(good(-static_cast<int32_t>(0x80000000), 5U), run("80 80 80 80 08"));
+  EXPECT_EQ(good(-0x1, 5U), run("FF FF FF FF 0F"));  // Redundant code.
+  EXPECT_EQ(kBad, run("FF FF FF FF 80"));            // Too long / out of data.
+  EXPECT_EQ(good(0x0FFFFFFF, 5U), run("FF FF FF FF 10"));   // "1" discarded.
+  EXPECT_EQ(good(0x00000000, 5U), run("80 80 80 80 20"));   // "2" discarded.
+  EXPECT_EQ(good(-0x5AB56AD6, 5U), run("AA AA AA AA 7A"));  // "7" discarded.
+  EXPECT_EQ(kBad, run("FF FF FF FF FF 00"));                // Too long.
+}
+
+TEST_F(BufferSourceTest, SkipLeb128) {
+  using size_type = BufferSource::size_type;
+  // Result = {success, value, bytes_consumed}.
+  using Result = std::tuple<bool, size_type>;
+
+  constexpr Result kBad{false, 0U};
+
+  auto run = [](const std::string hex_string) -> Result {
+    std::vector<uint8_t> bytes = ParseHexString(hex_string);
+    BufferSource source(ConstBufferView{bytes.data(), bytes.size()});
+    BufferSource::iterator base = source.begin();
+    bool success = source.SkipLeb128();
+    return {success, source.begin() - base};
+  };
+
+  auto good = [](size_type bytes_consumed) -> Result {
+    return Result{true, bytes_consumed};
+  };
+
+  EXPECT_EQ(good(1U), run("00"));
+  EXPECT_EQ(good(1U), run("20"));
+  EXPECT_EQ(good(1U), run("42"));
+  EXPECT_EQ(good(1U), run("7F"));
+  EXPECT_EQ(kBad, run("80"));         // Out of data.
+  EXPECT_EQ(good(2U), run("80 00"));  // Redundant code.
+  EXPECT_EQ(good(2U), run("80 01"));
+  EXPECT_EQ(good(2U), run("FF 00"));  // Redundant (unsigned).
+  EXPECT_EQ(good(2U), run("FF 7F"));
+  EXPECT_EQ(good(1U), run("00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80"));         // Out of data.
+  EXPECT_EQ(kBad, run("F1 88"));         // Out of data.
+  EXPECT_EQ(good(3U), run("80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(3U), run("80 80 01"));
+  EXPECT_EQ(good(3U), run("80 80 40"));
+  EXPECT_EQ(good(3U), run("FF FF 7F"));
+  EXPECT_EQ(good(1U), run("00 00 80"));     // Only reads byte 0.
+  EXPECT_EQ(kBad, run("80 80 80"));         // Out of data.
+  EXPECT_EQ(kBad, run("AB CD EF"));         // Out of data.
+  EXPECT_EQ(good(4U), run("80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(4U), run("80 80 C0 00"));
+  EXPECT_EQ(good(4U), run("80 80 80 01"));
+  EXPECT_EQ(good(4U), run("80 80 80 40"));
+  EXPECT_EQ(good(4U), run("FF 80 FF 00"));
+  EXPECT_EQ(good(5U), run("80 80 80 80 00"));  // Redundant code.
+  EXPECT_EQ(good(5U), run("80 80 80 80 01"));
+  EXPECT_EQ(good(5U), run("81 81 81 81 01"));
+  EXPECT_EQ(good(5U), run("FF FF FF FF 07"));
+  EXPECT_EQ(good(5U), run("80 80 80 80 08"));
+  EXPECT_EQ(good(5U), run("FF FF FF FF 0F"));
+  EXPECT_EQ(kBad, run("FF FF FF FF 80"));      // Too long / out of data.
+  EXPECT_EQ(good(5U), run("FF FF FF FF 10"));  // "1" discarded.
+  EXPECT_EQ(good(5U), run("80 80 80 80 20"));  // "2" discarded.
+  EXPECT_EQ(good(5U), run("AA AA AA AA 7A"));  // "7" discarded.
+  EXPECT_EQ(kBad, run("FF FF FF FF FF 00"));   // Too long.
 }
 
 }  // namespace zucchini

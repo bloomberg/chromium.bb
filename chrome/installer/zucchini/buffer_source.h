@@ -23,6 +23,9 @@ namespace zucchini {
 // maintain cursor progress across reads.
 class BufferSource : public ConstBufferView {
  public:
+  // LEB128 info: http://dwarfstd.org/doc/dwarf-2.0.0.pdf , Section 7.6.
+  enum : size_t { kMaxLeb128Size = 5 };
+
   static BufferSource FromRange(const_iterator first, const_iterator last) {
     return BufferSource(ConstBufferView::FromRange(first, last));
   }
@@ -47,7 +50,6 @@ class BufferSource : public ConstBufferView {
   bool CheckNextValue(const T& value) const {
     static_assert(std::is_integral<T>::value,
                   "Value type must be an integral type");
-
     DCHECK_NE(begin(), nullptr);
     if (Remaining() < sizeof(T))
       return false;
@@ -115,6 +117,20 @@ class BufferSource : public ConstBufferView {
   // |size| bytes starting at the cursor, while advancing the cursor beyond the
   // region, and returns true. Otherwise returns false.
   bool GetRegion(size_type size, ConstBufferView* buffer);
+
+  // Reads an Unsigned Little Endian Base 128 (uleb128) int at |first_|. If
+  // successful, writes the result to |value|, advances |first_|, and returns
+  // true. Otherwise returns false.
+  bool GetUleb128(uint32_t* value);
+
+  // Reads a Signed Little Endian Base 128 (sleb128) int at |first_|. If
+  // successful, writes the result to |value|, advances |first_|, and returns
+  // true. Otherwise returns false.
+  bool GetSleb128(int32_t* value);
+
+  // Reads uleb128 / sleb128 at |first_| but discards the result. If successful,
+  // advances |first_| and returns true. Otherwise returns false.
+  bool SkipLeb128();
 
   // Returns the number of bytes remaining from cursor until end.
   size_type Remaining() const { return size(); }
