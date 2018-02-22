@@ -76,6 +76,17 @@ class TestCyglogToOrderfile(unittest.TestCase):
     if failure_items:
       raise self.failureException('\n'.join(failure_items))
 
+  def testParseLogLines(self):
+    lines = """5086e000-52e92000 r-xp 00000000 b3:02 51276      libchromeview.so
+secs       usecs      pid:threadid    func
+START
+1314897086 795828     3587:1074648168 0x509e105c
+1314897086 795874     3587:1074648168 0x509e0eb4
+END""".split('\n')
+    offsets = cyglog_to_orderfile._ParseLogLines(lines)
+    self.assertListEqual(
+        offsets, [0x509e105c - 0x5086e000, 0x509e0eb4 - 0x5086e000])
+
   def testWarnAboutDuplicates(self):
     offsets = [0x1, 0x2, 0x3]
     self.assertTrue(cyglog_to_orderfile._WarnAboutDuplicates(offsets))

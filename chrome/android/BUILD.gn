@@ -771,8 +771,8 @@ template("chrome_shared_library") {
       deps += [ "//tools/cygprofile" ]
     }
 
-    # See crbug.com/705088.
-    if (target_cpu == "arm" && is_asan) {
+    # See crbug.com/705088, crbug.com/717815.
+    if (target_cpu == "arm" && (is_asan || use_order_profiling)) {
       ldflags = [ "-Wl,--long-plt" ]
     }
 
