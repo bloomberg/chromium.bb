@@ -132,7 +132,6 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
   if (chromeos::GetAshConfig() == ash::Config::MASH) {
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
-
     // Register ash-specific window properties with Chrome's property converter.
     // This propagates ash properties set on chrome windows to ash, via mojo.
     DCHECK(views::MusClient::Exists());
@@ -168,6 +167,14 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
         aura::PropertyConverter::CreateAcceptAnyValueCallback());
     converter->RegisterStringProperty(
         ash::kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
+    converter->RegisterPrimitiveProperty(
+        ash::kRestoreBoundsOverrideKey,
+        ash::mojom::kRestoreBoundsOverride_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
+    converter->RegisterPrimitiveProperty(
+        ash::kRestoreWindowStateTypeOverrideKey,
+        ash::mojom::kRestoreWindowStateTypeOverride_Property,
+        base::BindRepeating(&ash::IsValidWindowStateType));
 
     mus_client->SetMusPropertyMirror(
         std::make_unique<ash::MusPropertyMirrorAsh>());

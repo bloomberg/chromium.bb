@@ -19,3 +19,16 @@ const string kHideShelfWhenFullscreen_Property =
 // minimize overlap.
 const string kWindowPositionManaged_Property =
   "ash:window-position-managed";
+
+// A property key which stores the bounds to restore a window to. These take
+// preference over the current bounds. This is used by e.g. the tablet mode
+// window manager.
+const string kRestoreBoundsOverride_Property =
+  "ash:restore-bounds-override";
+
+// A property key which stores the window state to restore a window to. These
+// take preference over the current state if
+// |kRestoreWindowStateTypeOverrideKey| is set. This is used by e.g. the tablet
+// mode window manager.
+const string kRestoreWindowStateTypeOverride_Property  =
+  "ash:restore-window-state-type-override";

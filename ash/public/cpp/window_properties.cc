@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ui/gfx/geometry/rect.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
@@ -18,6 +19,12 @@ namespace ash {
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
+                                   kRestoreBoundsOverrideKey,
+                                   nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+                             kRestoreWindowStateTypeOverrideKey,
+                             mojom::WindowStateType::DEFAULT);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kShowInOverviewKey, true);
