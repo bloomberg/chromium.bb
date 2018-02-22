@@ -171,8 +171,7 @@ class MockClient : public AudioOutputStreamClient {
   MockClient() {}
   ~MockClient() override {}
 
-  void StreamCreated(mojo::ScopedSharedBufferHandle handle1,
-                     mojo::ScopedHandle handle2) {
+  void StreamCreated(media::mojom::AudioDataPipePtr data_pipe) {
     was_called_ = true;
   }
 

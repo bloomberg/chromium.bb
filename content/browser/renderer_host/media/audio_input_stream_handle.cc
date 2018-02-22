@@ -49,17 +49,15 @@ AudioInputStreamHandle::~AudioInputStreamHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void AudioInputStreamHandle::OnCreated(
-    mojo::ScopedSharedBufferHandle shared_buffer,
-    mojo::ScopedHandle socket_descriptor,
-    bool initially_muted) {
+void AudioInputStreamHandle::OnCreated(media::mojom::AudioDataPipePtr data_pipe,
+                                       bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_);
   DCHECK(deleter_callback_)
       << "|deleter_callback_| was called, but |this| hasn't been destructed!";
-  client_->StreamCreated(
-      std::move(stream_ptr_), std::move(stream_client_request_),
-      std::move(shared_buffer), std::move(socket_descriptor), initially_muted);
+  client_->StreamCreated(std::move(stream_ptr_),
+                         std::move(stream_client_request_),
+                         std::move(data_pipe), initially_muted);
 }
 
 void AudioInputStreamHandle::CallDeleter() {

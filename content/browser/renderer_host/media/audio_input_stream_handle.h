@@ -10,6 +10,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/services/mojo_audio_input_stream.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -33,9 +34,7 @@ class CONTENT_EXPORT AudioInputStreamHandle {
   ~AudioInputStreamHandle();
 
  private:
-  void OnCreated(mojo::ScopedSharedBufferHandle shared_buffer,
-                 mojo::ScopedHandle socket_descriptor,
-                 bool initially_muted);
+  void OnCreated(media::mojom::AudioDataPipePtr, bool initially_muted);
 
   void CallDeleter();
 

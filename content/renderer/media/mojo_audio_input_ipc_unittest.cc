@@ -88,9 +88,11 @@ class FakeStreamCreator {
         base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
     factory_client_->StreamCreated(
         std::move(stream_ptr), mojo::MakeRequest(&stream_client_),
-        mojo::SharedBufferHandle::Create(kMemoryLength)
-            ->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
-        mojo::WrapPlatformFile(foreign_socket.Release()), initially_muted_);
+        {base::in_place,
+         mojo::SharedBufferHandle::Create(kMemoryLength)
+             ->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+         mojo::WrapPlatformFile(foreign_socket.Release())},
+        initially_muted_);
   }
 
   MojoAudioInputIPC::StreamCreatorCB GetCallback() {

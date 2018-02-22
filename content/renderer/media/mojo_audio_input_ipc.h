@@ -54,8 +54,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   void StreamCreated(
       media::mojom::AudioInputStreamPtr stream,
       media::mojom::AudioInputStreamClientRequest stream_client_request,
-      mojo::ScopedSharedBufferHandle shared_memory,
-      mojo::ScopedHandle socket,
+      media::mojom::AudioDataPipePtr data_pipe,
       bool initially_muted) override;
   void OnError() override;
   void OnMutedStateChanged(bool is_muted) override;

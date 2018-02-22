@@ -10,6 +10,7 @@
 
 #include "base/sequence_checker.h"
 #include "media/audio/audio_input_delegate.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -22,8 +23,8 @@ class MEDIA_MOJO_EXPORT MojoAudioInputStream
     : public mojom::AudioInputStream,
       public AudioInputDelegate::EventHandler {
  public:
-  using StreamCreatedCallback = base::OnceCallback<
-      void(mojo::ScopedSharedBufferHandle, mojo::ScopedHandle, bool)>;
+  using StreamCreatedCallback =
+      base::OnceCallback<void(mojom::AudioDataPipePtr, bool)>;
   using CreateDelegateCallback =
       base::OnceCallback<std::unique_ptr<AudioInputDelegate>(
           AudioInputDelegate::EventHandler*)>;

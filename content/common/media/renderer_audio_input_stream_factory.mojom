@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "media/mojo/interfaces/audio_data_pipe.mojom";
 import "media/mojo/interfaces/audio_input_stream.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/media_types.mojom";
@@ -31,6 +32,6 @@ interface RendererAudioInputStreamFactoryClient {
   StreamCreated(
       media.mojom.AudioInputStream stream,
       media.mojom.AudioInputStreamClient& client_request,
-      handle<shared_buffer> shared_buffer, handle socket_descriptor,
+      media.mojom.AudioDataPipe data_pipe,
       bool initially_muted);
 };

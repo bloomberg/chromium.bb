@@ -4,6 +4,7 @@
 
 module media.mojom;
 
+import "media/mojo/interfaces/audio_data_pipe.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 
@@ -16,8 +17,8 @@ interface AudioOutputStream {
   // Starts rendering audio.
   Play();
 
-  // Stops rendering audio and sends a signal to the |socket_descriptor|
-  // indicating this.
+  // Stops rendering audio and sends a signal on the AudioDataPipe indicating
+  // this.
   Pause();
 
   // Sets volume. Volume must be in the range [0, 1].
@@ -31,16 +32,12 @@ interface AudioOutputStreamClient {
 };
 
 interface AudioOutputStreamProvider {
-  // Creates a new AudioOutputStream using |params|. |shared_buffer| and
-  // |socket_descriptor| are used to write data to the stream as defined
-  // in AudioDeviceThread. This means:
-  // * |shared_buffer| will be a writable handle to memory of the size needed
-  //   by AudioDeviceThread for the specified params.
-  // * |socket_descriptor| is a descriptor from which a
-  //   base::CancelableSyncSocket can be constructed.
+  // Creates a new AudioOutputStream using |params|. |data_pipe| is used to
+  // transfer audio data.
   // Can only be called once.
-  Acquire(AudioOutputStream& output_stream, AudioOutputStreamClient client, AudioParameters params)
-  => (handle<shared_buffer> shared_buffer, handle socket_descriptor);
+  Acquire(AudioOutputStream& output_stream, AudioOutputStreamClient client,
+    AudioParameters params)
+    => (AudioDataPipe data_pipe);
 };
 
 // An AudioOutputStreamObserver gets notifications about events related to an
