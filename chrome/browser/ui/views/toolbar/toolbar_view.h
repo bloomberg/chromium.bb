@@ -103,6 +103,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
+  ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
   AppMenuButton* app_menu_button() const { return app_menu_button_; }
