@@ -81,7 +81,6 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int b_row = mi_row & (cm->seq_params.mib_size - 1);
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
   if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
       read_delta_q_flag) {
@@ -117,7 +116,6 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int b_row = mi_row & (cm->seq_params.mib_size - 1);
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
 
   if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
       read_delta_lf_flag) {
@@ -275,9 +273,8 @@ static MOTION_MODE read_motion_mode(MACROBLOCKD *xd, MODE_INFO *mi,
   }
 }
 
-static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                                aom_reader *r, int16_t ctx) {
-  (void)cm;
+static PREDICTION_MODE read_inter_compound_mode(MACROBLOCKD *xd, aom_reader *r,
+                                                int16_t ctx) {
   const int mode =
       aom_read_symbol(r, xd->tile_ctx->inter_compound_mode_cdf[ctx],
                       INTER_COMPOUND_MODES, ACCT_STR);
@@ -348,11 +345,10 @@ static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
 }
 #endif
 
-static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
-                               MB_MODE_INFO *mbmi, TX_SIZE tx_size, int depth,
-                               int blk_row, int blk_col, aom_reader *r) {
+static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
+                               TX_SIZE tx_size, int depth, int blk_row,
+                               int blk_col, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
   int is_split = 0;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int max_blocks_high = max_block_high(xd, bsize, 0);
@@ -405,8 +401,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
         int offsetr = blk_row + row;
         int offsetc = blk_col + col;
-        read_tx_size_vartx(cm, xd, mbmi, sub_txs, depth + 1, offsetr, offsetc,
-                           r);
+        read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1, offsetr, offsetc, r);
       }
     }
   } else {
@@ -424,8 +419,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int is_inter, aom_reader *r) {
+static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
+                                     aom_reader *r) {
   // TODO(debargha): Clean up the logic here. This function should only
   // be called for intra.
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
@@ -433,8 +428,6 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const int max_depths = bsize_to_max_depth(bsize, 0);
   const int ctx = get_tx_size_context(xd, is_inter);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
-
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     max_depths + 1, ACCT_STR);
   assert(depth >= 0 && depth <= max_depths);
@@ -450,7 +443,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 
   if (block_signals_txsize(bsize)) {
     if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
-      const TX_SIZE coded_tx_size = read_selected_tx_size(cm, xd, is_inter, r);
+      const TX_SIZE coded_tx_size = read_selected_tx_size(xd, is_inter, r);
       return coded_tx_size;
     } else {
       return tx_size_from_tx_mode(bsize, tx_mode, is_inter);
@@ -903,7 +896,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       mbmi->min_tx_size = TX_SIZES_LARGEST;
       for (int idy = 0; idy < height; idy += bh) {
         for (int idx = 0; idx < width; idx += bw) {
-          read_tx_size_vartx(cm, xd, mbmi, max_tx_size, 0, idy, idx, r);
+          read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
         }
       }
     } else {
@@ -1434,11 +1427,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int_mv *pred_mv = mbmi->pred_mv;
-  (void)ref_frame;
-  (void)cm;
-  (void)mi_row;
-  (void)mi_col;
-  (void)bsize;
 #if CONFIG_AMVR
   if (cm->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
@@ -1741,7 +1729,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->mode = GLOBALMV;
     } else {
       if (is_compound)
-        mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
+        mbmi->mode = read_inter_compound_mode(xd, r, mode_ctx);
       else
         mbmi->mode = read_inter_mode(ec_ctx, r, mode_ctx);
       if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
@@ -2140,7 +2128,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     mbmi->min_tx_size = TX_SIZES_LARGEST;
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
-        read_tx_size_vartx(cm, xd, mbmi, max_tx_size, 0, idy, idx, r);
+        read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
   } else {
     mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
     if (inter_block)
