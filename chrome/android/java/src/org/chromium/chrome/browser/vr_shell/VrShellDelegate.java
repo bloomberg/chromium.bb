@@ -454,11 +454,7 @@ public class VrShellDelegate
     }
 
     public static void requestToExitVr(OnExitVrRequestListener listener) {
-        if (sInstance == null) {
-            listener.onDenied();
-            return;
-        }
-        sInstance.requestToExitVrInternal(listener);
+        requestToExitVr(listener, UiUnsupportedMode.GENERIC_UNSUPPORTED_FEATURE);
     }
 
     public static void requestToExitVr(
@@ -1240,17 +1236,6 @@ public class VrShellDelegate
         return ENTER_VR_REQUESTED;
     }
 
-    private void requestToExitVrInternal(OnExitVrRequestListener listener) {
-        assert listener != null;
-        // If we are currently processing another request or we are not in VR, deny the request.
-        if (mOnExitVrRequestListener != null || !mInVr) {
-            listener.onDenied();
-            return;
-        }
-        mOnExitVrRequestListener = listener;
-        if (!showDoff(true /* optional */)) callOnExitVrRequestListener(false);
-    }
-
     private void requestToExitVrInternal(
             OnExitVrRequestListener listener, @UiUnsupportedMode int reason) {
         assert listener != null;
@@ -1865,6 +1850,14 @@ public class VrShellDelegate
 
     protected boolean getDonSucceeded() {
         return mDonSucceeded;
+    }
+
+    protected boolean isShowingDoff() {
+        return mShowingDaydreamDoff;
+    }
+
+    protected void acceptDoffPromptForTesting() {
+        mVrShell.acceptDoffPromptForTesting();
     }
 
     /**

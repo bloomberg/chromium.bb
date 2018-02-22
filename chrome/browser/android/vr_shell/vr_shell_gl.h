@@ -128,6 +128,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void SetAlertDialogSize(int width, int height);
 
+  void AcceptDoffPromptForTesting();
+
  private:
   void GvrInit(gvr_context* gvr_api);
   device::mojom::VRDisplayFrameTransportOptionsPtr

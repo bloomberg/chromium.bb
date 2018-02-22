@@ -1546,4 +1546,8 @@ void VrShellGl::ClosePresentationBindings() {
   binding_.Close();
 }
 
+void VrShellGl::AcceptDoffPromptForTesting() {
+  ui_->AcceptDoffPromptForTesting();
+}
+
 }  // namespace vr

@@ -399,17 +399,15 @@ public class VrShellTransitionTest {
             }
         };
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                        context, SingleWebsitePreferences.class.getName());
-                context.startActivity(preferencesIntent);
-                Assert.assertTrue(mockApi.getExitFromVrCalled());
-                Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                    context, SingleWebsitePreferences.class.getName());
+            context.startActivity(preferencesIntent);
+            VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
 
+        CriteriaHelper.pollUiThread(() -> { return mockApi.getExitFromVrCalled(); });
+        Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
         MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi() {
             @Override
             public boolean exitFromVr(int requestCode, final Intent intent) {
@@ -424,13 +422,15 @@ public class VrShellTransitionTest {
 
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PreferencesLauncher.launchSettingsPage(context, null);
-                mTestRule.getActivity().onActivityResult(
-                        VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PreferencesLauncher.launchSettingsPage(context, null);
+            VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
+        });
+        CriteriaHelper.pollUiThread(
+                () -> { return VrShellDelegateUtils.getDelegateInstance().isShowingDoff(); });
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestRule.getActivity().onActivityResult(
+                    VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
         });
 
         ActivityUtils.waitForActivity(

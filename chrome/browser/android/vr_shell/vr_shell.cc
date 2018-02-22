@@ -722,7 +722,8 @@ content::WebContents* VrShell::GetNonNativePageWebContents() const {
 
 void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
   switch (mode) {
-    case UiUnsupportedMode::kUnhandledCodePoint:
+    case UiUnsupportedMode::kUnhandledCodePoint:  // Fall through.
+    case UiUnsupportedMode::kGenericUnsupportedFeature:
       ExitVrDueToUnsupportedMode(mode);
       return;
     case UiUnsupportedMode::kUnhandledPageInfo: {
@@ -1011,6 +1012,14 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
 
 void VrShell::OnAssetsComponentReady() {
   ui_->OnAssetsComponentReady();
+}
+
+void VrShell::AcceptDoffPromptForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::AcceptDoffPromptForTesting,
+                                gl_thread_->GetVrShellGl()));
 }
 
 // ----------------------------------------------------------------------------

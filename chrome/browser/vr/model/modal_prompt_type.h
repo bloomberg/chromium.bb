@@ -13,6 +13,7 @@ enum ModalPromptType {
   kModalPromptTypeNone,
   kModalPromptTypeExitVRForSiteInfo,
   kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
+  kModalPromptTypeGenericUnsupportedFeature,
 };
 
 UiUnsupportedMode GetReasonForPrompt(ModalPromptType prompt);
