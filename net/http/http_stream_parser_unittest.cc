@@ -1224,14 +1224,11 @@ class SimpleGetRunner {
     read_buffer_->set_offset(offset + size);
   }
 
-  void AddRead(const std::string& data) {
-    reads_.push_back(MockRead(SYNCHRONOUS, sequence_number_++, data.data()));
-  }
-
-  // Simple overload - the above method requires using std::strings that outlive
-  // the function call.  This version works with inlined C-style strings.
-  void AddRead(const char* data) {
-    reads_.push_back(MockRead(SYNCHRONOUS, sequence_number_++, data));
+  // The data used to back |string_piece| must stay alive until all mock data
+  // has been read.
+  void AddRead(base::StringPiece string_piece) {
+    reads_.push_back(MockRead(SYNCHRONOUS, string_piece.data(),
+                              string_piece.length(), sequence_number_++));
   }
 
   void SetupParserAndSendRequest() {
@@ -1265,18 +1262,21 @@ class SimpleGetRunner {
 
   void ReadHeaders() { ReadHeadersExpectingError(OK); }
 
-  void ReadBody(int user_buf_len, int* read_lengths) {
+  std::string ReadBody(int user_buf_len, int* read_lengths) {
     TestCompletionCallback callback;
     scoped_refptr<IOBuffer> buffer = new IOBuffer(user_buf_len);
     int rv;
     int i = 0;
+    std::string body;
     while (true) {
       rv = parser_->ReadResponseBody(
           buffer.get(), user_buf_len, callback.callback());
       EXPECT_EQ(read_lengths[i], rv);
+      if (rv > 0)
+        body.append(buffer->data(), rv);
       i++;
       if (rv <= 0)
-        return;
+        return body;
     }
   }
 
@@ -1709,6 +1709,34 @@ TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
 
   EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)), parser.sent_bytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)), parser.received_bytes());
+}
+
+// Case where one byte is received at a time.
+TEST(HttpStreamParser, ReceiveOneByteAtATime) {
+  const std::string kResponseHeaders =
+      "HTTP/1.0 200 OK\r\n"
+      "Foo: Bar\r\n\r\n";
+  const std::string kResponseBody = "hi";
+
+  SimpleGetRunner get_runner;
+  for (size_t i = 0; i < kResponseHeaders.length(); ++i) {
+    get_runner.AddRead(base::StringPiece(kResponseHeaders.data() + i, 1));
+  }
+  for (size_t i = 0; i < kResponseBody.length(); ++i) {
+    get_runner.AddRead(base::StringPiece(kResponseBody.data() + i, 1));
+  }
+  // EOF
+  get_runner.AddRead("");
+
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  std::string header_value;
+  EXPECT_TRUE(get_runner.response_info()->headers->GetNormalizedHeader(
+      "Foo", &header_value));
+  EXPECT_EQ("Bar", header_value);
+  int read_lengths[] = {1, 1, 0};
+  EXPECT_EQ(kResponseBody,
+            get_runner.ReadBody(kResponseBody.size(), read_lengths));
 }
 
 }  // namespace
