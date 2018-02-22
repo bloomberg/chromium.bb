@@ -45474,6 +45474,9 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="Error instantiating variable font, falling back"/>
   <int value="1" label="Success conventional web font"/>
   <int value="2" label="Success variable web font"/>
+  <int value="3" label="Success CBDT/CBLC color font"/>
+  <int value="4" label="Success CFF2 outline font"/>
+  <int value="5" label="Success Sbix color font"/>
 </enum>
 
 <enum name="WebFontInterventionResult">

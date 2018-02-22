@@ -10,3 +10,5 @@ Local Modifications:
 - src/ots.cc: Changed include path to woff2_dec.h.
 - BUILD.gn: Added.
 - fuzz/: Added.
+- ots.cc: Allow CFF2 outlines, upstreamed in
+  https://github.com/khaledhosny/ots/pull/161
