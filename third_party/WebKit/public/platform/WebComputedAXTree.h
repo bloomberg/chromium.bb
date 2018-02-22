@@ -60,13 +60,15 @@ class WebComputedAXTree {
   virtual bool GetIntAttributeForAXNode(int32_t ax_id,
                                         WebAOMIntAttribute,
                                         int32_t* out_param) = 0;
-  virtual bool GetStringAttributeForAXNode(int32_t,
+  virtual bool GetStringAttributeForAXNode(int32_t ax_id,
                                            WebAOMStringAttribute,
                                            WebString* out_param) = 0;
 
   // The role is stored seperately from other attributes in the AXNode, so we
   // expose a seperate method for retrieving this.
   virtual bool GetRoleForAXNode(int32_t ax_id, blink::WebString* out_param) = 0;
+  virtual bool GetCheckedStateForAXNode(int32_t ax_id,
+                                        blink::WebString* out_param) = 0;
   virtual bool GetParentIdForAXNode(int32_t ax_id, int32_t* out_param) = 0;
   virtual bool GetFirstChildIdForAXNode(int32_t ax_id, int32_t* out_param) = 0;
   virtual bool GetLastChildIdForAXNode(int32_t ax_id, int32_t* out_param) = 0;

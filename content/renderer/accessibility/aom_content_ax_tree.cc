@@ -8,6 +8,7 @@
 
 #include "content/common/ax_content_node_data.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
+#include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -125,6 +126,17 @@ bool AomContentAxTree::GetBoolAttributeForAXNode(
   }
   ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
   return node->data().GetBoolAttribute(ax_attr, out_param);
+}
+
+bool AomContentAxTree::GetCheckedStateForAXNode(int32_t ax_id,
+                                                blink::WebString* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  ax::mojom::CheckedState checked_state = static_cast<ax::mojom::CheckedState>(
+      node->data().GetIntAttribute(ax::mojom::IntAttribute::kCheckedState));
+  *out_param = blink::WebString::FromUTF8(ui::ToString(checked_state));
+  return true;
 }
 
 bool AomContentAxTree::GetIntAttributeForAXNode(int32_t ax_id,
