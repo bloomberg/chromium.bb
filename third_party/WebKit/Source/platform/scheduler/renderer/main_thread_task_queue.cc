@@ -18,8 +18,6 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "control_tq";
     case MainThreadTaskQueue::QueueType::kDefault:
       return "default_tq";
-    case MainThreadTaskQueue::QueueType::kDefaultTimer:
-      return "default_timer_tq";
     case MainThreadTaskQueue::QueueType::kUnthrottled:
       return "unthrottled_tq";
     case MainThreadTaskQueue::QueueType::kFrameLoading:
@@ -69,7 +67,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kFrameLoading:
     case QueueType::kFrameLoadingControl:
       return QueueClass::kLoading;
-    case QueueType::kDefaultTimer:
     case QueueType::kUnthrottled:
     case QueueType::kFrameThrottleable:
     case QueueType::kFrameDeferrable:
