@@ -12,6 +12,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -109,7 +110,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
  private:
   // Returns true if |worker| is allowed to cleanup and remove itself from the
   // pool. Called from GetWork() when no work is available.
-  bool CanCleanup(SchedulerWorker* worker);
+  bool CanCleanupLockRequired(SchedulerWorker* worker);
 
   // Calls cleanup on |worker| and removes it from the pool.
   void CleanupLockRequired(SchedulerWorker* worker);
@@ -294,12 +295,14 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 #if DCHECK_IS_ON()
   join_for_testing_started_.Set();
 #endif
-  DCHECK(!CanWorkerCleanupForTesting() || suggested_reclaim_time_.is_max())
-      << "Workers can cleanup during join.";
 
   decltype(workers_) workers_copy;
   {
     AutoSchedulerLock auto_lock(lock_);
+
+    DCHECK(!CanWorkerCleanupForTestingLockRequired() ||
+           suggested_reclaim_time_.is_max())
+        << "Workers can cleanup during join.";
 
     // Make a copy of the SchedulerWorkers so that we can call
     // SchedulerWorker::JoinForTesting() without holding |lock_| since
@@ -319,7 +322,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 }
 
 void SchedulerWorkerPoolImpl::DisallowWorkerCleanupForTesting() {
-  worker_cleanup_disallowed_.Set();
+  AutoSchedulerLock auto_lock(lock_);
+  worker_cleanup_disallowed_for_testing_ = true;
 }
 
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() {
@@ -398,7 +402,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     DCHECK_EQ(is_on_idle_workers_stack_,
               outer_->idle_workers_stack_.Contains(worker));
     if (is_on_idle_workers_stack_) {
-      if (CanCleanup(worker))
+      if (CanCleanupLockRequired(worker))
         CleanupLockRequired(worker);
 
       // Since we got here from timing out from the WaitableEvent rather than
@@ -485,10 +489,10 @@ TimeDelta SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
   return outer_->suggested_reclaim_time_;
 }
 
-bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CanCleanup(
-    SchedulerWorker* worker) {
+bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
+    CanCleanupLockRequired(SchedulerWorker* worker) {
   return worker != outer_->PeekAtIdleWorkersStackLockRequired() &&
-         outer_->CanWorkerCleanupForTesting();
+         LIKELY(outer_->CanWorkerCleanupForTestingLockRequired());
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::CleanupLockRequired(
@@ -774,8 +778,9 @@ void SchedulerWorkerPoolImpl::RemoveFromIdleWorkersStackLockRequired(
   idle_workers_stack_.Remove(worker);
 }
 
-bool SchedulerWorkerPoolImpl::CanWorkerCleanupForTesting() {
-  return !worker_cleanup_disallowed_.IsSet();
+bool SchedulerWorkerPoolImpl::CanWorkerCleanupForTestingLockRequired() {
+  lock_.AssertAcquired();
+  return !worker_cleanup_disallowed_for_testing_;
 }
 
 SchedulerWorker*
