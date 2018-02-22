@@ -654,8 +654,13 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
       box->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
   if (box->HasBorderOrPadding())
     local_pos.Move(-box->ContentBoxOffset());
-  local_pos.Scale(canvas()->width() / box->ContentWidth(),
-                  canvas()->height() / box->ContentHeight());
+  float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
+                         ? 1.0f
+                         : canvas()->width() / box->ContentWidth();
+  float scaleHeight = box->ContentHeight().ToFloat() == 0.0f
+                          ? 1.0f
+                          : canvas()->height() / box->ContentHeight();
+  local_pos.Scale(scaleWidth, scaleHeight);
 
   HitRegion* hit_region = HitRegionAtPoint(local_pos);
   if (hit_region) {
