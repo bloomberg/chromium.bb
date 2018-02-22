@@ -24,14 +24,12 @@ struct aom_write_bit_buffer;
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb);
 #endif
 
-#if CONFIG_OBU
 uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
                           uint8_t *const dst);
 
 #if CONFIG_OBU_SIZING
 int write_uleb_obu_size(uint32_t obu_size, uint8_t *dest);
 #endif  // CONFIG_OBU_SIZING
-#endif  // CONFIG_OBU
 
 int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 

@@ -116,17 +116,4 @@ TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {
   EXPECT_GE(sf_count_, 1);
 }
 
-// The superframe index is currently mandatory with both ANS and DAALA_EC due
-// to the decoder starting at the end of the buffer.
-#if CONFIG_EXT_TILE && !CONFIG_OBU
-// TODO(yaowu): remove this test once OBU is fully merged in AV1
-// Single tile does not work with ANS (see comment above).
-const int tile_col_values[] = { 1, 2 };
-const int tile_row_values[] = { 1, 2, 32 };
-AV1_INSTANTIATE_TEST_CASE(
-    SuperframeTest,
-    ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
-                       ::testing::ValuesIn(tile_col_values),
-                       ::testing::ValuesIn(tile_row_values)));
-#endif  // CONFIG_EXT_TILE
 }  // namespace

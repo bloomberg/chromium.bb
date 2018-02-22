@@ -20,9 +20,7 @@
 #include "aom/aom_decoder.h"
 #include "aom_dsp/bitreader_buffer.h"
 #include "aom_dsp/aom_dsp_common.h"
-#if CONFIG_OBU
 #include "aom_ports/mem_ops.h"
-#endif
 #include "aom_util/aom_thread.h"
 
 #include "av1/common/alloccommon.h"
@@ -173,134 +171,6 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-#if !CONFIG_OBU
-static aom_bit_depth_t parse_bitdepth(BITSTREAM_PROFILE profile,
-                                      struct aom_read_bit_buffer *rb) {
-  aom_bit_depth_t bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_10 : AOM_BITS_8;
-  if (profile < PROFILE_2 || bit_depth == AOM_BITS_8) {
-    return bit_depth;
-  }
-  bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
-  return bit_depth;
-}
-
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-static void parse_timing_info_header(struct aom_read_bit_buffer *rb) {
-  int timing_info_present;
-  int equal_picture_interval;
-  uint32_t num_ticks_per_picture;
-
-  timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
-
-  if (timing_info_present) {
-    rb->bit_offset += 32;  // Number of units in tick
-    rb->bit_offset += 32;  // Time scale
-
-    equal_picture_interval = aom_rb_read_bit(rb);  // Equal picture interval bit
-    if (equal_picture_interval) {
-      num_ticks_per_picture = aom_rb_read_uvlc(rb) - 1;  // ticks per picture
-    }
-  }
-}
-#endif  // CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-
-static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
-                                              struct aom_read_bit_buffer *rb) {
-#if CONFIG_CICP
-  aom_color_primaries_t color_primaries;
-  aom_transfer_characteristics_t transfer_characteristics;
-  aom_matrix_coefficients_t matrix_coefficients;
-#else
-  aom_color_space_t color_space = AOM_CS_UNKNOWN;
-#endif  // CONFIG_CICP
-  int subsampling_x = 0;
-  int subsampling_y = 0;
-  (void)subsampling_x;
-  (void)subsampling_y;
-
-  aom_bit_depth_t bit_depth = parse_bitdepth(profile, rb);
-#if CONFIG_MONO_VIDEO
-  // Monochrome bit
-  const int is_monochrome = profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
-#else
-  const int is_monochrome = 0;
-#endif  // CONFIG_MONO_VIDEO
-
-#if CONFIG_CICP
-  int color_description_present_flag = aom_rb_read_bit(rb);
-  if (color_description_present_flag) {
-    color_primaries = (aom_color_primaries_t)aom_rb_read_literal(rb, 8);
-    transfer_characteristics =
-        (aom_transfer_characteristics_t)aom_rb_read_literal(rb, 8);
-    matrix_coefficients = (aom_matrix_coefficients_t)aom_rb_read_literal(rb, 8);
-  } else {
-    color_primaries = AOM_CICP_CP_UNSPECIFIED;
-    transfer_characteristics = AOM_CICP_TC_UNSPECIFIED;
-    matrix_coefficients = AOM_CICP_MC_UNSPECIFIED;
-  }
-#else
-#if CONFIG_COLORSPACE_HEADERS
-  if (!is_monochrome) {
-    color_space = (aom_color_space_t)aom_rb_read_literal(rb, 5);
-  }
-  rb->bit_offset += 5;  // Transfer function
-#else
-  if (!is_monochrome) {
-    color_space = (aom_color_space_t)aom_rb_read_literal(rb, 4);
-  }
-#endif  // CONFIG_COLORSPACE_HEADERS
-#endif  // CONFIG_CICP
-#if CONFIG_MONO_VIDEO
-  if (is_monochrome) return 1;
-#endif  // CONFIG_MONO_VIDEO
-#if CONFIG_CICP
-  if (color_primaries == AOM_CICP_CP_BT_709 &&
-      transfer_characteristics == AOM_CICP_TC_SRGB &&
-      matrix_coefficients == AOM_CICP_MC_IDENTITY) {  // it would be better to
-                                                      // remove this dependency
-                                                      // too
-#else
-  if (color_space == AOM_CS_SRGB) {
-#endif  // CONFIG_CICP
-    if (!(profile == PROFILE_1 ||
-          (profile == PROFILE_2 && bit_depth == AOM_BITS_12))) {
-      return 0;
-    }
-  } else {
-    rb->bit_offset += 1;  // [16,235] (including xvycc) vs [0,255] range.
-
-    if (profile == PROFILE_0) {
-      subsampling_x = 1;
-      subsampling_y = 1;
-    } else if (profile == PROFILE_1) {
-      subsampling_x = 0;
-      subsampling_y = 0;
-    } else if (profile == PROFILE_2) {
-      if (bit_depth == AOM_BITS_12) {
-        subsampling_x = aom_rb_read_bit(rb);
-        if (subsampling_x == 0)
-          subsampling_y = 0;
-        else
-          subsampling_y = aom_rb_read_bit(rb);
-      } else {
-        subsampling_x = 1;
-        subsampling_y = 0;
-      }
-    }
-#if CONFIG_COLORSPACE_HEADERS
-    if (subsampling_x == 1 && subsampling_y == 1) {
-      rb->bit_offset += 2;  // chroma_sample_position
-    }
-#endif  // CONFIG_COLORSPACE_HEADERS
-  }
-  rb->bit_offset += 1;  // separate_uv_delta_q
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-  parse_timing_info_header(rb);
-#endif
-  return 1;
-}
-#endif
-
 static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
                                                 unsigned int data_sz,
                                                 aom_codec_stream_info_t *si,
@@ -323,13 +193,10 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
     data += index_size;
     data_sz -= index_size;
-#if CONFIG_OBU
     if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
-#endif
   }
 
   {
-#if CONFIG_OBU
     si->is_kf = 1;
     intra_only_flag = 1;
     si->h = 1;
@@ -356,94 +223,6 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     si->w = max_frame_width;
     si->h = max_frame_height;
 #endif  // CONFIG_FRAME_SIZE
-
-#else
-    int show_frame;
-    int error_resilient;
-    struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
-    const int frame_marker = aom_rb_read_literal(&rb, 2);
-    const BITSTREAM_PROFILE profile = av1_read_profile(&rb);
-
-    if (frame_marker != AOM_FRAME_MARKER) return AOM_CODEC_UNSUP_BITSTREAM;
-
-    if (profile >= MAX_PROFILES) return AOM_CODEC_UNSUP_BITSTREAM;
-
-    if ((profile >= 2 && data_sz <= 1) || data_sz < 1)
-      return AOM_CODEC_UNSUP_BITSTREAM;
-
-    if (aom_rb_read_bit(&rb)) {     // show an existing frame
-      aom_rb_read_literal(&rb, 3);  // Frame buffer to show.
-      return AOM_CODEC_OK;
-    }
-
-    if (data_sz <= 8) return AOM_CODEC_UNSUP_BITSTREAM;
-
-    si->is_kf = !aom_rb_read_bit(&rb);
-    show_frame = aom_rb_read_bit(&rb);
-    if (!si->is_kf) {
-      if (!show_frame) intra_only_flag = show_frame ? 0 : aom_rb_read_bit(&rb);
-    }
-    error_resilient = aom_rb_read_bit(&rb);
-#if CONFIG_REFERENCE_BUFFER
-    SequenceHeader seq_params;
-    memset(&seq_params, 0, sizeof(seq_params));
-    if (si->is_kf) {
-      /* TODO: Move outside frame loop or inside key-frame branch */
-      read_sequence_header(&seq_params, &rb);
-    }
-#endif  // CONFIG_REFERENCE_BUFFER
-
-#if CONFIG_REFERENCE_BUFFER
-    if (seq_params.frame_id_numbers_present_flag) {
-      aom_rb_read_literal(&rb, seq_params.frame_id_length);
-    }
-#endif  // CONFIG_REFERENCE_BUFFER
-
-#if CONFIG_FRAME_SIZE
-    int frame_size_override_flag = aom_rb_read_bit(&rb);
-#endif
-
-    if (si->is_kf) {
-      if (!parse_bitdepth_colorspace_sampling(profile, &rb))
-        return AOM_CODEC_UNSUP_BITSTREAM;
-#if CONFIG_FRAME_SIZE
-      if (frame_size_override_flag) {
-        int num_bits_width = seq_params.num_bits_width;
-        int num_bits_height = seq_params.num_bits_height;
-        av1_read_frame_size(&rb, num_bits_width, num_bits_height, (int *)&si->w,
-                            (int *)&si->h);
-      } else {
-        si->w = seq_params.max_frame_width;
-        si->h = seq_params.max_frame_height;
-      }
-#else
-      av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
-#endif
-    } else {
-      rb.bit_offset += error_resilient ? 0 : 2;  // reset_frame_context
-
-      if (intra_only_flag) {
-        if (profile > PROFILE_0) {
-          if (!parse_bitdepth_colorspace_sampling(profile, &rb))
-            return AOM_CODEC_UNSUP_BITSTREAM;
-        }
-        rb.bit_offset += REF_FRAMES;  // refresh_frame_flags
-#if CONFIG_FRAME_SIZE
-        if (frame_size_override_flag) {
-          int num_bits_width = seq_params.num_bits_width;
-          int num_bits_height = seq_params.num_bits_height;
-          av1_read_frame_size(&rb, num_bits_width, num_bits_height,
-                              (int *)&si->w, (int *)&si->h);
-        } else {
-          si->w = seq_params.max_frame_width;
-          si->h = seq_params.max_frame_height;
-        }
-#else
-        av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
-#endif
-      }
-    }
-#endif  // CONFIG_OBU
   }
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;
@@ -793,14 +572,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     res = init_decoder(ctx);
     if (res != AOM_CODEC_OK) return res;
   }
-#if !CONFIG_OBU
-  int index_size = 0;
-  res = av1_parse_superframe_index(data, data_sz, frame_sizes, &frame_count,
-                                   &index_size);
-  if (res != AOM_CODEC_OK) return res;
-
-  data_start += index_size;
-#endif
   if (ctx->frame_parallel_decode) {
     // Decode in frame parallel mode. When decoding in this mode, the frame
     // passed to the decoder must be either a normal frame or a superframe with

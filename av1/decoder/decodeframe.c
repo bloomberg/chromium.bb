@@ -1435,21 +1435,6 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
-#if !CONFIG_OBU
-static void read_tile_group_range(AV1Decoder *pbi,
-                                  struct aom_read_bit_buffer *const rb) {
-  AV1_COMMON *const cm = &pbi->common;
-  const int num_bits = cm->log2_tile_rows + cm->log2_tile_cols;
-  const int num_tiles =
-      cm->tile_rows * cm->tile_cols;  // Note: May be < (1<<num_bits)
-  pbi->tg_start = aom_rb_read_literal(rb, num_bits);
-  pbi->tg_size = 1 + aom_rb_read_literal(rb, num_bits);
-  if (pbi->tg_start + pbi->tg_size > num_tiles)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Tile group extends past last tile in frame");
-}
-#endif  // !CONFIG_OBU
-
 #if CONFIG_MAX_TILE
 
 // Same function as av1_read_uniform but reading from uncompresses header wb
@@ -1675,12 +1660,7 @@ static void read_tile_info(AV1Decoder *const pbi,
   }
 #endif  // CONFIG_EXT_TILE
 
-// each tile group header is in its own tile group OBU
-#if !CONFIG_OBU
-  // Store an index to the location of the tile group information
-  pbi->tg_size_bit_offset = rb->bit_offset;
-  read_tile_group_range(pbi, rb);
-#endif
+  // each tile group header is in its own tile group OBU
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {
@@ -1867,11 +1847,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   const int tile_rows = cm->tile_rows;
   int tc = 0;
   int first_tile_in_tg = 0;
-#if !CONFIG_OBU
-  struct aom_read_bit_buffer rb_tg_hdr;
-  const size_t hdr_size = pbi->uncomp_hdr_size;
-  const int tg_size_bit_offset = pbi->tg_size_bit_offset;
-#endif
 
 #if CONFIG_DEPENDENT_HORZTILES
   int tile_group_start_col = 0;
@@ -1887,13 +1862,8 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
     for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
 
-#if CONFIG_OBU
       const int is_last = (tc == endTile);
       const size_t hdr_offset = 0;
-#else
-      const int is_last = (r == tile_rows - 1) && (c == tile_cols - 1);
-      const size_t hdr_offset = (tc && tc == first_tile_in_tg) ? hdr_size : 0;
-#endif
 
       if (tc < startTile || tc > endTile) continue;
 
@@ -1901,24 +1871,12 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Data ended before all tiles were read.");
       buf->col = c;
-#if CONFIG_OBU
 #if CONFIG_DEPENDENT_HORZTILES
       if (tc == startTile) {
         tile_group_start_row = r;
         tile_group_start_col = c;
       }
 #endif  // CONFIG_DEPENDENT_HORZTILES
-#else   // CONFIG_OBU
-      if (hdr_offset) {
-        av1_init_read_bit_buffer(pbi, &rb_tg_hdr, data, data_end);
-        rb_tg_hdr.bit_offset = tg_size_bit_offset;
-        read_tile_group_range(pbi, &rb_tg_hdr);
-#if CONFIG_DEPENDENT_HORZTILES
-        tile_group_start_row = r;
-        tile_group_start_col = c;
-#endif
-      }
-#endif  // CONFIG_OBU
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
       data += hdr_offset;
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,
@@ -2135,10 +2093,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                              "Failed to decode tile data");
       }
     }
-
-#if !CONFIG_OBU
-    assert(mi_row > 0);
-#endif
 
     // After loopfiltering, the last 7 row pixels in each superblock row may
     // still be changed by the longest loopfilter of the next superblock row.
@@ -2449,7 +2403,6 @@ void av1_read_timing_info_header(AV1_COMMON *cm,
 }
 #endif
 
-#if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void read_sequence_header(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
 #if CONFIG_FRAME_SIZE
@@ -2494,7 +2447,6 @@ void read_sequence_header(SequenceHeader *seq_params,
   }
 #endif
 }
-#endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
 static void read_compound_tools(AV1_COMMON *cm,
                                 struct aom_read_bit_buffer *rb) {
@@ -2711,19 +2663,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
 
-#if !CONFIG_OBU
-  if (aom_rb_read_literal(rb, 2) != AOM_FRAME_MARKER)
-    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                       "Invalid frame marker");
-
-  cm->profile = av1_read_profile(rb);
-
-  const BITSTREAM_PROFILE MAX_SUPPORTED_PROFILE = MAX_PROFILES;
-  if (cm->profile >= MAX_SUPPORTED_PROFILE)
-    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                       "Unsupported bitstream profile");
-#endif
-
   cm->show_existing_frame = aom_rb_read_bit(rb);
 #if CONFIG_FWD_KF
   cm->reset_decoder_state = 0;
@@ -2799,22 +2738,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     return 0;
   }
 
-#if !CONFIG_OBU
-  cm->frame_type = (FRAME_TYPE)aom_rb_read_bit(rb);
-  cm->show_frame = aom_rb_read_bit(rb);
-  if (cm->frame_type != KEY_FRAME)
-    cm->intra_only = cm->show_frame ? 0 : aom_rb_read_bit(rb);
-#else
   cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
   cm->show_frame = aom_rb_read_bit(rb);
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
-#endif
   cm->error_resilient_mode = aom_rb_read_bit(rb);
 
 #if CONFIG_REFERENCE_BUFFER
-#if !CONFIG_OBU
-  if (frame_is_intra_only(cm)) read_sequence_header(&cm->seq_params, rb);
-#endif  // !CONFIG_OBU
 
 #if CONFIG_INTRA_EDGE2
   if (frame_is_intra_only(cm)) {
@@ -2895,15 +2824,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
   if (cm->frame_type == KEY_FRAME) {
-#if !CONFIG_OBU
-    av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-    av1_read_timing_info_header(cm, rb);
-#endif
-#if CONFIG_FILM_GRAIN
-    cm->film_grain_params_present = aom_rb_read_bit(rb);
-#endif
-#endif
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
@@ -2960,16 +2880,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
     if (cm->intra_only) {
-#if !CONFIG_OBU
-      av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-      av1_read_timing_info_header(cm, rb);
-#endif
-#if CONFIG_FILM_GRAIN
-      cm->film_grain_params_present = aom_rb_read_bit(rb);
-#endif
-#endif
-
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
 #if CONFIG_FRAME_SIZE
       setup_frame_size(cm, frame_size_override_flag, rb);
@@ -2993,13 +2903,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->cdf_update_mode = aom_rb_read_literal(rb, 2);
 #endif                                  // CONFIG_CDF_UPDATE_MODE
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
-#if CONFIG_OBU
       pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
                                      ? 0xFF
                                      : aom_rb_read_literal(rb, REF_FRAMES);
-#else
-      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
-#endif
 
       if (!pbi->refresh_frame_flags) {
         // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
@@ -3066,11 +2972,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         }
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
-#if CONFIG_OBU
         // NOTE: For the scenario of (cm->frame_type != S_FRAME),
         // ref_frame_sign_bias will be reset based on frame offsets.
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
-#endif  // CONFIG_OBU
 
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -3150,10 +3054,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
   av1_setup_frame_buf_refs(cm);
 
-#if CONFIG_OBU
-  if (cm->frame_type != S_FRAME)
-#endif  // CONFIG_OBU
-    av1_setup_frame_sign_bias(cm);
+  if (cm->frame_type != S_FRAME) av1_setup_frame_sign_bias(cm);
 
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
 

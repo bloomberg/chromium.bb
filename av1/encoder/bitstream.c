@@ -68,18 +68,13 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              const RestorationUnitInfo *rui,
                                              aom_writer *const w, int plane);
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_OBU
 static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_EXT_TILE
                                           struct aom_write_bit_buffer *saved_wb,
 #endif
                                           struct aom_write_bit_buffer *wb);
-#else
-static void write_uncompressed_header_frame(AV1_COMP *cpi,
-                                            struct aom_write_bit_buffer *wb);
-#endif
 
-#if !CONFIG_OBU || CONFIG_EXT_TILE
+#if CONFIG_EXT_TILE
 static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        const uint32_t data_size, const uint32_t max_tile_size,
                        const uint32_t max_tile_col_size,
@@ -2737,288 +2732,6 @@ static INLINE int find_identical_tile(
 }
 #endif  // CONFIG_EXT_TILE
 
-#if !CONFIG_OBU
-static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
-                            unsigned int *max_tile_size,
-                            unsigned int *max_tile_col_size) {
-  AV1_COMMON *const cm = &cpi->common;
-  aom_writer mode_bc;
-  int tile_row, tile_col;
-  TOKENEXTRA *(*const tok_buffers)[MAX_TILE_COLS] = cpi->tile_tok;
-  TileBufferEnc(*const tile_buffers)[MAX_TILE_COLS] = cpi->tile_buffers;
-  uint32_t total_size = 0;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
-  unsigned int tile_size = 0;
-  const int have_tiles = tile_cols * tile_rows > 1;
-  struct aom_write_bit_buffer wb = { dst, 0 };
-  const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
-  // Fixed size tile groups for the moment
-  const int num_tg_hdrs = cm->num_tg;
-  const int tg_size =
-#if CONFIG_EXT_TILE
-      (cm->large_scale_tile)
-          ? 1
-          :
-#endif  // CONFIG_EXT_TILE
-          (tile_rows * tile_cols + num_tg_hdrs - 1) / num_tg_hdrs;
-  int tile_count = 0;
-  int tg_count = 1;
-  int tile_size_bytes = 4;
-  int tile_col_size_bytes;
-  uint32_t uncompressed_hdr_size = 0;
-  struct aom_write_bit_buffer tg_params_wb;
-  struct aom_write_bit_buffer tile_size_bytes_wb;
-  uint32_t saved_offset;
-  int mtu_size = cpi->oxcf.mtu;
-  int curr_tg_data_size = 0;
-  int hdr_size;
-  const int num_planes = av1_num_planes(cm);
-
-  *max_tile_size = 0;
-  *max_tile_col_size = 0;
-
-  // All tile size fields are output on 4 bytes. A call to remux_tiles will
-  // later compact the data if smaller headers are adequate.
-
-  cm->largest_tile_id = 0;
-
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile) {
-    for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-      TileInfo tile_info;
-      const int is_last_col = (tile_col == tile_cols - 1);
-      const uint32_t col_offset = total_size;
-
-      av1_tile_set_col(&tile_info, cm, tile_col);
-
-      // The last column does not have a column header
-      if (!is_last_col) total_size += 4;
-
-      for (tile_row = 0; tile_row < tile_rows; tile_row++) {
-        TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
-        const int data_offset = have_tiles ? 4 : 0;
-        const int tile_idx = tile_row * tile_cols + tile_col;
-        TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-        av1_tile_set_row(&tile_info, cm, tile_row);
-
-        buf->data = dst + total_size;
-
-        // Is CONFIG_EXT_TILE = 1, every tile in the row has a header,
-        // even for the last one, unless no tiling is used at all.
-        total_size += data_offset;
-        // Initialise tile context from the frame context
-        this_tile->tctx = *cm->fc;
-        cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-        mode_bc.allow_update_cdf = !cm->large_scale_tile;
-#if CONFIG_LOOP_RESTORATION
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
-#endif  // CONFIG_LOOP_RESTORATION
-
-        aom_start_encode(&mode_bc, buf->data + data_offset);
-        write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-        assert(tok == tok_end);
-        aom_stop_encode(&mode_bc);
-        tile_size = mode_bc.pos;
-        buf->size = tile_size;
-
-        if (tile_size > *max_tile_size) {
-          cm->largest_tile_id = tile_cols * tile_row + tile_col;
-        }
-        // Record the maximum tile size we see, so we can compact headers later.
-        *max_tile_size = AOMMAX(*max_tile_size, tile_size);
-
-        if (have_tiles) {
-          // tile header: size of this tile, or copy offset
-          uint32_t tile_header = tile_size;
-          const int tile_copy_mode =
-              ((AOMMAX(cm->tile_width, cm->tile_height) << MI_SIZE_LOG2) <= 256)
-                  ? 1
-                  : 0;
-
-          // If tile_copy_mode = 1, check if this tile is a copy tile.
-          // Very low chances to have copy tiles on the key frames, so don't
-          // search on key frames to reduce unnecessary search.
-          if (cm->frame_type != KEY_FRAME && tile_copy_mode) {
-            const int idendical_tile_offset =
-                find_identical_tile(tile_row, tile_col, tile_buffers);
-
-            if (idendical_tile_offset > 0) {
-              tile_size = 0;
-              tile_header = idendical_tile_offset | 0x80;
-              tile_header <<= 24;
-            }
-          }
-
-          mem_put_le32(buf->data, tile_header);
-        }
-
-        total_size += tile_size;
-      }
-
-      if (!is_last_col) {
-        uint32_t col_size = total_size - col_offset - 4;
-        mem_put_le32(dst + col_offset, col_size);
-
-        // If it is not final packing, record the maximum tile column size we
-        // see, otherwise, check if the tile size is out of the range.
-        *max_tile_col_size = AOMMAX(*max_tile_col_size, col_size);
-      }
-    }
-  } else {
-#endif  // CONFIG_EXT_TILE
-
-#if !CONFIG_OBU
-    write_uncompressed_header_frame(cpi, &wb);
-#else
-  write_uncompressed_header_obu(cpi, &wb);
-#endif
-
-    if (cm->show_existing_frame) {
-      total_size = aom_wb_bytes_written(&wb);
-      return (uint32_t)total_size;
-    }
-
-    // Write the tile length code
-    tile_size_bytes_wb = wb;
-    aom_wb_write_literal(&wb, 3, 2);
-
-    /* Write a placeholder for the number of tiles in each tile group */
-    tg_params_wb = wb;
-    saved_offset = wb.bit_offset;
-    if (have_tiles) {
-      aom_wb_write_literal(&wb, 3, n_log2_tiles);
-      aom_wb_write_literal(&wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
-    }
-
-    uncompressed_hdr_size = aom_wb_bytes_written(&wb);
-    hdr_size = uncompressed_hdr_size;
-    total_size += hdr_size;
-
-    for (tile_row = 0; tile_row < tile_rows; tile_row++) {
-      TileInfo tile_info;
-      const int is_last_row = (tile_row == tile_rows - 1);
-      av1_tile_set_row(&tile_info, cm, tile_row);
-
-      for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-        const int tile_idx = tile_row * tile_cols + tile_col;
-        TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-        TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
-        const int is_last_col = (tile_col == tile_cols - 1);
-        const int is_last_tile = is_last_col && is_last_row;
-
-        if ((!mtu_size && tile_count > tg_size) ||
-            (mtu_size && tile_count && curr_tg_data_size >= mtu_size)) {
-          // New tile group
-          tg_count++;
-          // We've exceeded the packet size
-          if (tile_count > 1) {
-            /* The last tile exceeded the packet size. The tile group size
-               should therefore be tile_count-1.
-               Move the last tile and insert headers before it
-             */
-            uint32_t old_total_size = total_size - tile_size - 4;
-            memmove(dst + old_total_size + hdr_size, dst + old_total_size,
-                    (tile_size + 4) * sizeof(uint8_t));
-            // Copy uncompressed header
-            memmove(dst + old_total_size, dst,
-                    uncompressed_hdr_size * sizeof(uint8_t));
-            // Write the number of tiles in the group into the last uncompressed
-            // header before the one we've just inserted
-            aom_wb_overwrite_literal(&tg_params_wb, tile_idx - tile_count,
-                                     n_log2_tiles);
-            aom_wb_overwrite_literal(&tg_params_wb, tile_count - 2,
-                                     n_log2_tiles);
-            // Update the pointer to the last TG params
-            tg_params_wb.bit_offset = saved_offset + 8 * old_total_size;
-            total_size += hdr_size;
-            tile_count = 1;
-            curr_tg_data_size = hdr_size + tile_size + 4;
-          } else {
-            // We exceeded the packet size in just one tile
-            // Copy uncompressed header
-            memmove(dst + total_size, dst,
-                    uncompressed_hdr_size * sizeof(uint8_t));
-            // Write the number of tiles in the group into the last uncompressed
-            // header
-            aom_wb_overwrite_literal(&tg_params_wb, tile_idx - tile_count,
-                                     n_log2_tiles);
-            aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1,
-                                     n_log2_tiles);
-            tg_params_wb.bit_offset = saved_offset + 8 * total_size;
-            total_size += hdr_size;
-            tile_count = 0;
-            curr_tg_data_size = hdr_size;
-          }
-        }
-        tile_count++;
-        av1_tile_set_col(&tile_info, cm, tile_col);
-
-#if CONFIG_DEPENDENT_HORZTILES
-        av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
-#endif
-        buf->data = dst + total_size;
-
-        // The last tile does not have a header.
-        if (!is_last_tile) total_size += 4;
-
-        // Initialise tile context from the frame context
-        this_tile->tctx = *cm->fc;
-        cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-        mode_bc.allow_update_cdf = 1;
-#if CONFIG_LOOP_RESTORATION
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
-#endif  // CONFIG_LOOP_RESTORATION
-
-        aom_start_encode(&mode_bc, dst + total_size);
-        write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-        aom_stop_encode(&mode_bc);
-        tile_size = mode_bc.pos;
-        assert(tile_size > 0);
-
-        curr_tg_data_size += tile_size + 4;
-        buf->size = tile_size;
-
-        if (tile_size > *max_tile_size) {
-          cm->largest_tile_id = tile_cols * tile_row + tile_col;
-        }
-        if (!is_last_tile) {
-          *max_tile_size = AOMMAX(*max_tile_size, tile_size);
-          // size of this tile
-          mem_put_le32(buf->data, tile_size);
-        }
-
-        total_size += tile_size;
-      }
-    }
-    // Write the final tile group size
-    if (n_log2_tiles) {
-      aom_wb_overwrite_literal(
-          &tg_params_wb, (tile_cols * tile_rows) - tile_count, n_log2_tiles);
-      aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
-    }
-    // Remux if possible. TODO (Thomas Davies): do this for more than one tile
-    // group
-    if (have_tiles && tg_count == 1) {
-      int data_size = total_size - uncompressed_hdr_size;
-      data_size = remux_tiles(cm, dst + uncompressed_hdr_size, data_size,
-                              *max_tile_size, *max_tile_col_size,
-                              &tile_size_bytes, &tile_col_size_bytes);
-      total_size = data_size + uncompressed_hdr_size;
-      aom_wb_overwrite_literal(&tile_size_bytes_wb, tile_size_bytes - 1, 2);
-    }
-
-#if CONFIG_EXT_TILE
-  }
-#endif  // CONFIG_EXT_TILE
-  return (uint32_t)total_size;
-}
-#endif
-
 static void write_render_size(const AV1_COMMON *cm,
                               struct aom_write_bit_buffer *wb) {
   const int scaling_active = !av1_resize_unscaled(cm);
@@ -3342,7 +3055,6 @@ static void write_sb_size(SequenceHeader *seq_params,
 #endif  // CONFIG_EXT_PARTITION
 }
 
-#if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *seq_params = &cm->seq_params;
@@ -3406,7 +3118,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   }
 #endif
 }
-#endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
 static void write_compound_tools(const AV1_COMMON *cm,
                                  struct aom_write_bit_buffer *wb) {
@@ -3514,398 +3225,6 @@ static void write_global_motion(AV1_COMP *cpi,
            */
   }
 }
-
-#if !CONFIG_OBU
-static void write_uncompressed_header_frame(AV1_COMP *cpi,
-                                            struct aom_write_bit_buffer *wb) {
-  AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-
-  aom_wb_write_literal(wb, AOM_FRAME_MARKER, 2);
-
-  write_profile(cm->profile, wb);
-
-  // NOTE: By default all coded frames to be used as a reference
-  cm->is_reference_frame = 1;
-
-  if (cm->show_existing_frame) {
-    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-    const int frame_to_show = cm->ref_frame_map[cpi->existing_fb_idx_to_show];
-
-    if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
-      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Buffer %d does not contain a reconstructed frame",
-                         frame_to_show);
-    }
-    ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
-
-    aom_wb_write_bit(wb, 1);  // show_existing_frame
-    aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
-
-#if CONFIG_REFERENCE_BUFFER
-    if (cm->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len = cm->seq_params.frame_id_length;
-      int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
-      aom_wb_write_literal(wb, display_frame_id, frame_id_len);
-      /* Add a zero byte to prevent emulation of superframe marker */
-      /* Same logic as when when terminating the entropy coder */
-      /* Consider to have this logic only one place */
-      aom_wb_write_literal(wb, 0, 8);
-    }
-#endif  // CONFIG_REFERENCE_BUFFER
-
-#if CONFIG_FILM_GRAIN
-    if (cm->film_grain_params_present) write_film_grain_params(cm, wb);
-#endif
-
-#if CONFIG_FWD_KF
-    if (cm->reset_decoder_state && !frame_bufs[frame_to_show].intra_only) {
-      aom_internal_error(
-          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-          "show_existing_frame to reset state on non-intra_only");
-    }
-    aom_wb_write_bit(wb, cm->reset_decoder_state);
-#endif  // CONFIG_FWD_KF
-
-    return;
-  } else {
-    aom_wb_write_bit(wb, 0);  // show_existing_frame
-  }
-
-  aom_wb_write_bit(wb, cm->frame_type);
-  aom_wb_write_bit(wb, cm->show_frame);
-  if (cm->frame_type != KEY_FRAME)
-    if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
-  aom_wb_write_bit(wb, cm->error_resilient_mode);
-
-  if (frame_is_intra_only(cm)) {
-#if CONFIG_REFERENCE_BUFFER
-    write_sequence_header(cpi, wb);
-#endif  // CONFIG_REFERENCE_BUFFER
-#if CONFIG_INTRA_EDGE2
-    aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
-#endif  // CONFIG_INTRA_EDGE2
-  }
-
-  if (cm->seq_params.force_screen_content_tools == 2) {
-    aom_wb_write_bit(wb, cm->allow_screen_content_tools);
-  } else {
-    assert(cm->allow_screen_content_tools ==
-           cm->seq_params.force_screen_content_tools);
-  }
-
-#if CONFIG_AMVR
-  if (cm->allow_screen_content_tools) {
-    if (cm->seq_params.force_integer_mv == 2) {
-      aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
-    } else {
-      assert(cm->cur_frame_force_integer_mv == cm->seq_params.force_integer_mv);
-    }
-  } else {
-    assert(cm->cur_frame_force_integer_mv == 0);
-  }
-#endif  // CONFIG_AMVR
-
-#if CONFIG_REFERENCE_BUFFER
-  cm->invalid_delta_frame_id_minus1 = 0;
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_len = cm->seq_params.frame_id_length;
-    aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
-  }
-#endif  // CONFIG_REFERENCE_BUFFER
-
-#if CONFIG_FRAME_SIZE
-  if (cm->width > cm->seq_params.max_frame_width ||
-      cm->height > cm->seq_params.max_frame_height) {
-    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                       "Frame dimensions are larger than the maximum values");
-  }
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-  const int coded_width = cm->superres_upscaled_width;
-  const int coded_height = cm->superres_upscaled_height;
-#else
-  const int coded_width = cm->width;
-  const int coded_height = cm->height;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-  int frame_size_override_flag =
-      (coded_width != cm->seq_params.max_frame_width ||
-       coded_height != cm->seq_params.max_frame_height);
-  aom_wb_write_bit(wb, frame_size_override_flag);
-#endif
-
-#if CONFIG_FRAME_REFS_SIGNALING
-  cm->frame_refs_short_signaling = 0;
-#endif  // CONFIG_FRAME_REFS_SIGNALING
-
-  if (cm->frame_type == KEY_FRAME) {
-    write_bitdepth_colorspace_sampling(cm, wb);
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-    // timing_info
-    write_timing_info_header(cm, wb);
-#endif
-#if CONFIG_FILM_GRAIN
-    aom_wb_write_bit(wb, cm->film_grain_params_present);
-#endif
-#if CONFIG_FRAME_SIZE
-    write_frame_size(cm, frame_size_override_flag, wb);
-#else
-    write_frame_size(cm, wb);
-#endif
-#if CONFIG_INTRABC
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-    assert(av1_superres_unscaled(cm) ||
-           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-    if (cm->allow_screen_content_tools &&
-        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-#else
-    if (cm->allow_screen_content_tools)
-#endif
-      aom_wb_write_bit(wb, cm->allow_intrabc);
-#endif  // CONFIG_INTRABC
-#if CONFIG_CDF_UPDATE_MODE
-    aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
-#endif  // CONFIG_CDF_UPDATE_MODE
-  } else {
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (!cm->error_resilient_mode) {
-      if (cm->intra_only) {
-        aom_wb_write_bit(wb,
-                         cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
-      } else {
-        aom_wb_write_bit(wb,
-                         cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE);
-        if (cm->reset_frame_context != RESET_FRAME_CONTEXT_NONE)
-          aom_wb_write_bit(wb,
-                           cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
-      }
-    }
-#endif
-    cpi->refresh_frame_mask = get_refresh_mask(cpi);
-
-    if (cm->intra_only) {
-      write_bitdepth_colorspace_sampling(cm, wb);
-#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
-      write_timing_info_header(cm, wb);
-#endif
-
-#if CONFIG_FILM_GRAIN
-      aom_wb_write_bit(wb, cm->film_grain_params_present);
-#endif
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-#if CONFIG_FRAME_SIZE
-      write_frame_size(cm, frame_size_override_flag, wb);
-#else
-      write_frame_size(cm, wb);
-#endif
-#if CONFIG_INTRABC
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-      assert(av1_superres_unscaled(cm) ||
-             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-      if (cm->allow_screen_content_tools &&
-          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-#else
-      if (cm->allow_screen_content_tools)
-#endif
-        aom_wb_write_bit(wb, cm->allow_intrabc);
-#endif  // CONFIG_INTRABC
-#if CONFIG_CDF_UPDATE_MODE
-      aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
-#endif  // CONFIG_CDF_UPDATE_MODE
-    } else {
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-
-      if (!cpi->refresh_frame_mask) {
-        // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
-        //       will not be used as a reference
-        cm->is_reference_frame = 0;
-      }
-
-#if CONFIG_FRAME_REFS_SIGNALING
-      // TODO(zoeliu@google.com): To complete the encoder-side implementation
-      // for the scenario cm->frame_refs_short_signaling == 1.
-      assert(cm->frame_refs_short_signaling == 0);
-      // NOTE: Error resilient mode turns off frame_refs_short_signaling
-      //       automatically.
-      if (!cm->error_resilient_mode)
-        aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
-      else
-        assert(cm->frame_refs_short_signaling == 0);
-
-      if (cm->frame_refs_short_signaling) {
-        assert(get_ref_frame_map_idx(cpi, LAST_FRAME) != INVALID_IDX);
-        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, LAST_FRAME),
-                             REF_FRAMES_LOG2);
-        assert(get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX);
-        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
-                             REF_FRAMES_LOG2);
-      }
-#endif  // CONFIG_FRAME_REFS_SIGNALING
-
-      for (MV_REFERENCE_FRAME ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME;
-           ++ref_frame) {
-        assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-#if CONFIG_FRAME_REFS_SIGNALING
-        if (!cm->frame_refs_short_signaling)
-#endif  // CONFIG_FRAME_REFS_SIGNALING
-          aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
-                               REF_FRAMES_LOG2);
-
-#if CONFIG_REFERENCE_BUFFER
-        if (cm->seq_params.frame_id_numbers_present_flag) {
-          int i = get_ref_frame_map_idx(cpi, ref_frame);
-          int frame_id_len = cm->seq_params.frame_id_length;
-          int diff_len = cm->seq_params.delta_frame_id_length;
-          int delta_frame_id_minus1 =
-              ((cm->current_frame_id - cm->ref_frame_id[i] +
-                (1 << frame_id_len)) %
-               (1 << frame_id_len)) -
-              1;
-          if (delta_frame_id_minus1 < 0 ||
-              delta_frame_id_minus1 >= (1 << diff_len))
-            cm->invalid_delta_frame_id_minus1 = 1;
-          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
-        }
-#endif  // CONFIG_REFERENCE_BUFFER
-      }
-
-#if CONFIG_FRAME_SIZE
-      if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
-        write_frame_size_with_refs(cpi, wb);
-      } else {
-        write_frame_size(cm, frame_size_override_flag, wb);
-      }
-#else
-      write_frame_size_with_refs(cpi, wb);
-#endif
-
-#if CONFIG_AMVR
-      if (cm->cur_frame_force_integer_mv) {
-        cm->allow_high_precision_mv = 0;
-      } else {
-        aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-      }
-#else
-      aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-#endif
-      fix_interp_filter(cm, cpi->td.counts);
-      write_frame_interp_filter(cm->interp_filter, wb);
-      if (frame_might_use_prev_frame_mvs(cm))
-        aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
-    }
-  }
-
-  if (cm->show_frame == 0) {
-    int arf_offset = AOMMIN(
-        (MAX_GF_INTERVAL - 1),
-        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
-    int brf_offset =
-        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
-
-    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
-  }
-
-#if CONFIG_REFERENCE_BUFFER
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    cm->refresh_mask =
-        cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
-  }
-#endif  // CONFIG_REFERENCE_BUFFER
-
-#if CONFIG_EXT_TILE
-  const int might_bwd_adapt =
-      !(cm->error_resilient_mode || cm->large_scale_tile);
-#else
-  const int might_bwd_adapt = !cm->error_resilient_mode;
-#endif  // CONFIG_EXT_TILE
-  if (might_bwd_adapt) {
-    aom_wb_write_bit(
-        wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD);
-  }
-#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
-#endif
-
-#if CONFIG_TILE_INFO_FIRST
-  write_tile_info(cm, wb);
-#endif
-
-  encode_loopfilter(cm, wb);
-  encode_quantization(cm, wb);
-  encode_segmentation(cm, xd, wb);
-  {
-    int delta_q_allowed = 1;
-#if !CONFIG_EXT_DELTA_Q
-    int i;
-    struct segmentation *const seg = &cm->seg;
-    int segment_quantizer_active = 0;
-    for (i = 0; i < MAX_SEGMENTS; i++) {
-      if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
-        segment_quantizer_active = 1;
-      }
-    }
-    delta_q_allowed = !segment_quantizer_active;
-#endif
-
-    if (cm->delta_q_present_flag) assert(cm->base_qindex > 0);
-    // Segment quantizer and delta_q both allowed if CONFIG_EXT_DELTA_Q
-    if (delta_q_allowed == 1 && cm->base_qindex > 0) {
-      aom_wb_write_bit(wb, cm->delta_q_present_flag);
-      if (cm->delta_q_present_flag) {
-        aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
-        xd->prev_qindex = cm->base_qindex;
-#if CONFIG_EXT_DELTA_Q
-        aom_wb_write_bit(wb, cm->delta_lf_present_flag);
-        if (cm->delta_lf_present_flag) {
-          aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
-          xd->prev_delta_lf_from_base = 0;
-#if CONFIG_LOOPFILTER_LEVEL
-          aom_wb_write_bit(wb, cm->delta_lf_multi);
-          const int frame_lf_count =
-              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-            xd->prev_delta_lf[lf_id] = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
-        }
-#endif  // CONFIG_EXT_DELTA_Q
-      }
-    }
-  }
-  if (!cm->all_lossless) {
-    encode_cdef(cm, wb);
-  }
-#if CONFIG_LOOP_RESTORATION
-  encode_restoration_mode(cm, wb);
-#endif  // CONFIG_LOOP_RESTORATION
-  write_tx_mode(cm, &cm->tx_mode, wb);
-
-  if (cpi->allow_comp_inter_inter) {
-    const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
-
-    aom_wb_write_bit(wb, use_hybrid_pred);
-  }
-
-#if CONFIG_EXT_SKIP
-  if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
-#endif  // CONFIG_EXT_SKIP
-
-  write_compound_tools(cm, wb);
-
-  aom_wb_write_bit(wb, cm->reduced_tx_set_used);
-
-  if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
-
-#if CONFIG_FILM_GRAIN
-  if (cm->film_grain_params_present && cm->show_frame)
-    write_film_grain_params(cm, wb);
-#endif
-
-#if !CONFIG_TILE_INFO_FIRST
-  write_tile_info(cm, wb);
-#endif
-}
-
-#else  // CONFIG_OBU
 
 // New function based on HLS R18
 static void write_uncompressed_header_obu(AV1_COMP *cpi,
@@ -4324,9 +3643,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
 #endif  // !CONFIG_TILE_INFO_FIRST
 }
-#endif  // CONFIG_OBU
 
-#if !CONFIG_OBU || CONFIG_EXT_TILE
+#if CONFIG_EXT_TILE
 static int choose_size_bytes(uint32_t size, int spare_msbs) {
   // Choose the number of bytes required to represent size, without
   // using the 'spare_msbs' number of most significant bits.
@@ -4466,8 +3784,6 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
   }
 }
 #endif
-
-#if CONFIG_OBU
 
 uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
                           uint8_t *const dst) {
@@ -4828,14 +4144,11 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   return (uint32_t)total_size;
 }
 
-#endif  // CONFIG_OBU
-
 int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint8_t *data = dst;
   uint32_t data_size;
   unsigned int max_tile_size;
   unsigned int max_tile_col_size;
-#if CONFIG_OBU
   AV1_COMMON *const cm = &cpi->common;
   uint32_t obu_size;
 #if CONFIG_SCALABILITY
@@ -4845,13 +4158,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #else
   uint8_t obu_extension_header = 0;
 #endif  // CONFIG_SCALABILITY
-#endif  // CONFIG_OBU
 
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_reset_write();
 #endif
 
-#if CONFIG_OBU
   // The TD is now written outside the frame encode loop
 
   // write sequence header obu if KEY_FRAME, preceded by 4-byte size
@@ -4918,96 +4229,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif
                                obu_extension_header);
   }
-
-#endif  // CONFIG_OBU
-
-#if CONFIG_EXT_TILE && !CONFIG_OBU
-  uint32_t uncompressed_hdr_size;
-  struct aom_write_bit_buffer saved_wb;
-  struct aom_write_bit_buffer wb = { data, 0 };
-  const int have_tiles = cm->tile_cols * cm->tile_rows > 1;
-  int tile_size_bytes;
-  int tile_col_size_bytes;
-
-  if (cm->large_scale_tile) {
-#if !CONFIG_OBU
-    write_uncompressed_header_frame(cpi, &wb);
-#else
-    write_uncompressed_header_obu(cpi, &wb);
-#endif
-
-    if (cm->show_existing_frame) {
-      *size = aom_wb_bytes_written(&wb);
-      return AOM_CODEC_OK;
-    }
-
-    // We do not know these in advance. Output placeholder bit.
-    saved_wb = wb;
-    // Write tile size magnitudes
-    if (have_tiles) {
-      // Note that the last item in the uncompressed header is the data
-      // describing tile configuration.
-      // Number of bytes in tile column size - 1
-      aom_wb_write_literal(&wb, 0, 2);
-
-      // Number of bytes in tile size - 1
-      aom_wb_write_literal(&wb, 0, 2);
-    }
-
-    uncompressed_hdr_size = (uint32_t)aom_wb_bytes_written(&wb);
-    aom_clear_system_state();
-    data += uncompressed_hdr_size;
-
-#define EXT_TILE_DEBUG 0
-#if EXT_TILE_DEBUG
-    {
-      char fn[20] = "./fh";
-      fn[4] = cm->current_video_frame / 100 + '0';
-      fn[5] = (cm->current_video_frame % 100) / 10 + '0';
-      fn[6] = (cm->current_video_frame % 10) + '0';
-      fn[7] = '\0';
-      av1_print_uncompressed_frame_header(data - uncompressed_hdr_size,
-                                          uncompressed_hdr_size, fn);
-    }
-#endif  // EXT_TILE_DEBUG
-#undef EXT_TILE_DEBUG
-
-    // Write the encoded tile data
-    data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
-  } else {
-#endif  // CONFIG_EXT_TILE
-#if !CONFIG_OBU
-    data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
-#endif
-#if CONFIG_EXT_TILE && !CONFIG_OBU
-  }
-#endif  // CONFIG_EXT_TILE
-#if CONFIG_EXT_TILE && !CONFIG_OBU
-  if (cm->large_scale_tile) {
-    if (have_tiles) {
-      data_size =
-          remux_tiles(cm, data, data_size, max_tile_size, max_tile_col_size,
-                      &tile_size_bytes, &tile_col_size_bytes);
-    }
-
-    data += data_size;
-
-    // Now fill in the gaps in the uncompressed header.
-    if (have_tiles) {
-      assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
-      aom_wb_write_literal(&saved_wb, tile_col_size_bytes - 1, 2);
-
-      assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
-      aom_wb_write_literal(&saved_wb, tile_size_bytes - 1, 2);
-    }
-
-    if (compressed_hdr_size > 0xffff) return AOM_CODEC_ERROR;
-  } else {
-#endif  // CONFIG_EXT_TILE
-    data += data_size;
-#if CONFIG_EXT_TILE && !CONFIG_OBU
-  }
-#endif  // CONFIG_EXT_TILE
+  data += data_size;
   *size = data - dst;
   return AOM_CODEC_OK;
 }

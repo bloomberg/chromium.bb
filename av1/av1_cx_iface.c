@@ -21,10 +21,8 @@
 #include "aom/aomcx.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/av1_iface_common.h"
-#if CONFIG_OBU
 #include "av1/encoder/bitstream.h"
 #include "aom_ports/mem_ops.h"
-#endif
 
 #define MAG_SIZE (4)
 #define MAX_INDEX_SIZE (256)
@@ -1222,73 +1220,6 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
 // Turn on to test if supplemental superframe data breaks decoding
 #define TEST_SUPPLEMENTAL_SUPERFRAME_DATA 0
 
-#if !CONFIG_OBU
-static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
-  uint8_t marker = 0xc0;
-  size_t max_frame_sz = 0;
-
-  assert(ctx->pending_frame_count);
-  assert(ctx->pending_frame_count <= 8);
-
-  // Add the number of frames to the marker byte
-  marker |= ctx->pending_frame_count - 1;
-  for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
-    const size_t frame_sz = ctx->pending_frame_sizes[i] - 1;
-    max_frame_sz = AOMMAX(frame_sz, max_frame_sz);
-  }
-
-  // Choose the magnitude
-  int mag;
-  unsigned int mask;
-  for (mag = 0, mask = 0xff; mag < MAG_SIZE; mag++) {
-    if (max_frame_sz <= mask) break;
-    mask <<= 8;
-    mask |= 0xff;
-  }
-  marker |= mag << 3;
-
-  // Write the index
-  uint8_t buffer[MAX_INDEX_SIZE];
-  uint8_t *x = buffer;
-
-  if (TEST_SUPPLEMENTAL_SUPERFRAME_DATA) {
-    uint8_t marker_test = 0xc0;
-    int mag_test = 2;     // 1 - 4
-    int frames_test = 4;  // 1 - 8
-    marker_test |= frames_test - 1;
-    marker_test |= (mag_test - 1) << 3;
-    *x++ = marker_test;
-    for (int i = 0; i < mag_test * frames_test; ++i)
-      *x++ = 0;  // fill up with arbitrary data
-    *x++ = marker_test;
-    printf("Added supplemental superframe data\n");
-  }
-
-  *x++ = marker;
-  for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
-    assert(ctx->pending_frame_sizes[i] > 0);
-    unsigned int this_sz = (unsigned int)ctx->pending_frame_sizes[i] - 1;
-    for (int j = 0; j <= mag; j++) {
-      *x++ = this_sz & 0xff;
-      this_sz >>= 8;
-    }
-  }
-  *x++ = marker;
-
-  const size_t index_sz = x - buffer;
-  assert(index_sz < MAX_INDEX_SIZE);
-  assert(ctx->pending_cx_data_sz + index_sz < ctx->cx_data_sz);
-
-  // move the frame to make room for the index
-  memmove(ctx->pending_cx_data + index_sz, ctx->pending_cx_data,
-          ctx->pending_cx_data_sz);
-  memcpy(ctx->pending_cx_data, buffer, index_sz);
-  ctx->pending_cx_data_sz += index_sz;
-
-  return (int)index_sz;
-}
-#endif
-
 // av1 uses 10,000,000 ticks/second as time stamp
 #define TICKS_PER_SEC 10000000LL
 
@@ -1450,16 +1381,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       }
     }
     if (is_frame_visible) {
-#if !CONFIG_OBU
-      // insert superframe index if needed
-      if (ctx->pending_frame_count > 1) {
-#if CONFIG_DEBUG
-        assert(index_size >= write_superframe_index(ctx));
-#else
-        write_superframe_index(ctx);
-#endif
-      }
-#endif
       // Add the frame packet to the list of returned packets.
       aom_codec_cx_pkt_t pkt;
 
@@ -1469,7 +1390,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       pkt.data.frame.sz = ctx->pending_cx_data_sz;
       pkt.data.frame.partition_id = -1;
 
-#if CONFIG_OBU
       int write_temporal_delimiter = 1;
 #if CONFIG_SCALABILITY
       // only write OBU_TD if base layer
@@ -1502,7 +1422,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 #endif  // CONFIG_OBU_SIZING
         pkt.data.frame.sz += obu_size + length_field_size;
       }
-#endif  // CONFIG_OBU
 
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
       pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);

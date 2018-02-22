@@ -17,10 +17,6 @@
 // OBUs.
 #include "./aom_config.h"
 
-#if !CONFIG_OBU
-#error "obu_parser.cc requires CONFIG_OBU"
-#endif
-
 #include "aom/aom_integer.h"
 #include "aom_ports/mem_ops.h"
 #include "tools/obu_parser.h"

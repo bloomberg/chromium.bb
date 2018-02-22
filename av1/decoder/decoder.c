@@ -34,10 +34,7 @@
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/detokenize.h"
-
-#if CONFIG_OBU
 #include "av1/decoder/obu.h"
-#endif  // CONFIG_OBU
 
 static void initialize_dec(void) {
   static volatile int init_done = 0;
@@ -377,16 +374,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   cm->error.setjmp = 1;
 
-#if !CONFIG_OBU
-  av1_decode_frame_headers_and_setup(pbi, source, source + size, psource);
-  if (!cm->show_existing_frame) {
-    const uint8_t *data = source + pbi->uncomp_hdr_size;
-    av1_decode_tg_tiles_and_wrapup(pbi, data, source + size, psource, 0,
-                                   cm->tile_rows * cm->tile_cols - 1, 1);
-  }
-#else
   av1_decode_frame_from_obus(pbi, source, source + size, psource);
-#endif
 
   if (cm->error.error_code != AOM_CODEC_OK) return 1;
 

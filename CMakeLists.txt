@@ -457,7 +457,7 @@ if (ENABLE_EXAMPLES)
 endif ()
 
 if (ENABLE_TOOLS)
-  if (CONFIG_AV1_DECODER AND CONFIG_OBU)
+  if (CONFIG_AV1_DECODER)
     require_cxx_flag_nomsvc("-std=c++11" NO)
     add_executable(dump_obu
                    "${AOM_CONFIG_DIR}/usage_exit.cc"
