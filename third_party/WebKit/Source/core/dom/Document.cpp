@@ -4245,7 +4245,7 @@ bool Document::CanAcceptChild(const Node& new_child,
   return true;
 }
 
-Node* Document::Clone(Document& factory, CloneChildrenFlag flag) {
+Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
   DCHECK_EQ(this, &factory)
       << "Document::Clone() doesn't support importNode mode.";
   Document* clone = CloneDocumentWithoutChildren();
@@ -4255,7 +4255,7 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) {
   return clone;
 }
 
-Document* Document::CloneDocumentWithoutChildren() {
+Document* Document::CloneDocumentWithoutChildren() const {
   DocumentInit init = DocumentInit::Create()
                           .WithContextDocument(ContextDocument())
                           .WithURL(Url());
@@ -5607,11 +5607,11 @@ Document& Document::TopDocument() const {
   return *doc;
 }
 
-Document* Document::ContextDocument() {
+Document* Document::ContextDocument() const {
   if (context_document_)
     return context_document_;
   if (frame_)
-    return this;
+    return const_cast<Document*>(this);
   return nullptr;
 }
 

@@ -44,7 +44,7 @@ Node::NodeType DocumentType::getNodeType() const {
   return kDocumentTypeNode;
 }
 
-Node* DocumentType::Clone(Document& factory, CloneChildrenFlag) {
+Node* DocumentType::Clone(Document& factory, CloneChildrenFlag) const {
   return Create(&factory, name_, public_id_, system_id_);
 }
 

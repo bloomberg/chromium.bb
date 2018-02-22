@@ -147,7 +147,7 @@ Document& SVGScriptElement::GetDocument() const {
 }
 
 Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
-    Document& factory) {
+    Document& factory) const {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());

@@ -40,7 +40,7 @@ Node::NodeType CDATASection::getNodeType() const {
   return kCdataSectionNode;
 }
 
-Text* CDATASection::CloneWithData(Document& factory, const String& data) {
+Text* CDATASection::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 

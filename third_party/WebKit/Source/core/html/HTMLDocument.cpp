@@ -74,7 +74,7 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 
 HTMLDocument::~HTMLDocument() = default;
 
-Document* HTMLDocument::CloneDocumentWithoutChildren() {
+Document* HTMLDocument::CloneDocumentWithoutChildren() const {
   return Create(DocumentInit::Create()
                     .WithContextDocument(ContextDocument())
                     .WithURL(Url())

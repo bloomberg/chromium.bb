@@ -77,14 +77,14 @@ class CORE_EXPORT Text : public CharacterData {
 
  private:
   String nodeName() const override;
-  Node* Clone(Document&, CloneChildrenFlag) override;
+  Node* Clone(Document&, CloneChildrenFlag) const override;
 
   bool IsTextNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
   bool NeedsWhitespaceLayoutObject();
 
-  virtual Text* CloneWithData(Document&, const String&);
+  virtual Text* CloneWithData(Document&, const String&) const;
 };
 
 DEFINE_NODE_TYPE_CASTS(Text, IsTextNode());

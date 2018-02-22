@@ -40,7 +40,7 @@ Node::NodeType Comment::getNodeType() const {
   return kCommentNode;
 }
 
-Node* Comment::Clone(Document& factory, CloneChildrenFlag) {
+Node* Comment::Clone(Document& factory, CloneChildrenFlag) const {
   return Create(factory, data());
 }
 
