@@ -217,7 +217,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
     ancestors.push_back(node);
 
   // Insert a clone of the top blockquote after the break.
-  Element* cloned_blockquote = top_blockquote->CloneElementWithoutChildren();
+  Element* cloned_blockquote = top_blockquote->CloneWithoutChildren();
   InsertNodeAfter(cloned_blockquote, break_element, editing_state);
   if (editing_state->IsAborted())
     return;
@@ -228,7 +228,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
   // or clonedBlockquote if ancestors is empty).
   Element* cloned_ancestor = cloned_blockquote;
   for (size_t i = ancestors.size(); i != 0; --i) {
-    Element* cloned_child = ancestors[i - 1]->CloneElementWithoutChildren();
+    Element* cloned_child = ancestors[i - 1]->CloneWithoutChildren();
     // Preserve list item numbering in cloned lists.
     if (IsHTMLOListElement(*cloned_child)) {
       Node* list_child_node = i > 1 ? ancestors[i - 2].Get() : start_node;

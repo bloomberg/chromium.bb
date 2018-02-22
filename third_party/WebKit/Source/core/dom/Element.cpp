@@ -262,38 +262,36 @@ bool Element::IsFocusableStyle() const {
 }
 
 Node* Element::Clone(Document& factory, CloneChildrenFlag flag) {
-  return flag == CloneChildrenFlag::kClone
-             ? CloneElementWithChildren(&factory)
-             : CloneElementWithoutChildren(&factory);
+  return flag == CloneChildrenFlag::kClone ? CloneWithChildren(&factory)
+                                           : CloneWithoutChildren(&factory);
 }
 
-Element* Element::CloneElementWithChildren(Document* nullable_factory) {
-  Element* clone = CloneElementWithoutAttributesAndChildren(
+Element* Element::CloneWithChildren(Document* nullable_factory) {
+  Element* clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
-  clone->CloneAttributesFromElement(*this);
-  clone->CopyNonAttributePropertiesFromElement(*this,
-                                               CloneChildrenFlag::kClone);
+  clone->CloneAttributesFrom(*this);
+  clone->CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kClone);
   clone->CloneChildNodesFrom(*this);
   return clone;
 }
 
-Element* Element::CloneElementWithoutChildren(Document* nullable_factory) {
-  Element* clone = CloneElementWithoutAttributesAndChildren(
+Element* Element::CloneWithoutChildren(Document* nullable_factory) {
+  Element* clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
 
-  clone->CloneAttributesFromElement(*this);
-  clone->CopyNonAttributePropertiesFromElement(*this, CloneChildrenFlag::kSkip);
+  clone->CloneAttributesFrom(*this);
+  clone->CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kSkip);
   return clone;
 }
 
-Element* Element::CloneElementWithoutAttributesAndChildren(Document& factory) {
+Element* Element::CloneWithoutAttributesAndChildren(Document& factory) {
   return factory.CreateElement(TagQName(), CreateElementFlags::ByCloneNode(),
                                IsValue());
 }
@@ -4354,7 +4352,7 @@ scoped_refptr<ComputedStyle> Element::CustomStyleForLayoutObject() {
   return OriginalStyleForLayoutObject();
 }
 
-void Element::CloneAttributesFromElement(const Element& other) {
+void Element::CloneAttributesFrom(const Element& other) {
   if (HasRareData())
     DetachAllAttrNodesFromElement();
 

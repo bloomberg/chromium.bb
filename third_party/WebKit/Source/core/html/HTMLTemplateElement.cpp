@@ -55,7 +55,7 @@ DocumentFragment* HTMLTemplateElement::content() const {
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#the-template-element:concept-node-clone-ext
-void HTMLTemplateElement::CopyNonAttributePropertiesFromElement(
+void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
   if (flag == CloneChildrenFlag::kSkip)

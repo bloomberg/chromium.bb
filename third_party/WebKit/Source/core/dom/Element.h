@@ -351,8 +351,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   String nodeName() const override;
 
-  Element* CloneElementWithChildren(Document* = nullptr);
-  Element* CloneElementWithoutChildren(Document* = nullptr);
+  Element* CloneWithChildren(Document* = nullptr);
+  Element* CloneWithoutChildren(Document* = nullptr);
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
@@ -446,13 +446,13 @@ class CORE_EXPORT Element : public ContainerNode {
   }
 
   // Clones attributes only.
-  void CloneAttributesFromElement(const Element&);
+  void CloneAttributesFrom(const Element&);
 
   bool HasEquivalentAttributes(const Element* other) const;
 
   // Step 5 of https://dom.spec.whatwg.org/#concept-node-clone
-  virtual void CopyNonAttributePropertiesFromElement(const Element&,
-                                                     CloneChildrenFlag) {}
+  virtual void CloneNonAttributePropertiesFrom(const Element&,
+                                               CloneChildrenFlag) {}
 
   void AttachLayoutTree(AttachContext&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
@@ -1013,7 +1013,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // Clone is private so that non-virtual CloneElementWithChildren and
   // CloneElementWithoutChildren are used instead.
   Node* Clone(Document&, CloneChildrenFlag) override;
-  virtual Element* CloneElementWithoutAttributesAndChildren(Document& factory);
+  virtual Element* CloneWithoutAttributesAndChildren(Document& factory);
 
   QualifiedName tag_name_;
 

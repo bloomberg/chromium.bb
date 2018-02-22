@@ -681,10 +681,10 @@ String HTMLFormControlElement::NameForAutofill() const {
   return trimmed_name;
 }
 
-void HTMLFormControlElement::CopyNonAttributePropertiesFromElement(
+void HTMLFormControlElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
-  HTMLElement::CopyNonAttributePropertiesFromElement(source, flag);
+  HTMLElement::CloneNonAttributePropertiesFrom(source, flag);
   SetNeedsValidityCheck();
 }
 
