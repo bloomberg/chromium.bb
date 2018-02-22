@@ -323,7 +323,7 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_MONO_VIDEO
   int monochrome;
 #endif  // CONFIG_MONO_VIDEO
-
+  int enable_dual_filter;
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;
 } AV1EncoderConfig;

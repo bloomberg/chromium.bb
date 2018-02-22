@@ -819,6 +819,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
 #endif
                                         AV1E_SET_DISABLE_TEMPMV,
+                                        AV1E_SET_ENABLE_DF,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 

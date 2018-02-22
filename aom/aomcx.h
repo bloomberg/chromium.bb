@@ -690,6 +690,14 @@ enum aome_enc_control_id {
    */
   AV1E_SET_DISABLE_TEMPMV,
 
+  /*!\brief Codec control function to turn on / off dual filter
+   * enabling/disabling.
+   *
+   * This will enable or disable dual filter. The default value is 1
+   *
+   */
+  AV1E_SET_ENABLE_DF,
+
   /*!\brief Codec control function to set loop_filter_across_tiles_v_enabled
    * and loop_filter_across_tiles_h_enabled.
    * In encoding and decoding, AV1 allows disabling loop filter across tile
@@ -960,6 +968,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO, aom_timing_info_t)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TEMPMV, unsigned int)
 #define AOM_CTRL_AV1E_SET_DISABLE_TEMPMV
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DF
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_FRAME_PARALLEL_DECODING

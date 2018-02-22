@@ -84,6 +84,7 @@ struct av1_extracfg {
 #endif
   unsigned int disable_tempmv;
   unsigned int frame_parallel_decoding_mode;
+  int use_dual_filter;
   AQ_MODE aq_mode;
 #if CONFIG_EXT_DELTA_Q
   DELTAQ_MODE deltaq_mode;
@@ -170,6 +171,7 @@ static struct av1_extracfg default_extra_cfg = {
 #endif
   0,      // disable temporal mv prediction
   1,      // frame_parallel_decoding_mode
+  1,      // enable dual filter
   NO_AQ,  // aq_mode
 #if CONFIG_EXT_DELTA_Q
   NO_DELTA_Q,  // deltaq_mode
@@ -741,6 +743,7 @@ static aom_codec_err_t set_encoder_config(
 #if CONFIG_MONO_VIDEO
   oxcf->monochrome = cfg->monochrome;
 #endif  // CONFIG_MONO_VIDEO
+  oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
 
 #if CONFIG_MAX_TILE
   oxcf->tile_width_count = AOMMIN(cfg->tile_width_count, MAX_TILE_COLS);
@@ -1088,6 +1091,14 @@ static aom_codec_err_t ctrl_set_disable_tempmv(aom_codec_alg_priv_t *ctx,
   extra_cfg.disable_tempmv = CAST(AV1E_SET_DISABLE_TEMPMV, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+
+static aom_codec_err_t ctrl_set_enable_df(aom_codec_alg_priv_t *ctx,
+                                          va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.use_dual_filter = CAST(AV1E_SET_ENABLE_DF, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
 static aom_codec_err_t ctrl_set_frame_parallel_decoding_mode(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1777,6 +1788,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #endif
   { AV1E_SET_DISABLE_TEMPMV, ctrl_set_disable_tempmv },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
+  { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
 #if CONFIG_EXT_DELTA_Q
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
