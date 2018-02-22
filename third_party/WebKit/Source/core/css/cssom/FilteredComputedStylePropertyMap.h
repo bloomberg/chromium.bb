@@ -23,6 +23,8 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
                                                 custom_properties);
   }
 
+  int size() final;
+
  private:
   FilteredComputedStylePropertyMap(
       Node*,

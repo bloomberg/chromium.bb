@@ -13,6 +13,16 @@
 
 namespace blink {
 
+int ComputedStylePropertyMap::size() {
+  const ComputedStyle* style = UpdateStyle();
+  if (!style)
+    return 0;
+
+  const auto& variables = ComputedStyleCSSValueMapping::GetVariables(*style);
+  return CSSComputedStyleDeclaration::ComputableProperties().size() +
+         (variables ? variables->size() : 0);
+}
+
 Node* ComputedStylePropertyMap::StyledNode() const {
   DCHECK(node_);
   if (!pseudo_id_)
