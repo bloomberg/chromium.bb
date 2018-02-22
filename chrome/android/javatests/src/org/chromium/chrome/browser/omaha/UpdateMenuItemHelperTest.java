@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -206,6 +207,7 @@ public class UpdateMenuItemHelperTest {
     @Feature({"Omaha"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/814575")
     public void testMenuItemNotShownInOverview() throws Exception {
         checkUpdateMenuItemIsShowing("0.0.0.0", "1.2.3.4");
 
