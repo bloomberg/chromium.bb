@@ -238,8 +238,9 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
   signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
 
-  socket_factory_.reset(
-      new IpcPacketSocketFactory(p2p_socket_dispatcher_.get()));
+  // TODO(https://crbug.com/656607): Add proper annotation here.
+  socket_factory_.reset(new IpcPacketSocketFactory(
+      p2p_socket_dispatcher_.get(), NO_TRAFFIC_ANNOTATION_BUG_656607));
 
   std::unique_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
   std::unique_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;

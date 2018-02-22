@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/webrtc/p2p/base/packetsocketfactory.h"
 
 namespace content {
@@ -25,7 +26,8 @@ class P2PSocketDispatcher;
 class IpcPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
   CONTENT_EXPORT explicit IpcPacketSocketFactory(
-      P2PSocketDispatcher* socket_dispatcher);
+      P2PSocketDispatcher* socket_dispatcher,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~IpcPacketSocketFactory() override;
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
@@ -47,6 +49,7 @@ class IpcPacketSocketFactory : public rtc::PacketSocketFactory {
 
  private:
   P2PSocketDispatcher* socket_dispatcher_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocketFactory);
 };
