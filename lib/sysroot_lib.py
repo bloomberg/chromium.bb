@@ -400,12 +400,12 @@ class Sysroot(object):
       else:
         return ''
 
-#    config.append("""
+    config.append("""
 # FULL_BINHOST is populated by the full builders. It is listed first because it
 # is the lowest priority binhost. It is better to download packages from the
 # preflight binhost because they are fresher packages.
-#PORTAGE_BINHOST="$FULL_BINHOST"
-#""")
+PORTAGE_BINHOST="$FULL_BINHOST"
+""")
 
     if preflight_binhost:
       config.append("""
@@ -482,7 +482,6 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     filenames = ['%s-PREFLIGHT_BINHOST.conf' % p for p in prefixes]
 
     external = internal = None
-    return external, internal
     for filename in filenames:
       # The binhost file must exist and not be empty, both for internal and
       # external binhosts.
