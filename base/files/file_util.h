@@ -185,6 +185,12 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
 // Returns true iff |bytes| bytes have been successfully read from |fd|.
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
+// Performs the same function as CreateAndOpenTemporaryFileInDir(), but returns
+// the file-descriptor directly, rather than wrapping it into a FILE. Returns
+// -1 on failure.
+BASE_EXPORT int CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
+                                                     FilePath* path);
+
 // The following functions use POSIX functionality that isn't supported by
 // Fuchsia.
 #if !defined(OS_FUCHSIA)
