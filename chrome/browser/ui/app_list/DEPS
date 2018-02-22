@@ -2,3 +2,10 @@ include_rules = [
   # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662
   "+ash/app_list/model",
 ]
+
+specific_include_rules = {
+  # TODO(733662): Remove when app_list is migrated.
+  "crostini_app_model_builder\.cc": [
+    "+ash/resources/grit/ash_resources.h",
+  ],
+}

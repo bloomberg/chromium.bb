@@ -231,6 +231,11 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kExperimentalAppBanners{"ExperimentalAppBanners",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kExperimentalCrostiniUI{
+    "ExperimentalCrostiniUI", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // An experimental fullscreen prototype that allows pages to map browser and
 // system-reserved keyboard shortcuts.
 const base::Feature kExperimentalKeyboardLockUI{

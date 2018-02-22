@@ -653,6 +653,10 @@ const char kExperimentalCanvasFeaturesDescription[] =
     "Enables the use of experimental canvas features which are still in "
     "development.";
 
+const char kExperimentalCrostiniUIName[] = "Experimental Crostini";
+const char kExperimentalCrostiniUIDescription[] =
+    "Enables in-development Crostini features.";
+
 const char kExperimentalExtensionApisName[] = "Experimental Extension APIs";
 const char kExperimentalExtensionApisDescription[] =
     "Enables experimental extension APIs. Note that the extension gallery "

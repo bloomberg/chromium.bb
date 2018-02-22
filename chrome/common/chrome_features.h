@@ -123,6 +123,11 @@ extern const base::Feature kDownloadsLocationChange;
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;
+
+#if defined(OS_CHROMEOS)
+extern const base::Feature kExperimentalCrostiniUI;
+#endif
+
 extern const base::Feature kExperimentalKeyboardLockUI;
 
 // Android expects this string from Java code, so it is always needed.
