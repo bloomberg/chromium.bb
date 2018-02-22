@@ -666,7 +666,9 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
                               kPhaseNone);
   element->AddBinding(VR_BIND_FUNC(
       bool, Model, model_,
-      model->active_modal_prompt_type != kModalPromptTypeExitVRForSiteInfo,
+      model->active_modal_prompt_type ==
+              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission ||
+          model->active_modal_prompt_type == kModalPromptTypeNone,
       UiElement, element.get(), SetVisible));
   scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
 
@@ -1738,7 +1740,7 @@ void UiSceneCreator::CreateOmnibox() {
 
   auto visibility_toggle_for_audio_permission = Create<UiElement>(
       kOmniboxVisibilityControlForAudioPermissionPrompt, kPhaseNone);
-  // Note that wnen the audio permissions prompt is triggered from the omnibox
+  // Note that when the audio permissions prompt is triggered from the omnibox
   // editing mode, we don't change the opacity of the background like we do in
   // the default browsing case.
   visibility_toggle_for_audio_permission->AddBinding(VR_BIND_FUNC(
@@ -2100,8 +2102,11 @@ void UiSceneCreator::CreateExitPrompt() {
   backplane->SetTranslate(0.0,
                           kContentVerticalOffset + kExitPromptVerticalOffset,
                           -kContentDistance);
-  VR_BIND_VISIBILITY(backplane, model->active_modal_prompt_type ==
-                                    kModalPromptTypeExitVRForSiteInfo);
+  VR_BIND_VISIBILITY(
+      backplane,
+      model->active_modal_prompt_type != kModalPromptTypeNone &&
+          model->active_modal_prompt_type !=
+              kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission);
 
   std::unique_ptr<ExitPrompt> exit_prompt = std::make_unique<ExitPrompt>(
       512, base::BindRepeating(
@@ -2146,6 +2151,7 @@ void UiSceneCreator::CreateExitPrompt() {
                 e->SetContentMessageId(
                     IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO);
                 break;
+              case kModalPromptTypeGenericUnsupportedFeature:  // Fall through.
               default:
                 e->SetContentMessageId(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
                 break;

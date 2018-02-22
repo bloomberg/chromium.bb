@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
+#include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
@@ -154,6 +155,10 @@ void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
     case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission:
       model_->active_modal_prompt_type =
           kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission;
+      return;
+    case UiUnsupportedMode::kGenericUnsupportedFeature:
+      model_->active_modal_prompt_type =
+          kModalPromptTypeGenericUnsupportedFeature;
       return;
     case UiUnsupportedMode::kCount:
       NOTREACHED();  // Should never be used as a mode (when |enabled| is true).
@@ -428,6 +433,18 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
       ui_initial_state.skips_redraw_when_not_dirty;
   model_->background_available = ui_initial_state.assets_available;
   model_->supports_selection = ui_initial_state.supports_selection;
+}
+
+void Ui::AcceptDoffPromptForTesting() {
+  DCHECK(model_->active_modal_prompt_type != kModalPromptTypeNone);
+  if (model_->active_modal_prompt_type ==
+      kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission) {
+    static_cast<ExitPrompt*>(scene_->GetUiElementByName(kAudioPermissionPrompt))
+        ->ClickPrimaryButtonForTesting();
+  } else {
+    static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
+        ->ClickSecondaryButtonForTesting();
+  }
 }
 
 }  // namespace vr

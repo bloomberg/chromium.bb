@@ -81,6 +81,16 @@ public class TestVrShellDelegate extends VrShellDelegate {
         return super.isVrEntryComplete();
     }
 
+    @Override
+    public boolean isShowingDoff() {
+        return super.isShowingDoff();
+    }
+
+    @Override
+    public void acceptDoffPromptForTesting() {
+        super.acceptDoffPromptForTesting();
+    }
+
     /**
      * Wait a short period of time before running if we think the DON flow was cancelled.
      *

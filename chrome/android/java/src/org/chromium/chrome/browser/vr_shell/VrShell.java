@@ -80,4 +80,9 @@ public interface VrShell extends VrDialogManager {
      *  Triggers VrShell to navigate backward.
      */
     void navigateBack();
+
+    /**
+     * Simulates a user accepting the currently visible DOFF prompt.
+     */
+    void acceptDoffPromptForTesting();
 }

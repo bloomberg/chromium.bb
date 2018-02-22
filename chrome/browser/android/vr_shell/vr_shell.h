@@ -236,6 +236,10 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnAssetsLoaded(AssetsLoadStatus status,
                       const base::Version& component_version);
 
+  void AcceptDoffPromptForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
  private:
   ~VrShell() override;
   void PostToGlThread(const base::Location& from_here, base::OnceClosure task);

@@ -967,6 +967,11 @@ public class VrShellImpl
                 mNativeVrShell, selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
 
+    @Override
+    public void acceptDoffPromptForTesting() {
+        nativeAcceptDoffPromptForTesting(mNativeVrShell);
+    }
+
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
@@ -1004,4 +1009,5 @@ public class VrShellImpl
     private native void nativeShowSoftInput(long nativeVrShell, boolean show);
     private native void nativeUpdateWebInputIndices(long nativeVrShell, int selectionStart,
             int selectionEnd, int compositionStart, int compositionEnd);
+    private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
 }

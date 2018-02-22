@@ -158,6 +158,8 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnInputCommitted(const EditedText& info) override;
   void OnKeyboardHidden() override;
 
+  void AcceptDoffPromptForTesting();
+
  private:
   void InitializeModel(const UiInitialState& ui_initial_state);
   UiBrowserInterface* browser_;

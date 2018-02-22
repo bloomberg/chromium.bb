@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
-import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 
 /**
@@ -54,7 +53,7 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
                     @Override
                     public void onDenied() {}
-                }, UiUnsupportedMode.UNHANDLED_CODE_POINT);
+                });
                 return;
             }
 
