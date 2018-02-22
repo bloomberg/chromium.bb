@@ -1952,6 +1952,24 @@
             ]
         }
     ],
+    "MemoryAblation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "Size": "1048570"
+                    },
+                    "enable_features": [
+                        "MemoryAblation"
+                    ]
+                }
+            ]
+        }
+    ],
     "MojoCdm": [
         {
             "platforms": [
