@@ -46,11 +46,6 @@ class MockArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
  public:
   MockArrayBufferAllocator()
       : v8::ArrayBuffer::Allocator(), currently_allocated_(0) {}
-  void SetProtection(void* data,
-                     size_t length,
-                     Protection protection) override {
-    allocator_->SetProtection(data, length, protection);
-  }
 
   void* Allocate(size_t length) override {
     void* data = AllocateUninitialized(length);
@@ -72,33 +67,6 @@ class MockArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
     // We need to free before we unlock, otherwise currently_allocated_ will
     // be innacurate.
     free(ptr);
-  }
-
-  void Free(void* data, size_t length, AllocationMode mode) override {
-    switch (mode) {
-      case AllocationMode::kNormal: {
-        // Free locks and unlocks for us.
-        Free(data, length);
-        return;
-      }
-      case AllocationMode::kReservation: {
-        lock_guard<mutex> mtx_locker(mtx_);
-        currently_allocated_ -= length;
-        allocator_->Free(data, length, mode);
-        return;
-      }
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void* Reserve(size_t length) override {
-    lock_guard<mutex> mtx_locker(mtx_);
-    if (length + currently_allocated_ > kAllocationLimit) {
-      return nullptr;
-    }
-    currently_allocated_ += length;
-    return allocator_->Reserve(length);
   }
 };
 
