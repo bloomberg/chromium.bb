@@ -679,7 +679,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   quirks::QuirksManager::Initialize(
       std::unique_ptr<quirks::QuirksManager::Delegate>(
           new quirks::QuirksManagerDelegateImpl()),
-      base::CreateTaskRunnerWithTraits({base::MayBlock()}),
       g_browser_process->local_state(),
       g_browser_process->system_request_context());
 

@@ -13,6 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/quirks/pref_names.h"
@@ -57,12 +59,11 @@ std::string IdToFileName(int64_t product_id) {
 
 QuirksManager::QuirksManager(
     std::unique_ptr<Delegate> delegate,
-    scoped_refptr<base::TaskRunner> task_runner,
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter)
     : waiting_for_login_(true),
       delegate_(std::move(delegate)),
-      task_runner_(task_runner),
+      task_runner_(base::CreateTaskRunnerWithTraits({base::MayBlock()})),
       local_state_(local_state),
       url_context_getter_(url_context_getter),
       weak_ptr_factory_(this) {}
@@ -75,11 +76,10 @@ QuirksManager::~QuirksManager() {
 // static
 void QuirksManager::Initialize(
     std::unique_ptr<Delegate> delegate,
-    scoped_refptr<base::TaskRunner> task_runner,
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> url_context_getter) {
-  manager_ = new QuirksManager(std::move(delegate), task_runner, local_state,
-                               url_context_getter);
+  manager_ =
+      new QuirksManager(std::move(delegate), local_state, url_context_getter);
 }
 
 // static

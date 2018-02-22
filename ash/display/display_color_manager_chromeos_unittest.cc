@@ -126,7 +126,7 @@ class DisplayColorManagerTest : public testing::Test {
     quirks::QuirksManager::Initialize(
         std::unique_ptr<quirks::QuirksManager::Delegate>(
             new QuirksManagerDelegateTestImpl(color_path_)),
-        base::CreateTaskRunnerWithTraits({base::MayBlock()}), nullptr, nullptr);
+        nullptr, nullptr);
   }
 
   void TearDown() override {
