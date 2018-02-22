@@ -34,6 +34,8 @@ const char kPostContentType[] = "application/protobuf";
 
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
+const char kEnrollmentTokenAuthHeader[] =
+    "Authorization: GoogleEnrollmentToken token=";
 
 // Number of times to retry on ERR_NETWORK_CHANGED errors.
 const int kMaxRetries = 3;
@@ -160,6 +162,10 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestCheckDeviceLicense;
     case DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT:
       return dm_protocol::kValueRequestAppInstallReport;
+    case DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT:
+      return dm_protocol::kValueRequestTokenEnrollment;
+    case DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT:
+      return dm_protocol::kValueRequestChromeDesktopReport;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
@@ -412,6 +418,8 @@ void DeviceManagementRequestJobImpl::ConfigureRequest(
     extra_headers += kServiceTokenAuthHeader + gaia_token_ + "\n";
   if (!dm_token_.empty())
     extra_headers += kDMTokenAuthHeader + dm_token_ + "\n";
+  if (!enrollment_token_.empty())
+    extra_headers += kEnrollmentTokenAuthHeader + enrollment_token_ + "\n";
   fetcher->SetExtraRequestHeaders(extra_headers);
 }
 
@@ -483,6 +491,10 @@ void DeviceManagementRequestJob::SetDMToken(const std::string& dm_token) {
 
 void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
   AddParameter(dm_protocol::kParamDeviceID, client_id);
+}
+
+void DeviceManagementRequestJob::SetEnrollmentToken(const std::string& token) {
+  enrollment_token_ = token;
 }
 
 void DeviceManagementRequestJob::SetCritical(bool critical) {

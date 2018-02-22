@@ -64,6 +64,8 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_ACTIVE_DIRECTORY_PLAY_ACTIVITY = 15,
     TYPE_REQUEST_LICENSE_TYPES = 16,
     TYPE_UPLOAD_APP_INSTALL_REPORT = 17,
+    TYPE_TOKEN_ENROLLMENT = 18,
+    TYPE_CHROME_DESKTOP_REPORT = 19,
   };
 
   typedef base::Callback<
@@ -80,6 +82,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   void SetOAuthToken(const std::string& oauth_token);
   void SetDMToken(const std::string& dm_token);
   void SetClientID(const std::string& client_id);
+  void SetEnrollmentToken(const std::string& token);
   // Sets the critical request parameter, which is used to differentiate regular
   // DMServer requests (like scheduled policy fetches) from time-sensitive ones
   // (like policy fetch during device enrollment). Should only be called before
@@ -115,6 +118,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   ParameterMap query_params_;
   std::string gaia_token_;
   std::string dm_token_;
+  std::string enrollment_token_;
   enterprise_management::DeviceManagementRequest request_;
   RetryCallback retry_callback_;
 
