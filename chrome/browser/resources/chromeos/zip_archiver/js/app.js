@@ -235,7 +235,7 @@ unpacker.app = {
    */
   restoreVolumeState_: function(fileSystemId) {
     if (chrome.extension.inIncognitoContext)
-      return new Promise.reject('No state restored due to incognito context');
+      return Promise.reject('No state restored due to incognito context');
     return new Promise(function(fulfill, reject) {
       chrome.storage.local.get([unpacker.app.STORAGE_KEY], function(result) {
         if (!result[unpacker.app.STORAGE_KEY]) {
