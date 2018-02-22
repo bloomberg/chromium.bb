@@ -17,3 +17,6 @@
 
 # Flaky, https://crbug.com/814596.
 -MultiprocessMessagePipeTest.MoreChildToChildPipes
+
+# Flaky, https://crbug.com/755848.
+-EmbedderTest.MultiprocessBaseSharedMemory
