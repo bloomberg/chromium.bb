@@ -206,6 +206,7 @@
       Het beleid moet op een URL worden ingesteld vanaf waar de Servicevoorwaarden door <ph name="PRODUCT_OS_NAME" /> kunnen worden gedownload. De Servicevoorwaarden moeten platte tekst zijn die als tekst met MIME-type/plat wordt weergegeven. Er is geen opmaak toegestaan.</translation>
 <translation id="1750315445671978749">Alle downloads blokkeren</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op True (Waar), hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op False (Onwaar) of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
+<translation id="1797233582739332495">Toon de gebruiker een terugkerende prompt om aan te geven dat een herstart is vereist</translation>
 <translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
@@ -284,6 +285,11 @@
 
           Als dit beleid niet is ingesteld, worden alle vier de schema's gebruikt.</translation>
 <translation id="2067011586099792101">Toegang blokkeren naar sites die zich niet in inhoudspakketten bevinden</translation>
+<translation id="2070270043919235595">Laat gebruikers weten dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart om een update toe te passen.
+
+      Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker op de hoogte wordt gebracht dat een herstart van de browser wordt aanbevolen of is vereist. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat een herstart is vereist via kleine wijzigingen in het menu. Als dit is ingesteld op Aanbevolen, wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat een herstart wordt aanbevolen. De gebruiker kan deze waarschuwing negeren om de herstart uit te stellen. Als dit is ingesteld op Vereist, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat een herstart van de browser wordt afgedwongen zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      De sessie van de gebruiker wordt na de herstart hersteld.</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
@@ -330,6 +336,9 @@
           Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
 
           Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
+<translation id="2188722565665306629">Hiermee kun je de periode instellen waarin herstartmeldingen voor <ph name="PRODUCT_NAME" /> worden weergegeven om een update toe te passen.
+
+      Met deze beleidsinstellingen kun je de periode tot op de milliseconde nauwkeurig bepalen waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 604.800.000 milliseconden (één week) gehanteerd.</translation>
 <translation id="2194470398825717446">Dit beleid is beëindigd in M61. Gebruik EcryptfsMigrationStrategy.
 
       Geeft aan hoe een apparaat zich moet gedragen dat is geleverd met eCryptfs en moet worden overgezet naar ext4-versleuteling.
@@ -532,6 +541,13 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="2682225790874070339">Schakelt Drive uit in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
+<translation id="2726613915126661822">Hiermee kun je aangeven of virtuele machines al dan niet mogen worden uitgevoerd op Chrome OS.
+
+      Als het beleid is ingesteld op True (Waar), mogen virtuele machines worden uitgevoerd op het apparaat.
+      Als het beleid is ingesteld op False (Onwaar), mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Als dit beleid wordt gewijzigd naar False (Onwaar), wordt dit toegepast op nieuwe virtuele machines, maar worden reeds uitgevoerde virtuele machines niet uitgeschakeld.
+      Als dit beleid niet is ingesteld op een beheerd apparaat, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
 <translation id="2731627323327011390">Gebruik van certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps uitschakelen</translation>
 <translation id="2742843273354638707">De app en voettekstlink voor de Chrome Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher van <ph name="PRODUCT_OS_NAME" />.
 
@@ -755,6 +771,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen nieuwe tabbladpagina weergegeven.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="3465852069254497664">Laat een gebruiker weten dat een herstart van de browser wordt aanbevolen of is vereist</translation>
 <translation id="346731943813722404">Hiermee wordt aangegeven of vertragingen in energiebeheer en de limiet voor sessielengte pas moeten worden gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
 
           Als dit beleid is ingesteld op 'True', worden vertragingen in energiebeheer en de limiet voor sessielengte pas gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
@@ -788,6 +805,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
 <translation id="3737544779868348650">Hostnaam van apparaat in netwerk</translation>
+<translation id="3740754010292550733">Stel de periode in voor meldingen over een herstart na updates</translation>
 <translation id="3750220015372671395">Het genereren van sleutels op deze sites blokkeren</translation>
 <translation id="3756011779061588474">Ontwikkelaarsmodus blokkeren</translation>
 <translation id="3758089716224084329">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
@@ -1374,7 +1392,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
 <translation id="5530347722229944744">Potentieel gevaarlijke downloads blokkeren</translation>
-<translation id="5530586312297447592">Accountmarkering wegens wachtwoordbeveiligingsrisico wordt geactiveerd bij hergebruik van een wachtwoord op een phishing-pagina</translation>
+<translation id="5530586312297447592">Accountmarkering wegens wachtwoordbeveiligingsrisico wordt geactiveerd bij hergebruik van een wachtwoord op een phishingpagina</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="555077880566103058">Alle sites toestaan om de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch uit te voeren</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
@@ -1501,6 +1519,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
           Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door de grote muisaanwijzer in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld wanneer het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
 
           Als dit beleid niet is ingesteld, wordt de grote muisaanwijzer uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de grote muisaanwijzer op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
+<translation id="5929855945144989709">Sta apparaten toe virtuele machines uit te voeren op Chrome OS</translation>
 <translation id="5932767795525445337">Dit beleid kan ook worden gebruikt om Android-apps vast te zetten.</translation>
 <translation id="5936622343001856595">Hiermee wordt afgedwongen dat zoekopdrachten in Google Zoeken worden uitgevoerd met SafeSearch ingesteld op 'actief' en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -1756,6 +1775,15 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld (RoamingProfileSupportEnabled wordt overschreven).</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
+<translation id="673699536430961464">Deze instelling biedt gebruikers de mogelijkheid om in het contentgedeelte van hun browservenster tussen Google-accounts te schakelen nadat ze zijn ingelogd op hun <ph name="PRODUCT_OS_NAME" />-apparaat.
+
+      Als dit beleid is ingesteld op False (Onwaar), is het niet mogelijk om vanuit het contentgedeelte van een niet-incognito browservenster in te loggen op een ander account.
+
+      Als dit beleid niet is ingesteld of is ingesteld op True (Waar), wordt het standaardgedrag gebruikt. Het is dan wel toegestaan om vanuit het contentgedeelte van de browser in te loggen op een ander account, met uitzondering van onderliggende accounts. Hiervoor geldt dat er niet vanuit het contentgedeelte van een niet-incognito browservenster kan worden ingelogd op een ander account.
+
+      Als je niet wilt dat er in de incognitomodus kan worden ingelogd op een ander account, kun je deze modus eventueel blokkeren met het beleid IncognitoModeAvailability.
+
+      Gebruikers met een niet-bevoegde status kunnen toegang krijgen tot Google-services door cookies te blokkeren.</translation>
 <translation id="6757438632136860443">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
@@ -1765,6 +1793,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
+<translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat een herstart wordt aanbevolen</translation>
 <translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
@@ -2372,7 +2401,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
 <translation id="8818768076343557335">Netwerkacties voorspellen op elk netwerk dat niet mobiel is.
           (Beëindigd in 50, verwijderd in 52. Als na 52 waarde 1 is ingesteld, wordt deze waarde verwerkt als 0 - netwerkacties voorspellen voor elke netwerkverbinding.)</translation>
-<translation id="8825782996899863372">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord op een phishing-pagina</translation>
+<translation id="8825782996899863372">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord op een phishingpagina</translation>
 <translation id="8828766846428537606">Hiermee wordt de standaard homepage in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       De instellingen voor de homepage worden alleen volledig voor de gebruiker vergrendeld als je de pagina 'Nieuw tabblad' als de homepage selecteert of als je zelf een URL voor de homepage specificeert. Als je geen URL voor de homepage opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als homepage instellen door 'chrome://newtab' op te geven.</translation>

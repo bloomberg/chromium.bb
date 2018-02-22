@@ -171,6 +171,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> je morda nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="573759479754913123">O sistemu Chrome OS</translation>
 <translation id="5774845247549698882">OS Chrome je v tem jeziku</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – delovna različica Google Chroma</translation>
 <translation id="5855036575689098185">Programska oprema, ki se izvaja v računalniku, ni združljiva z Google Chromom.</translation>
 <translation id="5877064549588274448">Kanal spremenjen. Znova zaženite napravo, da uveljavite spremembe.</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
@@ -182,6 +183,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6070348360322141662">Zaradi večje varnosti bo Google Chrome šifriral vaše podatke</translation>
 <translation id="6113794647360055231">Chrome je pravkar postal še boljši</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> različica beta Google Chroma</translation>
 <translation id="61852838583753520">Posodobitev &amp;sistema Chrome OS</translation>
 <translation id="6235018212288296708">Pravilo za dohodni promet za Google Chrome, ki omogoča promet mDNS.</translation>
 <translation id="6291089322031436445">Aplikacije za Chrome Dev</translation>
@@ -189,6 +191,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="6338556085225130112">Posodabljanje Google Chroma</translation>
 <translation id="6368958679917195344">Sistem Chrome OS uporablja dodatno <ph name="BEGIN_LINK_CROS_OSS" />odprtokodno programsko opremo<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">S samodejnim pošiljanjem nekaterih informacij o sistemu in vsebine strani Googlu, s čimer pomagate pri hitrejšem zaznavanju nevarnih aplikacij in spletnih mest, lahko pomagate narediti Chrome varnejši in preprostejši za uporabo.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> različica Google Chroma za razvijalce</translation>
 <translation id="6566149418543181476">Posodabljanje Google Chroma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Za sinhronizacijo stvari v Chromu uporabljate <ph name="PROFILE_EMAIL" />. Če želite posodobiti nastavitve sinhroniziranja ali uporabljati Chrome brez Google Računa, odprite <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopirano v Chrome</translation>

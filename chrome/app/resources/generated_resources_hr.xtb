@@ -1270,7 +1270,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2916073183900451334">Pritiskom na Tab na web-stranici ističu se veze, isto kao i iz polja</translation>
 <translation id="2916745397441987255">Pretražite proširenja</translation>
 <translation id="2921081876747860777">Napravite zaporku da biste zaštitili lokalne podatke.</translation>
-<translation id="2924395203970765374">Sinkronizirano s računom <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Tablice</translation>
 <translation id="2927017729816812676">Pohrana predmemorije</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (račun za djecu)</translation>
@@ -1553,7 +1552,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3348459612390503954">Čestitamo</translation>
 <translation id="3349933790966648062">Upotreba memorije</translation>
 <translation id="3353984535370177728">Odaberite mapu za prijenos</translation>
-<translation id="335581015389089642">Govor</translation>
 <translation id="3355936511340229503">Pogreška veze</translation>
 <translation id="3356797067524893661">Spremni ste za nastavak na Hangouts Meet</translation>
 <translation id="3358935496594837302">Telefon nije moguće pronaći. Provjerite je li vaš Android telefon kompatibilan i pri ruci. &lt;a&gt;Saznajte više&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3613422051106148727">&amp;Otvori u novoj kartici</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Obriši podatke o pregledavanju...</translation>
-<translation id="3618849550573277856">Potraži "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Sve je sigurnosno kopirano!</translation>
 <translation id="3623574769078102674">Tim nadziranim korisnikom upravljat će <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Snimke zaslona onemogućene su</translation>
@@ -2145,7 +2142,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="428565720843367874">Antivirusni softver neočekivano je prekinuo s radom tijekom pretraživanja ove datoteke.</translation>
 <translation id="428608937826130504">Stavka police 8</translation>
 <translation id="4287502004382794929">Nemate dovoljno softverskih licenci za prijavu ovog uređaja. Obratite se prodaji da biste kupili više. Ako smatrate da vam se ova poruka prikazuje pogreškom, obratite se podršci.</translation>
-<translation id="4289300219472526559">Počni govoriti</translation>
 <translation id="4289540628985791613">Pregled</translation>
 <translation id="4296575653627536209">Dodaj nadziranog korisnika</translation>
 <translation id="4297322094678649474">Promijeni jezike</translation>
@@ -2441,7 +2437,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4813512666221746211">Pogreška mreže</translation>
 <translation id="4816492930507672669">Prilagodi stranici</translation>
 <translation id="4820334425169212497">Ne, ne vidim</translation>
-<translation id="4821725298388681253">Ovo je rano izdanje. Neke značajke, primjerice pretraživanje i unos teksta, još nisu dostupne.</translation>
 <translation id="4821935166599369261">&amp;Profiliranje omogućeno</translation>
 <translation id="4823484602432206655">čitati i mijenjati korisničke postavke i postavke uređaja</translation>
 <translation id="4823651846660089135">Uređaj je samo za čitanje</translation>
@@ -3452,7 +3447,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="6388771388956873507">Pronađite senzor otiska prsta na uređaju i dodirnite ga prstom</translation>
 <translation id="6390799748543157332">Stranice koje gledate u ovom prozoru neće se pojaviti u povijesti preglednika niti će ostaviti druge tragove, poput kolačića, na računalu nakon što zatvorite sve otvorene gostujuće prozore. Međutim, datoteke koje preuzmete sačuvat će se.</translation>
 <translation id="6395423953133416962">Šalji <ph name="BEGIN_LINK1" />informacije o sustavu<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />mjerne podatke<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Prestani govoriti</translation>
 <translation id="6397592254427394018">Otvaranje svih oznaka u anonimnom prozoru</translation>
 <translation id="6398715114293939307">Ukloni Trgovinu Google Play</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
@@ -5022,7 +5016,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8912793549644936705">Rastegni</translation>
 <translation id="8915370057835397490">Učitavanje prijedloga</translation>
 <translation id="8916476537757519021">Anonimni podokvir: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sinkroniziraj s računom <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Uvijek dopusti oglase na ovoj web-lokaciji</translation>
 <translation id="8925458182817574960">&amp;Postavke</translation>
 <translation id="8926389886865778422">Više me ne pitaj</translation>

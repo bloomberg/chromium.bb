@@ -165,6 +165,7 @@
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5774845247549698882">Chrome OS इस भाषा में प्रदर्शित किया जा रहा है</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome कैनरी</translation>
 <translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
@@ -176,6 +177,7 @@
 <translation id="6070348360322141662">अतिरिक्‍त सुरक्षा के लिए, Google Chrome आपका डेटा एन्‍क्रिप्‍ट करेगा</translation>
 <translation id="6113794647360055231">Chrome पहले से बेहतर हो गया है</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome बीटा</translation>
 <translation id="61852838583753520">&amp;Chrome OS को अपडेट करें</translation>
 <translation id="6235018212288296708">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome के लिए इनबाउंड नियम.</translation>
 <translation id="6291089322031436445">Chrome डेवलपर ऐप्लिकेशन</translation>
@@ -183,6 +185,7 @@
 <translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
 <translation id="6410540444482791104">खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता करने के लिए Google को अपने आप कुछ सिस्टम जानकारी और पेज सामग्री भेजकर आप Chrome को उपयोग में अधिक सुरक्षित और अधिक आसान बनाने में सहायता कर सकते हैं.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेवलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">आप अपनी Chrome सामग्री को समन्वयित करने के लिए <ph name="PROFILE_EMAIL" /> का उपयोग कर रहे हैं. अपनी समन्वयन प्राथमिकता को अपडेट करने या Google खाते के बिना Chrome का उपयोग करने के लिए, <ph name="SETTINGS_LINK" /> पर जाएं.</translation>
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>

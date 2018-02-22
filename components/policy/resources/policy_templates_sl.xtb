@@ -210,6 +210,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
 <translation id="1750315445671978749">Blokiraj vse prenose</translation>
 <translation id="1781356041596378058">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik omogočite, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
+<translation id="1797233582739332495">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je potreben vnovičen zagon</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
 <translation id="1827523283178827583">Uporabi fiksne strežnike proxy</translation>
@@ -288,6 +289,11 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bodo uporabljeni vsi štirje načini.</translation>
 <translation id="2067011586099792101">Blokira dostop do spletnih mest zunaj paketov vsebine</translation>
+<translation id="2070270043919235595">Obvesti uporabnike, da je treba zaradi uveljavitve posodobitve na čakanju zagnati brskalnik <ph name="PRODUCT_NAME" />.
+
+      Ta nastavitev pravilnika omogoči obvestila, ki uporabnika obvestijo, da je priporočen ali obvezen vnovičen zagon brskalnika. Če pravilnik ni nastavljen, brskalnik <ph name="PRODUCT_NAME" /> uporabnika glede potrebnega vnovičnega zagona obvesti prek manjših sprememb menija. Če je pravilnik nastavljen na »Recommended«, je uporabniku prikazano ponavljajoče se opozorilo, da je priporočen vnovičen zagon. Uporabnik lahko opozorilo opusti in tako odloži vnovičen zagon. Če je pravilnik nastavljen na »Required«, je uporabniku prikazano ponavljajoče se opozorilo, da bo po izteku obdobja za obveščanje vsiljen vnovičen zagon brskalnika. To obdobje privzeto traja sedem dni in ga je mogoče konfigurirati v nastavitvi pravilnika <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Uporabniška seja je po vnovičnem zagonu obnovljena.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2077273864382355561">Časovni zamik izklopa zaslona ob napajanju iz akumulatorja</translation>
 <translation id="2082205219176343977">Konfiguriranje najmanjše dovoljene različice Chroma za napravo.</translation>
@@ -332,6 +338,9 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           Če je ta nastavitev konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo glede na to nastavitev.
 
           Če ta nastavitev ni konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo vsak dan.</translation>
+<translation id="2188722565665306629">Omogoči nastavitev časovnega obdobja, v katerem so prikazana obvestila o vnovičnem zagonu brskalnika <ph name="PRODUCT_NAME" /> zaradi uveljavitve posodobitve na čakanju.
+
+      S to nastavitvijo pravilnika je mogoče v milisekundah nadzirati časovno obdobje, v katerem je uporabnik postopno obveščan, da mora zaradi posodobitve znova zagnati brskalnik <ph name="PRODUCT_NAME" /> (ali operacijski sistem <ph name="PRODUCT_OS_NAME" />). V tem časovnem obdobju je uporabnik postopno obveščan glede potrebe po posodobitvi na podlagi nastavitve pravilnika <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Če pravilnik ni nastavljen, se kot privzeto časovno obdobje uporabi 604.800.000 milisekund (en teden).</translation>
 <translation id="2194470398825717446">Ta pravilnik je zastarel v različici M61, uporabite EcryptfsMigrationStrategy.
 
       Določa, kako naj deluje naprava, ki je bila dobavljena z ecryptfs in mora preiti na šifriranje ext4.
@@ -536,6 +545,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="2682225790874070339">Onemogoči Google Drive v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogoči funkcijo stiskanja podatkov v strežniku proxy</translation>
+<translation id="2726613915126661822">Omogoči nadziranje, ali je v sistemu OS Chrome dovoljeno izvajanje navideznih računalnikov.
+
+      Če je pravilnik nastavljen na »True«, je v napravi dovoljeno izvajanje navideznih računalnikov.
+      Če pravilnik nastavljen na »False«, v napravi ni dovoljeno izvajanje navideznih računalnikov.
+      Ko je nastavitev pravilnika spremenjena na »False«, se uporabi pri zagonu novih navideznih računalnikov, navideznih računalnikov, ki se že izvajajo, pa ne zaustavi.
+      Če ta pravilnik ni nastavljen v upravljani napravi, v napravi ni dovoljeno izvajanje navideznih računalnikov.
+      V napravah, ki niso upravljane, je dovoljeno izvajanje navideznih računalnikov.</translation>
 <translation id="2731627323327011390">Onemogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na strani »Nov zavihek« in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
 
@@ -759,6 +775,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik je izbiren. Če ni nastavljen, ne bo novega zavihka s povezavami.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="3465852069254497664">Obveščanje uporabnika, da je priporočen ali obvezen vnovičen zagon brskalnika</translation>
 <translation id="346731943813722404">Določa, ali naj se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati šele po prvi zaznani dejavnosti uporabnika v seji.
 
           Če je pravilnik nastavljen na »True«, se zakasnitve upravljanja porabe in omejitev dolžine seje ne začnejo izvajati, dokler v seji ni zaznana prva dejavnost uporabnika.
@@ -792,6 +809,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3711895659073496551">Prekinitev</translation>
 <translation id="3736879847913515635">Omogočanje dodajanja oseb v upravitelju uporabnikov</translation>
 <translation id="3737544779868348650">Ime gostitelja omrežja naprave</translation>
+<translation id="3740754010292550733">Nastavitev časovnega obdobja za obveščanje o vnovičnem zagonu zaradi posodobitve</translation>
 <translation id="3750220015372671395">Blokiraj ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="3756011779061588474">Blokiranje načina za razvijalce</translation>
 <translation id="3758089716224084329">Omogoča nastavitev strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME" />, in preprečuje uporabnikom spreminjanje nastavitev strežnika proxy.
@@ -1516,6 +1534,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če pravilnik nastavite, ga lahko uporabniki začasno preglasijo tako, da omogočijo ali onemogočijo velik kazalec, vendar ta nastavitev ni trajna, pri čemer se privzeta nastavitev obnovi vsakič, ko je ponovno prikazan prijavni zaslon ali kadar je uporabnik eno minuto nedejaven na prijavnem zaslonu.
 
           Če pravilnika ne nastavite, je velik kazalec onemogočen, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo velik kazalec, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
+<translation id="5929855945144989709">V napravah je dovoljeno izvajanje navideznih računalnikov v sistemu OS Chrome</translation>
 <translation id="5932767795525445337">Ta pravilnik je prav tako mogoče uporabiti za pripenjanje aplikacij za Android.</translation>
 <translation id="5936622343001856595">Uveljavi izvajanje poizvedb v Google Spletnem iskanju z aktiviranim Google Varnim iskanjem in uporabnikom prepreči spreminjanje te nastavitve.
 
@@ -1771,6 +1790,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Vsiljeno preverjanje črkovanja jezikov</translation>
+<translation id="673699536430961464">Ta nastavitev uporabnikom po prijavi v napravo <ph name="PRODUCT_OS_NAME" /> omogoča preklop med Google Računi na območju z vsebino v oknu brskalnika.
+
+      Če je ta pravilnik nastavljen na »false«, prijava v drug račun na območju z vsebino brskalnika z beleženjem zgodovine ne bo dovoljena.
+
+      Če ta pravilnik ni nastavljen ali je nastavljen na »true«, se uporabi privzeto delovanje: prijava v drug račun na območju z vsebino brskalnika bo dovoljena z izjemo računov za otroke, pri katerih je to blokirano za območje z vsebino brskalnika z beleženjem zgodovine.
+
+      Če prijava v drug račun ne bi smela biti dovoljena v načinu brez beleženja zgodovine, blokirajte ta način s pravilnikom »IncognitoModeAvailability«.
+
+      Upoštevajte, da bodo lahko uporabniki z blokiranjem piškotkov dostopali do Googlovih storitev v stanju brez preverjanja pristnosti.</translation>
 <translation id="6757438632136860443">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je dovoljeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -1780,6 +1808,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6786967369487349613">Nastavitev imenika za profil za gostovanje</translation>
 <translation id="6810445994095397827">Blokiraj JavaScript na teh mestih</translation>
 <translation id="681446116407619279">Podprti načini preverjanja pristnosti</translation>
+<translation id="6835883744948188639">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je priporočen vnovičen zagon</translation>
 <translation id="685769593149966548">Uveljavitev Strogo omejenega načina v YouTubu</translation>
 <translation id="687046793986382807">Ta pravilnik je zastaral in se ne uporablja več od različice 35 brskalnika <ph name="PRODUCT_NAME" />.
 

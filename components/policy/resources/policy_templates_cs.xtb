@@ -196,6 +196,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME" /> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
 <translation id="1750315445671978749">Blokovat veškerá stahování</translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
+<translation id="1797233582739332495">Zobrazovat uživateli opakovaně výzvu s oznámením, že je vyžadován restart</translation>
 <translation id="1803646570632580723">Seznam připnutých aplikací, které se zobrazují ve spouštěči</translation>
 <translation id="1808715480127969042">Blokovat soubory cookie na těchto stránkách</translation>
 <translation id="1827523283178827583">Použít pevně dané servery proxy</translation>
@@ -274,6 +275,11 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 
           Pokud tuto zásadu nenastavíte, budou se používat všechna čtyři schémata.</translation>
 <translation id="2067011586099792101">Blokování přístupu k webům mimo obsahové balíčky</translation>
+<translation id="2070270043919235595">Oznamovat uživatelům, že je nutné prohlížeč <ph name="PRODUCT_NAME" /> restartovat, aby bylo možné použít aktualizaci čekající na vyřízení.
+
+      Tato zásada povoluje oznámení o tom, že je vyžadován nebo doporučen restart prohlížeče. Pokud není nastavena, <ph name="PRODUCT_NAME" /> uživatele o potřebě restartu informuje prostřednictvím drobných změn v nabídce. Pokud je nastavena na hodnotu Doporučeno, bude se uživateli opakovaně zobrazovat upozornění, že je doporučen restart. Uživatel upozornění může odmítnout a tím restart odložit. Pokud je nastavena na hodnotu Povinné, bude se uživateli opakovaně zobrazovat upozornění, že po uplynutí lhůty pro oznámení bude vynucen restart prohlížeče. Lhůta je ve výchozím nastavení sedm dní a lze ji nakonfigurovat pomocí zásady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Relace uživatele se po restartu obnoví.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2077273864382355561">Prodleva vypnutí obrazovky při napájení z baterie</translation>
 <translation id="2082205219176343977">Konfigurace minimální povolené verze Chromu v zařízení.</translation>
@@ -312,6 +318,9 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
       Je-li toto nastavení nakonfigurováno, uživatelé, kteří používají rychlé odemknutí, budou muset na obrazovce uzamčení zadávat heslo podle tohoto nastavení.
 
       Pokud toto nastavení není nakonfigurováno, uživatelé, kteří používají rychlé odemknutí, budou na obrazovce uzamčení muset zadávat heslo každý den.</translation>
+<translation id="2188722565665306629">Umožňuje nastavit dobu, po kterou se budou zobrazovat oznámení o restartu prohlížeče <ph name="PRODUCT_NAME" /> za účelem použití aktualizace čekající na vyřízení.
+
+      Pomocí této zásady lze ovládat dobu (v milisekundách), po kterou je uživatel postupně informován o tom, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" /> kvůli aktualizaci restartovat. Během této doby bude uživatel na základě nastavení zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> opakovaně informován, že je potřeba nainstalovat aktualizaci. Pokud tuto zásadu nenastavíte, použije se výchozí hodnota 604 800 000 milisekund (jeden týden).</translation>
 <translation id="2194470398825717446">Podpora této zásady byla ve verzi M61 ukončena. Použijte namísto ní zásadu EcryptfsMigrationStrategy.
 
 Určuje, jak se má chovat zařízení dodané s šifrováním ecryptfs, které potřebuje přejít na šifrování ext4.
@@ -383,7 +392,7 @@ Pokud tato zásada není nastavena, funkce aktualizace firmwaru <ph name="TPM_FI
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="2386362615870139244">Povolit uzamčení obrazovky při probuzení</translation>
-<translation id="2411817661175306360">Ochrana hesla – varování je vypnuté</translation>
+<translation id="2411817661175306360">Ochrana hesla – upozornění je vypnuté</translation>
 <translation id="2411919772666155530">Blokovat upozornění na těchto stránkách</translation>
 <translation id="2418507228189425036">Deaktivuje ukládání historie procházení v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
 
@@ -515,6 +524,13 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
           Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Zakáže v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku.</translation>
 <translation id="268577405881275241">Aktivace funkce datové komprese proxy serveru</translation>
+<translation id="2726613915126661822">Umožňuje určit, zda má být v systému Chrome OS povoleno spouštění virtuálních počítačů.
+
+      Pokud je tato zásada nastavena na hodnotu True, spouštění virtuálních počítačů je v zařízení povoleno.
+      Pokud je tato zásada nastavena na hodnotu False, spouštění virtuálních počítačů v zařízení povoleno není.
+      Při změně na hodnotu False se na spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
+      Pokud tato zásada není nastavena na spravovaném zařízení, spouštění virtuálních počítačů v něm nebude povoleno.
+      Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
 <translation id="2731627323327011390">Zakázat aplikacím ARC používání certifikátů systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2742843273354638707">Skryje ze stránky Nová karta a ze spouštěče aplikací systému <ph name="PRODUCT_OS_NAME" /> aplikaci Internetový obchod Chrome a odkaz na zápatí.
 
@@ -733,6 +749,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Tato zásada je nepovinná. Pokud ji nenastavíte, žádná stránka nové karty se nezobrazí.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="3465852069254497664">Oznamovat uživateli, že je doporučen nebo vyžadován restart prohlížeče</translation>
 <translation id="346731943813722404">Určuje, zda mají prodlevy systému správy napájení a limit délky relací začít běžet až poté, co je v relaci zaznamenána první aktivita uživatele.
 
           Pokud je tato zásada nastavena na hodnotu True, prodlevy systému správy napájení a limit délky relace začnou běžet až poté, co je v relaci zaznamenána první aktivita uživatele.
@@ -766,6 +783,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3711895659073496551">Pozastavit</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
+<translation id="3740754010292550733">Nastavit dobu oznámení o restartu z důvodu aktualizace</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -1474,6 +1492,7 @@ Pokud je zásada nastavena na hodnotu false, bude při zobrazení přihlašovac�
 Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat aktivací nebo deaktivací velkého kurzoru. Volba uživatele nicméně nebude trvalá a po opětovném zobrazení přihlašovací obrazovky nebo nečinnosti uživatele na přihlašovací obrazovce po dobu jedné minuty se obnoví původní nastavení.
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky velký kurzor deaktivován. Uživatelé budou moci velký kurzor kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
+<translation id="5929855945144989709">Povolit zařízením spouštět v systému Chrome OS virtuální počítače</translation>
 <translation id="5932767795525445337">Tuto zásadu lze využít také k připnutí aplikací pro Android.</translation>
 <translation id="5936622343001856595">Vynutí, aby se při použití Vyhledávání Google vždy aktivovalo Bezpečné vyhledávání, a zabrání uživatelům toto nastavení změnit.
 
@@ -1724,6 +1743,15 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 
       Zásada <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže veškerou synchronizaci dat a tím zásadu RoamingProfileSupportEnabled přepíše.</translation>
 <translation id="6735701345096330595">Vynutit povolení jazyků kontroly pravopisu</translation>
+<translation id="673699536430961464">Toto nastavení uživatelům umožňuje přepínat mezi účty Google v obsahové oblasti okna prohlížeče po přihlášení k zařízení <ph name="PRODUCT_OS_NAME" />.
+
+      Je-li tato zásada nastavena na hodnotu false, přihlášení k jinému učtu z obsahové oblasti neanonymního okna prohlížeče nebude povoleno.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, použije se výchozí chování: přihlášení k jinému účtu z obsahové oblasti prohlížeče bude povoleno s výjimkou dětských účtů, u nichž bude v obsahové oblasti neanonymních oken blokováno.
+
+      Pokud nechcete povolovat přihlášení k jinému účtu pomocí anonymního režimu, zvažte zablokování tohoto režimu pomocí zásady IncognitoModeAvailability.
+
+      Upozorňujeme, že uživatelé budou moci získat přístup ke službám Google v neověřeném stavu tím, že zablokují soubory cookie.</translation>
 <translation id="6757438632136860443">Umožňuje nastavit seznam vzorů adres URL webů, které mají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -1733,6 +1761,7 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 <translation id="6786967369487349613">Nastavit adresář cestovního profilu</translation>
 <translation id="6810445994095397827">Blokovat JavaScript na těchto stránkách</translation>
 <translation id="681446116407619279">Podporovaná schémata ověření</translation>
+<translation id="6835883744948188639">Zobrazovat uživateli opakovaně výzvu s oznámením, že je doporučen restart</translation>
 <translation id="685769593149966548">Vynutit přísný omezený režim pro YouTube</translation>
 <translation id="687046793986382807">V prohlížečích <ph name="PRODUCT_NAME" /> verze 35 a novějších byla tato zásada zrušena.
 
@@ -2230,7 +2259,7 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
       Pokud tuto zásadu ponecháte nenastavenou nebo deaktivovanou, budou se soubory PDF otevírat pomocí pluginu PDF (pokud jej uživatel nezakáže).</translation>
 <translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
-<translation id="841977920223099909">Ochrana hesla – spouštěč varování</translation>
+<translation id="841977920223099909">Ochrana hesla – spouštěč upozornění</translation>
 <translation id="8424255554404582727">Nastavit výchozí otočení displeje, které se použije při každém restartu</translation>
 <translation id="8426231401662877819">Otočit obrazovku ve směru hodinových ručiček o 90 stupňů</translation>
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
@@ -2289,7 +2318,7 @@ Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné zna
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
-<translation id="8685024486845674965">Ochrana hesla – varování je spouštěno opětovným použitím hesla</translation>
+<translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
 <translation id="8711086062295757690">Určuje klíčové slovo, které v adresním řádku spouští vyhledávání tohoto poskytovatele.
@@ -2326,7 +2355,7 @@ Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu 
       Pokud tato zásada není nastavena, nebo je nastavena na hodnotu false, poloha oznamována nebude.</translation>
 <translation id="8818768076343557335">Předvídat síťové akce u všech nemobilních sítí.
           (Od verze 50 ukončena podpora, od verze 52 odstraněno. Od verze 52 platí, že pokud je nastavena hodnota 1, bude se zásada chovat stejně, jako by byla nastavena hodnota 0 – síťové akce se budou předvídat u všech síťových připojení.)</translation>
-<translation id="8825782996899863372">Ochrana hesla – varování je spouštěno opětovným použitím hesla na phishingové stránce</translation>
+<translation id="8825782996899863372">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla na phishingové stránce</translation>
 <translation id="8828766846428537606">Slouží ke konfiguraci výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby nastavenou domovskou stránku měnili.
 
       Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta, a to tím, že zadá řetězec „chrome://newtab“.</translation>

@@ -882,6 +882,7 @@
 <translation id="2359345697448000899">如要管理擴充功能，只要按一下 [工具] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="236141728043665931">一律封鎖存取麥克風</translation>
+<translation id="2365507699358342471">這個網站可以讀取已複製到剪貼簿的文字和圖片。</translation>
 <translation id="2367972762794486313">顯示應用程式</translation>
 <translation id="2371076942591664043">完成後開啟(&amp;D)</translation>
 <translation id="2377319039870049694">切換為清單檢視</translation>
@@ -957,7 +958,7 @@
 <translation id="249819058197909513">不要再顯示這個應用程式的相關警告訊息</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2498765460639677199">最大</translation>
-<translation id="2499747912851752301">匯出密碼...</translation>
+<translation id="2499747912851752301">正在匯出密碼...</translation>
 <translation id="2500471369733289700">已封鎖權限，保護你的隱私</translation>
 <translation id="2501173422421700905">憑證保留中</translation>
 <translation id="2501278716633472235">返回</translation>
@@ -1269,7 +1270,6 @@
 <translation id="2916073183900451334">在網頁上按 Tab 鍵可反白顯示連結和表單欄位</translation>
 <translation id="2916745397441987255">搜尋擴充功能</translation>
 <translation id="2921081876747860777">請設定密碼，保護你的本機資料。</translation>
-<translation id="2924395203970765374">已和<ph name="FULL_NAME" />同步</translation>
 <translation id="2925966894897775835">試算表</translation>
 <translation id="2927017729816812676">快取儲存空間</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (兒童專用帳戶)</translation>
@@ -1552,7 +1552,6 @@
 <translation id="3348459612390503954">恭喜你</translation>
 <translation id="3349933790966648062">記憶體使用量</translation>
 <translation id="3353984535370177728">選取要上傳的資料夾</translation>
-<translation id="335581015389089642">語音</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="3356797067524893661">設定程序已完成，現在可以開始使用 Hangouts Meet 了</translation>
 <translation id="3358935496594837302">找不到你的手機。請確定你使用的是相容的 Android 手機並已開機，且手機在適當距離範圍內。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
@@ -1729,7 +1728,6 @@
 <translation id="3613422051106148727">在新分頁中開啟(&amp;O)</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3616741288025931835">清除瀏覽資料(&amp;C)...</translation>
-<translation id="3618849550573277856">查詢「<ph name="LOOKUP_STRING" />」</translation>
 <translation id="3620292326130836921">所有檔案都已備份！</translation>
 <translation id="3623574769078102674">受監管的使用者將由 <ph name="MANAGER_EMAIL" /> 負責管理。</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
@@ -2052,7 +2050,7 @@
 <translation id="4107048419833779140">識別並退出儲存裝置</translation>
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110559665646603267">將焦點移至檔案櫃</translation>
-<translation id="4110895898888439383">用高對比模式瀏覽網路</translation>
+<translation id="4110895898888439383">以高對比模式瀏覽網路</translation>
 <translation id="4114360727879906392">上一個視窗</translation>
 <translation id="4115002065223188701">偵測不到網路</translation>
 <translation id="4115080753528843955">部分內容服務會使用唯一識別碼來授予受保護內容的存取權</translation>
@@ -2143,7 +2141,6 @@
 <translation id="428565720843367874">掃描這個檔案時，防毒軟體發生意外錯誤。</translation>
 <translation id="428608937826130504">檔案櫃項目 8</translation>
 <translation id="4287502004382794929">你的軟體授權量不足，無法註冊這個裝置。如要購買更多授權，請與銷售人員聯絡。如果你認為這則訊息有誤，請與支援小組聯絡。</translation>
-<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">總覽</translation>
 <translation id="4296575653627536209">新增受監管的使用者</translation>
 <translation id="4297322094678649474">變更語言</translation>
@@ -2404,6 +2401,7 @@
 <translation id="4748762018725435655">需要來自 Chrome 線上應用程式商店的擴充功能</translation>
 <translation id="4750394297954878236">建議</translation>
 <translation id="475088594373173692">第一位使用者</translation>
+<translation id="4751476147751820511">動作或光源感應器</translation>
 <translation id="4756378406049221019">停止/重新載入</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4759238208242260848">下載</translation>
@@ -2438,7 +2436,6 @@
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4820334425169212497">否，我沒有看到</translation>
-<translation id="4821725298388681253">這是初期版本，目前還不支援部分功能 (例如搜尋和輸入文字)。</translation>
 <translation id="4821935166599369261">分析已啟用(&amp;P)</translation>
 <translation id="4823484602432206655">讀取及變更使用者和裝置設定</translation>
 <translation id="4823651846660089135">裝置目前是唯讀模式</translation>
@@ -3448,7 +3445,6 @@
 <translation id="6388771388956873507">找到裝置上的指紋感應器，並以手指輕觸</translation>
 <translation id="6390799748543157332">你在這個視窗瀏覽的網頁不會顯示在瀏覽器紀錄中，而且在你關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他紀錄。不過，系統將會保留你下載的所有檔案。</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">在無痕式視窗中開啟所有書籤(&amp;I)</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
@@ -3597,7 +3593,7 @@
 <translation id="6613452264606394692">將此頁加入書籤，方便你快速返回</translation>
 <translation id="6615455863669487791">顯示</translation>
 <translation id="661719348160586794">你已儲存的密碼會顯示在這裡。</translation>
-<translation id="6618097958368085618">仍要保留</translation>
+<translation id="6618097958368085618">確定保留</translation>
 <translation id="6619058681307408113">線上印表機服務精靈 (LPD)</translation>
 <translation id="6619801788773578757">新增 Kiosk 應用程式</translation>
 <translation id="6619990499523117484">確認你的 PIN 碼</translation>
@@ -4020,6 +4016,7 @@
 <translation id="7297443947353982503">使用者名稱/密碼錯誤或 EAP 驗證失敗</translation>
 <translation id="729761647156315797">選擇語言和鍵盤</translation>
 <translation id="7299337219131431707">啟用訪客瀏覽</translation>
+<translation id="7303900363563182677">這個網站無法讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="730515362922783851">與區域網路或網際網路中的任何裝置交換資料</translation>
 <translation id="7308002049209013926">使用啟動器快速存取新的應用程式和活動。如要使用鍵盤開啟這個畫面，請按下 Alt + Shift + L 鍵。</translation>
 <translation id="7309257895202129721">顯示控制介面(&amp;C)</translation>
@@ -4237,7 +4234,7 @@
 <translation id="7664620655576155379">不支援的藍牙裝置：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
 <translation id="7671130400130574146">使用系統標題列及邊界</translation>
-<translation id="7672520070349703697"><ph name="PAGE_TITLE" /> 的 <ph name="HUNG_IFRAME_URL" />。</translation>
+<translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> (在「<ph name="PAGE_TITLE" />」中)。</translation>
 <translation id="7683373461016844951">如要繼續操作，請依序點選 [確定] 和 [新增使用者]，為你的 <ph name="DOMAIN" /> 電子郵件地址建立新的設定檔。</translation>
 <translation id="7684212569183643648">由您的管理員安裝</translation>
 <translation id="7684559058815332124">造訪監控式入口網站登入頁面</translation>
@@ -4398,6 +4395,7 @@
 <translation id="7909969815743704077">已在無痕模式中下載</translation>
 <translation id="7910768399700579500">新增資料夾(&amp;N)</translation>
 <translation id="7912080627461681647">伺服器上的密碼已變更。請先登出然後重新登入。</translation>
+<translation id="7912883689016444961">設定行動網路</translation>
 <translation id="7915471803647590281">請將發生的狀況告訴我們，然後再提供意見。</translation>
 <translation id="7925247922861151263">AAA 檢查失敗</translation>
 <translation id="7925285046818567682">正在等候 <ph name="HOST_NAME" />...</translation>
@@ -4909,6 +4907,7 @@
 <translation id="8736288397686080465">這個網站已在背景更新。</translation>
 <translation id="8737685506611670901">開啟<ph name="PROTOCOL" />連結 (取代 <ph name="REPLACED_HANDLER_TITLE" />)</translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">子母畫面</translation>
 <translation id="8743864605301774756">1 小時前更新</translation>
 <translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
 <translation id="8754200782896249056">&lt;p&gt;在受支援的桌面環境下執行「<ph name="PRODUCT_NAME" />」時，瀏覽器會使用系統的 Proxy 設定。不過，您的系統可能不受支援，或在啟動系統設定時發生問題。&lt;/p&gt;
@@ -5011,7 +5010,6 @@
 <translation id="8912793549644936705">延伸</translation>
 <translation id="8915370057835397490">正在載入建議</translation>
 <translation id="8916476537757519021">無痕模式子頁框：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">同步到<ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">一律允許在這個網站中顯示廣告</translation>
 <translation id="8925458182817574960">設定(&amp;S)</translation>
 <translation id="8926389886865778422">不再詢問這個問題</translation>

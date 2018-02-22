@@ -291,7 +291,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 
 Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TIME" />. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="6418346271604475326">Se pregătește fișierul PDF</translation>
-<translation id="6434591244308415567">A apărut o eroare. Încearcă din nou mai târziu.</translation>
+<translation id="6434591244308415567">A apărut o eroare, încearcă mai târziu.</translation>
 <translation id="6445051938772793705">Țară</translation>
 <translation id="6445981559479772097">Mesaj trimis.</translation>
 <translation id="6464071786529933911">Deschide în Filă incognito nouă</translation>
@@ -330,7 +330,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7203585745079012652">Primești răspunsuri vocale</translation>
 <translation id="722055596168483966">Personalizează serviciile Google</translation>
 <translation id="7272437679830969316">Nu ți se poate confirma identitatea. Parola nu a fost copiată.</translation>
-<translation id="7291368939935408496">Se pregătesc parolele…</translation>
+<translation id="7291368939935408496">Se pregătesc parolele...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% descărcat</translation>
 <translation id="7346909386216857016">OK, am înțeles</translation>
 <translation id="7400418766976504921">Adresă URL</translation>

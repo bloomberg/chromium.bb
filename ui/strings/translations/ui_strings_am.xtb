@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">ወደ እዚህ ሸብልል</translation>
 <translation id="3234408098842461169">ዝቅዝቅ ቀስት</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ቀን}one{# ቀኖች}other{# ቀኖች}}</translation>
+<translation id="335581015389089642">ንግግር</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ቀን ቀርቷል}one{# ቀኖች ቀርቷል}other{# ቀኖች ቀርተዋል}}</translation>
+<translation id="3618849550573277856">«<ph name="LOOKUP_STRING" />»ን ፈልግ</translation>
 <translation id="364720409959344976">የሚሰቀል ዓቃፊ ይምረጡ</translation>
 <translation id="3660179305079774227">የላይ ቀስት</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ጊባ/ሰ</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">ዝለል</translation>
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{ከ1 ወር በፊት}one{ከ# ወሮች በፊት}other{ከ# ወሮች በፊት}}</translation>
+<translation id="4289300219472526559">መናገር ይጀምሩ</translation>
 <translation id="4316910396681052118">ሁሉም መተግበሪያዎች</translation>
 <translation id="4588090240171750605">ወደ ቀኝ ሸብልል</translation>
 <translation id="4724120544754982507">የማሳወቂያ ማዕከል፣ <ph name="UNREAD_NOTIFICATION_COUNT" /> ያልተነበቡ ማሳወቂያዎች</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">የመተግበሪያ አስተያየት ጥቆማዎች</translation>
 <translation id="6364916375976753737">ወደ ግራ ሸብልል</translation>
 <translation id="6394627529324717982">ኮማ</translation>
+<translation id="6397363302884558537">መናገር አቁም</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ሰከንድ በፊት}one{# ሰከንዶች በፊት}other{# ሰከንዶች በፊት}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ከ1 ሰከንድ በፊት}one{ከ# ሰከንዶች በፊት}other{ከ# ሰከንዶች በፊት}}</translation>
 <translation id="654149438358937226">ሁሉንም ማሳወቂያዎች አግድ</translation>

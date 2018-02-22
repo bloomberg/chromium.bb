@@ -207,6 +207,7 @@
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
+<translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que debe reiniciar</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
 <translation id="1827523283178827583">Usar servidores proxy fijos</translation>
@@ -279,6 +280,11 @@
 
           Si esta política no se configura, se usarán los cuatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquea el acceso a sitios fuera de los paquetes de contenido.</translation>
+<translation id="2070270043919235595">Notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
+
+      Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio reiniciar. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita reiniciar. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para reiniciar. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Después del reinicio, se restablecerá la sesión del usuario.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
 <translation id="2082205219176343977">Configura la versión mínima permitida de Chrome para el dispositivo.</translation>
@@ -317,6 +323,9 @@
       Si se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada, de acuerdo con esta configuración.
 
       Si no se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada todos los días.</translation>
+<translation id="2188722565665306629">Permite establecer el período en el que se mostrarán las notificaciones de reinicio de <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
+
+      Esta configuración de política se puede usar para controlar el período, en milisegundos, durante el cual se informan a los usuarios que <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) debe reiniciarse para instalar una actualización. En este período, se le informará al usuario de manera reiterada que es necesario instalar una actualización en función de la configuración de la política de <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece, se utiliza el período predeterminado de 604800000 milisegundos (una semana).</translation>
 <translation id="2194470398825717446">Esta política dejó de estar disponible en M61, usa EcryptfsMigrationStrategy en su lugar.
 
 Especifica el comportamiento de un dispositivo que se envió con ecryptfs y debe realizar una transición a la encriptación ext4.
@@ -503,6 +512,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2682225790874070339">Inhabilita Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
+<translation id="2726613915126661822">Permite controlar si las máquinas virtuales pueden ejecutarse en el Sistema operativo Chrome.
+
+      Si la política se establece como verdadera, el dispositivo podrá ejecutar las máquinas virtuales.
+      Si se establece como falsa, el dispositivo no podrá ejecutarlas.
+      Cuando se cambia a falsa, se aplica a las máquinas virtuales que se inician a partir de ese momento, pero no se apagan las máquinas virtuales que ya estén ejecutándose.
+      Cuando no se establece la política en un dispositivo administrado, el dispositivo no podrá ejecutar máquinas virtuales.
+      Los dispositivos no administrados podrán ejecutar máquinas virtuales.</translation>
 <translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> para apps de ARC</translation>
 <translation id="2742843273354638707">Permite ocultar la aplicación Chrome Web Store y el vínculo de la parte inferior de la página Nueva pestaña y del Selector de aplicaciones de <ph name="PRODUCT_OS_NAME" />.
 
@@ -719,6 +735,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política es opcional. Si no se establece, no se mostrará una página Nueva pestaña.
 
           Esta política solo se respeta si está habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="3465852069254497664">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador</translation>
 <translation id="346731943813722404">Especifica si las demoras por administración de energía y el límite de duración de la sesión deben ejecutarse solo después de que se observe actividad inicial en la sesión de un usuario.
 
           Si esta política se establece en "True", las demoras por administración de energía y el límite de duración de la sesión no se ejecutan hasta que se observe actividad inicial en la sesión de un usuario.
@@ -752,6 +769,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
 <translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
+<translation id="3740754010292550733">Establecer el período de las notificaciones de reinicio para instalar actualizaciones</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Te permite establecer el servidor proxy que usa <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
@@ -1303,7 +1321,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="5530347722229944744">Bloquear las descargas potencialmente peligrosas</translation>
-<translation id="5530586312297447592">La marca la protección de la contraseña que indica que la cuenta está en riesgo se activa cuando se vuelve a usar la contraseña en una página de suplantación de identidad (phishing)</translation>
+<translation id="5530586312297447592">La marca de la protección de la contraseña que indica que la cuenta está en riesgo se activa cuando se vuelve a usar la contraseña en una página de suplantación de identidad (phishing)</translation>
 <translation id="5535973522252703021">Lista blanca de servidores de delegación de Kerberos</translation>
 <translation id="555077880566103058">Permitir que todos los sitios ejecuten el complemento <ph name="FLASH_PLUGIN_NAME" /> de manera automática</translation>
 <translation id="5559079916187891399">Esta política no tiene efecto en las apps de Android.</translation>
@@ -1424,6 +1442,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el cursor grande. Sin embargo, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de acceso o el usuario permanezca ausente en la pantalla de acceso durante un minuto.
 
           Si no se establece esta política, el cursor grande se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar el cursor grande en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
+<translation id="5929855945144989709">Permitir que los dispositivos ejecuten máquinas virtuales en el Sistema operativo Chrome</translation>
 <translation id="5932767795525445337">Esta política también se puede usar para fijar apps de Android.</translation>
 <translation id="5936622343001856595">Permite forzar las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado y evitar que los usuarios modifiquen esta configuración.
 
@@ -1667,6 +1686,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita la sincronización de todos los datos y anula la política RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>
+<translation id="673699536430961464">Esta configuración permite que los usuarios cambien entre cuentas de Google en el área de contenido de la ventana del navegador después de acceder en el dispositivo con <ph name="PRODUCT_OS_NAME" />.
+
+      Si la política se establece como falsa, no se permitirá acceder en otra cuenta desde el área de contenido de una ventana de navegador que no sea de incógnito.
+
+      Si no se establece o se establece como verdadera, se usará el comportamiento predeterminado: se permitirá acceder a otra cuenta desde el área de contenido del navegador, excepto para las cuentas secundarias, donde se bloqueará para el área de contenido en ventanas que no sean de incógnito.
+
+      En caso de que no deba permitirse el acceso a otra cuenta a través del modo de navegación incógnito, considera bloquear dicho modo mediante la política IncognitoModeAvailability.
+
+      Debes tener en cuenta que, si bloquean sus cookies, los usuarios podrán acceder a los servicios de Google en un estado no autenticado.</translation>
 <translation id="6757438632136860443">Te permite establecer una lista de patrones de URL que especifican los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si se establece, o desde otro tipo de configuración personal del usuario.</translation>
@@ -1676,6 +1704,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
+<translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda reiniciar</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 

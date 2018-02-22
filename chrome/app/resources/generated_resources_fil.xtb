@@ -1270,7 +1270,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2916073183900451334">Ang pagpindot sa Tab sa isang webpage ay nagha-highlight ng mga link, pati na rin ang mga field ng form</translation>
 <translation id="2916745397441987255">Maghanap sa mga extension</translation>
 <translation id="2921081876747860777">Mangyaring gumawa ng password upang protektahan ang iyong lokal na data.</translation>
-<translation id="2924395203970765374">Na-sync kay <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2927017729816812676">Storage ng Cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Account para sa mga bata)</translation>
@@ -1553,7 +1552,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3348459612390503954">Binabati ka namin</translation>
 <translation id="3349933790966648062">Footprint ng Memory</translation>
 <translation id="3353984535370177728">Pumili ng folder na i-a-upload</translation>
-<translation id="335581015389089642">Pananalita</translation>
 <translation id="3355936511340229503">Error sa koneksyon</translation>
 <translation id="3356797067524893661">Handa ka nang magpatuloy sa Hangouts Meet</translation>
 <translation id="3358935496594837302">Hindi mahanap ang iyong telepono. Siguraduhing gumagamit ka ng tugmang Android phone na naka-on at malapit. &lt;a&gt;Matuto pa&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3613422051106148727">&amp;Buksan sa bagong tab</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;I-clear ang Data ng Pag-browse...</translation>
-<translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Naka-back up na ang lahat!</translation>
 <translation id="3623574769078102674">Pamamahalaan ang pinangangasiwaang user na ito ng <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Naka-disable ang mga screenshot</translation>
@@ -2145,7 +2142,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="428565720843367874">Hindi inaasahang nabigo ang software ng anti-virus habang ini-scan ang file na ito.</translation>
 <translation id="428608937826130504">Item 8 sa shelf</translation>
 <translation id="4287502004382794929">Wala kang sapat na mga lisensya ng software upang ipatala ang device na ito. Mangyaring makipag-ugnay sa sales upang bumili nang higit pa. Kung naniniwala ka na nakikita mo ang mensaheng ito dahil sa error, mangyaring makipag-ugnay sa suporta.</translation>
-<translation id="4289300219472526559">Simulan ang Pagsasalita</translation>
 <translation id="4289540628985791613">Pangkalahatang-ideya</translation>
 <translation id="4296575653627536209">Magdagdag ng Pinapangasiwaang User</translation>
 <translation id="4297322094678649474">Palitan ang Mga Wika</translation>
@@ -2441,7 +2437,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="4813512666221746211">Error sa network</translation>
 <translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
 <translation id="4820334425169212497">Hindi, hindi ko ito nakikita</translation>
-<translation id="4821725298388681253">Ito ay isang maagang release. Hindi pa available ang ilang feature, tulad ng paghahanap at paglalagay ng text.</translation>
 <translation id="4821935166599369261">&amp;Pinagana ang Pag-profile</translation>
 <translation id="4823484602432206655">Basahin at baguhin ang mga setting ng user at device</translation>
 <translation id="4823651846660089135">Read-only ang device</translation>
@@ -3452,7 +3447,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="6388771388956873507">Hanapin ang sensor para sa fingerprint sa iyong device at pindutin ito gamit ang iyong daliri</translation>
 <translation id="6390799748543157332">Hindi lalabas sa iyong history ng browser ang mga page na tiningnan mo sa window na ito at hindi mag-iiwan ang mga ito ng iba pang mga palatandaan, tulad ng cookies, sa computer pagkatapos mong isara ang lahat ng nakabukas na mga window ng Bisita. Gayunpaman, papanatilihin ang anumang mga file na na-download mo.</translation>
 <translation id="6395423953133416962">Ipadala ang <ph name="BEGIN_LINK1" />impormasyon ng system<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />mga sukatan<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Ihinto ang Pagsasalita</translation>
 <translation id="6397592254427394018">Buksan ang lahat ng bookmark sa &amp;incognito window</translation>
 <translation id="6398715114293939307">Alisin ang Google Play Store</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
@@ -5025,7 +5019,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8912793549644936705">Naka-stretch</translation>
 <translation id="8915370057835397490">Nilo-load ang suhestiyon</translation>
 <translation id="8916476537757519021">Incognito na Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">I-sync sa <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Palaging payagan ang mga ad sa site na ito</translation>
 <translation id="8925458182817574960">&amp;Mga Setting</translation>
 <translation id="8926389886865778422">Huwag nang itanong ulit</translation>

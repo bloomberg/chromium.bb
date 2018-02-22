@@ -1271,7 +1271,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2916073183900451334">Menekan Tab pada pautan serlahan halaman web, dan juga medan borang</translation>
 <translation id="2916745397441987255">Cari sambungan</translation>
 <translation id="2921081876747860777">Sila buat kata laluan untuk melindungi data setempat anda.</translation>
-<translation id="2924395203970765374">Disegerakkan ke <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Helaian</translation>
 <translation id="2927017729816812676">Storan Cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Akaun untuk kanak-kanak)</translation>
@@ -1554,7 +1553,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3348459612390503954">Tahniah!</translation>
 <translation id="3349933790966648062">Jejak Memori</translation>
 <translation id="3353984535370177728">Pilih folder untuk dimuat naik</translation>
-<translation id="335581015389089642">Pertuturan</translation>
 <translation id="3355936511340229503">Ralat sambungan</translation>
 <translation id="3356797067524893661">Anda telah sedia untuk terus ke Hangout Meet</translation>
 <translation id="3358935496594837302">Tidak dapat mencari telefon anda. Pastikan anda menggunakan telefon Android serasi yang dihidupkan dan telefon tersebut ada bersama anda. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
@@ -1731,7 +1729,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3613422051106148727">&amp;Buka dalam tab baharu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Kosongkan Data Menyemak Imbas...</translation>
-<translation id="3618849550573277856">Cari “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Semua disandarkan!</translation>
 <translation id="3623574769078102674">Pengguna diselia ini akan diuruskan oleh <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Tangkapan skrin dilumpuhkan</translation>
@@ -2146,7 +2143,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="428565720843367874">Perisian anti-virus gagal tanpa dijangka semasa mengimbas fail ini.</translation>
 <translation id="428608937826130504">Item rak 8</translation>
 <translation id="4287502004382794929">Anda tidak mempunyai lesen perisian yang cukup untuk mendaftarkan peranti ini. Sila hubungi bahagian jualan untuk membeli lagi. Jika anda percaya anda melihat mesej yang salah, sila hubungi sokongan.</translation>
-<translation id="4289300219472526559">Mula Bercakap</translation>
 <translation id="4289540628985791613">Gambaran keseluruhan</translation>
 <translation id="4296575653627536209">Tambahkan Pengguna di Bawah Seliaan</translation>
 <translation id="4297322094678649474">Tukar Bahasa</translation>
@@ -2442,7 +2438,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4813512666221746211">Ralat rangkaian</translation>
 <translation id="4816492930507672669">Muat halaman</translation>
 <translation id="4820334425169212497">Tidak, saya tidak melihatnya</translation>
-<translation id="4821725298388681253">Ini ialah keluaran awal. Sesetengah ciri seperti carian dan masukan teks belum tersedia lagi.</translation>
 <translation id="4821935166599369261">&amp;Pemprofilan Didayakan</translation>
 <translation id="4823484602432206655">Baca dan tukar pengguna dan tetapan peranti</translation>
 <translation id="4823651846660089135">Peranti dalam mod baca sahaja</translation>
@@ -3453,7 +3448,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6388771388956873507">Cari penderia cap jari pada peranti anda dan sentuh penderia itu menggunakan jari anda</translation>
 <translation id="6390799748543157332">Halaman yang anda lihat dalam tetingkap ini tidak akan dipaparkan dalam sejarah penyemak imbas dan halaman ini tidak akan meninggalkan kesan lain, seperti kuki, pada komputer selepas anda menutup semua tetingkap Tetamu yang terbuka. Walau bagaimanapun, sebarang fail yang anda muat turun akan disimpan.</translation>
 <translation id="6395423953133416962">Hantar <ph name="BEGIN_LINK1" />maklumat sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Berhenti Bercakap</translation>
 <translation id="6397592254427394018">Buka semua penanda halaman dalam tetingkap &amp;inkognito</translation>
 <translation id="6398715114293939307">Alih keluar Gedung Google Play</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
@@ -5023,7 +5017,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8912793549644936705">Regang</translation>
 <translation id="8915370057835397490">Memuatkan cadangan</translation>
 <translation id="8916476537757519021">Subbingkai Inkognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Segerakkan ke <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Sentiasa benarkan iklan di tapak ini</translation>
 <translation id="8925458182817574960">&amp;Tetapan</translation>
 <translation id="8926389886865778422">Jangan tanya lagi</translation>

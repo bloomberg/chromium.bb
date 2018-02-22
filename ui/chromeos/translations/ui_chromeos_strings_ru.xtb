@@ -175,7 +175,7 @@
 <translation id="5819442873484330149">Корейская раскладка (Sebeolsik Final)</translation>
 <translation id="5838825566232597749">США (Workman, международная)</translation>
 <translation id="5892290200158927959">Французская раскладка (BÉPO)</translation>
-<translation id="5928303187149237472">Изменить разрешение экрана</translation>
+<translation id="5928303187149237472">Изменить разрешение экрана.</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Латиноамериканская раскладка</translation>
 <translation id="6012987430370760224">Клавиатура маратхи (фонетическая)</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">Раскладка США (Workman)</translation>
 <translation id="6970230597523682626">Болгарский</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
+<translation id="7020813747703216897">Ничего не найдено.</translation>
 <translation id="7025325401470358758">Следующая панель</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Транслитерация (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Эстонская раскладка</translation>
 <translation id="719009910964971313">Клавиатура Дворака для программистов (США)</translation>
 <translation id="7222624196722476520">Болгарская раскладка (фонетическая)</translation>
+<translation id="7272373489634936181">Поиск быстрых клавиш</translation>
 <translation id="7348749398828259943">Раскладка США (Workman, международная)</translation>
 <translation id="7389722738210761877">Тайская раскладка (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Клавиатура хинди (фонетическая)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">США (Colemak)</translation>
 <translation id="7969525169268594403">Словенский</translation>
 <translation id="7987485481246785146">Раскладка сорани (арабский алфавит)</translation>
+<translation id="8004192919599017226">Начать поиск…</translation>
 <translation id="8008366997883261463">Собака</translation>
 <translation id="8031722894461705849">Словацкая раскладка</translation>
 <translation id="8045462269890919536">Румынский</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">Русская (фонетическая)</translation>
 <translation id="913758436357682283">Мьянманская раскладка (Myansan)</translation>
 <translation id="9153744823707037316">Способ ввода массива</translation>
+<translation id="9179672198516322668">Часто используемые быстрые клавиши</translation>
 <translation id="9206487995878691001">Цан-цзе</translation>
 <translation id="9219908252191632183">Луна</translation>
 </translationbundle>

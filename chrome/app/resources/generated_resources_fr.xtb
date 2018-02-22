@@ -882,6 +882,7 @@
 <translation id="2359345697448000899">Pour gérer les extensions, cliquer sur "Extensions" dans le menu "Outils"</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="236141728043665931">Toujours bloquer l'accès au micro</translation>
+<translation id="2365507699358342471">Ce site peut voir le texte et les images copiés dans le presse-papiers.</translation>
 <translation id="2367972762794486313">Afficher les applications</translation>
 <translation id="2371076942591664043">Ouvrir une fois le téléchargement &amp;terminé</translation>
 <translation id="2377319039870049694">Passer en mode Liste</translation>
@@ -1269,7 +1270,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2916073183900451334">La touche TAB permet de sélectionner des liens et d'accéder à des champs de formulaire sur une page Web.</translation>
 <translation id="2916745397441987255">Rechercher dans les extensions</translation>
 <translation id="2921081876747860777">Veuillez créer un mot de passe pour protéger vos données locales</translation>
-<translation id="2924395203970765374">Synchronisé avec le compte <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Feuilles de calcul</translation>
 <translation id="2927017729816812676">Espace de stockage du cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (compte pour enfants)</translation>
@@ -1552,7 +1552,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3348459612390503954">Félicitations</translation>
 <translation id="3349933790966648062">Espace mémoire utilisé</translation>
 <translation id="3353984535370177728">Sélectionner le dossier d'importation</translation>
-<translation id="335581015389089642">Voix</translation>
 <translation id="3355936511340229503">Erreur de connexion</translation>
 <translation id="3356797067524893661">Vous pouvez accéder à Hangouts Meet</translation>
 <translation id="3358935496594837302">Impossible de trouver votre téléphone. Assurez-vous qu'il s'agit bien d'un téléphone Android compatible, qu'il est allumé et qu'il se trouve à proximité. &lt;a&gt;En savoir plus&lt;/a&gt;</translation>
@@ -1729,7 +1728,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3613422051106148727">&amp;Ouvrir dans un nouvel onglet</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Effacer les données de navigation...</translation>
-<translation id="3618849550573277856">Rechercher "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Tout le contenu a été sauvegardé</translation>
 <translation id="3623574769078102674">Cet utilisateur supervisé va être géré par <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Captures d'écran désactivées</translation>
@@ -2144,7 +2142,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="428565720843367874">Le logiciel antivirus a rencontré une erreur inattendue pendant l'analyse de ce fichier.</translation>
 <translation id="428608937826130504">Élément d'étagère 8</translation>
 <translation id="4287502004382794929">Vous n'avez pas suffisamment de licences logicielles pour enregistrer cet appareil. Veuillez contacter le service commercial pour en acheter d'autres. Si vous pensez que ce message s'affiche par erreur, veuillez contacter l'assistance technique.</translation>
-<translation id="4289300219472526559">Commencer à parler</translation>
 <translation id="4289540628985791613">Présentation</translation>
 <translation id="4296575653627536209">Ajouter un utilisateur supervisé</translation>
 <translation id="4297322094678649474">Modifier les langues</translation>
@@ -2405,6 +2402,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4748762018725435655">Nécessite une extension du Chrome Web Store.</translation>
 <translation id="4750394297954878236">Suggestions</translation>
 <translation id="475088594373173692">Premier utilisateur</translation>
+<translation id="4751476147751820511">Capteurs de mouvement ou de lumière</translation>
 <translation id="4756378406049221019">Arrêter/Actualiser</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
@@ -2439,7 +2437,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4813512666221746211">Erreur réseau.</translation>
 <translation id="4816492930507672669">Ajuster à la page</translation>
 <translation id="4820334425169212497">Non, je ne le vois pas</translation>
-<translation id="4821725298388681253">Ceci est une version préliminaire. Certaines fonctionnalités, comme la recherche et la saisie de texte, ne sont pas encore disponibles.</translation>
 <translation id="4821935166599369261">&amp;Profilage activé</translation>
 <translation id="4823484602432206655">Consulter et modifier les paramètres d'utilisateur et d'appareil</translation>
 <translation id="4823651846660089135">Appareil en lecture seule</translation>
@@ -3451,7 +3448,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6388771388956873507">Localisez le lecteur d'empreinte digitale de votre appareil, puis posez le doigt dessus</translation>
 <translation id="6390799748543157332">Les pages que vous consultez dans cette fenêtre ne sont pas consignées dans l'historique du navigateur et ne laissent aucune autre trace sur votre ordinateur (des cookies, par exemple), une fois que vous avez fermé toutes les fenêtres Invité ouvertes. Tous les fichiers téléchargés sont toutefois conservés.</translation>
 <translation id="6395423953133416962">Envoyer les <ph name="BEGIN_LINK1" />informations système<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />statistiques<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Arrêter de parler</translation>
 <translation id="6397592254427394018">Ouvrir tous les favoris dans une fenêtre de &amp;navigation privée</translation>
 <translation id="6398715114293939307">Supprimer le Google Play Store</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
@@ -4024,6 +4020,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7297443947353982503">Nom d'utilisateur/mot de passe incorrect ou échec de l'authentification EAP.</translation>
 <translation id="729761647156315797">Sélectionner votre langue et votre clavier</translation>
 <translation id="7299337219131431707">Activer la navigation en tant qu'invité</translation>
+<translation id="7303900363563182677">Ce site ne pourra pas voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="730515362922783851">Échanger des données avec n'importe quel appareil sur le réseau local ou sur Internet</translation>
 <translation id="7308002049209013926">Utilisez le lanceur d'applications pour accéder rapidement à vos nouvelles applications et activités. Pour y accéder depuis le clavier, appuyez sur Alt+Maj+L.</translation>
 <translation id="7309257895202129721">Afficher les &amp;commandes</translation>
@@ -4405,6 +4402,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7909969815743704077">Téléchargé en mode navigation privée</translation>
 <translation id="7910768399700579500">&amp;Nouveau dossier</translation>
 <translation id="7912080627461681647">Votre mot de passe a été modifié sur le serveur. Veuillez vous déconnecter, puis vous reconnecter.</translation>
+<translation id="7912883689016444961">Configurer le réseau mobile</translation>
 <translation id="7915471803647590281">Veuillez nous indiquer ce qu'il se passe avant d'envoyer votre rapport.</translation>
 <translation id="7925247922861151263">Échec de la vérification AAA</translation>
 <translation id="7925285046818567682">En attente de <ph name="HOST_NAME" />...</translation>
@@ -4916,6 +4914,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8736288397686080465">Ce site a été mis à jour en arrière-plan.</translation>
 <translation id="8737685506611670901">Ouvrir les liens "<ph name="PROTOCOL" />" à la place de "<ph name="REPLACED_HANDLER_TITLE" />"</translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">Picture in Picture</translation>
 <translation id="8743864605301774756">Mise à jour il y a 1 heure</translation>
 <translation id="8749863574775030885">Accéder à des appareils USB d'un fournisseur inconnu</translation>
 <translation id="8754200782896249056">&lt;p&gt;Lorsque vous exécutez <ph name="PRODUCT_NAME" /> dans un environnement de bureau compatible, les paramètres proxy du système sont utilisés. Cependant, soit votre système n'est pas compatible, soit un problème est survenu lors du lancement de votre configuration système.&lt;/p&gt;
@@ -5018,7 +5017,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8912793549644936705">Étirer</translation>
 <translation id="8915370057835397490">Chargement des suggestions en cours…</translation>
 <translation id="8916476537757519021">Sous-cadre de navigation privée : <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Synchroniser avec le compte <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Toujours autoriser les annonces sur ce site</translation>
 <translation id="8925458182817574960">&amp;Paramètres</translation>
 <translation id="8926389886865778422">Ne plus afficher ce message</translation>

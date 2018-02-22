@@ -175,7 +175,7 @@
 <translation id="5819442873484330149">韩语（3 Set，终极版）</translation>
 <translation id="5838825566232597749">美式 Workman 国际</translation>
 <translation id="5892290200158927959">法语 BÉPO 键盘</translation>
-<translation id="5928303187149237472">更改显示分辨率</translation>
+<translation id="5928303187149237472">更改屏幕分辨率</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">拉丁美洲文键盘</translation>
 <translation id="6012987430370760224">马拉地语键盘（注音）</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">美式 Workman 键盘</translation>
 <translation id="6970230597523682626">保加利亚语</translation>
 <translation id="6981982820502123353">无障碍</translation>
+<translation id="7020813747703216897">找不到相符的搜索结果</translation>
 <translation id="7025325401470358758">下一窗格</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">音译(salam → ሰላም)</translation>
 <translation id="7172053773111046550">爱沙尼亚语键盘</translation>
 <translation id="719009910964971313">美式 Programmer Dvorak 键盘</translation>
 <translation id="7222624196722476520">保加利亚语注音键盘</translation>
+<translation id="7272373489634936181">搜索快捷键</translation>
 <translation id="7348749398828259943">美式 Workman 国际键盘</translation>
 <translation id="7389722738210761877">泰语键盘(TIS 820-2531)</translation>
 <translation id="7396038720194014279">印地语键盘（注音）</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">美国英语(Colemak)</translation>
 <translation id="7969525169268594403">斯洛维尼亚语</translation>
 <translation id="7987485481246785146">索拉尼库尔德语（阿拉伯语字母）键盘</translation>
+<translation id="8004192919599017226">开始搜索…</translation>
 <translation id="8008366997883261463">杰克罗素梗犬</translation>
 <translation id="8031722894461705849">斯洛伐克语键盘</translation>
 <translation id="8045462269890919536">罗马尼亚语</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">俄语（注音）</translation>
 <translation id="913758436357682283">缅甸语Myansan键盘</translation>
 <translation id="9153744823707037316">行列输入法</translation>
+<translation id="9179672198516322668">常用快捷键</translation>
 <translation id="9206487995878691001">仓颉输入法</translation>
 <translation id="9219908252191632183">月球表面</translation>
 </translationbundle>

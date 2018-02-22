@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Posunout sem</translation>
 <translation id="3234408098842461169">Klávesa šipka dolů</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 den}few{# dny}many{# dne}other{# dnů}}</translation>
+<translation id="335581015389089642">Řeč</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zbývá 1 den}few{Zbývají # dny}many{Zbývá # dne}other{Zbývá # dnů}}</translation>
+<translation id="3618849550573277856">Vyhledat „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Vyberte složku pro nahrávání</translation>
 <translation id="3660179305079774227">Klávesa šipka nahoru</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">přejít</translation>
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
+<translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">NÁVRHY APLIKACÍ</translation>
 <translation id="6364916375976753737">Posuv doleva</translation>
 <translation id="6394627529324717982">Čárka</translation>
+<translation id="6397363302884558537">Přestat mluvit</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Před 1 s}few{Před # s}many{Před # s}other{Před # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{před sekundou}few{před # sekundami}many{před # sekundy}other{před # sekundami}}</translation>
 <translation id="654149438358937226">Blokovat všechna oznámení</translation>

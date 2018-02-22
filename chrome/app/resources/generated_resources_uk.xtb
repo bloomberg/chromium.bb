@@ -1270,7 +1270,6 @@
 <translation id="2916073183900451334">За допомогою клавіші Tab можна виділяти посилання та поля форми на веб-сторінці</translation>
 <translation id="2916745397441987255">Пошук у розширеннях</translation>
 <translation id="2921081876747860777">Створіть пароль, щоб захистити дані на пристрої.</translation>
-<translation id="2924395203970765374">Синхронізовано з обліковим записом користувача <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Таблиці</translation>
 <translation id="2927017729816812676">Кеш-пам’ять</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (обліковий запис для дітей)</translation>
@@ -1553,7 +1552,6 @@
 <translation id="3348459612390503954">Вітаємо</translation>
 <translation id="3349933790966648062">Використання пам’яті</translation>
 <translation id="3353984535370177728">Виберіть папку для завантаження</translation>
-<translation id="335581015389089642">Speech</translation>
 <translation id="3355936511340229503">Помилка з’єднання</translation>
 <translation id="3356797067524893661">Готово. Можете перейти в Hangouts Meet</translation>
 <translation id="3358935496594837302">Не вдається знайти телефон. Переконайтеся, що ваш телефон Android сумісний, увімкнений і розташований поблизу. &lt;a&gt;Докладніше&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@
 <translation id="3613422051106148727">&amp;Відкрити в новій вкладці</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3616741288025931835">&amp;Очистити дані веб-перегляду...</translation>
-<translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Усі файли імпортовано!</translation>
 <translation id="3623574769078102674">Цим контрольованим користувачем буде керувати користувач <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Знімки екрана вимкнено</translation>
@@ -2145,7 +2142,6 @@
 <translation id="428565720843367874">Під час сканування цього файлу сталася неочікувана помилка антивірусного програмного забезпечення.</translation>
 <translation id="428608937826130504">Елемент полиці 8</translation>
 <translation id="4287502004382794929">У вас недостатньо ліцензій на використання програмного забезпечення для реєстрації цього пристрою. Зв’яжіться з продавцем, щоб придбати додаткові ліцензії. Якщо ви вважаєте, що це повідомлення з’явилося помилково, зв’яжіться зі службою підтримки.</translation>
-<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Огляд</translation>
 <translation id="4296575653627536209">Додати контрольованого користувача</translation>
 <translation id="4297322094678649474">Змінити мови</translation>
@@ -2441,7 +2437,6 @@
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4820334425169212497">Ні</translation>
-<translation id="4821725298388681253">Це попередній випуск. Деякі функції, як-от пошук і введення тексту, ще не доступні.</translation>
 <translation id="4821935166599369261">&amp;Профілювання ввімкнено</translation>
 <translation id="4823484602432206655">Переглядати та змінювати налаштування користувача й пристрою</translation>
 <translation id="4823651846660089135">Пристрій лише для перегляду</translation>
@@ -3452,7 +3447,6 @@
 <translation id="6388771388956873507">Знайдіть на пристрої сканер відбитків пальців і торкніться його</translation>
 <translation id="6390799748543157332">Сторінки, які ви переглядаєте в цьому вікні, не відображатимуться в історії веб-переглядача, а після закривання всіх вікон, відкритих у гостьовому режимі, не залишать у комп’ютері інших слідів, наприклад файлів cookie. Однак завантажені файли зберігаються.</translation>
 <translation id="6395423953133416962">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />показники<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">Відкрити всі закладки в &amp;анонімному вікні</translation>
 <translation id="6398715114293939307">Вилучити Google Play Маркет</translation>
 <translation id="6398765197997659313">Вийти з повноекранного режиму</translation>
@@ -5022,7 +5016,6 @@
 <translation id="8912793549644936705">Розтягнути</translation>
 <translation id="8915370057835397490">Завантаження пропозиції</translation>
 <translation id="8916476537757519021">Додатковий анонімний фрейм: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Синхронізувати з обліковим записом користувача <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Завжди дозволяти показ реклами на цьому сайті</translation>
 <translation id="8925458182817574960">&amp;Налаштування</translation>
 <translation id="8926389886865778422">Не запитувати знову</translation>

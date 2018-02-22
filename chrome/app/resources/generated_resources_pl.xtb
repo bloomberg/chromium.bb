@@ -1270,7 +1270,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2916073183900451334">Naciśnięcie klawisza Tab na stronie internetowej powoduje podświetlenie linków, a także pól formularza</translation>
 <translation id="2916745397441987255">Szukaj w rozszerzeniach</translation>
 <translation id="2921081876747860777">Utwórz hasło, by chronić swoje dane lokalne.</translation>
-<translation id="2924395203970765374">Zsynchronizowano z kontem użytkownika <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Arkusze</translation>
 <translation id="2927017729816812676">Pamięć podręczna</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (konto dla dzieci)</translation>
@@ -1553,7 +1552,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3348459612390503954">Gratulacje</translation>
 <translation id="3349933790966648062">Wykorzystanie pamięci</translation>
 <translation id="3353984535370177728">Wybierz folder do przesłania</translation>
-<translation id="335581015389089642">Mowa</translation>
 <translation id="3355936511340229503">Błąd połączenia</translation>
 <translation id="3356797067524893661">Wszystko gotowe do korzystania z Hangouts Meet</translation>
 <translation id="3358935496594837302">Nie można znaleźć telefonu. Upewnij się, że używasz zgodnego telefonu z Androidem oraz że jest on włączony i znajduje się w zasięgu ręki. &lt;a&gt;Więcej informacji&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3613422051106148727">&amp;Otwórz w nowej karcie</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3616741288025931835">&amp;Wyczyść dane przeglądania...</translation>
-<translation id="3618849550573277856">Sprawdź słowo „<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Wszystko ma już kopię zapasową.</translation>
 <translation id="3623574769078102674">Tym użytkownikiem nadzorowanym będzie zarządzać <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Zrzuty ekranu wyłączone</translation>
@@ -2145,7 +2142,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="428565720843367874">Podczas skanowania tego pliku w oprogramowaniu antywirusowym wystąpił nieoczekiwany błąd.</translation>
 <translation id="428608937826130504">8 element na półce</translation>
 <translation id="4287502004382794929">Nie masz wystarczającej liczby licencji na oprogramowanie, by zarejestrować to urządzenie. Aby dokupić licencje, skontaktuj się z działem sprzedaży. Jeśli uważasz, że widzisz tę wiadomość z powodu błędu, skontaktuj się z obsługą klienta.</translation>
-<translation id="4289300219472526559">Zacznij mówić</translation>
 <translation id="4289540628985791613">Przegląd</translation>
 <translation id="4296575653627536209">Dodaj nadzorowanego użytkownika</translation>
 <translation id="4297322094678649474">Zmień języki</translation>
@@ -2441,7 +2437,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4813512666221746211">Błąd sieci</translation>
 <translation id="4816492930507672669">Dopasuj do strony</translation>
 <translation id="4820334425169212497">Nie, nie widzę</translation>
-<translation id="4821725298388681253">To jest wczesna wersja. Niektóre funkcje, takie jak wyszukiwanie i wpisywanie tekstu, nie są jeszcze dostępne.</translation>
 <translation id="4821935166599369261">&amp;Profilowanie włączone</translation>
 <translation id="4823484602432206655">Odczyt i zmiana ustawień użytkownika oraz urządzenia</translation>
 <translation id="4823651846660089135">Urządzenie tylko do odczytu</translation>
@@ -3452,7 +3447,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6388771388956873507">Znajdź na urządzeniu czytnik linii papilarnych i dotknij go palcem</translation>
 <translation id="6390799748543157332">Strony wyświetlane w tym oknie nie pojawią się w historii przeglądarki. Po zamknięciu wszystkich okien otwartych w trybie gościa nie zostanie po nich na komputerze żaden ślad (np. w postaci plików cookie). Pobrane pliki zostaną jednak zachowane.</translation>
 <translation id="6395423953133416962">Przesyłaj <ph name="BEGIN_LINK1" />informacje o systemie<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Przestań mówić</translation>
 <translation id="6397592254427394018">Otwórz wszystkie zakładki w oknie &amp;incognito</translation>
 <translation id="6398715114293939307">Usuń Sklep Google Play</translation>
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
@@ -5016,7 +5010,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8912793549644936705">Rozciągnij</translation>
 <translation id="8915370057835397490">Ładuję sugestie</translation>
 <translation id="8916476537757519021">Ramka podrzędna incognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Zsynchronizuj z: <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Zawsze zezwalaj na wyświetlanie reklam na tej stronie</translation>
 <translation id="8925458182817574960">&amp;Ustawienia</translation>
 <translation id="8926389886865778422">Nie pytaj ponownie</translation>
@@ -5110,7 +5103,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9064142312330104323">Zdjęcie z profilu Google (ładowanie)</translation>
 <translation id="9064275926664971810">Włącz autouzupełnianie, by jednym kliknięciem wypełniać formularze</translation>
 <translation id="9064939804718829769">Przetwarzam...</translation>
-<translation id="9065203028668620118">Edycja</translation>
+<translation id="9065203028668620118">Edytuj</translation>
 <translation id="9066782832737749352">Zamiana tekstu na mowę</translation>
 <translation id="9070219033670098627">Przełącz osobę</translation>
 <translation id="907148966137935206">Nie zezwalaj na wyskakujące okienka w żadnej witrynie (zalecane)</translation>

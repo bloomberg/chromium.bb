@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Κύλιση εδώ</translation>
 <translation id="3234408098842461169">Κάτω βέλος</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ημέρα}other{# ημέρες}}</translation>
+<translation id="335581015389089642">Ομιλία</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Απομένει 1 ημέρα}other{Απομένουν # ημέρες}}</translation>
+<translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Επιλέξτε φάκελο για μεταφόρτωση</translation>
 <translation id="3660179305079774227">Πάνω βέλος</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">μεταπήδηση</translation>
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Πριν από 1 μήνα}other{Πριν από # μήνες}}</translation>
+<translation id="4289300219472526559">Έναρξη ομιλίας</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="4724120544754982507">Κέντρο ειδοποιήσεων, <ph name="UNREAD_NOTIFICATION_COUNT" /> μη αναγνωσμένες ειδοποιήσεις</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
 <translation id="6394627529324717982">Κόμμα</translation>
+<translation id="6397363302884558537">Διακοπή ομιλίας</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Πριν από 1 δευτερόλεπτο}other{Πριν από # δευτερόλεπτα}}</translation>
 <translation id="654149438358937226">Αποκλεισμός όλων των ειδοποιήσεων</translation>

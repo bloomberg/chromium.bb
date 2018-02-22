@@ -1270,7 +1270,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2916073183900451334">Paspaudus tinklalapio skirtuką paryškinamos nuorodos ir formos laukai</translation>
 <translation id="2916745397441987255">Ieškoti plėtinių</translation>
 <translation id="2921081876747860777">Sukurkite slaptažodį, kad apsaugotumėte vietinius duomenis.</translation>
-<translation id="2924395203970765374">Sinchronizuota su <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Skaičiuoklės</translation>
 <translation id="2927017729816812676">Talpyklos saugykla</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (vaikų paskyra)</translation>
@@ -1553,7 +1552,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3348459612390503954">Sveikiname</translation>
 <translation id="3349933790966648062">Atminties naudojimas</translation>
 <translation id="3353984535370177728">Pasirinkite norimą įkelti aplanką</translation>
-<translation id="335581015389089642">Kalba</translation>
 <translation id="3355936511340229503">Ryšio klaida</translation>
 <translation id="3356797067524893661">Viskas nustatyta – galite eiti į „Hangout Meet“</translation>
 <translation id="3358935496594837302">Nepavyksta rasti jūsų telefono. Įsitikinkite, kad naudojate suderinamą „Android“ telefoną, kuris įjungtas ir yra netoliese. &lt;a&gt;Sužinokite daugiau&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3613422051106148727">&amp;Atidaryti naujo skirtuko lape</translation>
 <translation id="3616113530831147358">Garsas</translation>
 <translation id="3616741288025931835">&amp;Išvalyti naršymo duomenis...</translation>
-<translation id="3618849550573277856">Ieškoti „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Atsarginis kopijavimas baigtas!</translation>
 <translation id="3623574769078102674">Šį prižiūrimą naudotoją tvarkys <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Ekrano kopijos išjungtos</translation>
@@ -2145,7 +2142,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="428565720843367874">Tikrinant šį failą netikėtai įvyko antivirusinės programinės įrangos klaida.</translation>
 <translation id="428608937826130504">8 lentynos elementas</translation>
 <translation id="4287502004382794929">Neturite pakankamai programinės įrangos licencijų, kad galėtumėte priregistruoti šį įrenginį. Susisiekite su pardavimo skyriumi, kad įsigytumėte daugiau. Jei manote, kad šį pranešimą gavote per klaidą, susisiekite su palaikymo tarnyba.</translation>
-<translation id="4289300219472526559">Pradėti kalbėti</translation>
 <translation id="4289540628985791613">Apžvalga</translation>
 <translation id="4296575653627536209">Pridėti prižiūrimą naudotoją</translation>
 <translation id="4297322094678649474">Keisti kalbas</translation>
@@ -2441,7 +2437,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4813512666221746211">Tinklo klaida</translation>
 <translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
 <translation id="4820334425169212497">Ne, nematau</translation>
-<translation id="4821725298388681253">Tai yra iš anksto išleista versija. Kai kurios funkcijos, pvz., paieška ir teksto įvedimas, dar neveikia.</translation>
 <translation id="4821935166599369261">&amp;Profiliavimas įgalintas</translation>
 <translation id="4823484602432206655">Skaityti ir keisti naudotojo bei įrenginio nustatymus</translation>
 <translation id="4823651846660089135">Įrenginys yra tik skaitomas</translation>
@@ -3453,7 +3448,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6388771388956873507">Raskite įrenginio kontrolinio kodo jutiklį ir palieskite jį pirštu</translation>
 <translation id="6390799748543157332">Puslapiai, kuriuos peržiūrite šiame lange, nerodomi naršyklės istorijoje. Kai uždarysite visus svečio langus, kompiuteryje neliks ir kitų jų pėdsakų, pvz., slapukų, tačiau atsisiųsti failai bus išsaugoti.</translation>
 <translation id="6395423953133416962">Siųsti <ph name="BEGIN_LINK1" />sistemos informaciją<ph name="END_LINK1" /> ir <ph name="BEGIN_LINK2" />metriką<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Baigti kalbėti</translation>
 <translation id="6397592254427394018">Atidaryti visas žymes &amp;inkognito lange</translation>
 <translation id="6398715114293939307">Pašalinti „Google Play“ parduotuvę</translation>
 <translation id="6398765197997659313">Išeiti iš viso ekrano režimo</translation>
@@ -5023,7 +5017,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8912793549644936705">Ištemptas</translation>
 <translation id="8915370057835397490">Įkeliamas pasiūlymas</translation>
 <translation id="8916476537757519021">Inkognito antrinis kadras: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sinchronizuoti <ph name="ACCOUNT_FULL_NAME" /> paskyroje</translation>
 <translation id="8922013791253848639">Visada leisti skelbimus šioje svetainėje</translation>
 <translation id="8925458182817574960">&amp;Nustatymai</translation>
 <translation id="8926389886865778422">Neklauskite dar kartą</translation>

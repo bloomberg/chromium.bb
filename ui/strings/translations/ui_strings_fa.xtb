@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">پیمایش به اینجا</translation>
 <translation id="3234408098842461169">پیکان پایین</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
+<translation id="335581015389089642">صدا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
+<translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">انتخاب پوشه برای بارگذاری</translation>
 <translation id="3660179305079774227">پیکان بالا</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> گیگابایت/ثانیه</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">پرش</translation>
 <translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{۱ ماه قبل}one{# ماه قبل}other{# ماه قبل}}</translation>
+<translation id="4289300219472526559">شروع صحبت</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
 <translation id="4724120544754982507">مرکز اعلان، <ph name="UNREAD_NOTIFICATION_COUNT" /> اعلان خوانده‌نشده</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">پیشنهادات برنامه</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
 <translation id="6394627529324717982">کاما</translation>
+<translation id="6397363302884558537">توقف صحبت</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
 <translation id="654149438358937226">مسدود کردن همه اعلان‌ها</translation>

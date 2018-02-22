@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Прокрутка до цього місця</translation>
 <translation id="3234408098842461169">Курсор униз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дні}many{# днів}other{# дня}}</translation>
+<translation id="335581015389089642">Speech</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Залишився 1 день}one{Залишився # день}few{Залишилося # дні}many{Залишилося # днів}other{Залишилося # дня}}</translation>
+<translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Виберіть папку для завантаження</translation>
 <translation id="3660179305079774227">Курсор угору</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ГБ/сек.</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">перейти</translation>
 <translation id="4250229828105606438">Знімок екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 місяць тому}one{# місяць тому}few{# місяці тому}many{# місяців тому}other{# місяця тому}}</translation>
+<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">УСІ ДОДАТКИ</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4724120544754982507">Центр сповіщень, непрочитаних сповіщень: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">ПРОПОЗИЦІЇ ДОДАТКІВ</translation>
 <translation id="6364916375976753737">Прокрутка вліво</translation>
 <translation id="6394627529324717982">Кома</translation>
+<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 с тому}one{# с тому}few{# с тому}many{# с тому}other{# с тому}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 секунду тому}one{# секунду тому}few{# секунди тому}many{# секунд тому}other{# секунди тому}}</translation>
 <translation id="654149438358937226">Блокувати всі сповіщення</translation>

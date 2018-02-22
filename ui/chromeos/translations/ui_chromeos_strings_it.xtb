@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">Tastiera Workman USA</translation>
 <translation id="6970230597523682626">Bulgaro</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
+<translation id="7020813747703216897">Nessun risultato corrispondente trovato</translation>
 <translation id="7025325401470358758">Riquadro successivo</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Traslitterazione (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Tastiera estone</translation>
 <translation id="719009910964971313">Tastiera US Programmer Dvorak</translation>
 <translation id="7222624196722476520">Tastiera fonetica Bulgaro</translation>
+<translation id="7272373489634936181">Cerca scorciatoie</translation>
 <translation id="7348749398828259943">Tastiera internazionale Workman USA</translation>
 <translation id="7389722738210761877">Tastiera Thailandese (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Tastiera Hindi (fonetica)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">Colemak USA</translation>
 <translation id="7969525169268594403">Sloveno</translation>
 <translation id="7987485481246785146">Tastiera basata su arabo curdo sorani</translation>
+<translation id="8004192919599017226">Inizia ricerca...</translation>
 <translation id="8008366997883261463">Cane</translation>
 <translation id="8031722894461705849">Tastiera Slovacco</translation>
 <translation id="8045462269890919536">Rumeno</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">Fonetica russa</translation>
 <translation id="913758436357682283">Tastiera Birmano myansan</translation>
 <translation id="9153744823707037316">Metodo di immissione Array</translation>
+<translation id="9179672198516322668">Scorciatoie comuni</translation>
 <translation id="9206487995878691001">Metodo di immissione Cangjie</translation>
 <translation id="9219908252191632183">Lunare</translation>
 </translationbundle>

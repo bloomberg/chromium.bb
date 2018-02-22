@@ -114,7 +114,7 @@
 <translation id="1164899421101904659">Weka Ufunguo wa Kufungua PIN</translation>
 <translation id="1165039591588034296">Hitilafu</translation>
 <translation id="1166212789817575481">Funga Vichupo vilivyo Upande wa Kulia</translation>
-<translation id="1168020859489941584">Inafungua katika <ph name="TIME_REMAINING" />...</translation>
+<translation id="1168020859489941584">Inafungua baada ya <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Seva za jina la Google</translation>
 <translation id="1171135284592304528">Angazia kipengee kilicholengwa kwa kibodi kinapobadilika</translation>
 <translation id="1173894706177603556">Ipe jina jipya</translation>
@@ -1267,7 +1267,6 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2916073183900451334">Kichupo cha Kubonyeza kwenye ukurasa wavuti kinaangazia viungo, pamoja na nyuga za fomu</translation>
 <translation id="2916745397441987255">Tafuta katika viendelezi</translation>
 <translation id="2921081876747860777">Tafadhali unda nenosiri la kulinda data yako kwenye kifaa.</translation>
-<translation id="2924395203970765374">Imesawazishwa kwenye <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Majedwali</translation>
 <translation id="2927017729816812676">Hifadhi ya Akiba</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Akaunti ya watoto)</translation>
@@ -1547,7 +1546,6 @@ Tembelea <ph name="BEGIN_LINK" />Kituo chetu cha Usaidizi<ph name="END_LINK" /> 
 <translation id="3348459612390503954">Hongera</translation>
 <translation id="3349933790966648062">Kiasi cha Hifadhi Iliyotumiwa na Programu</translation>
 <translation id="3353984535370177728">Chagua folda ya kupakia</translation>
-<translation id="335581015389089642">Usemi</translation>
 <translation id="3355936511340229503">Hitilafu ya muunganisho</translation>
 <translation id="3356797067524893661">Uko tayari kwenda kwenye Hangouts Meet</translation>
 <translation id="3358935496594837302">Imeshindwa kupata simu yako. Hakikisha kuwa unatumia simu ya Android inayooana, ambayo imewashwa na unayoweza kufikia. &lt;a&gt;Pata maelezo zaidi&lt;/a&gt;</translation>
@@ -1724,7 +1722,6 @@ Tembelea <ph name="BEGIN_LINK" />Kituo chetu cha Usaidizi<ph name="END_LINK" /> 
 <translation id="3613422051106148727">&amp;Fungua katika kichupo kipya</translation>
 <translation id="3616113530831147358">Sauti</translation>
 <translation id="3616741288025931835">&amp;Futa Data ya Kuvinjari</translation>
-<translation id="3618849550573277856">Angalia “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Zote zimehifadhiwa nakala!</translation>
 <translation id="3623574769078102674">Mtumiaji huyu anayesimamiwa atadhibitiwa na <ph name="MANAGER_EMAIL" /> .</translation>
 <translation id="3625258641415618104">Picha za skrini zimezimwa</translation>
@@ -2137,7 +2134,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="428565720843367874">Programu ya kinga virusi ilishindwa bila kutarajiwa wakati wa kutambaza faili hii.</translation>
 <translation id="428608937826130504">Kipengee cha kabati cha 8</translation>
 <translation id="4287502004382794929">Huna leseni za kutosha za programu ili kusajili kifaa hiki. Tafadhali wasilina na wauzaji ili kununua zaidi. Ikiwa unaamini unaona ujumbe huu kama hitilafu, tafadhali wasiliana na msaada kwa wateja.</translation>
-<translation id="4289300219472526559">Anza Kuzungumza</translation>
 <translation id="4289540628985791613">Muhtasari</translation>
 <translation id="4296575653627536209">Ongeza Mtumiaji Anayesimamiwa</translation>
 <translation id="4297322094678649474">Badilisha Lugha</translation>
@@ -2433,7 +2429,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4813512666221746211">Hitilafu ya mtandao</translation>
 <translation id="4816492930507672669">Sawazisha kwenye ukurasa</translation>
 <translation id="4820334425169212497">Hapana, Siioni</translation>
-<translation id="4821725298388681253">Toleo hili ni la awali. Baadhi ya vipengele kama vile utafutaji na uandikaji havipatikani.</translation>
 <translation id="4821935166599369261">&amp;Uwekaji Wasifu Umewezeshwa</translation>
 <translation id="4823484602432206655">Soma na ubadilishe mipangilio ya mtumiaji na kifaa</translation>
 <translation id="4823651846660089135">Kifaa ni cha kusoma tu</translation>
@@ -3444,7 +3439,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6388771388956873507">Pata kitambua alama ya kidole kwenye kifaa chako na ukiguse kwa kidole chako</translation>
 <translation id="6390799748543157332">Kurasa unazoangalia katika dirisha hili hazitaonekana katika historia ya kivinjari na hazitaacha alama nyingine, kama vile vidakuzi, kwenye kompyuta baada ya wewe kufunga madirisha yote Geni yaliyo wazi. Hata hivyo, faili zozote unazopakua zitahifadhiwa.</translation>
 <translation id="6395423953133416962">Tuma <ph name="BEGIN_LINK1" />maelezo ya mfumo<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />hesabu<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Koma Kuongea</translation>
 <translation id="6397592254427394018">Fungua alamisho zote katika dirisha fiche</translation>
 <translation id="6398715114293939307">Ondoa Duka la Google Play</translation>
 <translation id="6398765197997659313">Ondoka kwenye Skrini nzima</translation>
@@ -5016,7 +5010,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8912793549644936705">Panua</translation>
 <translation id="8915370057835397490">Inapakia pendekezo</translation>
 <translation id="8916476537757519021">Fremu ndogo ya Hali Fiche: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sawazisha katika <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Ruhusu matangazo kwenye tovuti hii wakati wote</translation>
 <translation id="8925458182817574960">&amp;Mipangilio</translation>
 <translation id="8926389886865778422">Nisiulizwe tena</translation>

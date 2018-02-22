@@ -175,7 +175,7 @@
 <translation id="5819442873484330149">Hangul 3 Grubu (Son)</translation>
 <translation id="5838825566232597749">ABD Workman uluslararası</translation>
 <translation id="5892290200158927959">Fransızca BÉPO klavyesi</translation>
-<translation id="5928303187149237472">Ekran çözünürlüğünü değiştirir</translation>
+<translation id="5928303187149237472">Ekran çözünürlüğünü değiştirin</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Latin Amerika klavyesi</translation>
 <translation id="6012987430370760224">Marathi klavye (Fonetik)</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">ABD Workman klavye</translation>
 <translation id="6970230597523682626">Bulgarca</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
+<translation id="7020813747703216897">Eşleşen sonuç bulunamadı</translation>
 <translation id="7025325401470358758">Sonraki bölme</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Harf çevirisi (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Estonca klavye</translation>
 <translation id="719009910964971313">ABD Programcı Dvorak klavye</translation>
 <translation id="7222624196722476520">Bulgarca Fonetik klavye</translation>
+<translation id="7272373489634936181">Kısayol ara</translation>
 <translation id="7348749398828259943">ABD Workman uluslararası klavye</translation>
 <translation id="7389722738210761877">Tayca klavye (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hintçe klavye (Fonetik)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">ABD Colemak</translation>
 <translation id="7969525169268594403">Slovence</translation>
 <translation id="7987485481246785146">Sorani Kürtçe Arapça temelli klavye</translation>
+<translation id="8004192919599017226">Aramayı başlat...</translation>
 <translation id="8008366997883261463">Jack Russell Teriyeri</translation>
 <translation id="8031722894461705849">Slovakça klavye</translation>
 <translation id="8045462269890919536">Rumence</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">Rusça fonetik</translation>
 <translation id="913758436357682283">Myanmar Myansan klavyesi</translation>
 <translation id="9153744823707037316">Dizi giriş yöntemi</translation>
+<translation id="9179672198516322668">Popüler Kısayollar</translation>
 <translation id="9206487995878691001">Kanji giriş yöntemi</translation>
 <translation id="9219908252191632183">Ay</translation>
 </translationbundle>

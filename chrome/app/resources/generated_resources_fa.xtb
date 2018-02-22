@@ -1266,7 +1266,6 @@
 <translation id="2916073183900451334">‏فشار دادن Tab در صفحهٔ وب، پیوندها و قسمت‌های فرم را برجسته می‌کند</translation>
 <translation id="2916745397441987255">جستجوی افزونه‌ها</translation>
 <translation id="2921081876747860777">لطفاً برای محافظت از داده محلی گذرواژه‌ای ایجاد کنید.</translation>
-<translation id="2924395203970765374">با <ph name="FULL_NAME" /> همگام‌سازی شد</translation>
 <translation id="2925966894897775835">صفحات</translation>
 <translation id="2927017729816812676">فضای حافظه پنهان</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (حسابی مخصوص بچه‌ها)</translation>
@@ -1549,7 +1548,6 @@
 <translation id="3348459612390503954">تبریک می‌گوییم</translation>
 <translation id="3349933790966648062">مصرف حافظه</translation>
 <translation id="3353984535370177728">انتخاب یک پوشه برای بارگذاری</translation>
-<translation id="335581015389089642">صدا</translation>
 <translation id="3355936511340229503">خطای اتصال</translation>
 <translation id="3356797067524893661">‏برای ادامه و رفتن به Hangouts Meet آماده‌اید</translation>
 <translation id="3358935496594837302">‏تلفنتان پیدا نمی‌شود. مطمئن شوید از تلفن Android سازگاری استفاده می‌کنید که روشن و در دسترس است. &lt;a&gt;بیشتر بدانید&lt;/a&gt;</translation>
@@ -1726,7 +1724,6 @@
 <translation id="3613422051106148727">باز &amp;کردن در برگهٔ جدید</translation>
 <translation id="3616113530831147358">صوتی</translation>
 <translation id="3616741288025931835">&amp;پاک کردن داده‌های مرور...</translation>
-<translation id="3618849550573277856">جستجوی «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="3620292326130836921">همه پشتیبان‌گیری شدند.</translation>
 <translation id="3623574769078102674"><ph name="MANAGER_EMAIL" />، این کاربر نظارت‌شده را مدیریت خواهد کرد.</translation>
 <translation id="3625258641415618104">عکس از صفحه‌نمایش غیرفعال است</translation>
@@ -2141,7 +2138,6 @@
 <translation id="428565720843367874">نرم‌افزار آنتی‌ویروس به‌طور غیرمنتظره‌ای در هنگام اسکن کردن این فایل متوقف شد.</translation>
 <translation id="428608937826130504">مورد ۸ قفسه</translation>
 <translation id="4287502004382794929">به اندازه‌ کافی مجوز نرم‌افزار برای ثبت‌نام این دستگاه ندارید. لطفاً با مرکز فروش برای خرید بیشتر تماس بگیرید. اگر اعتقاد دارید که این پیام به اشتباه برای شما نشان داده شده است، لطفاً با مرکز پشتیبانی تماس بگیرید.</translation>
-<translation id="4289300219472526559">شروع صحبت</translation>
 <translation id="4289540628985791613">مرور کلی</translation>
 <translation id="4296575653627536209">افزودن کاربر تحت نظارت</translation>
 <translation id="4297322094678649474">تغییر زبان‌ها</translation>
@@ -2437,7 +2433,6 @@
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4820334425169212497">نه، آن را نمی‌بینم</translation>
-<translation id="4821725298388681253">این یک نسخه اولیه است. بعضی از قابلیت‌ها (مانند جستجو و ورود متن) هنوز دردسترس نیستند.</translation>
 <translation id="4821935166599369261">&amp;ایجاد نمایه فعال شد</translation>
 <translation id="4823484602432206655">تغییر و خواندن تنظیمات کاربر و دستگاه</translation>
 <translation id="4823651846660089135">دستگاه فقط خواندنی است</translation>
@@ -3448,7 +3443,6 @@
 <translation id="6388771388956873507">حسگر اثر انگشت را در دستگاهتان پیدا کنید و آن را با انگشتتان لمس کنید</translation>
 <translation id="6390799748543157332">صفحاتی که در این پنجره مشاهده می‌کنید در سابقه مرورگر نشان داده نمی‌شوند و بعد از بسته شدن همه پنجره‌های مهمان باز، هیچ رد دیگری (مانند کوکی) در رایانه از خود به جای نمی‌گذارند. با این وجود، فایل‌هایی که بارگیری می‌کنید، حفظ می‌شوند.</translation>
 <translation id="6395423953133416962">ارسال <ph name="BEGIN_LINK1" />اطلاعات سیستم<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />معیارها<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">توقف صحبت</translation>
 <translation id="6397592254427394018">باز کردن همه نشانک‌ها در پنجره &amp;ناشناس</translation>
 <translation id="6398715114293939307">‏برداشتن «فروشگاه Google Play»</translation>
 <translation id="6398765197997659313">خروج از حالت تمام صفحه</translation>
@@ -5019,7 +5013,6 @@
 <translation id="8912793549644936705">گسترده کردن</translation>
 <translation id="8915370057835397490">در حال بارگیری پیشنهادات</translation>
 <translation id="8916476537757519021">قاب فرعی ناشناس: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">همگام‌سازی با <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">آگهی‌ها همیشه در این سایت مجاز باشند</translation>
 <translation id="8925458182817574960">&amp;تنظیمات</translation>
 <translation id="8926389886865778422">دوباره سؤال نشود</translation>

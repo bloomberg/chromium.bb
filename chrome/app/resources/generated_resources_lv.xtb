@@ -1270,7 +1270,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="2916073183900451334">Tabulēšanas taustiņa piespiešana tīmekļa lapā izgaismo saites, kā arī veidlapu laukus</translation>
 <translation id="2916745397441987255">Meklēt paplašinājumus</translation>
 <translation id="2921081876747860777">Paroles izveide lokālo datu aizsardzībai</translation>
-<translation id="2924395203970765374">Sinhronizēts ar kontu <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Izklājlapas</translation>
 <translation id="2927017729816812676">Kešatmiņas krātuve</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (bērniem paredzēts konts)</translation>
@@ -1553,7 +1552,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3348459612390503954">Apsveicam!</translation>
 <translation id="3349933790966648062">Atmiņas pēdas nospiedums</translation>
 <translation id="3353984535370177728">Atlasīt augšupielādējamo mapi</translation>
-<translation id="335581015389089642">Runa</translation>
 <translation id="3355936511340229503">Savienojuma kļūda</translation>
 <translation id="3356797067524893661">Jūs esat gatavs izmantot pakalpojumu Hangouts Meet</translation>
 <translation id="3358935496594837302">Nevar atrast tālruni. Jums ir jāizmanto saderīgs Android tālrunis, kurš ir ieslēgts un atrodas rokas stiepiena attālumā. &lt;a&gt;Uzziniet vairāk&lt;/a&gt;.</translation>
@@ -1730,7 +1728,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3613422051106148727">&amp;Atvērt jaunā cilnē</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Dzēst pārlūkošanas datus...</translation>
-<translation id="3618849550573277856">Meklēt “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Visi faili ir dublēti.</translation>
 <translation id="3623574769078102674">Šo uzraudzīto lietotāju pārvaldīs <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Ekrānuzņēmumi atspējoti</translation>
@@ -2145,7 +2142,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="428565720843367874">Šī faila pārbaudes laikā radās neparedzēta pretvīrusu programmatūras kļūda.</translation>
 <translation id="428608937826130504">8. plaukta vienums</translation>
 <translation id="4287502004382794929">Jums nav pietiekami daudz programmatūras licenču, lai reģistrētu šo ierīci. Lūdzu, sazinieties ar tirdzniecības nodaļu, lai iegādātos vairāk licenču. Ja uzskatāt, ka šis ziņojums tiek parādīts kļūdas dēļ, lūdzu, sazinieties ar atbalsta dienestu.</translation>
-<translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="4289540628985791613">Kopsavilkums</translation>
 <translation id="4296575653627536209">Pievienot uzraudzītu lietotāju</translation>
 <translation id="4297322094678649474">Mainīt valodas</translation>
@@ -2441,7 +2437,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4813512666221746211">Tīkla kļūda</translation>
 <translation id="4816492930507672669">Ietilpināt lapā</translation>
 <translation id="4820334425169212497">Nē, es to neredzu</translation>
-<translation id="4821725298388681253">Šis ir agrīnais laidiens. Dažas funkcijas, piemēram, meklēšana un teksta ievade, vēl nav pieejamas.</translation>
 <translation id="4821935166599369261">%Profilēšana iespējota</translation>
 <translation id="4823484602432206655">Lasīt un mainīt lietotāja un ierīces iestatījumus</translation>
 <translation id="4823651846660089135">Ierīce ir tikai lasāma.</translation>
@@ -3452,7 +3447,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6388771388956873507">Ar pirkstu pieskarieties savas ierīces pirkstu nospiedumu sensoram.</translation>
 <translation id="6390799748543157332">Lapas, ko skatāt šajā logā, nebūs redzamas pārlūka vēsturē, un, kad aizvērsiet visus viesa režīmā atvērtos logus, datorā nepaliks nekādi vienumi, piemēram, sīkfaili. Tomēr visi lejupielādētie faili tiks saglabāti.</translation>
 <translation id="6395423953133416962">Sūtīt <ph name="BEGIN_LINK1" />sistēmas informāciju<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />datus<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Pārtraukt runāt</translation>
 <translation id="6397592254427394018">Atvērt visas grāmatzīmes &amp;inkognito režīma logā</translation>
 <translation id="6398715114293939307">Noņemt Google Play veikalu</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
@@ -5022,7 +5016,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8912793549644936705">Izstiept</translation>
 <translation id="8915370057835397490">Notiek ieteikumu ielāde...</translation>
 <translation id="8916476537757519021">Inkognito apakšrāmis: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sinhronizēt ar kontu <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Vienmēr atļaut reklāmu rādīšanu šajā vietnē</translation>
 <translation id="8925458182817574960">&amp;Iestatījumi</translation>
 <translation id="8926389886865778422">Nejautāt atkārtoti</translation>

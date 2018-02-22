@@ -1270,7 +1270,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2916073183900451334">Bấm Tab trên liên kết đánh dấu của trang web, cũng như các trường biểu mẫu</translation>
 <translation id="2916745397441987255">Tìm kiếm trong tiện ích</translation>
 <translation id="2921081876747860777">Vui lòng tạo mật khẩu để bảo vệ dữ liệu cục bộ của bạn.</translation>
-<translation id="2924395203970765374">Đã được đồng bộ hóa với <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Bảng tính</translation>
 <translation id="2927017729816812676">Bộ nhớ đệm</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Tài khoản cho trẻ em)</translation>
@@ -1553,7 +1552,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3348459612390503954">Xin chúc mừng</translation>
 <translation id="3349933790966648062">Mức sử dụng bộ nhớ</translation>
 <translation id="3353984535370177728">Chọn thư mục để tải lên</translation>
-<translation id="335581015389089642">Giọng nói</translation>
 <translation id="3355936511340229503">Lỗi kết nối</translation>
 <translation id="3356797067524893661">Bạn đã thiết lập xong và sẵn sàng tiếp tục với Hangouts Meet</translation>
 <translation id="3358935496594837302">Không thể tìm thấy điện thoại của bạn. Hãy đảm bảo rằng bạn đang sử dụng điện thoại Android tương thích được bật và ở trong tầm tay. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3613422051106148727">&amp;Mở trong tab mới</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
 <translation id="3616741288025931835">&amp;Xoá Dữ liệu Duyệt web...</translation>
-<translation id="3618849550573277856">Tra cứu “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Đã sao lưu tất cả!</translation>
 <translation id="3623574769078102674">Người dùng bị giám sát này sẽ được quản lý bởi <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
@@ -2145,7 +2142,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="428565720843367874">Phần mềm chống vi-rút bị lỗi bất ngờ khi đang quét tệp này.</translation>
 <translation id="428608937826130504">Mục giá 8</translation>
 <translation id="4287502004382794929">Bạn không có đủ giấy phép phần mềm để đăng ký thiết bị này. Vui lòng liên hệ với bộ phận bán hàng để mua thêm. Nếu bạn nhận được thư này do nhầm lẫn, vui lòng liên hệ với bộ phận hỗ trợ.</translation>
-<translation id="4289300219472526559">Bắt đầu nói</translation>
 <translation id="4289540628985791613">Tổng quan</translation>
 <translation id="4296575653627536209">Thêm người dùng được giám sát</translation>
 <translation id="4297322094678649474">Thay đổi ngôn ngữ</translation>
@@ -2440,7 +2436,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4813512666221746211">Lỗi mạng</translation>
 <translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4820334425169212497">Không, tôi không thấy mã</translation>
-<translation id="4821725298388681253">Đây là bản phát hành sớm. Một số tính năng, như tìm kiếm và nhập văn bản, vẫn chưa sử dụng được.</translation>
 <translation id="4821935166599369261">&amp;Bật cấu hình</translation>
 <translation id="4823484602432206655">Đọc và thay đổi cài đặt người dùng và thiết bị</translation>
 <translation id="4823651846660089135">Thiết bị chỉ đọc</translation>
@@ -3451,7 +3446,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6388771388956873507">Tìm cảm biến vân tay trên thiết bị của bạn và chạm vào bằng ngón tay</translation>
 <translation id="6390799748543157332">Những trang bạn xem trong cửa sổ này sẽ không xuất hiện trong lịch sử trình duyệt và sẽ không để lại các dấu vết khác như cookie trên máy tính sau khi bạn đóng tất cả cửa sổ Khách đang mở. Tuy nhiên, bất kỳ tệp nào bạn tải xuống cũng sẽ được giữ nguyên.</translation>
 <translation id="6395423953133416962">Gửi <ph name="BEGIN_LINK1" />thông tin hệ thống<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />số liệu<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Dừng nói</translation>
 <translation id="6397592254427394018">Mở tất cả dấu trang trong &amp;cửa sổ ẩn danh</translation>
 <translation id="6398715114293939307">Xóa Cửa hàng Google Play</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
@@ -5018,7 +5012,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8912793549644936705">Kéo dãn</translation>
 <translation id="8915370057835397490">Đang tải đề xuất</translation>
 <translation id="8916476537757519021">Khung ẩn danh phụ: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Đồng bộ hóa với <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Luôn cho phép quảng cáo trên trang web này</translation>
 <translation id="8925458182817574960">&amp;Cài đặt</translation>
 <translation id="8926389886865778422">Đừng hỏi lại</translation>

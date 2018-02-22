@@ -89,6 +89,16 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1366104148063673624">
+      NOTE: This policy is experimental and may break functionality!
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains, e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
@@ -177,6 +187,16 @@
       If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> policies will be ignored.</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
+<translation id="1617923360251336102">
+      NOTE: This policy is experimental and may break functionality!
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
       capture devices will be granted on SAML login pages.  If no match is
@@ -503,6 +523,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
+<translation id="2535309829711666278">
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the 'SitePerProcess' policy which applies to the user session. It is recommended to set both policies to the same value.
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites that you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      </translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
@@ -616,6 +647,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2893546967669465276">Send system logs to the management server</translation>
 <translation id="2899002520262095963">Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
+<translation id="2907992746861405243">Controls which printers from the <ph name="BULK_PRINTERS_POLICY" /> are available to users.
+
+      Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL" /> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST" /> is selected, <ph name="BULK_PRINTERS_BLACKLIST" /> is used to restrict access to the specified printers. If <ph name="PRINTERS_WHITELIST" /> is selected, <ph name="BULK_PRINTERS_WHITELIST" /> designates only those printers which are selectable.
+
+      If this policy is not set, <ph name="PRINTERS_ALLOW_ALL" /> is assumed.
+      </translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
@@ -747,6 +784,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="332771718998993005">Determine the name advertised as a <ph name="PRODUCT_NAME" /> destination.
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
+<translation id="3332365412942111108">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+
+      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when users reuse Google passwords on any non-whitelisted sites.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when users reuse Google passwords on phishing sites.
+      If this policy is left unset, password protection warning will be triggered when users reuse Google passwords on phishing sites, but the user can change it.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3395348522300156660">Specifies the printers which a user can use.
 
@@ -754,6 +797,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is used, only the printers with IDs matching the values in this policy are available to the user. The IDs must correspond to the entries in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is TLS 1.0.
+
+      Otherwise it may be set to one of the following values: 'tls1', 'tls1.1' or 'tls1.2'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not allow guest sessions to be started.</translation>
@@ -867,6 +913,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="382476126209906314">Configure the TalkGadget prefix for remote access hosts</translation>
+<translation id="3831376478177535007">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows certificates issued by Symantec Corporation's Legacy PKI operations to be trusted if they otherwise successfully validate and chain to a recognised CA certificate.
+
+      Note that this policy depends on the operating system still recognising certificates from Symantec's legacy infrastructure. If an OS update changes the OS handling of such certificates, this policy no longer has effect. Further, this policy is intended as a temporary workaround to give enterprises more time to transition away from legacy Symantec certificates. This policy will be removed on or around 1 January 2019.
+
+      If this policy is not set, or it is set to false, then <ph name="PRODUCT_NAME" /> follows the publicly announced deprecation schedule.
+
+      See https://g.co/chrome/symantecpkicerts for more details on this deprecation.</translation>
 <translation id="383466854578875212">Allows you to specify which native messaging hosts are not subject to the blacklist.
 
           A blacklist value of * means that all native messaging hosts are blacklisted and only native messaging hosts listed in the whitelist will be loaded.

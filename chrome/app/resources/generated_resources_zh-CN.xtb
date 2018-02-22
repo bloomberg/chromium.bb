@@ -879,6 +879,7 @@
 <translation id="2359345697448000899">您可以通过点击“工具”菜单中的“扩展程序”，管理您的扩展程序。</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="236141728043665931">始终禁止使用麦克风</translation>
+<translation id="2365507699358342471">此页面可以查看复制到剪贴板的文字和图片。</translation>
 <translation id="2367972762794486313">显示应用</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
 <translation id="2377319039870049694">切换到列表视图</translation>
@@ -1265,7 +1266,6 @@
 <translation id="2916073183900451334">在网页上按 Tab 可突出显示链接以及表单字段</translation>
 <translation id="2916745397441987255">搜索扩展程序</translation>
 <translation id="2921081876747860777">请设置密码，以保护您的本地数据。</translation>
-<translation id="2924395203970765374">已同步到“<ph name="FULL_NAME" />”</translation>
 <translation id="2925966894897775835">表格</translation>
 <translation id="2927017729816812676">缓存空间</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" />（未成年人帐号）</translation>
@@ -1546,7 +1546,6 @@
 <translation id="3348459612390503954">恭喜</translation>
 <translation id="3349933790966648062">内存占用空间</translation>
 <translation id="3353984535370177728">选择要上传的文件夹</translation>
-<translation id="335581015389089642">语音</translation>
 <translation id="3355936511340229503">连接出错</translation>
 <translation id="3356797067524893661">大功告成！您现在便可开始使用 Hangouts Meet 了</translation>
 <translation id="3358935496594837302">找不到您的手机。请确保您使用的是兼容的 Android 手机，而且该手机正处于开机状态且就在您身边。&lt;a&gt;了解详情&lt;/a&gt;</translation>
@@ -1723,7 +1722,6 @@
 <translation id="3613422051106148727">在新标签页中打开(&amp;O)</translation>
 <translation id="3616113530831147358">音频</translation>
 <translation id="3616741288025931835">清除浏览数据(&amp;C)...</translation>
-<translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">所有文件都已备份！</translation>
 <translation id="3623574769078102674">此受监管用户将由 <ph name="MANAGER_EMAIL" /> 管理。</translation>
 <translation id="3625258641415618104">已停用屏幕截图</translation>
@@ -2137,7 +2135,6 @@
 <translation id="428565720843367874">防病毒软件在扫描此文件时意外失败。</translation>
 <translation id="428608937826130504">栏中第 8 项</translation>
 <translation id="4287502004382794929">您没有足够的软件许可来注册此设备。请与销售代表联系，以购买更多软件许可。如果您认为自己不应看到此讯息，请与支持人员联系。</translation>
-<translation id="4289300219472526559">开始讲话</translation>
 <translation id="4289540628985791613">概述</translation>
 <translation id="4296575653627536209">添加受监管用户</translation>
 <translation id="4297322094678649474">更改语言</translation>
@@ -2398,6 +2395,7 @@
 <translation id="4748762018725435655">需要安装 Chrome 网上应用店中的扩展程序</translation>
 <translation id="4750394297954878236">建议</translation>
 <translation id="475088594373173692">第 1 位用户</translation>
+<translation id="4751476147751820511">动作或光传感器</translation>
 <translation id="4756378406049221019">停止/重新加载</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
 <translation id="4759238208242260848">下载内容</translation>
@@ -2432,7 +2430,6 @@
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4820334425169212497">没看到</translation>
-<translation id="4821725298388681253">这是早期版本。某些功能（例如搜索和文本输入）尚在开发中。</translation>
 <translation id="4821935166599369261">分析已启用(&amp;P)</translation>
 <translation id="4823484602432206655">读取和更改用户设置与设备设置</translation>
 <translation id="4823651846660089135">设备目前处于只读模式</translation>
@@ -3437,7 +3434,6 @@
 <translation id="6388771388956873507">找到您设备上的指纹传感器并用手指触摸它</translation>
 <translation id="6390799748543157332">当您关闭以访客身份打开的所有窗口后，您在此窗口中浏览的网页将不会显示在浏览器历史记录中，也不会在计算机上留下其他痕迹（例如Cookie）。不过，您下载的所有文件均会保留下来。</translation>
 <translation id="6395423953133416962">发送<ph name="BEGIN_LINK1" />系统信息<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指标<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">停止讲话</translation>
 <translation id="6397592254427394018">在隐身窗口中打开所有书签(&amp;I)</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
@@ -4009,6 +4005,7 @@
 <translation id="7297443947353982503">用户名/密码错误或 EAP 身份验证失败</translation>
 <translation id="729761647156315797">选择语言和键盘</translation>
 <translation id="7299337219131431707">启用访客浏览</translation>
+<translation id="7303900363563182677">此网站已被阻止查看复制到剪贴板的文字和图片</translation>
 <translation id="730515362922783851">与本地网络或互联网中的任何设备交换数据</translation>
 <translation id="7308002049209013926">使用启动器快速访问新的应用和活动。若要通过键盘访问这些内容，请按 Alt + Shift + L 组合键。</translation>
 <translation id="7309257895202129721">显示控件(&amp;C)</translation>
@@ -4381,6 +4378,7 @@
 <translation id="7909969815743704077">已在隐身模式下进行下载</translation>
 <translation id="7910768399700579500">新建文件夹(&amp;N)</translation>
 <translation id="7912080627461681647">您已在服务器上更改密码。请先退出，然后重新登录。</translation>
+<translation id="7912883689016444961">配置移动网络</translation>
 <translation id="7915471803647590281">请先告诉我们所发生的情况，然后再发送反馈。</translation>
 <translation id="7925247922861151263">AAA 检查失败</translation>
 <translation id="7925285046818567682">正在等待 <ph name="HOST_NAME" /> 的响应...</translation>
@@ -4892,6 +4890,7 @@
 <translation id="8736288397686080465">此网站已在后台更新。</translation>
 <translation id="8737685506611670901">打开<ph name="PROTOCOL" />链接而非“<ph name="REPLACED_HANDLER_TITLE" />”</translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">画中画</translation>
 <translation id="8743864605301774756">上次更新时间：1 小时前</translation>
 <translation id="8749863574775030885">访问来自未知供应商的 USB 设备</translation>
 <translation id="8754200782896249056">&lt;p&gt;在受支持的桌面环境中运行<ph name="PRODUCT_NAME" />时，将使用系统代理设置。但您的系统不受支持，或启动系统配置时出现问题。&lt;/p&gt;
@@ -4994,7 +4993,6 @@
 <translation id="8912793549644936705">拉伸</translation>
 <translation id="8915370057835397490">正在加载建议</translation>
 <translation id="8916476537757519021">隐身辅助框架：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">同步到帐号“<ph name="ACCOUNT_FULL_NAME" />”中</translation>
 <translation id="8922013791253848639">在此网站上始终允许显示广告</translation>
 <translation id="8925458182817574960">设置(&amp;S)</translation>
 <translation id="8926389886865778422">不再询问</translation>
@@ -5175,7 +5173,7 @@
 <translation id="932327136139879170">首页</translation>
 <translation id="932508678520956232">无法开始打印。</translation>
 <translation id="93393615658292258">仅限密码</translation>
-<translation id="934503638756687833">如有必要，此处未列出的条目也会被移除。请参阅 Chrome 隐私权政策白皮书，详细了解&lt;a href="<ph name="URL" />"&gt;垃圾软件防护&lt;/a&gt;。</translation>
+<translation id="934503638756687833">如有必要，此处未列出的内容也会被移除。请参阅 Chrome 隐私权政策白皮书，详细了解&lt;a href="<ph name="URL" />"&gt;垃圾软件防护&lt;/a&gt;。</translation>
 <translation id="935490618240037774">您的书签、历史记录、密码及其他设置均将同步到您的 Google 帐号，以便您在自己所有的设备上使用。</translation>
 <translation id="936801553271523408">系统诊断数据</translation>
 <translation id="93766956588638423">修复扩展程序</translation>

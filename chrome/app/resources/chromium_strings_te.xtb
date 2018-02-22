@@ -115,6 +115,7 @@
 <translation id="5386450000063123300">Chromium నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">క్రొత్త Chromium సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="5427571867875391349">Chromiumను మీ డిఫాల్ట్ బ్రౌజర్‌గా సెట్ చేయండి</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium బీటా</translation>
 <translation id="5466153949126434691">Chromium స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chromium పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5480860683791598150">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromiumకు మీ స్థాన యాక్సెస్ అవసరం</translation>
@@ -187,6 +188,7 @@
 <ph name="BEGIN_LINK_2" />మరింత తెలుసుకోండి<ph name="END_LINK_2" />
 
 దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" />లో మీ ఇమెయిల్‌ను చూడండి.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">ఈ సైట్ కోసం మీ కెమెరాని యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
 <translation id="7483335560992089831">ప్రస్తుతం అమలు చేయబడుతున్న అదే Chromium సంస్కరణని ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromiumని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
@@ -200,6 +202,7 @@
 <translation id="7756122083761163394">ఈ వ్యక్తి యొక్క బ్రౌజింగ్ డేటా ఈ పరికరం నుండి తొలగించబడుతుంది. డేటాను పునరుద్ధరించడానికి, $2 వలె Chromeకు సైన్ ఇన్ చేయండి.</translation>
 <translation id="7773960292263897147">హెచ్చరిక:Chromium మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయడం నుండి పొడిగింపును నిరోధించలేదు. ఈ పొడిగింపును అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="7774736947049807614">ప్రమాణీకరణ ప్రమాణపత్రం విఫలమైంది. దయచేసి Chromiumలో <ph name="USER_NAME" />గా మళ్లీ సైన్ ఇన్ చేయండి లేదా మరింత సమాచారం కోసం మీ నిర్వాహకులను సంప్రదించండి. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromiumని తాజా వెర్షన్‌కు అప్‌డేట్ చేయడం సాధ్యం కాలేదు, కనుక మీరు కొత్త ఫీచర్‌లు మరియు భద్రతా పరిష్కారాలను పొందలేరు.</translation>
 <translation id="7937630085815544518">మీరు <ph name="USER_EMAIL_ADDRESS" />గా Chromiumకు సైన్ ఇన్ చేసారు. దయచేసి మళ్లీ సైన్ ఇన్ చేయడానికి ఇదే ఖాతాను ఉపయోగించండి.</translation>
 <translation id="7962572577636132072">Chromium స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణను కలిగి ఉంటారు.</translation>

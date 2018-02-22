@@ -105,6 +105,7 @@
 <translation id="5537725057119320332">Enviar</translation>
 <translation id="5546461542133609677">activar sonido</translation>
 <translation id="561939826962581046">time</translation>
+<translation id="5630795885300617244">Toca dos veces a la derecha o a la izquierda para saltar 10 segundos</translation>
 <translation id="5641012560118721995">pausar reproducción</translation>
 <translation id="5643186887447432888">botón</translation>
 <translation id="5677946354068040947">más opciones</translation>
@@ -123,6 +124,7 @@
 <translation id="6404546809543547843">control deslizante de duración de audio</translation>
 <translation id="648732519525291180">selector de hora</translation>
 <translation id="6550675742724504774">Configuración</translation>
+<translation id="6564313821541007458">Modo de imagen en imagen</translation>
 <translation id="658823671542763450">activar pantalla completa</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">registro</translation>
@@ -173,6 +175,7 @@
 <translation id="8583702881314752957">lista de definiciones</translation>
 <translation id="8597182159515967513">cabecera</translation>
 <translation id="8613126697340063924">reproducción de control remoto</translation>
+<translation id="8741316211671074806">Picture-in-Picture</translation>
 <translation id="8750798805984357768">Selecciona una de estas opciones</translation>
 <translation id="8785498733064193001">iniciar reproducción</translation>
 <translation id="8845239796550121995">Se está enviando contenido a tu TV</translation>

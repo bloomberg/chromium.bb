@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Görgessen ide</translation>
 <translation id="3234408098842461169">Lefelé nyíl</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 nap}other{# nap}}</translation>
+<translation id="335581015389089642">Beszéd</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 nap van hátra}other{# nap van hátra}}</translation>
+<translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
 <translation id="3660179305079774227">Felfelé nyíl</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">Mehet</translation>
 <translation id="4250229828105606438">Képernyőkép</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 hónapja}other{# hónapja}}</translation>
+<translation id="4289300219472526559">Beszéd megkezdése</translation>
 <translation id="4316910396681052118">MINDEN ALKALMAZÁS</translation>
 <translation id="4588090240171750605">Görgetés jobbra</translation>
 <translation id="4724120544754982507">Értesítési központ, <ph name="UNREAD_NOTIFICATION_COUNT" /> olvasatlan értesítés</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">ALKALMAZÁSJAVASLATOK</translation>
 <translation id="6364916375976753737">Görgetés balra</translation>
 <translation id="6394627529324717982">Vessző</translation>
+<translation id="6397363302884558537">Beszéd leállítása</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
 <translation id="654149438358937226">Minden értesítés letiltása</translation>

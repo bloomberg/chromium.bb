@@ -171,6 +171,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="565744775970812598">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier peut être dangereux.</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS est affiché dans cette langue</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Le logiciel exécuté sur votre ordinateur n'est pas compatible avec Google Chrome.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
@@ -182,6 +183,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6070348360322141662">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome</translation>
 <translation id="6113794647360055231">Chrome s'est amélioré</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Bêta</translation>
 <translation id="61852838583753520">Mettre à jour &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
 <translation id="6291089322031436445">Applications Chrome pour les développeurs</translation>
@@ -189,6 +191,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6338556085225130112">Mise à jour de Google Chrome...</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous envoyant automatiquement des informations système et du contenu de page. Cela nous aidera à détecter les applications et les sites dangereux.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome pour les développeurs</translation>
 <translation id="6566149418543181476">Mise à jour de Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Vous utilisez le compte <ph name="PROFILE_EMAIL" /> pour synchroniser votre contenu dans Chrome. Pour mettre à jour vos préférences de synchronisation ou pour utiliser Chrome sans compte Google, accédez à la page <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>

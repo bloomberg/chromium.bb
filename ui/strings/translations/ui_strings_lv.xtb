@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Ritināt šeit</translation>
 <translation id="3234408098842461169">Bulta Lejup</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 diena}zero{# dienas}one{# diena}other{# dienas}}</translation>
+<translation id="335581015389089642">Runa</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Atlikusi 1 diena}zero{Atlikušas # dienas}one{Atlikusi # diena}other{Atlikušas # dienas}}</translation>
+<translation id="3618849550573277856">Meklēt “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Augšupielādējamās mapes atlase</translation>
 <translation id="3660179305079774227">Bulta augšup</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">lekt</translation>
 <translation id="4250229828105606438">Ekrānuzņēmums</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pirms 1 mēneša}zero{Pirms # mēnešiem}one{Pirms # mēneša}other{Pirms # mēnešiem}}</translation>
+<translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
 <translation id="4724120544754982507">Paziņojumu centrs, <ph name="UNREAD_NOTIFICATION_COUNT" /> nelasīts(-i) paziņojums(-i)</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">LIETOTŅU IETEIKUMI</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
 <translation id="6394627529324717982">Komats</translation>
+<translation id="6397363302884558537">Pārtraukt runāt</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pirms 1 s}zero{Pirms # s}one{Pirms # s}other{Pirms # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pirms 1 sekundes}zero{Pirms # sekundēm}one{Pirms # sekundes}other{Pirms # sekundēm}}</translation>
 <translation id="654149438358937226">Bloķēt visus paziņojumus</translation>

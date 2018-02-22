@@ -1270,7 +1270,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2916073183900451334">Zvýrazňovať odkazy a polia formulárov na webovej stránke po stlačení klávesu Tab</translation>
 <translation id="2916745397441987255">Hľadať rozšírenia</translation>
 <translation id="2921081876747860777">Vytvorte si heslo na ochranu miestnych dát.</translation>
-<translation id="2924395203970765374">Synchronizované s profilom <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Tabuľky</translation>
 <translation id="2927017729816812676">Úložisko vyrovnávacej pamäte</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (detský účet)</translation>
@@ -1553,7 +1552,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3348459612390503954">Blahoželáme</translation>
 <translation id="3349933790966648062">Množstvo využívanej pamäte</translation>
 <translation id="3353984535370177728">Vyberte priečinok na nahranie</translation>
-<translation id="335581015389089642">Reč</translation>
 <translation id="3355936511340229503">Chyba pripojenia</translation>
 <translation id="3356797067524893661">Nastavenie je dokončené, môžete pokračovať do služby Hangouts Meet</translation>
 <translation id="3358935496594837302">Telefón sa nedarí nájsť. Skontrolujte, či používate kompatibilný telefón s Androidom, ktorý je zapnutý a v dosahu. &lt;a&gt;Ďalšie informácie&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3613422051106148727">&amp;Otvoriť na novej karte</translation>
 <translation id="3616113530831147358">Zvuk</translation>
 <translation id="3616741288025931835">&amp;Vymazať dáta prehliadania…</translation>
-<translation id="3618849550573277856">Vyhľadať „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">Všetko je zálohované!</translation>
 <translation id="3623574769078102674">Tento kontrolovaný používateľ bude spravovaný účtom <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Snímky obrazovky sú zakázané</translation>
@@ -2145,7 +2142,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="428565720843367874">Antivírusový softvér pri skenovaní tohto súboru neočakávane zlyhal.</translation>
 <translation id="428608937826130504">8. položka na poličke</translation>
 <translation id="4287502004382794929">Nemáte dostatočný počet softvérových licencií na registráciu tohto zariadenia. Kontaktujte obchodné oddelenie a kúpte si ďalšie. Ak sa domnievate, že ide o chybu, kontaktujte podporu.</translation>
-<translation id="4289300219472526559">Začať hovoriť</translation>
 <translation id="4289540628985791613">Prehľad</translation>
 <translation id="4296575653627536209">Pridať kontrolovaného používateľa</translation>
 <translation id="4297322094678649474">Zmeniť jazyky</translation>
@@ -2441,7 +2437,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4813512666221746211">Chyba siete</translation>
 <translation id="4816492930507672669">Prispôsobiť stránke</translation>
 <translation id="4820334425169212497">Nie, nevidím ho</translation>
-<translation id="4821725298388681253">Ide o rané vydanie. Niektoré funkcie, napríklad vyhľadávanie a zadávanie textu, zatiaľ nie sú k dispozícii.</translation>
 <translation id="4821935166599369261">&amp;Profilovanie povolené</translation>
 <translation id="4823484602432206655">Čítať a meniť nastavenia používateľa a zariadenia</translation>
 <translation id="4823651846660089135">Zariadenie je len na čítanie</translation>
@@ -3452,7 +3447,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6388771388956873507">Nájdite senzor odtlačkov prstov na zariadení a dotknite sa ho prstom</translation>
 <translation id="6390799748543157332">Stránky otvorené v tomto okne sa nezobrazia v histórii prehliadača. Po zavretí všetkých otvorených okien režimu hosťa nezanechajú na počítači žiadne ďalšie stopy, ako napríklad súbory cookie. Všetky stiahnuté súbory však zostanú zachované.</translation>
 <translation id="6395423953133416962">Odosielať <ph name="BEGIN_LINK1" />informácie o systéme<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Prestať hovoriť</translation>
 <translation id="6397592254427394018">Otvoriť všetky záložky v &amp;okne inkognito</translation>
 <translation id="6398715114293939307">Odstrániť Obchod Google Play</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
@@ -5020,7 +5014,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8912793549644936705">Roztiahnuť</translation>
 <translation id="8915370057835397490">Načítavajú sa návrhy</translation>
 <translation id="8916476537757519021">Podrámec inkognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Synchronizovať do účtu <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Vždy povoliť reklamy na tomto webe</translation>
 <translation id="8925458182817574960">&amp;Nastavenia</translation>
 <translation id="8926389886865778422">Túto otázku už nezobrazovať</translation>

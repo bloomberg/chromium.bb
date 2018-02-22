@@ -1270,7 +1270,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2916073183900451334">Pressing Tab on a web page highlights links, as well as form fields</translation>
 <translation id="2916745397441987255">Search extensions</translation>
 <translation id="2921081876747860777">Please create a password to protect your local data.</translation>
-<translation id="2924395203970765374">Synced to <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2927017729816812676">Cache Storage</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Account for kids)</translation>
@@ -1553,7 +1552,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3348459612390503954">Congratulations</translation>
 <translation id="3349933790966648062">Memory footprint</translation>
 <translation id="3353984535370177728">Select a folder to upload</translation>
-<translation id="335581015389089642">Speech</translation>
 <translation id="3355936511340229503">Connection error</translation>
 <translation id="3356797067524893661">You're all set to continue on to Hangouts Meet</translation>
 <translation id="3358935496594837302">Can’t find your phone. Make sure that you’re using a compatible Android phone that’s turned on and handy. &lt;a&gt;Learn more&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3613422051106148727">&amp;Open in new tab</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
-<translation id="3618849550573277856">Look Up “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">All backed up!</translation>
 <translation id="3623574769078102674">This supervised user will be managed by <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Screenshots disabled</translation>
@@ -2145,7 +2142,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="428565720843367874">Anti-virus software failed unexpectedly while scanning this file.</translation>
 <translation id="428608937826130504">Shelf item 8</translation>
 <translation id="4287502004382794929">You do not have enough software licenses to enrol this device. Please contact sales to purchase more. If you believe you're seeing this message in error, please contact support.</translation>
-<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Overview</translation>
 <translation id="4296575653627536209">Add Supervised User</translation>
 <translation id="4297322094678649474">Change Languages</translation>
@@ -2441,7 +2437,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="4820334425169212497">No, I don't see it</translation>
-<translation id="4821725298388681253">This is an early release. Some features, like search and text entry, are not yet available.</translation>
 <translation id="4821935166599369261">&amp;Profiling Enabled</translation>
 <translation id="4823484602432206655">Read and change user and device settings</translation>
 <translation id="4823651846660089135">Device is read-only</translation>
@@ -3452,7 +3447,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="6388771388956873507">Find the fingerprint sensor on your device and touch it with your finger</translation>
 <translation id="6390799748543157332">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files that you download, however, will be preserved.</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">Open all bookmarks in &amp;Incognito window</translation>
 <translation id="6398715114293939307">Remove Google Play Store</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
@@ -5022,7 +5016,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8912793549644936705">Stretch</translation>
 <translation id="8915370057835397490">Loading suggestion</translation>
 <translation id="8916476537757519021">Incognito Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sync to <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Always allow ads on this site</translation>
 <translation id="8925458182817574960">&amp;Settings</translation>
 <translation id="8926389886865778422">Don't ask again</translation>

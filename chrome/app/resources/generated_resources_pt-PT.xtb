@@ -1271,7 +1271,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2916073183900451334">Premir Separador numa página Web realça links e campos de formulários</translation>
 <translation id="2916745397441987255">Pesquisar extensões</translation>
 <translation id="2921081876747860777">Crie uma palavra-passe para proteger os seus dados locais.</translation>
-<translation id="2924395203970765374">Sincronizado com <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Folhas</translation>
 <translation id="2927017729816812676">Armazenamento de cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Conta para crianças)</translation>
@@ -1555,7 +1554,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3348459612390503954">Parabéns</translation>
 <translation id="3349933790966648062">Utilização da memória</translation>
 <translation id="3353984535370177728">Selecionar uma pasta a carregar</translation>
-<translation id="335581015389089642">Voz</translation>
 <translation id="3355936511340229503">Erro de ligação</translation>
 <translation id="3356797067524893661">Está preparado para continuar para o Hangouts Meet</translation>
 <translation id="3358935496594837302">Não é possível localizar o telemóvel. Certifique-se de que está a utilizar um telemóvel Android compatível que está ligado e próximo. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
@@ -1732,7 +1730,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3613422051106148727">&amp;Abrir num novo separador</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3616741288025931835">&amp;Limpar Dados de Navegação...</translation>
-<translation id="3618849550573277856">Procurar "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Foi feita uma cópia de segurança de todos os ficheiros!</translation>
 <translation id="3623574769078102674">Este utilizador supervisionado será gerido por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Capturas de ecrã desativadas</translation>
@@ -2147,7 +2144,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="428565720843367874">O software antivírus falhou inesperadamente enquanto analisava este ficheiro.</translation>
 <translation id="428608937826130504">Artigo de prateleira 8</translation>
 <translation id="4287502004382794929">Não tem licenças de software suficientes para inscrever este dispositivo. Entre em contacto com as vendas para comprar mais. Se considera que recebeu esta mensagem por engano, contacte o suporte.</translation>
-<translation id="4289300219472526559">Comece a Falar</translation>
 <translation id="4289540628985791613">Vista geral</translation>
 <translation id="4296575653627536209">Adicionar utilizador supervisionado</translation>
 <translation id="4297322094678649474">Alterar idiomas</translation>
@@ -2443,7 +2439,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4820334425169212497">Não, não estou a ver</translation>
-<translation id="4821725298388681253">Trata-se de uma versão de lançamento antecipado. Algumas funcionalidades, como a pesquisa e a introdução de texto, ainda não estão disponíveis.</translation>
 <translation id="4821935166599369261">Criação de &amp;perfis ativada</translation>
 <translation id="4823484602432206655">Ler e alterar definições do utilizador e do dispositivo</translation>
 <translation id="4823651846660089135">O dispositivo é apenas de leitura</translation>
@@ -3455,7 +3450,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6388771388956873507">Localize o sensor de impressões digitais no dispositivo e toque nele com o dedo</translation>
 <translation id="6390799748543157332">As páginas visualizadas nesta janela não serão apresentadas no histórico do navegador e não deixarão outros vestígios, como cookies, no computador depois de fechar todas as janelas de Convidado abertas. No entanto, todos os ficheiros transferidos serão preservados.</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />informações do sistema<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Pare de Falar</translation>
 <translation id="6397592254427394018">Abrir todos os marcadores na janela de &amp;navegação anónima</translation>
 <translation id="6398715114293939307">Remover a Google Play Store</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
@@ -5025,7 +5019,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8912793549644936705">Esticar</translation>
 <translation id="8915370057835397490">A carregar sugestão</translation>
 <translation id="8916476537757519021">Subestrutura da navegação anónima: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sincronizar com <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Permitir sempre anúncios neste site</translation>
 <translation id="8925458182817574960">&amp;Definições</translation>
 <translation id="8926389886865778422">Não voltar a perguntar</translation>

@@ -499,7 +499,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="536031132345979795">Achteruit springen tijdens doorlopend lezen</translation>
 <translation id="5368000168321181111">Earcons uit</translation>
 <translation id="5374320867641260420">Geen volgende knop.</translation>
-<translation id="5376407118396657359">Druk op de zoektoets en op Ctrl+Alt in combinatie met de pijltoetsen om van cel naar cel te navigeren.</translation>
+<translation id="5376407118396657359">Druk op de zoektoets en Ctrl+Alt in combinatie met de pijltoetsen om van cel naar cel te navigeren.</translation>
 <translation id="5382299583965267720">Geen volgende kop voor niveau 1.</translation>
 <translation id="5402367795255837559">Braille</translation>
 <translation id="5402791055281059602">Een melding die in een modaal dialoogvenster wordt weergegeven</translation>
@@ -588,7 +588,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6006050241733874051">Formulier</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}other{# backslashes}}</translation>
 <translation id="6037602951055904232">Vooruit schuiven</translation>
-<translation id="6042826534790431634">Druk op de zoektoets in combinatie met de spatiebalk om te activeren.</translation>
+<translation id="6042826534790431634">Druk op de zoektoets en de spatiebalk om te activeren.</translation>
 <translation id="6044160928851315051">Scherm donkerder maken</translation>
 <translation id="605761629541007221">Einde van vetgedrukte tekst</translation>
 <translation id="6065293622157674001">Begin van grammaticafout</translation>

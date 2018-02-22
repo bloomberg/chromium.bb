@@ -879,6 +879,7 @@
 <translation id="2359345697448000899">Управлявайте разширенията си, като кликнете върху „Разширения“ в менюто „Инструменти“.</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="236141728043665931">Достъпът до микрофона да се блокира винаги</translation>
+<translation id="2365507699358342471">Този сайт може да преглежда текста и изображенията, копирани в буферната памет.</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
 <translation id="2377319039870049694">Превключване към списъчен изглед</translation>
@@ -1266,7 +1267,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2916073183900451334">При натискането на клавиша „Tab“ върху уеб страница се открояват връзките, както и полетата на формулярите</translation>
 <translation id="2916745397441987255">Търсете в разширенията</translation>
 <translation id="2921081876747860777">Моля, създайте парола, за да защитите локалните си данни.</translation>
-<translation id="2924395203970765374">Синхронизирано със: <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Електронни таблици</translation>
 <translation id="2927017729816812676">Хранилище за кеш</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (профил за деца)</translation>
@@ -1549,7 +1549,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3348459612390503954">Поздравления</translation>
 <translation id="3349933790966648062">Използвана памет</translation>
 <translation id="3353984535370177728">Избиране на папка за качване</translation>
-<translation id="335581015389089642">Speech</translation>
 <translation id="3355936511340229503">Грешка във връзката</translation>
 <translation id="3356797067524893661">Готови сте да продължите към Hangouts Meet</translation>
 <translation id="3358935496594837302">Телефонът ви не може да бъде намерен. Уверете се, че използвате съвместим телефон с Android, който е включен и е подръка. &lt;a&gt;Научете повече&lt;/a&gt;</translation>
@@ -1726,7 +1725,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3613422051106148727">&amp;Отваряне в нов раздел</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3616741288025931835">&amp;Изчистване на данните за сърфирането...</translation>
-<translation id="3618849550573277856">Търсене на „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="3620292326130836921">На всичко бе създадено резервно копие!</translation>
 <translation id="3623574769078102674">Този контролиран потребител ще се управлява от <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Екранните снимки са деактивирани</translation>
@@ -2141,7 +2139,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="428565720843367874">Неочаквано сканирането на този файл от антивирусния софтуер не бе успешно.</translation>
 <translation id="428608937826130504">Елемент 8 в лавицата</translation>
 <translation id="4287502004382794929">Нямате достатъчно лицензи за софтуер, за да запишете това устройство. Моля, свържете се с екипа за продажби, за да купите още. Ако смятате, че виждате това съобщение по погрешка, моля, обърнете се към екипа за поддръжка.</translation>
-<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Общ преглед</translation>
 <translation id="4296575653627536209">Добавяне на контролиран потребител</translation>
 <translation id="4297322094678649474">Промяна на езиците</translation>
@@ -2402,6 +2399,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4748762018725435655">Изисква се разширение от уеб магазина на Chrome</translation>
 <translation id="4750394297954878236">Предложения</translation>
 <translation id="475088594373173692">Първи потребител</translation>
+<translation id="4751476147751820511">Сензори за движение или светлина</translation>
 <translation id="4756378406049221019">Спиране/презареждане</translation>
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
@@ -2436,7 +2434,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4813512666221746211">Грешка в мрежата</translation>
 <translation id="4816492930507672669">Да се побере в страницата</translation>
 <translation id="4820334425169212497">Не, не го виждам</translation>
-<translation id="4821725298388681253">Това е ранна версия. Някои функции, като например тези за въвеждане на текст и търсене, още не са налице.</translation>
 <translation id="4821935166599369261">&amp;Профилирането е активирано</translation>
 <translation id="4823484602432206655">Четене и промяна на настройките на потребителите и устройството</translation>
 <translation id="4823651846660089135">Устройството е само за четене</translation>
@@ -3448,7 +3445,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6388771388956873507">Намерете сензора за отпечатъци на устройството си и го докоснете с пръст</translation>
 <translation id="6390799748543157332">Преглежданите от вас страници в този прозорец няма да се показват в историята на браузъра и няма да оставят на компютъра други следи, като „бисквитки“, след като затворите всички прозорци в режим като гост. Изтеглените от вас файлове обаче ще бъдат запазени.</translation>
 <translation id="6395423953133416962">Изпращане на <ph name="BEGIN_LINK1" />системна информация<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатели<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6397592254427394018">Отваряне на всички отметки в прозорец в режим „&amp;инкогнито“</translation>
 <translation id="6398715114293939307">Премахване на Google Play Магазин</translation>
 <translation id="6398765197997659313">Изход от цял екран</translation>
@@ -4021,6 +4017,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7297443947353982503">Потребителското име или паролата са неправилни или удостоверяването през EAP не бе успешно</translation>
 <translation id="729761647156315797">Избиране на език и клавиатура</translation>
 <translation id="7299337219131431707">Активиране на сърфирането като гост</translation>
+<translation id="7303900363563182677">Този сайт няма право да преглежда текста и изображенията, копирани в буферната памет</translation>
 <translation id="730515362922783851">Обмен на данни с всяко устройство в локалната мрежа или интернет</translation>
 <translation id="7308002049209013926">Използвайте стартовия панел, за да стигате бързо до новите приложения и активности. За да го отворите от клавиатурата, натиснете Alt + Shift + L.</translation>
 <translation id="7309257895202129721">Показване на &amp;контролите</translation>
@@ -4402,6 +4399,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7909969815743704077">Изтеглено в режим „инкогнито“</translation>
 <translation id="7910768399700579500">&amp;Нова папка</translation>
 <translation id="7912080627461681647">Паролата ви е променена в сървъра. Моля, излезте от профила си и влезте отново в него.</translation>
+<translation id="7912883689016444961">Конфигуриране на мобилната мрежа</translation>
 <translation id="7915471803647590281">Моля, кажете ни какво става, преди да изпратите отзивите.</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="7925285046818567682">Изчаква се отговор от <ph name="HOST_NAME" />...</translation>
@@ -4913,6 +4911,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8736288397686080465">Този сайт бе актуализиран на заден план.</translation>
 <translation id="8737685506611670901">Да отваря връзки от типа „<ph name="PROTOCOL" />“ вместо <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">Картина в картината</translation>
 <translation id="8743864605301774756">Актуализирано преди 1 ч</translation>
 <translation id="8749863574775030885">Достъп до USB устройства от неизвестен доставчик</translation>
 <translation id="8754200782896249056">&lt;p&gt;Когато изпълнявате <ph name="PRODUCT_NAME" /> в поддържана среда на компютър, ще се използват системните настройки за прокси сървър. Но системата ви или не се поддържа, или е възникнал проблем при стартирането на системната конфигурация.&lt;/p&gt;
@@ -5015,7 +5014,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8912793549644936705">Разтегляне</translation>
 <translation id="8915370057835397490">Предложението се зарежда</translation>
 <translation id="8916476537757519021">Подрамка в режим „инкогнито“: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Синхронизиране с/ъс <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Рекламите на този сайт да са разрешени винаги</translation>
 <translation id="8925458182817574960">&amp;Настройки</translation>
 <translation id="8926389886865778422">Без повторно питане</translation>

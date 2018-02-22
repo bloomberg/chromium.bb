@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Mag-scroll dito</translation>
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 araw}one{# araw}other{# na araw}}</translation>
+<translation id="335581015389089642">Pananalita</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 araw na lang ang natitira}one{# araw na lang ang natitira}other{# na araw na lang ang natitira}}</translation>
+<translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pumili ng Folder na I-a-upload</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> (na) GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">tumalon</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 buwan ang nakalipas}one{# buwan ang nakalipas}other{# na buwan ang nakalipas}}</translation>
+<translation id="4289300219472526559">Simulan ang Pagsasalita</translation>
 <translation id="4316910396681052118">LAHAT NG APP</translation>
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="4724120544754982507">Notification Center, <ph name="UNREAD_NOTIFICATION_COUNT" /> (na) hindi pa nababasang notification</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">MGA IMINUMUNGKAHING APP</translation>
 <translation id="6364916375976753737">Mag-scroll Pakaliwa</translation>
 <translation id="6394627529324717982">Kuwit</translation>
+<translation id="6397363302884558537">Ihinto ang Pagsasalita</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="654149438358937226">I-block ang lahat ng notification</translation>

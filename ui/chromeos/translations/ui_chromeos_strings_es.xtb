@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">Teclado estilo Workman (EE. UU.)</translation>
 <translation id="6970230597523682626">Búlgaro</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
+<translation id="7020813747703216897">No se han podido encontrar resultados que coincidan</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteración (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclado estonio</translation>
 <translation id="719009910964971313">Teclado Programmer Dvorak de EE. UU.</translation>
 <translation id="7222624196722476520">Teclado búlgaro fonético</translation>
+<translation id="7272373489634936181">Buscar combinaciones de teclas</translation>
 <translation id="7348749398828259943">Teclado internacional estilo Workman (EE. UU.)</translation>
 <translation id="7389722738210761877">Teclado tailandés (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclado hindi (fonético)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">Estados Unidos (Colemak)</translation>
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7987485481246785146">Teclado kurdo sorani basado en el árabe</translation>
+<translation id="8004192919599017226">Iniciar búsqueda...</translation>
 <translation id="8008366997883261463">Terrier Jack Russell</translation>
 <translation id="8031722894461705849">Teclado de eslovaco</translation>
 <translation id="8045462269890919536">Rumano</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">Ruso fonético</translation>
 <translation id="913758436357682283">Teclado birmano myansan</translation>
 <translation id="9153744823707037316">Método de entrada de conjunto</translation>
+<translation id="9179672198516322668">Combinaciones de teclas populares</translation>
 <translation id="9206487995878691001">Método de entrada de cangjie</translation>
 <translation id="9219908252191632183">Lunar</translation>
 </translationbundle>

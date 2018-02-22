@@ -12,6 +12,7 @@
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1113597929977215864">显示简化版视图</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
+<translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="116280672541001035">已耗用</translation>
@@ -80,6 +81,7 @@
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">正在等待下载…</translation>
+<translation id="1672586136351118594">不再显示</translation>
 <translation id="1674523662097951983">“书签”的位置即将变更。下次只需上拉地址栏即可查看书签。</translation>
 <translation id="169033420419426091">未能成功下载 <ph name="FILE_NAME" />，因为找不到 SD 卡。</translation>
 <translation id="1709438864123551175">流量节省程序</translation>
@@ -442,6 +444,7 @@
 <translation id="510275257476243843">还剩 1 小时</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5129038482087801250">安装网络应用</translation>
+<translation id="5139940364318403933">了解如何使用 Google 云端硬盘</translation>
 <translation id="515227803646670480">清除存储的数据</translation>
 <translation id="5152843274749979095">尚未安装任何受支持的应用</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
@@ -695,6 +698,7 @@
 <translation id="7251326866581677552">已阻止在部分网站中显示广告</translation>
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
+<translation id="729975465115245577">您的设备上没有可以存储密码文件的应用。</translation>
 <translation id="7318797029885648322">点按“更多”即可获取相关文章</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
 <translation id="7352939065658542140">视频</translation>
@@ -737,6 +741,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
+<translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
@@ -809,6 +814,7 @@
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8441146129660941386">后退</translation>
+<translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8489271220582375723">打开历史记录页</translation>

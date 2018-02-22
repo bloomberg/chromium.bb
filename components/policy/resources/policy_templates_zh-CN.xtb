@@ -195,6 +195,7 @@
       该政策的值应设置为供 <ph name="PRODUCT_OS_NAME" />下载服务条款的网址。该服务条款必须是纯文本，以 MIME 纯文本形式提供，不允许进行任何标记。</translation>
 <translation id="1750315445671978749">拦截所有下载内容</translation>
 <translation id="1781356041596378058">此政策亦用于控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
+<translation id="1797233582739332495">显示要求用户重新启动浏览器的周期性提示</translation>
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
@@ -267,6 +268,11 @@
 
           如果此政策未设置，系统将使用所有这四种方案。</translation>
 <translation id="2067011586099792101">禁止访问非内容包内的网站</translation>
+<translation id="2070270043919235595">通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 以应用尚未应用的更新。
+
+      此政策设置用于启用建议或要求用户重新启动浏览器的通知功能。如果此政策未设置，<ph name="PRODUCT_NAME" /> 会通过菜单的细微变化来提示用户需要重新启动。如果此政策设为“推荐”，系统将会显示建议用户重新启动浏览器的周期性警告。用户可以关闭该警告来推迟重新启动。如果此政策设为“必须”，系统将会显示周期性警告，以便让用户知道系统将于通知期结束后强制重新启动浏览器。该通知期会默认设为 7 天，不过可以通过 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策设置进行配置。
+
+      浏览器重新启动后，将会恢复用户会话。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2077273864382355561">使用电源供电时的屏幕关闭延迟时间</translation>
 <translation id="2082205219176343977">为设备配置允许使用的最低 Chrome 版本。</translation>
@@ -305,6 +311,9 @@
           如果此设置已配置，系统将会根据此设置的值要求那些使用“快速解锁”的用户在锁定屏幕上输入密码。
 
           如果此设置未配置，系统每天都会要求那些使用“快速解锁”的用户在锁定屏幕上输入密码。</translation>
+<translation id="2188722565665306629">可让您设置系统显示 <ph name="PRODUCT_NAME" /> 重新启动通知（提示用户应用尚未应用的更新）的时间段。
+
+      此政策设置可用于控制该时间段的时长（以毫秒为单位），系统将在该时间段内循序渐进地通知用户必须重新启动 <ph name="PRODUCT_NAME" />（或 <ph name="PRODUCT_OS_NAME" />）以进行更新。在该时间段内，系统将会根据 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的设置重复提示用户需要进行更新。如果此政策未设置，系统将会使用 604800000 毫秒（1 周）的默认时长。</translation>
 <translation id="2194470398825717446">我们在 M61 中弃用了此政策，请改用 EcryptfsMigrationStrategy。
 
       用于指定内置了 ecryptfs 且需要转换为采用 ext4 加密功能的设备的行为方式。
@@ -491,6 +500,13 @@
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2682225790874070339">在<ph name="PRODUCT_OS_NAME" />的“文件”应用中停用Google云端硬盘</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
+<translation id="2726613915126661822">可让您控制是否允许在 Chrome 操作系统上运行虚拟机。
+
+      如果此政策设为 True，则设备可以运行虚拟机。
+      如果此政策设为 False，则设备将无法运行虚拟机。
+      当此政策更改为 False 时，将会导致无法启动新的虚拟机，但已在运行的虚拟机将不会被关闭。
+      如果受管理设备上未设置此政策，则设备将无法运行虚拟机。
+      不受管理的设备可以运行虚拟机。</translation>
 <translation id="2731627323327011390">禁止 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> 证书</translation>
 <translation id="2742843273354638707">在“打开新的标签页”页面和 <ph name="PRODUCT_OS_NAME" />应用启动器中不显示“Chrome 网上应用店”应用和页脚链接。
 
@@ -702,6 +718,7 @@
           该政策为可选政策。如果未设置，将不会提供任何新标签页。
 
           该政策只有在启用了“DefaultSearchProviderEnabled”政策的情况下才有效。</translation>
+<translation id="3465852069254497664">通知用户系统建议或要求重新启动浏览器</translation>
 <translation id="346731943813722404">指定是否仅在会话内察觉到首个用户活动后才开始计算电源管理延迟和会话长度限制。
 
           如果该政策设置为 True，电源管理延迟和会话长度限制将在会话内察觉到首个用户活动后才开始计算。
@@ -735,6 +752,7 @@
 <translation id="3711895659073496551">暂停</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3737544779868348650">设备网络主机名</translation>
+<translation id="3740754010292550733">设置显示浏览器重新启动通知（提示用户应用更新）的时间段</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
@@ -1391,6 +1409,7 @@
           如果您设置了此政策，那么用户将可通过启用或停用大号光标暂时覆盖此政策。不过，用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
 
           如果未设置此政策，则登录屏幕初次显示时会停用大号光标。用户可以随时启用或停用大号光标，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
+<translation id="5929855945144989709">允许设备在 Chrome 操作系统上运行虚拟机</translation>
 <translation id="5932767795525445337">此政策也可用于固定 Android 应用。</translation>
 <translation id="5936622343001856595">在安全搜索被设置为激活的状态下强制在 Google 网页搜索中执行查询，并禁止用户更改此设置。
 
@@ -1630,6 +1649,15 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策会停用所有数据同步，并会替换 RoamingProfileSupportEnabled。</translation>
 <translation id="6735701345096330595">强制检查语言拼写</translation>
+<translation id="673699536430961464">您可以通过此设置允许用户在登录其 <ph name="PRODUCT_OS_NAME" />设备后从浏览器窗口的内容区域切换 Google 帐号。
+
+      如果此政策设为 false，将不允许用户从处于非无痕模式的浏览器内容区域切换帐号。
+
+      如果此政策设为 true 或未设置，系统将会遵从默认行为：将允许用户从浏览器的内容区域切换帐号（切换到未成年人帐号除外，因为系统将阻止从处于非无痕模式的内容区域登录未成年人帐号）。
+
+      如果不应允许通过无痕模式切换帐号，建议使用 IncognitoModeAvailability 政策屏蔽该模式。
+
+      请注意，通过阻止 Google 服务的 Cookie，用户将能够在未经身份验证的情况下访问 Google 服务。</translation>
 <translation id="6757438632136860443">可让您设置一系列网址格式，以用于指定允许哪些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
@@ -1639,6 +1667,7 @@
 <translation id="6786967369487349613">设置漫游个人资料目录</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
+<translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
 <translation id="685769593149966548">强制启用 YouTube“严格”受限模式</translation>
 <translation id="687046793986382807">此政策自35版<ph name="PRODUCT_NAME" />起已停止使用。
 
