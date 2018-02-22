@@ -7,8 +7,8 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
+#include "core/testing/PageTestBase.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
@@ -40,7 +40,7 @@ class TestPerformance : public Performance {
   void Trace(blink::Visitor* visitor) { Performance::Trace(visitor); }
 };
 
-class PerformanceTest : public ::testing::Test {
+class PerformanceTest : public PageTestBase {
  protected:
   void Initialize(ScriptState* script_state) {
     v8::Local<v8::Function> callback =
@@ -52,7 +52,7 @@ class PerformanceTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    PageTestBase::SetUp();
     execution_context_ = new NullExecutionContext();
   }
 
@@ -74,7 +74,6 @@ class PerformanceTest : public ::testing::Test {
   Persistent<TestPerformance> base_;
   Persistent<ExecutionContext> execution_context_;
   Persistent<PerformanceObserver> observer_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<V8PerformanceObserverCallback> cb_;
 };
 
