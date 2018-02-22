@@ -242,9 +242,6 @@ def main(args):
   def on_stale_md5():
     tmp_apk = options.output_apk + '.tmp'
     try:
-      # TODO(agrieve): It would be more efficient to combine this step
-      # with finalize_apk(), which sometimes aligns and uncompresses the
-      # native libraries.
       with zipfile.ZipFile(options.resource_apk) as resource_apk, \
            zipfile.ZipFile(tmp_apk, 'w', zipfile.ZIP_DEFLATED) as out_apk:
         def copy_resource(zipinfo):
