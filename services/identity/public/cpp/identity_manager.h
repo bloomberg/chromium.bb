@@ -15,6 +15,9 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
+// Necessary to declare this class as a friend.
+class ProfileSyncServiceHarness;
+
 // Necessary to declare functions in identity_test_utils.h as friends.
 class FakeSigninManagerBase;
 class FakeSigninManager;
@@ -110,6 +113,7 @@ class IdentityManager : public SigninManagerBase::Observer,
       ProfileOAuth2TokenService* token_service,
       IdentityManager* identity_manager,
       const std::string& email);
+  friend ProfileSyncServiceHarness;
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.

@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -27,12 +27,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using browser_sync::ProfileSyncService;
 using syncer::SyncCycleSnapshot;
@@ -170,11 +169,16 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
     }
   } else if (signin_type_ == SigninType::FAKE_SIGNIN) {
     // Authenticate sync client using GAIA credentials.
-    service()->signin()->SetAuthenticatedAccountInfo(gaia_id_, username_);
-    std::string account_id = service()->signin()->GetAuthenticatedAccountId();
+    // TODO(https://crbug.com/814307): This ideally should go through
+    // identity_test_utils.h (and in the long run IdentityTestEnvironment), but
+    // making that change is complex for reasons described in the bug.
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_);
+    identity_manager->SetPrimaryAccountSynchronouslyForTests(
+        gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
+    std::string account_id =
+        identity_manager->GetPrimaryAccountInfo().account_id;
     service()->GoogleSigninSucceeded(account_id, username_);
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      UpdateCredentials(account_id, GenerateFakeOAuth2RefreshTokenString());
   } else {
     LOG(ERROR) << "Unsupported profile signin type.";
   }
