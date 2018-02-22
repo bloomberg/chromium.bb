@@ -16,6 +16,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -38,14 +39,6 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
   layer->SetContentsOpaque(surface_opaque);
 
   return layer;
-}
-
-void CopyOutputRequestCallback(
-    scoped_refptr<cc::Layer> readback_layer,
-    viz::CopyOutputRequest::CopyOutputRequestCallback result_callback,
-    std::unique_ptr<viz::CopyOutputResult> copy_output_result) {
-  readback_layer->RemoveFromParent();
-  std::move(result_callback).Run(std::move(copy_output_result));
 }
 
 }  // namespace
@@ -114,27 +107,52 @@ viz::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
-void DelegatedFrameHostAndroid::RequestCopyOfSurface(
-    WindowAndroidCompositor* compositor,
-    const gfx::Rect& src_subrect_in_pixel,
-    viz::CopyOutputRequest::CopyOutputRequestCallback result_callback) {
-  DCHECK(surface_info_.is_valid());
-  DCHECK(!result_callback.is_null());
+void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  if (!CanCopyFromCompositingSurface()) {
+    std::move(callback).Run(SkBitmap());
+    return;
+  }
 
   scoped_refptr<cc::Layer> readback_layer =
       CreateSurfaceLayer(surface_info_, !has_transparent_background_);
   readback_layer->SetHideLayerAndSubtree(true);
-  compositor->AttachLayerForReadback(readback_layer);
-  std::unique_ptr<viz::CopyOutputRequest> copy_output_request =
+  view_->GetWindowAndroid()->GetCompositor()->AttachLayerForReadback(
+      readback_layer);
+  std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-          base::BindOnce(&CopyOutputRequestCallback, readback_layer,
-                         std::move(result_callback)));
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(
+              [](base::OnceCallback<void(const SkBitmap&)> callback,
+                 scoped_refptr<cc::Layer> readback_layer,
+                 std::unique_ptr<viz::CopyOutputResult> result) {
+                readback_layer->RemoveFromParent();
+                std::move(callback).Run(result->AsSkBitmap());
+              },
+              std::move(callback), std::move(readback_layer)));
 
-  if (!src_subrect_in_pixel.IsEmpty())
-    copy_output_request->set_area(src_subrect_in_pixel);
+  if (src_subrect.IsEmpty()) {
+    request->set_area(gfx::Rect(surface_info_.size_in_pixels()));
+  } else {
+    request->set_area(
+        gfx::ConvertRectToPixel(view_->GetDipScale(), src_subrect));
+  }
 
-  support_->RequestCopyOfSurface(std::move(copy_output_request));
+  if (!output_size.IsEmpty()) {
+    request->set_result_selection(gfx::Rect(output_size));
+    request->SetScaleRatio(
+        gfx::Vector2d(request->area().width(), request->area().height()),
+        gfx::Vector2d(output_size.width(), output_size.height()));
+  }
+
+  support_->RequestCopyOfSurface(std::move(request));
+}
+
+bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
+  return support_ && surface_info_.is_valid() && view_->GetWindowAndroid() &&
+         view_->GetWindowAndroid()->GetCompositor();
 }
 
 void DelegatedFrameHostAndroid::DestroyDelegatedContent() {

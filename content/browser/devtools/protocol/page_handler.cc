@@ -799,7 +799,7 @@ void PageHandler::NotifyScreencastVisibility(bool visible) {
 }
 
 void PageHandler::InnerSwapCompositorFrame() {
-  if (!host_ || !host_->GetView())
+  if (!host_)
     return;
 
   if (frames_in_flight_ > kMaxScreencastFramesInFlight)
@@ -808,56 +808,66 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (++frame_counter_ % capture_every_nth_frame_)
     return;
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host_->GetView());
-  // TODO(vkuzkokov): do not use previous frame metadata.
-  // TODO(miu): RWHV to provide an API to provide actual rendering size.
-  // http://crbug.com/73362
-  viz::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
+  RenderWidgetHostViewBase* const view =
+      static_cast<RenderWidgetHostViewBase*>(host_->GetView());
+  if (!view || !view->IsSurfaceAvailableForCopy())
+    return;
 
-  float css_to_dip = metadata.page_scale_factor;
-  if (IsUseZoomForDSFEnabled())
-    css_to_dip /= metadata.device_scale_factor;
-  gfx::SizeF viewport_size_dip =
-      gfx::ScaleSize(metadata.scrollable_viewport_size, css_to_dip);
-  gfx::SizeF screen_size_dip =
-      gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
-                     1 / metadata.device_scale_factor);
-
-  content::ScreenInfo screen_info;
-  view->GetScreenInfo(&screen_info);
-  double device_scale_factor = screen_info.device_scale_factor;
+  // Determine the snapshot size that best-fits the Surface's content to the
+  // remote's requested image size.
+  const gfx::Size& surface_size = view->GetPhysicalBackingSize();
+  if (surface_size.IsEmpty())
+    return;  // Nothing to copy (and avoid divide-by-zero below).
   double scale = 1;
-
   if (screencast_max_width_ > 0) {
-    double max_width_dip = screencast_max_width_ / device_scale_factor;
-    scale = std::min(scale, max_width_dip / screen_size_dip.width());
+    scale = std::min(scale, static_cast<double>(screencast_max_width_) /
+                                surface_size.width());
   }
   if (screencast_max_height_ > 0) {
-    double max_height_dip = screencast_max_height_ / device_scale_factor;
-    scale = std::min(scale, max_height_dip / screen_size_dip.height());
+    scale = std::min(scale, static_cast<double>(screencast_max_height_) /
+                                surface_size.height());
   }
+  const gfx::Size snapshot_size =
+      gfx::ToRoundedSize(gfx::ScaleSize(gfx::SizeF(surface_size), scale));
+  if (snapshot_size.IsEmpty())
+    return;
 
-  if (scale <= 0)
-    scale = 0.1;
+  // Build the ScreencastFrameMetadata associated with this capture attempt.
+  const auto& metadata = last_compositor_frame_metadata_;
+  if (metadata.device_scale_factor == 0)
+    return;
+  const gfx::SizeF content_size_dip = gfx::ScaleSize(
+      gfx::SizeF(surface_size), 1 / metadata.device_scale_factor);
+  float top_offset_dip =
+      metadata.top_controls_height * metadata.top_controls_shown_ratio;
+  if (IsUseZoomForDSFEnabled())
+    top_offset_dip /= metadata.device_scale_factor;
+  std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
+      Page::ScreencastFrameMetadata::Create()
+          .SetPageScaleFactor(metadata.page_scale_factor)
+          .SetOffsetTop(top_offset_dip)
+          .SetDeviceWidth(content_size_dip.width())
+          .SetDeviceHeight(content_size_dip.height())
+          .SetScrollOffsetX(metadata.root_scroll_offset.x())
+          .SetScrollOffsetY(metadata.root_scroll_offset.y())
+          .SetTimestamp(base::Time::Now().ToDoubleT())
+          .Build();
 
-  gfx::Size snapshot_size_dip(gfx::ToRoundedSize(
-      gfx::ScaleSize(viewport_size_dip, scale)));
-
-  if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
-    view->CopyFromSurface(
-        gfx::Rect(), snapshot_size_dip,
-        base::Bind(&PageHandler::ScreencastFrameCaptured,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(last_compositor_frame_metadata_.Clone())),
-        kN32_SkColorType);
-    frames_in_flight_++;
-  }
+  // Request a copy of the surface as a scaled SkBitmap.
+  view->CopyFromSurface(
+      gfx::Rect(), snapshot_size,
+      // TODO(crbug/759310): This should be BindOnce.
+      base::BindRepeating(&PageHandler::ScreencastFrameCaptured,
+                          weak_factory_.GetWeakPtr(),
+                          base::Passed(&page_metadata)),
+      kN32_SkColorType);
+  frames_in_flight_++;
 }
 
-void PageHandler::ScreencastFrameCaptured(viz::CompositorFrameMetadata metadata,
-                                          const SkBitmap& bitmap,
-                                          ReadbackResponse response) {
+void PageHandler::ScreencastFrameCaptured(
+    std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
   if (response != READBACK_SUCCESS) {
     if (capture_retry_count_) {
       --capture_retry_count_;
@@ -872,50 +882,21 @@ void PageHandler::ScreencastFrameCaptured(viz::CompositorFrameMetadata metadata,
   }
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&EncodeSkBitmap, bitmap, screencast_format_,
-                 screencast_quality_),
-      base::Bind(&PageHandler::ScreencastFrameEncoded,
-                 weak_factory_.GetWeakPtr(), base::Passed(&metadata),
-                 base::Time::Now()));
+      base::BindOnce(&EncodeSkBitmap, bitmap, screencast_format_,
+                     screencast_quality_),
+      base::BindOnce(&PageHandler::ScreencastFrameEncoded,
+                     weak_factory_.GetWeakPtr(), std::move(page_metadata)));
 }
 
-void PageHandler::ScreencastFrameEncoded(viz::CompositorFrameMetadata metadata,
-                                         const base::Time& timestamp,
-                                         const std::string& data) {
-  // Consider metadata empty in case it has no device scale factor.
-  if (metadata.device_scale_factor == 0 || !host_ || data.empty()) {
+void PageHandler::ScreencastFrameEncoded(
+    std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
+    const std::string& data) {
+  if (data.empty()) {
     --frames_in_flight_;
-    return;
+    return;  // Encode failed.
   }
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host_->GetView());
-  if (!view) {
-    --frames_in_flight_;
-    return;
-  }
-
-  gfx::SizeF screen_size_dip =
-      gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
-                     1 / metadata.device_scale_factor);
-  float css_to_dip = metadata.page_scale_factor;
-  float top_offset_dip =
-      metadata.top_controls_height * metadata.top_controls_shown_ratio;
-  if (IsUseZoomForDSFEnabled()) {
-    css_to_dip /= metadata.device_scale_factor;
-    top_offset_dip /= metadata.device_scale_factor;
-  }
-  std::unique_ptr<Page::ScreencastFrameMetadata> param_metadata =
-      Page::ScreencastFrameMetadata::Create()
-          .SetPageScaleFactor(css_to_dip)
-          .SetOffsetTop(top_offset_dip)
-          .SetDeviceWidth(screen_size_dip.width())
-          .SetDeviceHeight(screen_size_dip.height())
-          .SetScrollOffsetX(metadata.root_scroll_offset.x())
-          .SetScrollOffsetY(metadata.root_scroll_offset.y())
-          .SetTimestamp(timestamp.ToDoubleT())
-          .Build();
-  frontend_->ScreencastFrame(data, std::move(param_metadata), session_id_);
+  frontend_->ScreencastFrame(data, std::move(page_metadata), session_id_);
 }
 
 void PageHandler::ScreenshotCaptured(
