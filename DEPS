@@ -156,6 +156,7 @@ allowed_hosts = [
   'android.googlesource.com',
   'aomedia.googlesource.com',
   'boringssl.googlesource.com',
+  'chrome-infra-packages.appspot.com',
   'chrome-internal.googlesource.com',
   'chromium.googlesource.com',
   'pdfium.googlesource.com',
@@ -311,7 +312,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7dd3b4e6d7a6b2e123d1aec04b121fd7c40871e0',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c1049d9106425476b49ba099e7691330fa117d6c',
       'condition': 'checkout_linux',
   },
 
