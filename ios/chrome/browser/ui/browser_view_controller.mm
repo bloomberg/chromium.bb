@@ -169,6 +169,7 @@
 #import "ios/chrome/browser/ui/new_foreground_tab_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
@@ -668,8 +669,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong, nullable)
     ProceduralBlock foregroundTabWasAddedCompletionBlock;
 // Coordinator for Recent Tabs.
-@property(nonatomic, strong)
-    RecentTabsHandsetCoordinator* recentTabsCoordinator;
+@property(nonatomic, strong) ChromeCoordinator* recentTabsCoordinator;
 // Coordinator for tablet tab strip.
 @property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
 // A weak reference to the view of the tab strip on tablet.
@@ -930,6 +930,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // ------------
 // Adds the given url to the reading list.
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title;
+
+// Recent Tabs
+// ------------
+// Creates the right RecentTabs Coordinator, once we stop supporting the legacy
+// implementation we can delete this method and start the coordinator on
+// |showRecentTabs|.
+- (void)createRecentTabsCoordinator;
 
 @end
 
@@ -3129,6 +3136,26 @@ bubblePresenterForFeature:(const base::Feature&)feature
                          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
 }
 
+#pragma mark - Private Methods: Recent Tabs
+
+- (void)createRecentTabsCoordinator {
+  if (experimental_flags::IsRecentTabsUIRebootEnabled()) {
+    // New RecentTabs UIReboot coordinator.
+    RecentTabsTableCoordinator* recentTabsCoordinator =
+        [[RecentTabsTableCoordinator alloc] initWithBaseViewController:self];
+    recentTabsCoordinator.dispatcher = self.dispatcher;
+    self.recentTabsCoordinator = recentTabsCoordinator;
+  } else {
+    // Legacy RecentTabs coordinator.
+    RecentTabsHandsetCoordinator* recentTabsCoordinator =
+        [[RecentTabsHandsetCoordinator alloc] initWithBaseViewController:self];
+    recentTabsCoordinator.loader = self;
+    recentTabsCoordinator.dispatcher = self.dispatcher;
+    recentTabsCoordinator.browserState = _browserState;
+    self.recentTabsCoordinator = recentTabsCoordinator;
+  }
+}
+
 #pragma mark - ** Protocol Implementations and Helpers **
 
 #pragma mark - SnapshotGeneratorDelegate methods
@@ -4677,13 +4704,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showRecentTabs {
-  if (!self.recentTabsCoordinator) {
-    self.recentTabsCoordinator =
-        [[RecentTabsHandsetCoordinator alloc] initWithBaseViewController:self];
-    self.recentTabsCoordinator.loader = self;
-    self.recentTabsCoordinator.dispatcher = self.dispatcher;
-    self.recentTabsCoordinator.browserState = _browserState;
-  }
+  if (!self.recentTabsCoordinator)
+    [self createRecentTabsCoordinator];
   [self.recentTabsCoordinator start];
 }
 

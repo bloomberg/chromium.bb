@@ -24,6 +24,7 @@
       initWithTable:[[ChromeTableViewController alloc]
                         initWithStyle:UITableViewStylePlain]];
   self.viewController.title = @"Table View";
+  self.viewController.bottomToolbar = [[UIView alloc] initWithFrame:CGRectZero];
   [self.baseViewController pushViewController:self.viewController animated:YES];
 }
 

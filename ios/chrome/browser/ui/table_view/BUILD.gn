@@ -13,7 +13,9 @@ source_set("table_view") {
     "table_view_model.mm",
   ]
   deps = [
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/list_model",
+    "//ui/base",
   ]
   public_deps = [
     "//ios/chrome/browser/ui/table_view/cells",

@@ -5,13 +5,21 @@
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+@interface TableContainerViewController ()
+// Change dismissButton to readwrite.
+@property(nonatomic, strong, readwrite) UIBarButtonItem* dismissButton;
+@end
+
 @implementation TableContainerViewController
 @synthesize bottomToolbar = _bottomToolbar;
+@synthesize dismissButton = _dismissButton;
 @synthesize tableViewController = _tableViewController;
 
 #pragma mark - Public Interface
@@ -20,8 +28,23 @@
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     self.tableViewController = table;
+    // Dismiss Button configuration.
+    _dismissButton = [[UIBarButtonItem alloc] init];
+    _dismissButton.style = UIBarButtonItemStylePlain;
+    _dismissButton.title =
+        l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
   }
   return self;
+}
+
+#pragma mark Setters and Getters
+
+// TODO(crbug.com/805178): Temporary Toolbar code for prototyping purposes.
+- (void)setBottomToolbar:(UIView*)bottomToolbar {
+  _bottomToolbar = bottomToolbar;
+  _bottomToolbar.backgroundColor = [UIColor grayColor];
+  _bottomToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  _bottomToolbar.alpha = 0.5;
 }
 
 #pragma mark - View Lifecycle
@@ -46,14 +69,13 @@
   [self.view addSubview:self.tableViewController.view];
   [self.tableViewController didMoveToParentViewController:self];
 
-  // Bottom Toolbar
-  self.bottomToolbar = [[UIView alloc] initWithFrame:CGRectZero];
-  self.bottomToolbar.backgroundColor = [UIColor grayColor];
-  self.bottomToolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  self.bottomToolbar.alpha = 0.5;
-  // Add the Bottom Toolbar after the TableView since it needs to be on top of
-  // the view hierarchy.
-  [self.view addSubview:self.bottomToolbar];
+  // Add Bottom Toolbar to view hierarchy if it exists.
+  if (self.bottomToolbar) {
+    // Add the Bottom Toolbar after the TableView since it needs to be on top of
+    // the view hierarchy.
+    [self.view addSubview:_bottomToolbar];
+    [self setUpBottomToolbarConstraints];
+  }
 
   [self setUpConstraints];
 }
@@ -70,6 +92,12 @@
         constraintEqualToAnchor:self.view.leadingAnchor],
     [self.tableViewController.view.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
+}
+
+- (void)setUpBottomToolbarConstraints {
+  NSArray* constraints = @[
     [self.bottomToolbar.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor],
     [self.bottomToolbar.trailingAnchor
@@ -78,7 +106,6 @@
         constraintEqualToAnchor:self.view.bottomAnchor],
     [self.bottomToolbar.heightAnchor constraintEqualToConstant:40],
   ];
-
   [NSLayoutConstraint activateConstraints:constraints];
 }
 
