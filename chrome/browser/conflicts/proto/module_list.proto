@@ -91,11 +91,11 @@ message BlacklistAction {
   // Indicates whether or not this module should be allowed to load. This can be
   // used to explicitly allow modules to load that when blocked cause problems,
   // but otherwise to allow messaging to encourage users to remove them.
-  required bool allow_load = 1;
+  optional bool allow_load = 1;
 
   // The URL associated with the user message. See BlacklistMessageType for full
   // details.
-  required BlacklistMessageType message_type = 2;
+  optional BlacklistMessageType message_type = 2;
   optional string message_url = 3;
 }
 
@@ -105,10 +105,10 @@ message BlacklistAction {
 // Next id: 3
 message BlacklistModuleGroup {
   // The action to take when modules in this group are encountered.
-  required BlacklistAction action = 1;
+  optional BlacklistAction action = 1;
 
   // The group of modules itself.
-  required ModuleGroup modules = 2;
+  optional ModuleGroup modules = 2;
 }
 
 // Describes a blacklist of modules that are to be handled specially when
@@ -122,9 +122,9 @@ message ModuleBlacklist {
 // Next id: 3
 message ModuleList {
   // The whitelisted modules.
-  required ModuleWhitelist whitelist = 1;
+  optional ModuleWhitelist whitelist = 1;
 
   // The blacklisted modules, and the associated actions to take upon
   // encountering them.
-  required ModuleBlacklist blacklist = 2;
+  optional ModuleBlacklist blacklist = 2;
 }
