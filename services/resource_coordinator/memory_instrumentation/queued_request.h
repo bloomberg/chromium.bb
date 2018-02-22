@@ -61,8 +61,8 @@ struct QueuedRequest {
     Response();
     ~Response();
 
-    base::ProcessId process_id;
-    mojom::ProcessType process_type;
+    base::ProcessId process_id = base::kNullProcessId;
+    mojom::ProcessType process_type = mojom::ProcessType::OTHER;
     std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_dump;
     OSMemDumpMap os_dumps;
   };
@@ -128,7 +128,7 @@ struct QueuedVmRegionRequest {
     Response();
     ~Response();
 
-    base::ProcessId process_id;
+    base::ProcessId process_id = base::kNullProcessId;
     OSMemDumpMap os_dumps;
   };
 
