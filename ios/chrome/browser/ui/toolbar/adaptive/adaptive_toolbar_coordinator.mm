@@ -7,7 +7,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view_controller.h"
@@ -74,9 +73,7 @@
 
 #pragma mark - SideSwipeToolbarSnapshotProviding
 
-- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
-  web::WebState* webState = tab.webState;
-
+- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
   [self updateToolbarForSideSwipeSnapshot:webState];
 
   UIImage* toolbarSnapshot = CaptureViewWithOption(

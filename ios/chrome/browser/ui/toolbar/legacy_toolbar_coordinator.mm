@@ -4,12 +4,12 @@
 
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
@@ -26,24 +26,33 @@
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUpdater;
 }
 
-@property(nonatomic, strong) id<Toolbar> toolbarController;
+@property(nonatomic, strong) ToolbarCoordinator* toolbarCoordinator;
 @end
 
 @implementation LegacyToolbarCoordinator
-@synthesize toolbarController = _toolbarController;
+@synthesize toolbarCoordinator = _toolbarCoordinator;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
             toolsMenuConfigurationProvider:
                 (id<ToolsMenuConfigurationProvider>)configurationProvider
                                 dispatcher:(CommandDispatcher*)dispatcher
                               browserState:
-                                  (ios::ChromeBrowserState*)browserState {
+                                  (ios::ChromeBrowserState*)browserState
+                              webStateList:(WebStateList*)webStateList {
   if (self = [super initWithBaseViewController:viewController
                                   browserState:browserState]) {
     DCHECK(browserState);
+    _toolbarCoordinator = [[ToolbarCoordinator alloc] init];
+    _toolbarCoordinator.webStateList = webStateList;
+    _toolbarCoordinator.dispatcher =
+        static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
+            dispatcher);
+    _toolbarCoordinator.browserState = browserState;
+
     _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
     _toolsMenuCoordinator.dispatcher = dispatcher;
     _toolsMenuCoordinator.configurationProvider = configurationProvider;
+    _toolsMenuCoordinator.presentationProvider = _toolbarCoordinator;
     [_toolsMenuCoordinator start];
 
     [dispatcher startDispatchingToTarget:self
@@ -63,54 +72,61 @@
 }
 
 - (void)start {
-  [self startObservingFullscreen];
+  [self.toolbarCoordinator start];
 }
 
 - (void)stop {
-  [self.toolbarController setBackgroundAlpha:1.0];
-  [self.toolbarController stop];
-  [self stopObservingFullscreen];
-  self.toolbarController = nil;
+  [self.toolbarCoordinator setBackgroundToIncognitoNTPColorWithAlpha:0];
+  [self.toolbarCoordinator stop];
+  self.toolbarCoordinator = nil;
 }
 
 - (UIViewController*)viewController {
-  return self.toolbarController.viewController;
+  return self.toolbarCoordinator.viewController;
+}
+
+- (void)setURLLoader:(id<UrlLoader>)URLLoader {
+  self.toolbarCoordinator.URLLoader = URLLoader;
+}
+
+- (id<UrlLoader>)URLLoader {
+  return self.toolbarCoordinator.URLLoader;
+}
+
+- (void)setDelegate:(id<ToolbarCoordinatorDelegate>)delegate {
+  self.toolbarCoordinator.delegate = delegate;
+}
+
+- (id<ToolbarCoordinatorDelegate>)delegate {
+  return self.toolbarCoordinator.delegate;
 }
 
 #pragma mark - Delegates
 
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
-  return self.toolbarController;
+  return self.toolbarCoordinator.voiceSearchControllerDelegate;
 }
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
-  return self.toolbarController;
+  return self.toolbarCoordinator.activityServicePositioner;
 }
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  return self.toolbarController.buttonUpdater;
+  return self.toolbarCoordinator.buttonUpdater;
 }
 
 - (id<QRScannerResultLoading>)QRScannerResultLoader {
-  return self.toolbarController;
+  return self.toolbarCoordinator.QRScannerResultLoader;
 }
 
 - (id<OmniboxFocuser>)omniboxFocuser {
-  return self.toolbarController;
+  return self.toolbarCoordinator.omniboxFocuser;
 }
 
-#pragma mark - WebToolbarController public interface
-
-- (void)setToolbarController:(id<Toolbar>)toolbarController {
-  _toolbarController = toolbarController;
-  // ToolbarController needs to know about whether the tools menu is presented
-  // or not, and does so by storing a reference to the coordinator to query.
-  _toolsMenuCoordinator.presentationProvider = _toolbarController;
-  [toolbarController start];
-}
+#pragma mark - ToolbarCommands
 
 - (void)triggerToolsMenuButtonAnimation {
-  [self.toolbarController triggerToolsMenuButtonAnimation];
+  [self.toolbarCoordinator triggerToolsMenuButtonAnimation];
 }
 
 #pragma mark - ToolbarCoordinating
@@ -122,33 +138,33 @@
 #pragma mark - PrimaryToolbarCoordinator
 
 - (void)showPrerenderingAnimation {
-  [self.toolbarController showPrerenderingAnimation];
+  [self.toolbarCoordinator showPrerenderingAnimation];
 }
 
 - (BOOL)isOmniboxFirstResponder {
-  return [self.toolbarController isOmniboxFirstResponder];
+  return [self.toolbarCoordinator isOmniboxFirstResponder];
 }
 
 - (BOOL)showingOmniboxPopup {
-  return [self.toolbarController showingOmniboxPopup];
+  return [self.toolbarCoordinator showingOmniboxPopup];
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
-  [self.toolbarController transitionToLocationBarFocusedState:focused];
+  [self.toolbarCoordinator transitionToLocationBarFocusedState:focused];
 }
 
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {
-  [self.toolbarController focusFakebox];
+  [self.toolbarCoordinator focusFakebox];
 }
 
 - (void)onFakeboxBlur {
-  [self.toolbarController onFakeboxBlur];
+  [self.toolbarCoordinator onFakeboxBlur];
 }
 
 - (void)onFakeboxAnimationComplete {
-  [self.toolbarController onFakeboxAnimationComplete];
+  [self.toolbarCoordinator onFakeboxAnimationComplete];
 }
 
 #pragma mark - SideSwipeToolbarInteracting
@@ -161,13 +177,13 @@
   return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
 }
 
-- (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
-  [self.toolbarController updateToolbarForSideSwipeSnapshot:tab];
+- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
+  [self.toolbarCoordinator updateToolbarForSideSwipeSnapshot:webState];
   UIImage* toolbarSnapshot = CaptureViewWithOption(
       [self.viewController view], [[UIScreen mainScreen] scale],
       kClientSideRendering);
 
-  [self.toolbarController resetToolbarAfterSideSwipeSnapshot];
+  [self.toolbarCoordinator resetToolbarAfterSideSwipeSnapshot];
   return toolbarSnapshot;
 }
 
@@ -195,32 +211,25 @@
   newFrame.size.width = width;
 
   self.viewController.view.superview.frame = newFrame;
-  [self.toolbarController activateFakeSafeAreaInsets:safeAreaInsets];
+  [self.toolbarCoordinator activateFakeSafeAreaInsets:safeAreaInsets];
   [self.viewController.view.superview layoutIfNeeded];
 
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
 
   self.viewController.view.superview.frame = oldFrame;
-  [self.toolbarController deactivateFakeSafeAreaInsets];
+  [self.toolbarCoordinator deactivateFakeSafeAreaInsets];
 
   return toolbarSnapshotView;
 }
 
 - (UIColor*)toolbarBackgroundColor {
-  UIColor* toolbarBackgroundColor = nil;
-  if (self.toolbarController.backgroundView.hidden ||
-      self.toolbarController.backgroundView.alpha == 0) {
-    // If the background view isn't visible, use the base toolbar view's
-    // background color.
-    toolbarBackgroundColor = self.viewController.view.backgroundColor;
-  }
-  return toolbarBackgroundColor;
+  return [self.toolbarCoordinator toolbarBackgroundColor];
 }
 
 #pragma mark - IncognitoViewControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-  [self.toolbarController setBackgroundAlpha:alpha];
+  [self.toolbarCoordinator setBackgroundToIncognitoNTPColorWithAlpha:1 - alpha];
 }
 
 #pragma mark - ToolsMenuPresentationStateProvider
@@ -232,43 +241,11 @@
 #pragma mark - Tools Menu
 
 - (void)toolsMenuWillShowNotification:(NSNotification*)note {
-  [self.toolbarController setToolsMenuIsVisibleForToolsMenuButton:YES];
+  [self.toolbarCoordinator setToolsMenuIsVisibleForToolsMenuButton:YES];
 }
 
 - (void)toolsMenuWillHideNotification:(NSNotification*)note {
-  [self.toolbarController setToolsMenuIsVisibleForToolsMenuButton:NO];
-}
-
-#pragma mark - Fullscreen helpers
-
-// Creates a FullscreenUIUpdater for the toolbar controller and adds it as a
-// FullscreenControllerObserver.
-- (void)startObservingFullscreen {
-  if (_fullscreenUpdater)
-    return;
-  if (!self.browserState)
-    return;
-  FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          self.browserState);
-  DCHECK(fullscreenController);
-  _fullscreenUpdater =
-      std::make_unique<FullscreenUIUpdater>(self.toolbarController);
-  fullscreenController->AddObserver(_fullscreenUpdater.get());
-}
-
-// Removes the FullscreenUIUpdater as a FullscreenControllerObserver.
-- (void)stopObservingFullscreen {
-  if (!_fullscreenUpdater)
-    return;
-  if (!self.browserState)
-    return;
-  FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          self.browserState);
-  DCHECK(fullscreenController);
-  fullscreenController->RemoveObserver(_fullscreenUpdater.get());
-  _fullscreenUpdater = nullptr;
+  [self.toolbarCoordinator setToolsMenuIsVisibleForToolsMenuButton:NO];
 }
 
 @end

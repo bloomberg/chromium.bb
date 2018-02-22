@@ -98,6 +98,9 @@ class WebState;
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets;
 // Deactivates the constraints used to create a fake safe area.
 - (void)deactivateFakeSafeAreaInsets;
+// Asks the provider for the color of the background of the toolbar. A nil value
+// indicates the default color will be used.
+- (UIColor*)toolbarBackgroundColor;
 
 @end
 

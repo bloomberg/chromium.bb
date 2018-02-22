@@ -326,6 +326,12 @@
   return self.view.toolsMenuButton;
 }
 
+- (UIColor*)backgroundColor {
+  if (self.view.backgroundView.hidden || self.view.backgroundView.alpha == 0)
+    return nil;
+  return self.view.backgroundView.backgroundColor;
+}
+
 #pragma mark - Components Setup
 
 - (void)setUpToolbarButtons {

@@ -9,8 +9,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
+#import "ios/chrome/browser/ui/toolbar/legacy/abstract_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/legacy_toolbar_view.h"
-#import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"

@@ -288,11 +288,11 @@ const CGFloat kResizeFactor = 4;
   Tab* tab = [model_ tabAtIndex:index];
   BOOL isNTP =
       tab.webState->GetLastCommittedURL().host_piece() == kChromeUINewTabHost;
-  UIImage* topToolbarSnapshot =
-      [self.topToolbarSnapshotProvider toolbarSideSwipeSnapshotForTab:tab];
+  UIImage* topToolbarSnapshot = [self.topToolbarSnapshotProvider
+      toolbarSideSwipeSnapshotForWebState:tab.webState];
   [card setTopToolbarImage:topToolbarSnapshot isNewTabPage:isNTP];
-  UIImage* bottomToolbarSnapshot =
-      [self.bottomToolbarSnapshotProvider toolbarSideSwipeSnapshotForTab:tab];
+  UIImage* bottomToolbarSnapshot = [self.bottomToolbarSnapshotProvider
+      toolbarSideSwipeSnapshotForWebState:tab.webState];
   [card setBottomToolbarImage:bottomToolbarSnapshot];
 
   // Converting snapshotted images to grey takes too much time for single core

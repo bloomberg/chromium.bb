@@ -45,6 +45,8 @@
 @property(nonatomic, assign) BOOL expanded;
 // Omnibox focuser.
 @property(nonatomic, weak) id<OmniboxFocuser> omniboxFocuser;
+// Background color of the toolbar. Returns nil if it is the default color.
+@property(nonatomic, strong, readonly) UIColor* backgroundColor;
 
 // Sets the location bar view, containing the omnibox.
 - (void)setLocationBarView:(UIView*)locationBarView;

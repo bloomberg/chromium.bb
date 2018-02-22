@@ -5,11 +5,14 @@
 source_set("legacy") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "abstract_toolbar.h",
     "legacy_toolbar_view.h",
     "legacy_toolbar_view.mm",
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
+    "toolbar_utils.h",
+    "toolbar_utils.mm",
   ]
   deps = [
     "//base",
