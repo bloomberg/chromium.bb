@@ -262,7 +262,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git' + '@' + '9166854ac93ef81b026e943ccd230fed6c8b8d3c',
 
   'src/third_party/android_protobuf/src': {
-      'url': Var('chromium_git') + '/external/android_protobuf.git' + '@' + '7fca48d8ce97f7ba3ab8eea5c472f1ad3711762f',
+      'url': Var('android_git') + '/platform/external/protobuf.git' + '@' + '7fca48d8ce97f7ba3ab8eea5c472f1ad3711762f',
       'condition': 'checkout_android',
   },
 
