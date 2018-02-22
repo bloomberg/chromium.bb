@@ -98,6 +98,83 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 // this file instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/raster_implementation_autogen.h"
 
+  // RasterInterface implementation.
+  void GenTextures(GLsizei n, GLuint* textures) override;
+  void BindTexture(GLenum target, GLuint texture) override;
+  void ActiveTexture(GLenum texture) override;
+  void GenerateMipmap(GLenum target) override;
+  void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
+                                     GLColorSpace color_space) override;
+  void GenMailboxCHROMIUM(GLbyte* mailbox) override;
+  void ProduceTextureDirectCHROMIUM(GLuint texture,
+                                    const GLbyte* mailbox) override;
+  GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
+  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
+  void TexImage2D(GLenum target,
+                  GLint level,
+                  GLint internalformat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLint border,
+                  GLenum format,
+                  GLenum type,
+                  const void* pixels) override;
+  void TexSubImage2D(GLenum target,
+                     GLint level,
+                     GLint xoffset,
+                     GLint yoffset,
+                     GLsizei width,
+                     GLsizei height,
+                     GLenum format,
+                     GLenum type,
+                     const void* pixels) override;
+  void CompressedTexImage2D(GLenum target,
+                            GLint level,
+                            GLenum internalformat,
+                            GLsizei width,
+                            GLsizei height,
+                            GLint border,
+                            GLsizei imageSize,
+                            const void* data) override;
+  void TexStorageForRaster(GLenum target,
+                           viz::ResourceFormat format,
+                           GLsizei width,
+                           GLsizei height,
+                           RasterTexStorageFlags flags) override;
+  void CopySubTextureCHROMIUM(GLuint source_id,
+                              GLint source_level,
+                              GLenum dest_target,
+                              GLuint dest_id,
+                              GLint dest_level,
+                              GLint xoffset,
+                              GLint yoffset,
+                              GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height,
+                              GLboolean unpack_flip_y,
+                              GLboolean unpack_premultiply_alpha,
+                              GLboolean unpack_unmultiply_alpha) override;
+  void BeginRasterCHROMIUM(
+      GLuint texture_id,
+      GLuint sk_color,
+      GLuint msaa_sample_count,
+      GLboolean can_use_lcd_text,
+      GLboolean use_distance_field_text,
+      GLint pixel_config,
+      const cc::RasterColorSpace& raster_color_space) override;
+  void RasterCHROMIUM(const cc::DisplayItemList* list,
+                      cc::ImageProvider* provider,
+                      const gfx::Size& content_size,
+                      const gfx::Rect& full_raster_rect,
+                      const gfx::Rect& playback_rect,
+                      const gfx::Vector2dF& post_translate,
+                      GLfloat post_scale,
+                      bool requires_clear) override;
+  void BeginGpuRaster() override;
+  void EndGpuRaster() override;
+
   // ContextSupport implementation.
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
   void Swap() override;
@@ -119,16 +196,14 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   bool ThreadsafeDiscardableTextureIsDeletedForTracing(
       uint32_t texture_id) override;
 
-  // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
-  // intercept it.
-  void SetLostContextCallback(base::OnceClosure callback);
-
   bool GetQueryObjectValueHelper(const char* function_name,
                                  GLuint id,
                                  GLenum pname,
                                  GLuint64* params);
 
  private:
+  friend class RasterImplementationTest;
+
   using IdNamespaces = gles2::id_namespaces::IdNamespaces;
 
   struct TextureUnit {
@@ -146,6 +221,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
    private:
     RasterImplementation* raster_implementation_;
   };
+
+  // ImplementationBase implementation.
+  void IssueShallowFlush() override;
 
   // GpuControlClient implementation.
   void OnGpuControlLostContext() final;
@@ -209,12 +287,14 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void UnmapRasterCHROMIUM(GLsizeiptr written_size);
 
   RasterCmdHelper* helper_;
-  TransferBufferInterface* transfer_buffer_;
   std::string last_error_;
   gles2::DebugMarkerManager debug_marker_manager_;
   std::string this_in_hex_;
 
   std::unique_ptr<TextureUnit[]> texture_units_;
+
+  // 0 to capabilities_.max_combined_texture_image_units.
+  GLuint active_texture_unit_;
 
   // Current GL error bits.
   uint32_t error_bits_;
@@ -230,8 +310,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
   base::RepeatingCallback<void(const char*, int32_t)> error_message_callback_;
-  base::OnceClosure lost_context_callback_;
-  bool lost_context_callback_run_ = false;
 
   int current_trace_stack_;
 

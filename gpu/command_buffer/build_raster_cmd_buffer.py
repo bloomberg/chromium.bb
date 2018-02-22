@@ -919,8 +919,8 @@ def main(argv):
     "gpu/command_buffer/client/raster_implementation_autogen.h")
   gen.WriteGLES2Implementation(
     "gpu/command_buffer/client/raster_implementation_impl_autogen.h")
-  # gen.WriteGLES2ImplementationUnitTests(
-  #   "gpu/command_buffer/client/raster_implementation_unittest_autogen.h")
+  gen.WriteGLES2ImplementationUnitTests(
+    "gpu/command_buffer/client/raster_implementation_unittest_autogen.h")
   # gen.WriteGLES2TraceImplementationHeader(
   #     "gpu/command_buffer/client/raster_trace_implementation_autogen.h")
   # gen.WriteGLES2TraceImplementation(
