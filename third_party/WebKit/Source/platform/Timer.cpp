@@ -108,11 +108,6 @@ void TimerBase::MoveToNewTaskRunner(
   SetNextFireTime(now, next_fire_time - now);
 }
 
-// static
-scoped_refptr<base::SingleThreadTaskRunner> TimerBase::GetTimerTaskRunner() {
-  return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner> TimerBase::TimerTaskRunner() const {
   return web_task_runner_;
 }

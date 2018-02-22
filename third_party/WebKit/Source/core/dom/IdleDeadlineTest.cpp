@@ -20,7 +20,6 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
   ~MockIdleDeadlineScheduler() override = default;
 
   // WebScheduler implementation:
-  base::SingleThreadTaskRunner* TimerTaskRunner() override { return nullptr; }
   base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }

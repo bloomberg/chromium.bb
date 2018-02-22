@@ -703,8 +703,10 @@ ScrollAnimatorBase* ScrollAnimatorBase::Create(
 
 ScrollAnimatorMac::ScrollAnimatorMac(blink::ScrollableArea* scrollable_area)
     : ScrollAnimatorBase(scrollable_area),
-      task_runner_(
-          Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner()),
+      task_runner_(Platform::Current()
+                       ->CurrentThread()
+                       ->Scheduler()
+                       ->CompositorTaskRunner()),
       have_scrolled_since_page_load_(false),
       needs_scroller_style_update_(false) {
   scroll_animation_helper_delegate_.AdoptNS(

@@ -24,7 +24,6 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
   ~MockScriptedIdleTaskControllerScheduler() override = default;
 
   // WebScheduler implementation:
-  base::SingleThreadTaskRunner* TimerTaskRunner() override { return nullptr; }
   base::SingleThreadTaskRunner* CompositorTaskRunner() override {
     return nullptr;
   }

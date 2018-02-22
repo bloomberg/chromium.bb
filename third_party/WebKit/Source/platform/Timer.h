@@ -99,9 +99,6 @@ class PLATFORM_EXPORT TimerBase {
     bool operator()(const TimerBase* a, const TimerBase* b) const;
   };
 
- protected:
-  static scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner();
-
  private:
   virtual void Fired() = 0;
 
