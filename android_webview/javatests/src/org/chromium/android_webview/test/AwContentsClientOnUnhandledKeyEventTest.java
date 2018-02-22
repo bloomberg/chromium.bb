@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 
@@ -18,7 +17,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.ImeAdapter;
 
 import java.util.ArrayList;
@@ -29,7 +27,6 @@ import java.util.List;
  * Tests for the WebViewClient.onUnhandledKeyEvent() method.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class AwContentsClientOnUnhandledKeyEventTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();

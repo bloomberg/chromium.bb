@@ -88,8 +88,6 @@ import java.util.WeakHashMap;
  * choose the latter, because it makes for a cleaner design.
  */
 @SuppressWarnings("deprecation")
-// You shouldn't change TargetApi, please see how Android M API was added.
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class WebViewContentsClientAdapter extends AwContentsClient {
     // TAG is chosen for consistency with classic webview tracing.
     private static final String TAG = "WebViewCallback";

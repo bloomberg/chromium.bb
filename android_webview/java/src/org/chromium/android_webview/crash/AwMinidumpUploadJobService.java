@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 package org.chromium.android_webview.crash;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.PersistableBundle;
 
 import org.chromium.android_webview.command_line.CommandLineUtil;
@@ -16,7 +14,6 @@ import org.chromium.components.minidump_uploader.MinidumpUploaderImpl;
 /**
  * Class that interacts with the Android JobScheduler to upload Minidumps at appropriate times.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 // OBS: This class needs to be public to be started from android.app.ActivityThread.
 public class AwMinidumpUploadJobService extends MinidumpUploadJobService {
     @Override
