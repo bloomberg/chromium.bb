@@ -52,40 +52,6 @@ namespace WebCORS {
 
 namespace {
 
-// Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
-String CreateAccessControlRequestHeadersHeader(
-    const WebHTTPHeaderMap& headers) {
-  Vector<String> filtered_headers;
-  for (const auto& header : headers.GetHTTPHeaderMap()) {
-    if (CORS::IsCORSSafelistedHeader(header.key, header.value)) {
-      // Exclude CORS-safelisted headers.
-      continue;
-    }
-    // TODO(hintzed) replace with EqualIgnoringASCIICase()
-    if (DeprecatedEqualIgnoringCase(header.key, "referer")) {
-      // When the request is from a Worker, referrer header was added by
-      // WorkerThreadableLoader. But it should not be added to
-      // Access-Control-Request-Headers header.
-      continue;
-    }
-    filtered_headers.push_back(header.key.DeprecatedLower());
-  }
-  if (!filtered_headers.size())
-    return g_null_atom;
-
-  // Sort header names lexicographically.
-  std::sort(filtered_headers.begin(), filtered_headers.end(),
-            WTF::CodePointCompareLessThan);
-  StringBuilder header_buffer;
-  for (const String& header : filtered_headers) {
-    if (!header_buffer.IsEmpty())
-      header_buffer.Append(",");
-    header_buffer.Append(header);
-  }
-
-  return header_buffer.ToString();
-}
-
 // A parser for the value of the Access-Control-Expose-Headers header.
 class HTTPHeaderNameListParser {
   STACK_ALLOCATED();
@@ -208,40 +174,6 @@ base::Optional<CORSError> HandleRedirect(
     options.cors_flag = true;
   }
   return base::nullopt;
-}
-
-WebURLRequest CreateAccessControlPreflightRequest(
-    const WebURLRequest& request) {
-  const KURL& request_url = request.Url();
-
-  DCHECK(request_url.User().IsEmpty());
-  DCHECK(request_url.Pass().IsEmpty());
-
-  WebURLRequest preflight_request(request_url);
-  preflight_request.SetHTTPMethod(HTTPNames::OPTIONS);
-  preflight_request.SetHTTPHeaderField(HTTPNames::Access_Control_Request_Method,
-                                       request.HttpMethod());
-  preflight_request.SetPriority(request.GetPriority());
-  preflight_request.SetRequestContext(request.GetRequestContext());
-  preflight_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
-  preflight_request.SetSkipServiceWorker(true);
-  preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),
-                                    request.GetReferrerPolicy());
-
-  if (request.IsExternalRequest()) {
-    preflight_request.SetHTTPHeaderField(
-        HTTPNames::Access_Control_Request_External, "true");
-  }
-
-  String request_headers = CreateAccessControlRequestHeadersHeader(
-      request.ToResourceRequest().HttpHeaderFields());
-  if (request_headers != g_null_atom) {
-    preflight_request.SetHTTPHeaderField(
-        HTTPNames::Access_Control_Request_Headers, request_headers);
-  }
-
-  return preflight_request;
 }
 
 WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(

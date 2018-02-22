@@ -75,6 +75,38 @@ namespace blink {
 
 namespace {
 
+// Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
+String CreateAccessControlRequestHeadersHeader(const HTTPHeaderMap& headers) {
+  Vector<String> filtered_headers;
+  for (const auto& header : headers) {
+    // Exclude CORS-safelisted headers.
+    if (CORS::IsCORSSafelistedHeader(header.key, header.value))
+      continue;
+    // Calling a deprecated function, but eventually this function,
+    // |CreateAccessControlRequestHeadersHeader| will be removed.
+    // When the request is from a Worker, referrer header was added by
+    // WorkerThreadableLoader. But it should not be added to
+    // Access-Control-Request-Headers header.
+    if (DeprecatedEqualIgnoringCase(header.key, "referer"))
+      continue;
+    filtered_headers.push_back(header.key.DeprecatedLower());
+  }
+  if (!filtered_headers.size())
+    return g_null_atom;
+
+  // Sort header names lexicographically.
+  std::sort(filtered_headers.begin(), filtered_headers.end(),
+            WTF::CodePointCompareLessThan);
+  StringBuilder header_buffer;
+  for (const String& header : filtered_headers) {
+    if (!header_buffer.IsEmpty())
+      header_buffer.Append(",");
+    header_buffer.Append(header);
+  }
+
+  return header_buffer.ToString();
+}
+
 class EmptyDataHandle final : public WebDataConsumerHandle {
  private:
   class EmptyDataReader final : public WebDataConsumerHandle::Reader {
@@ -118,6 +150,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
 // net/url_request/url_request.cc separately.
 static const int kMaxCORSRedirects = 20;
 
+// static
 void DocumentThreadableLoader::LoadResourceSynchronously(
     Document& document,
     const ResourceRequest& request,
@@ -130,6 +163,49 @@ void DocumentThreadableLoader::LoadResourceSynchronously(
       ->Start(request);
 }
 
+// static
+WebURLRequest DocumentThreadableLoader::CreateAccessControlPreflightRequest(
+    const WebURLRequest& request) {
+  const KURL& request_url = request.Url();
+
+  DCHECK(request_url.User().IsEmpty());
+  DCHECK(request_url.Pass().IsEmpty());
+
+  WebURLRequest preflight_request(request_url);
+  preflight_request.SetHTTPMethod(HTTPNames::OPTIONS);
+  preflight_request.SetHTTPHeaderField(HTTPNames::Access_Control_Request_Method,
+                                       request.HttpMethod());
+  preflight_request.SetPriority(request.GetPriority());
+  preflight_request.SetRequestContext(request.GetRequestContext());
+  preflight_request.SetFetchCredentialsMode(
+      network::mojom::FetchCredentialsMode::kOmit);
+  preflight_request.SetSkipServiceWorker(true);
+  preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),
+                                    request.GetReferrerPolicy());
+
+  if (request.IsExternalRequest()) {
+    preflight_request.SetHTTPHeaderField(
+        HTTPNames::Access_Control_Request_External, "true");
+  }
+
+  String request_headers = CreateAccessControlRequestHeadersHeader(
+      request.ToResourceRequest().HttpHeaderFields());
+  if (request_headers != g_null_atom) {
+    preflight_request.SetHTTPHeaderField(
+        HTTPNames::Access_Control_Request_Headers, request_headers);
+  }
+
+  return preflight_request;
+}
+
+// static
+WebURLRequest
+DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
+    const WebURLRequest& request) {
+  return CreateAccessControlPreflightRequest(request);
+}
+
+// static
 DocumentThreadableLoader* DocumentThreadableLoader::Create(
     ThreadableLoadingContext& loading_context,
     ThreadableLoaderClient* client,
@@ -380,7 +456,7 @@ void DocumentThreadableLoader::PrepareCrossOriginRequest(
 void DocumentThreadableLoader::LoadPreflightRequest(
     const ResourceRequest& actual_request,
     const ResourceLoaderOptions& actual_options) {
-  WebURLRequest web_url_request = WebCORS::CreateAccessControlPreflightRequest(
+  WebURLRequest web_url_request = CreateAccessControlPreflightRequest(
       WrappedResourceRequest(actual_request));
 
   ResourceRequest& preflight_request =

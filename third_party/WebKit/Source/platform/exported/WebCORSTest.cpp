@@ -5,9 +5,8 @@
 #include "public/platform/WebCORS.h"
 
 #include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebCORS.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -27,73 +26,6 @@ class CORSExposedHeadersTest : public ::testing::Test {
         credentials_mode, WrappedResourceResponse(response));
   }
 };
-
-TEST(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
-  WebURLRequest request;
-  request.AddHTTPHeaderField("Orange", "Orange");
-  request.AddHTTPHeaderField("Apple", "Red");
-  request.AddHTTPHeaderField("Kiwifruit", "Green");
-  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
-  request.AddHTTPHeaderField("Strawberry", "Red");
-
-  WebURLRequest preflight =
-      WebCORS::CreateAccessControlPreflightRequest(request);
-
-  EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
-}
-
-TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleHeaders) {
-  WebURLRequest request;
-  request.AddHTTPHeaderField("Accept", "everything");
-  request.AddHTTPHeaderField("Accept-Language", "everything");
-  request.AddHTTPHeaderField("Content-Language", "everything");
-  request.AddHTTPHeaderField("Save-Data", "on");
-
-  WebURLRequest preflight =
-      WebCORS::CreateAccessControlPreflightRequest(request);
-
-  // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
-  // request headers should cause "Access-Control-Request-Headers:" to be
-  // left out in the preflight request.
-  EXPECT_EQ(WebString(g_null_atom),
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
-}
-
-TEST(CreateAccessControlPreflightRequestTest, ExcludeSimpleContentTypeHeader) {
-  WebURLRequest request;
-  request.AddHTTPHeaderField("Content-Type", "text/plain");
-
-  WebURLRequest preflight =
-      WebCORS::CreateAccessControlPreflightRequest(request);
-
-  // Empty list also; see comment in test above.
-  EXPECT_EQ(WebString(g_null_atom),
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
-}
-
-TEST(CreateAccessControlPreflightRequestTest, IncludeNonSimpleHeader) {
-  WebURLRequest request;
-  request.AddHTTPHeaderField("X-Custom-Header", "foobar");
-
-  WebURLRequest preflight =
-      WebCORS::CreateAccessControlPreflightRequest(request);
-
-  EXPECT_EQ("x-custom-header",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
-}
-
-TEST(CreateAccessControlPreflightRequestTest,
-     IncludeNonSimpleContentTypeHeader) {
-  WebURLRequest request;
-  request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
-
-  WebURLRequest preflight =
-      WebCORS::CreateAccessControlPreflightRequest(request);
-
-  EXPECT_EQ("content-type",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
-}
 
 TEST_F(CORSExposedHeadersTest, ValidInput) {
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "valid"),
