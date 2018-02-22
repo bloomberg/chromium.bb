@@ -26,7 +26,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -156,7 +155,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   main_message_loop_ = message_loop;
   service_process_state_.reset(state);
 
-  // Initialize TaskScheduler and redirect SequencedWorkerPool tasks to it.
+  // Initialize TaskScheduler.
   constexpr int kMaxBackgroundThreads = 1;
   constexpr int kMaxBackgroundBlockingThreads = 1;
   constexpr int kMaxForegroundThreads = 3;
@@ -171,8 +170,6 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
        {kMaxForegroundThreads, kSuggestedReclaimTime},
        {kMaxForegroundBlockingThreads, kSuggestedReclaimTime,
         base::SchedulerBackwardCompatibility::INIT_COM_STA}});
-
-  base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   // The NetworkChangeNotifier must be created after TaskScheduler because it
   // posts tasks to it.

@@ -8,7 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -26,26 +25,8 @@ scoped_refptr<SequencedTaskRunner> SequencedTaskRunnerHandle::Get() {
   // Return the registered SequencedTaskRunner, if any.
   const SequencedTaskRunnerHandle* handle =
       sequenced_task_runner_tls.Pointer()->Get();
-  if (handle) {
-    // Various modes of setting SequencedTaskRunnerHandle don't combine.
-    DCHECK(!SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid());
-
+  if (handle)
     return handle->task_runner_;
-  }
-
-  // If we are on a worker thread for a SequencedWorkerPool that is running a
-  // sequenced task, return a SequencedTaskRunner for it.
-  scoped_refptr<SequencedWorkerPool> pool =
-      SequencedWorkerPool::GetWorkerPoolForCurrentThread();
-  if (pool) {
-    SequencedWorkerPool::SequenceToken sequence_token =
-        SequencedWorkerPool::GetSequenceTokenForCurrentThread();
-    DCHECK(sequence_token.IsValid());
-    scoped_refptr<SequencedTaskRunner> sequenced_task_runner(
-        pool->GetSequencedTaskRunner(sequence_token));
-    DCHECK(sequenced_task_runner->RunsTasksInCurrentSequence());
-    return sequenced_task_runner;
-  }
 
   // Note if you hit this: the problem is the lack of a sequenced context. The
   // ThreadTaskRunnerHandle is just the last attempt at finding such a context.
@@ -58,7 +39,6 @@ scoped_refptr<SequencedTaskRunner> SequencedTaskRunnerHandle::Get() {
 // static
 bool SequencedTaskRunnerHandle::IsSet() {
   return sequenced_task_runner_tls.Pointer()->Get() ||
-         SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid() ||
          ThreadTaskRunnerHandle::IsSet();
 }
 

@@ -12,12 +12,13 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/memory/scoped_refptr.h"
 
 class GURL;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace history_report {
@@ -52,7 +53,7 @@ class DeltaFileService {
   std::string Dump();
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<DeltaFileBackend> delta_file_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaFileService);

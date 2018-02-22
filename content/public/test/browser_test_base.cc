@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -128,13 +127,6 @@ BrowserTestBase::BrowserTestBase()
   base::i18n::AllowMultipleInitializeCallsForTesting();
 
   embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
-
-  // SequencedWorkerPool is enabled by default in tests (see
-  // base::TestSuite::Initialize). In browser tests, disable it and expect it
-  // to be re-enabled as part of BrowserMainLoop::PreCreateThreads().
-  // TODO(fdoray): Remove this once the SequencedWorkerPool to TaskScheduler
-  // redirection experiment concludes https://crbug.com/622400.
-  base::SequencedWorkerPool::DisableForProcessForTesting();
 }
 
 BrowserTestBase::~BrowserTestBase() {

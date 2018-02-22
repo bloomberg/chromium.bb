@@ -139,7 +139,6 @@ class TaskTracker;
 }
 
 class GetAppOutputScopedAllowBaseSyncPrimitives;
-class SequencedWorkerPool;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
@@ -420,7 +419,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class remoting::AutoThread;
   friend class ui::WindowResizeHelperMac;
   friend class MessagePumpDefault;
-  friend class SequencedWorkerPool;
   friend class SimpleThread;
   friend class Thread;
   friend class ThreadTestHelper;
