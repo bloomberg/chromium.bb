@@ -6,11 +6,14 @@ source_set("cells") {
   sources = [
     "table_view_item.h",
     "table_view_item.mm",
+    "table_view_url_item.h",
+    "table_view_url_item.mm",
   ]
 
   deps = [
     "//base",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/util:constraints_ui",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -19,10 +22,12 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "table_view_item_unittest.mm",
+    "table_view_url_item_unittest.mm",
   ]
 
   deps = [
     ":cells",
+    "//base",
     "//testing/gtest",
   ]
 
