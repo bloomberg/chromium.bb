@@ -20,18 +20,20 @@ import traceback
 import urllib
 import urllib2
 
+from core import path_util
+
 # The paths in the results dashboard URLs for sending and viewing results.
 SEND_RESULTS_PATH = '/add_point'
 SEND_HISTOGRAMS_PATH = '/add_histograms'
 RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 
-# CACHE_DIR/CACHE_FILENAME will be created in options.build_dir to cache
+# CACHE_DIR/CACHE_FILENAME will be created in a tmp_dir to cache
 # results which need to be retried.
 CACHE_DIR = 'results_dashboard'
 CACHE_FILENAME = 'results_to_retry'
 
 
-def SendResults(data, url, build_dir, json_url_file=None,
+def SendResults(data, url, tmp_dir, json_url_file=None,
                 send_as_histograms=False, oauth_token=None):
   """Sends results to the Chrome Performance Dashboard.
 
@@ -42,7 +44,7 @@ def SendResults(data, url, build_dir, json_url_file=None,
   Args:
     data: The data to try to send. Must be JSON-serializable.
     url: Performance Dashboard URL (including schema).
-    build_dir: Directory name, where the cache directory shall be.
+    tmp_dir: Directory name, where the cache directory shall be.
     json_url_file: Optional file to which to write the dashboard viewing URL.
     send_as_histograms: True if result is to be sent to /add_histograms.
     oauth_token: string; used for flushing oauth uploads from cache.
@@ -54,7 +56,7 @@ def SendResults(data, url, build_dir, json_url_file=None,
 
   # Write the new request line to the cache file, which contains all lines
   # that we shall try to send now.
-  cache_file_name = _GetCacheFileName(build_dir)
+  cache_file_name = _GetCacheFileName(tmp_dir)
   _AddLineToCacheFile(results_json, cache_file_name)
 
   # Send all the results from this run and the previous cache to the dashboard.
@@ -77,9 +79,9 @@ def SendResults(data, url, build_dir, json_url_file=None,
   return True
 
 
-def _GetCacheFileName(build_dir):
+def _GetCacheFileName(tmp_dir):
   """Gets the cache filename, creating the file if it does not exist."""
-  cache_dir = os.path.join(os.path.abspath(build_dir), CACHE_DIR)
+  cache_dir = os.path.join(os.path.abspath(tmp_dir), CACHE_DIR)
   if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
   cache_filename = os.path.join(cache_dir, CACHE_FILENAME)
@@ -175,7 +177,7 @@ def _GetData(line):
   return bool(line_dict.get('is_histogramset')), line_dict['data']
 
 
-def MakeHistogramSetWithDiagnostics(histograms_file, chromium_checkout_path,
+def MakeHistogramSetWithDiagnostics(histograms_file,
                                     test_name, bot, buildername, buildnumber,
                                     revisions_dict, is_reference_build,
                                     perf_dashboard_machine_group):
@@ -201,7 +203,7 @@ def MakeHistogramSetWithDiagnostics(histograms_file, chromium_checkout_path,
   add_diagnostics_args = [str(v) for v in add_diagnostics_args]
 
   add_reserved_diagnostics_path = os.path.join(
-      chromium_checkout_path, 'src', 'third_party', 'catapult', 'tracing',
+      path_util.GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing',
       'bin', 'add_reserved_diagnostics')
   cmd = [sys.executable, add_reserved_diagnostics_path] + add_diagnostics_args
 

@@ -5,7 +5,9 @@
 
 import argparse
 import json
+import shutil
 import sys
+import tempfile
 
 from core import oauth_api
 from core import upload_results_to_perf_dashboard
@@ -17,11 +19,11 @@ from os.path import isfile, join
 RESULTS_URL = 'https://chromeperf.appspot.com'
 
 def _upload_perf_results(json_to_upload, name, configuration_name,
-    build_properties, oauth_file):
+    build_properties, oauth_file, tmp_dir):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   build_properties = json.loads(build_properties)
   args = [
-      '--build-dir', '/b/c/b/obbs_fyi/src/out',
+      '--tmp-dir', tmp_dir,
       '--buildername', build_properties['buildername'],
       '--buildnumber', build_properties['buildnumber'],
       '--name', name,
@@ -31,7 +33,6 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--got-revision-cp', build_properties['got_revision_cp'],
       '--got-v8-revision', build_properties['got_v8_revision'],
       '--got-webrtc-revision', build_properties['got_webrtc_revision'],
-      '--chromium-checkout-dir', '/b/c/b/obbs_fyi',
       '--oauth-token-file', oauth_file,
   ]
   if _is_histogram(json_to_upload):
@@ -90,19 +91,24 @@ def _process_perf_results(output_json, configuration_name,
     ]
 
   test_results_list = []
-  for directory in benchmark_directory_list:
-    if '.reference' in directory:
-      # We don't need to upload reference build data to the
-      # flakiness dashboard since we don't monitor the ref build
-      continue
-    with open(join(directory, 'test_results.json')) as json_data:
-      test_results_list.append(json.load(json_data))
-  _merge_json_output(output_json, test_results_list)
-
-  with oauth_api.with_access_token(service_account_file) as oauth_file:
+  tmpfile_dir = tempfile.mkdtemp('resultscache')
+  try:
     for directory in benchmark_directory_list:
-      _upload_perf_results(join(directory, 'perf_results.json'),
-          directory, configuration_name, build_properties, oauth_file)
+      if '.reference' in directory:
+        # We don't need to upload reference build data to the
+        # flakiness dashboard since we don't monitor the ref build
+        continue
+      with open(join(directory, 'test_results.json')) as json_data:
+        test_results_list.append(json.load(json_data))
+    _merge_json_output(output_json, test_results_list)
+
+    with oauth_api.with_access_token(service_account_file) as oauth_file:
+      for directory in benchmark_directory_list:
+        _upload_perf_results(join(directory, 'perf_results.json'),
+            directory, configuration_name, build_properties,
+            oauth_file, tmpfile_dir)
+  finally:
+    shutil.rmtree(tmpfile_dir)
   return 0
 
 
