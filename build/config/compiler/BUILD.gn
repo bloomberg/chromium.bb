@@ -2123,5 +2123,8 @@ config("default_fatal_linker_warnings") {
     # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
     # crbug.com/485542
     ldflags += [ "-Wl,--fatal-warnings" ]
+    if (is_android) {
+      ldflags += [ "-Wl,--no-warn-symbol-ordering" ]
+    }
   }
 }
