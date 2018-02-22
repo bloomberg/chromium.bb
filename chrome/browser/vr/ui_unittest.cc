@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/elements/disc_button.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
@@ -1173,6 +1174,21 @@ TEST_F(UiTest, RepositionButton) {
   button->OnHoverLeave();
   OnBeginFrame();
   EXPECT_EQ(kRepositionButtonMinOpacity, button->GetTargetOpacity());
+}
+
+TEST_F(UiTest, ResetRepositioner) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  Repositioner* repositioner = static_cast<Repositioner*>(
+      scene_->GetUiElementByName(k2dBrowsingRepositioner));
+  repositioner->set_laser_direction(kForwardVector);
+  repositioner->SetEnabled(true);
+  repositioner->set_laser_direction({0, 1, 0});
+  OnBeginFrame();
+  EXPECT_FALSE(repositioner->world_space_transform().IsIdentity());
+  repositioner->SetEnabled(false);
+  model_->controller.recentered = true;
+  OnBeginFrame();
+  EXPECT_TRUE(repositioner->world_space_transform().IsIdentity());
 }
 
 // No element in the controller root's subtree should be hit testable.

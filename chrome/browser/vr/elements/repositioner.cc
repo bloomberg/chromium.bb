@@ -13,7 +13,32 @@ namespace vr {
 
 namespace {
 
-constexpr float kSnapThresholdDegrees = 10.0f;
+constexpr float kHeadUpTransitionStartDegrees = 60.0f;
+constexpr float kHeadUpTransitionEndDegrees = 30.0f;
+constexpr gfx::Vector3dF kUp = {0, 1, 0};
+
+gfx::Vector3dF GetEffectiveUpVector(const gfx::Vector3dF& forward,
+                                    const gfx::Vector3dF& head_forward,
+                                    const gfx::Vector3dF& right,
+                                    const gfx::Vector3dF& head_up) {
+  float degrees_from_up =
+      std::min(gfx::AngleBetweenVectorsInDegrees(forward, kUp),
+               gfx::AngleBetweenVectorsInDegrees(head_forward, kUp));
+  if (degrees_from_up < kHeadUpTransitionEndDegrees)
+    return head_up;
+
+  if (degrees_from_up > kHeadUpTransitionStartDegrees)
+    return kUp;
+
+  gfx::Quaternion q(kUp, head_up);
+  q = gfx::Quaternion().Slerp(
+      q, (kHeadUpTransitionStartDegrees - degrees_from_up) /
+             (kHeadUpTransitionStartDegrees - kHeadUpTransitionEndDegrees));
+
+  gfx::Vector3dF interpolated_up = kUp;
+  gfx::Transform(q).TransformVector(&interpolated_up);
+  return interpolated_up;
+}
 
 }  // namespace
 
@@ -29,43 +54,67 @@ gfx::Transform Repositioner::GetTargetLocalTransform() const {
 }
 
 void Repositioner::SetEnabled(bool enabled) {
-  bool check_for_snap = !enabled && enabled_;
   enabled_ = enabled;
-  if (!check_for_snap)
-    return;
-
-  gfx::Vector3dF world_up = {0, 1, 0};
-  gfx::Vector3dF up = world_up;
-  transform_.TransformVector(&up);
-  if (gfx::AngleBetweenVectorsInDegrees(up, world_up) < kSnapThresholdDegrees) {
-    snap_to_world_up_ = true;
+  if (enabled) {
+    initial_transform_ = transform_;
+    initial_laser_direction_ = laser_direction_;
   }
 }
 
+void Repositioner::Reset() {
+  transform_.MakeIdentity();
+}
+
 void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
-  gfx::Vector3dF head_up_vector =
-      snap_to_world_up_ ? gfx::Vector3dF(0, 1, 0) : vr::GetUpVector(head_pose);
-  snap_to_world_up_ = false;
+  gfx::Vector3dF head_up = vr::GetUpVector(head_pose);
+  gfx::Vector3dF head_forward = vr::GetForwardVector(head_pose);
 
-  transform_.ConcatTransform(
-      gfx::Transform(gfx::Quaternion(last_laser_direction_, laser_direction_)));
+  transform_ = initial_transform_;
+  transform_.ConcatTransform(gfx::Transform(
+      gfx::Quaternion(initial_laser_direction_, laser_direction_)));
 
-  gfx::Vector3dF new_right_vector = {1, 0, 0};
-  transform_.TransformVector(&new_right_vector);
+  gfx::Vector3dF new_right = {1, 0, 0};
+  transform_.TransformVector(&new_right);
 
-  gfx::Vector3dF new_forward_vector = {0, 0, -1};
-  transform_.TransformVector(&new_forward_vector);
+  gfx::Vector3dF forward = {0, 0, -1};
+  gfx::Vector3dF new_forward = forward;
+  transform_.TransformVector(&new_forward);
 
-  gfx::Vector3dF expected_right_vector =
-      gfx::CrossProduct(new_forward_vector, head_up_vector);
-  gfx::Quaternion rotate_to_expected_right(new_right_vector,
-                                           expected_right_vector);
+  new_forward = forward;
+  transform_.TransformVector(&new_forward);
+
+  // Finally we have to correct the roll. I.e., we want to rotate the content
+  // window so that it's oriented "up" and we want to favor world up when we're
+  // near the horizon. GetEffectiveUpVector handles producing the up vector we'd
+  // like to respect.
+  gfx::Vector3dF up =
+      GetEffectiveUpVector(new_forward, head_forward, new_right, head_up);
+
+  gfx::Vector3dF expected_right = gfx::CrossProduct(new_forward, up);
+  gfx::Quaternion rotate_to_expected_right(new_right, expected_right);
   transform_.ConcatTransform(gfx::Transform(rotate_to_expected_right));
+
+  // Potentially bake our current transform, to avoid situations where
+  // |laser_direction_| and |initial_laser_direction_| are nearly 180 degrees
+  // apart causing numeric ambiguity and strange artifacts.
+  //
+  // The reason we do this periodically and not every frame is because of the
+  // pitch and yaw clamping. Effectively, these "throw away" deltas and this can
+  // lead to a situation where the controller moves far past one of the clamp
+  // boundaries (and has no effect), but as soon as it changes direction
+  // (producing deltas in the other direction), the moves do have an effect.
+  // This results in the user's controller being pointed in a very odd direction
+  // to manipulate the window.
+  if (gfx::AngleBetweenVectorsInDegrees(initial_laser_direction_,
+                                        laser_direction_) > 90.0f) {
+    initial_laser_direction_ = laser_direction_;
+    initial_transform_ = transform_;
+  }
 }
 
 bool Repositioner::OnBeginFrame(const base::TimeTicks& time,
                                 const gfx::Transform& head_pose) {
-  if (enabled_ || snap_to_world_up_) {
+  if (enabled_) {
     UpdateTransform(head_pose);
     return true;
   }

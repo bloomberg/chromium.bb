@@ -43,6 +43,7 @@ class PlatformController {
   virtual base::TimeTicks GetLastTouchTimestamp() const = 0;
   virtual base::TimeTicks GetLastButtonTimestamp() const = 0;
   virtual Handedness GetHandedness() const = 0;
+  virtual bool GetRecentered() const = 0;
 };
 
 }  // namespace vr

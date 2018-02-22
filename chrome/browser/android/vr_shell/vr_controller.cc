@@ -188,6 +188,10 @@ PlatformController::Handedness VrController::GetHandedness() const {
              : PlatformController::kLeftHanded;
 }
 
+bool VrController::GetRecentered() const {
+  return controller_state_->GetRecentered();
+}
+
 gfx::Quaternion VrController::Orientation() const {
   const gvr::Quatf& orientation = controller_state_->GetOrientation();
   return gfx::Quaternion(orientation.qx, orientation.qy, orientation.qz,

@@ -73,8 +73,11 @@ TEST(Repositioner, RepositionNegativeZWithReticle) {
       {{1, 0, 0}, {0, 1, 0}, {kTestContentDistance, 0, 0}, {0, 0, 1}},
       // Should snap as head position is within threshold of up.
       {{0, 0, -1}, {0, 0.9f, 0}, {0, 0, -kTestContentDistance}, {1, 0, 0}},
-      // Should not snap, viewer is lying on their side.
-      {{0, 0, -1}, {1, 0, 0}, {0, 0, -kTestContentDistance}, {0, 1, 0}},
+      // If the user's head is leaning far back, we do tilt.
+      {{0, 1, 0},
+       {0.1f, 0.1f, 0.8f},
+       {0, kTestContentDistance, 0},
+       {-0.992278f, 0, 0.124035f}},
   };
 
   for (size_t i = 0; i < test_cases.size(); i++) {
