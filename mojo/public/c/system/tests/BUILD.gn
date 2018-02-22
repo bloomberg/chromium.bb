@@ -6,12 +6,12 @@ source_set("tests") {
   testonly = true
 
   visibility = [
-    "//mojo/public/cpp/system/tests:mojo_public_system_unittests",
+    "//mojo/public/cpp/system/tests:mojo_unittests",
     "//mojo/public/cpp/system/tests:tests",
   ]
 
   sources = [
-    "core_unittest.cc",
+    "core_api_unittest.cc",
     "core_unittest_pure_c.c",
     "macros_unittest.cc",
   ]

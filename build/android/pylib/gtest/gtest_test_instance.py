@@ -32,8 +32,7 @@ RUN_IN_SUB_THREAD_TEST_SUITES = [
   'ipc_perftests',
   'ipc_tests',
   'mojo_message_pipe_perftests',
-  'mojo_public_bindings_perftests',
-  'mojo_system_unittests',
+  'mojo_unittests',
   'net_unittests'
 ]
 
