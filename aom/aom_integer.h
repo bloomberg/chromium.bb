@@ -83,7 +83,7 @@ size_t aom_uleb_size_in_bytes(uint64_t value);
 
 // Returns 0 on success, -1 on decode failure.
 // On success, 'value' stores the decoded LEB128 value and 'length' stores
-// the number of bytes decoded
+// the number of bytes decoded.
 int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value,
                     size_t *length);
 

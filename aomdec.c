@@ -665,6 +665,7 @@ static int main_loop(int argc, const char **argv_) {
     return EXIT_FAILURE;
   }
 #endif
+  input.aom_input_ctx->filename = fn;
   input.aom_input_ctx->file = infile;
   if (file_is_ivf(input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_IVF;
