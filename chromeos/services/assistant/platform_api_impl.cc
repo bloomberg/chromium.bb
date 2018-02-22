@@ -79,7 +79,7 @@ PlatformApiImpl::PlatformApiImpl(const std::string& config)
       file_provider_(config),
       network_provider_(config),
       resource_provider_(config),
-      system_provider_(config) {}
+      system_provider_() {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
