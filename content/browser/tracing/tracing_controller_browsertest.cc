@@ -473,4 +473,21 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
   run_loop.Run();
 }
 
+IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
+  Navigate(shell());
+
+  base::RunLoop run_loop;
+  TracingController* controller = TracingController::GetInstance();
+  EXPECT_TRUE(controller->StartTracing(
+      TraceConfig(), TracingController::StartTracingDoneCallback()));
+  EXPECT_TRUE(controller->StopTracing(
+      TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+          [](base::Closure quit_closure,
+             std::unique_ptr<const base::DictionaryValue> metadata,
+             base::RefCountedString* trace_str) { quit_closure.Run(); },
+          run_loop.QuitClosure()))));
+  EXPECT_FALSE(controller->StopTracing(nullptr));
+  run_loop.Run();
+}
+
 }  // namespace content
