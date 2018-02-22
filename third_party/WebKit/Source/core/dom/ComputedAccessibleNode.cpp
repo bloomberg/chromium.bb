@@ -141,6 +141,14 @@ const String ComputedAccessibleNode::autocomplete() const {
   return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_AUTOCOMPLETE);
 }
 
+const String ComputedAccessibleNode::checked() const {
+  WebString out;
+  if (tree_->GetCheckedStateForAXNode(ax_id_, &out)) {
+    return out;
+  }
+  return String();
+}
+
 const String ComputedAccessibleNode::keyShortcuts() const {
   return GetStringAttribute(WebAOMStringAttribute::AOM_ATTR_KEY_SHORTCUTS);
 }

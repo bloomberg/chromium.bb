@@ -69,6 +69,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   int32_t setSize(bool& is_null) const;
 
   const String autocomplete() const;
+  const String checked() const;
   const String keyShortcuts() const;
   const String name() const;
   const String placeholder() const;

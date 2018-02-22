@@ -97,3 +97,35 @@ promise_test(async function(test) {
 }, "ComputedAccessibleNode.autocomplete");
 
 </script>
+
+<div role="checkbox" id="group-checkbox" aria-checked="mixed" aria-controls="cond1 cond2" tabindex="0">
+    All condiments
+</div>
+    <ul id="checkboxes">
+      <li>
+        <label>
+          <input type="checkbox" id="cond1"> Lettuce
+        </label>
+      </li>
+      <li>
+        <label>
+          <input type="checkbox" id="cond2" checked=""> Tomato
+        </label>
+      </li>
+</ul>
+
+<script>
+
+promise_test(async function(test) {
+    var groupElement = document.getElementById("group-checkbox");
+    var cond1Element = document.getElementById("cond1");
+    var cond2Element = document.getElementById("cond2");
+
+    var groupCaxNode = await window.getComputedAccessibleNode(groupElement);
+    var cond1CaxNode = await window.getComputedAccessibleNode(cond1Element);
+    var cond2CaxNode = await window.getComputedAccessibleNode(cond2Element);
+    assert_equals(groupCaxNode.checked, "mixed");
+    assert_equals(cond1CaxNode.checked, "false");
+    assert_equals(cond2CaxNode.checked, "true");
+}, "ComputedAccessibleNode.checked.");
+</script>

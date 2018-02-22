@@ -26,6 +26,7 @@
     readonly attribute long? setSize;
 
     readonly attribute DOMString? autocomplete;
+    readonly attribute DOMString? checked;
     readonly attribute DOMString? keyShortcuts;
     readonly attribute DOMString? name;
     readonly attribute DOMString? placeholder;

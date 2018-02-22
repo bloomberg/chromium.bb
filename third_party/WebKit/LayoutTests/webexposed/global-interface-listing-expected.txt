@@ -1078,6 +1078,7 @@ interface ComputedAccessibleNode
     getter atomic
     getter autocomplete
     getter busy
+    getter checked
     getter colCount
     getter colIndex
     getter colSpan
