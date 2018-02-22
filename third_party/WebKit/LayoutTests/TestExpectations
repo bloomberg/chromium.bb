@@ -3247,13 +3247,13 @@ crbug.com/771643 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-ima
 crbug.com/813462 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.convert.to.blob.html [ Pass Timeout ]
 
 # Sheriff failures 2018-02-20
-crbug.com/770691 [ Mac10.11 ] media/controls/repaint-on-resize.html [ Failure Pass ]
+crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
 
 # Sheriff failures 2018-02-21
 crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-22
-crbug.com/770691 [ Mac10.11 ] virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
+crbug.com/789921 virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
 
 # MSAN
 crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass Failure ]
