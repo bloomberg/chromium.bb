@@ -4,6 +4,9 @@
 
 import httplib
 import json
+import socket
+import subprocess
+import sys
 
 
 class _Method(object):
@@ -189,8 +192,13 @@ class CommandExecutor(object):
     body = None
     if command[0] == _Method.POST:
       body = json.dumps(params)
-    self._http_client.request(command[0], '/'.join(substituted_parts), body)
-    response = self._http_client.getresponse()
+    try:
+      self._http_client.request(command[0], '/'.join(substituted_parts), body)
+      response = self._http_client.getresponse()
+    except socket.timeout:
+      if sys.platform == 'linux2' or sys.platform == 'darwin':
+        subprocess.call(['ps', 'alx'])
+      raise
 
     if response.status == 303:
       self._http_client.request(_Method.GET, response.getheader('location'))
