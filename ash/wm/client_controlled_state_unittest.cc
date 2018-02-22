@@ -30,6 +30,7 @@ class TestClientControlledStateDelegate
 
   void HandleWindowStateRequest(WindowState* window_state,
                                 mojom::WindowStateType next_state) override {
+    EXPECT_FALSE(deleted_);
     old_state_ = window_state->GetStateType();
     new_state_ = next_state;
   }
@@ -58,10 +59,13 @@ class TestClientControlledStateDelegate
     requested_bounds_.SetRect(0, 0, 0, 0);
   }
 
+  void mark_as_deleted() { deleted_ = true; }
+
  private:
   mojom::WindowStateType old_state_ = mojom::WindowStateType::DEFAULT;
   mojom::WindowStateType new_state_ = mojom::WindowStateType::DEFAULT;
   gfx::Rect requested_bounds_;
+  bool deleted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientControlledStateDelegate);
 };
@@ -395,6 +399,18 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
   window_state()->OnWMEvent(&trusted_pin_event);
   EXPECT_FALSE(window_state()->IsTrustedPinned());
   EXPECT_TRUE(window_state_2->IsTrustedPinned());
+}
+
+TEST_F(ClientControlledStateTest, ClosePinned) {
+  EXPECT_FALSE(window_state()->IsPinned());
+  EXPECT_FALSE(GetScreenPinningController()->IsPinned());
+
+  const WMEvent trusted_pin_event(WM_EVENT_TRUSTED_PIN);
+  window_state()->OnWMEvent(&trusted_pin_event);
+  EXPECT_TRUE(window_state()->IsPinned());
+  EXPECT_TRUE(GetScreenPinningController()->IsPinned());
+  delegate()->mark_as_deleted();
+  widget()->CloseNow();
 }
 
 TEST_F(ClientControlledStateTest, MoveWindowToDisplay) {

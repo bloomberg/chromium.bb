@@ -695,5 +695,11 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
   MoveAllTransientChildrenToNewRoot(window);
 }
 
+void WindowState::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+  current_state_->OnWindowDestroying(this);
+  delegate_.reset();
+}
+
 }  // namespace wm
 }  // namespace ash
