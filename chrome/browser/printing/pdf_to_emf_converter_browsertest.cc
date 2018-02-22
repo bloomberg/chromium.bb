@@ -79,7 +79,19 @@ void CompareEMFHeaders(const ENHMETAHEADER& expected_header,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailure) {
+IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureNoTempFile) {
+  ScopedSimulateFailureCreatingTempFileForTests fail_creating_temp_file;
+
+  base::RunLoop run_loop;
+  int page_count = -1;
+  std::unique_ptr<PdfConverter> pdf_converter = PdfConverter::StartPdfConverter(
+      base::MakeRefCounted<base::RefCountedStaticMemory>(), PdfRenderSettings(),
+      base::Bind(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
+  run_loop.Run();
+  EXPECT_EQ(0, page_count);
+}
+
+IN_PROC_BROWSER_TEST_F(PDFToEMFConverterBrowserTest, TestFailureBadPdf) {
   scoped_refptr<base::RefCountedStaticMemory> bad_pdf_data =
       base::MakeRefCounted<base::RefCountedStaticMemory>("0123456789", 10);
 
