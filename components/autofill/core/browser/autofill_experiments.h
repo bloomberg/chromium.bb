@@ -35,6 +35,7 @@ extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillExpandedPopupViews;
+extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillSendBillingCustomerNumber;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
