@@ -80,12 +80,14 @@ bool JavaScriptDialogTabHelper::IsShowingDialogForTesting() const {
 
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     content::WebContents* alerting_web_contents,
-    const GURL& alerting_frame_url,
+    content::RenderFrameHost* render_frame_host,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     DialogClosedCallback callback,
     bool* did_suppress_message) {
+  GURL alerting_frame_url = render_frame_host->GetLastCommittedURL();
+
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
   bool foremost = IsWebContentsForemost(parent_web_contents);

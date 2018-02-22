@@ -162,7 +162,7 @@ base::string16 JavaScriptDialogManager::GetTitleImpl(
 
 void JavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
-    const GURL& alerting_frame_url,
+    content::RenderFrameHost* render_frame_host,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -212,7 +212,8 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
     last_close_time_ = base::TimeTicks();
   }
 
-  base::string16 dialog_title = GetTitle(web_contents, alerting_frame_url);
+  base::string16 dialog_title =
+      GetTitle(web_contents, render_frame_host->GetLastCommittedURL());
 
   extensions_client_->OnDialogOpened(web_contents);
 

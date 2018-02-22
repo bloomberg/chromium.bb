@@ -24,7 +24,7 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(WebContents* web_contents,
-                           const GURL& origin_url,
+                           RenderFrameHost* render_frame_host,
                            JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,

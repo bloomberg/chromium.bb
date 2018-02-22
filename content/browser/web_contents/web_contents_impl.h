@@ -492,7 +492,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RunJavaScriptDialog(RenderFrameHost* render_frame_host,
                            const base::string16& message,
                            const base::string16& default_prompt,
-                           const GURL& frame_url,
                            JavaScriptDialogType dialog_type,
                            IPC::Message* reply_msg) override;
   void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
