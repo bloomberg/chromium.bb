@@ -481,6 +481,29 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags) {
 #pragma warning(pop)
 }
 
+const char* GetAnsiImageInfoFromModule(HMODULE module) {
+// PEImage's dtor won't be run during SEH unwinding, but that's OK.
+#pragma warning(push)
+#pragma warning(disable : 4509)
+  const char* out_name = nullptr;
+  __try {
+    do {
+      base::win::PEImage pe(module);
+
+      if (!pe.VerifyMagic())
+        break;
+
+      PIMAGE_EXPORT_DIRECTORY exports = pe.GetExportDirectory();
+      if (exports)
+        out_name = static_cast<const char*>(pe.RVAToAddr(exports->Name));
+    } while (false);
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+  }
+
+  return out_name;
+#pragma warning(pop)
+}
+
 UNICODE_STRING* GetBackingFilePath(PVOID address) {
   // We'll start with something close to max_path charactes for the name.
   SIZE_T buffer_bytes = MAX_PATH * 2;
