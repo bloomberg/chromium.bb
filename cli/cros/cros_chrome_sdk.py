@@ -236,7 +236,7 @@ class SDKFetcher(object):
             'Using cros version from most recent LATEST file: %s -> %s',
             version_file, full_version)
         return full_version
-      except gs.GSNoSuchKey:
+      except (gs.GSNoSuchKey, gs.GSCommandError):
         pass
     logging.warning('No recent LATEST file found from %d.0.0 to %d.0.0: ',
                     version_base_min, version_base)
@@ -256,7 +256,7 @@ class SDKFetcher(object):
       full_version = self.gs_ctx.Cat(version_file)
       assert full_version.startswith('R')
       return full_version
-    except gs.GSNoSuchKey:
+    except (gs.GSNoSuchKey, gs.GSCommandError):
       logging.warning('No LATEST file matching SDK version %s', version)
       return self._GetFullVersionFromRecentLatest(version)
 
