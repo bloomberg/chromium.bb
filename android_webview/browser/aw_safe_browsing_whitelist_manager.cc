@@ -231,8 +231,7 @@ void AwSafeBrowsingWhitelistManager::SetWhitelistOnUIThread(
 
 bool AwSafeBrowsingWhitelistManager::IsURLWhitelisted(const GURL& url) const {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-  if (!(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() ||
-        url.SchemeIs(url::kFtpScheme))) {
+  if (!url.has_host()) {
     return false;
   }
   return IsWhitelisted(url, whitelist_.get());
