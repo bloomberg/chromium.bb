@@ -2545,6 +2545,12 @@ TEST_P(ChunkDemuxerTest, RemoveId) {
 // Test that removing an ID immediately after adding it does not interfere with
 // quota for new IDs in the future.
 TEST_P(ChunkDemuxerTest, RemoveAndAddId) {
+  demuxer_->Initialize(
+      &host_,
+      base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
+                          base::Unretained(this)),
+      true);
+
   std::string audio_id_1 = "audio1";
   ASSERT_TRUE(AddId(audio_id_1, HAS_AUDIO) == ChunkDemuxer::kOk);
   demuxer_->RemoveId(audio_id_1);
@@ -3104,6 +3110,11 @@ TEST_P(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
 }
 
 TEST_P(ChunkDemuxerTest, CodecPrefixMatching) {
+  demuxer_->Initialize(
+      &host_,
+      base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
+                          base::Unretained(this)),
+      true);
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -3132,6 +3143,12 @@ TEST_P(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
     "mp4a.40.02",
     "mp4a.40.05"
   };
+
+  demuxer_->Initialize(
+      &host_,
+      base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
+                          base::Unretained(this)),
+      true);
 
   for (size_t i = 0; i < arraysize(codec_ids); ++i) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -4886,6 +4903,11 @@ TEST_P(ChunkDemuxerTest, SequenceModeSingleTrackNoWarning) {
 }
 
 TEST_P(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
+  demuxer_->Initialize(
+      &host_,
+      base::BindRepeating(&ChunkDemuxerTest::DemuxerInitialized,
+                          base::Unretained(this)),
+      true);
   ChunkDemuxer::Status expected = ChunkDemuxer::kOk;
   EXPECT_EQ(AddId("source_id", "video/mp4", "vp09.00.10.08"), expected);
 }
