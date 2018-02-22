@@ -16,7 +16,7 @@
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
-#include "components/sync_sessions/fake_sync_sessions_client.h"
+#include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -482,45 +482,23 @@ class DummyRouter : public LocalSessionEventRouter {
   LocalSessionEventHandler* handler_ = nullptr;
 };
 
-// Provides ability to override SyncedWindowDelegatesGetter.
-// All other calls are passed through to the original FakeSyncSessionsClient.
-class SyncSessionsClientShim : public FakeSyncSessionsClient {
- public:
-  explicit SyncSessionsClientShim(
-      SyncedWindowDelegatesGetter* synced_window_getter)
-      : synced_window_getter_(synced_window_getter) {}
-  ~SyncSessionsClientShim() override {}
-
-  SyncedWindowDelegatesGetter* GetSyncedWindowDelegatesGetter() override {
-    // The idea here is to allow the test code override the default
-    // SyncedWindowDelegatesGetter provided by |sync_sessions_client_|.
-    // If |synced_window_getter_| is explicitly set, return it; otherwise return
-    // the default one provided by |sync_sessions_client_|.
-    return synced_window_getter_;
-  }
-
- private:
-  SyncedWindowDelegatesGetter* synced_window_getter_;
-};
-
 }  // namespace
 
 class SessionsSyncManagerTest : public testing::Test {
  protected:
-  SessionsSyncManagerTest() {}
-
   void SetUp() override {
+    ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
+        .WillByDefault(testing::Return(&window_getter_));
+
     local_device_ = std::make_unique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
     sync_client_ = std::make_unique<syncer::FakeSyncClient>();
-    sessions_client_shim_ =
-        std::make_unique<SyncSessionsClientShim>(&window_getter_);
     sync_prefs_ =
         std::make_unique<syncer::SyncPrefs>(sync_client_->GetPrefService());
     router_ = std::make_unique<DummyRouter>();
     manager_ = std::make_unique<SessionsSyncManager>(
-        sessions_client_shim(), sync_prefs_.get(), local_device_.get(),
+        &mock_sync_sessions_client_, sync_prefs_.get(), local_device_.get(),
         router_.get(),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
                    base::Unretained(&observer_)),
@@ -548,9 +526,6 @@ class SessionsSyncManagerTest : public testing::Test {
   LocalDeviceInfoProvider* local_device() { return local_device_.get(); }
   SessionNotificationObserver* observer() { return &observer_; }
   syncer::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
-  SyncSessionsClient* sessions_client_shim() {
-    return sessions_client_shim_.get();
-  }
   SyncedWindowDelegatesGetter* window_getter() { return &window_getter_; }
 
   void InitWithSyncDataTakeOutput(const SyncDataList& initial_data,
@@ -793,7 +768,7 @@ class SessionsSyncManagerTest : public testing::Test {
 
  private:
   std::unique_ptr<syncer::FakeSyncClient> sync_client_;
-  std::unique_ptr<SyncSessionsClientShim> sessions_client_shim_;
+  testing::NiceMock<MockSyncSessionsClient> mock_sync_sessions_client_;
   std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   SessionNotificationObserver observer_;
   std::unique_ptr<DummyRouter> router_;
@@ -1203,7 +1178,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
   EXPECT_TRUE(FilterOutLocalHeaderChanges(&output)->empty());
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(tab_list1);
@@ -1234,7 +1210,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
 
   // Check that this machine's data is not included in the foreign windows.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_FALSE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
 
   VerifyLocalHeaderChange(out[0], 0, 0);
   VerifyLocalTabChange(out[1], tab->GetEntryCount(), kBaz1);
@@ -1281,7 +1258,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
 
   // Verify foreign data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(tab_list1);
   helper()->VerifySyncedSession(kTag1, session_reference,
@@ -1343,7 +1321,8 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   ASSERT_EQ(
       4U,
@@ -1364,7 +1343,8 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   manager()->ProcessSyncChanges(FROM_HERE, changes);
   changes.clear();
 
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   std::vector<std::vector<SessionID::id_type>> meta2_reference;
   meta2_reference.push_back(tag2_tab_list);
   ASSERT_EQ(2U, foreign_sessions.size());
@@ -1388,7 +1368,8 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   AddTabsToChangeList(tabs1, SyncChange::ACTION_UPDATE, &removal);
   manager()->ProcessSyncChanges(FROM_HERE, removal);
 
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(2U, foreign_sessions.size());
   ASSERT_EQ(
       3U,
@@ -1403,9 +1384,11 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
   SyncChangeList changes;
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_FALSE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   manager()->DeleteForeignSessionInternal(kTag1, &changes);
-  ASSERT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_FALSE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   EXPECT_TRUE(changes.empty());
 
   // Fill an instance of session specifics with a foreign session's data.
@@ -1421,12 +1404,14 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
        iter != tabs.end(); ++iter) {
     manager()->UpdateTrackerWithSpecifics(*iter, base::Time());
   }
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
 
   // Now delete the foreign session.
   manager()->DeleteForeignSessionInternal(kTag1, &changes);
-  EXPECT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
+  EXPECT_FALSE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
 
   EXPECT_EQ(5U, changes.size());
   ASSERT_TRUE(AllOfChangesAreType(changes, SyncChange::ACTION_DELETE));
@@ -1464,7 +1449,8 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeTabsFirst) {
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(tab_list1);
@@ -1502,7 +1488,8 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   ASSERT_EQ(2U, foreign_sessions[0]->windows.size());
   ASSERT_EQ(
@@ -1521,7 +1508,8 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
 
   // Check that the foreign session was associated and retrieve the data.
   foreign_sessions.clear();
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
@@ -1585,7 +1573,8 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDelete) {
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
 
   changes.clear();
@@ -1593,7 +1582,8 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDelete) {
   changes.push_back(MakeRemoteChange(meta, SyncChange::ACTION_DELETE));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  EXPECT_FALSE(manager()->GetAllForeignSessions(&foreign_sessions));
+  EXPECT_FALSE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
 }
 
 TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabs) {
@@ -1648,7 +1638,8 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabs) {
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(update_list);
@@ -2062,7 +2053,8 @@ TEST_F(SessionsSyncManagerTest, ForeignSessionModifiedTime) {
   output.clear();
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(3U, foreign_sessions.size());
   EXPECT_EQ(newest_time, foreign_sessions[0]->modified_time);
   EXPECT_EQ(newest_time, foreign_sessions[1]->modified_time);
@@ -2100,7 +2092,8 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(2U, foreign_sessions.size());
   foreign_sessions.clear();
 
@@ -2114,7 +2107,8 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
               SyncDataLocal(output[i].sync_data()).GetTag());
   }
 
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(tab_list2);
@@ -2175,7 +2169,8 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollectionOrphans) {
 
   // Although we have 3 foreign sessions, only 1 is valid/clean enough.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   foreign_sessions.clear();
 
@@ -2213,13 +2208,15 @@ TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
 
   // Check that the foreign session was associated and retrieve the data.
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   foreign_sessions.clear();
 
   // Verify the now non-stale session does not get deleted.
   manager()->DoGarbageCollection();
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   std::vector<std::vector<SessionID::id_type>> session_reference;
   session_reference.push_back(tab_list1);
@@ -2274,7 +2271,7 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
 
   observer()->Reset();
   ASSERT_FALSE(observer()->notified_of_update());
-  manager()->DeleteForeignSession(tag);
+  manager()->GetOpenTabsUIDelegate()->DeleteForeignSession(tag);
   ASSERT_TRUE(observer()->notified_of_update());
 }
 
@@ -2392,7 +2389,8 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
   InitWithSyncDataTakeOutput(initial_data, &output);
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
 
   const std::vector<std::unique_ptr<sessions::SessionTab>>& window_tabs =
       foreign_sessions[0]->windows.find(0)->second->wrapped_window.tabs;
@@ -2430,7 +2428,8 @@ TEST_F(SessionsSyncManagerTest, GetAllForeignSessions) {
   InitWithSyncDataTakeOutput(initial_data, &output);
 
   std::vector<const SyncedSession*> foreign_sessions;
-  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
   ASSERT_EQ(2U, foreign_sessions.size());
   ASSERT_GT(foreign_sessions[0]->modified_time,
             foreign_sessions[1]->modified_time);
@@ -2470,7 +2469,8 @@ TEST_F(SessionsSyncManagerTest, GetForeignSessionTabs) {
   InitWithSyncDataTakeOutput(initial_data, &output);
 
   std::vector<const sessions::SessionTab*> tabs;
-  ASSERT_TRUE(manager()->GetForeignSessionTabs(kTag1, &tabs));
+  ASSERT_TRUE(
+      manager()->GetOpenTabsUIDelegate()->GetForeignSessionTabs(kTag1, &tabs));
   // Assert that the size matches the total number of tabs and that the order
   // is from most recent to least.
   ASSERT_EQ(tab_list1.size() + tab_list2.size(), tabs.size());

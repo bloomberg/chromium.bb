@@ -207,7 +207,7 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
                                1, session_entity, GetSessionTimestamp(s))));
   }
   manager->ProcessSyncChanges(FROM_HERE, changes);
-  VerifyExport(manager);
+  VerifyExport(manager->GetOpenTabsUIDelegate());
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(

@@ -385,9 +385,12 @@ sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Although the backing data actually is of type |SESSIONS|, the desire to use
   // open tabs functionality is tracked by the state of the |PROXY_TABS| type.
-  return IsDataTypeControllerRunning(syncer::PROXY_TABS)
-             ? sessions_sync_manager_.get()
-             : nullptr;
+  if (!IsDataTypeControllerRunning(syncer::PROXY_TABS)) {
+    return nullptr;
+  }
+
+  DCHECK(sessions_sync_manager_);
+  return sessions_sync_manager_->GetOpenTabsUIDelegate();
 }
 
 sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {

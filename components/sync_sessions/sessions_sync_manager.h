@@ -27,7 +27,7 @@
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
-#include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
 #include "components/sync_sessions/sessions_global_id_mapper.h"
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/synced_session_tracker.h"
@@ -59,7 +59,6 @@ class SyncedWindowDelegatesGetter;
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
 class SessionsSyncManager : public syncer::SyncableService,
-                            public OpenTabsUIDelegate,
                             public LocalSessionEventHandler {
  public:
   SessionsSyncManager(SyncSessionsClient* sessions_client,
@@ -82,24 +81,6 @@ class SessionsSyncManager : public syncer::SyncableService,
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // OpenTabsUIDelegate implementation.
-  bool GetSyncedFaviconForPageURL(
-      const std::string& pageurl,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
-  bool GetAllForeignSessions(
-      std::vector<const SyncedSession*>* sessions) override;
-  bool GetForeignSession(
-      const std::string& tag,
-      std::vector<const sessions::SessionWindow*>* windows) override;
-  bool GetForeignTab(const std::string& tag,
-                     SessionID::id_type tab_id,
-                     const sessions::SessionTab** tab) override;
-  bool GetForeignSessionTabs(
-      const std::string& tag,
-      std::vector<const sessions::SessionTab*>* tabs) override;
-  void DeleteForeignSession(const std::string& tag) override;
-  bool GetLocalSession(const SyncedSession** local_session) override;
-
   // LocalSessionEventHandler implementation.
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
   void OnFaviconsChanged(const std::set<GURL>& page_urls,
@@ -120,6 +101,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   void DoGarbageCollection();
 
   SessionsGlobalIdMapper* GetGlobalIdMapper();
+
+  OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
  private:
   friend class extensions::ExtensionSessionsTest;
@@ -189,6 +172,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   // changes for processing later.
   void DeleteForeignSessionInternal(const std::string& tag,
                                     syncer::SyncChangeList* change_output);
+
+  // Same as above but it also notifies the processor.
+  void DeleteForeignSessionFromUI(const std::string& tag);
 
   // Used to populate a session header from the session specifics header
   // provided.
@@ -300,6 +286,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   SyncedSessionTracker session_tracker_;
   FaviconCache favicon_cache_;
   SessionsGlobalIdMapper global_id_mapper_;
+  OpenTabsUIDelegateImpl open_tabs_ui_delegate_;
 
   // Tracks whether our local representation of which sync nodes map to what
   // tabs (belonging to the current local session) is inconsistent.  This can

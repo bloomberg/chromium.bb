@@ -50,20 +50,6 @@ const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 // stale and becomes a candidate for garbage collection.
 const int kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
-// Comparator function for use with std::sort that will sort tabs by
-// descending timestamp (i.e., most recent first).
-bool TabsRecencyComparator(const sessions::SessionTab* t1,
-                           const sessions::SessionTab* t2) {
-  return t1->timestamp > t2->timestamp;
-}
-
-// Comparator function for use with std::sort that will sort sessions by
-// descending modified_time (i.e., most recent first).
-bool SessionsRecencyComparator(const SyncedSession* s1,
-                               const SyncedSession* s2) {
-  return s1->modified_time > s2->modified_time;
-}
-
 std::string TabNodeIdToTag(const std::string& machine_tag, int tab_node_id) {
   CHECK_GT(tab_node_id, TabNodePool::kInvalidTabNodeID)
       << "https://crbug.com/639009";
@@ -131,6 +117,12 @@ SessionsSyncManager::SessionsSyncManager(
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
                      kMaxSyncFavicons),
+      open_tabs_ui_delegate_(
+          sessions_client,
+          &session_tracker_,
+          &favicon_cache_,
+          base::BindRepeating(&SessionsSyncManager::DeleteForeignSessionFromUI,
+                              base::Unretained(this))),
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(sync_prefs),
       local_device_(local_device),
@@ -692,13 +684,6 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
   return list;
 }
 
-bool SessionsSyncManager::GetLocalSession(const SyncedSession** local_session) {
-  if (current_machine_tag().empty())
-    return false;
-  *local_session = session_tracker_.GetSession(current_machine_tag());
-  return true;
-}
-
 syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
     const base::Location& from_here,
     const syncer::SyncChangeList& change_list) {
@@ -778,15 +763,6 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
             TabNodeIdToTag(current_machine_tag(), tab.tab_node_id()),
             syncer::SESSIONS));
   }
-}
-
-bool SessionsSyncManager::GetAllForeignSessions(
-    std::vector<const SyncedSession*>* sessions) {
-  if (!session_tracker_.LookupAllForeignSessions(
-          sessions, SyncedSessionTracker::PRESENTABLE))
-    return false;
-  std::sort(sessions->begin(), sessions->end(), SessionsRecencyComparator);
-  return true;
 }
 
 bool SessionsSyncManager::InitFromSyncModel(
@@ -1099,18 +1075,6 @@ void SessionsSyncManager::RefreshFaviconVisitTimesFromForeignTab(
   }
 }
 
-bool SessionsSyncManager::GetSyncedFaviconForPageURL(
-    const std::string& page_url,
-    scoped_refptr<base::RefCountedMemory>* favicon_png) const {
-  return favicon_cache_.GetSyncedFaviconForPageURL(GURL(page_url), favicon_png);
-}
-
-void SessionsSyncManager::DeleteForeignSession(const std::string& tag) {
-  syncer::SyncChangeList changes;
-  DeleteForeignSessionInternal(tag, &changes);
-  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-}
-
 void SessionsSyncManager::DeleteForeignSessionInternal(
     const std::string& tag,
     syncer::SyncChangeList* change_output) {
@@ -1133,54 +1097,17 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
     sessions_updated_callback_.Run();
 }
 
+void SessionsSyncManager::DeleteForeignSessionFromUI(const std::string& tag) {
+  syncer::SyncChangeList changes;
+  DeleteForeignSessionInternal(tag, &changes);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+}
+
 bool SessionsSyncManager::DisassociateForeignSession(
     const std::string& foreign_session_tag) {
   DCHECK_NE(foreign_session_tag, current_machine_tag());
   DVLOG(1) << "Disassociating session " << foreign_session_tag;
   return session_tracker_.DeleteForeignSession(foreign_session_tag);
-}
-
-bool SessionsSyncManager::GetForeignSession(
-    const std::string& tag,
-    std::vector<const sessions::SessionWindow*>* windows) {
-  return session_tracker_.LookupSessionWindows(tag, windows);
-}
-
-bool SessionsSyncManager::GetForeignSessionTabs(
-    const std::string& tag,
-    std::vector<const sessions::SessionTab*>* tabs) {
-  std::vector<const sessions::SessionWindow*> windows;
-  if (!session_tracker_.LookupSessionWindows(tag, &windows))
-    return false;
-
-  // Prune those tabs that are not syncable or are NewTabPage, then sort them
-  // from most recent to least recent, independent of which window the tabs were
-  // from.
-  for (size_t j = 0; j < windows.size(); ++j) {
-    const sessions::SessionWindow* window = windows[j];
-    for (size_t t = 0; t < window->tabs.size(); ++t) {
-      sessions::SessionTab* const tab = window->tabs[t].get();
-      if (tab->navigations.empty())
-        continue;
-      const sessions::SerializedNavigationEntry& current_navigation =
-          tab->navigations.at(tab->normalized_navigation_index());
-      if (!sessions_client_->ShouldSyncURL(current_navigation.virtual_url()))
-        continue;
-      tabs->push_back(tab);
-    }
-  }
-  std::sort(tabs->begin(), tabs->end(), TabsRecencyComparator);
-  return true;
-}
-
-bool SessionsSyncManager::GetForeignTab(const std::string& tag,
-                                        const SessionID::id_type tab_id,
-                                        const sessions::SessionTab** tab) {
-  const sessions::SessionTab* synced_tab = nullptr;
-  bool success = session_tracker_.LookupSessionTab(tag, tab_id, &synced_tab);
-  if (success)
-    *tab = synced_tab;
-  return success;
 }
 
 void SessionsSyncManager::AssociateRestoredPlaceholderTab(
@@ -1297,6 +1224,10 @@ FaviconCache* SessionsSyncManager::GetFaviconCache() {
 
 SessionsGlobalIdMapper* SessionsSyncManager::GetGlobalIdMapper() {
   return &global_id_mapper_;
+}
+
+OpenTabsUIDelegate* SessionsSyncManager::GetOpenTabsUIDelegate() {
+  return &open_tabs_ui_delegate_;
 }
 
 SyncedWindowDelegatesGetter*
