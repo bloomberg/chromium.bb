@@ -281,6 +281,15 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
 
 _OS_NEGATIVE_FILTER['android:chromium'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2286
+        'CorrectEventFiringTest.testSendingKeysToAnElementShouldCauseTheFocusEventToFire',
+        'CorrectEventFiringTest.testSendingKeysToAnElementShouldCauseTheFocusEventToFire',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
+        'ElementAttributeTest.testShouldReturnValueOfOnClickAttribute',
+        'BasicMouseInterfaceTest.testDoubleClickThenGet',
+        'TypingTest.testShouldReportKeyCodeOfArrowKeysUpDownEvents',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
+        'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
