@@ -44,10 +44,7 @@ struct ResourceLoaderOptions;
 
 namespace WebCORS {
 
-BLINK_PLATFORM_EXPORT WebURLRequest
-CreateAccessControlPreflightRequest(const WebURLRequest&);
-
-// TODO(tyoshino): Using platform/loader/fetch/ResourceLoaderOptions violates
+// TODO(toyoshim): Using platform/loader/fetch/ResourceLoaderOptions violates
 // the DEPS rule. This will be fixed soon by making HandleRedirect() not
 // depending on ResourceLoaderOptions.
 BLINK_PLATFORM_EXPORT base::Optional<network::mojom::CORSError> HandleRedirect(
@@ -71,7 +68,7 @@ BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
 BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(WebURLRequest::RequestContext,
                                                   bool skip_service_worker);
 
-// TODO(hintzed): The following three methods delegate to SchemeRegistry and
+// TODO(toyoshim): The following three methods delegate to SchemeRegistry and
 // FetchUtils respectively to expose them for outofblink-CORS in CORSURLLoader.
 // This is a temporary solution with the mid-term goal being to move e.g.
 // FetchUtils somewhere where it can be used from /content. The long term goal

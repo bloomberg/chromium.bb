@@ -66,6 +66,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,
                                         const ResourceLoaderOptions&);
+
+  // Exposed for testing. Code outside this class should not call this function.
+  static WebURLRequest CreateAccessControlPreflightRequestForTesting(
+      const WebURLRequest&);
+
   static DocumentThreadableLoader* Create(ThreadableLoadingContext&,
                                           ThreadableLoaderClient*,
                                           const ThreadableLoaderOptions&,
@@ -84,6 +89,9 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
  private:
   enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
+
+  static WebURLRequest CreateAccessControlPreflightRequest(
+      const WebURLRequest&);
 
   DocumentThreadableLoader(ThreadableLoadingContext&,
                            ThreadableLoaderClient*,
