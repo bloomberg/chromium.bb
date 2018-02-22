@@ -320,10 +320,11 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
         context->proxy_resolution_service();
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    if (proxy_resolution_service->fetched_config().is_valid())
-      dict->Set("original", proxy_resolution_service->fetched_config().ToValue());
-    if (proxy_resolution_service->config().is_valid())
-      dict->Set("effective", proxy_resolution_service->config().ToValue());
+    if (proxy_resolution_service->fetched_config())
+      dict->Set("original",
+                proxy_resolution_service->fetched_config()->ToValue());
+    if (proxy_resolution_service->config())
+      dict->Set("effective", proxy_resolution_service->config()->ToValue());
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
                        std::move(dict));

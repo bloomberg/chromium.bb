@@ -82,6 +82,16 @@ std::string FixupProxyHostScheme(ProxyServer::Scheme scheme,
   return host;
 }
 
+ProxyConfig GetConfigOrDirect(
+    const base::Optional<ProxyConfig>& optional_config) {
+  if (optional_config)
+    return optional_config.value();
+
+  ProxyConfig config = ProxyConfig::CreateDirect();
+  config.set_source(PROXY_CONFIG_SOURCE_SYSTEM_FAILED);
+  return config;
+}
+
 }  // namespace
 
 ProxyConfigServiceLinux::Delegate::~Delegate() = default;
@@ -115,7 +125,11 @@ bool ProxyConfigServiceLinux::Delegate::GetProxyFromEnvVar(
                                      result_server);
 }
 
-bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
+base::Optional<ProxyConfig>
+ProxyConfigServiceLinux::Delegate::GetConfigFromEnv() {
+  base::Optional<ProxyConfig> config;
+  config.emplace();
+
   // Check for automatic configuration first, in
   // "auto_proxy". Possibly only the "environment_proxy" firefox
   // extension has ever used this, but it still sounds like a good
@@ -129,7 +143,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
       // specified autoconfig URL
       config->set_pac_url(GURL(auto_proxy));
     }
-    return true;
+    return config;
   }
   // "all_proxy" is a shortcut to avoid defining {http,https,ftp}_proxy.
   ProxyServer proxy_server;
@@ -180,13 +194,13 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromEnv(ProxyConfig* config) {
     // explicit that env vars do specify a configuration: having no
     // rules specified only means the user explicitly asks for direct
     // connections.
-    return !no_proxy.empty();
+    return !no_proxy.empty() ? config : base::Optional<ProxyConfig>();
   }
   // Note that this uses "suffix" matching. So a bypass of "google.com"
   // is understood to mean a bypass of "*google.com".
   config->proxy_rules().bypass_rules.ParseFromStringUsingSuffixMatching(
       no_proxy);
-  return true;
+  return config;
 }
 
 namespace {
@@ -1012,17 +1026,20 @@ bool ProxyConfigServiceLinux::Delegate::GetProxyFromSettings(
   return false;
 }
 
-bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
-    ProxyConfig* config) {
+base::Optional<ProxyConfig>
+ProxyConfigServiceLinux::Delegate::GetConfigFromSettings() {
+  base::Optional<ProxyConfig> config;
+  config.emplace();
+
   std::string mode;
   if (!setting_getter_->GetString(SettingGetter::PROXY_MODE, &mode)) {
     // We expect this to always be set, so if we don't see it then we probably
     // have a gsettings problem, and so we don't have a valid proxy config.
-    return false;
+    return base::Optional<ProxyConfig>();
   }
   if (mode == "none") {
     // Specifically specifies no proxy.
-    return true;
+    return config;
   }
 
   if (mode == "auto") {
@@ -1036,18 +1053,18 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
           pac_url_str = "file://" + pac_url_str;
         GURL pac_url(pac_url_str);
         if (!pac_url.is_valid())
-          return false;
+          return base::Optional<ProxyConfig>();
         config->set_pac_url(pac_url);
-        return true;
+        return config;
       }
     }
     config->set_auto_detect(true);
-    return true;
+    return config;
   }
 
   if (mode != "manual") {
     // Mode is unrecognized.
-    return false;
+    return base::Optional<ProxyConfig>();
   }
   bool use_http_proxy;
   if (setting_getter_->GetBool(SettingGetter::PROXY_USE_HTTP_PROXY,
@@ -1055,7 +1072,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
       && !use_http_proxy) {
     // Another master switch for some reason. If set to false, then no
     // proxy. But we don't panic if the key doesn't exist.
-    return true;
+    return config;
   }
 
   bool same_proxy = false;
@@ -1110,7 +1127,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
 
   if (config->proxy_rules().empty()) {
     // Manual mode but we couldn't parse any rules.
-    return false;
+    return base::Optional<ProxyConfig>();
   }
 
   // Check for authentication, just so we can warn.
@@ -1147,7 +1164,7 @@ bool ProxyConfigServiceLinux::Delegate::GetConfigFromSettings(
   config->proxy_rules().reverse_bypass =
       setting_getter_->BypassListIsReversed();
 
-  return true;
+  return config;
 }
 
 ProxyConfigServiceLinux::Delegate::Delegate(
@@ -1214,24 +1231,23 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
   // does so even if the proxy mode is set to auto, which would
   // mislead us.
 
-  bool got_config = false;
-  if (setting_getter_ && setting_getter_->Init(glib_task_runner) &&
-      GetConfigFromSettings(&cached_config_)) {
-    cached_config_.set_id(1);  // Mark it as valid.
-    cached_config_.set_source(setting_getter_->GetConfigSource());
+  cached_config_ = base::Optional<ProxyConfig>();
+  if (setting_getter_ && setting_getter_->Init(glib_task_runner)) {
+    cached_config_ = GetConfigFromSettings();
+  }
+  if (cached_config_) {
+    cached_config_->set_source(setting_getter_->GetConfigSource());
     VLOG(1) << "Obtained proxy settings from "
-            << ProxyConfigSourceToString(cached_config_.source());
+            << ProxyConfigSourceToString(cached_config_->source());
 
     // If gsettings proxy mode is "none", meaning direct, then we take
     // that to be a valid config and will not check environment
     // variables. The alternative would have been to look for a proxy
-    // whereever we can find one.
-    got_config = true;
+    // wherever we can find one.
 
     // Keep a copy of the config for use from this thread for
     // comparison with updated settings when we get notifications.
     reference_config_ = cached_config_;
-    reference_config_.set_id(1);  // Mark it as valid.
 
     // We only set up notifications if we have the main and file loops
     // available. We do this after getting the initial configuration so that we
@@ -1255,14 +1271,14 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     }
   }
 
-  if (!got_config) {
+  if (!cached_config_) {
     // We fall back on environment variables.
     //
     // Consulting environment variables doesn't need to be done from the
     // default glib main loop, but it's a tiny enough amount of work.
-    if (GetConfigFromEnv(&cached_config_)) {
-      cached_config_.set_source(PROXY_CONFIG_SOURCE_ENV);
-      cached_config_.set_id(1);  // Mark it as valid.
+    cached_config_ = GetConfigFromEnv();
+    if (cached_config_) {
+      cached_config_->set_source(PROXY_CONFIG_SOURCE_ENV);
       VLOG(1) << "Obtained proxy settings from environment variables";
     }
   }
@@ -1295,12 +1311,7 @@ ProxyConfigService::ConfigAvailability
 
   // Simply return the last proxy configuration that glib_default_loop
   // notified us of.
-  if (cached_config_.is_valid()) {
-    *config = cached_config_;
-  } else {
-    *config = ProxyConfig::CreateDirect();
-    config->set_source(PROXY_CONFIG_SOURCE_SYSTEM_FAILED);
-  }
+  *config = GetConfigOrDirect(cached_config_);
 
   // We return CONFIG_VALID to indicate that *config was filled in. It is always
   // going to be available since we initialized eagerly on the UI thread.
@@ -1316,14 +1327,11 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
   scoped_refptr<base::SequencedTaskRunner> required_loop =
       setting_getter_->GetNotificationTaskRunner();
   DCHECK(!required_loop.get() || required_loop->RunsTasksInCurrentSequence());
-  ProxyConfig new_config;
-  bool valid = GetConfigFromSettings(&new_config);
-  if (valid)
-    new_config.set_id(1);  // mark it as valid
+  base::Optional<ProxyConfig> new_config = GetConfigFromSettings();
 
   // See if it is different from what we had before.
-  if (new_config.is_valid() != reference_config_.is_valid() ||
-      !new_config.Equals(reference_config_)) {
+  if (new_config.has_value() != reference_config_.has_value() ||
+      !new_config->Equals(*reference_config_)) {
     // Post a task to the main TaskRunner with the new configuration, so it can
     // update |cached_config_|.
     main_task_runner_->PostTask(
@@ -1338,12 +1346,14 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
 }
 
 void ProxyConfigServiceLinux::Delegate::SetNewProxyConfig(
-    const ProxyConfig& new_config) {
+    const base::Optional<ProxyConfig>& new_config) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   VLOG(1) << "Proxy configuration changed";
   cached_config_ = new_config;
-  for (auto& observer : observers_)
-    observer.OnProxyConfigChanged(new_config, ProxyConfigService::CONFIG_VALID);
+  for (auto& observer : observers_) {
+    observer.OnProxyConfigChanged(GetConfigOrDirect(new_config),
+                                  ProxyConfigService::CONFIG_VALID);
+  }
 }
 
 void ProxyConfigServiceLinux::Delegate::PostDestroyTask() {

@@ -615,9 +615,9 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     // Kick the ProxyResolutionService into action, as it doesn't start updating
     // its config until it's first used.
     proxy_resolution_service->ForceReloadProxyConfig();
-    EXPECT_TRUE(proxy_resolution_service->config().is_valid());
+    EXPECT_TRUE(proxy_resolution_service->config());
     EXPECT_TRUE(
-        proxy_resolution_service->config().Equals(initial_proxy_config));
+        proxy_resolution_service->config()->Equals(initial_proxy_config));
 
     // Always go through the other configs in the same order. This has the
     // advantage of testing the case where there's no change, for
@@ -625,8 +625,8 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     for (const auto& proxy_config : proxy_configs) {
       config_client->OnProxyConfigUpdated(proxy_config);
       scoped_task_environment_.RunUntilIdle();
-      EXPECT_TRUE(proxy_resolution_service->config().is_valid());
-      EXPECT_TRUE(proxy_resolution_service->config().Equals(proxy_config));
+      EXPECT_TRUE(proxy_resolution_service->config());
+      EXPECT_TRUE(proxy_resolution_service->config()->Equals(proxy_config));
     }
   }
 }
@@ -646,8 +646,8 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
   // Kick the ProxyResolutionService into action, as it doesn't start updating
   // its config until it's first used.
   proxy_resolution_service->ForceReloadProxyConfig();
-  EXPECT_TRUE(proxy_resolution_service->config().is_valid());
-  EXPECT_TRUE(proxy_resolution_service->config().Equals(proxy_config));
+  EXPECT_TRUE(proxy_resolution_service->config());
+  EXPECT_TRUE(proxy_resolution_service->config()->Equals(proxy_config));
 }
 
 TEST_F(NetworkContextTest, NoInitialProxyConfig) {
@@ -661,8 +661,8 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
 
   net::ProxyResolutionService* proxy_resolution_service =
       network_context->GetURLRequestContext()->proxy_resolution_service();
-  EXPECT_FALSE(proxy_resolution_service->config().is_valid());
-  EXPECT_FALSE(proxy_resolution_service->fetched_config().is_valid());
+  EXPECT_FALSE(proxy_resolution_service->config());
+  EXPECT_FALSE(proxy_resolution_service->fetched_config());
 
   // Before there's a proxy configuration, proxy requests should hang.
   net::ProxyInfo proxy_info;
@@ -673,8 +673,8 @@ TEST_F(NetworkContextTest, NoInitialProxyConfig) {
                                      test_callback.callback(), &request,
                                      nullptr, net::NetLogWithSource()));
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(proxy_resolution_service->config().is_valid());
-  EXPECT_FALSE(proxy_resolution_service->fetched_config().is_valid());
+  EXPECT_FALSE(proxy_resolution_service->config());
+  EXPECT_FALSE(proxy_resolution_service->fetched_config());
   ASSERT_FALSE(test_callback.have_result());
 
   net::ProxyConfig proxy_config;

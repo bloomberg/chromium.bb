@@ -333,33 +333,19 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
         proxy_info_.proxy_server().host_port_pair());
   }
 
-  int rv =
-      network_session_->proxy_resolution_service()->ReconsiderProxyAfterError(
-          url_, std::string(), error, &proxy_info_,
-          base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
-                              base::Unretained(this)),
-          &proxy_resolve_request_, nullptr, net_log_);
-  if (rv == net::OK || rv == net::ERR_IO_PENDING) {
-    CloseTransportSocket();
-  } else {
-    // If ReconsiderProxyAfterError() failed synchronously, it means
-    // there was nothing left to fall-back to, so fail the transaction
-    // with the last connection error we got.
-    rv = error;
-  }
+  // There was nothing left to fall-back to, so fail the transaction
+  // with the last connection error we got.
+  if (!proxy_info_.Fallback(error, net_log_))
+    return error;
 
-  // We either have new proxy info or there was an error in falling back.
-  // In both cases we want to post ConnectToProxy (in the error case
-  // we might still want to fall back a direct connection).
-  if (rv != net::ERR_IO_PENDING) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyResolvingClientSocket::ConnectToProxy,
-                                  weak_factory_.GetWeakPtr(), rv));
-    // Since we potentially have another try to go (trying the direct connect)
-    // set the return code code to ERR_IO_PENDING.
-    rv = net::ERR_IO_PENDING;
-  }
-  return rv;
+  CloseTransportSocket();
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyResolvingClientSocket::ConnectToProxy,
+                                weak_factory_.GetWeakPtr(), net::OK));
+  // Since we potentially have another try to go, set the return code code to
+  // ERR_IO_PENDING.
+  return net::ERR_IO_PENDING;
 }
 
 }  // namespace network

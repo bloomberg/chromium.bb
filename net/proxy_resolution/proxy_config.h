@@ -148,23 +148,13 @@ class NET_EXPORT ProxyConfig {
     const ProxyList* GetProxyListForWebSocketScheme() const;
   };
 
-  typedef int ID;
-
-  // Indicates an invalid proxy config.
-  static const ID kInvalidConfigID = 0;
-
   ProxyConfig();
   ProxyConfig(const ProxyConfig& config);
   ~ProxyConfig();
   ProxyConfig& operator=(const ProxyConfig& config);
 
-  // Used to numerically identify this configuration.
-  ID id() const { return id_; }
-  void set_id(ID id) { id_ = id; }
-  bool is_valid() const { return id_ != kInvalidConfigID; }
-
   // Returns true if the given config is equivalent to this config.  The
-  // comparison ignores differences in |id()| and |source()|.
+  // comparison ignores differences in |source()|.
   bool Equals(const ProxyConfig& other) const;
 
   // Returns true if this config contains any "automatic" settings. See the
@@ -256,8 +246,6 @@ class NET_EXPORT ProxyConfig {
 
   // Source of proxy settings.
   ProxyConfigSource source_;
-
-  ID id_;
 };
 
 }  // namespace net

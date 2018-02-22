@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_callback.h"
@@ -162,29 +163,6 @@ class NET_EXPORT ProxyResolutionService
                                     ProxyDelegate* proxy_delegate,
                                     const NetLogWithSource& net_log);
 
-  // This method is called after a failure to connect or resolve a host name.
-  // It gives the proxy service an opportunity to reconsider the proxy to use.
-  // The |results| parameter contains the results returned by an earlier call
-  // to ResolveProxy.  The |net_error| parameter contains the network error
-  // code associated with the failure. See "net/base/net_error_list.h" for a
-  // list of possible values. The semantics of this call are otherwise
-  // similar to ResolveProxy.
-  //
-  // NULL can be passed for |request| if the caller will not need to
-  // cancel the request.
-  //
-  // Returns ERR_FAILED if there is not another proxy config to try.
-  //
-  // Profiling information for the request is saved to |net_log| if non-NULL.
-  int ReconsiderProxyAfterError(const GURL& url,
-                                const std::string& method,
-                                int net_error,
-                                ProxyInfo* results,
-                                const CompletionCallback& callback,
-                                Request** request,
-                                ProxyDelegate* proxy_delegate,
-                                const NetLogWithSource& net_log);
-
   // Explicitly trigger proxy fallback for the given |results| by updating our
   // list of bad proxies to include the first entry of |results|, and,
   // additional bad proxies (can be none). Will retry after |retry_delay| if
@@ -235,14 +213,12 @@ class NET_EXPORT ProxyResolutionService
       std::unique_ptr<ProxyConfigService> new_proxy_config_service);
 
   // Returns the last configuration fetched from ProxyConfigService.
-  const ProxyConfig& fetched_config() {
+  const base::Optional<ProxyConfig>& fetched_config() const {
     return fetched_config_;
   }
 
   // Returns the current configuration being used by ProxyConfigService.
-  const ProxyConfig& config() const {
-    return config_;
-  }
+  const base::Optional<ProxyConfig>& config() const { return config_; }
 
   // Returns the map of proxies which have been marked as "bad".
   const ProxyRetryInfoMap& proxy_retry_info() const {
@@ -424,11 +400,10 @@ class NET_EXPORT ProxyResolutionService
   // The effective configuration is what we condense the original fetched
   // settings to after testing the various automatic settings (auto-detect
   // and custom PAC url).
-  ProxyConfig fetched_config_;
-  ProxyConfig config_;
-
-  // Increasing ID to give to the next ProxyConfig that we set.
-  int next_config_id_;
+  //
+  // These are "optional" as their value remains unset while being calculated.
+  base::Optional<ProxyConfig> fetched_config_;
+  base::Optional<ProxyConfig> config_;
 
   // The time when the proxy configuration was last read from the system.
   base::TimeTicks config_last_update_time_;

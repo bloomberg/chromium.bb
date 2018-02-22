@@ -130,11 +130,6 @@ class SimpleProxyConfigService : public ProxyConfigService {
     return CONFIG_VALID;
   }
 
-  void IncrementConfigId() {
-    config_.set_id(config_.id() + 1);
-    observer_->OnProxyConfigChanged(config_, ProxyConfigService::CONFIG_VALID);
-  }
-
  private:
   ProxyConfig config_;
   Observer* observer_;

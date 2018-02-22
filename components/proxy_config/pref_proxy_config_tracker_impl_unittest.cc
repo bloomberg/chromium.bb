@@ -141,10 +141,9 @@ TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
   EXPECT_TRUE(actual_config.auto_detect());
 }
 
-// Compares proxy configurations, but allows different identifiers.
+// Compares proxy configurations, but allows different sources.
 MATCHER_P(ProxyConfigMatches, config, "") {
   net::ProxyConfig reference(config);
-  reference.set_id(arg.id());
   return reference.Equals(arg);
 }
 

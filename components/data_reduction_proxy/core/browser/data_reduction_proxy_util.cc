@@ -181,7 +181,7 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
                                  const GURL& url,
                                  net::ProxyInfo* data_reduction_proxy_info) {
   DCHECK(data_reduction_proxy_info);
-  if (!proxy_config.is_valid())
+  if (proxy_config.proxy_rules().empty())
     return false;
   proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
   data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);

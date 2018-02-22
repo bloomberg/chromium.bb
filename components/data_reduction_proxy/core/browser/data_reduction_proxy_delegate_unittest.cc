@@ -327,21 +327,16 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxy) {
   // afterwards.
   // Another proxy is used. It should be used afterwards.
   result.Use(direct_proxy_info);
-  net::ProxyConfig::ID prev_id = result.config_id();
   proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info, &result);
   EXPECT_EQ(params()->proxies_for_http().front().proxy_server(),
             result.proxy_server());
-  // Only the proxy list should be updated, not the proxy info.
-  EXPECT_EQ(result.config_id(), prev_id);
 
   // A direct connection is used, but the data reduction proxy is on the retry
   // list. A direct connection should be used afterwards.
   result.Use(direct_proxy_info);
-  prev_id = result.config_id();
   proxy_delegate()->OnResolveProxy(GURL("ws://echo.websocket.org/"), "GET",
                                    data_reduction_proxy_retry_info, &result);
   EXPECT_TRUE(result.proxy_server().is_direct());
-  EXPECT_EQ(result.config_id(), prev_id);
 
   // Test that ws:// and wss:// URLs bypass the data reduction proxy.
   result.UseDirect();
@@ -422,7 +417,6 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyWarmupURL) {
     // A direct connection is used. The data reduction proxy should be used
     // afterwards.
     result.Use(direct_proxy_info);
-    net::ProxyConfig::ID prev_id = result.config_id();
     proxy_delegate()->OnResolveProxy(url, "GET", empty_proxy_retry_info,
                                      &result);
     //
@@ -432,8 +426,6 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyWarmupURL) {
     } else {
       EXPECT_TRUE(result.proxy_server().is_direct());
     }
-    // Only the proxy list should be updated, not the proxy info.
-    EXPECT_EQ(result.config_id(), prev_id);
   }
 }
 

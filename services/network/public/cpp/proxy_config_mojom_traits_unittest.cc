@@ -21,21 +21,17 @@ bool TestProxyConfigRoundTrip(net::ProxyConfig& original_config) {
       mojom::ProxyConfig::Serialize(&original_config), &copied_config));
 
   return original_config.Equals(copied_config) &&
-         original_config.id() == copied_config.id() &&
-         original_config.source() == copied_config.source() &&
-         original_config.is_valid() == copied_config.is_valid();
+         original_config.source() == copied_config.source();
 }
 
 TEST(ProxyConfigTraitsTest, AutoDetect) {
   net::ProxyConfig proxy_config = net::ProxyConfig::CreateAutoDetect();
-  proxy_config.set_id(1);
   proxy_config.set_source(net::ProxyConfigSource::PROXY_CONFIG_SOURCE_KDE);
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));
 }
 
 TEST(ProxyConfigTraitsTest, Direct) {
   net::ProxyConfig proxy_config = net::ProxyConfig::CreateDirect();
-  proxy_config.set_id(2);
   proxy_config.set_source(
       net::ProxyConfigSource::PROXY_CONFIG_SOURCE_GSETTINGS);
   EXPECT_TRUE(TestProxyConfigRoundTrip(proxy_config));

@@ -88,10 +88,11 @@ bool EligibleForDataReductionProxy(const net::ProxyInfo& proxy_info,
                                    const std::string& method);
 
 // Determines if |proxy_config| would override a direct. |proxy_config| should
-// be a data reduction proxy config with proxy servers mapped in the rules.
-// |proxy_retry_info| contains the list of bad proxies. |url| is used to
-// determine whether it is HTTP or HTTPS. |data_reduction_proxy_info| is an out
-// param that will contain the proxies that should be used.
+// be a data reduction proxy config with proxy servers mapped in the
+// rules, or DIRECT to indicate DRP is not to be used. |proxy_retry_info|
+// contains the list of bad proxies. |url| is used to determine whether it is
+// HTTP or HTTPS. |data_reduction_proxy_info| is an out param that will contain
+// the proxies that should be used.
 bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,

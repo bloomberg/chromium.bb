@@ -1294,36 +1294,28 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
         proxy_info_.proxy_server().host_port_pair());
   }
 
-  HostPortPair destination(HostPortPair::FromURL(request_info_.url));
-  GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
-
-  int rv = session_->proxy_resolution_service()->ReconsiderProxyAfterError(
-      origin_url, request_info_.method, error, &proxy_info_, io_callback_,
-      &proxy_resolve_request_, session_->context().proxy_delegate, net_log_);
-  if (rv == OK || rv == ERR_IO_PENDING) {
-    if (!job->using_quic())
-      RemoveRequestFromSpdySessionRequestMap();
-    // Abandon all Jobs and start over.
-    job_bound_ = false;
-    bound_job_ = nullptr;
-    alternative_job_.reset();
-    main_job_.reset();
-    // Also resets states that related to the old main job. In particular,
-    // cancels |resume_main_job_callback_| so there won't be any delayed
-    // ResumeMainJob() left in the task queue.
-    resume_main_job_callback_.Cancel();
-    main_job_is_resumed_ = false;
-    main_job_is_blocked_ = false;
-
-    next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
-  } else {
-    // If ReconsiderProxyAfterError() failed synchronously, it means
-    // there was nothing left to fall-back to, so fail the transaction
+  if (!proxy_info_.Fallback(error, net_log_)) {
+    // If there is no more proxy to fallback to, fail the transaction
     // with the last connection error we got.
-    // TODO(eroman): This is a confusing contract, make it more obvious.
-    rv = error;
+    return error;
   }
-  return rv;
+
+  if (!job->using_quic())
+    RemoveRequestFromSpdySessionRequestMap();
+  // Abandon all Jobs and start over.
+  job_bound_ = false;
+  bound_job_ = nullptr;
+  alternative_job_.reset();
+  main_job_.reset();
+  // Also resets states that related to the old main job. In particular,
+  // cancels |resume_main_job_callback_| so there won't be any delayed
+  // ResumeMainJob() left in the task queue.
+  resume_main_job_callback_.Cancel();
+  main_job_is_resumed_ = false;
+  main_job_is_blocked_ = false;
+
+  next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
+  return OK;
 }
 
 bool HttpStreamFactoryImpl::JobController::IsQuicWhitelistedForHost(

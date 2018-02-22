@@ -389,11 +389,7 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
   EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("badproxy:8080", info.proxy_server().ToURI());
 
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   service.ReportSuccess(info, nullptr);
@@ -609,14 +605,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   // Now, imagine that connecting to foopy:8080 fails: there is nothing
   // left to fallback to, since our proxy list was NOT terminated by
   // DIRECT.
-  TestResolveProxyDelegate proxy_delegate;
-  TestCompletionCallback callback2;
-  ProxyServer expected_proxy_server = info.proxy_server();
-  rv = service.ReconsiderProxyAfterError(
-      url, "GET", ERR_PROXY_CONNECTION_FAILED, &info, callback2.callback(),
-      nullptr, &proxy_delegate, NetLogWithSource());
-  // ReconsiderProxyAfterError returns error indicating nothing left.
-  EXPECT_THAT(rv, IsError(ERR_FAILED));
+  EXPECT_FALSE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_TRUE(info.is_empty());
 }
 
@@ -656,7 +645,6 @@ TEST_F(ProxyServiceTest, PAC_RuntimeError) {
   // DIRECT.
   EXPECT_TRUE(info.is_direct());
   EXPECT_TRUE(info.did_use_pac_script());
-  EXPECT_EQ(1, info.config_id());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -714,41 +702,21 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   EXPECT_TRUE(info.is_direct());
 
   // Fallback 1.
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
 
   // Fallback 2.
-  TestResolveProxyDelegate proxy_delegate;
-  ProxyServer expected_proxy_server3 = info.proxy_server();
-  TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(
-      url, "GET", ERR_PROXY_CONNECTION_FAILED, &info, callback3.callback(),
-      nullptr, &proxy_delegate, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_TRUE(info.is_direct());
 
   // Fallback 3.
-  ProxyServer expected_proxy_server4 = info.proxy_server();
-  TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, "GET", ERR_PROXY_CONNECTION_FAILED, &info, callback4.callback(),
-      nullptr, &proxy_delegate, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:20", info.proxy_server().ToURI());
 
   // Fallback 4 -- Nothing to fall back to!
-  ProxyServer expected_proxy_server5 = info.proxy_server();
-  TestCompletionCallback callback5;
-  rv = service.ReconsiderProxyAfterError(
-      url, "GET", ERR_PROXY_CONNECTION_FAILED, &info, callback5.callback(),
-      nullptr, &proxy_delegate, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_FAILED));
+  EXPECT_FALSE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_TRUE(info.is_empty());
 }
 
@@ -1196,11 +1164,7 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   base::TimeTicks proxy_resolve_end_time = info.proxy_resolve_end_time();
 
   // Fake an error on the proxy.
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // Proxy times should not have been modified by fallback.
   EXPECT_EQ(proxy_resolve_start_time, info.proxy_resolve_start_time());
@@ -1243,30 +1207,18 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   proxy_resolve_end_time = info.proxy_resolve_end_time();
 
   // We fake another error. It should now try the third one.
-  TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback4.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
   // We fake another error. At this point we have tried all of the
   // proxy servers we thought were valid; next we try the proxy server
   // that was in our bad proxies map (foopy1:8080).
-  TestCompletionCallback callback5;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback5.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   // Fake another error, the last proxy is gone, the list should now be empty,
   // so there is nothing left to try.
-  TestCompletionCallback callback6;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback6.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_FAILED));
+  EXPECT_FALSE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
   EXPECT_FALSE(info.is_direct());
   EXPECT_TRUE(info.is_empty());
 
@@ -1340,21 +1292,13 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   // Fake an error on the proxy.
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // Now we get back the second proxy.
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
   // Fake an error on this proxy as well.
-  TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback3.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // Finally, we get back DIRECT.
   EXPECT_TRUE(info.is_direct());
@@ -1364,116 +1308,9 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
   EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
 
   // Now we tell the proxy service that even DIRECT failed.
-  TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback4.callback(), nullptr, nullptr, NetLogWithSource());
   // There was nothing left to try after DIRECT, so we are out of
   // choices.
-  EXPECT_THAT(rv, IsError(ERR_FAILED));
-}
-
-TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
-  // Test proxy failover when new settings are available.
-
-  MockProxyConfigService* config_service =
-      new MockProxyConfigService("http://foopy/proxy.pac");
-
-  MockAsyncProxyResolver resolver;
-  MockAsyncProxyResolverFactory* factory =
-      new MockAsyncProxyResolverFactory(false);
-
-  ProxyResolutionService service(base::WrapUnique(config_service),
-                                 base::WrapUnique(factory), nullptr);
-
-  GURL url("http://www.google.com/");
-
-  // Get the proxy information.
-  ProxyInfo info;
-  TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(url, std::string(), &info, callback1.callback(),
-                                nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  EXPECT_EQ(GURL("http://foopy/proxy.pac"),
-            factory->pending_requests()[0]->script_data()->url());
-  factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
-
-  // Set the result in proxy resolver.
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
-      "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
-
-  // The first item is valid.
-  EXPECT_THAT(callback1.WaitForResult(), IsOk());
-  EXPECT_FALSE(info.is_direct());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
-
-  // Fake an error on the proxy, and also a new configuration on the proxy.
-  config_service->SetConfig(
-      ProxyConfig::CreateFromCustomPacURL(GURL("http://foopy-new/proxy.pac")));
-
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  EXPECT_EQ(GURL("http://foopy-new/proxy.pac"),
-            factory->pending_requests()[0]->script_data()->url());
-  factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
-
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
-      "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
-
-  // The first proxy is still there since the configuration changed.
-  EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
-
-  // We fake another error. It should now ignore the first one.
-  TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback3.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
-
-  // We simulate a new configuration.
-  config_service->SetConfig(
-      ProxyConfig::CreateFromCustomPacURL(
-          GURL("http://foopy-new2/proxy.pac")));
-
-  // We fake another error. It should go back to the first proxy.
-  TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback4.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  EXPECT_EQ(GURL("http://foopy-new2/proxy.pac"),
-            factory->pending_requests()[0]->script_data()->url());
-  factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
-
-  ASSERT_EQ(1u, resolver.pending_jobs().size());
-  EXPECT_EQ(url, resolver.pending_jobs()[0]->url());
-
-  resolver.pending_jobs()[0]->results()->UseNamedProxy(
-      "foopy1:8080;foopy2:9090");
-  resolver.pending_jobs()[0]->CompleteNow(OK);
-
-  EXPECT_THAT(callback4.WaitForResult(), IsOk());
-  EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
-
-  EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
-  EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
-  EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
+  EXPECT_FALSE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 }
 
 TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
@@ -1514,11 +1351,7 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   // Fake a proxy error.
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // The first proxy is ignored, and the second one is selected.
   EXPECT_FALSE(info.is_direct());
@@ -1548,9 +1381,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info3,
-      callback4.callback(), nullptr, nullptr, NetLogWithSource());
+  rv = service.ResolveProxy(url, std::string(), &info3, callback4.callback(),
+                            nullptr, nullptr, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, resolver.pending_jobs().size());
@@ -1560,7 +1392,7 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
       "foopy1:8080;foopy2:9090");
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
-  // The first proxy is not there since the it was added to the bad proxies
+  // The first proxy is not there since it was added to the bad proxies
   // list by the earlier ReconsiderProxyAfterError().
   EXPECT_THAT(callback4.WaitForResult(), IsOk());
   EXPECT_FALSE(info3.is_direct());
@@ -1612,11 +1444,7 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   // Fake a proxy error.
-  TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info,
-      callback2.callback(), nullptr, nullptr, NetLogWithSource());
-  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(info.Fallback(ERR_PROXY_CONNECTION_FAILED, NetLogWithSource()));
 
   // The first proxy is ignored, and the second one is selected.
   EXPECT_FALSE(info.is_direct());
@@ -1647,9 +1475,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(
-      url, std::string(), ERR_PROXY_CONNECTION_FAILED, &info3,
-      callback4.callback(), nullptr, nullptr, NetLogWithSource());
+  rv = service.ResolveProxy(url, std::string(), &info3, callback4.callback(),
+                            nullptr, nullptr, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   ASSERT_EQ(1u, resolver.pending_jobs().size());
