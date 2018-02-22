@@ -199,6 +199,11 @@ void WebContentsObserverProxy::NavigationEntryCommitted(
   Java_WebContentsObserverProxy_navigationEntryCommitted(env, java_observer_);
 }
 
+void WebContentsObserverProxy::NavigationEntriesDeleted() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_navigationEntriesDeleted(env, java_observer_);
+}
+
 void WebContentsObserverProxy::DidAttachInterstitialPage() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_didAttachInterstitialPage(env, java_observer_);

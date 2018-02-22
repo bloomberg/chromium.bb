@@ -135,6 +135,11 @@ public abstract class WebContentsObserver {
     public void navigationEntryCommitted() {}
 
     /**
+     * Called when navigation entries were removed.
+     */
+    public void navigationEntriesDeleted() {}
+
+    /**
      * Called when an interstitial page gets attached to the tab content.
      */
     public void didAttachInterstitialPage() {}
