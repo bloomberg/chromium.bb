@@ -55,7 +55,7 @@ GROUP_BENCH = 'AFDO_FILE_LLVM'
 GROUP_CWP = 'AFDO_FILE_EXP1'
 
 GSURL_BASE_BENCH = 'gs://chromeos-prebuilt/afdo-job/llvm'
-GSURL_BASE_CWP = 'gs://chromeos-localmirror/distfiles/afdo/experimental/cwp'
+GSURL_BASE_CWP = 'gs://chromeos-prebuilt/afdo-job/cwp/chrome'
 GSURL_CHROME_PERF = os.path.join(GSURL_BASE_BENCH,
                                  CHROME_PERF_AFDO_FILE + '.bz2')
 GSURL_CHROME_AFDO = os.path.join(GSURL_BASE_BENCH, CHROME_AFDO_FILE + '.bz2')
@@ -110,6 +110,9 @@ KERNEL_EBUILD_ROOT = os.path.join(
     constants.SOURCE_ROOT,
     'src/third_party/chromiumos-overlay/sys-kernel'
 )
+
+# Filename pattern of CWP profiles for Chrome
+CWP_CHROME_PROFILE_NAME_PATTERN = r'R%s-%s.%s-%s.afdo.xz'
 
 
 class MissingAFDOData(failures_lib.StepFailure):
@@ -617,6 +620,22 @@ def PatchKernelEbuild(filename, version):
   osutils.WriteFile(filename, contents, atomic=True)
 
 
+def CWPProfileToVersionTuple(url):
+  """Convert a CWP profile url to a version tuple
+
+  Args:
+    url: for example, gs://chromeos-prebuilt/afdo-job/cwp/chrome/
+                      R65-3325.65-1519323840.afdo.xz
+
+  Returns:
+    A tuple of (milestone, major, minor, timestamp)
+  """
+  fn_mat = (CWP_CHROME_PROFILE_NAME_PATTERN %
+            tuple(r'([0-9]+)' for _ in xrange(0, 4)))
+  fn_mat.replace('.', '\\.')
+  return map(int, re.match(fn_mat, os.path.basename(url)).groups())
+
+
 def GetCWPProfile(cpv, _arch, _buildroot, gs_context):
   """Try to find the latest suitable AFDO profile file for cwp.
 
@@ -633,28 +652,38 @@ def GetCWPProfile(cpv, _arch, _buildroot, gs_context):
     Name of latest suitable AFDO profile file if one is found.
     None otherwise.
   """
-  fn_pat = r'chromeos-chrome-amd64-%s.%s.%s.%s_rc-r%s.afdo.bz2'
-  fn_mat = fn_pat % tuple(r'([0-9]+)' for _ in xrange(0, 5))
-  fn_mat.replace('.', '\\.')
-  def _to_version(url):
-    return map(int, re.match(fn_mat, os.path.basename(url)).groups())
-
-  ver_mat = r'%s\.%s\.%s\.%s_rc-r%s' % tuple(r'([0-9]+)' for _ in xrange(0, 5))
+  ver_mat = r'([0-9]+)\.[0-9]+\.([0-9]+)\.([0-9]+)_rc-r[0-9]+'
   target = map(int, re.match(ver_mat, cpv.version).groups())
-  gs_ls_url = os.path.join(GSURL_BASE_CWP, '*.afdo.bz2')
-  try:
-    res = gs_context.List(gs_ls_url)
-  except gs.GSNoSuchKey:
-    logging.info('gs files not found: %s', gs_ls_url)
+
+  # For efficiency, we only check 3 most recent milestones.
+  versions = []
+  for milestone in (target[0] - i for i in (0, 1, 2)):
+    gs_ls_url = os.path.join(GSURL_BASE_CWP,
+                             CWP_CHROME_PROFILE_NAME_PATTERN %
+                             (milestone, '*', '*', '*'))
+    try:
+      res = gs_context.List(gs_ls_url)
+      versions += map(CWPProfileToVersionTuple, [r.url for r in res])
+    except gs.GSNoSuchKey:
+      pass
+
+  # Don't pick profiles from other branches.
+  #
+  # v[1] is major version. Two versions have the same major iff they are on the
+  # same branch.
+  #
+  # v[2] is minor version, which is always 0 in master. A target in branch,
+  # including master, can pick a profile from its ancestor.
+  versions = [v for v in versions if v[2] == 0 or v[1] == target[1]]
+
+  if not versions:
+    logging.info('profile not found for: %s', cpv.version)
     return None
 
-  versions = map(_to_version, [r.url for r in res])
-  # Don't pick profiles from other branches.
-  versions = [v for v in versions if v[3] == 0 or v[2] == target[2]]
   versions.sort()
   cand = FindLatestProfile(target, versions)
-  # Strip .bz2
-  return (fn_pat % tuple(cand))[:-4]
+  # reconstruct the filename and strip .xz
+  return (CWP_CHROME_PROFILE_NAME_PATTERN % tuple(cand))[:-3]
 
 
 def GetAvailableKernelProfiles():
@@ -662,7 +691,7 @@ def GetAvailableKernelProfiles():
 
   Returns:
     a dictionary that maps kernel version, e.g. "4_4" to a list of
-    [major Chrome OS version, minor, timestamp]. E.g,
+    [milestone, major, minor, timestamp]. E.g,
     [62, 9901, 21, 1506581147]
   """
 
