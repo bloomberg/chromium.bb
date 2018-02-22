@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
@@ -758,7 +757,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // The new browser should have only the NTP.
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_TRUE(search::IsInstantNTP(tab_strip->GetWebContentsAt(0)));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
 
   // profile_urls opened the urls.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
@@ -871,7 +871,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 
   // The new browser should have only the NTP.
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_TRUE(search::IsInstantNTP(tab_strip->GetWebContentsAt(0)));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
 
   EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
@@ -881,7 +882,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_TRUE(search::IsInstantNTP(tab_strip->GetWebContentsAt(0)));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
   EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
   // The profile which normally opens URLs displays the new tab page.
@@ -890,7 +892,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
-  EXPECT_TRUE(search::IsInstantNTP(tab_strip->GetWebContentsAt(0)));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetWebContentsAt(0)->GetURL());
   EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
 #if !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)

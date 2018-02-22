@@ -681,8 +681,10 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, CannotScriptTheNewTabPage) {
   ResultCatcher catcher;
   test_listener.Reply(std::string());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  EXPECT_TRUE(search::IsInstantNTP(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(GURL("chrome://newtab"), browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetLastCommittedURL());
   EXPECT_FALSE(
       did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
 

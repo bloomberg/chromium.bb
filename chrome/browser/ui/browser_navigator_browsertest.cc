@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -1351,8 +1349,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   params.url = GURL(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(&params);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(search::IsInstantNTP(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   {
     content::WindowedNotificationObserver observer(

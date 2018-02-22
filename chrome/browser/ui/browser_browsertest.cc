@@ -57,7 +57,6 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
-#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -518,7 +517,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ClearPendingOnFailUnlessNTP) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  GURL ntp_url(search::GetNewTabPageURL(browser()->profile()));
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
 
   // Navigate to a 204 URL (aborts with no content) on the NTP and make sure it
   // sticks around so that the user can edit it.
@@ -1143,7 +1143,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NavigateToDefaultNTPPageOnExtensionUnload) {
 
   // There should only be one tab now, with the NTP loaded.
   ASSERT_EQ(1, tab_strip_model->count());
-  EXPECT_TRUE(search::IsInstantNTP(tab_strip_model->GetActiveWebContents()));
+  EXPECT_EQ(
+      chrome::kChromeUINewTabURL,
+      tab_strip_model->GetActiveWebContents()->GetLastCommittedURL().spec());
 }
 
 // Open with --app-id=<id>, and see that an application tab opens by default.
@@ -1235,7 +1237,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReattachDevToolsWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  GURL ntp_url = search::GetNewTabPageURL(browser()->profile());
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
 
   // Open a devtools window.
   DevToolsWindow* devtools_window =
