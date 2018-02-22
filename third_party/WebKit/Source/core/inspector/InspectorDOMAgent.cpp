@@ -836,7 +836,7 @@ Response InspectorDOMAgent::setNodeName(int node_id,
     return ToResponse(exception_state);
 
   // Copy over the original node's attributes.
-  new_elem->CloneAttributesFromElement(*old_element);
+  new_elem->CloneAttributesFrom(*old_element);
 
   // Copy over the original node's children.
   for (Node* child = old_element->firstChild(); child;

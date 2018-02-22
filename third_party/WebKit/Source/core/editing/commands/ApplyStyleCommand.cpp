@@ -1383,7 +1383,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
         continue;
       if (!child->contains(target_node) && elements_to_push_down.size()) {
         for (const auto& element : elements_to_push_down) {
-          Element* wrapper = element->CloneElementWithoutChildren();
+          Element* wrapper = element->CloneWithoutChildren();
           wrapper->removeAttribute(styleAttr);
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
@@ -2000,10 +2000,11 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
       return;
   }
 
-  if (styled_inline_element_ && add_styled_element == kAddStyledElement)
-    SurroundNodeRangeWithElement(
-        start_node, end_node,
-        styled_inline_element_->CloneElementWithoutChildren(), editing_state);
+  if (styled_inline_element_ && add_styled_element == kAddStyledElement) {
+    SurroundNodeRangeWithElement(start_node, end_node,
+                                 styled_inline_element_->CloneWithoutChildren(),
+                                 editing_state);
+  }
 }
 
 float ApplyStyleCommand::ComputedFontSize(Node* node) {

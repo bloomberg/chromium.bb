@@ -795,11 +795,10 @@ void HTMLFormElement::FinishParsingChildren() {
   did_finish_parsing_children_ = true;
 }
 
-void HTMLFormElement::CopyNonAttributePropertiesFromElement(
-    const Element& source,
-    CloneChildrenFlag flag) {
-  was_demoted_ = static_cast<const HTMLFormElement&>(source).was_demoted_;
-  HTMLElement::CopyNonAttributePropertiesFromElement(source, flag);
+void HTMLFormElement::CloneNonAttributePropertiesFrom(const Element& source,
+                                                      CloneChildrenFlag flag) {
+  was_demoted_ = ToHTMLFormElement(source).was_demoted_;
+  HTMLElement::CloneNonAttributePropertiesFrom(source, flag);
 }
 
 void HTMLFormElement::AnonymousNamedGetter(

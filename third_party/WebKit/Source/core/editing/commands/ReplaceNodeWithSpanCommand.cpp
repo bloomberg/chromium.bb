@@ -60,7 +60,7 @@ static void SwapInNodePreservingAttributesAndChildren(
 
   // FIXME: Fix this to send the proper MutationRecords when MutationObservers
   // are present.
-  new_element->CloneAttributesFromElement(element_to_replace);
+  new_element->CloneAttributesFrom(element_to_replace);
 
   parent_node->RemoveChild(&element_to_replace, ASSERT_NO_EXCEPTION);
 }

@@ -69,7 +69,7 @@ void SplitElementCommand::ExecuteApply() {
 }
 
 void SplitElementCommand::DoApply(EditingState*) {
-  element1_ = element2_->CloneElementWithoutChildren();
+  element1_ = element2_->CloneWithoutChildren();
 
   ExecuteApply();
 }

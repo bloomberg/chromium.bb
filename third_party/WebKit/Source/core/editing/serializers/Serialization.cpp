@@ -584,7 +584,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
       element->setAttribute(classAttr, AppleInterchangeNewline);
     } else {
       if (use_clones_of_enclosing_block)
-        element = block->CloneElementWithoutChildren();
+        element = block->CloneWithoutChildren();
       else
         element = CreateDefaultParagraphElement(document);
       FillContainerFromString(element, s);
