@@ -810,7 +810,9 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #else
   // only y plane's tx_type is transmitted
   if (plane > 0) return;
-  TX_TYPE *tx_type = &mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+  const int txk_type_idx =
+      av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+  TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
 #endif
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];

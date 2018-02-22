@@ -254,20 +254,17 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
 #if CONFIG_TXK_SEL
-  if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0)
-    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-        DCT_DCT;
-
+  const int txk_type_idx =
+      av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+  if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0) {
+    xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
+  }
   uint8_t disable_txk_check = args->enable_optimize_b;
-
   if (plane == 0 && p->eobs[block] == 0) {
     if (disable_txk_check) {
-      xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-          DCT_DCT;
+      xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
     } else {
-      assert(
-          xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
-          DCT_DCT);
+      assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
     }
   }
 #endif  // CONFIG_TXK_SEL
@@ -537,9 +534,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;
     *(args->skip) = 0;
-    assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
-           DCT_DCT);
-
+    assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
+               plane_bsize, blk_row, blk_col)] == DCT_DCT);
 #if CONFIG_CFL
     if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
         is_cfl_allowed(&xd->mi[0]->mbmi)) {
@@ -562,9 +558,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_TXK_SEL
     if (plane == 0 && p->eobs[block] == 0) {
-      assert(
-          xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
-          DCT_DCT);
+      assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
+                 plane_bsize, blk_row, blk_col)] == DCT_DCT);
     }
 #endif  // CONFIG_TXK_SEL
   } else {
@@ -574,9 +569,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   }
 
 #if CONFIG_TXK_SEL
-  if (args->cpi->oxcf.aq_mode != NO_AQ && !*eob && plane == 0)
-    xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-        DCT_DCT;
+  if (args->cpi->oxcf.aq_mode != NO_AQ && !*eob && plane == 0) {
+    const int txk_type_idx =
+        av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+    xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
+  }
 #endif
 
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,

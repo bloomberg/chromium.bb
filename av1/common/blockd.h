@@ -225,6 +225,9 @@ typedef struct {
 } INTERINTER_COMPOUND_DATA;
 
 #define INTER_TX_SIZE_BUF_LEN 16
+#if CONFIG_TXK_SEL
+#define TXK_TYPE_BUF_LEN 64
+#endif
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
@@ -253,7 +256,7 @@ typedef struct MB_MODE_INFO {
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
 #if CONFIG_TXK_SEL
-  TX_TYPE txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
 #endif
 
 #if CONFIG_FILTER_INTRA
@@ -883,6 +886,22 @@ static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
   return index;
 }
 
+#if CONFIG_TXK_SEL
+static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
+                                         int blk_col) {
+  TX_SIZE txs = max_txsize_rect_lookup[bsize];
+  for (int level = 0; level < MAX_VARTX_DEPTH; ++level)
+    txs = sub_tx_size_map[1][txs];
+  const int tx_w = tx_size_wide_unit[txs];
+  const int tx_h = tx_size_high_unit[txs];
+  const int bw_uint = mi_size_wide[bsize];
+  const int stride = bw_uint / tx_w;
+  const int index = (blk_row / tx_h) * stride + (blk_col / tx_w);
+  assert(index < TXK_TYPE_BUF_LEN);
+  return index;
+}
+#endif  // CONFIG_TXK_SEL
+
 static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       const MACROBLOCKD *xd, int blk_row,
                                       int blk_col, TX_SIZE tx_size,
@@ -900,12 +919,16 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
     tx_type = DCT_DCT;
   } else {
     if (plane_type == PLANE_TYPE_Y) {
-      tx_type = mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+      const int txk_type_idx =
+          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+      tx_type = mbmi->txk_type[txk_type_idx];
     } else if (is_inter_block(mbmi)) {
       // scale back to y plane's coordinate
       blk_row <<= pd->subsampling_y;
       blk_col <<= pd->subsampling_x;
-      tx_type = mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+      const int txk_type_idx =
+          av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
+      tx_type = mbmi->txk_type[txk_type_idx];
     } else {
       // In intra mode, uv planes don't share the same prediction mode as y
       // plane, so the tx_type should not be shared

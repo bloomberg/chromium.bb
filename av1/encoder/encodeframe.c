@@ -476,8 +476,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       reset_tx_size(xd, mbmi, cm->tx_mode);
 #if CONFIG_TXK_SEL
       memset(mbmi->txk_type, DCT_DCT,
-             sizeof(mbmi->txk_type[0]) *
-                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+             sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
@@ -488,8 +487,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       reset_tx_size(xd, mbmi, cm->tx_mode);
 #if CONFIG_TXK_SEL
       memset(mbmi->txk_type, DCT_DCT,
-             sizeof(mbmi->txk_type[0]) *
-                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+             sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
     }
   }

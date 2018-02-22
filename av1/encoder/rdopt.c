@@ -1849,9 +1849,10 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 }
 
 #if CONFIG_TXK_SEL
-static void update_txk_array(TX_TYPE *txk_type, int blk_row, int blk_col,
-                             TX_SIZE tx_size, TX_TYPE tx_type) {
-  txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
+static void update_txk_array(TX_TYPE *txk_type, BLOCK_SIZE bsize, int blk_row,
+                             int blk_col, TX_SIZE tx_size, TX_TYPE tx_type) {
+  const int txk_type_idx = av1_get_txk_type_index(bsize, blk_row, blk_col);
+  txk_type[txk_type_idx] = tx_type;
 
   const int txw = tx_size_wide_unit[tx_size];
   const int txh = tx_size_high_unit[tx_size];
@@ -1862,10 +1863,13 @@ static void update_txk_array(TX_TYPE *txk_type, int blk_row, int blk_col,
   if (txw == tx_size_wide_unit[TX_64X64] ||
       txh == tx_size_high_unit[TX_64X64]) {
     const int tx_unit = tx_size_wide_unit[TX_16X16];
-    for (int idy = 0; idy < txh; idy += tx_unit)
-      for (int idx = 0; idx < txw; idx += tx_unit)
-        txk_type[((blk_row + idy) << MAX_MIB_SIZE_LOG2) + (blk_col + idx)] =
-            tx_type;
+    for (int idy = 0; idy < txh; idy += tx_unit) {
+      for (int idx = 0; idx < txw; idx += tx_unit) {
+        const int this_index =
+            av1_get_txk_type_index(bsize, blk_row + idy, blk_col + idx);
+        txk_type[this_index] = tx_type;
+      }
+    }
   }
 }
 
@@ -1919,7 +1923,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       if (is_inter && x->use_default_inter_tx_type &&
           tx_type != get_default_tx_type(0, xd, tx_size))
         continue;
-      mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
+      const int txk_type_idx =
+          av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+      mbmi->txk_type[txk_type_idx] = tx_type;
     }
     const TX_TYPE ref_tx_type =
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
@@ -1978,8 +1984,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   if (best_eob == 0) best_tx_type = DCT_DCT;
 
-  if (plane == 0)
-    update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, best_tx_type);
+  if (plane == 0) {
+    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                     best_tx_type);
+  }
 
   x->plane[plane].txb_entropy_ctx[block] = best_txb_ctx;
   x->plane[plane].eobs[block] = best_eob;
@@ -2592,7 +2600,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   TX_SIZE best_tx_size = max_rect_tx_size;
   TX_TYPE best_tx_type = DCT_DCT;
 #if CONFIG_TXK_SEL
-  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
 #endif  // CONFIG_TXK_SEL
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int n4 = bsize_to_num_blk(bs);
@@ -2644,8 +2652,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       if (rd < best_rd) {
 #if CONFIG_TXK_SEL
         memcpy(best_txk_type, mbmi->txk_type,
-               sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
-                   (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
+               sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
         memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
         best_tx_type = tx_type;
@@ -2671,8 +2678,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
   memcpy(mbmi->txk_type, best_txk_type,
-         sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
-             (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
+         sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
@@ -3147,7 +3153,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   TX_TYPE best_tx_type;
 #if CONFIG_TXK_SEL
-  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
 #endif
   (void)ctx;
   av1_zero(filter_intra_mode_info);
@@ -3178,8 +3184,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
       memcpy(best_txk_type, mbmi->txk_type,
-             sizeof(*best_txk_type) *
-                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+             sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
       memcpy(ctx->blk_skip[0], x->blk_skip[0],
              sizeof(uint8_t) * ctx->num_4x4_blk);
@@ -3198,8 +3203,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
     memcpy(mbmi->txk_type, best_txk_type,
-           sizeof(*best_txk_type) *
-               (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+           sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
     return 1;
   } else {
@@ -3250,8 +3254,7 @@ static int64_t calc_rd_given_intra_angle(
   if (this_rd < *best_rd) {
 #if CONFIG_TXK_SEL
     memcpy(best_txk_type, mbmi->txk_type,
-           sizeof(*best_txk_type) *
-               (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+           sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
 #endif
     memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
     *best_rd = this_rd;
@@ -3284,7 +3287,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   TX_TYPE best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
   const int n4 = bsize_to_num_blk(bsize);
-  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
 #else
   TX_TYPE *best_txk_type = NULL;
 #endif
@@ -3335,8 +3338,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
   memcpy(mbmi->txk_type, best_txk_type,
-         sizeof(*best_txk_type) *
-             (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+         sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 #endif
   return best_rd;
@@ -3714,6 +3716,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const uint16_t cur_joint_ctx =
       (txb_ctx.dc_sign_ctx << 8) + txb_ctx.txb_skip_ctx;
 
+  const int txk_type_idx =
+      av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   // Look up RD and terminate early in case when we've already processed exactly
   // the same residual with exactly the same entropy context.
   if (rd_info_array != NULL && rd_info_array->valid &&
@@ -3725,8 +3729,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     p->eobs[block] = rd_info_array->eob;
     p->txb_entropy_ctx[block] = rd_info_array->txb_entropy_ctx;
     if (plane == 0) {
-      x->e_mbd.mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] =
-          rd_info_array->tx_type;
+      x->e_mbd.mi[0]->mbmi.txk_type[txk_type_idx] = rd_info_array->tx_type;
     }
     return;
   }
@@ -3747,9 +3750,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     rd_info_array->eob = p->eobs[block];
     rd_info_array->txb_entropy_ctx = p->txb_entropy_ctx[block];
     if (plane == 0) {
-      rd_info_array->tx_type =
-          x->e_mbd.mi[0]
-              ->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+      rd_info_array->tx_type = x->e_mbd.mi[0]->mbmi.txk_type[txk_type_idx];
     }
   }
 
@@ -4024,7 +4025,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->blk_skip[plane][blk_row * bw + blk_col] = 1;
       p->eobs[block] = 0;
 #if CONFIG_TXK_SEL
-      update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, DCT_DCT);
+      update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                       DCT_DCT);
 #endif
     } else {
       x->blk_skip[plane][blk_row * bw + blk_col] = 0;
@@ -4037,8 +4039,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     tmp_eob = p->txb_entropy_ctx[block];
 
 #if CONFIG_TXK_SEL
-    const int txk_idx = (blk_row << MAX_MIB_SIZE_LOG2) + blk_col;
-    best_tx_type = mbmi->txk_type[txk_idx];
+    const int txk_type_idx =
+        av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
+    best_tx_type = mbmi->txk_type[txk_type_idx];
 #endif
   }
 
@@ -4215,7 +4218,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
     mbmi->tx_size = tx_size_selected;
 #if CONFIG_TXK_SEL
-    update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, best_tx_type);
+    update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                     best_tx_type);
 #endif
     if (this_rd == INT64_MAX) *is_cost_valid = 0;
     x->blk_skip[plane][blk_row * bw + blk_col] = rd_stats->skip;
@@ -4425,7 +4429,8 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->plane[plane].eobs[block] = 0;
       x->plane[plane].txb_entropy_ctx[block] = 0;
 #if CONFIG_TXK_SEL
-      update_txk_array(mbmi->txk_type, blk_row, blk_col, tx_size, DCT_DCT);
+      update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
+                       DCT_DCT);
 #endif
     } else {
       rd_stats->skip = 0;
@@ -4850,9 +4855,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   const TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
   mbmi->tx_type = DCT_DCT;
 #if CONFIG_TXK_SEL
-  memset(mbmi->txk_type, DCT_DCT,
-         sizeof(mbmi->txk_type[0]) *
-             (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+  memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
 #endif
   memset(mbmi->inter_tx_size, tx_size, sizeof(mbmi->inter_tx_size));
   mbmi->tx_size = tx_size;
@@ -9798,10 +9801,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         TX_SIZE best_tx_size = mbmi->tx_size;
         TX_TYPE best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
-        TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+        TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
         memcpy(best_txk_type, mbmi->txk_type,
-               sizeof(*best_txk_type) *
-                   (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+               sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
 #endif
         FILTER_INTRA_MODE best_fi_mode = FILTER_DC_PRED;
         int64_t best_rd_tmp = INT64_MAX;
@@ -9832,8 +9834,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             best_tx_type = mbmi->tx_type;
 #if CONFIG_TXK_SEL
             memcpy(best_txk_type, mbmi->txk_type,
-                   sizeof(*best_txk_type) *
-                       (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+                   sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
 #endif
             memcpy(best_blk_skip, x->blk_skip[0],
                    sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
@@ -9851,8 +9852,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
         memcpy(mbmi->txk_type, best_txk_type,
-               sizeof(*best_txk_type) *
-                   (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+               sizeof(*best_txk_type) * TXK_TYPE_BUF_LEN);
 #endif
         memcpy(x->blk_skip[0], best_blk_skip,
                sizeof(x->blk_skip[0][0]) * ctx->num_4x4_blk);
