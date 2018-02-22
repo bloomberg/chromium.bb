@@ -8,6 +8,8 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -549,8 +551,8 @@ std::string GetPlacementOverride(aura::Window* window) {
   gfx::Rect* bounds = window->GetProperty(kRestoreBoundsOverrideKey);
   if (bounds) {
     gfx::Rect restore_bounds = *bounds;
-    ui::WindowShowState restore_state =
-        window->GetProperty(kRestoreShowStateOverrideKey);
+    ui::WindowShowState restore_state = ToWindowShowState(
+        window->GetProperty(kRestoreWindowStateTypeOverrideKey));
     return GetPlacementString(restore_bounds, restore_state);
   }
   return std::string();

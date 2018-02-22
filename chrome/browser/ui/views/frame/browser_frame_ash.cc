@@ -9,6 +9,7 @@
 // This file is only instantiated in classic ash/mus. It is never used in mash.
 // See native_browser_frame_factory_chromeos.cc switches on GetAshConfig().
 #include "ash/public/cpp/window_properties.h"  // mash-ok
+#include "ash/public/cpp/window_state_type.h"  // mash-ok
 #include "ash/shell.h"                         // mash-ok
 #include "ash/wm/window_properties.h"          // mash-ok
 #include "ash/wm/window_state.h"               // mash-ok
@@ -107,14 +108,17 @@ void BrowserFrameAsh::GetWindowPlacement(
                                    ash::kRestoreBoundsOverrideKey);
   if (override_bounds && !override_bounds->IsEmpty()) {
     *bounds = *override_bounds;
-    *show_state = GetWidget()->GetNativeWindow()->GetProperty(
-                      ash::kRestoreShowStateOverrideKey);
+    *show_state =
+        ash::ToWindowShowState(GetWidget()->GetNativeWindow()->GetProperty(
+            ash::kRestoreWindowStateTypeOverrideKey));
   } else {
     *bounds = GetWidget()->GetRestoredBounds();
     *show_state = GetWidget()->GetNativeWindow()->GetProperty(
                       aura::client::kShowStateKey);
   }
 
+  // Session restore might be unable to correctly restore other states.
+  // For the record, https://crbug.com/396272
   if (*show_state != ui::SHOW_STATE_MAXIMIZED &&
       *show_state != ui::SHOW_STATE_MINIMIZED) {
     *show_state = ui::SHOW_STATE_NORMAL;

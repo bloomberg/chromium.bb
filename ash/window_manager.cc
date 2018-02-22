@@ -121,6 +121,13 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter_->RegisterStringProperty(
       kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
+  property_converter_->RegisterPrimitiveProperty(
+      kRestoreBoundsOverrideKey, ash::mojom::kRestoreBoundsOverride_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter_->RegisterPrimitiveProperty(
+      kRestoreWindowStateTypeOverrideKey,
+      ash::mojom::kRestoreWindowStateTypeOverride_Property,
+      base::BindRepeating(&ash::IsValidWindowStateType));
 }
 
 WindowManager::~WindowManager() {

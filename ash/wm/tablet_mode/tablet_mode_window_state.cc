@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -31,11 +33,12 @@ void SetWindowRestoreOverrides(aura::Window* window,
                                const gfx::Rect& bounds_override,
                                ui::WindowShowState window_state_override) {
   if (bounds_override.IsEmpty()) {
-    window->ClearProperty(kRestoreShowStateOverrideKey);
+    window->ClearProperty(kRestoreWindowStateTypeOverrideKey);
     window->ClearProperty(kRestoreBoundsOverrideKey);
     return;
   }
-  window->SetProperty(kRestoreShowStateOverrideKey, window_state_override);
+  window->SetProperty(kRestoreWindowStateTypeOverrideKey,
+                      ToWindowStateType(window_state_override));
   window->SetProperty(kRestoreBoundsOverrideKey,
                       new gfx::Rect(bounds_override));
 }

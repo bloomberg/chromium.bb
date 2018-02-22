@@ -17,6 +17,10 @@ template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace ash {
 
 namespace mojom {
@@ -40,6 +44,19 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // If true (and the window is a panel), it's attached to its shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
+
+// A property key which stores the bounds to restore a window to. These take
+// preference over the current bounds. This is used by e.g. the tablet mode
+// window manager.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
+    kRestoreBoundsOverrideKey;
+
+// A property key which stores the window state to restore a window to. These
+// take preference over the current state if
+// |kRestoreWindowStateTypeOverrideKey| is set. This is used by e.g. the tablet
+// mode window manager.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    mojom::WindowStateType>* const kRestoreWindowStateTypeOverrideKey;
 
 // A property key to store the id for a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const

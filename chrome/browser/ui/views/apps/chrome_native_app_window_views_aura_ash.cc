@@ -14,6 +14,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
@@ -244,8 +245,9 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
           ash::kRestoreBoundsOverrideKey)) {
     // If an override is given, use that restore state, unless the window is in
     // immersive fullscreen.
-    restore_state = widget()->GetNativeWindow()->GetProperty(
-        ash::kRestoreShowStateOverrideKey);
+    restore_state =
+        ash::ToWindowShowState(widget()->GetNativeWindow()->GetProperty(
+            ash::kRestoreWindowStateTypeOverrideKey));
     is_fullscreen = restore_state == ui::SHOW_STATE_FULLSCREEN;
   } else {
     if (IsMaximized())

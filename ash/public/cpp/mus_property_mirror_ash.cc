@@ -46,6 +46,12 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     root_window->SetProperty(kWindowPinTypeKey, value);
   } else if (key == aura::client::kAppIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kAppIconKey);
+  } else if (key == kRestoreBoundsOverrideKey) {
+    MirrorOwnedProperty(window, root_window, kRestoreBoundsOverrideKey);
+  } else if (key == kRestoreWindowStateTypeOverrideKey) {
+    ash::mojom::WindowStateType value =
+        window->GetProperty(kRestoreWindowStateTypeOverrideKey);
+    root_window->SetProperty(kRestoreWindowStateTypeOverrideKey, value);
   } else if (key == kShelfIDKey) {
     MirrorOwnedProperty(window, root_window, kShelfIDKey);
   } else if (key == aura::client::kDrawAttentionKey) {

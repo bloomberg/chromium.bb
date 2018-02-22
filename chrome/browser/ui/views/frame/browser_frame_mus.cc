@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
@@ -20,6 +21,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -83,13 +86,34 @@ bool BrowserFrameMus::UsesNativeSystemMenu() const {
 }
 
 bool BrowserFrameMus::ShouldSaveWindowPlacement() const {
-  return false;
+#if defined(OS_CHROMEOS)
+  return nullptr == GetWidget()->GetNativeWindow()->GetProperty(
+                        ash::kRestoreBoundsOverrideKey);
+#else
+  return true;
+#endif
 }
 
 void BrowserFrameMus::GetWindowPlacement(
     gfx::Rect* bounds, ui::WindowShowState* show_state) const {
-  *bounds = gfx::Rect(10, 10, 800, 600);
-  *show_state = ui::SHOW_STATE_NORMAL;
+  DesktopNativeWidgetAura::GetWindowPlacement(bounds, show_state);
+#if defined(OS_CHROMEOS)
+  gfx::Rect* override_bounds = GetWidget()->GetNativeWindow()->GetProperty(
+      ash::kRestoreBoundsOverrideKey);
+  if (override_bounds && !override_bounds->IsEmpty()) {
+    *bounds = *override_bounds;
+    *show_state =
+        ash::ToWindowShowState(GetWidget()->GetNativeWindow()->GetProperty(
+            ash::kRestoreWindowStateTypeOverrideKey));
+  }
+#endif
+
+  // Session restore might be unable to correctly restore other states.
+  // For the record, https://crbug.com/396272
+  if (*show_state != ui::SHOW_STATE_MAXIMIZED &&
+      *show_state != ui::SHOW_STATE_MINIMIZED) {
+    *show_state = ui::SHOW_STATE_NORMAL;
+  }
 }
 
 bool BrowserFrameMus::PreHandleKeyboardEvent(
