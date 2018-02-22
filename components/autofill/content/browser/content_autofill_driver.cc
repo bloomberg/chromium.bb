@@ -42,11 +42,7 @@ ContentAutofillDriver::ContentAutofillDriver(
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
-    autofill_handler_ = std::make_unique<AutofillHandlerProxy>(this, provider);
-    GetAutofillAgent()->SetUserGestureRequired(false);
-    GetAutofillAgent()->SetSecureContextRequired(true);
-    GetAutofillAgent()->SetFocusRequiresScroll(false);
-    GetAutofillAgent()->SetQueryPasswordSuggestion(true);
+    SetAutofillProvider(provider);
   } else {
     autofill_handler_ = std::make_unique<AutofillManager>(
         this, client, app_locale, enable_download_manager);
@@ -302,6 +298,19 @@ void ContentAutofillDriver::RemoveHandler(
   if (!view)
     return;
   view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(handler);
+}
+
+void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
+  autofill_handler_ = std::make_unique<AutofillHandlerProxy>(this, provider);
+  GetAutofillAgent()->SetUserGestureRequired(false);
+  GetAutofillAgent()->SetSecureContextRequired(true);
+  GetAutofillAgent()->SetFocusRequiresScroll(false);
+  GetAutofillAgent()->SetQueryPasswordSuggestion(true);
+}
+
+void ContentAutofillDriver::SetAutofillProviderForTesting(
+    AutofillProvider* provider) {
+  SetAutofillProvider(provider);
 }
 
 }  // namespace autofill

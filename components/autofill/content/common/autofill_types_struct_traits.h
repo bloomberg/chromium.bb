@@ -107,6 +107,15 @@ struct EnumTraits<autofill::mojom::SubmissionSource,
 };
 
 template <>
+struct EnumTraits<autofill::mojom::LabelSource,
+                  autofill::FormFieldData::LabelSource> {
+  static autofill::mojom::LabelSource ToMojom(
+      autofill::FormFieldData::LabelSource input);
+  static bool FromMojom(autofill::mojom::LabelSource input,
+                        autofill::FormFieldData::LabelSource* output);
+};
+
+template <>
 struct StructTraits<autofill::mojom::FormFieldDataDataView,
                     autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
@@ -186,6 +195,11 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
   static const std::vector<base::string16>& option_contents(
       const autofill::FormFieldData& r) {
     return r.option_contents;
+  }
+
+  static autofill::FormFieldData::LabelSource label_source(
+      const autofill::FormFieldData& r) {
+    return r.label_source;
   }
 
   static bool Read(autofill::mojom::FormFieldDataDataView data,
