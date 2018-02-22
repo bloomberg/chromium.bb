@@ -13,7 +13,6 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
@@ -24,29 +23,6 @@ namespace {
 // Extension icon size for the notification.
 const int kIconSize = 48;
 
-// Forwards notification events to the notification manager.
-class ProviderNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  // Passing a raw pointer is safe here, since the life of each notification is
-  // shorter than life of the |notification_manager|.
-  explicit ProviderNotificationDelegate(
-      NotificationManager* notification_manager)
-      : notification_manager_(notification_manager) {}
-
-  void ButtonClick(int button_index) override {
-    notification_manager_->OnButtonClick(button_index);
-  }
-
-  void Close(bool by_user) override { notification_manager_->OnClose(); }
-
- private:
-  ~ProviderNotificationDelegate() override {}
-  NotificationManager* notification_manager_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(ProviderNotificationDelegate);
-};
-
 }  // namespace
 
 NotificationManager::NotificationManager(
@@ -55,7 +31,8 @@ NotificationManager::NotificationManager(
     : profile_(profile),
       file_system_info_(file_system_info),
       icon_loader_(
-          new extensions::ChromeAppIconLoader(profile, kIconSize, this)) {
+          new extensions::ChromeAppIconLoader(profile, kIconSize, this)),
+      weak_factory_(this) {
   DCHECK_EQ(ProviderId::EXTENSION, file_system_info.provider_id().GetType());
 }
 
@@ -84,11 +61,11 @@ void NotificationManager::HideUnresponsiveNotification(int id) {
   }
 }
 
-void NotificationManager::OnButtonClick(int button_index) {
+void NotificationManager::ButtonClick(int button_index) {
   OnNotificationResult(ABORT);
 }
 
-void NotificationManager::OnClose() {
+void NotificationManager::Close(bool by_user) {
   OnNotificationResult(CONTINUE);
 }
 
@@ -127,7 +104,8 @@ void NotificationManager::ShowNotification() {
       extension_icon_.get() ? *extension_icon_.get() : gfx::Image(),
       base::string16(),  // display_source
       GURL(), notifier_id, rich_notification_data,
-      new ProviderNotificationDelegate(this));
+      base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+          weak_factory_.GetWeakPtr()));
   notification.SetSystemPriority();
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
