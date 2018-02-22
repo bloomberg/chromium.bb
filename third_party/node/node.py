@@ -24,7 +24,6 @@ def RunNode(cmd_parts, stdout=None):
   stdout, stderr = process.communicate()
 
   if stderr:
-    print >> sys.stderr, '%s failed: %s' % (cmd, stderr)
-    raise
+    raise RuntimeError('%s failed: %s' % (cmd, stderr))
 
   return stdout
