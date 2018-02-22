@@ -197,6 +197,7 @@ Se questa norma non viene impostata, i Termini di servizio non verranno visualiz
 Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" /> possa scaricare i Termini di servizio. I Termini di servizio devono essere in testo normale e pubblicati come testo di tipo MIME/semplice. Il markup non è consentito.</translation>
 <translation id="1750315445671978749">Blocca tutti i download</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
+<translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
@@ -269,6 +270,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Se questa norma non viene impostata, vengono utilizzati tutti e quattro gli schemi.</translation>
 <translation id="2067011586099792101">Blocca l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
+<translation id="2070270043919235595">Notifica agli utenti che <ph name="PRODUCT_NAME" /> deve essere riavviato per applicare l'aggiornamento in attesa.
+
+      Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Consigliato", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Obbligatorio", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2077273864382355561">Ritardo disattivazione schermo in caso di utilizzo della batteria</translation>
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
@@ -307,6 +313,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione viene configurata, gli utenti che usano lo sblocco rapido devono inserire le proprie password nella schermata di blocco in base a questa impostazione.
 
       Se questa impostazione non viene configurata, gli utenti che usano lo sblocco rapido devono inserire ogni giorno la propria password nella schermata di blocco.</translation>
+<translation id="2188722565665306629">Ti consente di impostare il periodo di tempo durante il quale vengono visualizzate le notifiche di riavvio di <ph name="PRODUCT_NAME" /> per applicare un aggiornamento in attesa.
+
+      Questa impostazione della norma può essere utilizzata per controllare il periodo di tempo, in millisecondi, durante il quale un utente viene informato progressivamente che <ph name="PRODUCT_NAME" /> deve essere riavviato (o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato) per un aggiornamento. Durante questo periodo, l'utente verrà ripetutamente informato della necessità di un aggiornamento in base all'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non impostata, viene utilizzato il periodo predefinito di 604800000 millisecondi (una settimana).</translation>
 <translation id="2194470398825717446">Questa norma è stata ritirata in M61. Usa la norma EcryptfsMigrationStrategy.
 
       Consente di specificare come deve comportarsi un dispositivo con ecryptfs e come deve passare alla crittografia ext4.
@@ -493,6 +502,13 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Consente di disattivare Drive nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
+<translation id="2726613915126661822">Ti consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
+
+      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
+      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
+      Quando questa norma viene modificata in false, quest'ultima ha valore solo sulle nuove macchine virtuali e non arresta le macchine virtuali già in esecuzione.
+      Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non potrà eseguire macchine virtuali.
+      I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="2742843273354638707">Consente di nascondere l'app Chrome Web Store e il link nel piè di pagina nella pagina Nuova scheda e in Avvio applicazioni di <ph name="PRODUCT_OS_NAME" />.
 
@@ -705,6 +721,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata non verrà fornita una pagina Nuova scheda.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="3465852069254497664">Notifica a un utente che è necessario od obbligatorio eseguire un riavvio del browser</translation>
 <translation id="346731943813722404">Consente di specificare se i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni devono iniziare soltanto dopo il rilevamento dell'attività del primo utente in una sessione.
 
 Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni non iniziano fino al termine del rilevamento dell'attività del primo utente in una sessione.
@@ -738,6 +755,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
 <translation id="3737544779868348650">Nome host della rete del dispositivo</translation>
+<translation id="3740754010292550733">Imposta il periodo per le notifiche di riavvio dell'aggiornamento</translation>
 <translation id="3750220015372671395">Blocca la generazione di chiavi su questi siti</translation>
 <translation id="3756011779061588474">Blocca modalità sviluppatore</translation>
 <translation id="3758089716224084329">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
@@ -1399,6 +1417,7 @@ Se la norma viene impostata su false, il puntatore grande viene disattivato quan
 Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando il puntatore grande. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
 
 Se la norma non viene impostata, il puntatore grande viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare il puntatore grande in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
+<translation id="5929855945144989709">Consente ai dispositivi di eseguire macchine virtuali su Chrome OS</translation>
 <translation id="5932767795525445337">Questa policy può essere utilizzata anche per bloccare app per Android.</translation>
 <translation id="5936622343001856595">Forza l'esecuzione delle query in Ricerca Google con l'opzione SafeSearch attiva e impedisce agli utenti di modificare questa impostazione.
 
@@ -1634,6 +1653,15 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 
       La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
+<translation id="673699536430961464">Questa impostazione consente agli utenti di passare da un account Google a un altro all'interno dell'area dei contenuti della finestra del browser dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
+
+      Se questa norma viene impostata su false, l'accesso a un altro account dall'area dei contenuti del browser in modalità diversa da quella di navigazione in incognito non sarà consentito.
+
+      Se questa norma non viene impostata o viene impostata su true, verrà usato il comportamento predefinito: sarà possibile accedere a un altro account dall'area dei contenuti del browser, ma non agli account di minori, per i quali tale accesso non sarà consentito dall'area dei contenuti in modalità diversa da quella di navigazione in incognito.
+
+      Qualora l'accesso a un altro account non debba essere consentito tramite la modalità di navigazione in incognito, potresti bloccare tale modalità usando la norma IncognitoModeAvailability.
+
+      Tieni presente che gli utenti potranno accedere ai servizi Google in uno stato non autenticato bloccando i loro cookie.</translation>
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>
@@ -1643,6 +1671,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
+<translation id="6835883744948188639">Mostra un messaggio ricorrente all'utente in cui indica che è consigliato eseguire un riavvio</translation>
 <translation id="685769593149966548">Imponi Livello massimo della Modalità con restrizioni per YouTube</translation>
 <translation id="687046793986382807">Questa norma è stata ritirata a partire dalla versione 35 di <ph name="PRODUCT_NAME" />.
 

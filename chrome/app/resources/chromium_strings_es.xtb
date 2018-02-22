@@ -119,6 +119,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> ‑ Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chromium se reiniciará automáticamente.</translation>
 <translation id="5479196819031988440">Chromium OS no puede abrir esta página.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio web</translation>
@@ -140,7 +141,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5987687638152509985">Actualiza Chromium para iniciar la sincronización</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible que funciona a una velocidad sin precedentes.</translation>
 <translation id="6063093106622310249">&amp;Abrir en Chromium</translation>
-<translation id="6072279588547424923">"<ph name="EXTENSION_NAME" />" se ha añadido a Chromium</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> se ha añadido a Chromium</translation>
 <translation id="608189560609172163">Chromium no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="6096348254544841612">Personaliza y controla Chromium. Hay una actualización disponible.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> es peligroso, por lo que Chromium lo ha bloqueado.</translation>
@@ -194,6 +195,7 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, bloquea tu pe
 <ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
 
 Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más información.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> ‑ Chromium para desarrolladores</translation>
 <translation id="7451052299415159299">Chromium necesita permiso para acceder a la cámara en este sitio web</translation>
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Información de Chromium OS</translation>
@@ -207,6 +209,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7756122083761163394">Los datos de navegación de este usuario se eliminarán de este dispositivo. Para recuperarlos, inicia sesión en Chrome como $2.</translation>
 <translation id="7773960292263897147">Advertencia: Chromium no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo incógnito, desactiva esta opción.</translation>
 <translation id="7774736947049807614">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Chromium como <ph name="USER_NAME" /> o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> ‑ Chromium Canary</translation>
 <translation id="7867198900892795913">No se ha podido actualizar Chromium a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre dispongas de la última versión.</translation>

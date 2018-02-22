@@ -163,6 +163,7 @@
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
 <translation id="573759479754913123">О Chrome OS</translation>
 <translation id="5774845247549698882">Этот язык сейчас используется в Chrome OS</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Используемое программное обеспечение несовместимо с Google Chrome.</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
@@ -174,6 +175,7 @@
 <translation id="6070348360322141662">В целях повышения безопасности Google Chrome шифрует ваши данные</translation>
 <translation id="6113794647360055231">Chrome становится все лучше</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome (бета-версия)</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Разрешить в Google Chrome передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6291089322031436445">Приложения Chrome для разработчиков</translation>
@@ -181,6 +183,7 @@
 <translation id="6338556085225130112">Обновление Google Chrome…</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Вы можете автоматически отправлять системную информацию и контент страниц в Google, чтобы помочь улучшить распознавание опасных приложений и сайтов. Давайте вместе сделаем Chrome ещё удобнее и безопаснее!</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
 <translation id="6566149418543181476">Обновление Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Для синхронизации данных Chrome используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>

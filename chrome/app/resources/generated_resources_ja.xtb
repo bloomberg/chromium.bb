@@ -883,6 +883,7 @@
 <translation id="2359345697448000899">[ツール] メニューの [拡張機能] をクリックして拡張機能を管理できます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="236141728043665931">マイクのアクセスを常にブロックする</translation>
+<translation id="2365507699358342471">このサイトでは、クリップボードにコピーされているテキストや画像へのアクセスが許可されています。</translation>
 <translation id="2367972762794486313">アプリを表示</translation>
 <translation id="2371076942591664043">ダウンロードしたら開く(&amp;D)</translation>
 <translation id="2377319039870049694">リスト表示に切り替え</translation>
@@ -1270,7 +1271,6 @@
 <translation id="2916073183900451334">ウェブページで Tab キーを押すと、リンクやフォーム欄がハイライト表示されます</translation>
 <translation id="2916745397441987255">拡張機能を検索</translation>
 <translation id="2921081876747860777">ローカルデータを保護するパスワードを作成してください。</translation>
-<translation id="2924395203970765374">「<ph name="FULL_NAME" />」に同期されています</translation>
 <translation id="2925966894897775835">スプレッドシート</translation>
 <translation id="2927017729816812676">キャッシュ ストレージ</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" />（子供向けのアカウント）</translation>
@@ -1553,7 +1553,6 @@
 <translation id="3348459612390503954">設定完了</translation>
 <translation id="3349933790966648062">メモリ使用量</translation>
 <translation id="3353984535370177728">アップロードするフォルダを選択</translation>
-<translation id="335581015389089642">スピーチ</translation>
 <translation id="3355936511340229503">接続エラー</translation>
 <translation id="3356797067524893661">設定が完了しました。ハングアウト Meet を使用できます</translation>
 <translation id="3358935496594837302">スマートフォンが見つかりません。使用している Android スマートフォンが対応機種で、電源が入っており、手の届く範囲にあることを確認してください。&lt;a&gt;詳細&lt;/a&gt;</translation>
@@ -1730,7 +1729,6 @@
 <translation id="3613422051106148727">新しいタブで開く(&amp;O)</translation>
 <translation id="3616113530831147358">音声</translation>
 <translation id="3616741288025931835">閲覧履歴を消去(&amp;C)...</translation>
-<translation id="3618849550573277856">「<ph name="LOOKUP_STRING" />」を検索</translation>
 <translation id="3620292326130836921">すべてバックアップ済みです。</translation>
 <translation id="3623574769078102674">この監視対象ユーザーは <ph name="MANAGER_EMAIL" /> によって管理されます。</translation>
 <translation id="3625258641415618104">スクリーンショットが無効</translation>
@@ -2145,7 +2143,6 @@
 <translation id="428565720843367874">このファイルのスキャン中にウイルス対策ソフトウェアで予期しないエラーが発生しました。</translation>
 <translation id="428608937826130504">シェルフ アイテム 8</translation>
 <translation id="4287502004382794929">このデバイスを登録するソフトウェア ライセンスを持っていません。さらに購入するには、販売担当者にお問い合わせください。このメッセージが間違って表示されていると思われる場合は、サポートにお問い合わせください。</translation>
-<translation id="4289300219472526559">読み上げを開始</translation>
 <translation id="4289540628985791613">概要</translation>
 <translation id="4296575653627536209">監視対象ユーザーを追加</translation>
 <translation id="4297322094678649474">言語を変更</translation>
@@ -2242,7 +2239,7 @@
 <translation id="4478664379124702289">リンク先を別名で保存(&amp;K)...</translation>
 <translation id="4479424953165245642">キオスク アプリケーションを管理</translation>
 <translation id="4479639480957787382">イーサネット</translation>
-<translation id="4480590691557335796">Chrome で、パソコン上の有害なソフトウェアを探して削除することができます。</translation>
+<translation id="4480590691557335796">Chrome で、パソコン上の有害なソフトウェアを探して削除することができます</translation>
 <translation id="4481249487722541506">パッケージ化されていない拡張機能を読み込む...</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
@@ -2406,6 +2403,7 @@
 <translation id="4748762018725435655">Chrome ウェブストアから拡張機能を取得する必要があります</translation>
 <translation id="4750394297954878236">候補</translation>
 <translation id="475088594373173692">最初のユーザー</translation>
+<translation id="4751476147751820511">モーション センサーまたは光センサー</translation>
 <translation id="4756378406049221019">停止 / 再読み込み</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
@@ -2440,7 +2438,6 @@
 <translation id="4813512666221746211">ネットワーク エラー</translation>
 <translation id="4816492930507672669">ページサイズに合わせる</translation>
 <translation id="4820334425169212497">いいえ、表示されていません</translation>
-<translation id="4821725298388681253">これは早期リリースです。検索、テキスト入力といった一部の機能はまだご利用いただけません。</translation>
 <translation id="4821935166599369261">プロファイル記録の開始(&amp;P)</translation>
 <translation id="4823484602432206655">ユーザー設定とデバイス設定の読み取りと変更</translation>
 <translation id="4823651846660089135">デバイスは読み取り専用です</translation>
@@ -3451,7 +3448,6 @@
 <translation id="6388771388956873507">端末の指紋認証センサーに指を置きます</translation>
 <translation id="6390799748543157332">このウィンドウで開いたページはブラウザの履歴に記録されません。また、開いているゲスト ウィンドウをすべて閉じると、Cookie などのデータはパソコンから消去されます。ただし、ダウンロードしたファイルは保持されます。</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />システム情報<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />指標データ<ph name="END_LINK2" />を送信する</translation>
-<translation id="6397363302884558537">読み上げを停止</translation>
 <translation id="6397592254427394018">すべてのブックマークをシークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="6398715114293939307">Google Play ストアを削除</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
@@ -4024,6 +4020,7 @@
 <translation id="7297443947353982503">ユーザー名/パスワードが正しくないか、EAP 認証に失敗しました</translation>
 <translation id="729761647156315797">言語とキーボードの選択</translation>
 <translation id="7299337219131431707">ゲストのブラウジングを許可する</translation>
+<translation id="7303900363563182677">このサイトでは、クリップボードにコピーされているテキストや画像へのアクセスがブロックされています</translation>
 <translation id="730515362922783851">ローカル ネットワークまたはインターネット上のデバイスとのデータ交換</translation>
 <translation id="7308002049209013926">ランチャーを使うと、新しいアプリやアクティビティにすばやく移動できます。キーボードからランチャーを表示するには、Alt+Shift+L キーを押します。</translation>
 <translation id="7309257895202129721">コントロールを表示(&amp;C)</translation>
@@ -4407,6 +4404,7 @@
 <translation id="7909969815743704077">シークレット モードでダウンロード</translation>
 <translation id="7910768399700579500">新しいフォルダ(&amp;N)</translation>
 <translation id="7912080627461681647">サーバーでパスワードが変更されました。いったんログアウトして再度ログインしてください。</translation>
+<translation id="7912883689016444961">モバイル ネットワークを設定</translation>
 <translation id="7915471803647590281">フィードバックを送信する前に、問題の詳細を入力してください。</translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> を待機しています...</translation>
@@ -4918,6 +4916,7 @@
 <translation id="8736288397686080465">このサイトはバックグラウンドで更新されました。</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> の代わりに「<ph name="PROTOCOL" />」リンクを開く</translation>
 <translation id="8737709691285775803">サクラ</translation>
+<translation id="8741316211671074806">ピクチャー イン ピクチャー</translation>
 <translation id="8743864605301774756">1 時間前に更新されました</translation>
 <translation id="8749863574775030885">不明なベンダーの USB デバイスへのアクセス</translation>
 <translation id="8754200782896249056">&lt;p&gt;<ph name="PRODUCT_NAME" /> をサポート対象のデスクトップ環境で実行するとシステムのプロキシ設定が使用されますが、お使いのシステムがサポートされていないか、システム設定の適用で問題が発生した可能性があります。&lt;/p&gt;
@@ -5020,7 +5019,6 @@
 <translation id="8912793549644936705">拡大</translation>
 <translation id="8915370057835397490">候補を読み込んでいます</translation>
 <translation id="8916476537757519021">シークレット サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831"><ph name="ACCOUNT_FULL_NAME" /> に同期</translation>
 <translation id="8922013791253848639">このサイトで常に広告を許可します</translation>
 <translation id="8925458182817574960">設定(&amp;S)</translation>
 <translation id="8926389886865778422">再表示させない</translation>

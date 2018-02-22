@@ -115,6 +115,7 @@
 <translation id="5386450000063123300">Обновление Chromium (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="5398878173008909840">Доступна новая версия Chromium.</translation>
 <translation id="5427571867875391349">Сделать Chromium браузером по умолчанию</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium (бета-версия)</translation>
 <translation id="5466153949126434691">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
@@ -187,6 +188,7 @@
 <ph name="BEGIN_LINK_2" />Подробнее…<ph name="END_LINK_2" />
 
 Дальнейшие инструкции отправлены на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium для разработчиков</translation>
 <translation id="7451052299415159299">Для этого сайта Chromium запрашивает доступ к камере.</translation>
 <translation id="7483335560992089831">Невозможно установить ту же версию Chromium, которая уже присутствует в системе. Закройте Chromium и повторите попытку.</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
@@ -200,6 +202,7 @@
 <translation id="7756122083761163394">Данные этого пользователя о работе в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chrome как $2.</translation>
 <translation id="7773960292263897147">Внимание! Chromium не может запретить расширениям записывать историю просмотров. Чтобы отключить данное расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="7774736947049807614">Ошибка сертификата аутентификации. Войдите в Chromium как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="7937630085815544518">Ранее вы входили в Chromium как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7962572577636132072">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>

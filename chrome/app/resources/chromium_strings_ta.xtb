@@ -117,6 +117,7 @@
 <translation id="5386450000063123300">Chromiumஐப் புதுப்பிக்கிறது (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium இன் புதிய பதிப்பு கிடைக்கிறது.</translation>
 <translation id="5427571867875391349">உங்கள் இயல்புநிலை உலாவியாக Chromium ஐ அமை</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium பீட்டா</translation>
 <translation id="5466153949126434691">Chromium தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள். இந்தப் பதிவிறக்கம் முடியும்போது, Chromium மறுதொடக்கம் செய்யும், பிறகு உங்கள் பணியைத் தொடரலாம்.</translation>
 <translation id="5479196819031988440">Chromium OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="5480860683791598150">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர, Chromiumக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை</translation>
@@ -191,6 +192,7 @@
 <ph name="BEGIN_LINK_2" />மேலும் அறிக<ph name="END_LINK_2" />
 
 தொடர்ச்சியான வழிமுறைகளுக்கு, <ph name="ACCOUNT_EMAIL" /> இல் உங்கள் மின்னஞ்சலைப் பார்க்கவும்.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - டெவெலப்பர்களுக்கான Chromium</translation>
 <translation id="7451052299415159299">இந்தத் தளத்திற்காகக் கேமராவை அணுக, Chromiumக்கு அனுமதி தேவை</translation>
 <translation id="7483335560992089831">தற்போது இயக்கத்தில் உள்ள அதே பதிப்புள்ள Chromium ஐ நிறுவ முடியாது. Chromium ஐ மூடி, பின்னர் முயலவும்.</translation>
 <translation id="7549178288319965365">Chromium OS அறிமுகம்</translation>
@@ -204,6 +206,7 @@
 <translation id="7756122083761163394">இவரின் உலாவல் தரவு சாதனத்திலிருந்து நீக்கப்படும். தரவை மீட்டெடுக்க, Chrome இல் $2 ஆக உள்நுழையவும்.</translation>
 <translation id="7773960292263897147">எச்சரிக்கை: நீட்டிப்புகள் உங்கள் உலாவல் வரலாற்றைப் பதிவுசெய்வதை Chromium ஆல் தடுக்க முடியவில்லை. மறைநிலையில் இந்த நீட்டிப்பை முடக்க, இந்த விருப்பத்தைத் தேர்வுநீக்கவும்.</translation>
 <translation id="7774736947049807614">அங்கீகாரச் சான்றிதழ் தோல்வி. மீண்டும் Chromium இல் <ph name="USER_NAME" /> ஆக உள்நுழையவும் அல்லது நிர்வாகியைத் தொடர்புகொண்டு, கூடுதல் தகவலைப் பெறவும். <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கப்படவில்லை என்பதால், புதிய அம்சங்களையும் பாதுகாப்புத் திருத்தங்களையும் தவறவிடுகிறீர்கள்.</translation>
 <translation id="7937630085815544518">Chromium இல் <ph name="USER_EMAIL_ADDRESS" /> ஆக உள்நுழைந்திருந்தீர்கள். மீண்டும் உள்நுழைய அதே கணக்கைப் பயன்படுத்தவும்.</translation>
 <translation id="7962572577636132072">Chromium தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள்.</translation>

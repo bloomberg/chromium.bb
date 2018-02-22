@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Vieritä tähän</translation>
 <translation id="3234408098842461169">Nuoli al.</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 päivä}other{# päivää}}</translation>
+<translation id="335581015389089642">Puhe</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 päivä jäljellä}other{# päivää jäljellä}}</translation>
+<translation id="3618849550573277856">Hae ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Valitse lähetettävä kansio</translation>
 <translation id="3660179305079774227">Nuoli yl.</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> Gt/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">siirry</translation>
 <translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 kuukausi sitten}other{# kuukautta sitten}}</translation>
+<translation id="4289300219472526559">Aloita puhuminen</translation>
 <translation id="4316910396681052118">KAIKKI SOVELLUKSET</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="4724120544754982507">Ilmoituskeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lukematonta ilmoitusta</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">SOVELLUSEHDOTUKSET</translation>
 <translation id="6364916375976753737">Vieritä vasemmalle</translation>
 <translation id="6394627529324717982">Pilkku</translation>
+<translation id="6397363302884558537">Lopeta puhuminen</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 s sitten}other{# s sitten}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekunti sitten}other{# sekuntia sitten}}</translation>
 <translation id="654149438358937226">Estä kaikki ilmoitukset</translation>

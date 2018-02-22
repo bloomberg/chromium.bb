@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">ఇక్కడ స్క్రోల్ చెయ్యండి</translation>
 <translation id="3234408098842461169">క్రింది బాణం</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 రోజు}other{# రోజులు}}</translation>
+<translation id="335581015389089642">ప్రసంగం</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 రోజు మిగిలి ఉంది}other{# రోజులు మిగిలి ఉన్నాయి}}</translation>
+<translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="364720409959344976">అప్‌లోడ్ చేయడానికి ఫోల్డర్‌ని ఎంచుకోండి</translation>
 <translation id="3660179305079774227">ఎగువ బాణం</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">వెళ్ళు</translation>
 <translation id="4250229828105606438">స్క్రీన్‌షాట్</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
+<translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
 <translation id="4316910396681052118">అన్ని అనువర్తనాలు</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చెయ్యి</translation>
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">యాప్ సూచనలు</translation>
 <translation id="6364916375976753737">ఎడమకి స్క్రోల్ చేయి</translation>
 <translation id="6394627529324717982">కామా</translation>
+<translation id="6397363302884558537">మాట్లాడటాన్ని ఆపివేయి</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 సెక. క్రితం}other{# సెక. క్రితం}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 సెకను క్రితం}other{# సెకన్ల క్రితం}}</translation>
 <translation id="654149438358937226">అన్ని నోటిఫికేషన్‌లను బ్లాక్ చేయి</translation>

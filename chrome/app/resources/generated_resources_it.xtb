@@ -725,7 +725,7 @@
 <translation id="2128691215891724419">Errore di sincronizzazione. Aggiorna la passphrase di sincronizzazione...</translation>
 <translation id="2129825002735785149">Aggiorna il plug-in</translation>
 <translation id="2129904043921227933">Errore di sincronizzazione. Aggiorna la passphrase di sincronizzazione...</translation>
-<translation id="2130949041518253417">Attiva la sincronizzazione per avere un'esperienza di navigazione personalizzata sui tuoi dispositivi</translation>
+<translation id="2130949041518253417">Sincronizza per un'esperienza di navigazione personalizzata, attraverso i tuoi dispositivi</translation>
 <translation id="2131077480075264">Impossibile installare "<ph name="APP_NAME" />" perché non è consentita da "<ph name="IMPORT_NAME" />"</translation>
 <translation id="2135787500304447609">&amp;Riprendi</translation>
 <translation id="2136372518715274136">Inserisci la nuova password</translation>
@@ -882,6 +882,7 @@
 <translation id="2359345697448000899">Gestisci le tue estensioni facendo clic su Estensioni nel menu Strumenti.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="236141728043665931">Impedisci sempre l'accesso al microfono</translation>
+<translation id="2365507699358342471">Questo sito può leggere testo e immagini copiati negli appunti</translation>
 <translation id="2367972762794486313">Mostra app</translation>
 <translation id="2371076942591664043">Apri al &amp;termine</translation>
 <translation id="2377319039870049694">Passa alla visualizzazione elenco</translation>
@@ -1268,7 +1269,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2916073183900451334">Se premi Tab in una pagina web vengono evidenziati i link, così come i campi dei moduli</translation>
 <translation id="2916745397441987255">Cerca tra le estensioni</translation>
 <translation id="2921081876747860777">Crea una password per proteggere i tuoi dati locali.</translation>
-<translation id="2924395203970765374">Sincronizzato con <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Fogli</translation>
 <translation id="2927017729816812676">Spazio di archiviazione cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (account di minori)</translation>
@@ -1549,7 +1549,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3348459612390503954">Complimenti</translation>
 <translation id="3349933790966648062">Footprint di memoria</translation>
 <translation id="3353984535370177728">Seleziona una cartella da caricare</translation>
-<translation id="335581015389089642">Voce</translation>
 <translation id="3355936511340229503">Errore di connessione</translation>
 <translation id="3356797067524893661">Sei pronto per continuare su Hangouts Meet</translation>
 <translation id="3358935496594837302">Impossibile trovare il telefono. Assicurati di usare un telefono Android compatibile che sia acceso e a portata di mano. &lt;a&gt;Ulteriori informazioni&lt;/a&gt;</translation>
@@ -1726,7 +1725,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3613422051106148727">&amp;Apri in un'altra scheda</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Cancella dati di navigazione...</translation>
-<translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Backup di tutti i contenuti completato.</translation>
 <translation id="3623574769078102674">Questo utente supervisionato verrà gestito da <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Screenshot disabilitati</translation>
@@ -2136,12 +2134,11 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4281844954008187215">Termini di servizio</translation>
 <translation id="4282196459431406533">Funzione Smart Lock attiva</translation>
 <translation id="4284105660453474798">Eliminare "$1"?</translation>
-<translation id="4285418559658561636">Aggiorna password</translation>
+<translation id="4285418559658561636">Aggiorna Password</translation>
 <translation id="4285498937028063278">Sblocca</translation>
 <translation id="428565720843367874">La scansione del software antivirus non è inaspettatamente riuscita durante la scansione di questo file.</translation>
 <translation id="428608937826130504">Elemento 8 della shelf</translation>
 <translation id="4287502004382794929">Non disponi di licenze software sufficienti per registrare questo dispositivo. Contatta l'ufficio vendite per acquistarne altre. Se ritieni che questo messaggio sia stato visualizzato per sbaglio, contatta l'assistenza.</translation>
-<translation id="4289300219472526559">Avvia comandi vocali</translation>
 <translation id="4289540628985791613">Panoramica</translation>
 <translation id="4296575653627536209">Aggiungi utente supervisionato</translation>
 <translation id="4297322094678649474">Cambia le lingue</translation>
@@ -2402,6 +2399,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4748762018725435655">Richiede estensione dal Chrome Web Store</translation>
 <translation id="4750394297954878236">Suggerimenti</translation>
 <translation id="475088594373173692">Primo utente</translation>
+<translation id="4751476147751820511">Sensori di movimento o della luce</translation>
 <translation id="4756378406049221019">Interrompi/Ricarica</translation>
 <translation id="4756388243121344051">&amp;Cronologia</translation>
 <translation id="4759238208242260848">Download</translation>
@@ -2436,7 +2434,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4813512666221746211">Errore di rete</translation>
 <translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4820334425169212497">No, non lo vedo</translation>
-<translation id="4821725298388681253">Si tratta di una versione in anteprima. Alcune funzioni, ad esempio la ricerca e l'immissione di testo, non sono ancora disponibili.</translation>
 <translation id="4821935166599369261">&amp;Profiling attivato</translation>
 <translation id="4823484602432206655">Lettura e modifica delle impostazioni utente e dispositivo</translation>
 <translation id="4823651846660089135">Il dispositivo è in sola lettura</translation>
@@ -2819,7 +2816,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5398772614898833570">Annunci bloccati</translation>
 <translation id="5402815541704507626">Scarica l'aggiornamento usando i dati mobili</translation>
 <translation id="540296380408672091">Blocca sempre i cookie su <ph name="HOST" /></translation>
-<translation id="5405146885510277940">Reimposta impostazioni</translation>
+<translation id="5405146885510277940">Reimposta</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
 <translation id="5409029099497331039">Sorprendimi</translation>
 <translation id="5411472733320185105">Non utilizzare le impostazioni proxy per i seguenti host e domini:</translation>
@@ -3446,7 +3443,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6388771388956873507">Individua il sensore di impronte digitali sul dispositivo e toccalo con il dito</translation>
 <translation id="6390799748543157332">Le pagine visualizzate in questa finestra non verranno memorizzate nella cronologia del browser e non lasceranno altre tracce, ad esempio cookie, sul computer dopo la chiusura di tutte le finestre Ospite aperte. Tutti i file scaricati verranno comunque conservati.</translation>
 <translation id="6395423953133416962">Invia <ph name="BEGIN_LINK1" />informazioni di sistema<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />metriche<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Interrompi comandi vocali</translation>
 <translation id="6397592254427394018">Apri tutti i Preferiti nella finestra di navigazione in &amp;incognito</translation>
 <translation id="6398715114293939307">Rimuovi il Google Play Store</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
@@ -4019,6 +4015,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7297443947353982503">Nome utente/password errati o autenticazione EAP non riuscita</translation>
 <translation id="729761647156315797">Scegli la lingua e la tastiera</translation>
 <translation id="7299337219131431707">Attiva navigazione come ospite</translation>
+<translation id="7303900363563182677">A questo sito è stato impedito di leggere testo e immagini copiati negli appunti</translation>
 <translation id="730515362922783851">Scambiare dati con qualsiasi dispositivo sulla rete locale o su Internet</translation>
 <translation id="7308002049209013926">Usa Avvio applicazioni per accedere rapidamente a nuove app e attività. Per accedere usando la tastiera, premi ALT + MAIUSC + L.</translation>
 <translation id="7309257895202129721">Visualizza &amp;comandi</translation>
@@ -4391,6 +4388,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7909969815743704077">Scaricato in modalità in incognito</translation>
 <translation id="7910768399700579500">&amp;Nuova cartella</translation>
 <translation id="7912080627461681647">La password è stata modificata sul server. Esci e accedi nuovamente.</translation>
+<translation id="7912883689016444961">Configura la rete mobile</translation>
 <translation id="7915471803647590281">Comunicaci cosa sta accadendo prima di inviare il feedback.</translation>
 <translation id="7925247922861151263">Controllo AAA non riuscito</translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME" />...</translation>
@@ -4785,7 +4783,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8569682776816196752">Nessuna destinazione trovata</translation>
 <translation id="8569764466147087991">Seleziona un file da aprire</translation>
 <translation id="8571213806525832805">Ultime 4 settimane</translation>
-<translation id="8571613743082299268">Reindirizzamento bloccato al seguente sito:</translation>
+<translation id="8571613743082299268">Reindirizzamento bloccato al seguente sito</translation>
 <translation id="8574990355410201600">Consenti sempre l'audio su <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Non può superare le 99 lettere</translation>
 <translation id="8579285237314169903">Sincronizzazione di <ph name="NUMBER_OF_FILES" /> elementi...</translation>
@@ -4902,6 +4900,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8736288397686080465">Il sito è stato aggiornato in background.</translation>
 <translation id="8737685506611670901">Aprire link <ph name="PROTOCOL" /> anziché <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">Picture-in-Picture</translation>
 <translation id="8743864605301774756">Aggiornata 1 ora fa</translation>
 <translation id="8749863574775030885">Accedi a dispositivi USB di fornitori sconosciuti</translation>
 <translation id="8754200782896249056">&lt;p&gt;Quando esegui <ph name="PRODUCT_NAME" /> in un ambiente desktop supportato, vengono utilizzate le impostazioni proxy del sistema. Tuttavia, il tuo sistema non è supportato o si è verificato un problema durante l'avvio della tua configurazione di sistema.&lt;/p&gt;
@@ -5004,7 +5003,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8912793549644936705">Allunga</translation>
 <translation id="8915370057835397490">Caricamento suggerimento</translation>
 <translation id="8916476537757519021">Frame secondario modalità di navigazione in incognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sincronizza con <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Consenti sempre gli annunci su questo sito</translation>
 <translation id="8925458182817574960">&amp;Impostazioni</translation>
 <translation id="8926389886865778422">Non visualizzare più questo avviso</translation>

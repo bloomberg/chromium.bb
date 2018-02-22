@@ -1270,7 +1270,6 @@
 <translation id="2916073183900451334">አንድ ድረ-ገጽ ላይ Tabን መጫን አገናኞችንና እንዲሁም የቅጽ መስኮችን ያደምቃል።</translation>
 <translation id="2916745397441987255">በቅጥያዎች ውስጥ ይፈልጉ</translation>
 <translation id="2921081876747860777">እባክዎ አካባቢያዊ ውሂብዎን ለመጠበቅ የይለፍ ቃል ይፍጠሩ</translation>
-<translation id="2924395203970765374">ከ<ph name="FULL_NAME" /> ጋር ሰምሯል</translation>
 <translation id="2925966894897775835">ሉሆች</translation>
 <translation id="2927017729816812676">የመሸጎጫ ማከማቻ</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (የህጻናት መለያ)</translation>
@@ -1553,7 +1552,6 @@
 <translation id="3348459612390503954">እንኳን ደስ አለዎት</translation>
 <translation id="3349933790966648062">የማህደረ ትውስታ</translation>
 <translation id="3353984535370177728">የሚሰቅሉትን አቃፊ ይምረጡ</translation>
-<translation id="335581015389089642">ንግግር</translation>
 <translation id="3355936511340229503">የግንኙነት ስህተት</translation>
 <translation id="3356797067524893661">ወደ Hangouts Meet ለመቀጠል ሙሉ በሙሉ ተዘጋጅተዋል</translation>
 <translation id="3358935496594837302">የእርስዎን ስልክ ማግኘት አልተቻለም። የበራ እና በቅርብ ርቀት የሚገኝ ተኳሃኝ የሆነ የAndroid ስልክ እየተጠቀሙ መሆንዎን ያረጋግጡ። &lt;a&gt;የበለጠ ለመረዳት&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@
 <translation id="3613422051106148727">&amp;አዲስ ትር ውስጥ ክፈት</translation>
 <translation id="3616113530831147358">ድምጽ</translation>
 <translation id="3616741288025931835">&amp;የአሰሳ ውሂብ አጽዳ…</translation>
-<translation id="3618849550573277856">«<ph name="LOOKUP_STRING" />»ን ፈልግ</translation>
 <translation id="3620292326130836921">ሁሉም በምትኬ ተቀምጧል!</translation>
 <translation id="3623574769078102674">ይህ ክትትል የሚደረግበት ተጠቃሚ በ<ph name="MANAGER_EMAIL" /> ነው የሚተዳደረው።</translation>
 <translation id="3625258641415618104">ቅጽበታዊ-ገጽ እይታዎች ተሰናክለዋል</translation>
@@ -2143,7 +2140,6 @@
 <translation id="428565720843367874">የጸረ-ቫይረስ ሶፍትዌር ይህንን ፋይል እየቃኘ ሳለ ድንገት አልተሳካም።</translation>
 <translation id="428608937826130504">የመደርደሪያ ንጥል 8</translation>
 <translation id="4287502004382794929">ይህን መሣሪያ ለመመዝገብ በቂ የሆኑ የሶፍትዌር ፍቃዶች የለዎትም። ተጨማሪ ለመመዝገብ እባክዎ ሽያጭን ያግኙ። ይህን መልዕክት የሚያዩት በስህተት ነው ብለው ካመኑ እባክዎ ድጋፍን ያግኙ።</translation>
-<translation id="4289300219472526559">መናገር ይጀምሩ</translation>
 <translation id="4289540628985791613">ማጠቃለያ</translation>
 <translation id="4296575653627536209">ክትትል የሚደረግበት ተጠቃሚ አክል</translation>
 <translation id="4297322094678649474">ቋንቋዎችን ይቀይሩ</translation>
@@ -2439,7 +2435,6 @@
 <translation id="4813512666221746211">የአውታረ መረብ ስህተት</translation>
 <translation id="4816492930507672669">ገጹን አመጣጥን</translation>
 <translation id="4820334425169212497">አይ፣ አይታየኝም</translation>
-<translation id="4821725298388681253">ይህ ገና የመጀመሪያ ልቀት ነው። እንደ ፍለጋ እና የጽሑፍ ግቤት ያሉ አንዳንድ ባህሪያት እስካሁን ሊገኙ የሚችሉ አይደሉም።</translation>
 <translation id="4821935166599369261">&amp;መገለጫ መስራት ነቅቷል</translation>
 <translation id="4823484602432206655">የተጠቃሚ እና የመሣሪያ ቅንብሮችን ያንብቡ እና ይለውጡ</translation>
 <translation id="4823651846660089135">መሣሪያው ተነባቢ-ብቻ ነው</translation>
@@ -3449,7 +3444,6 @@
 <translation id="6388771388956873507">በመሣሪያዎ ላይ ያለውን የጣት አሻራ ዳሳሽ ያግኙትና በጣትዎ ይንኩት</translation>
 <translation id="6390799748543157332">በዚህ መስኮት ውስጥ የሚመለከቷቸውን ገጾች በአሰሳ ታሪክዎ ላይ የማይታዩ ሲሆን ሁሉንም የተከፈቱ የእንግዳ መስኮቶችን ከዘጉ በኋላ እንደ ኩኪዎች ያሉ ሌሎች መከታተያዎች በእርስዎ ኮምፒውተር ላይ አይተዉም። ይሁንና ማንኛውም የሚያወርዷቸው ፋይሎች ይቀመጣሉ።</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />የስርዓት መረጃ<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />ልኬቶች<ph name="END_LINK2" /> ይላኩ</translation>
-<translation id="6397363302884558537">መናገር አቁም</translation>
 <translation id="6397592254427394018">&amp;ሁሉንም እልባቶች ማንነትን በስውር መስኮት ክፈት</translation>
 <translation id="6398715114293939307">Google Play መደብርን አስወግድ</translation>
 <translation id="6398765197997659313">ከሙሉ ማሳያ መስኮት ይውጡ</translation>
@@ -5024,7 +5018,6 @@ nil</translation>
 <translation id="8912793549644936705">ወጥር</translation>
 <translation id="8915370057835397490">የጥቆማ አስተያየት በመጫን ላይ</translation>
 <translation id="8916476537757519021">ማንነት የማያሳውቅ ንዑስ ክፈፍ፦ <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">ከ<ph name="ACCOUNT_FULL_NAME" /> ጋር አስምር</translation>
 <translation id="8922013791253848639">ሁልጊዜ በዚህ ጣቢያ ላይ ማስታወቂያዎችን አሳይ</translation>
 <translation id="8925458182817574960">&amp;ቅንብሮች</translation>
 <translation id="8926389886865778422">ደግመው አይጠይቁ</translation>

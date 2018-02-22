@@ -207,6 +207,7 @@
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME" /> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
 <translation id="1750315445671978749">Az összes letöltés letiltása</translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
+<translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
 <translation id="1803646570632580723">Az indítóban megjeleníteni kívánt rögzített alkalmazások listája</translation>
 <translation id="1808715480127969042">Cookie-k letiltása ezeken a webhelyeken</translation>
 <translation id="1827523283178827583">Használjon fix proxyszervereket</translation>
@@ -279,6 +280,11 @@
 
           Ha a házirend konfigurálatlanul marad, a böngésző mind a négy sémát használhatja.</translation>
 <translation id="2067011586099792101">A tartalomcsomagokon kívüli webhelyekhez való hozzáférés letiltása</translation>
+<translation id="2070270043919235595">Értesíti a felhasználót arról, hogy újra kell indítani a <ph name="PRODUCT_NAME" /> böngészőt a függőben lévő frissítés élesítéséhez.
+
+      Ezen házirend-beállítás használatával a felhasználó értesítéseken keresztül tudomást szerezhet arról, hogy ajánlott, illetve szükséges a böngésző újraindítása. Ha nincs beállítva, a <ph name="PRODUCT_NAME" /> a menüben található apró módosításokkal jelzi a felhasználónak, hogy szükség van az újraindításra. Ha a házirend beállítása „Ajánlott”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára az ajánlott újraindítással kapcsolatban. A felhasználónak lehetősége van a figyelmeztetés elvetésére és az újraindítás elhalasztására. Ha a házirend beállítása „Szükséges”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára, amely szerint a rendszer kényszeríti a böngésző újraindítását az értesítési időszak lejárta után. Ez az időszak alapértelmezés szerint hét nap, és a <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> házirend-beállításnál módosítható.
+
+      Az újraindítás után a rendszer visszaállítja a felhasználói munkamenetet.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2077273864382355561">Képernyő kikapcsolásának késleltetése akkumulátorról való működés során</translation>
 <translation id="2082205219176343977">Az engedélyezett legrégebbi Chrome-verzió beállítása az eszközön.</translation>
@@ -323,6 +329,9 @@
       Ha konfigurálta ezt a beállítást, a gyorsfeloldást használó felhasználóknak a beállítástól függően kell beírniuk jelszavukat a lezárási képernyőn.
 
       Ha nem konfigurálta ezt a beállítást, a gyorsfeloldást használó felhasználóknak minden nap be kell írniuk jelszavukat a lezárási képernyőn.</translation>
+<translation id="2188722565665306629">Lehetővé teszi annak az időszaknak a beállítását, amely során a <ph name="PRODUCT_NAME" /> újraindítására vonatkozó értesítések jelennek meg a függőben lévő frissítéssel kapcsolatban.
+
+      Ezen házirend-beállítás segítségével ezredmásodpercben adható meg az az időszak, amely során a rendszer folyamatosan tájékoztatja a felhasználót arról, hogy frissítés miatt szükség van a <ph name="PRODUCT_NAME" /> (vagy a <ph name="PRODUCT_OS_NAME" />) újraindítására. Ezen időszak során a rendszer újra és újra tájékoztatja a felhasználót a frissítés szükségességéről a <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> házirend beállítása alapján. Ha a házirend értéke nincs megadva, a rendszer alapértelmezés szerint 604 800 000 ezredmásodperces időszakot (egy hét) vesz alapul.</translation>
 <translation id="2194470398825717446">Ezt a házirendet megszüntettük az M61 verzióban, használja helyette az EcryptfsMigrationStrategy házirendet.
 
       Meghatározza az olyan eszközök viselkedését, amelyek ecryptfs titkosítással rendelkeznek, és amelyeket át kell ültetni ext4 titkosításra.
@@ -509,6 +518,13 @@
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
+<translation id="2726613915126661822">Segítségével szabályozhatja, hogy futhatnak-e virtuális gépek a Chrome OS rendszeren.
+
+      Ha a házirend értéke „Igaz”, az eszközön futhatnak virtuális gépek.
+      Ha a házirend értéke „Hamis”, az eszközön nem futhatnak virtuális gépek.
+      Amikor „Hamis” értékre állítja ezt a házirendet, a módosítás az új virtuális gépek indítására vonatkozik, de nem kapcsolja ki a már futó virtuális gépeket.
+      Ha a házirend nincs beállítva kezelt eszközön, az eszköz számára nem lesz engedélyezve a virtuális gépek futtatása.
+      A nem kezelt eszközök számára engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
@@ -724,6 +740,7 @@
           Ezt a szabályt nem kötelező beállítani. Ha nincs megadva, nem lesz új lap oldal megjelenítve.
 
           A rendszer csak akkor veszi figyelembe ezt a szabályt, ha a „DefaultSearchProviderEnabled” szabály engedélyezve van.</translation>
+<translation id="3465852069254497664">A felhasználó értesítése arról, hogy ajánlott, illetve szükséges a böngésző újraindítása</translation>
 <translation id="346731943813722404">Meghatározza, hogy az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja egy munkamenet során csak az első felhasználói tevékenység észlelése után kezdődjön-e.
 
           Ha az irányelv beállítása Igaz, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja nem indul el egy munkamenet során az első felhasználói tevékenység észleléséig.
@@ -757,6 +774,7 @@
 <translation id="3711895659073496551">Felfüggesztés</translation>
 <translation id="3736879847913515635">Engedélyezi a személyek hozzáadását a felhasználókezelőben</translation>
 <translation id="3737544779868348650">Eszköz hálózati gazdagépneve</translation>
+<translation id="3740754010292550733">A frissítéssel kapcsolatos újraindítási értesítésekhez tartozó időszak beállítása</translation>
 <translation id="3750220015372671395">Kulcslétrehozás letiltása a következő webhelyeken</translation>
 <translation id="3756011779061588474">Fejlesztői mód letiltása</translation>
 <translation id="3758089716224084329">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
@@ -1429,6 +1447,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Amennyiben beállítja ezt a házirendet, a felhasználók ideiglenesen felülbírálhatják a nagy mutató engedélyezésével vagy letiltásával. A felhasználó döntése azonban nem végleges, és az alapértelmezett beállítás lép érvénybe a bejelentkezési képernyő ismételt megjelenítésekor, vagy ha a felhasználó egy percig nem hajt végre semmilyen tevékenységet a bejelentkezési képernyőn.
 
           Ha nem állítja be ezt a házirendet, akkor a nagy egérmutató le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a nagy egérmutatót, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
+<translation id="5929855945144989709">Virtuális gépek futtatásának engedélyezése eszközök számára Chrome OS rendszeren</translation>
 <translation id="5932767795525445337">Ez a házirend Android-alkalmazások rögzítésére is használható.</translation>
 <translation id="5936622343001856595">Hatására a Google Internetes Kereső bekapcsolt Biztonságos Keresés mellett végez lekérdezéseket, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
@@ -1672,6 +1691,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       A(z) <ph name="SYNC_DISABLED_POLICY_NAME" /> házirend letilt minden adatszinkronizálást, felülbírálva a RoamingProfileSupportEnabled házirendet.</translation>
 <translation id="6735701345096330595">A helyesírás-ellenőrzéshez használt nyelvek engedélyezésének kényszerítése</translation>
+<translation id="673699536430961464">A beállítás lehetővé teszi a felhasználók számára a Google-fiókok közötti váltást a böngészőablak tartalomterületén belül, miután bejelentkeztek <ph name="PRODUCT_OS_NAME" />-eszközükbe.
+
+      Ha a házirend beállítása „hamis”, nem engedélyezett a másik fiókba történő bejelentkezés a nem inkognitómódban használt böngésző tartalomterületén.
+
+      Ha a házirend nincs beállítva, vagy értéke „igaz”, az alapértelmezett beállítás van használatban: Engedélyezett a másik fiókba történő bejelentkezés a böngésző tartalomterületéről, kivéve gyermek fiókok esetén, amelyeknél ez a lehetőség le van tiltva a nem inkognitómódban használt tartalomterületeken.
+
+      Ha nem szeretné engedélyezni a másik fiókba történő bejelentkezést inkognitómódban, fontolja meg a mód letiltását az IncognitoModeAvailability házirenddel.
+
+      Megjegyzés: A felhasználók a cookie-k letiltásával hozzá tudnak férni a Google-szolgáltatásokhoz nem hitelesített állapotban.</translation>
 <translation id="6757438632136860443">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
@@ -1681,6 +1709,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
+<translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
 <translation id="685769593149966548">Szigorú Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME" /> 35-ös verziójától kezdve megszűnt.
 

@@ -31,7 +31,7 @@
 <translation id="1039337018183941703">Ungültige oder beschädigte Datei</translation>
 <translation id="1042174272890264476">Auch die RLZ-Bibliothek von <ph name="SHORT_PRODUCT_NAME" /> ist auf Ihrem Computer vorinstalliert. RLZ sorgt für die Zuweisung von Tags, anhand derer gemessen wird, wie sich einzelne Werbekampagnen auf die Suchanfragen und die Nutzung von <ph name="SHORT_PRODUCT_NAME" /> auswirken. Die Tags sind weder eindeutig, noch personenbezogen und kommen manchmal in Google-Suchanfragen in <ph name="PRODUCT_NAME" /> vor.</translation>
 <translation id="1046059554679513793">Dieser Name wird bereits verwendet.</translation>
-<translation id="1046286965898806214">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website speichern?</translation>
+<translation id="1046286965898806214">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Konto für diese Website speichern?</translation>
 <translation id="1047431265488717055">Linkte&amp;xt kopieren</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> Elemente werden gelöscht...</translation>
@@ -879,6 +879,7 @@
 <translation id="2359345697448000899">Klicken Sie zum Verwalten Ihrer Erweiterungen im Menü "Tools" auf "Erweiterungen".</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="236141728043665931">Zugriff auf das Mikrofon immer blockieren</translation>
+<translation id="2365507699358342471">Diese Website kann Texte und Bilder aus der Zwischenablage abrufen.</translation>
 <translation id="2367972762794486313">Apps anzeigen</translation>
 <translation id="2371076942591664043">Nach &amp;Download öffnen</translation>
 <translation id="2377319039870049694">Zur Listenansicht wechseln</translation>
@@ -1265,7 +1266,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2916073183900451334">Durch Drücken der Tab-Taste auf einer Webseite werden Links sowie Formularfelder markiert.</translation>
 <translation id="2916745397441987255">In Erweiterungen suchen</translation>
 <translation id="2921081876747860777">Erstellen Sie ein Passwort, um Ihre lokalen Daten zu schützen.</translation>
-<translation id="2924395203970765374">Mit <ph name="FULL_NAME" /> synchronisiert</translation>
 <translation id="2925966894897775835">Tabellen</translation>
 <translation id="2927017729816812676">Cache-Speicher</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Konto für Kinder)</translation>
@@ -1548,7 +1548,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3348459612390503954">Glückwunsch</translation>
 <translation id="3349933790966648062">Speicherbedarf</translation>
 <translation id="3353984535370177728">Ordner zum Hochladen auswählen</translation>
-<translation id="335581015389089642">Sprachausgabe</translation>
 <translation id="3355936511340229503">Verbindungsfehler</translation>
 <translation id="3356797067524893661">Hangouts Meet-Einrichtung abgeschlossen</translation>
 <translation id="3358935496594837302">Smartphone wurde nicht gefunden. Ihr Smartphone muss ein kompatibles Android-Smartphone sein, das eingeschaltet ist und sich in Reichweite befindet. &lt;a&gt;Weitere Informationen&lt;/a&gt;</translation>
@@ -1725,7 +1724,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3613422051106148727">In &amp;neuem Tab öffnen</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Browserdaten löschen...</translation>
-<translation id="3618849550573277856">"<ph name="LOOKUP_STRING" />" nachschlagen</translation>
 <translation id="3620292326130836921">Alle Daten gesichert</translation>
 <translation id="3623574769078102674">Dieser betreute Nutzer wird von <ph name="MANAGER_EMAIL" /> verwaltet.</translation>
 <translation id="3625258641415618104">Screenshot-Funktion deaktiviert</translation>
@@ -1797,7 +1795,7 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3727148787322499904">Änderungen dieser Einstellung wirken sich auf alle freigegebenen Netzwerke aus</translation>
 <translation id="3727187387656390258">Pop-up prüfen</translation>
 <translation id="3728067901555601989">OTP:</translation>
-<translation id="3732078975418297900">Fehler in Zeile "<ph name="ERROR_LINE" />"</translation>
+<translation id="3732078975418297900">Fehler in Zeile <ph name="ERROR_LINE" /></translation>
 <translation id="3733127536501031542">SSL-Server mit Step-up</translation>
 <translation id="3737536731758327622">Hier werden Ihre Downloads angezeigt</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
@@ -2140,7 +2138,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="428565720843367874">Beim Scannen dieser Datei durch die Antivirensoftware ist ein unerwarteter Fehler aufgetreten.</translation>
 <translation id="428608937826130504">Ablageartikel 8</translation>
 <translation id="4287502004382794929">Sie haben nicht genügend Softwarelizenzen zum Anmelden dieses Geräts. Weitere Lizenzen können Sie beim Vertrieb erwerben. Wenn Sie glauben, dass Sie diese Meldung fälschlicherweise erhalten, kontaktieren Sie den Support.</translation>
-<translation id="4289300219472526559">Sprachausgabe starten</translation>
 <translation id="4289540628985791613">Übersicht</translation>
 <translation id="4296575653627536209">Betreuten Nutzer hinzufügen</translation>
 <translation id="4297322094678649474">Sprachen ändern</translation>
@@ -2401,6 +2398,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4748762018725435655">Erweiterung aus dem Chrome Web Store erforderlich</translation>
 <translation id="4750394297954878236">Vorschläge</translation>
 <translation id="475088594373173692">Erster Nutzer</translation>
+<translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
 <translation id="4756378406049221019">Stopp/Neu laden</translation>
 <translation id="4756388243121344051">&amp;Verlauf</translation>
 <translation id="4759238208242260848">Downloads</translation>
@@ -2435,7 +2433,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4820334425169212497">Nein, dieser Code wird nicht angezeigt.</translation>
-<translation id="4821725298388681253">Dies ist eine Vorabversion. Einige Funktionen, beispielsweise die Suche und die Texteingabe, sind noch nicht verfügbar.</translation>
 <translation id="4821935166599369261">&amp;Profilerstellung aktiviert</translation>
 <translation id="4823484602432206655">Nutzer- und Geräteeinstellungen lesen und ändern</translation>
 <translation id="4823651846660089135">Gerät ist schreibgeschützt</translation>
@@ -2928,7 +2925,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5556206011531515970">Klicken Sie auf "Weiter", um Ihren Standardbrowser zu wählen.</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="555746285996217175">Sperren oder ein-/ausschalten</translation>
-<translation id="5557579359142031072">Identifizierungsinformationen zu Ihrem Sicherheitsschlüssel ansehen</translation>
+<translation id="5557579359142031072">Identifizierungsinformationen zu Ihrem Sicherheitsschlüssel abrufen</translation>
 <translation id="5557991081552967863">WLAN im Ruhemodus aktiviert lassen</translation>
 <translation id="5558129378926964177">Ver&amp;größern</translation>
 <translation id="55601339223879446">Desktopbegrenzungen auf dem Bildschirm anpassen</translation>
@@ -3446,7 +3443,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6388771388956873507">Suchen Sie den Fingerabdrucksensor Ihres Geräts und berühren Sie ihn mit dem Finger</translation>
 <translation id="6390799748543157332">In diesem Fenster aufgerufene Seiten erscheinen nicht im Browserverlauf und hinterlassen auch keine anderweitigen Spuren wie Cookies auf dem Computer, nachdem Sie alle geöffneten Gastmodus-Fenster geschlossen haben. Heruntergeladene Dateien bleiben jedoch erhalten.</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeminformationen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Messwerte<ph name="END_LINK2" /> senden</translation>
-<translation id="6397363302884558537">Sprachausgabe stoppen</translation>
 <translation id="6397592254427394018">Alle Lesezeichen in &amp;Inkognito-Fenster öffnen</translation>
 <translation id="6398715114293939307">Google Play Store entfernen</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
@@ -4019,6 +4015,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7297443947353982503">Nutzername/Passwort falsch oder Fehler bei EAP-Authentifizierung</translation>
 <translation id="729761647156315797">Sprache und Tastatur wählen</translation>
 <translation id="7299337219131431707">Gastmodus aktivieren</translation>
+<translation id="7303900363563182677">Diese Website wurde daran gehindert, Texte und Bilder aus der Zwischenablage abzurufen</translation>
 <translation id="730515362922783851">Daten mit einem beliebigen Gerät im lokalen Netzwerk oder Internet austauschen</translation>
 <translation id="7308002049209013926">Über den Launcher gelangen Sie schnell zu neuen Apps und Aktivitäten. Zum Öffnen über die Tastatur drücken Sie Alt + Shift + L.</translation>
 <translation id="7309257895202129721">&amp;Steuerelemente anzeigen</translation>
@@ -4403,6 +4400,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7909969815743704077">Im Inkognitomodus heruntergeladen</translation>
 <translation id="7910768399700579500">&amp;Neuer Ordner</translation>
 <translation id="7912080627461681647">Ihr Passwort wurde auf dem Server geändert. Bitte melden Sie sich ab und dann wieder an.</translation>
+<translation id="7912883689016444961">Mobilfunknetz konfigurieren</translation>
 <translation id="7915471803647590281">Bitte beschreiben Sie das Problem, bevor Sie das Feedback abschicken.</translation>
 <translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME" />...</translation>
@@ -4915,6 +4913,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8736288397686080465">Diese Website wurde im Hintergrund aktualisiert.</translation>
 <translation id="8737685506611670901"><ph name="PROTOCOL" />-Links anstelle von <ph name="REPLACED_HANDLER_TITLE" /> öffnen</translation>
 <translation id="8737709691285775803">Shill</translation>
+<translation id="8741316211671074806">Bild im Bild</translation>
 <translation id="8743864605301774756">Vor einer Stunde aktualisiert</translation>
 <translation id="8749863574775030885">Auf USB-Geräte von einem unbekannten Anbieter zugreifen</translation>
 <translation id="8754200782896249056">&lt;p&gt;Bei der Ausführung von <ph name="PRODUCT_NAME" /> in einer unterstützten Desktop-Umgebung werden die Proxy-Einstellungen des Systems verwendet. Allerdings wird entweder Ihr System nicht unterstützt oder Ihre Systemkonfiguration konnte nicht gestartet werden.&lt;/p&gt;
@@ -5017,7 +5016,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8912793549644936705">Strecken</translation>
 <translation id="8915370057835397490">Vorschläge werden geladen</translation>
 <translation id="8916476537757519021">Inkognito-Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Synchronisieren mit <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Werbung auf dieser Website immer zulassen</translation>
 <translation id="8925458182817574960">&amp;Einstellungen</translation>
 <translation id="8926389886865778422">Nicht mehr fragen</translation>

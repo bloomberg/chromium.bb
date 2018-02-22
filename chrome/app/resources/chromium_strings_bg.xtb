@@ -115,6 +115,7 @@
 <translation id="5386450000063123300">Chromium се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Налице е нова версия на Chromium.</translation>
 <translation id="5427571867875391349">Задаване на Chromium като браузър по подразбиране</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
 <translation id="5466153949126434691">Chromium се актуализира автоматично, така че винаги да имате най-новата версия. Когато това изтегляне завърши, Chromium ще се рестартира и ще можете да започнете работа.</translation>
 <translation id="5479196819031988440">Chromium OS не може да отвори тази страница.</translation>
 <translation id="5480860683791598150">Chromium се нуждае от достъп до данните за местоположението ви, за да ги сподели с този сайт</translation>
@@ -185,6 +186,7 @@
 <ph name="BEGIN_LINK_2" />Научете повече<ph name="END_LINK_2" />
 
 За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium се нуждае от разрешение за достъп до камерата ви за този сайт</translation>
 <translation id="7483335560992089831">Не може да се инсталира същата версия на Chromium, която се използва понастоящем. Моля, затворете браузъра и опитайте отново.</translation>
 <translation id="7549178288319965365">Всичко за Chromium OS</translation>
@@ -198,6 +200,7 @@
 <translation id="7756122083761163394">Данните за сърфирането на този човек ще се изтрият от устройството. За да ги възстановите, влезте в Chrome като $2.</translation>
 <translation id="7773960292263897147">Предупреждение: Chromium не може да попречи на разширенията да записват историята ви на сърфиране. За да деактивирате това разширение в режим „инкогнито“, премахнете отметката от тази опция.</translation>
 <translation id="7774736947049807614">Грешка в сертификата за удостоверяване. Моля, влезте отново в Chromium като <ph name="USER_NAME" /> или се свържете с администратора си за повече информация. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
 <translation id="7937630085815544518">Бяхте влезли в Chromium като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7962572577636132072">Chromium се актуализира автоматично, така че винаги да имате най-новата версия.</translation>

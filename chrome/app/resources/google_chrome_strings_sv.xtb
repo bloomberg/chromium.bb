@@ -171,6 +171,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS visas på det här språket</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Programmet som körs på datorn är inte kompatibelt med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="5895138241574237353">Starta om</translation>
@@ -182,6 +183,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6070348360322141662">Din data krypteras i Google Chrome för att öka säkerheten</translation>
 <translation id="6113794647360055231">Vi har gjort Chrome ännu bättre</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Regel som tillåter inkommande mDNS-trafik för Google Chrome.</translation>
 <translation id="6291089322031436445">Appar i Chrome Dev</translation>
@@ -189,6 +191,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="6338556085225130112">Uppdatera Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />öppen källkod<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Du kan bidra till att göra Chrome säkrare och enklare att använda genom att låta viss systeminformation och visst sidinnehåll skickas automatiskt till Google i syfte att identifiera skadliga appar och webbplatser.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du använder <ph name="PROFILE_EMAIL" /> för att synkronisera dina grejer i Chrome. Om du vill uppdatera synkroniseringsinställningen eller använda Chrome utan ett Google-konto besöker du <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>

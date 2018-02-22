@@ -117,6 +117,7 @@
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
 <translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>
 <translation id="5479196819031988440">Chromium 操作系统无法打开此网页。</translation>
 <translation id="5480860683791598150">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
@@ -191,6 +192,7 @@ Chromium 无法恢复您的设置。</translation>
 <ph name="BEGIN_LINK_2" />了解详情<ph name="END_LINK_2" />
 
 有关详细说明，请查看 <ph name="ACCOUNT_EMAIL" /> 中的电子邮件。</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium 开发者版</translation>
 <translation id="7451052299415159299">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="7549178288319965365">关于 Chromium 操作系统</translation>
@@ -204,6 +206,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7756122083761163394">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“$2”的身份登录 Chrome。</translation>
 <translation id="7773960292263897147">警告：Chromium 无法阻止扩展程序记录您的浏览活动。要在无痕模式下停用该扩展程序，请取消选中此选项。</translation>
 <translation id="7774736947049807614">身份验证失败。请以“<ph name="USER_NAME" />”的身份重新登录 Chromium，或者与您的管理员联系以了解详情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
 <translation id="7962572577636132072">Chromium会自动更新，因此您使用的始终都是最新版本。</translation>

@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Rolovať na toto miesto</translation>
 <translation id="3234408098842461169">Šípka nadol</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 deň}few{# dni}many{# dňa}other{# dní}}</translation>
+<translation id="335581015389089642">Reč</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zostáva 1 deň}few{Zostávajú # dni}many{Zostáva # dňa}other{Zostáva # dní}}</translation>
+<translation id="3618849550573277856">Vyhľadať „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Výber priečinka na nahranie</translation>
 <translation id="3660179305079774227">Šípka nahor</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">skok</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
+<translation id="4289300219472526559">Začať hovoriť</translation>
 <translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
 <translation id="4724120544754982507">Centrum upozornení – počet neprečítaných upozornení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">NÁVRHY APLIKÁCIÍ</translation>
 <translation id="6364916375976753737">Rolovať doľava</translation>
 <translation id="6394627529324717982">Čiarka</translation>
+<translation id="6397363302884558537">Prestať hovoriť</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}few{Pred # s}many{Pred # s}other{Pred # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{pred sekundou}few{pred # sekundami}many{pred # sekundami}other{pred # sekundami}}</translation>
 <translation id="654149438358937226">Blokovať všetky upozornenia</translation>

@@ -250,7 +250,7 @@
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
-<translation id="5938160824633642847">你的雲端硬碟快要滿了，請在釋出空間後再試一次。</translation>
+<translation id="5938160824633642847">你的裝置空間即將用盡，請在釋出空間後再試一次。</translation>
 <translation id="5948291296578561264">可讓你將相片儲存至相片庫。</translation>
 <translation id="5955891643922670672">正在查看離線版</translation>
 <translation id="5964480694698977962">新增無痕式分頁。</translation>
@@ -291,7 +291,7 @@
 
 您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="6418346271604475326">正在準備 PDF</translation>
-<translation id="6434591244308415567">發生錯誤，請稍後再試一次。</translation>
+<translation id="6434591244308415567">發生錯誤，請稍後再試。</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6445981559479772097">訊息已送出。</translation>
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
@@ -330,7 +330,7 @@
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
 <translation id="7272437679830969316">無法驗證你的身分，因此未複製密碼。</translation>
-<translation id="7291368939935408496">正在準備匯出密碼…</translation>
+<translation id="7291368939935408496">正在準備匯出密碼...</translation>
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">好，我知道了</translation>
 <translation id="7400418766976504921">網址</translation>

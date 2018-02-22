@@ -163,6 +163,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS vises på dette språket</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
@@ -174,6 +175,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="6070348360322141662">Google Chrome krypterer dataene dine for å øke sikkerheten</translation>
 <translation id="6113794647360055231">Nå er Chrome blitt enda bedre</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="61852838583753520">Oppdater &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Regel om innkommende trafikk for Google Chrome for å tillate mDNS-trafikk.</translation>
 <translation id="6291089322031436445">Chrome Dev-apper</translation>
@@ -181,6 +183,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="6338556085225130112">Oppdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Du kan bidra til å gjøre Chrome tryggere og enklere å bruke ved å sende Google noe systeminformasjon og sideinnhold automatisk. Dette hjelper oss med å oppdage farlige apper og nettsteder.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Oppdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruker <ph name="PROFILE_EMAIL" /> for synkronisering av Chrome-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chrome uten Google-konto, kan du gå til <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>

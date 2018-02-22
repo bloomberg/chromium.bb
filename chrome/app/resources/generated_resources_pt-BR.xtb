@@ -1270,7 +1270,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2916073183900451334">Ao pressionar Tab em uma página da Web, os links e os campos de formulário são destacados</translation>
 <translation id="2916745397441987255">Pesquisar extensões</translation>
 <translation id="2921081876747860777">Crie uma senha para proteger seus dados locais.</translation>
-<translation id="2924395203970765374">Sincronizado com <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Planilhas</translation>
 <translation id="2927017729816812676">Armazenamento de cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Conta para crianças)</translation>
@@ -1553,7 +1552,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3348459612390503954">Parabéns</translation>
 <translation id="3349933790966648062">Ocupação da memória</translation>
 <translation id="3353984535370177728">Selecionar uma pasta para upload</translation>
-<translation id="335581015389089642">Voz</translation>
 <translation id="3355936511340229503">Erro de conexão</translation>
 <translation id="3356797067524893661">Está tudo pronto para usar o Hangouts Meet</translation>
 <translation id="3358935496594837302">Não foi possível localizar seu smartphone. Certifique-se de que você esteja usando um smartphone compatível com Android ativado e acessível. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3613422051106148727">&amp;Abrir em nova guia</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3616741288025931835">&amp;Limpar dados de navegação...</translation>
-<translation id="3618849550573277856">Pesquisar “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Backup completo.</translation>
 <translation id="3623574769078102674">Este usuário supervisionado será gerenciado por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Capturas de tela desativadas</translation>
@@ -2145,7 +2142,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="428565720843367874">O software antivírus falhou inesperadamente ao verificar este arquivo.</translation>
 <translation id="428608937826130504">Item 8 da estante</translation>
 <translation id="4287502004382794929">Você não tem licenças de software suficientes para inscrever este dispositivo. Entre em contato com o departamento de vendas para adquirir mais. Se acredita que esta mensagem está aparecendo por engano, entre em contato com o suporte.</translation>
-<translation id="4289300219472526559">Comece a falar</translation>
 <translation id="4289540628985791613">Visão geral</translation>
 <translation id="4296575653627536209">Adicionar usuário supervisionado</translation>
 <translation id="4297322094678649474">Alterar idiomas</translation>
@@ -2441,7 +2437,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4813512666221746211">Erro na rede</translation>
 <translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4820334425169212497">Não, não estou vendo</translation>
-<translation id="4821725298388681253">Esta é uma versão inicial. Alguns recursos, como a pesquisa e a entrada de texto, ainda não estão disponíveis.</translation>
 <translation id="4821935166599369261">&amp;Criação de perfil ativada</translation>
 <translation id="4823484602432206655">Ler e alterar as configurações do dispositivo e usuário</translation>
 <translation id="4823651846660089135">O dispositivo é somente leitura</translation>
@@ -3454,7 +3449,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6388771388956873507">Encontre o sensor de impressão digital no dispositivo e toque nele com seu dedo</translation>
 <translation id="6390799748543157332">As páginas que você visualiza nesta janela não aparecem no histórico do navegador e não deixam outros rastros, como cookies, no computador depois que todas as janelas abertas no modo de visitante são fechadas. No entanto, todos os arquivos baixados serão preservados.</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />informações<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas do sistema<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Pare de falar</translation>
 <translation id="6397592254427394018">Abrir todos os favoritos em &amp;janela  anônima</translation>
 <translation id="6398715114293939307">Remover Google Play Store</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
@@ -5026,7 +5020,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8912793549644936705">Esticar</translation>
 <translation id="8915370057835397490">Carregando sugestão</translation>
 <translation id="8916476537757519021">Subquadro anônimo: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sincronizar com <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Sempre permitir anúncios neste site</translation>
 <translation id="8925458182817574960">&amp;Configurações</translation>
 <translation id="8926389886865778422">Não perguntar novamente</translation>

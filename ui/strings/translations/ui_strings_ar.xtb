@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">التمرير إلى هنا</translation>
 <translation id="3234408098842461169">مفتاح سهم  إلى أسفل</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{يوم واحد}zero{# من الأيام}two{يومان (#)}few{# أيام}many{# يومًا}other{# من الأيام}}</translation>
+<translation id="335581015389089642">الحديث</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
+<translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">حدد مجلدًا للتحميل</translation>
 <translation id="3660179305079774227">مفتاح سهم إلى أعلى</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> غيغابايت/ثانية</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">الدخول</translation>
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
+<translation id="4289300219472526559">بدء التحدث</translation>
 <translation id="4316910396681052118">جميع التطبيقات</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
 <translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">اقتراحات التطبيقات</translation>
 <translation id="6364916375976753737">التمرير إلى اليمين</translation>
 <translation id="6394627529324717982">فاصلة</translation>
+<translation id="6397363302884558537">إيقاف التحدث</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{قبل ثانية واحدة}zero{ قبل # من الثواني}two{ قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # من الثواني}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{قبل ثانية واحدة}zero{قبل # ثانية}two{قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # ثانية}}</translation>
 <translation id="654149438358937226">حظر جميع الإشعارات</translation>

@@ -210,6 +210,7 @@
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
+<translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
 <translation id="1808715480127969042">Blokkér informasjonskapsler på disse nettstedene</translation>
 <translation id="1827523283178827583">Bruk faste proxytjenere</translation>
@@ -286,6 +287,11 @@
 
           Hvis denne regelen ikke angis, brukes alle de fire skjemaene.</translation>
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
+<translation id="2070270043919235595">Varsle brukere om at <ph name="PRODUCT_NAME" /> må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
+
+      Denne regelen aktiverer varsler for å informere brukeren om at nettleseren må eller bør startes på nytt. Hvis regelen ikke er angitt, varsler <ph name="PRODUCT_NAME" /> brukeren om at det er nødvendig med en omstart ved hjelp av diskrete endringer i menyen. Hvis regelen er angitt som «Recommended» (anbefalt), ser brukeren en gjentakende advarsel om at en omstart er anbefalt. Brukeren kan avvise advarselen for å utsette omstarten. Hvis regelen er angitt som «Required» (obligatorisk), ser brukeren en gjentakende advarsel om at en tvungen omstart utføres når varselperioden er utløpt. Denne perioden er som standard 7 dager og kan konfigureres via regelen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Brukerens økt gjenopprettes etter omstarten.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
@@ -330,6 +336,9 @@
       Hvis denne innstillingen er konfigurert, kan brukere som bruker hurtigopplåsing, bli bedt om å skrive inn passordet sitt på låseskjermen. Dette avhenger imidlertid av hvilken innstilling som er valgt.
 
       Hvis denne innstillingen ikke konfigureres, blir brukere som bruker hurtigopplåsing, bedt om å skrive inn passordet sitt på låseskjermen hver dag.</translation>
+<translation id="2188722565665306629">Lar deg angi tidsperioden varslene om omstart av <ph name="PRODUCT_NAME" /> skal vises i når det finnes en oppdatering som ikke er installert ennå.
+
+      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) må startes på nytt på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen i regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 604 800 000 millisekunder (én uke).</translation>
 <translation id="2194470398825717446">Denne regelen er avviklet i M61. Bruk EcryptfsMigrationStrategy i stedet.
 
       Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.
@@ -393,7 +402,7 @@
       Innstillingen må angis i millisekunder.</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
-<translation id="2411817661175306360">Advarsel om passordbeskyttelse er slått av</translation>
+<translation id="2411817661175306360">Advarselen om passordbeskyttelse er slått av</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
 <translation id="2418507228189425036">Slår av lagringen av nettleserloggen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
@@ -524,6 +533,13 @@
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="2682225790874070339">Deaktiverer Google Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
+<translation id="2726613915126661822">Lar deg styre om virtuelle maskiner kan kjøre i Chrome OS.
+
+      Hvis regelen er angitt som True (sann), kan enheten kjøre virtuelle maskiner.
+      Hvis regelen er angitt som False (usann), kan ikke enheten kjøre virtuelle maskiner.
+      Når denne regelen endres til False (usann), gjelder det for nye virtuelle maskiner. Virtuelle maskiner som allerede kjører, blir imidlertid ikke slått av.
+      Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
+      Ikke-administrerte enheter kan ikke kjøre virtuelle maskiner.</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
@@ -738,6 +754,7 @@
           Denne innstillingen er valgfri. Hvis den ikke angis, leveres ingen nye fane-side.
 
           Denne innstillingen etterfølges bare dersom «DefaultSearchProviderEnabled» er aktivert.</translation>
+<translation id="3465852069254497664">Varsle en bruker om at nettleseren bør eller må startes på nytt</translation>
 <translation id="346731943813722404">Angi hvorvidt tidtaking av strømstyringsforsinkelser og grense for øktens varighet bare skal begynne å løpe etter brukerens første aktivitet i en økt.
 
           Hvis innstillingen er satt til True, begynner ikke tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe før etter at brukerens første aktivitet i en økt er registrert.
@@ -771,6 +788,7 @@
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
+<translation id="3740754010292550733">Angi perioden for varsler for omstart på grunn av en oppdatering</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
@@ -997,7 +1015,7 @@
 
       Alle Google-kontoer på enheten sammenlignes med mønstrene som er lagret i denne regelen, for å avgjøre synligheten for kontoene i <ph name="PRODUCT_NAME" />. En konto er synlig hvis kontonavnet stemmer overens med et av mønstrene på listen. Ellers er den skjult.
 
-      Bruk jokertegnet «*» for å få treff på ingen eller flere vilkårlige tegn. Escape-tegnet er «\», så for å få treff på «*» eller «\» som faktiske tegn, må du sette en «\» foran dem.
+      Bruk jokertegnet «*» for å få treff på null eller flere vilkårlige tegn. Escape-tegnet er «\», så for å få treff på «*» eller «\» som faktiske tegn, må du sette en «\» foran dem.
 
       Hvis denne regelen ikke er angitt, er alle Google-kontoer synlige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Rapportér nettverksgrensesnitt for enheten</translation>
@@ -1070,7 +1088,7 @@
 
           For å få en fullstendig beskrivelse over mulige innstilinger samt strukturen i denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
-<translation id="4554651132977135445">Behandlingsmodus med tilbakekobling for brukerretningslinjer</translation>
+<translation id="4554651132977135445">Behandlingsmodus med tilbakekobling for brukerinnstillinger</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
@@ -1472,6 +1490,7 @@
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere den store musepekeren. Brukerens valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren når påloggingsskjermen vises for første gang. Brukere kan aktivere eller deaktivere den store musepekeren når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
+<translation id="5929855945144989709">Tillat enheter å kjøre virtuelle maskiner i Chrome OS</translation>
 <translation id="5932767795525445337">Disse reglene kan også brukes til å feste Android-apper.</translation>
 <translation id="5936622343001856595">Tvinger søkene i Google Nettsøk til å gjennomføres med Sikkert Søk aktivert, og hindrer brukere fra å endre denne innstillingen.
 
@@ -1542,7 +1561,7 @@
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="6029950823657977211">
       MERK: Dette er en eksperimentell regel som kan føre til at funksjonaliteten ikke fungerer som den skal!
-      Denne regelen gjelder for påloggingsskjermen. Se også «IsolateOrigins»-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke samme verdi for begge reglene..
+      Denne regelen gjelder for påloggingsskjermen. Se også «IsolateOrigins»-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke samme verdi for begge reglene.
       Hvis regelen er aktivert, kjøres hver av de navngitte opprinnelsene
       i en kommadelt liste i sin egen prosess. Da isoleres også
       opprinnelser som har navn basert på underdomener. Hvis for eksempel
@@ -1728,6 +1747,15 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Tving aktivering av språk med stavekontroll</translation>
+<translation id="673699536430961464">Denne innstillingen lar brukere bytte mellom Google-kontoer i innholdsområdet i nettleservinduet når de har logget på <ph name="PRODUCT_OS_NAME" />-enhetene sine.
+
+      Hvis regelen er angitt som False (usann), kan ikke brukerne logge på andre kontoer i innholdsområdet hvis nettleseren ikke er i inkognitomodus.
+
+      Hvis regelen ikke er angitt eller er angitt som True (sann), brukes standardinnstillingen, det vil si at det er tillatt å logge på andre kontoer i innholdsområdet i nettleseren. Dette gjelder imidlertid ikke for underkontoer, der det blokkeres for innholdsområder som ikke er i inkognitomodus.
+
+      Hvis det ikke skal være lov å logge på andre kontoer i inkognitomodus, kan du blokkere denne modusen i IncognitoModeAvailability-regelen.
+
+      Vær oppmerksom på at brukerne kan få tilgang til Google-tjenester uten autentisering ved å blokkere informasjonskapsler.</translation>
 <translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -1737,6 +1765,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
+<translation id="6835883744948188639">Vis brukeren en gjentakende melding om at omstart anbefales</translation>
 <translation id="685769593149966548">Fremtvinger bruk av strengt nivå for Begrenset innhold-modus på YouTube</translation>
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
@@ -2485,11 +2514,11 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
 <translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
-<translation id="9775893229076211">Lar deg styre hva som utløser kontorapportering om passordbeskyttelse i fare. Merking om kontoer der passordbeskyttelse er i fare, betyr at Google informeres om at denne kontoen står i fare for å bli kapret.
+<translation id="9775893229076211">Lar deg styre hva som utløser kontovarsling om passordbeskyttelse i fare. Kontovarsling om passordbeskyttelse i fare, betyr at Google informeres om at denne kontoen står i fare for å bli kapret.
 
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen merking av kontoer der passordbeskyttelsen er i fare.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
-      Hvis denne regelen ikke er angitt, blir det utløst merking av kontoer der passordbeskyttelsen er i fare, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking. Men brukerne kan endre dette.</translation>
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen kontovarsling om passordbeskyttelse i fare.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
+      Hvis denne regelen ikke er angitt, blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking. Men brukerne kan endre dette.</translation>
 <translation id="982497069985795632">Aktiver stavekontrollen</translation>
 </translationbundle>

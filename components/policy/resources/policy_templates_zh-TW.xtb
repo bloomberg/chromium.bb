@@ -208,6 +208,7 @@
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
 <translation id="1781356041596378058">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為 true，使用者將無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼 7 次，即可存取開發人員選項。</translation>
+<translation id="1797233582739332495">顯示週期性提示，要求使用者重新啟動瀏覽器</translation>
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="1808715480127969042">封鎖這些網站的 Cookie</translation>
 <translation id="1827523283178827583">使用固定的 Proxy 伺服器</translation>
@@ -280,6 +281,11 @@
 
           如果未設定這項政策，系統將全部採用以上 4 種機制。</translation>
 <translation id="2067011586099792101">禁止存取內容套件以外的網站</translation>
+<translation id="2070270043919235595">通知使用者 <ph name="PRODUCT_NAME" /> 必須重新啟動才能套用待安裝的更新。
+
+      這項政策設定可啟用通知，藉此建議或要求使用者重新啟動瀏覽器。如果不予設定，<ph name="PRODUCT_NAME" /> 會以細微的選單變更讓使用者知道瀏覽器需要重新啟動。如果設為「Recommended」(建議)，瀏覽器會定期顯示警告，建議使用者重新啟動。如果不想立即重新啟動，使用者可以關閉這項警告。如果設為「Required」(必要)，瀏覽器會定期顯示警告，告知使用者瀏覽器將於通知期過後強制重新啟動。通知期預設為七天，可透過 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策設定加以設定。
+
+      使用者的工作階段會在瀏覽器重新啟動後恢復。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
@@ -324,6 +330,9 @@
           如果指定這項設定，系統會根據這項設定的值要求快速解鎖功能使用者在鎖定畫面中輸入密碼。
 
           如果未指定這項設定，系統則會每天要求快速解鎖功能使用者在鎖定畫面中輸入密碼。</translation>
+<translation id="2188722565665306629">讓你設定要顯示 <ph name="PRODUCT_NAME" /> 重新啟動通知 (為了套用待安裝的更新) 的時間範圍。
+
+      這項設定可用於控制時間範圍 (以毫秒為單位)，透過定期通知讓使用者瞭解 <ph name="PRODUCT_NAME" /> 必須重新啟動 (或者 <ph name="PRODUCT_OS_NAME" />必須重新啟動) 才能套用更新。在此期間內，系統會根據 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的設定持續告知使用者必須進行更新。如果不予設定，則會使用 604800000 毫秒 (一週) 做為預設的時間範圍。</translation>
 <translation id="2194470398825717446">M61 已淘汰這項政策，請改用 EcryptfsMigrationStrategy。
 
       針對採用 eCryptfs 檔案系統且需要轉換成 Ext4 加密系統的裝置指定相關行為。
@@ -510,6 +519,13 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2682225790874070339">停用 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的雲端硬碟</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
+<translation id="2726613915126661822">讓你控制虛擬機器能否在 Chrome 作業系統上運作。
+
+      如果將這項政策設為 True，裝置將可以執行虛擬機器。
+      如果將這項政策設為 False，裝置將無法執行虛擬機器。
+      當這項政策變更為 False 時，會禁止裝置啟動新的虛擬機器，但不會關閉已在執行中的虛擬機器。
+      在受管理的裝置上，如果不設定這項政策，裝置將無法執行虛擬機器。
+      未受管理的裝置則可執行虛擬機器。</translation>
 <translation id="2731627323327011390">禁止 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」憑證</translation>
 <translation id="2742843273354638707">在新分頁和 <ph name="PRODUCT_OS_NAME" />應用程式啟動畫面中隱藏 Chrome 線上應用程式商店和底端連結。
 
@@ -727,6 +743,7 @@
           這項政策是選擇性的，如果未設定，系統將不會提供新分頁。
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
+<translation id="3465852069254497664">透過通知建議或要求使用者重新啟動瀏覽器</translation>
 <translation id="346731943813722404">指定是否延遲管理電源，以及是否在發現工作階段中產生第一個使用者活動後，才開始執行工作階段長度限制。
 
           如果這項政策設為 True，系統會延遲管理電源，並且在發現工作階段中產生第一個使用者活動後，才會開始執行工作階段長度限制。
@@ -760,6 +777,7 @@
 <translation id="3711895659073496551">暫停</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3737544779868348650">裝置網路主機名稱</translation>
+<translation id="3740754010292550733">設定更新重新啟動通知期</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
@@ -1426,6 +1444,7 @@
           如果你設定了這項政策，使用者可以暫時覆寫這項政策，只要啟用或停用大型游標即可。但使用者的選擇並非永久性，只要系統再次顯示登入畫面或使用者在登入畫面閒置了一段時間，系統就會還原預設值。
 
           如果你未設定這項政策，則系統會在初次顯示登入畫面時停用大型游標。使用者隨時都可以啟用或停用大型游標，而大型游標在登入畫面的狀態則視使用者的選擇而定 (均為永久性)。</translation>
+<translation id="5929855945144989709">允許裝置在 Chrome 作業系統上執行虛擬機器</translation>
 <translation id="5932767795525445337">這項政策也可用於固定 Android 應用程式。</translation>
 <translation id="5936622343001856595">強制啟用安全搜尋服務，處理 Google 網頁搜尋中的查詢，並且防止使用者變更這項設定。
 
@@ -1658,6 +1677,15 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 RoamingProfileSupportEnabled。</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
+<translation id="673699536430961464">如果啟用這項設定，使用者在登入 <ph name="PRODUCT_OS_NAME" />裝置後，將可在瀏覽器視窗的內容區域中切換 Google 帳戶。
+
+      如果將這項政策設為 false，就無法透過非無痕式瀏覽器內容區域登入其他帳戶。
+
+      如果將這項政策設為 true 或不予設定，就會採用預設行為：使用者可透過瀏覽器內容區域登入其他帳戶，但無法透過非無痕式內容區域登入子帳戶。
+
+      如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。
+
+      請注意，使用者只要封鎖 Google 服務的 Cookie，即可在未經驗證狀態下存取 Google 服務。</translation>
 <translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -1667,6 +1695,7 @@
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
+<translation id="6835883744948188639">顯示週期性提示，建議使用者重新啟動瀏覽器</translation>
 <translation id="685769593149966548">強制執行高度的 YouTube 嚴格篩選模式</translation>
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 

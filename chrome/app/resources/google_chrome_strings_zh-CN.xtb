@@ -164,6 +164,7 @@
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5774845247549698882">Chrome 操作系统界面目前使用的是这种语言</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">您计算机上运行的软件与 Google Chrome 不兼容。</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
@@ -175,6 +176,7 @@
 <translation id="6070348360322141662">为了提高安全性，Google Chrome 将对您的数据进行加密</translation>
 <translation id="6113794647360055231">Chrome现在更好用了</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome 测试版</translation>
 <translation id="61852838583753520">更新 Chrome 操作系统(&amp;C)</translation>
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
 <translation id="6291089322031436445">Chrome 开发者版应用</translation>
@@ -182,6 +184,7 @@
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
 <translation id="6410540444482791104">您可以选择自动向 Google 发送某些系统信息和网页内容，以帮助我们检测危险应用和网站，从而提高 Chrome 的安全性和易用性。</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 开发者版</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chrome资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chrome，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>

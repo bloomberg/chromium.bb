@@ -175,7 +175,7 @@
 <translation id="5819442873484330149">한글 세벌식(최종)</translation>
 <translation id="5838825566232597749">미국 워크맨(국제)</translation>
 <translation id="5892290200158927959">프랑스어 BÉPO 키보드</translation>
-<translation id="5928303187149237472">화면 해상도 변경</translation>
+<translation id="5928303187149237472">해상도 변경</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">남미 언어 키보드</translation>
 <translation id="6012987430370760224">마라티어 키보드(음역 방식)</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">미국 워크맨 키보드</translation>
 <translation id="6970230597523682626">불가리아어</translation>
 <translation id="6981982820502123353">접근성</translation>
+<translation id="7020813747703216897">일치하는 결과 없음</translation>
 <translation id="7025325401470358758">다음 창</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">음역(salam → ሰላም)</translation>
 <translation id="7172053773111046550">에스토니아어 키보드</translation>
 <translation id="719009910964971313">US 프로그래머 드보락 키보드</translation>
 <translation id="7222624196722476520">불가리아어 표음식 키보드</translation>
+<translation id="7272373489634936181">단축키 검색</translation>
 <translation id="7348749398828259943">미국 워크맨(국제) 키보드</translation>
 <translation id="7389722738210761877">태국어 키보드(TIS 820-2531)</translation>
 <translation id="7396038720194014279">힌디어 키보드(음역 방식)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">영어(미국) 콜마크</translation>
 <translation id="7969525169268594403">슬로베니아어</translation>
 <translation id="7987485481246785146">소라니 쿠르드어 아랍어 기반 키보드</translation>
+<translation id="8004192919599017226">검색 시작...</translation>
 <translation id="8008366997883261463">개</translation>
 <translation id="8031722894461705849">슬로바키아어 키보드</translation>
 <translation id="8045462269890919536">루마니아어</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">러시아어 표음</translation>
 <translation id="913758436357682283">미얀마 미얀산 키보드</translation>
 <translation id="9153744823707037316">배열 입력 방법</translation>
+<translation id="9179672198516322668">자주 쓰는 단축키</translation>
 <translation id="9206487995878691001">창힐 입력 방법</translation>
 <translation id="9219908252191632183">달</translation>
 </translationbundle>

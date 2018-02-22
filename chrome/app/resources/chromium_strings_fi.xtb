@@ -117,11 +117,12 @@
 <translation id="5386450000063123300">Päivitetään Chromiumia (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromiumista on saatavilla uusi versio.</translation>
 <translation id="5427571867875391349">Aseta Chromium oletusselaimeksi</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chromium käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="5479196819031988440">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="5480860683791598150">Chromium tarvitsee oikeuden käyttää sijaintiasi, jotta se voidaan jakaa tämän sivuston kanssa.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
-<translation id="5631814766731275228">Chromium-nimi ja ‑kuva</translation>
+<translation id="5631814766731275228">Chromiumin nimi ja kuva</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
@@ -191,6 +192,7 @@ Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiil
 <ph name="BEGIN_LINK_2" />Lisätietoja<ph name="END_LINK_2" />
 
 Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
@@ -204,6 +206,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7756122083761163394">Käyttäjän selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.</translation>
 <translation id="7773960292263897147">Varoitus: Chromium ei voi estää laajennuksia tallentamasta selaushistoriaasi. Poista tämä valinta, jos haluat poistaa tämän laajennuksen käytöstä incognito-tilassa.</translation>
 <translation id="7774736947049807614">Todennusvarmenne epäonnistui. Kirjaudu uudelleen Chromiumiin käyttäjänä <ph name="USER_NAME" /> tai ota yhteyttä järjestelmänvalvojaan. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromiumia ei voitu päivittää uusimpaan versioon, joten sinulta puuttuu joitakin uusia ominaisuuksia ja tietoturvakorjauksia.</translation>
 <translation id="7937630085815544518">Chromiumiin kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7962572577636132072">Chromium päivitetään automaattisesti, joten käytössäsi on aina uusin versio.</translation>

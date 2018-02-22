@@ -1266,7 +1266,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2916073183900451334">‏לחיצה על המקש Tab תדגיש קישורים בדף וכן שדות של טפסים</translation>
 <translation id="2916745397441987255">חפש תוספים</translation>
 <translation id="2921081876747860777">יצירת סיסמה להגנה על הנתונים המקומיים שלך.</translation>
-<translation id="2924395203970765374">מסונכרן עם <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">גיליונות אלקטרוניים</translation>
 <translation id="2927017729816812676">אחסון קובצי מטמון</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (חשבון בשביל ילדים)</translation>
@@ -1548,7 +1547,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3348459612390503954">ברכותינו</translation>
 <translation id="3349933790966648062">הזיכרון שבשימוש</translation>
 <translation id="3353984535370177728">בחר תיקיה להעלאה</translation>
-<translation id="335581015389089642">דיבור</translation>
 <translation id="3355936511340229503">שגיאת חיבור</translation>
 <translation id="3356797067524893661">‏הכול מוכן ואפשר להמשיך אל Hangouts Meet</translation>
 <translation id="3358935496594837302">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שימוש בטלפון Android תואם ושהוא מופעל ונמצא בקרבתך. &lt;a&gt;למידע נוסף&lt;/a&gt;</translation>
@@ -1725,7 +1723,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3613422051106148727">&amp;פתח בכרטיסייה חדשה</translation>
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3616741288025931835">&amp;נקה נתוני גלישה...</translation>
-<translation id="3618849550573277856">חפש “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">הכל מגובה!</translation>
 <translation id="3623574769078102674">משתמש בפיקוח זה ינוהל על ידי <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">צילומי מסך מושבתים</translation>
@@ -2140,7 +2137,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="428565720843367874">תוכנת האנטי-וירוס נכשלה באופן בלתי צפוי בעת סריקת קובץ זה.</translation>
 <translation id="428608937826130504">פריט מדף 8</translation>
 <translation id="4287502004382794929">אין ברשותך מספיק רשיונות תוכנה כדי לרשום מכשיר זה. פנה למחלקת המכירות כדי לרכוש עוד רשיונות. אם אתה סבור שהודעה זו מופיעה בטעות, צור קשר עם מחלקת התמיכה.</translation>
-<translation id="4289300219472526559">התחל לדבר</translation>
 <translation id="4289540628985791613">סקירה כללית</translation>
 <translation id="4296575653627536209">הוסף משתמש בפיקוח</translation>
 <translation id="4297322094678649474">החלפת שפות</translation>
@@ -2435,7 +2431,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
 <translation id="4820334425169212497">לא, אני לא רואה אותו</translation>
-<translation id="4821725298388681253">זוהי הפצה מוקדמת. חלק מהתכונות, כמו חיפוש והזנת טקסט, עדיין לא זמינות.</translation>
 <translation id="4821935166599369261">&amp;יצירת פרופילים מופעלת</translation>
 <translation id="4823484602432206655">קריאה ושינוי של הגדרות המשתמש והמכשיר</translation>
 <translation id="4823651846660089135">המכשיר מוגדר לקריאה בלבד</translation>
@@ -3447,7 +3442,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6388771388956873507">מצא את חיישן טביעות האצבע במכשיר וגע בו עם האצבע</translation>
 <translation id="6390799748543157332">‏הדפים שאתה מציג בחלון זה לא יופיעו בהיסטוריית הדפדפן, ולאחר שתסגור את כל חלונות האורח הפתוחים, לא יותירו במחשב עקבות, כמו קובצי Cookie. עם זאת, כל הקבצים שאתה מוריד יישמרו.</translation>
 <translation id="6395423953133416962">שלח <ph name="BEGIN_LINK1" />פרטי מערכת<ph name="END_LINK1" /> ו<ph name="BEGIN_LINK2" />ערכים<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">הפסק לדבר</translation>
 <translation id="6397592254427394018">פתח את כל הסימניות בחלון &amp;גלישה בסתר</translation>
 <translation id="6398715114293939307">‏הסרה של חנות Google Play</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
@@ -5005,7 +4999,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8912793549644936705">מתח</translation>
 <translation id="8915370057835397490">טוען הצעה...</translation>
 <translation id="8916476537757519021">תת-מסגרת לגלישה בסתר: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">סנכרון עם <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">התר תמיד מודעות באתר הזה</translation>
 <translation id="8925458182817574960">&amp;הגדרות</translation>
 <translation id="8926389886865778422">אל תשאל שוב</translation>

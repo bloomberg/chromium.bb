@@ -118,11 +118,12 @@
 <translation id="5386450000063123300">Chromium अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
 <translation id="5427571867875391349">आपला डीफॉल्ट ब्राउझर म्हणून Chromium सेट करा</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium बीटा</translation>
 <translation id="5466153949126434691">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chromium रीस्टार्ट होईल आणि आपण आपल्या मार्गावर असाल.</translation>
 <translation id="5479196819031988440">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="5480860683791598150">या साइटसोबत तुमचे स्थान शेअर करण्यासाठी Chromium ला तुमच्या स्थानाचा अॅक्सेस हवा आहे</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टम अपडेट इंस्टॉल करेपर्यंत प्रतीक्षा करा.</translation>
-<translation id="5631814766731275228">Chromium नाव आणि चित्र</translation>
+<translation id="5631814766731275228">Chromium नाव आणि फोटो</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत प्रदर्शि‍त करा</translation>
@@ -139,7 +140,7 @@
 <translation id="5987687638152509985">संकालित करण्यासाठी Chromium अपडेट करा</translation>
 <translation id="6055895534982063517">Chromium ची नवीन आवृत्ती उपलब्ध आहे आणि ही नेहमीपेक्षा जलद आहे.</translation>
 <translation id="6063093106622310249">आणि Chromium मध्ये उघडा</translation>
-<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> हे Chromium मध्‍ये जोडण्यात आले आहे</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> Chromium मध्‍ये जोडण्यात आले आहे</translation>
 <translation id="608189560609172163">साइन इन करण्यात एरर आल्यामुळे Chromium आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="6096348254544841612">Chromium कस्टमाइझ करा आणि नियंत्रित करा. अपडेट उपलब्ध आहे.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
@@ -191,6 +192,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <ph name="NEW_PROFILE_NAME" /> ला आपल्या खात्यात प्रवेश करण्‍यापासून प्रतिबंधित करण्यासाठी, आपण Chromium वापरत नसता तेव्हा आपण आपले प्रोफाइल लॉक करता याची खात्री करा. हे करण्‍यासाठी, ब्राउझरच्या वरील उजव्या कोपर्‍यातील आपले प्रोफाइल नाव क्लिक करा आणि "बाहेर पडा आणि मुलांचा लॉक" निवडा. <ph name="BEGIN_LINK_2" />अधिक जाणून घ्या<ph name="END_LINK_2" />
 
 कृपया पुढील सूचनांसाठी आपले ईमेल <ph name="ACCOUNT_EMAIL" /> वर तपासा.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium डेव्हलपर</translation>
 <translation id="7451052299415159299">या साइटसाठी Chromium ला तुमचा कॅमेरा अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="7483335560992089831">सध्‍या चालू असलेल्‍या सारख्याच Chromium आवृत्तीची स्‍थापना होऊ शकत नाही. कृपया Chromium बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="7549178288319965365">Chromium OS बद्दल</translation>
@@ -204,6 +206,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="7756122083761163394">या व्यक्तीचा ब्राउझिंग डेटा या डिव्हाइसवरून हटवला जाईल. डेटा पुन्हा मिळवण्यासाठी, Chrome वर $2 म्हणून साइन इन करा.</translation>
 <translation id="7773960292263897147">चेतावणी: Chromium हे एक्सटेंशनना तुमचा ब्राउझिंग इतिहास रेकॉर्ड करून ठेवण्यापासून रोखू शकत नाही. हे एक्सटेंशन बंद करण्यासाठी गुप्त मोडमधील या पर्यायाची निवड रद्द करा.</translation>
 <translation id="7774736947049807614">प्रमाणीकरण प्रमाणपत्र अयशस्वी झाले. कृपया Chromium मध्ये <ph name="USER_NAME" /> म्हणून पुन्हा साइन इन करा किंवा आणखी माहितीसाठी तुमच्या प्रशासकाशी संपर्क साधा. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium नवीनतम आवृत्तीवर अपडेट होऊ शकले नाही, त्यामुळे तुम्ही नवीन वैशिष्ट्ये आणि सुरक्षितता निराकरणे गमावत आहात.</translation>
 <translation id="7937630085815544518">आपण <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chromium मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
 <translation id="7962572577636132072">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>

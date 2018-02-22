@@ -117,6 +117,7 @@
 <translation id="5386450000063123300">Oppdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
 <translation id="5427571867875391349">Bruk Chromium som standard nettleser</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="5480860683791598150">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
@@ -191,6 +192,7 @@ Hvis du vil hindre <ph name="NEW_PROFILE_NAME" /> i å få tilgang til kontoen d
 <ph name="BEGIN_LINK_2" />Finn ut mer<ph name="END_LINK_2" />
 
 Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjoner.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium trenger tilgang til kameraet ditt for dette nettstedet</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
@@ -204,6 +206,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7756122083761163394">Denne personens nettlesingsdata slettes fra denne enheten. For å gjenopprette dataene, logg på Chrome som $2.</translation>
 <translation id="7773960292263897147">Advarsel: Chromium kan ikke hindre utvidelser fra å spille inn nettlesingsloggen. For å slå av denne utvidelsen i inkognitomodus, fjern avmerkingen for dette alternativet.</translation>
 <translation id="7774736947049807614">Autentiseringssertifikatet mislyktes. Logg på Chromium på nytt som <ph name="USER_NAME" />, eller kontakt administratoren din for å få mer informasjon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium kunne ikke oppdateres til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsforbedringer.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>
 <translation id="7962572577636132072">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>

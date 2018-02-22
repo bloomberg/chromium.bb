@@ -289,11 +289,11 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kesemua empat skim akan digunakan.</translation>
 <translation id="2067011586099792101">Sekat akses ke tapak web di luar pek kandungan</translation>
-<translation id="2070270043919235595">Maklumkan pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula untuk menggunakan kemas kini yang belum selesai.
+<translation id="2070270043919235595">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula untuk menggunakan kemas kini yang belum selesai.
 
       Tetapan dasar ini mendayakan pemberitahuan untuk memaklumi pengguna bahawa pelancaran semula penyemak imbas adalah disyorkan atau diperlukan. Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> menunjukkan kepada pengguna bahawa pelancaran semula diperlukan melalui sedikit perubahan kepada menunya. Jika ditetapkan kepada 'Disyorkan', amaran berulang akan ditunjukkan kepada pengguna bahawa pelancaran semula disyorkan. Pengguna boleh menolak amaran ini untuk menunda pelancaran semula. Jika ditetapkan kepada 'Diperlukan', amaran berulang akan ditunjukkan kepada pengguna yang menunjukkan bahawa pelancaran semula penyemak imbas akan dipaksa selepas tempoh pemberitahuan tamat. Tempoh ini ialah 7 hari secara lalai dan boleh dikonfigurasikan melalui tetapan dasar <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-      The user's session is restored following the relaunch.</translation>
+      Sesi pengguna dipulihkan selepas pelancaran semula.</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2077273864382355561">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2082205219176343977">Konfigurasikan versi Chrome minimum yang dibenarkan untuk peranti ini.</translation>
@@ -338,9 +338,9 @@
       Jika tetapan ini dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin bergantung pada tetapan ini.
 
       Jika tetapan ini tidak dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin setiap hari.</translation>
-<translation id="2188722565665306629">Membolehkan anda menetapkan tempoh masa untuk pemberitahuan pelancaran semula <ph name="PRODUCT_NAME" /> ditunjukkan bagi menggunakan kemas kini yang belum selesai.
+<translation id="2188722565665306629">Membolehkan anda menetapkan jangka masa untuk pemberitahuan pelancaran semula <ph name="PRODUCT_NAME" /> ditunjukkan bagi menggunakan kemas kini yang belum selesai.
 
-      Tetapan dasar ini boleh digunakan untuk mengawal tempoh masa pengguna dimaklumi secara progresif dalam milisaat berkenaan <ph name="PRODUCT_NAME" /> yang perlu dilancarkan semula (atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula) untuk dikemas kini. Dalam tempoh masa ini, pengguna akan dimaklumi berulang kali tentang keperluan kemas kini berdasarkan tetapan dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika dasar ini tidak ditetapkan, tempoh lalai ialah 604800000 milisaat (satu minggu) akan digunakan.</translation>
+      Tetapan dasar ini boleh digunakan untuk mengawal jangka masa pengguna dimaklumi secara progresif dalam milisaat berkenaan <ph name="PRODUCT_NAME" /> yang perlu dilancarkan semula (atau <ph name="PRODUCT_OS_NAME" /> mesti dimulakan semula) untuk dikemas kini. Dalam jangka masa ini, pengguna akan dimaklumi berulang kali tentang keperluan kemas kini berdasarkan tetapan dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Jika dasar ini tidak ditetapkan, tempoh lalai ialah 604800000 milisaat (satu minggu) akan digunakan.</translation>
 <translation id="2194470398825717446">Dasar ini ditamatkan dalam M61, sila gunakan EcryptfsMigrationStrategy.
 
       Menentukan gelagat peranti yang dihantar dengan ecryptfs dan memerlukan peralihan kepada penyulitan ext4.

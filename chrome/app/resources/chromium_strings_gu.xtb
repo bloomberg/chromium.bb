@@ -119,11 +119,12 @@
 <translation id="5386450000063123300">Chromium અપડેટ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="5427571867875391349">Chromium ને તમારા ડિફોલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium બીટા</translation>
 <translation id="5466153949126434691">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chromium પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="5479196819031988440">Chromium OS, આ પૃષ્ઠને ખોલી શકતું નથી.</translation>
 <translation id="5480860683791598150">Chromiumને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
-<translation id="5631814766731275228">Chromium નામ અને ચિત્ર</translation>
+<translation id="5631814766731275228">Chromiumમાંનું નામ અને ફોટો</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5698481217667032250">આ ભાષામાં Chromium પ્રદર્શિત કરો</translation>
@@ -140,7 +141,7 @@
 <translation id="5987687638152509985">સમન્વયનને પ્રારંભ કરવા માટે Chromium ને અપડેટ કરો</translation>
 <translation id="6055895534982063517">Chromium નું એક નવું સંસ્કરણ ઉપલબ્ધ છે અને તે પહેલાં કરતાંએ વધુ ઝડપી છે.</translation>
 <translation id="6063093106622310249">અને Chromiumમાં ખોલો</translation>
-<translation id="6072279588547424923"><ph name="EXTENSION_NAME" />ને Chromiumમાં ઉમેરવામાં આવ્યું</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" />ને Chromiumમાં ઉમેરવામાં આવ્યું છે</translation>
 <translation id="608189560609172163">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chromium તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="6096348254544841612">Chromiumને કસ્ટમાઇઝ અને નિયંત્રિત કરો. અપડેટ ઉપલબ્ધ છે.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> જોખમી છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
@@ -193,6 +194,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <ph name="BEGIN_LINK_2" />વધુ જાણો<ph name="END_LINK_2" />
 
 વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારી ઇમેઇલને તપાસો.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Chromiumને આ સાઇટ માટે તમારા કૅમેરાના ઍક્સેસની પરવાનગીની જરૂર પડે છે</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="7549178288319965365">Chromium OS વિશે</translation>
@@ -206,6 +208,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7756122083761163394">આ વ્યક્તિનો બ્રાઉઝિંગ ડેટા આ ઉપકરણમાંથી કાઢી નાખવામાં આવશે. આ ડેટા પાછો મેળવવા માટે, Chromeમાં $2 તરીકે સાઇન ઇન કરો.</translation>
 <translation id="7773960292263897147">ચેતવણી: એક્સ્ટેંશનને તમારો બ્રાઉઝિંગ ઇતિહાસ રેકોર્ડ કરવાથી Chromium અટકાવી શકતું નથી. છૂપા મોડમાં આ એક્સ્ટેંશનને બંધ કરવા માટે, આ વિકલ્પની પસંદગી નાપસંદ કરો.</translation>
 <translation id="7774736947049807614">પ્રમાણીકરણ પ્રમાણપત્ર નિષ્ફળ થયું. કૃપા કરીને Chromiumમાં ફરીથી <ph name="USER_NAME" /> તરીકે સાઇન ઇન કરો અથવા વધુ માહિતી માટે તમારા વ્યવસ્થાપકનો સંપર્ક કરો. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium નવીનતમ વર્ઝન પર અપડેટ ન થઈ શક્યું, તેથી તમે નવી સુવિધાઓ અને સુરક્ષાના સુધારા ચૂકી રહ્યા છો.</translation>
 <translation id="7937630085815544518">તમે Chromium માં <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન કર્યું હતું. ફરીથી સાઇન ઇન કરવા માટે કૃપા કરીને એ જ એકાઉન્ટનો ઉપયોગ કરો.</translation>
 <translation id="7962572577636132072">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા સૌથી તાજું સંસ્કરણ રહે છે.</translation>

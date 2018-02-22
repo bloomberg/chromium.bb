@@ -115,6 +115,7 @@
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hay una nueva versión de Chromium disponible.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" />: Versión beta de Chromium</translation>
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente. Cuando se complete esta descarga, Chromium se reiniciará y podrás usarlo.</translation>
 <translation id="5479196819031988440">El Sistema operativo Chromium no puede abrir esta página.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio</translation>
@@ -185,6 +186,7 @@ Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate d
 <ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
 
 Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" />: Chromium para desarrolladores</translation>
 <translation id="7451052299415159299">Chromium necesita permiso para acceder a tu cámara para este sitio</translation>
 <translation id="7483335560992089831">No es posible instalar la misma versión de Chromium que se está ejecutando. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Acerca de Chromium OS</translation>
@@ -198,6 +200,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7756122083761163394">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como $2.</translation>
 <translation id="7773960292263897147">Advertencia: Chromium no puede evitar que las extensiones registren tu historial de búsqueda. Para desactivar esta extensión en modo de navegación incógnito, desmarca la casilla de esta opción.</translation>
 <translation id="7774736947049807614">Se produjo un error en el certificado de autenticación. Vuelve a acceder a tu cuenta en Chromium como <ph name="USER_NAME" /> o comunícate con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" />: Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium no se pudo actualizar a la última versión, por lo que te estás perdiendo las nuevas funciones y correcciones de seguridad.</translation>
 <translation id="7937630085815544518">Accediste a Chromium con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>

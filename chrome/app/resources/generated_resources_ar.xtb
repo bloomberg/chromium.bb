@@ -1270,7 +1270,6 @@
 <translation id="2916073183900451334">يؤدي الضغط على علامة تبويب في صفحة الويب إلى إبراز الروابط وكذلك حقول النماذج</translation>
 <translation id="2916745397441987255">بحث في الإضافات</translation>
 <translation id="2921081876747860777">يُرجى إنشاء كلمة مرور لحماية بياناتك المحلية.</translation>
-<translation id="2924395203970765374">تمت المزامنة مع <ph name="FULL_NAME" />.</translation>
 <translation id="2925966894897775835">جداول البيانات</translation>
 <translation id="2927017729816812676">السعة التخزينية لذاكرة التخزين المؤقت</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (حساب للأطفال)</translation>
@@ -1552,7 +1551,6 @@
 <translation id="3348459612390503954">تهانينا</translation>
 <translation id="3349933790966648062">الذاكرة المستخدَمة</translation>
 <translation id="3353984535370177728">حدد مجلدًا لتحميله</translation>
-<translation id="335581015389089642">الحديث</translation>
 <translation id="3355936511340229503">خطأ الاتصال</translation>
 <translation id="3356797067524893661">‏الآن أنت جاهز تمامًا للمتابعة إلى Hangouts Meet</translation>
 <translation id="3358935496594837302">‏تعذّر العثور على هاتفك. تأكد من أنك تستخدم هاتف Android متوافقًا وأنه قيد التشغيل وفي متناول يديك. &lt;a&gt;مزيد من المعلومات&lt;/a&gt;</translation>
@@ -1729,7 +1727,6 @@
 <translation id="3613422051106148727">&amp;فتح في علامة تبويب جديدة</translation>
 <translation id="3616113530831147358">الصوت</translation>
 <translation id="3616741288025931835">&amp;محو بيانات التصفح...</translation>
-<translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">تم نسخ جميع العناصر احتياطيًا</translation>
 <translation id="3623574769078102674">هذا المستخدم الذي يخضع للإشراف ستتم إدارته عن طريق <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">تم تعطيل لقطات الشاشة</translation>
@@ -2141,7 +2138,6 @@
 <translation id="428565720843367874">تعذّر برنامج مكافحة الفيروسات بشكل غير متوقع أثناء فحص هذا الملف.</translation>
 <translation id="428608937826130504">عنصر الرف 8</translation>
 <translation id="4287502004382794929">ليست لديك تراخيص برامج كافية لتسجيل هذا الجهاز. يُرجى الاتصال بالمبيعات لشراء المزيد. إذا كنت تعتقد أن هذه الرسالة ظهرت عن طريق الخطأ، فيُرجى الاتصال بالدعم.</translation>
-<translation id="4289300219472526559">بدء التحدث</translation>
 <translation id="4289540628985791613">نظرة عامة</translation>
 <translation id="4296575653627536209">إضافة مستخدم تحت الإشراف</translation>
 <translation id="4297322094678649474">تغيير اللغات</translation>
@@ -2437,7 +2433,6 @@
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
 <translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
 <translation id="4820334425169212497">لا، أنا لا أراه.</translation>
-<translation id="4821725298388681253">يُعد ذلك إصدارًا أوليًا. ستكون بعض الميزات، مثل إدخال النص والبحث غير متاحة بعد.</translation>
 <translation id="4821935166599369261">&amp;التوصيف مفعّل</translation>
 <translation id="4823484602432206655">قراءة إعدادات المستخدم والجهاز وتغييرها</translation>
 <translation id="4823651846660089135">الجهاز للقراءة فقط</translation>
@@ -3448,7 +3443,6 @@
 <translation id="6388771388956873507">ابحث عن مستشعر بصمات الإصبع على جهازك والمسه بإصبعك</translation>
 <translation id="6390799748543157332">لن تُظهر الصفحات التي تعرضها في هذه النافذة في سجل المتصفح، ولن تترك أي آثار أخرى، مثل ملفات تعريف الارتباط، في الكمبيوتر بعد إغلاق جميع النوافذ المفتوحة بالضيف. ومع هذا سيتم الاحتفاظ بأي ملفات يتم تنزيلها.</translation>
 <translation id="6395423953133416962">إرسال <ph name="BEGIN_LINK1" />معلومات النظام<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />المقاييس<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">إيقاف التحدث</translation>
 <translation id="6397592254427394018">فتح جميع الإشارات المرجعية في ن&amp;افذة التصفح المتخفي</translation>
 <translation id="6398715114293939307">‏إزالة متجر Google Play</translation>
 <translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
@@ -5018,7 +5012,6 @@
 <translation id="8912793549644936705">تمدد</translation>
 <translation id="8915370057835397490">جارٍ تحميل الاقتراح</translation>
 <translation id="8916476537757519021">الإطار الفرعي للتصفح المتخفي: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">مزامنة مع <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">السماح دائمًا بالإعلانات على هذا الموقع</translation>
 <translation id="8925458182817574960">&amp;الإعدادات</translation>
 <translation id="8926389886865778422">عدم السؤال مرة أخرى</translation>

@@ -208,6 +208,7 @@
       Tämän käytännön arvoksi määritetään URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata käyttöehdot. Käyttöehtojen täytyy olla tavallista tekstiä (MIME-tyyppi text/plain). Muotoilua ei sallita.</translation>
 <translation id="1750315445671978749">Estä kaikki lataukset</translation>
 <translation id="1781356041596378058">Tämä käytäntö hallinnoi myös Android-kehittäjäasetusten käyttöä. Jos tämän käytännön arvoksi määritetään tosi, käyttäjät eivät voi käyttää kehittäjäasetuksia. Jos tämän käytännön arvoksi määritetään epätosi tai sitä ei määritetä ollenkaan, käyttäjät voivat käyttää kehittäjäasetuksia koskettamalla Android-asetukset-sovelluksessa olevaa versionumeroa seitsemän kertaa.</translation>
+<translation id="1797233582739332495">Näytä käyttäjälle toistuva kehote vaaditusta uudelleenkäynnistyksestä</translation>
 <translation id="1803646570632580723">Luettelo kiinnitetyistä sovelluksista, jotka näytetään käynnistyspalkissa</translation>
 <translation id="1808715480127969042">Estä evästeet näissä sivustoissa</translation>
 <translation id="1827523283178827583">Käytä kiinteitä välityspalvelimia</translation>
@@ -279,6 +280,11 @@
           Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla.
           Jos tätä käytäntöä ei ole määritetty, kaikkia neljää todennustapaa tuetaan.</translation>
 <translation id="2067011586099792101">Estä pääsy sisältöpakkauksiin kuulumattomiin sivustoihin</translation>
+<translation id="2070270043919235595">Ilmoita käyttäjille, että <ph name="PRODUCT_NAME" /> on käynnistettävä uudelleen odottavan päivityksen käyttöönottamiseksi.
+
+      Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla. Jos tilana on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tilana on Vaadittu, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää, ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntoasetuksista.
+
+      Käyttäjän käyttökerta palautetaan uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2077273864382355561">Ruudun sammutuksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="2082205219176343977">Määritä vanhin sallittu Chrome-versio laitteelle.</translation>
@@ -324,6 +330,9 @@
           Jos tämä asetus on määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä tämän asetuksen mukaisesti.
 
           Jos tätä asetusta ei ole määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä päivittäin.</translation>
+<translation id="2188722565665306629">Voit määrittää ajanjakson, jolloin tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistysilmoituksia näytetään.
+
+      Tämän käytäntöasetuksen avulla voit määrittää millisekunteina sen ajan, jolloin käyttäjä saa ilmoituksia päivityksen edellyttämästä tuotteen <ph name="PRODUCT_NAME" /> uudelleenkäynnistyksestä (tai tuotteen <ph name="PRODUCT_OS_NAME" /> uudelleenkäynnistyksestä). Tänä aikana käyttäjä saa toistuvia muistutuksia <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-käytännön mukaisen päivityksen tarpeellisuudesta. Jos ajanjaksoa ei ole määritetty, oletuksena on 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="2194470398825717446">Tämä käytäntö on poistettu käytöstä M61:ssä, ota sen sijaan käyttöön EcryptfsMigrationStrategy.
 
       Määrittää laitteen toiminnan, jos se toimitettiin ecryptfs-salauksen kanssa mutta on siirrettävä ext4-salaukseen.
@@ -510,6 +519,13 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="2682225790874070339">Poistaa Google Driven käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksesta</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
+<translation id="2726613915126661822">Voit määrittää, saako virtuaalikoneita käyttää Chrome-käyttöjärjestelmässä.
+
+      Jos käytännön arvo on tosi, laite saa käyttää virtuaalikoneita.
+      Jos käytännön arvo on epätosi, laite ei saa käyttää virtuaalikoneita.
+      Kun käytännön arvoksi muutetaan epätosi, tämä koskee uusien virtuaalikoneiden käynnistämistä mutta ei sammuta jo käytössä olevia virtuaalikoneita.
+      Jos käytäntöä ei ole määritetty hallinnoidulla laitteella, laite ei saa käyttää virtuaalikoneita.
+      Hallinnoimattomat laitteet saavat käyttää virtuaalikoneita.</translation>
 <translation id="2731627323327011390">Estä ARC-sovelluksia käyttämästä <ph name="PRODUCT_OS_NAME" /> -varmenteita</translation>
 <translation id="2742843273354638707">Piilota Chrome Web Store -sovellus ja linkki Uusi välilehti -sivulla sekä tuotteen <ph name="PRODUCT_OS_NAME" /> sovellusten käynnistysohjelmassa.
 
@@ -727,6 +743,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Tämä käytäntö on valinnainen. Jos sitä ei ole asetettu, uutta välilehteä ei tarjota.
 
           Tämä käytäntö toteutetaan, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="3465852069254497664">Ilmoita käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan</translation>
 <translation id="346731943813722404">Määritä, alkavatko virranhallinnan viiveet ja istuntojen pituusrajoitukset vasta käyttäjän ensimmäisen toiminnon jälkeen.
 
           Jos tämän käytännön arvoksi on määritetty tosi, virranhallinnan viiveet ja istuntojen pituusrajoitukset eivät ala ennen kuin käyttäjän ensimmäinen istunnon aikainen toiminto on havaittu.
@@ -760,6 +777,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3711895659073496551">Keskeytä</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
 <translation id="3737544779868348650">Laitteen verkon isäntänimi</translation>
+<translation id="3740754010292550733">Määritä päivitysten uudelleenkäynnistysilmoitusten ajanjakso</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -1435,6 +1453,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
           Jos määrität tämän käytännön, käyttäjät voivat ohittaa sen väliaikaisesti ottamalla suuren osoittimen käyttöön tai poistamalla sen käytöstä. Käyttäjän valinta ei kuitenkaan ole pysyvä, ja oletusarvo palautetaan käyttöön aina kirjautumisnäytön tullessa näkyviin uudestaan tai käyttäjän ollessa epäaktiivinen kirjautumisnäytössä minuutin ajan.
 
           Jos tätä käytäntöä ei määritetä, suuri osoitin ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa suuren osoittimen käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
+<translation id="5929855945144989709">Salli laitteiden käyttää virtuaalikoneita Chrome-käyttöjärjestelmässä</translation>
 <translation id="5932767795525445337">Tämän käytännön avulla voidaan myös kiinnittää Android-sovelluksia.</translation>
 <translation id="5936622343001856595">Pakottaa Google-verkkohaun kyselyt tehtäväksi SafeSearch-tilassa ja estää käyttäjiä muuttamasta tätä asetusta.
 
@@ -1676,6 +1695,15 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken tietojen synkronoinnin käytöstä ja ohittaa RoamingProfileSupportEnabled-käytännön .</translation>
 <translation id="6735701345096330595">Pakota oikeinkirjoituksen tarkistuskielten käyttöönotto</translation>
+<translation id="673699536430961464">Tämä käytäntö antaa käyttäjien vaihtaa Google-tililtä toiselle selainikkunan sisältöosassa <ph name="PRODUCT_OS_NAME" /> ‑laitteelle kirjautumisen jälkeen.
+
+      Jos käytännön arvo on epätosi, toiselle tilille kirjautuminen ei ole sallittua muun kuin incognito-selaimen sisältöalueella.
+
+      Jos käytännön arvo on tosi tai sille ei ole määritetty arvoa, oletuskäyttäytymistä sovelletaan: toiselle tilille kirjautuminen selaimen sisältöalueella on sallittua, paitsi jos kyseessä on lapsen tili, jolloin se on kiellettyä, paitsi jos kyseessä ole incognito-ikkunan sisältöalue.
+
+      Jos et halua, että toiselle tilille kirjautuminen incognito-tilan avulla on sallittua, voit estää tämän tilan IncognitoModeAvailability-käytännöllä.
+
+      Huomaa, että käyttäjät pääsevät käyttämään Google-palveluja ilman todennusta estämällä evästeet.</translation>
 <translation id="6757438632136860443">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot saavat suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennuksen.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
@@ -1685,6 +1713,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
+<translation id="6835883744948188639">Näytä käyttäjälle toistuva kehote suositellusta uudelleenkäynnistyksestä</translation>
 <translation id="685769593149966548">Pakota rajoitettu tila YouTubessa</translation>
 <translation id="687046793986382807">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 35 alkaen.
 

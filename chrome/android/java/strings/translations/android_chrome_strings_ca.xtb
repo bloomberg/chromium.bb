@@ -12,6 +12,7 @@
 <translation id="1111673857033749125">Les adreces d'interès desades als altres dispositius es mostraran aquí.</translation>
 <translation id="1113597929977215864">Mostra la visualització simplificada</translation>
 <translation id="1121094540300013208">Informes d'ús i d'error</translation>
+<translation id="1129510026454351943">Detalls: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1145536944570833626">Suprimeix les dades existents.</translation>
 <translation id="1146678959555564648">Activa el mode RV</translation>
 <translation id="116280672541001035">Dades utilitzades</translation>
@@ -80,6 +81,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1660204651932907780">Permet que els llocs web reprodueixin so (opció recomanada)</translation>
 <translation id="1670399744444387456">Opcions bàsiques</translation>
 <translation id="1671236975893690980">Baixada pendent…</translation>
+<translation id="1672586136351118594">No m'ho tornis a mostrar</translation>
 <translation id="1674523662097951983">L'opció Adreces d'interès canvia de lloc. La propera vegada, fes lliscar la barra d'adreces cap amunt per trobar-la.</translation>
 <translation id="169033420419426091">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè no s'ha trobat la targeta SD.</translation>
 <translation id="1709438864123551175">Economitzador de dades</translation>
@@ -442,6 +444,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5129038482087801250">Instal·la l'aplicació web</translation>
+<translation id="5139940364318403933">Obtén informació sobre com pots utilitzar Google Drive</translation>
 <translation id="515227803646670480">Esborrar les dades emmagatzemades</translation>
 <translation id="5152843274749979095">No hi ha cap aplicació admesa instal·lada</translation>
 <translation id="5161254044473106830">Cal indicar un títol</translation>
@@ -680,7 +683,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7062545763355031412">Accepta i canvia de compte</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seleccionat}other{# elements seleccionats}}</translation>
-<translation id="7077143737582773186">Targeta SD</translation>
+<translation id="7077143737582773186">Targeta Secure Digital</translation>
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="7128222689758636196">Permet al motor de cerca actual</translation>
 <translation id="7138678301420049075">Altres</translation>
@@ -695,6 +698,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7251326866581677552">S'ha bloquejat en alguns llocs web</translation>
 <translation id="7253272406652746122">Afegeix un compte de Google des de la pàgina Comptes de l'aplicació Configuració del dispositiu.</translation>
 <translation id="7274013316676448362">Lloc bloquejat</translation>
+<translation id="729975465115245577">El dispositiu no té cap aplicació per emmagatzemar el fitxer de contrasenyes.</translation>
 <translation id="7318797029885648322">Toca Més per veure els articles</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
@@ -737,6 +741,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
+<translation id="7682724950699840886">Segueix aquests consells: comprova que hi hagi prou espai al dispositiu i prova d'exportar les contrasenyes de nou.</translation>
 <translation id="7698359219371678927">Crea una adreça electrònica a <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">Tradueix sempre les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
@@ -809,6 +814,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8413126021676339697">Mostra l'historial complet</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8441146129660941386">Retrocedeix</translation>
+<translation id="8445448999790540984">No es poden exportar les contrasenyes</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
 <translation id="8487700953926739672">Disponible sense connexió</translation>
 <translation id="8489271220582375723">Obre la pàgina de l'historial</translation>

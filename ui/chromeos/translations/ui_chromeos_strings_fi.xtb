@@ -175,7 +175,7 @@
 <translation id="5819442873484330149">Hangul 3-set (lopullinen)</translation>
 <translation id="5838825566232597749">Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="5892290200158927959">Ranskalainen BÉPO-näppäimistö</translation>
-<translation id="5928303187149237472">Muuta näytön resoluutiota</translation>
+<translation id="5928303187149237472">Näytön resoluution muuttaminen</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Näppäimistö: Latinalainen Amerikka</translation>
 <translation id="6012987430370760224">Marathinkielinen näppäimistö (foneettinen)</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">Näppäimistö: Yhdysvallat, Workman</translation>
 <translation id="6970230597523682626">bulgaria</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
+<translation id="7020813747703216897">Hakua vastaavia tuloksia ei löytynyt.</translation>
 <translation id="7025325401470358758">Seuraava ruutu</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Translitterointi (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Näppäimistö: viro</translation>
 <translation id="719009910964971313">Näppäimistö: US, Dvorak ohjelmoijille</translation>
 <translation id="7222624196722476520">Bulgarian foneettinen näppäimistö</translation>
+<translation id="7272373489634936181">Hae pikanäppäimiä</translation>
 <translation id="7348749398828259943">Näppäimistö: Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="7389722738210761877">Thainkielinen näppäimistö (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Hindinkielinen näppäimistö (foneettinen)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">USA, Colemak</translation>
 <translation id="7969525169268594403">sloveeni</translation>
 <translation id="7987485481246785146">Soranîn arabiaan perustuva näppäimistö</translation>
+<translation id="8004192919599017226">Aloita haku…</translation>
 <translation id="8008366997883261463">Jackrussellinterrieri</translation>
 <translation id="8031722894461705849">Näppäimistö: slovakki</translation>
 <translation id="8045462269890919536">romania</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">venäjä, foneettinen</translation>
 <translation id="913758436357682283">Myanmarin myansan-näppäimistö</translation>
 <translation id="9153744823707037316">Array-syöttötapa</translation>
+<translation id="9179672198516322668">Suositut pikanäppäimet</translation>
 <translation id="9206487995878691001">Cangjie-syöttötapa</translation>
 <translation id="9219908252191632183">Kuu</translation>
 </translationbundle>

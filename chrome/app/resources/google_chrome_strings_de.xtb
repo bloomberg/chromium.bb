@@ -112,7 +112,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="4028693306634653894">Schneller Zugriff auf Chrome</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
 <translation id="4053720452172726777">Google Chrome anpassen und einstellen</translation>
-<translation id="4143243756087420366">Name und Bild des Chrome-Profils</translation>
+<translation id="4143243756087420366">Chrome-Name und -Bild</translation>
 <translation id="4147555960264124640">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Google Chrome-Profil. Ihre Chrome-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="4251615635259297716">Ihre Chrome-Daten mit diesem Konto verknüpfen?</translation>
@@ -163,6 +163,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ist möglicherweise schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS wird in dieser Sprache angezeigt</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Auf Ihrem Computer befindet sich Software, die nicht mit Google Chrome kompatibel ist.</translation>
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
@@ -174,6 +175,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6070348360322141662">Google Chrome verschlüsselt Ihre Daten zur Erhöhung der Sicherheit</translation>
 <translation id="6113794647360055231">Chrome ist jetzt noch besser</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="6235018212288296708">Eingangsregel für die Zulassung von mDNS-Verkehr in Google Chrome</translation>
 <translation id="6291089322031436445">Chrome Dev-Apps</translation>
@@ -181,6 +183,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="6338556085225130112">Google Chrome wird aktualisiert</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> möglich gemacht.</translation>
 <translation id="6410540444482791104">Sie können dazu beitragen, die Verwendung von Chrome sicherer und nutzerfreundlicher zu machen, indem Sie einige Systeminformationen und Seiteninhalte automatisch an Google senden. Google kann so schädliche Apps und Websites besser erfassen.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chrome-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chrome ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>

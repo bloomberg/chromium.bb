@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">捲動至此</translation>
 <translation id="3234408098842461169">向下鍵</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
+<translation id="335581015389089642">語音</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{還剩 1 天}other{還剩 # 天}}</translation>
+<translation id="3618849550573277856">查詢「<ph name="LOOKUP_STRING" />」</translation>
 <translation id="364720409959344976">選取要上傳的資料夾</translation>
 <translation id="3660179305079774227">向上鍵</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/秒</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">跳至另一頁</translation>
 <translation id="4250229828105606438">螢幕擷取畫面</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 個月前}other{# 個月前}}</translation>
+<translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 則未讀通知</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">應用程式建議</translation>
 <translation id="6364916375976753737">向左捲動</translation>
 <translation id="6394627529324717982">逗號</translation>
+<translation id="6397363302884558537">Stop Speaking</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="654149438358937226">封鎖所有通知</translation>

@@ -90,7 +90,7 @@
 <translation id="3519867315646775981">ലിപ്യന്തരണം (shalom ← שלום)</translation>
 <translation id="3522708245912499433">പോര്‍ച്ചുഗീസ്</translation>
 <translation id="357479282490346887">ലിത്വാനിയന്‍</translation>
-<translation id="3592821358219525223">സിസ്‌റ്റവും, ഡിസ്‌പ്ലേ ക്രമീകരണവും</translation>
+<translation id="3592821358219525223">സിസ്‌റ്റം, ഡിസ്‌പ്ലേ ക്രമീകരണം</translation>
 <translation id="3603385196401704894">കനേഡിയന്‍ ഫ്രഞ്ച്</translation>
 <translation id="3606220979431771195">ടർക്കിഷ്-എഫ്</translation>
 <translation id="3619115746895587757">കാപ്പുചീനോ</translation>
@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">യുഎസ് വർക്ക്‌മാൻ കീബോർഡ്</translation>
 <translation id="6970230597523682626">ബള്‍ഗേറിയന്‍</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
+<translation id="7020813747703216897">പൊരുത്തമുള്ള ഫലങ്ങളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="7025325401470358758">അടുത്ത പാൻ</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">ലിപ്യന്തരണം (salam → ሰላም)</translation>
 <translation id="7172053773111046550">എസ്റ്റോണിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="719009910964971313">യുഎസ് പ്രോഗ്രാമർ ഡൊറാക്ക് കീബോർഡ്</translation>
 <translation id="7222624196722476520">ബൾഗേറിയൻ ഫൊണറ്റിക് കീബോർഡ്</translation>
+<translation id="7272373489634936181">കുറുക്കുവഴികൾക്കായി തിരയുക</translation>
 <translation id="7348749398828259943">യുഎസ് വർക്ക്മാൻ ഇന്റർനാഷണൽ കീബോർഡ്</translation>
 <translation id="7389722738210761877">തായ് കീബോർഡ് (TIS 820-2531)</translation>
 <translation id="7396038720194014279">ഹിന്ദി കീബോർഡ് (സ്വരസൂചകം)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">യുഎസ് കോൾമാക്ക്</translation>
 <translation id="7969525169268594403">സ്ലോവേനിയന്‍</translation>
 <translation id="7987485481246785146">സൊറാനി കുർദ്ദിഷ് അറബിക് അധിഷ്‌ഠിത കീബോർഡ്</translation>
+<translation id="8004192919599017226">തിരയൽ ആരംഭിക്കുക...</translation>
 <translation id="8008366997883261463">ജാക്ക് റസ്സൽ ടെറിയർ</translation>
 <translation id="8031722894461705849">സ്ലോവാക് കീബോർഡ്</translation>
 <translation id="8045462269890919536">റുമാനിയന്‍</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">റഷ്യൻ സ്വരസൂചകം</translation>
 <translation id="913758436357682283">മ്യാൻമാർ മ്യാൻസൻ കീബോർഡ്</translation>
 <translation id="9153744823707037316">അറേ ടൈപ്പുചെയ്യൽ രീതി</translation>
+<translation id="9179672198516322668">ജനപ്രിയ കുറുക്കുവഴികൾ</translation>
 <translation id="9206487995878691001">സാങ്‌ചി ടൈപ്പുചെയ്യൽ രീതി</translation>
 <translation id="9219908252191632183">ലൂണാർ</translation>
 </translationbundle>

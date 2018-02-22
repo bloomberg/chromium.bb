@@ -119,6 +119,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5386450000063123300">Chromium uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
 <translation id="5479196819031988440">Det går inte att öppna den här sidan i Chromium OS.</translation>
 <translation id="5480860683791598150">Du behöver ge Chromium åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
@@ -193,6 +194,7 @@ Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_
 <ph name="BEGIN_LINK_2" />Läs mer<ph name="END_LINK_2" />
 
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Du behöver ge Chromium behörighet att använda kameran på webbplatsen</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
@@ -206,6 +208,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="7756122083761163394">Den här personens webbinformation raderas från enheten. Om du vill återställa informationen loggar du in i Chrome som $2.</translation>
 <translation id="7773960292263897147">Varning! Chromium kan inte förhindra att tillägg registrerar din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du det här alternativet.</translation>
 <translation id="7774736947049807614">Autentiseringscertifikatet fungerade inte. Logga in i Chromium igen som <ph name="USER_NAME" /> eller kontakta administratören. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Det gick inte att uppdatera Chromium till den senaste versionen. Därför går du miste om nya funktioner och säkerhetskorrigeringar.</translation>
 <translation id="7937630085815544518">Du var inloggad i Chromium som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
 <translation id="7962572577636132072">Chromium uppdateras automatiskt så att du alltid har den senaste versionen.</translation>

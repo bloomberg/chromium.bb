@@ -169,6 +169,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
 <translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS wordt weergegeven in deze taal</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">De software op je computer is niet compatibel met Google Chrome.</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
@@ -180,6 +181,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6070348360322141662">Je gegevens worden voor extra beveiliging door Google Chrome versleuteld</translation>
 <translation id="6113794647360055231">Chrome is nu nog beter</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Bèta</translation>
 <translation id="61852838583753520">&amp;Chrome OS updaten</translation>
 <translation id="6235018212288296708">Inkomende regel zodat Google Chrome mDNS-verkeer toestaat.</translation>
 <translation id="6291089322031436445">Chrome Dev-apps</translation>
@@ -187,6 +189,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="6338556085225130112">Google Chrome updaten</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Je kunt helpen Chrome veiliger en gebruiksvriendelijker te maken door automatisch bepaalde systeeminformatie en paginacontent naar Google te verzenden om te helpen bij de detectie van gevaarlijke apps en sites.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Je gebruikt <ph name="PROFILE_EMAIL" /> om je Chrome-bestanden te synchroniseren. Als je je synchronisatievoorkeur wilt bijwerken of Chrome zonder Google-account wilt gebruiken, ga je naar '<ph name="SETTINGS_LINK" />'.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>

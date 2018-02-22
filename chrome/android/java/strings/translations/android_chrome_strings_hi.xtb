@@ -12,6 +12,7 @@
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
 <translation id="1113597929977215864">सरल बनाया गया व्यू दिखाएं</translation>
 <translation id="1121094540300013208">उपयोग और क्रैश रिपोर्ट</translation>
+<translation id="1129510026454351943">विवरण: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1145536944570833626">मौजूदा डेटा हटाएं.</translation>
 <translation id="1146678959555564648">VR डालें</translation>
 <translation id="116280672541001035">उपयोग किया गया</translation>
@@ -80,6 +81,7 @@
 <translation id="1660204651932907780">साइटों को आवाज़ चलाने दें (सुझाया गया)</translation>
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1671236975893690980">डाउनलोड लंबित…</translation>
+<translation id="1672586136351118594">फिर से न दिखाएं</translation>
 <translation id="1674523662097951983">“बुकमार्क” दूसरी जगह पर जा रहा है. अगली बार, पता बार ऊपर की ओर खींचें.</translation>
 <translation id="169033420419426091">अनुपलब्‍ध SD कार्ड के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="1709438864123551175">डेटा बचाने का साधन</translation>
@@ -376,7 +378,7 @@
 <translation id="4522570452068850558">विवरण</translation>
 <translation id="4526249700380860531">सहेजे गए पासवर्ड <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> पर देखें और प्रबंधित करें</translation>
 <translation id="4532845899244822526">फ़ोल्डर चुनें</translation>
-<translation id="4544481164434183075">यह पेज <ph name="CREATION_TIME" /> का है और इसके ऑनलाइन वर्शन में अंतर हो सकता है.</translation>
+<translation id="4544481164434183075">यह पेज का है <ph name="CREATION_TIME" /> और इसके ऑनलाइन वर्शन में अंतर हो सकता है.</translation>
 <translation id="4550003330909367850">यहां अपना पासवर्ड देखने या उसे कॉपी करने के लिए, इस डिवाइस पर स्क्रीन लॉक सेट करें.</translation>
 <translation id="4558311620361989323">वेबपेज शॉर्टकट</translation>
 <translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
@@ -442,6 +444,7 @@
 <translation id="510275257476243843">1 घंटा शेष</translation>
 <translation id="5127805178023152808">समन्वयन बंद है</translation>
 <translation id="5129038482087801250">वेब ऐप्लिकेशन इंस्टॉल करें</translation>
+<translation id="5139940364318403933">Google डिस्क के इस्तेमाल का तरीका जानें</translation>
 <translation id="515227803646670480">संग्रहित डेटा साफ़ करें</translation>
 <translation id="5152843274749979095">कोई समर्थित ऐप्लिकेशन इंस्‍टॉल नहीं है</translation>
 <translation id="5161254044473106830">शीर्षक आवश्‍यक</translation>
@@ -695,6 +698,7 @@
 <translation id="7251326866581677552">कुछ साइटों से ब्लॉक है</translation>
 <translation id="7253272406652746122">अपने डिवाइस के सेटिंग ऐप्लिकेशन में खाते पेज से कोई Google खाता जोड़ें.</translation>
 <translation id="7274013316676448362">अवरोधित साइट</translation>
+<translation id="729975465115245577">आपके डिवाइस में पासवर्ड फ़ाइल को संग्रहित करने वाला कोई ऐप्लिकेशन नहीं है.</translation>
 <translation id="7318797029885648322">लेख पाने के लिए अधिक पर टैप करें</translation>
 <translation id="7333031090786104871">पिछली साइट अभी भी जोड़ी जा रही है</translation>
 <translation id="7352939065658542140">वीडियो</translation>
@@ -737,6 +741,7 @@
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7665369617277396874">खाता जोड़ें</translation>
+<translation id="7682724950699840886">ये सलाह आज़माएं: पक्का करें कि आपके डिवाइस पर ज़रूरी जगह उपलब्ध है, फिर दोबारा निर्यात करके देखें.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> में ईमेल बनाएं</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> भाषा के पेज का हमेशा अनुवाद करें</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
@@ -809,6 +814,7 @@
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8441146129660941386">पीछे जाएं</translation>
+<translation id="8445448999790540984">पासवर्ड निर्यात नहीं कर सकते</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8489271220582375723">इतिहास पेज खोलें</translation>

@@ -89,7 +89,7 @@
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
-<translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
+<translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -204,6 +204,7 @@
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
+<translation id="1797233582739332495">Mostra una sol·licitud periòdica a l'usuari per indicar-li que cal reiniciar el navegador</translation>
 <translation id="1803646570632580723">Llista d'aplicacions fixades perquè es mostrin a la barra d'execució ràpida</translation>
 <translation id="1808715480127969042">Bloqueja les galetes en aquests llocs</translation>
 <translation id="1827523283178827583">Fes servir servidors intermediaris fixos</translation>
@@ -276,6 +277,11 @@
 
           Si no s'estableix aquesta política, s'utilitzaran els quatre esquemes.</translation>
 <translation id="2067011586099792101">Bloqueja l'accés a llocs situats fora de paquets de contingut.</translation>
+<translation id="2070270043919235595">Notifica els usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> per aplicar una actualització pendent.
+
+      Aquesta política activa les notificacions per avisar l'usuari que es recomana o es requereix reiniciar el navegador. Si no s'estableix, <ph name="PRODUCT_NAME" /> fa canvis subtils al seu menú per indicar a l'usuari que cal reiniciar el navegador. Si s'estableix en "Recommended", s'avisa periòdicament l'usuari que es recomana reiniciar el navegador. L'usuari pot ignorar aquest advertiment per posposar el reinici. Si s'estableix en "Required", s'avisa periòdicament l'usuari que el navegador es reiniciarà a la força en finalitzar el període de notificació. La durada predeterminada d'aquest període és de 7 dies i es pot configurar amb la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      La sessió de l'usuari es restaura en reiniciar el navegador.</translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2077273864382355561">Retard de la desactivació de pantalla quan s'utilitza bateria</translation>
 <translation id="2082205219176343977">Configura la versió mínima de Chrome que es permet al dispositiu.</translation>
@@ -321,6 +327,9 @@
       Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
 
       Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
+<translation id="2188722565665306629">Et permet establir el període de temps durant el qual es mostren les notificacions per reiniciar <ph name="PRODUCT_NAME" /> a fi d'aplicar una actualització pendent.
+
+      Aquesta política es pot utilitzar per controlar el període de temps, en mil·lisegons, durant el qual s'informa l'usuari de manera progressiva que cal reiniciar <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per aplicar una actualització. Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat d'actualitzar el navegador en funció de com estigui configurada la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no s'estableix, s'utilitza el període predeterminat de 604.800.000 mil·lisegons (1 setmana).</translation>
 <translation id="2194470398825717446">Aquesta política es considera obsoleta a M61; utilitza EcryptfsMigrationStrategy en lloc seu.
 
       Especifica com s'ha de comportar un dispositiu que conté eCryptfs i que ha de fer una transició a encriptació ext4.
@@ -507,6 +516,13 @@
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2682225790874070339">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
+<translation id="2726613915126661822">Et permet controlar si es poden executar ordinadors virtuals a Chrome OS.
+
+      Si la política es defineix en "true", el dispositiu pot executar ordinadors virtuals.
+      Si la política es defineix en "false", el dispositiu no pot executar ordinadors virtuals.
+      Quan la política es canvia a "false", afecta l'execució d'ordinadors virtuals nous, però no apaga els que ja s'estan executant.
+      Quan la política no es defineix en un dispositiu gestionat, el dispositiu no té permís per executar ordinadors virtuals.
+      Els dispositius no gestionats tenen permís per executar ordinadors virtuals.</translation>
 <translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
 
@@ -723,6 +739,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política és opcional. Si no es configura, no es proporcionarà cap pestanya nova.
 
           La política només s'aplica si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="3465852069254497664">Notifica a un usuari que es recomana o que cal reiniciar el navegador</translation>
 <translation id="346731943813722404">Permet especificar si els retards de la gestió de l'energia i el límit de la durada de la sessió només s'han d'executar quan l'usuari realitzi la primera acció en una sessió.
 
           Si la política s'estableix com a True, els retards de la gestió de l'energia i el límit de la durada de la sessió no s'executen fins que l'usuari no realitza la primera acció en una sessió.
@@ -756,6 +773,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3711895659073496551">Suspèn</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
 <translation id="3737544779868348650">Nom d'amfitrió de la xarxa del dispositiu</translation>
+<translation id="3740754010292550733">Estableix el període per actualitzar les notificacions de reinici</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
@@ -1416,6 +1434,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Si s'estableix aquesta política, els usuaris podran anular-la temporalment si activen o desactiven el cursor gran. No obstant això, l'elecció de l'usuari no és permanent i l'estat predeterminat es restablirà quan la pantalla d'inici de sessió es torni a mostrar o si l'usuari resta inactiu a la pantalla d'inici de sessió durant un minut.
 
           Si no s'estableix aquesta política, el cursor gran es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris podran activar o desactivar el cursor gran en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
+<translation id="5929855945144989709">Permet que els dispositius executin ordinadors virtuals a Chrome OS</translation>
 <translation id="5932767795525445337">Aquesta política també es pot utilitzar per fixar les aplicacions per a Android.</translation>
 <translation id="5936622343001856595">Força que les consultes de Cerca web de Google es facin amb l'opció SafeSearch activada i impedeix que els usuaris canviïn aquest paràmetre.
 
@@ -1655,6 +1674,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactiva la sincronització de totes les dades i substitueix RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Força l'activació del corrector ortogràfic d'idiomes</translation>
+<translation id="673699536430961464">Aquesta opció de configuració permet que els usuaris canviïn d'un compte de Google a un altre des de l'àrea de contingut de la finestra del navegador després que hagin iniciat la sessió al dispositiu <ph name="PRODUCT_OS_NAME" />.
+
+      Si aquesta política es defineix en "false", els usuaris no podran iniciar la sessió en un altre compte des de l'àrea de contingut d'un navegador que no estigui en mode d'incògnit.
+
+      Si aquesta política no es defineix o es defineix en "true", s'aplicarà el comportament predeterminat: els usuaris podran iniciar la sessió en un altre compte des de l'àrea de contingut del navegador, excepte en el cas dels comptes secundaris, en què es bloquejarà aquesta política a l'àrea de contingut dels navegadors que no estiguin en mode d'incògnit.
+
+      En cas que no es vulgui permetre l'inici de sessió a un altre compte mitjançant el mode d'incògnit, pots bloquejar aquest mode amb la política IncognitoModeAvailability.
+
+      Tinguis en compte que els usuaris poden bloquejar les galetes per accedir als serveis de Google sense autenticar-se.</translation>
 <translation id="6757438632136860443">Permet definir una llista de patrons d'URL que especifiquin llocs que poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1664,6 +1692,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6786967369487349613">Estableix el directori de perfils itinerants</translation>
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
+<translation id="6835883744948188639">Mostra una sol·licitud periòdica a l'usuari per indicar-li que es recomana reiniciar el navegador</translation>
 <translation id="685769593149966548">Aplica el mode restringit estricte a YouTube</translation>
 <translation id="687046793986382807">Aquesta política s'ha retirat a partir de la versió 35 de <ph name="PRODUCT_NAME" />.
 

@@ -167,6 +167,7 @@
 <translation id="565744775970812598"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5774845247549698882">Chrome OS এই ভাষায় প্রদর্শিত হচ্ছে</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">আপনার কম্পিউটারে যে সফটওয়্যারটি চলছে  সেটি Google Chrome এর সঙ্গে সঙ্গতিপূর্ণ নয়৷</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস আবার শুরু করুন৷</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
@@ -178,6 +179,7 @@
 <translation id="6070348360322141662">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে</translation>
 <translation id="6113794647360055231">Chrome আরও ভাল হয়ে উঠেছে</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome বিটা</translation>
 <translation id="61852838583753520">&amp;Chrome OS আপডেট</translation>
 <translation id="6235018212288296708">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6291089322031436445">Chrome ডেভেলপার অ্যাপ</translation>
@@ -185,6 +187,7 @@
 <translation id="6338556085225130112">Google Chrome আপডেট করা হচ্ছে</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />মুক্ত উৎস সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
 <translation id="6410540444482791104">বিপজ্জনক অ্যাপ্লিকেশান এবং সাইট সনাক্ত করতে সহায়তা দিতে স্বয়ংক্রিয়ভাবে কিছু তথ্য ও পৃষ্ঠা সামগ্রী Google এ পাঠানোর মাধ্যমে Chrome কে আরও নিরাপদ ও সহজে ব্যবহারযোগ্য করে তুলতে সাহায্য করতে পারেন।</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome আপডেট হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">আপনার Chrome জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chrome ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>

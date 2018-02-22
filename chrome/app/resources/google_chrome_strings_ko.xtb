@@ -171,6 +171,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5774845247549698882">현재 Chrome OS에서 사용 중인 언어</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Chrome Canary</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
@@ -182,6 +183,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6070348360322141662">보안 강화를 위해 Chrome에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="6113794647360055231">더욱 업그레이드된 Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Chrome 베타</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
 <translation id="6235018212288296708">Chrome이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6291089322031436445">Chrome 개발자 앱</translation>
@@ -189,6 +191,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6338556085225130112">Chrome 업데이트 중</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용했습니다.</translation>
 <translation id="6410540444482791104">위험한 앱과 사이트를 감지할 수 있도록 일부 시스템 정보와 페이지 콘텐츠를 Google로 자동 전송함으로써 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - 개발자용 Chrome</translation>
 <translation id="6566149418543181476">Chrome 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Chrome 콘텐츠를 동기화하기 위해 <ph name="PROFILE_EMAIL" />을(를) 사용 중입니다. 동기화 환경설정을 업데이트하거나 Google 계정 없이 Chrome을 사용하려면 <ph name="SETTINGS_LINK" />(으)로 이동하세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>

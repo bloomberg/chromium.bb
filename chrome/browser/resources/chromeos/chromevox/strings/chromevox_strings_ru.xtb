@@ -500,7 +500,7 @@
 <translation id="536031132345979795">Вернуться назад во время непрерывного чтения</translation>
 <translation id="5368000168321181111">Звуковые сигналы отключены.</translation>
 <translation id="5374320867641260420">Следующей кнопки нет.</translation>
-<translation id="5376407118396657359">Для перемещения по ячейкам нажмите Поиск + Ctrl + Alt и нужную стрелку.</translation>
+<translation id="5376407118396657359">Для перемещения к другой ячейке нажмите Поиск + Ctrl + Alt и нужную стрелку.</translation>
 <translation id="5382299583965267720">Следующего заголовка первого уровня нет.</translation>
 <translation id="5402367795255837559">Шрифт Брайля</translation>
 <translation id="5402791055281059602">Модальное оповещение</translation>
@@ -509,7 +509,7 @@
 <translation id="5417034931411865818">Нажать на элемент под ключом маршрутизации $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак "меньше"}one{# знак "меньше"}few{# знака "меньше"}many{# знаков "меньше"}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
-<translation id="5446809554778706307">Нет аудиофокуса. Нажмите Ctrl + T, чтобы открыть новую вкладку.</translation>
+<translation id="5446809554778706307">Нет аудиофокуса. Нажмите Ctrl + T, чтобы открыть новую вкладку.</translation>
 <translation id="5451268436205074266">точки <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Дополнительно</translation>
 <translation id="5485036206801896268">Предыдущей диаграммы нет.</translation>
@@ -866,7 +866,7 @@
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9077213568694924680">Удалено из выбранного фрагмента.</translation>
 <translation id="9082874451376019682">Предыдущего ползунка нет.</translation>
-<translation id="9087707351856729768">Для автозаполнения начните вводить текст.</translation>
+<translation id="9087707351856729768">Чтобы сработало автозаполнение, начните вводить текст.</translation>
 <translation id="9089864840575085222">Повторно озвучивать вводимый текст</translation>
 <translation id="9105227991373418255">вырезать $1.</translation>
 <translation id="9107530006868467849">Предыдущего виджета мультимедиа нет.</translation>

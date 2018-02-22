@@ -117,6 +117,7 @@
 <translation id="5386450000063123300">S'està actualitzant Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hi ha disponible una versió nova de Chromium.</translation>
 <translation id="5427571867875391349">Defineix Chromium com a navegador predeterminat</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
 <translation id="5466153949126434691">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent. Quan es completi aquesta baixada, Chromium es reiniciarà i ja el podreu utilitzar.</translation>
 <translation id="5479196819031988440">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="5480860683791598150">Chromium necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
@@ -191,6 +192,7 @@ Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloqu
 <ph name="BEGIN_LINK_2" />Més informació<ph name="END_LINK_2" />
 
 Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">Per visitar aquest lloc web, Chromium necessita permís per accedir a la càmera</translation>
 <translation id="7483335560992089831">No es pot instal·lar la mateixa versió de Chromium que s'està executant actualment. Tanqueu Chromium i torneu-ho a provar.</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
@@ -204,6 +206,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7756122083761163394">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-ne les dades, inicia la sessió a Chrome com a $2.</translation>
 <translation id="7773960292263897147">Advertiment: Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, desmarca aquesta opció.</translation>
 <translation id="7774736947049807614">El certificat d'autenticació ha fallat. Torna a iniciar la sessió a Chromium com a <ph name="USER_NAME" /> o contacta amb l'administrador per obtenir més informació. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium no s'ha pogut actualitzar a la darrera versió, així que no pots gaudir de les noves funcions ni de les correccions de seguretat.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
 <translation id="7962572577636132072">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>

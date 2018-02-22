@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Помери се овде</translation>
 <translation id="3234408098842461169">Стрелица надоле</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 дан}one{# дан}few{# дана}other{# дана}}</translation>
+<translation id="335581015389089642">Говор</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Још 1 дан}one{Још # дан}few{Још # дана}other{Још # дана}}</translation>
+<translation id="3618849550573277856">Потражи „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Избор директоријума за отпремање</translation>
 <translation id="3660179305079774227">Стрелица нагоре</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">прескочи</translation>
 <translation id="4250229828105606438">Снимак екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пре месец дана}one{Пре # месец}few{Пре # месеца}other{Пре # месеци}}</translation>
+<translation id="4289300219472526559">Почните да говорите</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">ПРЕДЛОЗИ АПЛИКАЦИЈА</translation>
 <translation id="6364916375976753737">Помери налево</translation>
 <translation id="6394627529324717982">Зарез</translation>
+<translation id="6397363302884558537">Престаните да говорите</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Пре 1 сек}one{Пре # сек}few{Пре # сек}other{Пре # сек}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Пре 1 секунду}one{Пре # секунду}few{Пре # секунде}other{Пре # секунди}}</translation>
 <translation id="654149438358937226">Блокирај сва обавештења</translation>

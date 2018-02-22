@@ -1270,7 +1270,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2916073183900451334">Menekan Tab pada halaman web akan menyorot link, juga bidang formulir</translation>
 <translation id="2916745397441987255">Telusuri ekstensi</translation>
 <translation id="2921081876747860777">Buat sandi untuk melindungi data lokal Anda.</translation>
-<translation id="2924395203970765374">Disinkronkan ke <ph name="FULL_NAME" /></translation>
 <translation id="2925966894897775835">Spreadsheet</translation>
 <translation id="2927017729816812676">Penyimpanan Cache</translation>
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Akun untuk anak)</translation>
@@ -1553,7 +1552,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3348459612390503954">Selamat</translation>
 <translation id="3349933790966648062">Jejak Memori</translation>
 <translation id="3353984535370177728">Pilih folder untuk diunggah</translation>
-<translation id="335581015389089642">Ucapan</translation>
 <translation id="3355936511340229503">Kesalahan sambungan</translation>
 <translation id="3356797067524893661">Anda siap untuk melanjutkan ke Hangouts Meet</translation>
 <translation id="3358935496594837302">Ponsel tidak dapat ditemukan. Pastikan Anda menggunakan ponsel Android yang kompatibel yang aktif dan ada dalam jangkauan. &lt;a&gt;Pelajari lebih lanjut&lt;/a&gt;</translation>
@@ -1730,7 +1728,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="3613422051106148727">&amp;Buka di tab baru</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3616741288025931835">&amp;Hapus Data browsing...</translation>
-<translation id="3618849550573277856">Cari "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="3620292326130836921">Semua dicadangkan!</translation>
 <translation id="3623574769078102674">Pengguna yang diawasi ini akan dikelola oleh <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3625258641415618104">Screenshot dinonaktifkan</translation>
@@ -2145,7 +2142,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="428565720843367874">Software antivirus gagal secara tak terduga saat memindai file ini.</translation>
 <translation id="428608937826130504">Item rak 8</translation>
 <translation id="4287502004382794929">Anda tidak memiliki cukup lisensi software untuk mendaftarkan perangkat ini. Hubungi pihak penjualan untuk membeli yang lainnya. Jika Anda yakin Anda tidak seharusnya mendapatkan pesan ini, hubungi dukungan.</translation>
-<translation id="4289300219472526559">Mulai Berbicara</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
 <translation id="4296575653627536209">Tambahkan Pengguna yang Dilindungi</translation>
 <translation id="4297322094678649474">Ubah Bahasa</translation>
@@ -2441,7 +2437,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
 <translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4820334425169212497">Tidak, saya tidak melihatnya</translation>
-<translation id="4821725298388681253">Ini adalah rilis awal. Beberapa fitur, seperti penelusuran dan entri teks, belum tersedia.</translation>
 <translation id="4821935166599369261">&amp;Penyidikan Diaktifkan</translation>
 <translation id="4823484602432206655">Membaca dan mengubah setelan perangkat dan pengguna</translation>
 <translation id="4823651846660089135">Perangkat berstatus hanya-baca</translation>
@@ -3452,7 +3447,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="6388771388956873507">Temukan sensor sidik jari di perangkat dan sentuh sensor tersebut dengan jari Anda</translation>
 <translation id="6390799748543157332">Halaman yang Anda lihat di jendela ini tidak akan muncul dalam histori browser dan tidak meninggalkan jejak lain, seperti cookie, di komputer setelah Anda menutup semua jendela Tamu yang terbuka. Namun, file apa pun yang Anda download akan tersimpan.</translation>
 <translation id="6395423953133416962">Kirim <ph name="BEGIN_LINK1" />informasi sistem<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />metrik<ph name="END_LINK2" /></translation>
-<translation id="6397363302884558537">Berhenti Berbicara</translation>
 <translation id="6397592254427394018">Buka semua bookmark di &amp;jendela penyamaran</translation>
 <translation id="6398715114293939307">Hapus Google Play Store</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
@@ -5022,7 +5016,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8912793549644936705">Meregang</translation>
 <translation id="8915370057835397490">Memuat saran</translation>
 <translation id="8916476537757519021">Subkerangka Mode Penyamaran: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8918468086406665831">Sinkronkan ke <ph name="ACCOUNT_FULL_NAME" /></translation>
 <translation id="8922013791253848639">Selalu izinkan iklan di situs ini</translation>
 <translation id="8925458182817574960">&amp;Setelan</translation>
 <translation id="8926389886865778422">Jangan tanya lagi</translation>

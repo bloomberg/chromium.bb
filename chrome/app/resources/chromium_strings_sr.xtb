@@ -119,6 +119,7 @@
 <translation id="5386450000063123300">Ажурирање Chromium-а (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
 <translation id="5466153949126434691">Chromium се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chromium ће се поново покренути и бићете спремни.</translation>
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
@@ -193,6 +194,7 @@ Chromium не може да врати подешавања.</translation>
 <ph name="BEGIN_LINK_2" />Сазнајте више<ph name="END_LINK_2" />
 
 Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Програмерска верзија Chromium-а</translation>
 <translation id="7451052299415159299">Chromium тражи дозволу да приступи камери за овај сајт</translation>
 <translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
 <translation id="7549178288319965365">О Chromium ОС-у</translation>
@@ -206,6 +208,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7756122083761163394">Подаци прегледања ове особе ће бити избрисани са овог уређаја. Да бисте вратили податке, пријавите се у Chrome као $2.</translation>
 <translation id="7773960292263897147">Упозорење: Chromium не може да спречи додатке да чувају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
 <translation id="7774736947049807614">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Chromium као <ph name="USER_NAME" /> или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
 <translation id="7937630085815544518">Били сте пријављени на Chromium као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7962572577636132072">Chromium се аутоматски ажурира, па увек имате најновију верзију.</translation>

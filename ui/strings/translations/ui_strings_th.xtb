@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">เลื่อนมาที่นี่</translation>
 <translation id="3234408098842461169">ลูกศรลง</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 วัน}other{# วัน}}</translation>
+<translation id="335581015389089642">คำพูด</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{เหลือ 1 วัน}other{เหลือ # วัน}}</translation>
+<translation id="3618849550573277856">ค้นหา “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">เลือกโฟลเดอร์เพื่ออัปโหลด</translation>
 <translation id="3660179305079774227">ลูกศรขึ้น</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/วินาที</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">ข้าม</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 เดือนที่ผ่านมา}other{# เดือนที่ผ่านมา}}</translation>
+<translation id="4289300219472526559">เริ่มพูด</translation>
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="4724120544754982507">ศูนย์การแจ้งเตือนมีการแจ้งเตือนที่ยังไม่อ่าน <ph name="UNREAD_NOTIFICATION_COUNT" /> รายการ</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">คำแนะนำเกี่ยวกับแอป</translation>
 <translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
 <translation id="6394627529324717982">จุลภาค</translation>
+<translation id="6397363302884558537">หยุดพูด</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ 1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
 <translation id="654149438358937226">บล็อกการแจ้งเตือนทั้งหมด</translation>

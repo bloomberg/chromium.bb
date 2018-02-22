@@ -120,6 +120,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5386450000063123300">Posodabljanje Chromiuma (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Na voljo je nova različica Chromiuma.</translation>
 <translation id="5427571867875391349">Nastavitev Chromiuma za privzeti brskalnik</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – različica beta Chromiuma</translation>
 <translation id="5466153949126434691">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico. Ko bo ta prenos končan, se bo Chromium znova zagnal in lahko boste nadaljevali z delom.</translation>
 <translation id="5479196819031988440">OS Chromium ne more odpreti te strani.</translation>
 <translation id="5480860683791598150">Chromium potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom</translation>
@@ -194,6 +195,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <ph name="BEGIN_LINK_2" />Več o tem<ph name="END_LINK_2" />
 
 Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph name="ACCOUNT_EMAIL" />.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – različica Chromiuma za razvijalce</translation>
 <translation id="7451052299415159299">Chromium potrebuje dovoljenje za dostop do fotoaparata za to spletno mesto</translation>
 <translation id="7483335560992089831">Ni mogoče namestiti iste različice Chromiuma, ki se trenutno izvaja. Zaprite Chromium in poskusite znova.</translation>
 <translation id="7549178288319965365">O sistemu Chromium OS</translation>
@@ -207,6 +209,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="7756122083761163394">Podatki brskanja te osebe bodo izbrisani iz naprave. Če želite podatke obnoviti, se prijavite v Chrome kot $2.</translation>
 <translation id="7773960292263897147">Opozorilo: Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="7774736947049807614">Napaka potrdila za preverjanje pristnosti. Znova se prijavite v Chromium kot <ph name="USER_NAME" /> ali se obrnite na skrbnika, če želite več informacij. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – delovna različica Chromiuma</translation>
 <translation id="7867198900892795913">Chromiuma ni bilo mogoče posodobiti na najnovejšo različico, zato nimate novih funkcij in varnostnih popravkov.</translation>
 <translation id="7937630085815544518">V Chromium ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS" />. Pri vnovični prijavi uporabite isti račun.</translation>
 <translation id="7962572577636132072">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico.</translation>

@@ -216,12 +216,14 @@
 <translation id="6939777852457331078">Teclat Workman nord-americà</translation>
 <translation id="6970230597523682626">Búlgar</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
+<translation id="7020813747703216897">No s'ha trobat cap resultat coincident</translation>
 <translation id="7025325401470358758">Subfinestra següent</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7170467426996704624">Transliteració (salam → ሰላም)</translation>
 <translation id="7172053773111046550">Teclat estonià</translation>
 <translation id="719009910964971313">Teclat Dvorak nord-americà per a programadors</translation>
 <translation id="7222624196722476520">Teclat de búlgar fonètic</translation>
+<translation id="7272373489634936181">Cerca dreceres</translation>
 <translation id="7348749398828259943">Teclat Workman nord-americà internacional</translation>
 <translation id="7389722738210761877">Teclat tailandès (TIS 820-2531)</translation>
 <translation id="7396038720194014279">Teclat hindi (fonètic)</translation>
@@ -246,6 +248,7 @@
 <translation id="7943385054491506837">Colemak nord-americà</translation>
 <translation id="7969525169268594403">Eslovè</translation>
 <translation id="7987485481246785146">Teclat de kurd sorani basat en l'àrab</translation>
+<translation id="8004192919599017226">Inicia la cerca...</translation>
 <translation id="8008366997883261463">Gos</translation>
 <translation id="8031722894461705849">Teclat eslovac</translation>
 <translation id="8045462269890919536">Romanès</translation>
@@ -285,6 +288,7 @@
 <translation id="9017798300203431059">Fonètic rus</translation>
 <translation id="913758436357682283">Teclat myansan de Birmània</translation>
 <translation id="9153744823707037316">Mètode d'introducció de la matriu</translation>
+<translation id="9179672198516322668">Dreceres populars</translation>
 <translation id="9206487995878691001">Mètode d'introducció de cangjie</translation>
 <translation id="9219908252191632183">Paisatge lunar</translation>
 </translationbundle>

@@ -171,6 +171,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
 <translation id="5774845247549698882">Chrome ОС се приказује на овом језику</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Софтвер покренут на рачунару није компатибилан са Google Chrome-ом.</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
@@ -182,6 +183,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6070348360322141662">Google Chrome ће шифровати податке ради додатне сигурности</translation>
 <translation id="6113794647360055231">Управо смо побољшали Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome бета</translation>
 <translation id="61852838583753520">Ажурирај &amp;Chrome ОС</translation>
 <translation id="6235018212288296708">Правило за долазни саобраћај за Google Chrome да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6291089322031436445">Chrome апликације за програмерски канал</translation>
@@ -189,6 +191,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6338556085225130112">Ажурирање Google Chrome-а</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Можете да помогнете да Chrome буде безбеднији и лакши за коришћење тако што ћете аутоматски слати Google-у неке системске информације и садржај страница да бисмо открили опасне апликације и сајтове.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Програмерска верзија Google Chrome-а</translation>
 <translation id="6566149418543181476">Ажурирање Google Chrome-а (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chrome садржаја. Да бисте ажурирали подешавање синхронизације или користили Chrome без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Копирана у Chrome</translation>

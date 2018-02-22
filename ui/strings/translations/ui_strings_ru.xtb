@@ -50,7 +50,9 @@
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дня}many{# дней}other{# дня}}</translation>
+<translation id="335581015389089642">Озвучить</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
+<translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Выберите папку для загрузки</translation>
 <translation id="3660179305079774227">Стрелка вверх</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> ГБ/с</translation>
@@ -63,6 +65,7 @@
 <translation id="4202807286478387388">перейти</translation>
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{месяц назад}one{# месяц назад}few{# месяца назад}many{# месяцев назад}other{# месяца назад}}</translation>
+<translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4724120544754982507">Центр уведомлений. Непрочитанных: <ph name="UNREAD_NOTIFICATION_COUNT" />.</translation>
@@ -101,6 +104,7 @@
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>
 <translation id="6394627529324717982">Запятая</translation>
+<translation id="6397363302884558537">Прекратить голосовой ввод</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 сек. назад}one{# сек. назад}few{# сек. назад}many{# сек. назад}other{# сек. назад}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{только что}one{# секунду назад}few{# секунды назад}many{# секунд назад}other{# секунды назад}}</translation>
 <translation id="654149438358937226">Блокировать все уведомления</translation>
