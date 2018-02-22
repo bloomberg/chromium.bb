@@ -241,9 +241,9 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
                     }
                 }
             }
-            items.add(
-                    new BrowserActionsCustomContextMenuItem(CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(i),
-                            customItems.get(i).getTitle(), drawable));
+            items.add(new BrowserActionsCustomContextMenuItem(
+                    CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(i), customItems.get(i).getTitle(), drawable,
+                    customItems.get(i).getIconUri()));
             mCustomItemActionMap.put(
                     CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(i), customItems.get(i).getAction());
         }

@@ -10,8 +10,12 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +23,7 @@ import android.os.StrictMode;
 import android.support.annotation.DrawableRes;
 import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
+import android.support.customtabs.browseractions.BrowserServiceFileProvider;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -33,6 +38,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -80,7 +86,9 @@ public class BrowserActionActivityTest {
     private static final String CUSTOM_ITEM_TITLE_3 = "Custom item wit invalid icon id";
     private static final String CUSTOM_ITEM_TITLE_4 = "Custom item without icon";
     @DrawableRes
-    private static final int CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID = R.drawable.star_green;
+    private static final int CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID_1 = R.drawable.star_green;
+    @DrawableRes
+    private static final int CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID_2 = R.drawable.star_gray;
     @DrawableRes
     private static final int CUSTOM_ITEM_ICON_VECTOR_DRAWABLE_ID = R.drawable.ic_add;
     @DrawableRes
@@ -173,6 +181,24 @@ public class BrowserActionActivityTest {
         mTestServer.stopAndDestroyServer();
     }
 
+    private void assertDrawableNull(Context context, ContextMenuItem item) {
+        item.getDrawableAsync(context, new Callback<Drawable>() {
+            @Override
+            public void onResult(Drawable drawable) {
+                Assert.assertNull(drawable);
+            }
+        });
+    }
+
+    private void assertDrawableNotNull(Context context, ContextMenuItem item) {
+        item.getDrawableAsync(context, new Callback<Drawable>() {
+            @Override
+            public void onResult(Drawable drawable) {
+                Assert.assertNotNull(drawable);
+            }
+        });
+    }
+
     @Test
     @SmallTest
     /**
@@ -215,10 +241,10 @@ public class BrowserActionActivityTest {
                             BrowserActionsContextMenuHelper.CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(
                                     i)));
         }
-        Assert.assertNotNull(contextMenuItems.get(5).getDrawable(context));
-        Assert.assertNotNull(contextMenuItems.get(6).getDrawable(context));
-        Assert.assertNull(contextMenuItems.get(7).getDrawable(context));
-        Assert.assertNull(contextMenuItems.get(8).getDrawable(context));
+        assertDrawableNotNull(context, contextMenuItems.get(5));
+        assertDrawableNotNull(context, contextMenuItems.get(6));
+        assertDrawableNull(context, contextMenuItems.get(7));
+        assertDrawableNull(context, contextMenuItems.get(8));
     }
 
     @Test
@@ -259,10 +285,37 @@ public class BrowserActionActivityTest {
                             BrowserActionsContextMenuHelper.CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(
                                     i)));
         }
-        Assert.assertNotNull(contextMenuItems.get(2).getDrawable(context));
-        Assert.assertNotNull(contextMenuItems.get(3).getDrawable(context));
-        Assert.assertNull(contextMenuItems.get(4).getDrawable(context));
-        Assert.assertNull(contextMenuItems.get(5).getDrawable(context));
+        assertDrawableNotNull(context, contextMenuItems.get(2));
+        assertDrawableNotNull(context, contextMenuItems.get(3));
+        assertDrawableNull(context, contextMenuItems.get(4));
+        assertDrawableNull(context, contextMenuItems.get(5));
+    }
+
+    @Test
+    @SmallTest
+    public void testCustomIconShownFromProviderCorrectly() throws Exception {
+        List<BrowserActionItem> items = createCustomItemsWithProvider();
+        startBrowserActionActivity(mTestPage, items, 0);
+        mOnBrowserActionsMenuShownCallback.waitForCallback(0);
+
+        List<Pair<Integer, List<ContextMenuItem>>> menus = mItems;
+        List<ContextMenuItem> contextMenuItems = menus.get(0).second;
+        ContentResolver resolver = InstrumentationRegistry.getTargetContext().getContentResolver();
+
+        Assert.assertTrue(contextMenuItems.get(5) instanceof BrowserActionsCustomContextMenuItem);
+        BrowserActionsCustomContextMenuItem customItems =
+                (BrowserActionsCustomContextMenuItem) contextMenuItems.get(5);
+        CallbackHelper imageShownCallback = new CallbackHelper();
+        Context context = InstrumentationRegistry.getTargetContext();
+        Callback<Drawable> callback = new Callback<Drawable>() {
+            @Override
+            public void onResult(Drawable drawable) {
+                Assert.assertNotNull(drawable);
+                imageShownCallback.notifyCalled();
+            }
+        };
+        customItems.getDrawableAsync(context, callback);
+        imageShownCallback.waitForCallback(0);
     }
 
     @Test
@@ -683,10 +736,18 @@ public class BrowserActionActivityTest {
         intent.putExtra(BrowserActionsIntent.EXTRA_APP_ID, pendingIntent);
 
         ArrayList<Bundle> customItemBundles = new ArrayList<>();
+        List<Uri> uris = new ArrayList<>();
         for (BrowserActionItem item : items) {
             Bundle customItemBundle = new Bundle();
             customItemBundle.putString(BrowserActionsIntent.KEY_TITLE, item.getTitle());
-            customItemBundle.putInt(BrowserActionsIntent.KEY_ICON_ID, item.getIconId());
+            if (item.getIconId() != 0) {
+                customItemBundle.putInt(BrowserActionsIntent.KEY_ICON_ID, item.getIconId());
+            }
+            if (item.getIconUri() != null) {
+                Uri uri = item.getIconUri();
+                customItemBundle.putParcelable(BrowserActionsIntent.KEY_ICON_URI, uri);
+                uris.add(uri);
+            }
             customItemBundle.putParcelable(BrowserActionsIntent.KEY_ACTION, item.getAction());
             customItemBundles.add(customItemBundle);
         }
@@ -695,6 +756,10 @@ public class BrowserActionActivityTest {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         intent.setClass(context, BrowserActionActivity.class);
+        if (!uris.isEmpty()) {
+            BrowserServiceFileProvider.grantReadPermission(
+                    intent, uris, InstrumentationRegistry.getContext());
+        }
         // Android Test Rule auto adds {@link Intent.FLAG_ACTIVITY_NEW_TASK} which violates {@link
         // BrowserActionsIntent} policy. Add an extra to skip Intent.FLAG_ACTIVITY_NEW_TASK check
         // for test.
@@ -711,7 +776,7 @@ public class BrowserActionActivityTest {
         List<BrowserActionItem> items = new ArrayList<>();
         PendingIntent action1 = createCustomItemAction(mTestPage);
         BrowserActionItem item1 = new BrowserActionItem(
-                CUSTOM_ITEM_TITLE_1, action1, CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID);
+                CUSTOM_ITEM_TITLE_1, action1, CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID_1);
         PendingIntent action2 = createCustomItemAction(mTestPage);
         BrowserActionItem item2 = new BrowserActionItem(
                 CUSTOM_ITEM_TITLE_2, action2, CUSTOM_ITEM_ICON_VECTOR_DRAWABLE_ID);
@@ -724,6 +789,19 @@ public class BrowserActionActivityTest {
         items.add(item2);
         items.add(item3);
         items.add(item4);
+        return items;
+    }
+
+    private List<BrowserActionItem> createCustomItemsWithProvider() {
+        List<BrowserActionItem> items = new ArrayList<>();
+        PendingIntent action1 = createCustomItemAction(mTestPage);
+        Context context = InstrumentationRegistry.getTargetContext();
+        Bitmap bm = BitmapFactory.decodeResource(
+                context.getResources(), CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID_1);
+
+        Uri uri = BrowserServiceFileProvider.generateUri(context, bm, CUSTOM_ITEM_TITLE_1, 1);
+        BrowserActionItem item = new BrowserActionItem(CUSTOM_ITEM_TITLE_1, action1, uri);
+        items.add(item);
         return items;
     }
 }
