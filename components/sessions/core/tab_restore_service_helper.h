@@ -31,6 +31,7 @@ class TimeFactory;
 class SESSIONS_EXPORT TabRestoreServiceHelper
     : public base::trace_event::MemoryDumpProvider {
  public:
+  typedef TabRestoreService::DeletionPredicate DeletionPredicate;
   typedef TabRestoreService::Entries Entries;
   typedef TabRestoreService::Entry Entry;
   typedef TabRestoreService::Tab Tab;
@@ -43,6 +44,9 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
    public:
     // Invoked before the entries are cleared.
     virtual void OnClearEntries();
+
+    // Invoked when navigations from entries have been deleted.
+    virtual void OnNavigationEntriesDeleted();
 
     // Invoked before the entry is restored. |entry_iterator| points to the
     // entry corresponding to the session identified by |id|.
@@ -78,6 +82,8 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   void BrowserClosing(LiveTabContext* context);
   void BrowserClosed(LiveTabContext* context);
   void ClearEntries();
+  void DeleteNavigationEntries(const DeletionPredicate& predicate);
+
   const Entries& entries() const;
   std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context);
   std::unique_ptr<Tab> RemoveTabEntryById(SessionID::id_type id);
@@ -143,6 +149,15 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
 
   // Validates all the tabs in a window, plus the window's active tab index.
   static bool ValidateWindow(const Window& window);
+
+  // Removes all navigation entries matching |predicate| from |tab|.
+  // Returns true if |tab| should be deleted because it is empty.
+  static bool DeleteFromTab(const DeletionPredicate& predicate, Tab* tab);
+
+  // Removes all navigation entries matching |predicate| from tabs in |window|.
+  // Returns true if |window| should be deleted because it is empty.
+  static bool DeleteFromWindow(const DeletionPredicate& predicate,
+                               Window* window);
 
   // Returns true if |tab| is one we care about restoring.
   bool IsTabInteresting(const Tab& tab);

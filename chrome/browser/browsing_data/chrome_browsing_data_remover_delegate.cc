@@ -56,6 +56,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -563,9 +564,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           prerender::PrerenderManager::CLEAR_PRERENDER_HISTORY);
     }
 
+    // When this feature is enabled, recent tabs and sessions will be deleted
+    // by NavigationEntryRemover and not here.
+    bool is_navigation_entry_remover_enabled = base::FeatureList::IsEnabled(
+        browsing_data::features::kRemoveNavigationHistory);
+
     // If the caller is removing history for all hosts, then clear ancillary
     // historical information.
-    if (filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    if (!is_navigation_entry_remover_enabled &&
+        filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
       // We also delete the list of recently closed tabs. Since these expire,
       // they can't be more than a day old, so we can simply clear them all.
       sessions::TabRestoreService* tab_service =

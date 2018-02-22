@@ -51,6 +51,7 @@ class SessionTabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& load_details) override;
   void NavigationListPruned(
       const content::PrunedDetails& pruned_details) override;
+  void NavigationEntriesDeleted() override;
   void NavigationEntryChanged(
       const content::EntryChangedDetails& change_details) override;
 #endif
