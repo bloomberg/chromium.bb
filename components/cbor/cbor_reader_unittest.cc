@@ -1304,4 +1304,19 @@ TEST(CBORReaderTest, TestUnsupportedSimplevalue) {
   }
 }
 
+TEST(CBORReaderTest, TestSuperLongContentDontCrash) {
+  static const std::vector<uint8_t> kTestCases[] = {
+      // CBOR array of 0xffffffff length.
+      {0x9b, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+      // CBOR map of 0xffffffff pairs.
+      {0xbb, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
+  };
+  for (const auto& test_case : kTestCases) {
+    CBORReader::DecoderError error_code;
+    base::Optional<CBORValue> cbor = CBORReader::Read(test_case, &error_code);
+    EXPECT_FALSE(cbor.has_value());
+    EXPECT_EQ(error_code, CBORReader::DecoderError::INCOMPLETE_CBOR_DATA);
+  }
+}
+
 }  // namespace cbor
