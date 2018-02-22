@@ -154,7 +154,7 @@ class PLATFORM_EXPORT FontCache {
   unsigned short Generation();
   void Invalidate();
 
-  SkFontMgr* FontManager() { return font_manager_.get(); }
+  sk_sp<SkFontMgr> FontManager() { return font_manager_; }
   static void SetFontManager(sk_sp<SkFontMgr>);
 
 #if !defined(OS_MACOSX)

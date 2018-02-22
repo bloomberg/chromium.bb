@@ -40,7 +40,7 @@
 
 namespace blink {
 
-static AtomicString DefaultFontFamily(SkFontMgr* font_manager) {
+static AtomicString DefaultFontFamily(sk_sp<SkFontMgr> font_manager) {
   // Pass nullptr to get the default typeface. The default typeface in Android
   // is "sans-serif" if exists, or the first entry in fonts.xml.
   sk_sp<SkTypeface> typeface(
@@ -60,10 +60,9 @@ static AtomicString DefaultFontFamily(SkFontMgr* font_manager) {
 }
 
 static AtomicString DefaultFontFamily() {
-  if (SkFontMgr* font_manager = FontCache::GetFontCache()->FontManager())
+  if (sk_sp<SkFontMgr> font_manager = FontCache::GetFontCache()->FontManager())
     return DefaultFontFamily(font_manager);
-  sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-  return DefaultFontFamily(fm.get());
+  return DefaultFontFamily(SkFontMgr::RefDefault());
 }
 
 // static
