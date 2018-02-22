@@ -160,9 +160,9 @@ void DumpResidency(size_t start,
 
 // static
 bool NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary() {
+  // Avoid forking with cygprofile instrumentation because the latter performs
+  // memory allocations.
 #if defined(CYGPROFILE_INSTRUMENTATION)
-  // Avoid forking with cygprofile instrumentation because the child process
-  // would create a dump as well.
   return false;
 #endif
 

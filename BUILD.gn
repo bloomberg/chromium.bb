@@ -311,6 +311,7 @@ group("gn_all") {
       "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
       "//tools/android/errorprone_plugin:errorprone_plugin_java",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
+      "//tools/cygprofile:cygprofile_unittests",
       "//ui/android:ui_junit_tests",
     ]
     deps -= [

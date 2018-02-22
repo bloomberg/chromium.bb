@@ -216,7 +216,11 @@ config("default_cygprofile_instrumentation") {
 
 config("cygprofile_instrumentation") {
   defines = [ "CYGPROFILE_INSTRUMENTATION=1" ]
-  cflags = [ "-finstrument-function-entry-bare" ]
+  if (use_lightweight_order_profiling) {
+    cflags = [ "-finstrument-function-entry-bare" ]
+  } else {
+    cflags = [ "-finstrument-functions-after-inlining" ]
+  }
 }
 
 config("no_cygprofile_instrumentation") {
