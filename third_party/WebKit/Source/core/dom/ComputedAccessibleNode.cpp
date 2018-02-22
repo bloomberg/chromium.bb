@@ -212,6 +212,18 @@ int32_t ComputedAccessibleNode::setSize(bool& is_null) const {
   return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_SET_SIZE, is_null);
 }
 
+float ComputedAccessibleNode::valueMax(bool& is_null) const {
+  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_MAX, is_null);
+}
+
+float ComputedAccessibleNode::valueMin(bool& is_null) const {
+  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_MIN, is_null);
+}
+
+float ComputedAccessibleNode::valueNow(bool& is_null) const {
+  return GetFloatAttribute(WebAOMFloatAttribute::AOM_ATTR_VALUE_NOW, is_null);
+}
+
 ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
   int32_t parent_ax_id;
   if (!tree_->GetParentIdForAXNode(ax_id_, &parent_ax_id)) {
@@ -281,6 +293,16 @@ bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
   bool out;
   is_null = true;
   if (tree_->GetBoolAttributeForAXNode(ax_id_, attr, &out)) {
+    is_null = false;
+  }
+  return out;
+}
+
+float ComputedAccessibleNode::GetFloatAttribute(WebAOMFloatAttribute attr,
+                                                bool& is_null) const {
+  float out;
+  is_null = true;
+  if (tree_->GetFloatAttributeForAXNode(ax_id_, attr, &out)) {
     is_null = false;
   }
   return out;

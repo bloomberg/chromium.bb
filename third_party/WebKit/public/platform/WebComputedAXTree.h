@@ -22,6 +22,13 @@ enum WebAOMIntAttribute {
   AOM_ATTR_SET_SIZE,
 };
 
+enum WebAOMFloatAttribute {
+  AOM_FLOAT_ATTRIBUTE_NONE,
+  AOM_ATTR_VALUE_MIN,
+  AOM_ATTR_VALUE_MAX,
+  AOM_ATTR_VALUE_NOW,
+};
+
 enum WebAOMStringAttribute {
   AOM_STRING_ATTRIBUTE_NONE,
   AOM_ATTR_AUTOCOMPLETE,
@@ -63,6 +70,10 @@ class WebComputedAXTree {
   virtual bool GetStringAttributeForAXNode(int32_t ax_id,
                                            WebAOMStringAttribute,
                                            WebString* out_param) = 0;
+
+  virtual bool GetFloatAttributeForAXNode(int32_t ax_id,
+                                          WebAOMFloatAttribute,
+                                          float* out_param) = 0;
 
   // The role is stored seperately from other attributes in the AXNode, so we
   // expose a seperate method for retrieving this.

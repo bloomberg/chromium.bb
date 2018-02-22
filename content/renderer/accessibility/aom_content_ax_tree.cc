@@ -55,6 +55,20 @@ ax::mojom::IntAttribute GetCorrespondingAXAttribute(
   }
 }
 
+ax::mojom::FloatAttribute GetCorrespondingAXAttribute(
+    blink::WebAOMFloatAttribute attr) {
+  switch (attr) {
+    case blink::WebAOMFloatAttribute::AOM_ATTR_VALUE_MIN:
+      return ax::mojom::FloatAttribute::kMinValueForRange;
+    case blink::WebAOMFloatAttribute::AOM_ATTR_VALUE_MAX:
+      return ax::mojom::FloatAttribute::kMaxValueForRange;
+    case blink::WebAOMFloatAttribute::AOM_ATTR_VALUE_NOW:
+      return ax::mojom::FloatAttribute::kValueForRange;
+    default:
+      return ax::mojom::FloatAttribute::kNone;
+  }
+}
+
 ax::mojom::StringAttribute GetCorrespondingAXAttribute(
     blink::WebAOMStringAttribute attr) {
   switch (attr) {
@@ -164,6 +178,17 @@ bool AomContentAxTree::GetRestrictionAttributeForAXNode(
   ax::mojom::Restriction ax_attr = GetCorrespondingRestrictionFlag(attr);
   *out_param = (restriction == ax_attr);
   return true;
+}
+
+bool AomContentAxTree::GetFloatAttributeForAXNode(
+    int32_t ax_id,
+    blink::WebAOMFloatAttribute attr,
+    float* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+  ax::mojom::FloatAttribute ax_attr = GetCorrespondingAXAttribute(attr);
+  return node->data().GetFloatAttribute(ax_attr, out_param);
 }
 
 bool AomContentAxTree::GetStringAttributeForAXNode(

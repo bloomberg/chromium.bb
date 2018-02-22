@@ -1101,6 +1101,9 @@ interface ComputedAccessibleNode
     getter rowIndex
     getter rowSpan
     getter setSize
+    getter valueMax
+    getter valueMin
+    getter valueNow
     getter valueText
     method constructor
     method ensureUpToDate

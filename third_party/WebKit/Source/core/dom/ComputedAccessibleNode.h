@@ -68,6 +68,10 @@ class ComputedAccessibleNode : public ScriptWrappable {
   int32_t rowSpan(bool& is_null) const;
   int32_t setSize(bool& is_null) const;
 
+  float valueMax(bool& is_null) const;
+  float valueMin(bool& is_null) const;
+  float valueNow(bool& is_null) const;
+
   const String autocomplete() const;
   const String checked() const;
   const String keyShortcuts() const;
@@ -93,6 +97,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   void OnUpdateResponse(ScriptPromiseResolver*);
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
+  float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
 
   AXID ax_id_;
