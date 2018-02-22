@@ -11,9 +11,9 @@
 
 namespace blink {
 
+class WebFormControlElement;
 class WebFormElement;
 class WebFormElementObserverCallback;
-class WebInputElement;
 
 class BLINK_EXPORT WebFormElementObserver {
  public:
@@ -23,7 +23,7 @@ class BLINK_EXPORT WebFormElementObserver {
       WebFormElement&,
       std::unique_ptr<WebFormElementObserverCallback>);
   static WebFormElementObserver* Create(
-      WebInputElement&,
+      WebFormControlElement&,
       std::unique_ptr<WebFormElementObserverCallback>);
 
   virtual void Disconnect() = 0;

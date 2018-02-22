@@ -11,10 +11,9 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
+#include "public/web/WebFormControlElement.h"
 #include "public/web/WebFormElement.h"
-#include "public/web/WebInputElement.h"
-#include "public/web/modules/password_manager/WebFormElementObserverCallback.h"
+#include "public/web/modules/autofill/WebFormElementObserverCallback.h"
 
 namespace blink {
 
@@ -126,9 +125,9 @@ WebFormElementObserver* WebFormElementObserver::Create(
 }
 
 WebFormElementObserver* WebFormElementObserver::Create(
-    WebInputElement& element,
+    WebFormControlElement& element,
     std::unique_ptr<WebFormElementObserverCallback> callback) {
-  return new WebFormElementObserverImpl(*element.Unwrap<HTMLInputElement>(),
+  return new WebFormElementObserverImpl(*element.Unwrap<HTMLElement>(),
                                         std::move(callback));
 }
 
