@@ -317,24 +317,27 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
         if (support_experimental_cdm_interface) {
           scoped_feature_list_.InitWithFeatures(
               {media::kExternalClearKeyForTesting,
-               media::kSupportExperimentalCdmInterface, media::kMojoCdm},
+               media::kSupportExperimentalCdmInterface},
               {});
         } else {
           scoped_feature_list_.InitWithFeatures(
-              {media::kExternalClearKeyForTesting, media::kMojoCdm}, {});
+              {media::kExternalClearKeyForTesting}, {});
         }
       } else {
         // Pepper CDM does not support any experimental CDM interface.
         scoped_feature_list_.InitWithFeatures(
-            {media::kExternalClearKeyForTesting}, {});
+            {media::kExternalClearKeyForTesting}, {media::kMojoCdm});
       }
     } else {
       // Experimental CDM interface is only supported with External Clear Key.
-      if (cdm_host_type == CdmHostType::kMojo) {
-        scoped_feature_list_.InitWithFeatures({media::kMojoCdm}, {});
+      if (cdm_host_type != CdmHostType::kMojo) {
+        scoped_feature_list_.InitWithFeatures({}, {media::kMojoCdm});
       }
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+    // Make sure we actually use MojoCdm iff host type is kMojo.
+    DCHECK_EQ(cdm_host_type == CdmHostType::kMojo, IsUsingMojoCdm());
   }
 
   // Check whether the test is actually using mojo CDM.
