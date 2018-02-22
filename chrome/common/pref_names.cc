@@ -1549,6 +1549,10 @@ const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
 
 #if !defined(OS_ANDROID)
+// Tracks the number of times the dice signin promo has been shown in the user
+// menu.
+const char kDiceSigninUserMenuPromoCount[] = "sync_promo.user_menu_show_count";
+
 // Tracks the number of times that we have shown the sign in promo at startup.
 const char kSignInPromoStartupCount[] = "sync_promo.startup_count";
 

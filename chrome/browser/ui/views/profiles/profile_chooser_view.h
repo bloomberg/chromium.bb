@@ -181,6 +181,11 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Callback for DiceAccountsMenu.
   void EnableSync(const base::Optional<AccountInfo>& account);
 
+  // Methods to keep track of the number of times the Dice sign-in promo has
+  // been shown.
+  int GetDiceSigninPromoShowCount() const;
+  void IncrementDiceSigninPromoShowCount();
+
   std::unique_ptr<AvatarMenu> avatar_menu_;
   Browser* const browser_;
 

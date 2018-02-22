@@ -556,6 +556,7 @@ extern const char kDevToolsRemoteEnabled[];
 extern const char kGoogleServicesPasswordHash[];
 
 #if !defined(OS_ANDROID)
+extern const char kDiceSigninUserMenuPromoCount[];
 extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];
 extern const char kSignInPromoShowOnFirstRunAllowed[];
