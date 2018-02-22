@@ -16,13 +16,15 @@ test(function() {
 
   var entry = iterator.next();
   assert_equals(entry.value[0], 'border-left-width');
-  assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value[1].toString(), '30px');
+  assert_equals(entry.value[1].length, 1);
+  assert_equals(entry.value[1][0].constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value[1][0].toString(), '30px');
 
   entry = iterator.next();
   assert_equals(entry.value[0], 'width');
-  assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value[1].toString(), '60px');
+  assert_equals(entry.value[1].length, 1);
+  assert_equals(entry.value[1][0].constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value[1][0].toString(), '60px');
 
   assert_true(iterator.next().done);
 }, "Adding a property while iterating over entries() doesn't affect iterator");
@@ -36,12 +38,14 @@ test(function() {
   testElement.style.borderTopWidth = '10px';
 
   var entry = iterator.next();
-  assert_equals(entry.value.constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value.toString(), '30px');
+  assert_equals(entry.value.length, 1);
+  assert_equals(entry.value[0].constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value[0].toString(), '30px');
 
   entry = iterator.next();
-  assert_equals(entry.value.constructor.name, CSSUnitValue.name);
-  assert_equals(entry.value.toString(), '60px');
+  assert_equals(entry.value.length, 1);
+  assert_equals(entry.value[0].constructor.name, CSSUnitValue.name);
+  assert_equals(entry.value[0].toString(), '60px');
 
   assert_true(iterator.next().done);
 }, "Adding a property while iterating over values() doesn't affect current iterator");

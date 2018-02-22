@@ -19,8 +19,7 @@ namespace blink {
 namespace {
 
 class StylePropertyMapIterationSource final
-    : public PairIterable<String, CSSStyleValueOrCSSStyleValueSequence>::
-          IterationSource {
+    : public PairIterable<String, CSSStyleValueVector>::IterationSource {
  public:
   explicit StylePropertyMapIterationSource(
       HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values)
@@ -28,7 +27,7 @@ class StylePropertyMapIterationSource final
 
   bool Next(ScriptState*,
             String& key,
-            CSSStyleValueOrCSSStyleValueSequence& value,
+            CSSStyleValueVector& value,
             ExceptionState&) override {
     if (index_ >= values_.size())
       return false;
@@ -42,8 +41,7 @@ class StylePropertyMapIterationSource final
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(values_);
-    PairIterable<String, CSSStyleValueOrCSSStyleValueSequence>::
-        IterationSource::Trace(visitor);
+    PairIterable<String, CSSStyleValueVector>::IterationSource::Trace(visitor);
   }
 
  private:
@@ -115,15 +113,9 @@ StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
                             const CSSValue& css_value) {
     const auto property_id = cssPropertyID(property_name);
 
-    CSSStyleValueOrCSSStyleValueSequence value;
-    const auto style_value_vector =
+    auto values =
         StyleValueFactory::CssValueToStyleValueVector(property_id, css_value);
-    if (style_value_vector.size() == 1)
-      value.SetCSSStyleValue(style_value_vector[0]);
-    else
-      value.SetCSSStyleValueSequence(style_value_vector);
-
-    result.emplace_back(property_name, value);
+    result.emplace_back(property_name, std::move(values));
   });
 
   std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
