@@ -4,6 +4,8 @@
 
 #include "extensions/browser/content_verifier/test_utils.h"
 
+#include "base/strings/stringprintf.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +58,42 @@ void TestContentVerifyJobObserver::WaitForOnHashesReady() {
   // Run() returns immediately if Quit() has already been called.
   on_hashes_ready_run_loop_.Run();
 }
+
+MockContentVerifierDelegate::MockContentVerifierDelegate() = default;
+MockContentVerifierDelegate::~MockContentVerifierDelegate() = default;
+
+ContentVerifierDelegate::Mode MockContentVerifierDelegate::ShouldBeVerified(
+    const Extension& extension) {
+  return ContentVerifierDelegate::ENFORCE_STRICT;
+}
+
+ContentVerifierKey MockContentVerifierDelegate::GetPublicKey() {
+  return ContentVerifierKey(kWebstoreSignaturesPublicKey,
+                            kWebstoreSignaturesPublicKeySize);
+}
+
+GURL MockContentVerifierDelegate::GetSignatureFetchUrl(
+    const ExtensionId& extension_id,
+    const base::Version& version) {
+  std::string url =
+      base::StringPrintf("http://localhost/getsignature?id=%s&version=%s",
+                         extension_id.c_str(), version.GetString().c_str());
+  return GURL(url);
+}
+
+std::set<base::FilePath> MockContentVerifierDelegate::GetBrowserImagePaths(
+    const extensions::Extension* extension) {
+  ADD_FAILURE() << "Unexpected call for this test";
+  return std::set<base::FilePath>();
+}
+
+void MockContentVerifierDelegate::VerifyFailed(
+    const ExtensionId& extension_id,
+    ContentVerifyJob::FailureReason reason) {
+  ADD_FAILURE() << "Unexpected call for this test";
+}
+
+void MockContentVerifierDelegate::Shutdown() {}
 
 namespace content_verifier_test_utils {
 
