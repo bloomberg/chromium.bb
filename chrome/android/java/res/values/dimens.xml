@@ -300,6 +300,7 @@
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>
     <dimen name="tile_grid_layout_padding_top">8dp</dimen>
+    <dimen name="tile_grid_layout_modern_padding_top">24dp</dimen>
     <dimen name="tile_grid_layout_padding_start">12dp</dimen>
     <dimen name="tile_grid_layout_padding_end">12dp</dimen>
     <dimen name="tile_grid_layout_no_logo_padding_top">20dp</dimen>
@@ -374,6 +375,9 @@
     <dimen name="content_suggestions_card_modern_badge_size">18dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_margin_start">8dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_margin_top">8dp</dimen>
+    <!-- Used to offset content_suggestions_card_modern_margin applied to the bottom of the
+         last card. -->
+    <dimen name="content_suggestions_action_modern_margin_top">-16dp</dimen>
     <dimen name="contextual_carousel_space_between_cards">8dp</dimen>
     <dimen name="md_incognito_ntp_line_spacing">6sp</dimen>
     <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
