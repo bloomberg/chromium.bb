@@ -15,16 +15,11 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class TaskRunner;
 }  // namespace base
 
 namespace blink {
 class WebMediaStream;
 }  // namespace blink
-
-namespace media {
-class GpuVideoAcceleratorFactories;
-}  // namespace media
 
 namespace content {
 
@@ -38,16 +33,11 @@ class MediaStreamRendererFactory {
 
   // Returns a MediaStreamVideoRenderer that uses the given task runners.
   // |io_task_runner| is used for passing video frames.
-  // |media_task_runner|, |worker_task_runner| and |gpu_factories| are used to
-  // create a GpuMemoryBufferVideoFramePool instance on supported platforms.
   virtual scoped_refptr<MediaStreamVideoRenderer> GetVideoRenderer(
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      media::GpuVideoAcceleratorFactories* gpu_factories) = 0;
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,

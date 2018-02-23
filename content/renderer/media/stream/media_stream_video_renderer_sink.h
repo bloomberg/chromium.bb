@@ -17,13 +17,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class TaskRunner;
 }  // namespace base
-
-namespace media {
-class GpuMemoryBufferVideoFramePool;
-class GpuVideoAcceleratorFactories;
-}  // namespace media
 
 namespace content {
 
@@ -47,10 +41,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
       const blink::WebMediaStreamTrack& video_track,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      media::GpuVideoAcceleratorFactories* gpu_factories);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // MediaStreamVideoRenderer implementation. Called on the main thread.
   void Start() override;
@@ -73,10 +64,8 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
 
-  // Helper methods used for testing.
+  // Helper method used for testing.
   State GetStateForTesting();
-  void SetGpuMemoryBufferVideoForTesting(
-      media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
   const base::Closure error_cb_;
   const RepaintCB repaint_cb_;
@@ -88,9 +77,6 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
   std::unique_ptr<FrameDeliverer> frame_deliverer_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  const scoped_refptr<base::TaskRunner> worker_task_runner_;
-  media::GpuVideoAcceleratorFactories* const gpu_factories_;
 
   base::ThreadChecker main_thread_checker_;
 
