@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <gtk/gtk.h>
+#include <libappindicator/app-indicator.h>
 
 #include "base/bind.h"
 #include "base/environment.h"
@@ -25,145 +26,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace {
-
-typedef enum {
-  APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
-  APP_INDICATOR_CATEGORY_COMMUNICATIONS,
-  APP_INDICATOR_CATEGORY_SYSTEM_SERVICES,
-  APP_INDICATOR_CATEGORY_HARDWARE,
-  APP_INDICATOR_CATEGORY_OTHER
-} AppIndicatorCategory;
-
-typedef enum {
-  APP_INDICATOR_STATUS_PASSIVE,
-  APP_INDICATOR_STATUS_ACTIVE,
-  APP_INDICATOR_STATUS_ATTENTION
-} AppIndicatorStatus;
-
-typedef AppIndicator* (*app_indicator_new_func)(const gchar* id,
-                                                const gchar* icon_name,
-                                                AppIndicatorCategory category);
-
-typedef AppIndicator* (*app_indicator_new_with_path_func)(
-    const gchar* id,
-    const gchar* icon_name,
-    AppIndicatorCategory category,
-    const gchar* icon_theme_path);
-
-typedef void (*app_indicator_set_status_func)(AppIndicator* self,
-                                              AppIndicatorStatus status);
-
-typedef void (*app_indicator_set_attention_icon_full_func)(
-    AppIndicator* self,
-    const gchar* icon_name,
-    const gchar* icon_desc);
-
-typedef void (*app_indicator_set_menu_func)(AppIndicator* self, GtkMenu* menu);
-
-typedef void (*app_indicator_set_icon_full_func)(AppIndicator* self,
-                                                 const gchar* icon_name,
-                                                 const gchar* icon_desc);
-
-typedef void (*app_indicator_set_icon_theme_path_func)(
-    AppIndicator* self,
-    const gchar* icon_theme_path);
-
-bool g_attempted_load = false;
-bool g_opened = false;
-
-// Retrieved functions from libappindicator.
-app_indicator_new_func app_indicator_new = nullptr;
-app_indicator_new_with_path_func app_indicator_new_with_path = nullptr;
-app_indicator_set_status_func app_indicator_set_status = nullptr;
-app_indicator_set_attention_icon_full_func
-    app_indicator_set_attention_icon_full = nullptr;
-app_indicator_set_menu_func app_indicator_set_menu = nullptr;
-app_indicator_set_icon_full_func app_indicator_set_icon_full = nullptr;
-app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path =
-    nullptr;
-
-bool ShouldUseLibAppIndicator() {
-  // Only use libappindicator where it is needed to support dbus based status
-  // icons. In particular, libappindicator does not support a click action.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
-    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
-    case base::nix::DESKTOP_ENVIRONMENT_UNITY:
-      return true;
-    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
-    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
-      return false;
-  }
-}
-
-void EnsureMethodsLoaded() {
-  if (g_attempted_load)
-    return;
-
-  g_attempted_load = true;
-
-  if (!ShouldUseLibAppIndicator())
-    return;
-
-  void* indicator_lib = nullptr;
-
-  // These include guards might be unnecessary, but let's keep them as a
-  // precaution since using gtk2 and gtk3 symbols in the same process is
-  // explicitly unsupported.
-#if GTK_MAJOR_VERSION == 2
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
-
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so.1", RTLD_LAZY);
-
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so.0", RTLD_LAZY);
-#endif
-
-#if GTK_MAJOR_VERSION == 3
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator3.so", RTLD_LAZY);
-
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator3.so.1", RTLD_LAZY);
-#endif
-
-  if (!indicator_lib)
-    return;
-
-  g_opened = true;
-
-  app_indicator_new = reinterpret_cast<app_indicator_new_func>(
-      dlsym(indicator_lib, "app_indicator_new"));
-
-  app_indicator_new_with_path =
-      reinterpret_cast<app_indicator_new_with_path_func>(
-          dlsym(indicator_lib, "app_indicator_new_with_path"));
-
-  app_indicator_set_status = reinterpret_cast<app_indicator_set_status_func>(
-      dlsym(indicator_lib, "app_indicator_set_status"));
-
-  app_indicator_set_attention_icon_full =
-      reinterpret_cast<app_indicator_set_attention_icon_full_func>(
-          dlsym(indicator_lib, "app_indicator_set_attention_icon_full"));
-
-  app_indicator_set_menu = reinterpret_cast<app_indicator_set_menu_func>(
-      dlsym(indicator_lib, "app_indicator_set_menu"));
-
-  app_indicator_set_icon_full =
-      reinterpret_cast<app_indicator_set_icon_full_func>(
-          dlsym(indicator_lib, "app_indicator_set_icon_full"));
-
-  app_indicator_set_icon_theme_path =
-      reinterpret_cast<app_indicator_set_icon_theme_path_func>(
-          dlsym(indicator_lib, "app_indicator_set_icon_theme_path"));
-}
 
 // Writes |bitmap| to a file at |path|. Returns true if successful.
 bool WriteFile(const base::FilePath& path, const SkBitmap& bitmap) {
@@ -196,10 +58,10 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   desktop_env_ = base::nix::GetDesktopEnvironment(env.get());
 
-  EnsureMethodsLoaded();
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
   SetImage(image);
 }
+
 AppIndicatorIcon::~AppIndicatorIcon() {
   if (icon_) {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
@@ -210,16 +72,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
   }
 }
 
-// static
-bool AppIndicatorIcon::CouldOpen() {
-  EnsureMethodsLoaded();
-  return g_opened;
-}
-
 void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
-  if (!g_opened)
-    return;
-
   ++icon_change_count_;
 
   // Copy the bitmap because it may be freed by the time it's accessed in
@@ -255,9 +108,6 @@ void AppIndicatorIcon::SetToolTip(const base::string16& tool_tip) {
 }
 
 void AppIndicatorIcon::UpdatePlatformContextMenu(ui::MenuModel* model) {
-  if (!g_opened)
-    return;
-
   menu_model_ = model;
 
   // The icon is created asynchronously so it might not exist when the menu is
