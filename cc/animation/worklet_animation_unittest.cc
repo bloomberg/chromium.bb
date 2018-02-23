@@ -24,6 +24,20 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
   WorkletAnimationTest() = default;
   ~WorkletAnimationTest() override = default;
 
+  void AttachWorkletAnimation() {
+    client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+    client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
+    client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+
+    worklet_animation_ =
+        WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
+
+    worklet_animation_->AttachElement(element_id_);
+    host_->AddAnimationTimeline(timeline_);
+    timeline_->AttachAnimation(worklet_animation_);
+  }
+
+  scoped_refptr<WorkletAnimation> worklet_animation_;
   int worklet_animation_id_ = 11;
 };
 
@@ -35,9 +49,7 @@ class MockScrollTimeline : public ScrollTimeline {
 };
 
 TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  AttachWorkletAnimation();
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -45,14 +57,6 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
 
   const float expected_opacity =
       start_opacity + (end_opacity - start_opacity) / 2;
-
-  scoped_refptr<WorkletAnimation> worklet_animation_ =
-      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
-
-  worklet_animation_->AttachElement(element_id_);
-  host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachAnimation(worklet_animation_);
-
   AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
                                   start_opacity, end_opacity, true);
 
@@ -83,25 +87,16 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
 // Tests that verify interaction of AnimationHost with LayerTreeMutator.
 // TODO(majidvp): Perhaps moves these to AnimationHostTest.
 TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
+  AttachWorkletAnimation();
+
   MockLayerTreeMutator* mock_mutator = new MockLayerTreeMutator();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
   ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
 
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
-
   const float start_opacity = .7f;
   const float end_opacity = .3f;
   const double duration = 1.;
-
-  scoped_refptr<WorkletAnimation> worklet_animation_ =
-      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
-
-  worklet_animation_->AttachElement(element_id_);
-  host_->AddAnimationTimeline(timeline_);
-  timeline_->AttachAnimation(worklet_animation_);
 
   AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
                                   start_opacity, end_opacity, true);
@@ -114,6 +109,38 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
   TickAnimationsTransferEvents(time, 1u);
+
+  Mock::VerifyAndClearExpectations(mock_mutator);
+}
+
+TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
+  AttachWorkletAnimation();
+
+  MockLayerTreeMutator* mock_mutator = new MockLayerTreeMutator();
+  host_impl_->SetLayerTreeMutator(
+      base::WrapUnique<LayerTreeMutator>(mock_mutator));
+  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+
+  const float start_opacity = .7f;
+  const float end_opacity = .3f;
+  const double duration = 1.;
+
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
+
+  host_->PushPropertiesTo(host_impl_);
+  host_impl_->ActivateAnimations();
+
+  EXPECT_CALL(*mock_mutator, MutateRef(_)).Times(1);
+
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSecondsD(0.1);
+  TickAnimationsTransferEvents(time, 1u);
+
+  // The time has not changed which means worklet animation input is the same.
+  // Ticking animations again should not result in mutator being asked to
+  // mutate.
+  TickAnimationsTransferEvents(time, 0u);
 
   Mock::VerifyAndClearExpectations(mock_mutator);
 }
