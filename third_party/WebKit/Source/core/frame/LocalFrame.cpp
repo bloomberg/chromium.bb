@@ -537,7 +537,25 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
   return inspector_task_runner_;
 }
 
+void LocalFrame::StartPrinting(const FloatSize& page_size,
+                               const FloatSize& original_page_size,
+                               float maximum_shrink_ratio) {
+  SetPrinting(/*printing=*/true, /*use_printing_layout=*/true, page_size,
+              original_page_size, maximum_shrink_ratio);
+}
+
+void LocalFrame::StartPrintingWithoutPrintingLayout() {
+  SetPrinting(/*printing=*/true, /*use_printing_layout=*/false, FloatSize(),
+              FloatSize(), 0);
+}
+
+void LocalFrame::EndPrinting() {
+  SetPrinting(/*printing=*/false, /*use_printing_layout=*/false, FloatSize(),
+              FloatSize(), 0);
+}
+
 void LocalFrame::SetPrinting(bool printing,
+                             bool use_printing_layout,
                              const FloatSize& page_size,
                              const FloatSize& original_page_size,
                              float maximum_shrink_ratio) {
@@ -553,7 +571,7 @@ void LocalFrame::SetPrinting(bool printing,
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
 
-  if (ShouldUsePrintingLayout()) {
+  if (use_printing_layout && ShouldUsePrintingLayout()) {
     View()->ForceLayoutForPagination(page_size, original_page_size,
                                      maximum_shrink_ratio);
   } else {
@@ -569,9 +587,8 @@ void LocalFrame::SetPrinting(bool printing,
   // Subframes of the one we're printing don't lay out to the page size.
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    // TODO(tkent): Support remote frames. crbug.com/455764.
     if (child->IsLocalFrame())
-      ToLocalFrame(child)->SetPrinting(printing, FloatSize(), FloatSize(), 0);
+      ToLocalFrame(child)->StartPrintingWithoutPrintingLayout();
   }
 
   View()->SetSubtreeNeedsPaintPropertyUpdate();
@@ -581,8 +598,16 @@ void LocalFrame::SetPrinting(bool printing,
 }
 
 bool LocalFrame::ShouldUsePrintingLayout() const {
-  // Only top frame being printed should be fit to page size.
+  // Only the top frame being printed should be fitted to page size.
   // Subframes should be constrained by parents only.
+  // This function considers the following three kinds of frames as top frames:
+  // -- frame with no parent;
+  // -- frame's parent is remote frame;
+  // -- frame's parent is not in printing mode.
+  // Among them, if a frame's parent is a remote frame, but in printing mode,
+  // this frame should not use printing layout either. But in that case, this
+  // frame is a local top frame, the printing must start from
+  // StartPrintingWithoutPrintingLayout() so this function won't been called.
   return GetDocument()->Printing() &&
          (!Tree().Parent() || !Tree().Parent()->IsLocalFrame() ||
           !ToLocalFrame(Tree().Parent())->GetDocument()->Printing());

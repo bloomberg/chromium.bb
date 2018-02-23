@@ -1433,20 +1433,19 @@ void PrintRenderFrameHelper::OnPrintFrameContent(
     return;
 
   PdfMetafileSkia metafile(SkiaDocumentType::MSKP, params.document_cookie);
-  gfx::Rect area(params.printable_area.width(), params.printable_area.height());
+  gfx::Size area_size = params.printable_area.size();
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
-  cc::PaintCanvas* canvas = metafile.GetVectorCanvasForNewPage(
-      gfx::Size(area.width(), area.height()), area, 1.0f);
+  cc::PaintCanvas* canvas =
+      metafile.GetVectorCanvasForNewPage(area_size, gfx::Rect(area_size), 1.0f);
   DCHECK(canvas);
 
   MetafileSkiaWrapper::SetMetafileOnCanvas(canvas, &metafile);
 
-  // Use default values for other fields as they are only meaningful for plugin
-  // printing.
-  blink::WebPrintParams web_print_params;
-  web_print_params.print_content_area = area;
-  web_print_params.printable_area = area;
+  // This subframe doesn't need to fit to the page size, thus we are not using
+  // printing layout for it. It just prints with the specified size.
+  blink::WebPrintParams web_print_params(area_size,
+                                         /*use_printing_layout=*/false);
 
   // Printing embedded pdf plugin has been broken since pdf plugin viewer was
   // moved out-of-process

@@ -267,8 +267,8 @@ HeapVector<ScriptSourceCode> CreateSourcesVector(
 // made virtual so that they can be overridden by ChromePluginPrintContext.
 class ChromePrintContext : public PrintContext {
  public:
-  explicit ChromePrintContext(LocalFrame* frame)
-      : PrintContext(frame), printed_page_width_(0) {}
+  ChromePrintContext(LocalFrame* frame, bool use_printing_layout)
+      : PrintContext(frame, use_printing_layout), printed_page_width_(0) {}
 
   ~ChromePrintContext() override = default;
 
@@ -453,7 +453,7 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   ChromePluginPrintContext(LocalFrame* frame,
                            WebPluginContainerImpl* plugin,
                            const WebPrintParams& print_params)
-      : ChromePrintContext(frame),
+      : ChromePrintContext(frame, print_params.use_printing_layout),
         plugin_(plugin),
         print_params_(print_params) {}
 
@@ -1498,7 +1498,8 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
     print_context_ = new ChromePluginPrintContext(GetFrame(), plugin_container,
                                                   print_params);
   } else {
-    print_context_ = new ChromePrintContext(GetFrame());
+    print_context_ =
+        new ChromePrintContext(GetFrame(), print_params.use_printing_layout);
   }
 
   FloatSize size(static_cast<float>(print_params.print_content_area.width),

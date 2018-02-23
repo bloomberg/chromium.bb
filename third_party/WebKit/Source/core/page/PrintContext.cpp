@@ -46,8 +46,11 @@ bool IsCoordinateInPage(int top, int left, const IntRect& page) {
 
 }  // namespace
 
-PrintContext::PrintContext(LocalFrame* frame)
-    : frame_(frame), is_printing_(false), linked_destinations_valid_(false) {}
+PrintContext::PrintContext(LocalFrame* frame, bool use_printing_layout)
+    : frame_(frame),
+      is_printing_(false),
+      use_printing_layout_(use_printing_layout),
+      linked_destinations_valid_(false) {}
 
 PrintContext::~PrintContext() {
   DCHECK(!is_printing_);
@@ -58,6 +61,12 @@ void PrintContext::ComputePageRects(const FloatSize& print_size) {
 
   if (!IsFrameValid())
     return;
+
+  if (!use_printing_layout_) {
+    IntRect page_rect(0, 0, print_size.Width(), print_size.Height());
+    page_rects_.push_back(page_rect);
+    return;
+  }
 
   auto* view = frame_->GetDocument()->GetLayoutView();
   const IntRect& document_rect = view->DocumentRect();
@@ -140,6 +149,11 @@ void PrintContext::BeginPrintMode(float width, float height) {
   // without going back to screen mode.
   is_printing_ = true;
 
+  if (!use_printing_layout_) {
+    frame_->StartPrintingWithoutPrintingLayout();
+    return;
+  }
+
   FloatSize original_page_size = FloatSize(width, height);
   FloatSize min_layout_size = frame_->ResizePageRectsKeepingRatio(
       original_page_size, FloatSize(width * kPrintingMinimumShrinkFactor,
@@ -147,8 +161,8 @@ void PrintContext::BeginPrintMode(float width, float height) {
 
   // This changes layout, so callers need to make sure that they don't paint to
   // screen while in printing mode.
-  frame_->SetPrinting(
-      true, min_layout_size, original_page_size,
+  frame_->StartPrinting(
+      min_layout_size, original_page_size,
       kPrintingMaximumShrinkFactor / kPrintingMinimumShrinkFactor);
 }
 
@@ -156,7 +170,7 @@ void PrintContext::EndPrintMode() {
   DCHECK(is_printing_);
   is_printing_ = false;
   if (IsFrameValid())
-    frame_->SetPrinting(false, FloatSize(), FloatSize(), 0);
+    frame_->EndPrinting();
   linked_destinations_.clear();
   linked_destinations_valid_ = false;
 }
@@ -314,7 +328,7 @@ void PrintContext::Trace(blink::Visitor* visitor) {
 }
 
 ScopedPrintContext::ScopedPrintContext(LocalFrame* frame)
-    : context_(new PrintContext(frame)) {}
+    : context_(new PrintContext(frame, /*use_printing_layout=*/true)) {}
 
 ScopedPrintContext::~ScopedPrintContext() {
   context_->EndPrintMode();
