@@ -119,6 +119,9 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // DelegateSimpleThread::Delegate implementation.
   void Run() override;
 
+  // Pulls capture data from the endpoint device and pushes it to the sink.
+  void PullCaptureDataAndPushToSink();
+
   // Issues the OnError() callback to the |sink_|.
   void HandleError(HRESULT err);
 
