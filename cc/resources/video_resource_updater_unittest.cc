@@ -13,8 +13,8 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +69,8 @@ class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
   int created_texture_count_;
 };
 
-class SharedBitmapManagerAllocationCounter : public TestSharedBitmapManager {
+class SharedBitmapManagerAllocationCounter
+    : public viz::TestSharedBitmapManager {
  public:
   std::unique_ptr<viz::SharedBitmap> AllocateSharedBitmap(
       const gfx::Size& size) override {

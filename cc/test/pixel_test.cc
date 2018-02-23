@@ -17,7 +17,6 @@
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -28,6 +27,7 @@
 #include "components/viz/service/display/software_renderer.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -168,7 +168,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       std::move(context_provider), flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
 
-  shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
+  shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::TestGpuMemoryBufferManager>();
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
@@ -201,7 +201,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_.reset(new PixelTestOutputSurface(
       std::make_unique<viz::SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
-  shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+  shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(

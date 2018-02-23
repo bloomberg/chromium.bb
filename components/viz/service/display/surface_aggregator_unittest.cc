@@ -16,7 +16,6 @@
 #include "cc/resources/display_resource_provider.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/render_pass_test_utils.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -32,6 +31,7 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/fake_surface_observer.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -2802,7 +2802,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 class SurfaceAggregatorWithResourcesTest : public testing::Test {
  public:
   void SetUp() override {
-    shared_bitmap_manager_ = std::make_unique<cc::TestSharedBitmapManager>();
+    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             nullptr, shared_bitmap_manager_.get());

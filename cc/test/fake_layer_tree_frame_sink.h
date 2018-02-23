@@ -15,13 +15,13 @@
 #include "base/time/time.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 
 namespace viz {
 class BeginFrameSource;
@@ -130,7 +130,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
       scoped_refptr<viz::RasterContextProvider> worker_context_provider);
 
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
-  TestSharedBitmapManager test_shared_bitmap_manager_;
+  viz::TestSharedBitmapManager test_shared_bitmap_manager_;
 
   std::vector<viz::SharedBitmapId> shared_bitmaps_;
   std::unique_ptr<viz::CompositorFrame> last_sent_frame_;

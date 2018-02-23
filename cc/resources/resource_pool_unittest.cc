@@ -12,7 +12,7 @@
 #include "cc/resources/resource_util.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -52,7 +52,7 @@ class ResourcePoolTest : public testing::Test {
     resource_pool_->ReleaseResource(std::move(resource));
   }
 
-  TestSharedBitmapManager shared_bitmap_manager_;
+  viz::TestSharedBitmapManager shared_bitmap_manager_;
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -17,7 +17,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -36,6 +35,7 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -506,7 +506,7 @@ class OverlayTest : public testing::Test {
     output_surface_->SetOverlayCandidateValidator(
         new OverlayCandidateValidatorType);
 
-    shared_bitmap_manager_ = std::make_unique<cc::TestSharedBitmapManager>();
+    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             provider_.get(), shared_bitmap_manager_.get());
@@ -559,7 +559,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   output_surface.BindToClient(&client);
   output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
 
-  auto shared_bitmap_manager = std::make_unique<cc::TestSharedBitmapManager>();
+  auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
       cc::FakeResourceProvider::CreateDisplayResourceProvider(
           provider.get(), shared_bitmap_manager.get());

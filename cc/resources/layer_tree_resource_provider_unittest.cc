@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,7 +73,7 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu_;
   scoped_refptr<TestContextProvider> context_provider_;
   gpu::ContextResult bound_;
-  TestSharedBitmapManager shared_bitmap_manager_;
+  viz::TestSharedBitmapManager shared_bitmap_manager_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   bool delegated_sync_points_required_ = true;
   viz::ResourceSettings resource_settings_;
