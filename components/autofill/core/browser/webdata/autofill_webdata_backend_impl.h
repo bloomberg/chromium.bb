@@ -202,9 +202,6 @@ class AutofillWebDataBackendImpl
   // The task runner that this class uses for its UI tasks.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // The task runner that this class uses for its DB tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
-
   // Storage for user data to be accessed only on the DB sequence. May
   // be used e.g. for SyncableService subclasses that need to be owned
   // by this object. Is created on first call to |GetDBUserData()|.

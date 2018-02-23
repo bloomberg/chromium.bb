@@ -63,8 +63,8 @@ class FileDataPipeProducer::FileSequenceState
       CompletionCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       std::unique_ptr<Observer> observer)
-      : base::RefCountedDeleteOnSequence<FileSequenceState>(file_task_runner),
-        file_task_runner_(std::move(file_task_runner)),
+      : base::RefCountedDeleteOnSequence<FileSequenceState>(
+            std::move(file_task_runner)),
         callback_task_runner_(std::move(callback_task_runner)),
         producer_handle_(std::move(producer_handle)),
         callback_(std::move(callback)),
@@ -76,14 +76,14 @@ class FileDataPipeProducer::FileSequenceState
   }
 
   void StartFromFile(base::File file, size_t max_bytes) {
-    file_task_runner_->PostTask(
+    owning_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSequenceState::StartFromFileOnFileSequence, this,
                        std::move(file), max_bytes));
   }
 
   void StartFromPath(const base::FilePath& path) {
-    file_task_runner_->PostTask(
+    owning_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSequenceState::StartFromPathOnFileSequence, this,
                        path));
@@ -214,7 +214,6 @@ class FileDataPipeProducer::FileSequenceState
                                   std::move(producer_handle_), result));
   }
 
-  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   // State which is effectively owned and used only on the file sequence.
