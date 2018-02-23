@@ -142,7 +142,13 @@ Polymer({
 
   /** @private */
   emptyListMessage_: function() {
-    const emptyListMessage = this.searchTerm_ ? 'noSearchResults' : 'emptyList';
+    let emptyListMessage = 'noSearchResults';
+    if (!this.searchTerm_) {
+      emptyListMessage = bookmarks.util.canReorderChildren(
+                             this.getState(), this.getState().selectedFolder) ?
+          'emptyList' :
+          'emptyUnmodifiableList';
+    }
     return loadTimeData.getString(emptyListMessage);
   },
 
