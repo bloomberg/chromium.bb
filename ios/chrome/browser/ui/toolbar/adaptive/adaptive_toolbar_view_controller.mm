@@ -119,6 +119,20 @@
   self.view.shareButton.enabled = enabled;
 }
 
+- (void)setIsNTP:(BOOL)isNTP {
+  // No-op, should be handled by the primary toolbar.
+}
+
+#pragma mark - NewTabPageControllerDelegate
+
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+  // TODO(crbug.com/803379): Implement that.
+}
+
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  // No-op, should be handled by the primary toolbar.
+}
+
 #pragma mark - Protected
 
 - (void)stopProgressBar {

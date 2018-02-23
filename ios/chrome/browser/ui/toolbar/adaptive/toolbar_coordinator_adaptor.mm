@@ -48,11 +48,17 @@
   [self.coordinators addObject:toolbarCoordinator];
 }
 
-#pragma mark - IncognitoViewControllerDelegate
+#pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
   for (id<ToolbarCoordinating> coordinator in self.coordinators) {
     [coordinator setToolbarBackgroundAlpha:alpha];
+  }
+}
+
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  for (id<ToolbarCoordinating> coordinator in self.coordinators) {
+    [coordinator setScrollProgressForTabletOmnibox:progress];
   }
 }
 

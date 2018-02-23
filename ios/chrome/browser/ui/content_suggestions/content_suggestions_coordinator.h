@@ -15,6 +15,7 @@ class ChromeBrowserState;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ContentSuggestionsHeaderViewController;
+@protocol NewTabPageControllerDelegate;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
@@ -31,6 +32,7 @@ class WebStateList;
 // URLLoader used to open pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 @property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               OmniboxFocuser,

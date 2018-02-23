@@ -102,6 +102,11 @@
   [_shadow setAlpha:0];
 }
 
+- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset {
+  NOTREACHED();
+  return 0;
+}
+
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint

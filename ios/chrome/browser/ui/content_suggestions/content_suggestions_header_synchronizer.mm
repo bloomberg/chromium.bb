@@ -155,7 +155,7 @@ initWithCollectionController:
     [self.headerController unfocusOmnibox];
   }
 
-  if (IsIPadIdiom()) {
+  if (IsIPadIdiom() && !IsUIRefreshPhase1Enabled()) {
     return;
   }
 

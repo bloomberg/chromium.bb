@@ -80,6 +80,7 @@
 @implementation PrimaryToolbarView
 
 @synthesize locationBarView = _locationBarView;
+@synthesize locationBarBottomConstraint = _locationBarBottomConstraint;
 @synthesize locationBarHeight = _locationBarHeight;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize allButtons = _allButtons;
@@ -239,10 +240,11 @@
   self.locationBarHeight = [self.locationBarContainer.heightAnchor
       constraintEqualToConstant:kToolbarHeight -
                                 2 * kLocationBarVerticalMargin];
+  self.locationBarBottomConstraint = [self.locationBarContainer.bottomAnchor
+      constraintEqualToAnchor:self.bottomAnchor
+                     constant:-kLocationBarVerticalMargin];
   [NSLayoutConstraint activateConstraints:@[
-    [self.locationBarContainer.bottomAnchor
-        constraintEqualToAnchor:self.bottomAnchor
-                       constant:-kLocationBarVerticalMargin],
+    self.locationBarBottomConstraint,
     self.locationBarHeight,
   ]];
   [self.unfocusedConstraints addObjectsFromArray:@[

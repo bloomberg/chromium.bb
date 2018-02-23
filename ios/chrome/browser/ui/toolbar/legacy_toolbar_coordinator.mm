@@ -226,10 +226,14 @@
   return [self.toolbarCoordinator toolbarBackgroundColor];
 }
 
-#pragma mark - IncognitoViewControllerDelegate
+#pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
   [self.toolbarCoordinator setBackgroundToIncognitoNTPColorWithAlpha:1 - alpha];
+}
+
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  NOTREACHED();
 }
 
 #pragma mark - ToolsMenuPresentationStateProvider

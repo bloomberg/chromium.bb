@@ -57,7 +57,7 @@ const CGFloat kToolbarHeight = 56;
   __weak id<OmniboxFocuser> _focuser;
 
   // Delegate to fetch the ToolbarModel and current web state from.
-  __weak id<IncognitoViewControllerDelegate> _toolbarDelegate;
+  __weak id<NewTabPageControllerDelegate> _toolbarDelegate;
 
   TabModel* _tabModel;
 }
@@ -112,7 +112,7 @@ const CGFloat kToolbarHeight = 56;
                   loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
             browserState:(ios::ChromeBrowserState*)browserState
-         toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate
+         toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,
@@ -306,6 +306,7 @@ const CGFloat kToolbarHeight = 56;
       self.contentSuggestionsCoordinator.dispatcher = self.dispatcher;
       self.contentSuggestionsCoordinator.webStateList =
           [_tabModel webStateList];
+      self.contentSuggestionsCoordinator.toolbarDelegate = _toolbarDelegate;
       [self.contentSuggestionsCoordinator start];
       self.headerController =
           self.contentSuggestionsCoordinator.headerController;

@@ -483,6 +483,10 @@ const CGFloat kScrollFadeDistance = 30;
   }
 }
 
+- (void)setIsNTP:(BOOL)isNTP {
+  // This boolean is unused in the clean toolbar.
+}
+
 - (void)setLoadingProgressFraction:(double)progress {
   [self.view.progressBar setProgress:progress animated:YES completion:nil];
 }

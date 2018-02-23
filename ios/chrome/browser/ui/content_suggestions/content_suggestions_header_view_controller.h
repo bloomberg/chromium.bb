@@ -19,6 +19,7 @@
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 @protocol FakeboxFocuser;
+@protocol NewTabPageControllerDelegate;
 @protocol OmniboxFocuser;
 @class PrimaryToolbarViewController;
 class ReadingListModel;
@@ -53,6 +54,7 @@ class ReadingListModel;
     delegate;
 @property(nonatomic, weak) id<ContentSuggestionsCommands> commandHandler;
 @property(nonatomic, assign) ReadingListModel* readingListModel;
+@property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 
 // Whether the Google logo or doodle is being shown.
 @property(nonatomic, assign) BOOL logoIsShowing;

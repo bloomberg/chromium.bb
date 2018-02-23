@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
@@ -82,7 +83,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
-
+@synthesize toolbarDelegate = _toolbarDelegate;
 @synthesize logoVendor = _logoVendor;
 @synthesize promoCanShow = _promoCanShow;
 @synthesize canGoForward = _canGoForward;
@@ -132,6 +133,13 @@ const CGFloat kHintLabelSidePadding = 12;
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset
                        screenWidth:(CGFloat)screenWidth
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
+  if (self.headerView.cr_widthSizeClass == REGULAR &&
+      self.headerView.cr_heightSizeClass == REGULAR &&
+      IsUIRefreshPhase1Enabled()) {
+    CGFloat progress = [self.headerView searchFieldProgressForOffset:offset];
+    [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
+  }
+
   NSArray* constraints =
       @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
 

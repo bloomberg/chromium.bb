@@ -9,8 +9,8 @@
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 
+@protocol NewTabPageControllerDelegate;
 @protocol UrlLoader;
-@protocol IncognitoViewControllerDelegate;
 
 @interface IncognitoViewController : UIViewController<NewTabPagePanelProtocol>
 
@@ -18,7 +18,7 @@
 // retained so it must outlive this controller.
 // |toolbarDelegate| is used to fade the toolbar views on page scroll.
 - (id)initWithLoader:(id<UrlLoader>)loader
-     toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate;
+     toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate;
 
 @end
 

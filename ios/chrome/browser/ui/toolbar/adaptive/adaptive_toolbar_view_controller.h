@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 
@@ -22,7 +23,8 @@
 // and rotations. Any view constrained to a layout guide is expected to be
 // dismissed on such events. For example, the tools menu is closed upon
 // rotation.
-@interface AdaptiveToolbarViewController : UIViewController<ToolbarConsumer>
+@interface AdaptiveToolbarViewController
+    : UIViewController<ToolbarConsumer, NewTabPageControllerDelegate>
 
 // Button factory.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;

@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -102,6 +103,21 @@
   // TODO(crbug.com/805644) Update fake omnibox theme.
 }
 
+- (CGFloat)searchFieldProgressForOffset:(CGFloat)offset {
+  // The scroll offset at which point searchField's frame should stop growing.
+  CGFloat maxScaleOffset =
+      self.frame.size.height - ntp_header::kMinHeaderHeight;
+  // The scroll offset at which point searchField's frame should start
+  // growing.
+  CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
+  CGFloat percent = 0;
+  if (offset && offset > startScaleOffset) {
+    CGFloat animatingOffset = offset - startScaleOffset;
+    percent = MIN(1, MAX(0, animatingOffset / ntp_header::kAnimationDistance));
+  }
+  return percent;
+}
+
 - (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
                         height:(NSLayoutConstraint*)heightConstraint
                      topMargin:(NSLayoutConstraint*)topMarginConstraint
@@ -111,20 +127,15 @@
                 safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   CGFloat contentWidth = std::max<CGFloat>(
       0, screenWidth - safeAreaInsets.left - safeAreaInsets.right);
-  // The scroll offset at which point searchField's frame should stop growing.
-  CGFloat maxScaleOffset =
-      self.frame.size.height - ntp_header::kMinHeaderHeight;
-  // The scroll offset at which point searchField's frame should start
-  // growing.
-  CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
-  CGFloat percent = 0;
-  if (offset > startScaleOffset) {
-    CGFloat animatingOffset = offset - startScaleOffset;
-    percent = MIN(1, MAX(0, animatingOffset / ntp_header::kAnimationDistance));
-  }
-
   if (screenWidth == 0 || contentWidth == 0)
     return;
+
+  CGFloat percent = [self searchFieldProgressForOffset:offset];
+
+  if (self.cr_widthSizeClass == REGULAR && self.cr_heightSizeClass == REGULAR) {
+    self.alpha = 1 - percent;
+    return;
+  }
 
   CGFloat searchFieldNormalWidth =
       content_suggestions::searchFieldWidth(contentWidth);

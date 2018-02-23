@@ -82,6 +82,7 @@
     _headerCollectionInteractionHandler;
 @synthesize headerController = _headerController;
 @synthesize webStateList = _webStateList;
+@synthesize toolbarDelegate = _toolbarDelegate;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
 @synthesize metricsRecorder = _metricsRecorder;
@@ -134,6 +135,7 @@
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
+  self.headerController.toolbarDelegate = self.toolbarDelegate;
 
   if (IsUIRefreshPhase1Enabled()) {
     ToolbarButtonFactory* buttonFactory =
