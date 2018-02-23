@@ -7,6 +7,7 @@ package org.chromium.chromoting.jni;
 import org.chromium.chromoting.R;
 
 /** Interface used for connection state notifications. */
+@SuppressWarnings("JavaLangClash")
 public interface ConnectionListener {
     /**
      * This enum must match the C++ enumeration remoting::protocol::ConnectionToHost::State.
