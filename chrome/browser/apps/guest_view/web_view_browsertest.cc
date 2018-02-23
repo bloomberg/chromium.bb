@@ -4466,9 +4466,8 @@ class WebViewFocusTest : public WebViewTest {
         switches::kTouchEventFeatureDetectionEnabled);
   }
 
-  void ForceCompositorFrame() {
-    frame_watcher_.Observe(GetEmbedderWebContents());
-
+  void ForceCompositorFrame(
+      content::RenderFrameSubmissionObserver& frame_observer) {
     while (!RequestFrame(GetEmbedderWebContents())) {
       // RequestFrame failed because we were waiting on an ack ... wait a short
       // time and retry.
@@ -4478,11 +4477,8 @@ class WebViewFocusTest : public WebViewTest {
           base::TimeDelta::FromMilliseconds(10));
       run_loop.Run();
     }
-    frame_watcher_.WaitFrames(1);
+    frame_observer.WaitForAnyFrameSubmission();
   }
-
- private:
-  content::FrameWatcher frame_watcher_;
 };
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewFocusTest, testing::Values(false));
 
@@ -4493,6 +4489,8 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
 
   content::WebContents* web_contents = GetEmbedderWebContents();
   content::RenderViewHost* embedder_rvh = web_contents->GetRenderViewHost();
+  content::RenderFrameSubmissionObserver frame_observer(
+      GetEmbedderWebContents());
 
   bool embedder_has_touch_handler =
       content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
@@ -4530,7 +4528,7 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   other_focusable_view->SetPosition(gfx::Point(bounds.x() + bounds.width(), 0));
 
   // Sync changes to compositor.
-  ForceCompositorFrame();
+  ForceCompositorFrame(frame_observer);
 
   aura_webview->RequestFocus();
   // Verify that other_focusable_view can steal focus from aura_webview.

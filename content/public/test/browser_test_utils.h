@@ -682,39 +682,6 @@ class WebContentsDestroyedObserver : public WebContentsObserver {
 // Request a new frame be drawn, returns false if request fails.
 bool RequestFrame(WebContents* web_contents);
 
-// Watches compositor frame changes, blocking until a frame has been
-// composited. This class must run on the UI thread.
-class FrameWatcher : public WebContentsObserver {
- public:
-  // Don't observe any WebContents at construction. Observe() must be called
-  // later on.
-  FrameWatcher();
-
-  // Listen for new frames from the |web_contents| renderer process. The
-  // WebContents that we observe can be changed by calling Observe().
-  explicit FrameWatcher(WebContents* web_contents);
-
-  ~FrameWatcher() override;
-
-  // Wait for |frames_to_wait| swap mesages from the compositor.
-  void WaitFrames(int frames_to_wait);
-
-  // Return the last received CompositorFrame's metadata.
-  const viz::CompositorFrameMetadata& LastMetadata();
-
-  // Call this method to start observing a WebContents for CompositorFrames.
-  using WebContentsObserver::Observe;
-
- private:
-  // WebContentsObserver implementation.
-  void DidReceiveCompositorFrame() override;
-
-  int frames_to_wait_ = 0;
-  base::Closure quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
-};
-
 // This class is intended to synchronize upon the submission of compositor
 // frames from the renderer to the display compositor.
 //
@@ -733,18 +700,32 @@ class RenderFrameSubmissionObserver
  public:
   explicit RenderFrameSubmissionObserver(
       RenderFrameMetadataProvider* render_frame_metadata_provider);
+  explicit RenderFrameSubmissionObserver(WebContents* web_contents);
   ~RenderFrameSubmissionObserver() override;
 
   // Blocks the browser ui thread until the next OnRenderFrameSubmission.
-  void Wait();
+  void WaitForAnyFrameSubmission();
+
+  // Blocks the browser ui thread until the next OnRenderFrameMetadataChanged.
+  void WaitForMetadataChange();
+
+  const cc::RenderFrameMetadata& LastRenderFrameMetadata() const;
 
  private:
   // Exits |run_loop_| unblocking the UI thread. Execution will resume in Wait.
   void Quit();
 
+  // Blocks the browser ui thread.
+  void Wait();
+
   // RenderFrameMetadataProvider::Observer
   void OnRenderFrameMetadataChanged() override;
   void OnRenderFrameSubmission() override;
+
+  // If true then the next OnRenderFrameSubmission will cancel the blocking
+  // |run_loop_| otherwise the blocking will continue until the next
+  // OnRenderFrameMetadataChanged.
+  bool break_on_any_frame_ = false;
 
   RenderFrameMetadataProvider* render_frame_metadata_provider_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
