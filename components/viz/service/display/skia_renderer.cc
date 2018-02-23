@@ -58,13 +58,15 @@ namespace viz {
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
                            cc::DisplayResourceProvider* resource_provider)
-    : DirectRenderer(settings, output_surface, resource_provider) {
+    : DirectRenderer(settings, output_surface, resource_provider),
+      sync_queries_(output_surface->context_provider()->ContextGL()) {
 #if BUILDFLAG(ENABLE_VULKAN)
   use_swap_with_bounds_ = false;
 #else
   const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
+  use_sync_query_ = context_caps.sync_query;
 #endif
 }
 
@@ -90,11 +92,9 @@ void SkiaRenderer::BeginDrawingFrame() {
   return;
 #else
   // Copied from GLRenderer.
-  bool use_sync_query_ = false;
   scoped_refptr<ResourceFence> read_lock_fence;
-  // TODO(weiliangc): Implement use_sync_query_. (crbug.com/644851)
   if (use_sync_query_) {
-    NOTIMPLEMENTED();
+    read_lock_fence = sync_queries_.StartNewFrame();
   } else {
     read_lock_fence =
         base::MakeRefCounted<cc::DisplayResourceProvider::SynchronousFence>(
@@ -115,6 +115,10 @@ void SkiaRenderer::BeginDrawingFrame() {
 
 void SkiaRenderer::FinishDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::FinishDrawingFrame");
+  if (use_sync_query_) {
+    sync_queries_.EndCurrentFrame();
+  }
+
   if (settings_->show_overdraw_feedback) {
     sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
     SkPaint paint;

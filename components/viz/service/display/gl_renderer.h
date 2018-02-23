@@ -23,6 +23,7 @@
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
 #include "components/viz/service/display/scoped_gpu_memory_buffer_texture.h"
+#include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -374,10 +375,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   ScopedRenderPassTexture* current_framebuffer_texture_;
 
-  class SyncQuery;
-  base::circular_deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
-  base::circular_deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
-  std::unique_ptr<SyncQuery> current_sync_query_;
+  SyncQueryCollection sync_queries_;
   bool use_discard_framebuffer_ = false;
   bool use_sync_query_ = false;
   bool use_blend_equation_advanced_ = false;
