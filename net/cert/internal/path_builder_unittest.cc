@@ -166,16 +166,11 @@ TEST_F(PathBuilderMultiRootTest, TargetHasNameAndSpkiOfTrustAnchor) {
 
   path_builder.Run();
 
-  ASSERT_FALSE(result.HasValidPath());
-
-  // TODO(eroman): This probably should have succeeded and found the path below.
-  // It fails right now because path building stops on trust anchors (and the
-  // end entity is added as a trust anchor).
-  //
-  // const auto& path = result.GetBestValidPath()->path;
-  // ASSERT_EQ(2U, path.certs.size());
-  // EXPECT_EQ(a_by_b_, path.certs[0]);
-  // EXPECT_EQ(b_by_f_, path.certs[1]);
+  ASSERT_TRUE(result.HasValidPath());
+  const auto& path = *result.GetBestValidPath();
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(a_by_b_, path.certs[0]);
+  EXPECT_EQ(b_by_f_, path.certs[1]);
 }
 
 // If the target cert is has the same name and key as a trust anchor, however
@@ -251,16 +246,14 @@ TEST_F(PathBuilderMultiRootTest, TargetIsSelfSignedTrustAnchor) {
 
   path_builder.Run();
 
-  ASSERT_FALSE(result.HasValidPath());
+  ASSERT_TRUE(result.HasValidPath());
 
-  // TODO(eroman): This test currently fails because path building stops
-  // searching once it identifies a certificate as a trust anchor. In this case
-  // the target is a trust anchor, however could be verified using the
-  // self-signedness (or even the cert itself).
-  // const auto& path = result.GetBestValidPath()->path;
-  // ASSERT_EQ(2U, path.certs.size());
-  // EXPECT_EQ(e_by_e_, path.certs[0]);
-  // EXPECT_EQ(e_by_e_, path.certs[1]);
+  // Verifying a trusted leaf certificate is not permitted, however this
+  // certificate is self-signed, and can chain to itself.
+  const auto& path = *result.GetBestValidPath();
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(e_by_e_, path.certs[0]);
+  EXPECT_EQ(e_by_e_, path.certs[1]);
 }
 
 // If the target cert is directly issued by a trust anchor, it should verify
