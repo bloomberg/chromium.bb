@@ -408,8 +408,13 @@ void ScriptInjection::InjectCss(std::set<std::string>* injected_stylesheets,
       css_origin && *css_origin == CSS_ORIGIN_USER
           ? blink::WebDocument::kUserOrigin
           : blink::WebDocument::kAuthorOrigin;
+  blink::WebStyleSheetKey style_sheet_key;
+  if (const base::Optional<std::string>& injection_key =
+          injector_->GetInjectionKey())
+    style_sheet_key = blink::WebString::FromASCII(*injection_key);
   for (const blink::WebString& css : css_sources)
-    web_frame->GetDocument().InsertStyleSheet(css, nullptr, blink_css_origin);
+    web_frame->GetDocument().InsertStyleSheet(css, &style_sheet_key,
+                                              blink_css_origin);
 }
 
 }  // namespace extensions

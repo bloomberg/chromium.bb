@@ -48,6 +48,9 @@ class ScriptInjector {
   // Returns the CSS origin of this injection.
   virtual base::Optional<CSSOrigin> GetCssOrigin() const = 0;
 
+  // Returns the key for this injection, if it's a CSS injection.
+  virtual const base::Optional<std::string> GetInjectionKey() const = 0;
+
   // Returns true if the script expects results.
   virtual bool ExpectsResults() const = 0;
 

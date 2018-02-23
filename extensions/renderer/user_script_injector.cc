@@ -149,6 +149,10 @@ base::Optional<CSSOrigin> UserScriptInjector::GetCssOrigin() const {
   return base::nullopt;
 }
 
+const base::Optional<std::string> UserScriptInjector::GetInjectionKey() const {
+  return base::nullopt;
+}
+
 bool UserScriptInjector::ShouldInjectJs(
     UserScript::RunLocation run_location,
     const std::set<std::string>& executing_scripts) const {

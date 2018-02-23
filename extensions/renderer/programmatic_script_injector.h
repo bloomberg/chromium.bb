@@ -33,6 +33,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   bool ShouldExecuteInMainWorld() const override;
   bool IsUserGesture() const override;
   base::Optional<CSSOrigin> GetCssOrigin() const override;
+  const base::Optional<std::string> GetInjectionKey() const override;
   bool ExpectsResults() const override;
   bool ShouldInjectJs(
       UserScript::RunLocation run_location,
