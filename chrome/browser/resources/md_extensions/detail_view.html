@@ -144,6 +144,10 @@
         width: 78px;
       }
 
+      #reload-button {
+        color: var(--google-blue-500);
+      }
+
       .warning div {
         display: flex;
       }
@@ -155,9 +159,20 @@
 
       .warning-icon {
         --iron-icon-fill-color: var(--paper-red-700);
-        --iron-icon-height: 19px;
-        --iron-icon-width: 19px;
-        margin-right: 16px;
+        -webkit-margin-end: 16px;
+        height: 19px;
+        width: 19px;
+      }
+
+      #error-icon {
+        --iron-icon-fill-color: var(--google-red-700);
+        -webkit-margin-end: 4px;
+        height: 18px;
+        width: 18px;
+      }
+
+      #runtime-warnings {
+        color: var(--google-red-700);
       }
 
       ul {
@@ -227,6 +242,19 @@
           </div>
         </div>
         <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
+          <div id="runtime-warnings" aria-describedby="a11yAssociation"
+              hidden$="[[!data.runtimeWarnings.length]]"
+              class="section continuation control-line">
+            <div>
+              <iron-icon id="error-icon" icon="error"></iron-icon>
+              <template is="dom-repeat" items="[[data.runtimeWarnings]]">
+                [[item]]
+              </template>
+            </div>
+            <paper-button id="reload-button" on-click="onReloadTap_">
+              $i18n{itemReload}
+            </paper-button>
+          </div>
           <div class="section continuation warning" id="suspicious-warning"
               hidden$="[[!data.disableReasons.suspiciousInstall]]">
             <div>
