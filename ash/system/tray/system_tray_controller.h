@@ -18,9 +18,6 @@ namespace ash {
 // interface. Implements both because it caches state pushed down from the
 // browser process via SystemTray so it can be synchronously queried inside ash.
 // Lives on the main thread.
-//
-// TODO: Consider renaming this to SystemTrayClient or renaming the current
-// SystemTray to SystemTrayView and making this class SystemTray.
 class ASH_EXPORT SystemTrayController : public mojom::SystemTray {
  public:
   SystemTrayController();
