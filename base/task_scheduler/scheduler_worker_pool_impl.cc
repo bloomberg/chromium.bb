@@ -404,16 +404,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     if (is_on_idle_workers_stack_) {
       if (CanCleanupLockRequired(worker))
         CleanupLockRequired(worker);
-
-      // Since we got here from timing out from the WaitableEvent rather than
-      // waking up and completing tasks, we expect to have completed 0 tasks
-      // since waiting.
-      //
-      // TODO(crbug.com/756898): Do not log this histogram when waking up due to
-      // timeout.
-      DCHECK_EQ(num_tasks_since_last_wait_, 0U);
-      outer_->num_tasks_between_waits_histogram_->Add(
-          num_tasks_since_last_wait_);
       return nullptr;
     }
 
