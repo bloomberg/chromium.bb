@@ -588,7 +588,9 @@ group("gn_all") {
       "//tools/win/chromeexts:chromeexts",
     ]
 
-    if (!(is_component_build && is_debug && target_cpu == "x86")) {
+    # TODO(thakis): Enable this in cross builds, https://crbug.com/799827
+    if (!(is_component_build && is_debug && target_cpu == "x86") &&
+        host_os == "win") {
       deps +=
           [ "//chrome/installer/mini_installer:next_version_mini_installer" ]
     }

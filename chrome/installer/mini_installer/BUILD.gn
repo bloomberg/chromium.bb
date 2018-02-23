@@ -302,7 +302,9 @@ if (is_syzyasan) {
 
 # next_version_mini_installer.exe can't be generated in an x86 Debug component
 # build because it requires too much memory.
-if (!(is_component_build && is_debug && target_cpu == "x86")) {
+# TODO(thakis): Enable this in cross builds, https://crbug.com/799827
+if (!(is_component_build && is_debug && target_cpu == "x86") &&
+    host_os == "win") {
   action("next_version_mini_installer") {
     script = "generate_next_version_mini_installer.py"
     testonly = true
