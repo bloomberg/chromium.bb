@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
+#include "components/printing/common/cloud_print_cdd_conversion.h"
 
 #include <stddef.h>
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
@@ -36,8 +37,8 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
 
   if (semantic_info.duplex_capable) {
     DuplexCapability duplex;
-    duplex.AddDefaultOption(
-        NO_DUPLEX, semantic_info.duplex_default == printing::SIMPLEX);
+    duplex.AddDefaultOption(NO_DUPLEX,
+                            semantic_info.duplex_default == printing::SIMPLEX);
     duplex.AddDefaultOption(
         LONG_EDGE, semantic_info.duplex_default == printing::LONG_EDGE);
     duplex.AddDefaultOption(
@@ -72,8 +73,7 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
       if (paper_size.width() > paper_size.height())
         paper_size.SetSize(paper_size.height(), paper_size.width());
       Media new_media(semantic_info.papers[i].display_name,
-                      semantic_info.papers[i].vendor_id,
-                      paper_size.width(),
+                      semantic_info.papers[i].vendor_id, paper_size.width(),
                       paper_size.height());
       new_media.MatchBySize();
       if (new_media.IsValid() && !media.Contains(new_media)) {
@@ -123,7 +123,7 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   orientation.AddOption(AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
-  return std::unique_ptr<base::DictionaryValue>(description.root().DeepCopy());
+  return base::WrapUnique(description.root().DeepCopy());
 }
 
 }  // namespace cloud_print

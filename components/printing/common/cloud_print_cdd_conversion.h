@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CDD_CONVERSION_H_
-#define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CDD_CONVERSION_H_
+#ifndef COMPONENTS_PRINTING_COMMON_CLOUD_PRINT_CDD_CONVERSION_H_
+#define COMPONENTS_PRINTING_COMMON_CLOUD_PRINT_CDD_CONVERSION_H_
 
 #include <memory>
 #include <string>
@@ -21,4 +21,4 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
 
 }  // namespace cloud_print
 
-#endif  // CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CDD_CONVERSION_H_
+#endif  // COMPONENTS_PRINTING_COMMON_CLOUD_PRINT_CDD_CONVERSION_H_
