@@ -205,6 +205,14 @@ void DataReductionProxyService::SetPingbackReportingFraction(
   pingback_client_->SetPingbackReportingFraction(pingback_reporting_fraction);
 }
 
+void DataReductionProxyService::OnCacheCleared(const base::Time start,
+                                               const base::Time end) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DataReductionProxyIOData::OnCacheCleared,
+                                io_data_, start, end));
+}
+
 void DataReductionProxyService::LoadHistoricalDataUsage(
     const HistoricalDataUsageCallback& load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(

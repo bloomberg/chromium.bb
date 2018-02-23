@@ -946,6 +946,25 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       ui_nqe_service->ClearPrefs();
     }
 
+    // Notify data reduction component.
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                profile_);
+    // |data_reduction_proxy_settings| is null if |profile_| is off the record.
+    // Skip notification if the user clears cache for only a finite set of
+    // sites.
+    if (data_reduction_proxy_settings &&
+        filter_builder.GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+      data_reduction_proxy::DataReductionProxyService*
+          data_reduction_proxy_service =
+              data_reduction_proxy_settings->data_reduction_proxy_service();
+      if (data_reduction_proxy_service) {
+        data_reduction_proxy_service->OnCacheCleared(delete_begin_,
+                                                     delete_end_);
+      }
+    }
+
 #if defined(OS_ANDROID)
     // For now we're considering offline pages as cache, so if we're removing
     // cache we should remove offline pages as well.
