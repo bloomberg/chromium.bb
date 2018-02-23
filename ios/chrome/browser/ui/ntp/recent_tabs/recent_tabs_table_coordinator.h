@@ -9,13 +9,16 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol UrlLoader;
 
+// Coordinator that presents Recent Tabs.
 @interface RecentTabsTableCoordinator : ChromeCoordinator
-
 // The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
-
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+// URL loader being managed by this Coordinator.
+@property(nonatomic, weak) id<UrlLoader> loader;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_COORDINATOR_H_

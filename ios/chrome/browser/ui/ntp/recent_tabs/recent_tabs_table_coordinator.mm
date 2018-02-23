@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -22,14 +22,21 @@
 
 @implementation RecentTabsTableCoordinator
 @synthesize dispatcher = _dispatcher;
+@synthesize loader = _loader;
 @synthesize recentTabsContainerViewController =
     _recentTabsContainerViewController;
 
 - (void)start {
+  // Initialize and configure RecentTabsTableViewController.
+  RecentTabsTableViewController* recentTabsTableViewController =
+      [[RecentTabsTableViewController alloc] init];
+  recentTabsTableViewController.browserState = self.browserState;
+  recentTabsTableViewController.loader = self.loader;
+  recentTabsTableViewController.dispatcher = self.dispatcher;
+
   // Initialize and configure RecentTabsViewController.
   self.recentTabsContainerViewController = [[TableContainerViewController alloc]
-      initWithTable:[[ChromeTableViewController alloc]
-                        initWithStyle:UITableViewStylePlain]];
+      initWithTable:recentTabsTableViewController];
   self.recentTabsContainerViewController.title =
       l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
   // TODO(crbug.com/805135): Move this configuration code to

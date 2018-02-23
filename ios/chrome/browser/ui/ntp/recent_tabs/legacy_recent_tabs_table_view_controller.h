@@ -30,6 +30,13 @@
     : UITableViewController<UIGestureRecognizerDelegate,
                             RecentTabsTableViewControllerInterface>
 
+// Designated initializer. The controller opens link with |loader|.
+// |browserState|
+// and |loader| must not be nil.
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              loader:(id<UrlLoader>)loader
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_LEGACY_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
