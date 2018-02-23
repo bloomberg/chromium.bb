@@ -24,6 +24,10 @@
 // State of the download task. Default is kDownloadManagerStateNotStarted.
 @property(nonatomic) DownloadManagerState state;
 
+// Visible state of Install Google Drive button.
+@property(nonatomic, getter=isInstallDriveButtonVisible)
+    BOOL installDriveButtonVisible;
+
 @end
 
 #endif  // IOS_CHROME_TEST_FAKES_FAKE_DOWNLOAD_MANAGER_CONSUMER_H_

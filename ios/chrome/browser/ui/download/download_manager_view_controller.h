@@ -27,6 +27,10 @@
 - (void)downloadManagerViewController:(DownloadManagerViewController*)controller
      presentOpenInMenuWithLayoutGuide:(UILayoutGuide*)layoutGuide;
 
+// Called when install google drive button was tapped.
+- (void)installDriveForDownloadManagerViewController:
+    (DownloadManagerViewController*)controller;
+
 @end
 
 // Presents bottom bar UI for a single download task.
@@ -49,6 +53,10 @@
 // Button appropriate for the current download status ("Download", "Open In..",
 // "Try Again").
 @property(nonatomic, readonly) UIButton* actionButton;
+
+// Install Google Drive button. Only visible if
+// setInstallGoogleDriveButtonVisible:animated: was called with YES.
+@property(nonatomic, readonly) UIButton* installDriveButton;
 
 @end
 

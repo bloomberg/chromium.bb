@@ -34,6 +34,9 @@ typedef NS_ENUM(NSInteger, DownloadManagerState) {
 // kDownloadManagerStateNotStarted.
 - (void)setState:(DownloadManagerState)state;
 
+// Sets visible state to Install Google Drive button.
+- (void)setInstallDriveButtonVisible:(BOOL)visible animated:(BOOL)animated;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_DOWNLOAD_MANAGER_CONSUMER_H_

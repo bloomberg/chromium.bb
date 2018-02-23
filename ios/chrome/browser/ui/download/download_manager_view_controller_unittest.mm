@@ -155,3 +155,18 @@ TEST_F(DownloadManagerViewControllerTest, Restart) {
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }
+
+// Tests making Install Google drive button visible and hidden.
+TEST_F(DownloadManagerViewControllerTest, InstallDriveButton) {
+  // The button itself is not hidden, but the superview which contains the
+  // button is transparent.
+  ASSERT_EQ(0.0f, view_controller_.installDriveButton.superview.alpha);
+
+  [view_controller_ setInstallDriveButtonVisible:YES animated:NO];
+  // Superview which contains the button is now opaque.
+  EXPECT_EQ(1.0f, view_controller_.installDriveButton.superview.alpha);
+
+  [view_controller_ setInstallDriveButtonVisible:NO animated:NO];
+  // Superview which contains the button is transparent again.
+  EXPECT_EQ(0.0f, view_controller_.installDriveButton.superview.alpha);
+}
