@@ -17,16 +17,12 @@
          add_and_true_to_loop_condition)                     \
   GPU_OP(ADJUST_SRC_DST_REGION_FOR_BLITFRAMEBUFFER,          \
          adjust_src_dst_region_for_blitframebuffer)          \
-  GPU_OP(AVDA_DONT_COPY_PICTURES,                            \
-         avda_dont_copy_pictures)                            \
   GPU_OP(AVOID_EGL_IMAGE_TARGET_TEXTURE_REUSE,               \
          avoid_egl_image_target_texture_reuse)               \
   GPU_OP(AVOID_ONE_COMPONENT_EGL_IMAGES,                     \
          avoid_one_component_egl_images)                     \
   GPU_OP(AVOID_STENCIL_BUFFERS,                              \
          avoid_stencil_buffers)                              \
-  GPU_OP(AVOID_USING_IMAGE_FLUSH_EXTERNAL_WITH_EGL_CREATE_IMAGE, \
-         avoid_using_image_flush_external_with_egl_create_image) \
   GPU_OP(BROKEN_EGL_IMAGE_REF_COUNTING,                      \
          broken_egl_image_ref_counting)                      \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
@@ -203,10 +199,6 @@
          set_zero_level_before_generating_mipmap)            \
   GPU_OP(SIMULATE_OUT_OF_MEMORY_ON_LARGE_TEXTURES,           \
          simulate_out_of_memory_on_large_textures)           \
-  GPU_OP(SURFACE_TEXTURE_CANT_DETACH,                        \
-         surface_texture_cant_detach)                        \
-  GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
-         swizzle_rgba_for_async_readpixels)                  \
   GPU_OP(TEXSUBIMAGE_FASTER_THAN_TEXIMAGE,                   \
          texsubimage_faster_than_teximage)                   \
   GPU_OP(UNBIND_ATTACHMENTS_ON_BOUND_RENDER_FBO_DELETE,      \
