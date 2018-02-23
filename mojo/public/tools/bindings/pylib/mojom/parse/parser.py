@@ -103,10 +103,11 @@ class Parser(object):
     p[0].definition_list.append(p[2])
 
   def p_import(self, p):
-    """import : IMPORT STRING_LITERAL SEMI"""
+    """import : attribute_section IMPORT STRING_LITERAL SEMI"""
     # 'eval' the literal to strip the quotes.
     # TODO(vtl): This eval is dubious. We should unquote/unescape ourselves.
-    p[0] = ast.Import(eval(p[2]), filename=self.filename, lineno=p.lineno(2))
+    p[0] = ast.Import(p[1], eval(p[3]), filename=self.filename,
+                      lineno=p.lineno(2))
 
   def p_module(self, p):
     """module : attribute_section MODULE identifier_wrapped SEMI"""

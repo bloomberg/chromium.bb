@@ -75,6 +75,22 @@ class ConditionalFeaturesTest(unittest.TestCase):
     """
     self.parseAndAssertEqual(enum_source, expected_source)
 
+  def testFilterImport(self):
+    """Test that imports are correctly filtered from a Mojom."""
+    import_source = """
+      [EnableIf=blue]
+      import "foo.mojom";
+      import "bar.mojom";
+      [EnableIf=purple]
+      import "baz.mojom";
+    """
+    expected_source = """
+      [EnableIf=blue]
+      import "foo.mojom";
+      import "bar.mojom";
+    """
+    self.parseAndAssertEqual(import_source, expected_source)
+
   def testFilterInterface(self):
     """Test that definitions are correctly filtered from an Interface."""
     interface_source = """

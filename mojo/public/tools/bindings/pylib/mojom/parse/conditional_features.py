@@ -68,6 +68,10 @@ def _FilterDefinition(definition, enabled_features):
 
 def RemoveDisabledDefinitions(mojom, enabled_features):
   """Removes conditionally disabled definitions from a Mojom node."""
+  mojom.import_list = ast.ImportList([
+    imported_file for imported_file in mojom.import_list
+      if _IsEnabled(imported_file, enabled_features)
+  ])
   mojom.definition_list = [
       definition for definition in mojom.definition_list
           if _IsEnabled(definition, enabled_features)
