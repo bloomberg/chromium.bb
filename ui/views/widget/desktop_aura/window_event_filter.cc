@@ -89,28 +89,31 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
       break;
     case LinuxUI::WINDOW_FRAME_ACTION_LOWER:
       LowerWindow();
+      event->SetHandled();
       break;
     case LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE:
       window_tree_host_->Minimize();
+      event->SetHandled();
       break;
     case LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE:
       if (target->GetProperty(aura::client::kResizeBehaviorKey) &
           ui::mojom::kResizeBehaviorCanMaximize)
         ToggleMaximizedState();
+      event->SetHandled();
       break;
     case LinuxUI::WINDOW_FRAME_ACTION_MENU:
       views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
       if (!widget)
         break;
       views::View* view = widget->GetContentsView();
-      if (!view)
+      if (!view || !view->context_menu_controller())
         break;
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(view, &location);
       view->ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
+      event->SetHandled();
       break;
   }
-  event->SetHandled();
 }
 
 void WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
