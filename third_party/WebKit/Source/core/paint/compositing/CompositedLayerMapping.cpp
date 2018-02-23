@@ -402,8 +402,11 @@ void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
   graphics_layer_->SetIsRootForIsolatedGroup(isolate);
 }
 
-void CompositedLayerMapping::
-    UpdateBackgroundPaintsOntoScrollingContentsLayer() {
+void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
+    bool& invalidate_graphics_layer,
+    bool& invalidate_scrolling_contents_layer) {
+  invalidate_graphics_layer = false;
+  invalidate_scrolling_contents_layer = false;
   // We can only paint the background onto the scrolling contents layer if
   // it would be visually correct and we are using composited scrolling meaning
   // we have a scrolling contents layer to paint it into.
@@ -419,7 +422,7 @@ void CompositedLayerMapping::
     // The scrolling contents layer needs to be updated for changed
     // m_backgroundPaintsOntoScrollingContentsLayer.
     if (HasScrollingLayer())
-      scrolling_contents_layer_->SetNeedsDisplay();
+      invalidate_scrolling_contents_layer = true;
   }
   bool should_paint_onto_graphics_layer =
       !background_paints_onto_scrolling_contents_layer_ ||
@@ -429,7 +432,7 @@ void CompositedLayerMapping::
     background_paints_onto_graphics_layer_ = should_paint_onto_graphics_layer;
     // The graphics layer needs to be updated for changed
     // m_backgroundPaintsOntoGraphicsLayer.
-    graphics_layer_->SetNeedsDisplay();
+    invalidate_graphics_layer = true;
   }
 }
 
@@ -1219,9 +1222,22 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateIsRootForIsolatedGroup();
   UpdateContentsRect();
   UpdateBackgroundColor();
+
+  bool invalidate_graphics_layer;
+  bool invalidate_scrolling_contents_layer;
+  UpdateBackgroundPaintsOntoScrollingContentsLayer(
+      invalidate_graphics_layer, invalidate_scrolling_contents_layer);
+
+  // This depends on background_paints_onto_graphics_layer_.
   UpdateDrawsContent();
+
+  // These invalidations need to happen after UpdateDrawsContent.
+  if (invalidate_graphics_layer)
+    graphics_layer_->SetNeedsDisplay();
+  if (invalidate_scrolling_contents_layer)
+    scrolling_contents_layer_->SetNeedsDisplay();
+
   UpdateElementId();
-  UpdateBackgroundPaintsOntoScrollingContentsLayer();
   UpdateContentsOpaque();
   UpdateRasterizationPolicy();
   UpdateAfterPartResize();
@@ -2857,19 +2873,10 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
       ToLayoutVideo(layout_object).ShouldDisplayVideo())
     return owning_layer_.HasBoxDecorationsOrBackground();
 
-  if (owning_layer_.HasVisibleBoxDecorations())
-    return true;
-
-  if (layout_object.HasMask())  // masks require special treatment
-    return true;
-
-  if (layout_object.IsAtomicInlineLevel() && !IsCompositedPlugin(layout_object))
-    return true;
-
-  if (layout_object.IsLayoutMultiColumnSet())
-    return true;
-
   if (layout_object.GetNode() && layout_object.GetNode()->IsDocumentNode()) {
+    if (owning_layer_.NeedsCompositedScrolling())
+      return background_paints_onto_graphics_layer_;
+
     // Look to see if the root object has a non-simple background
     LayoutObject* root_object =
         layout_object.GetDocument().documentElement()
@@ -2889,6 +2896,18 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
         HasBoxDecorationsOrBackgroundImage(body_object->StyleRef()))
       return true;
   }
+
+  if (owning_layer_.HasVisibleBoxDecorations())
+    return true;
+
+  if (layout_object.HasMask())  // masks require special treatment
+    return true;
+
+  if (layout_object.IsAtomicInlineLevel() && !IsCompositedPlugin(layout_object))
+    return true;
+
+  if (layout_object.IsLayoutMultiColumnSet())
+    return true;
 
   // FIXME: it's O(n^2). A better solution is needed.
   return PaintsChildren();

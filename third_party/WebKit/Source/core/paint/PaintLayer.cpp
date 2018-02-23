@@ -2624,9 +2624,11 @@ BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
                    ? kBackgroundPaintInGraphicsLayer
                    : GetLayoutObject().GetBackgroundPaintLocation(reasons);
   }
-  stacking_node_->UpdateLayerListsIfNeeded();
-  if (stacking_node_->HasNegativeZOrderList())
-    location = kBackgroundPaintInGraphicsLayer;
+  if (!IsRootLayer()) {
+    stacking_node_->UpdateLayerListsIfNeeded();
+    if (stacking_node_->HasNegativeZOrderList())
+      location = kBackgroundPaintInGraphicsLayer;
+  }
   return location;
 }
 

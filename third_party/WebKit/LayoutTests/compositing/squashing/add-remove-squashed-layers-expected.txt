@@ -6,6 +6,7 @@ CASE 1, original layer tree with overlap1 and overlap2:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -55,6 +56,7 @@ CASE 2, overlap3 gets added:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -117,6 +119,7 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -173,6 +176,7 @@ CASE 4, overlap1 gets removed:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -240,6 +244,7 @@ CASE 5, overlap2 gets added back:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -316,6 +321,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

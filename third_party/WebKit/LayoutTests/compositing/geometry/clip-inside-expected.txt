@@ -5,6 +5,7 @@ Test CSS clip with composited layers. Left and right sides should look the same.
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

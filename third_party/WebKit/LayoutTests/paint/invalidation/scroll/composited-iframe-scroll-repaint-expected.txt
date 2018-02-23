@@ -4,6 +4,7 @@
       "name": "LayoutView #document",
       "position": [2, 2],
       "bounds": [300, 150],
+      "drawsContent": false,
       "backgroundColor": "#EEEEEE"
     },
     {

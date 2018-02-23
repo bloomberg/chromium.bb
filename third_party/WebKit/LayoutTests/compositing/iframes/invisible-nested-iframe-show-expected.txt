@@ -4,6 +4,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -25,7 +26,8 @@
     {
       "name": "LayoutView #document",
       "position": [23, 23],
-      "bounds": [300, 150]
+      "bounds": [300, 150],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Layer",

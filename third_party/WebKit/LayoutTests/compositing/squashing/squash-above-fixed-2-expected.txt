@@ -6,6 +6,7 @@ CASE 1, original layer tree:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -48,6 +49,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

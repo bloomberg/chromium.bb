@@ -6,6 +6,7 @@ When the parent document becomes composited, the layer trees should get connecte
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -28,6 +29,7 @@ When the parent document becomes composited, the layer trees should get connecte
       "name": "LayoutView #document",
       "position": [43, 143],
       "bounds": [300, 150],
+      "drawsContent": false,
       "backgroundColor": "#C0C0C0"
     },
     {

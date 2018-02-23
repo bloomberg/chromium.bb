@@ -5,6 +5,7 @@ This tests that squashed layers' offset from renderer is updated properly. If no
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

@@ -63,7 +63,7 @@ second paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Unknown, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:26}
+        cause : {reason: Scrollbar changed, stackTrace: test://evaluations/0/timeline-paint-with-layout-invalidations.js:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

@@ -11517,10 +11517,9 @@ TEST_P(ParameterizedWebFrameTest, RootLayerMinimumHeight) {
   ASSERT_TRUE(invalidation_tracking);
   const auto& raster_invalidations = invalidation_tracking->Invalidations();
 
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    // For SPv175, we don't issue raster invalidation on layer resize, because
-    // the expanded part will be invalid initially.
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With RLS we don't issue raster invalidation, because the content paints
+    // into the scrolling contents layer whose size hasn't changed.
     EXPECT_TRUE(raster_invalidations.IsEmpty());
   } else {
     // The newly revealed content at the bottom of the screen should have been

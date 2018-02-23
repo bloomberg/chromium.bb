@@ -7,6 +7,7 @@ Initial
     {
       "name": "LayoutView #document",
       "bounds": [785, 626],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -67,6 +68,7 @@ After step 1
     {
       "name": "LayoutView #document",
       "bounds": [785, 1531],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -143,6 +145,7 @@ After step 2
     {
       "name": "LayoutView #document",
       "bounds": [785, 2675],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },

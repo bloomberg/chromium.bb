@@ -2142,8 +2142,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   ASSERT_TRUE(invalidation_tracking);
 
   const auto* raster_invalidations = &invalidation_tracking->Invalidations();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // No raster invalidation is needed because of no change within the root
     // scrolling layer.
     EXPECT_EQ(0u, raster_invalidations->size());
@@ -2182,8 +2181,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   ASSERT_TRUE(invalidation_tracking);
   raster_invalidations = &invalidation_tracking->Invalidations();
 
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     // No raster invalidation is needed because of no change within the root
     // scrolling layer.
     EXPECT_EQ(0u, raster_invalidations->size());
@@ -2264,16 +2262,8 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
             ->GraphicsLayerBacking(document->GetLayoutView())
             ->GetRasterInvalidationTracking();
 
-    // No invalidations should have occured in LocalFrameView scrolling. If
-    // root-layer-scrolls is on, an invalidation is necessary for now, see the
-    // comment and TODO in LocalFrameView::ViewportSizeChanged.
-    // http://crbug.com/568847.
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-        !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-      EXPECT_TRUE(invalidation_tracking->HasInvalidations());
-    } else {
-      EXPECT_FALSE(invalidation_tracking->HasInvalidations());
-    }
+    // No invalidations should have occured.
+    EXPECT_FALSE(invalidation_tracking->HasInvalidations());
   }
 
   document->View()->SetTracksPaintInvalidations(false);
@@ -2315,8 +2305,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
             ->GetRasterInvalidationTracking();
     ASSERT_TRUE(invalidation_tracking);
     const auto* raster_invalidations = &invalidation_tracking->Invalidations();
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       // No raster invalidation is needed because of no change within the root
       // scrolling layer.
       EXPECT_EQ(0u, raster_invalidations->size());

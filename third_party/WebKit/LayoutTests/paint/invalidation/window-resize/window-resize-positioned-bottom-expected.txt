@@ -3,6 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [600, 250],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -44,6 +45,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 250],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -81,6 +83,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -132,6 +135,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

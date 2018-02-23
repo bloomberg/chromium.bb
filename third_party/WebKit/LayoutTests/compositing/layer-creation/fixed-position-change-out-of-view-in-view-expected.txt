@@ -4,6 +4,7 @@ Layer tree when the fixed elements are out-of-view (should have just a root laye
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -38,6 +39,7 @@ Layer tree when the fixed elements are in-view (both fixed elements should have 
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -73,6 +75,7 @@ Layer tree when the fixed elements are out-of-view again (should have just a roo
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
