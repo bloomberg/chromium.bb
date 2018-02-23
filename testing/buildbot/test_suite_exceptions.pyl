@@ -95,6 +95,7 @@
       'ToTWinCFI',
       'ToTWinCFI64',
       'ToTWinThinLTO64',
+      'UBSanVptr Linux',
       # chromium.fyi
       'CrWinAsan tester',
       'CrWinAsan(dll) tester',
@@ -353,6 +354,7 @@
       # chromium.clang
       'CrWinAsanCov',
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
       # chromium.fyi
       'CrWinAsanCov tester',
       # chromium.memory
@@ -913,6 +915,7 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1662,6 +1665,7 @@
       'CFI Linux (icall)',
       'CFI Linux ToT',
       'ToTLinuxThinLTO',
+      'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Linux',
       'ThinLTO Linux ToT',
@@ -2093,6 +2097,7 @@
       'ToTLinuxASan',
       'ToTLinuxThinLTO',
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
@@ -2425,6 +2430,7 @@
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
       # chromium.fyi
       'ThinLTO Linux ToT',
       # chromium.memory
@@ -2866,6 +2872,7 @@
       'ToTAndroidASan',
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
+      'UBSanVptr Linux',
       # chromium.fyi
       'Chromium Mac 10.10 MacViews',
       'Chromium Mac 10.11',
@@ -3135,6 +3142,7 @@
       'ToTLinuxASan',
       'ToTLinuxThinLTO',
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Mac',
       'ThinLTO Linux ToT',
@@ -3515,6 +3523,7 @@
       'ToTLinuxASan',
       'ToTLinuxThinLTO',
       'ToTLinuxUBSanVptr',
+      'UBSanVptr Linux',
        # chromium.android.fyi
       'Jelly Bean Tester',
       'Lollipop Consumer Tester',

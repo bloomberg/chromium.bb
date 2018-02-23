@@ -811,6 +811,11 @@
           'gtest_tests': 'chromium_win_clang_gtests',
         },
       },
+      'UBSanVptr Linux': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+        },
+      },
     },
   },
   {
