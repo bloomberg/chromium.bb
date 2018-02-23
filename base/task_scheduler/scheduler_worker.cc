@@ -72,6 +72,10 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
       scoped_refptr<Sequence> sequence =
           outer_->delegate_->GetWork(outer_.get());
       if (!sequence) {
+        // Exit immediately if GetWork() resulted in detaching this worker.
+        if (outer_->ShouldExit())
+          break;
+
         TRACE_EVENT_END0("task_scheduler", "SchedulerWorkerThread active");
         outer_->delegate_->WaitForWork(&wake_up_event_);
         TRACE_EVENT_BEGIN0("task_scheduler", "SchedulerWorkerThread active");
@@ -126,7 +130,7 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
 
   // Returns the priority for which the thread should be set based on the
   // priority hint, current shutdown state, and platform capabilities.
-  ThreadPriority GetDesiredThreadPriority() {
+  ThreadPriority GetDesiredThreadPriority() const {
     DCHECK(outer_);
 
     // All threads have a NORMAL priority when Lock doesn't handle multiple
