@@ -28,6 +28,7 @@ source_set("browsing_data") {
     "//components/prefs",
     "//components/sessions",
     "//components/signin/core/browser",
+    "//components/signin/ios/browser",
     "//components/translate/core/browser:browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
