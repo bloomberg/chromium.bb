@@ -83,8 +83,10 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // Compute ContainingBlock logical size.
   // OverrideContainingBlockLogicalWidth/Height are used by e.g. grid layout.
   // Override sizes are padding box size, not border box, so we must add
-  // borders to compensate.
-  NGBoxStrut borders = ComputeBorders(*constraint_space, *container_style);
+  // borders and scrollbars to compensate.
+  NGBoxStrut borders_and_scrollbars =
+      ComputeBorders(*constraint_space, *container_style) +
+      NGBlockNode(container).GetScrollbarSizes();
 
   // Calculate the border-box size of the object that's the containing block of
   // this out-of-flow positioned descendant. Note that this is not to be used as
@@ -97,13 +99,15 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   LayoutUnit container_border_box_logical_height;
   if (HasOverrideContainingBlockLogicalWidth()) {
     container_border_box_logical_width =
-        OverrideContainingBlockContentLogicalWidth() + borders.InlineSum();
+        OverrideContainingBlockContentLogicalWidth() +
+        borders_and_scrollbars.InlineSum();
   } else {
     container_border_box_logical_width = container->LogicalWidth();
   }
   if (HasOverrideContainingBlockLogicalHeight()) {
     container_border_box_logical_height =
-        OverrideContainingBlockContentLogicalHeight() + borders.BlockSum();
+        OverrideContainingBlockContentLogicalHeight() +
+        borders_and_scrollbars.BlockSum();
   } else {
     container_border_box_logical_height = container->LogicalHeight();
   }
@@ -154,23 +158,35 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // Legacy static position is relative to padding box. Convert to border
   // box. Also flip offsets as necessary to make them relative to to the
   // left/top edges.
-  if (parent_style->IsLeftToRightDirection()) {
-    static_inline += borders.inline_start;
-  } else {
-    static_inline += borders.inline_end;
-    static_inline = containing_block_logical_width - static_inline;
-  }
-  static_block += borders.block_start;
-  if (parent_style->IsFlippedBlocksWritingMode())
-    static_block = containing_block_logical_height - static_block;
 
-  // Convert inline/block direction to physical direction. This can be done
-  // with a simple coordinate flip because static_inline/block distances are
-  // relative to physical origin.
+  // First convert the static inline offset to a line-left offset, i.e. physical
+  // left or top.
+  LayoutUnit inline_left_or_top =
+      parent_style->IsLeftToRightDirection()
+          ? static_inline
+          : containing_block_logical_width - static_inline;
+  // Now make it relative to the left or top border edge of the containing
+  // block.
+  inline_left_or_top +=
+      borders_and_scrollbars.LineLeft(container_style->Direction());
+
+  // Make the static block offset relative to the start border edge of the
+  // containing block.
+  static_block += borders_and_scrollbars.block_start;
+  // Then convert it to a physical top or left offset. Since we're already
+  // border-box relative, flip it around the size of the border box, rather than
+  // the size of the containing block (padding box).
+  LayoutUnit block_top_or_left =
+      parent_style->IsFlippedBlocksWritingMode()
+          ? container_border_box_logical_height - static_block
+          : static_block;
+
+  // Convert to physical direction. This can be done with a simple coordinate
+  // flip because the distances are relative to physical top/left origin.
   NGPhysicalOffset static_location =
       container_style->IsHorizontalWritingMode()
-          ? NGPhysicalOffset(static_inline, static_block)
-          : NGPhysicalOffset(static_block, static_inline);
+          ? NGPhysicalOffset(inline_left_or_top, block_top_or_left)
+          : NGPhysicalOffset(block_top_or_left, inline_left_or_top);
   NGStaticPosition static_position =
       NGStaticPosition::Create(parent_style->GetWritingMode(),
                                parent_style->Direction(), static_location);

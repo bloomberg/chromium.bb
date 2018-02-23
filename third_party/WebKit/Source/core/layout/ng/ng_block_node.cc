@@ -256,7 +256,7 @@ NGBoxStrut NGBlockNode::GetScrollbarSizes() const {
     LayoutUnit vertical = LayoutUnit(box->VerticalScrollbarWidth());
     LayoutUnit horizontal = LayoutUnit(box->HorizontalScrollbarHeight());
     sizes.bottom = horizontal;
-    if (style->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    if (box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
       sizes.left = vertical;
     else
       sizes.right = vertical;
