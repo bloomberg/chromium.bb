@@ -5,6 +5,8 @@
 Polymer({
   is: 'print-preview-advanced-settings-item',
 
+  behaviors: [SettingsBehavior],
+
   properties: {
     /** @type {!print_preview.VendorCapability} */
     capability: Object,
@@ -19,9 +21,30 @@ Polymer({
     },
   },
 
+  observers: [
+    'updateFromSettings_(capability, settings.vendorItems.value)',
+  ],
+
   /** @private */
-  onSelectChange_: function() {
-    this.currentValue_ = this.$$('select').value;
+  updateFromSettings_: function() {
+    const settings = this.getSetting('vendorItems').value;
+
+    // The settings may not have a property with the id if they were populated
+    // from sticky settings from a different destination or if the
+    // destination's capabilities changed since the sticky settings were
+    // generated.
+    if (!settings.hasOwnProperty(this.capability.id))
+      return;
+
+    const value = settings[this.capability.id];
+    if (this.isCapabilityTypeSelect_()) {
+      // Ignore a value that can't be selected.
+      if (this.hasOptionWithValue_(value))
+        this.currentValue_ = value;
+    } else {
+      this.currentValue_ = value;
+      this.$$('input[type="text"]').value = this.currentValue_;
+    }
   },
 
   /**
@@ -67,8 +90,33 @@ Polymer({
         this.capability.typed_value_cap) {
       return this.capability.typed_value_cap.default.toString() || '';
     }
-    if (this.capability.type == 'RANGE' && this.capability.range_type)
+    if (this.capability.type == 'RANGE' && this.capability.range_cap)
       return this.capability.range_cap.default.toString() || '';
     return '';
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasOptionWithValue_: function(value) {
+    return !!this.capability.select_cap &&
+        !!this.capability.select_cap.option &&
+        this.capability.select_cap.option.some(option => option.value == value);
+  },
+
+  /**
+   * @param {!Event} e Event containing the new value.
+   * @private
+   */
+  onUserInput_: function(e) {
+    this.currentValue_ = e.target.value;
+  },
+
+  /**
+   * @return {(number | string | boolean)} The current value of the setting.
+   */
+  getCurrentValue: function() {
+    return this.currentValue_;
   },
 });

@@ -52,11 +52,21 @@ const NUM_DESTINATIONS = 3;
 /**
  * Sticky setting names. Alphabetical except for fitToPage, which must be set
  * after scaling in updateFromStickySettings().
- * @type {Array<string>}
+ * @type {!Array<string>}
  */
 const STICKY_SETTING_NAMES = [
-  'collate', 'color', 'cssBackground', 'dpi', 'duplex', 'headerFooter',
-  'layout', 'margins', 'mediaSize', 'scaling', 'fitToPage'
+  'collate',
+  'color',
+  'cssBackground',
+  'dpi',
+  'duplex',
+  'headerFooter',
+  'layout',
+  'margins',
+  'mediaSize',
+  'scaling',
+  'fitToPage',
+  'vendorItems',
 ];
 
 Polymer({
@@ -187,7 +197,7 @@ Polymer({
           unavailableValue: {},
           valid: true,
           available: true,
-          key: '',
+          key: 'vendorOptions',
         },
         // This does not represent a real setting value, and is used only to
         // expose the availability of the other options settings section.
@@ -240,11 +250,21 @@ Polymer({
         'settings.mediaSize.value, settings.margins.value, ' +
         'settings.dpi.value, settings.fitToPage.value, ' +
         'settings.scaling.value, settings.duplex.value, ' +
-        'settings.headerFooter.value, settings.cssBackground.value)',
+        'settings.headerFooter.value, settings.cssBackground.value, ' +
+        'settings.vendorItems.value)',
   ],
 
   /** @private {boolean} */
   initialized_: false,
+
+  /** @private {?print_preview.Destination} */
+  lastDestination_: null,
+
+  /** @private {?print_preview.Cdd} */
+  lastCapabilities_: null,
+
+  /** @private {boolean} */
+  hasStickySettings_: true,
 
   /**
    * Updates the availability of the settings sections and values of dpi and
@@ -256,7 +276,19 @@ Polymer({
         this.destination.capabilities.printer :
         null;
     this.updateSettingsAvailability_(caps);
-    this.updateSettingsValues_(caps);
+    // This check is needed to avoid overwriting the sticky settings at
+    // startup, since the sticky settings will be known before the printer
+    // capabilities. These values should be updated only when the printer
+    // changes from the original selection or when the first printer is loaded
+    // and there are no sticky values.
+    if ((this.destination != this.lastDestination_ ||
+         this.destination.capabilities_ != this.lastCapabilities_) &&
+        ((this.lastDestination_ != null && this.lastCapabilities_ != null) ||
+         !this.hasStickySettings_)) {
+      this.updateSettingsValues_(caps);
+    }
+    this.lastDestination_ = this.destination;
+    this.lastCapabilities_ = this.destination.capabilities;
   },
 
   /**
@@ -302,6 +334,8 @@ Polymer({
             this.settings.selectionOnly.available ||
             this.settings.headerFooter.available ||
             this.settings.rasterize.available);
+    this.set(
+        'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
   },
 
   /**
@@ -330,24 +364,37 @@ Polymer({
    */
   updateSettingsValues_: function(caps) {
     if (this.settings.mediaSize.available) {
-      for (const option of caps.media_size.option) {
-        if (option.is_default) {
-          this.set('settings.mediaSize.value', option);
-          break;
-        }
-      }
+      const defaultOption = caps.media_size.option.find(o => !!o.is_default);
+      this.set('settings.mediaSize.value', defaultOption);
     }
-
     if (this.settings.dpi.available) {
-      for (const option of caps.dpi.option) {
-        if (option.is_default) {
-          this.set('settings.dpi.value', option);
-          break;
-        }
-      }
+      const defaultOption = caps.dpi.option.find(o => !!o.is_default);
+      this.set('settings.dpi.value', defaultOption);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.value', caps.dpi.option[0]);
+    }
+
+    if (this.settings.vendorItems.available) {
+      const vendorSettings = {};
+      for (const item of caps.vendor_capability) {
+        let defaultValue = null;
+        if (item.type == 'SELECT' && !!item.select_cap &&
+            !!item.select_cap.option) {
+          const defaultOption =
+              item.select_cap.option.find(o => !!o.is_default);
+          defaultValue = !!defaultOption ? defaultOption.value : null;
+        } else if (item.type == 'RANGE') {
+          if (!!item.range_cap)
+            defaultValue = item.range_cap.default || null;
+        } else if (item.type == 'TYPED_VALUE') {
+          if (!!item.typed_value_cap)
+            defaultValue = item.typed_value_cap.default || null;
+        }
+        if (defaultValue != null)
+          vendorSettings[item.id] = defaultValue;
+      }
+      this.set('settings.vendorItems.value', vendorSettings);
     }
   },
 
@@ -394,6 +441,7 @@ Polymer({
    */
   updateFromStickySettings: function(savedSettingsStr) {
     this.initialized_ = true;
+    this.hasStickySettings_ = false;
     if (!savedSettingsStr)
       return;
 
@@ -408,6 +456,7 @@ Polymer({
     if (savedSettings.version != 2)
       return;
 
+    this.hasStickySettings_ = true;
     let recentDestinations = savedSettings.recentDestinations || [];
     if (!Array.isArray(recentDestinations)) {
       recentDestinations = [recentDestinations];
@@ -594,8 +643,15 @@ Polymer({
         vendor_id: dpiValue.vendor_id
       };
     }
-    // TODO (rbpotter): Deal with advanced settings (vendorItems).
-
+    if (this.settings.vendorItems.available) {
+      const items = this.settings.vendorItems.value;
+      cjt.print.vendor_ticket_item = [];
+      for (const itemId in items) {
+        if (items.hasOwnProperty(itemId)) {
+          cjt.print.vendor_ticket_item.push({id: itemId, value: items[itemId]});
+        }
+      }
+    }
     return JSON.stringify(cjt);
   },
 });

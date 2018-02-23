@@ -25,13 +25,16 @@
         <template is="dom-repeat"
             items="[[destination.capabilities.printer.vendor_capability]]">
           <print-preview-advanced-settings-item
-              search-query="[[searchQuery_]]" capability="[[item]]">
+              search-query="[[searchQuery_]]" capability="[[item]]"
+              settings="[[settings]]">
           </print-preview-advanced-settings-item>
         </template>
       </div>
       <div slot="button-container">
         <button on-click="onCancelButtonClick_">$i18n{cancel}</button>
-        <button>$i18n{advancedSettingsDialogConfirm}</button>
+        <button on-click="onApplyButtonClick_">
+          $i18n{advancedSettingsDialogConfirm}
+        </button>
       </div>
     </dialog>
   </template>

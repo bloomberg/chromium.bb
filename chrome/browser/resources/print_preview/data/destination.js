@@ -104,7 +104,7 @@ print_preview.VendorCapability;
  * Capabilities of a print destination represented in a CDD.
  *
  * @typedef {{
- *   vendor_capability: !Array<{Object}>,
+ *   vendor_capability: !Array<!print_preview.VendorCapability>,
  *   collate: ({default: (boolean|undefined)}|undefined),
  *   color: ({
  *     option: !Array<{
