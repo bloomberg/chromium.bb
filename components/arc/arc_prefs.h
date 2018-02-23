@@ -23,6 +23,8 @@ ARC_EXPORT extern const char kArcTermsAccepted[];
 ARC_EXPORT extern const char kArcLocationServiceEnabled[];
 ARC_EXPORT extern const char kArcPackages[];
 ARC_EXPORT extern const char kArcPaiStarted[];
+ARC_EXPORT extern const char kArcPushInstallAppsRequested[];
+ARC_EXPORT extern const char kArcPushInstallAppsPending[];
 ARC_EXPORT extern const char kArcSetNotificationsEnabledDeferred[];
 ARC_EXPORT extern const char kArcSignedIn[];
 ARC_EXPORT extern const char kArcCompatibleFilesystemChosen[];
