@@ -479,7 +479,9 @@ void CoordinatorImpl::FinalizeVmRegionDumpIfAllManagersReplied(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = in_progress_vm_region_requests_.find(dump_guid);
-  DCHECK(it != in_progress_vm_region_requests_.end());
+  if (it == in_progress_vm_region_requests_.end())
+    return;
+
   if (!it->second->pending_responses.empty())
     return;
 
