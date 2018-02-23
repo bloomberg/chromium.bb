@@ -1,0 +1,85 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_OZONE_DEMO_SKIA_RENDERER_H_
+#define UI_OZONE_DEMO_SKIA_RENDERER_H_
+
+#include "base/containers/queue.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/simple_thread.h"
+#include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/swap_result.h"
+#include "ui/ozone/demo/renderer_base.h"
+
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
+namespace gl {
+class GLContext;
+class GLSurface;
+}  // namespace gl
+
+namespace ui {
+
+class SkiaRenderer : public RendererBase,
+                     public base::DelegateSimpleThread::Delegate {
+ public:
+  SkiaRenderer(gfx::AcceleratedWidget widget,
+               const scoped_refptr<gl::GLSurface>& surface,
+               const gfx::Size& size);
+  ~SkiaRenderer() override;
+
+  // Renderer:
+  bool Initialize() override;
+
+ protected:
+  virtual void RenderFrame();
+  virtual void PostRenderFrameTask(gfx::SwapResult result);
+
+  void Draw(SkCanvas* canvas, float fraction);
+  void StartDDLRenderThreadIfNecessary(SkSurface* sk_surface);
+  void StopDDLRenderThread();
+  std::unique_ptr<SkDeferredDisplayList> GetDDL();
+
+  scoped_refptr<gl::GLSurface> gl_surface_;
+  scoped_refptr<gl::GLContext> gl_context_;
+
+  sk_sp<GrContext> gr_context_;
+  const bool use_ddl_;
+  const bool draw_text_;
+
+ private:
+  // base::DelegateSimpleThread::Delegate:
+  void Run() override;
+
+  void OnPresentation(const gfx::PresentationFeedback& feedback);
+
+  sk_sp<SkSurface> sk_surface_;
+
+  std::unique_ptr<base::SimpleThread> ddl_render_thread_;
+
+  // The lock to protect |surface_charaterization_| and |ddls_|.
+  base::Lock lock_;
+
+  // The condition variable for signalling change of |ddls_|.
+  base::ConditionVariable condition_variable_;
+
+  SkSurfaceCharacterization surface_charaterization_;
+  base::queue<std::unique_ptr<SkDeferredDisplayList>> ddls_;
+
+  base::WeakPtrFactory<SkiaRenderer> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
+};
+
+}  // namespace ui
+
+#endif  // UI_OZONE_DEMO_SKIA_RENDERER_H_

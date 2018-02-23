@@ -19,13 +19,16 @@ RendererBase::RendererBase(gfx::AcceleratedWidget widget, const gfx::Size& size)
 RendererBase::~RendererBase() {
 }
 
-float RendererBase::NextFraction() {
+float RendererBase::CurrentFraction() const {
   float fraction =
       (sinf(iteration_ * 2 * base::kPiFloat / kAnimationSteps) + 1) / 2;
+  return fraction;
+}
 
+float RendererBase::NextFraction() {
+  float fraction = CurrentFraction();
   iteration_++;
   iteration_ %= kAnimationSteps;
-
   return fraction;
 }
 
