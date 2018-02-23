@@ -5,6 +5,7 @@
 #include "core/dom/ComputedAccessibleNode.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "core/dom/DOMException.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
@@ -51,7 +52,8 @@ ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
     ScriptState* script_state,
     Element& element)
     : element_(element),
-      resolver_(ScriptPromiseResolver::Create(script_state)) {}
+      resolver_(ScriptPromiseResolver::Create(script_state)),
+      resolve_with_node_(false) {}
 
 ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
   return resolver_->Promise();
@@ -63,11 +65,14 @@ void ComputedAccessibleNodePromiseResolver::Trace(blink::Visitor* visitor) {
 }
 
 void ComputedAccessibleNodePromiseResolver::ComputeAccessibleNode() {
-  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
+  resolve_with_node_ = true;
+  EnsureUpToDate();
+}
 
+void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
+  DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
   if (continue_callback_request_id_)
     return;
-
   // TODO(aboxhall): Trigger a call when lifecycle is next at kPrePaintClean.
   RequestAnimationFrameCallback* callback =
       new RequestAnimationFrameCallback(this);
@@ -76,21 +81,28 @@ void ComputedAccessibleNodePromiseResolver::ComputeAccessibleNode() {
 }
 
 void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
+  LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
+  WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
+  WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
+  tree->ComputeAccessibilityTree();
+
+  if (!resolve_with_node_) {
+    resolver_->Resolve();
+    return;
+  }
+
   Document& document = element_->GetDocument();
   document.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   AXObjectCache* cache = element_->GetDocument().GetOrCreateAXObjectCache();
   DCHECK(cache);
   AXID ax_id = cache->GetAXID(element_);
 
-  LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
-  WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
-  WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
-  tree->ComputeAccessibilityTree();
-
   ComputedAccessibleNode* accessible_node =
       local_frame->GetOrCreateComputedAccessibleNode(ax_id, tree);
   resolver_->Resolve(accessible_node);
 }
+
+// ComputedAccessibleNode ------------------------------------------------------
 
 ComputedAccessibleNode* ComputedAccessibleNode::Create(AXID ax_id,
                                                        WebComputedAXTree* tree,
@@ -107,6 +119,17 @@ ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
 bool ComputedAccessibleNode::atomic(bool& is_null) const {
   return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_ATOMIC, is_null);
+}
+
+ScriptPromise ComputedAccessibleNode::ensureUpToDate(
+    ScriptState* script_state) {
+  AXObjectCache* cache = frame_->GetDocument()->GetOrCreateAXObjectCache();
+  Element* element = cache->GetElementFromAXID(ax_id_);
+  ComputedAccessibleNodePromiseResolver* resolver =
+      ComputedAccessibleNodePromiseResolver::Create(script_state, *element);
+  ScriptPromise promise = resolver->Promise();
+  resolver->EnsureUpToDate();
+  return promise;
 }
 
 bool ComputedAccessibleNode::busy(bool& is_null) const {
@@ -274,30 +297,6 @@ ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
     return nullptr;
   }
   return frame_->GetOrCreateComputedAccessibleNode(sibling_ax_id, tree_);
-}
-
-ScriptPromise ComputedAccessibleNode::ensureUpToDate(
-    ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  // TODO(aboxhall): Post this task asynchronously, with a callback into
-  // this->OnSnapshotResponse.
-  if (!tree_->ComputeAccessibilityTree()) {
-    // TODO(meredithl): Change this exception to something relevant to AOM.
-    resolver->Reject(DOMException::Create(kUnknownError));
-  } else {
-    OnUpdateResponse(resolver);
-  }
-  return promise;
-}
-
-void ComputedAccessibleNode::OnSnapshotResponse(
-    ScriptPromiseResolver* resolver) {
-  resolver->Resolve(this);
-}
-
-void ComputedAccessibleNode::OnUpdateResponse(ScriptPromiseResolver* resolve) {
-  resolve->Resolve();
 }
 
 bool ComputedAccessibleNode::GetBoolAttribute(WebAOMBoolAttribute attr,
