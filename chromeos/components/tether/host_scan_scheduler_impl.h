@@ -15,10 +15,15 @@
 #include "chromeos/components/tether/host_scan_scheduler.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/session_manager/core/session_manager_observer.h"
 
 namespace base {
 class TaskRunner;
 }  // namespace base
+
+namespace session_manager {
+class SessionManager;
+}  // namespace session_manager
 
 namespace chromeos {
 
@@ -33,10 +38,12 @@ namespace tether {
 //   (3) The scan is explicitly requested via ScheduleScan().
 class HostScanSchedulerImpl : public HostScanScheduler,
                               public NetworkStateHandlerObserver,
-                              public HostScanner::Observer {
+                              public HostScanner::Observer,
+                              public session_manager::SessionManagerObserver {
  public:
   HostScanSchedulerImpl(NetworkStateHandler* network_state_handler,
-                        HostScanner* host_scanner);
+                        HostScanner* host_scanner,
+                        session_manager::SessionManager* session_manager);
   ~HostScanSchedulerImpl() override;
 
   // HostScanScheduler:
@@ -49,6 +56,9 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   // HostScanner::Observer:
   void ScanFinished() override;
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
 
  private:
   friend class HostScanSchedulerImplTest;
@@ -63,6 +73,7 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   NetworkStateHandler* network_state_handler_;
   HostScanner* host_scanner_;
+  session_manager::SessionManager* session_manager_;
 
   std::unique_ptr<base::Timer> timer_;
   std::unique_ptr<base::Clock> clock_;
@@ -70,6 +81,8 @@ class HostScanSchedulerImpl : public HostScanScheduler,
 
   base::Time last_scan_batch_start_timestamp_;
   base::Time last_scan_end_timestamp_;
+
+  bool is_screen_locked_;
 
   base::WeakPtrFactory<HostScanSchedulerImpl> weak_ptr_factory_;
 
