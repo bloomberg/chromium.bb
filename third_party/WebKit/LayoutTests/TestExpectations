@@ -3254,6 +3254,10 @@ crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-po
 
 # Sheriff failures 2018-02-22
 crbug.com/789921 virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
+crbug.com/814889 [ Debug ] idle-callback/test-runner-run-idle-tasks.html [ Timeout Pass ]
+crbug.com/814907 http/tests/credentialmanager/credentialscontainer-create-from-nested-frame.html [ Failure Pass ]
+crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
+crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
 
 # MSAN
 crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass Failure ]
@@ -3347,7 +3351,3 @@ crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-span-all-margin
 crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure Pass ]
 
 crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
-
-crbug.com/814889 [ Debug ] idle-callback/test-runner-run-idle-tasks.html [ Timeout Pass ]
-
-crbug.com/814907 http/tests/credentialmanager/credentialscontainer-create-from-nested-frame.html [ Failure Pass ]
