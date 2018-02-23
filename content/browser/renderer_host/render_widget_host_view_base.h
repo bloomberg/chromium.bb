@@ -438,7 +438,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
 
-  // Gets the bounds of the window, in screen coordinates.
+  // Returns the offset of the view from the origin of the browser compositor's
+  // surface. This is in DIP.
+  virtual gfx::Vector2d GetOffsetFromRootSurface() = 0;
+
+  // Gets the bounds of the top-level window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;
 
   // Called by the RenderWidgetHost when an ambiguous gesture is detected to

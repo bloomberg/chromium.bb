@@ -335,6 +335,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
 
   bool ShouldContinueToPauseForFrame() override;
+  gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ResizeDueToAutoResize(const gfx::Size& new_size,
                              uint64_t sequence_number) override;

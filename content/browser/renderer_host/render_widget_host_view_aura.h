@@ -146,6 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                        const gfx::Size& output_size,
                        const ReadbackRequestCallback& callback,
                        const SkColorType color_type) override;
+  gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;

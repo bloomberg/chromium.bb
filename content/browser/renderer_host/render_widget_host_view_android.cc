@@ -1453,6 +1453,11 @@ void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   DestroyDelegatedContent();
 }
 
+gfx::Vector2d RenderWidgetHostViewAndroid::GetOffsetFromRootSurface() {
+  return gfx::Vector2d(
+      0, DoBrowserControlsShrinkBlinkSize() ? GetTopControlsHeight() : 0);
+}
+
 // TODO(jrg): Find out the implications and answer correctly here,
 // as we are returning the WebView and not root window bounds.
 gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
