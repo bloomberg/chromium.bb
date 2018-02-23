@@ -122,20 +122,3 @@ class PixelExpectations(GpuTestExpectations):
                bug=809868)
     self.Flaky('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
                ['android'], bug=810006)
-
-    # TODO(kainino): temporary suppressions for pixel test rebaseline
-    self.Fail('Pixel_2DCanvasWebGL', bug=812071)
-    self.Fail('Pixel_IOSurface2DCanvasWebGL', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=812071)
-    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=812071)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=812071)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha_SwiftShader', bug=812071)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=812071)
-    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha', bug=812071)
-    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha', bug=812071)
-
