@@ -9,6 +9,7 @@ const Action = {
   CALL_PROMPT_DELAYED: "call_prompt_delayed",
   CALL_PROMPT_IN_HANDLER: "call_prompt_in_handler",
   CALL_PROMPT_NO_USERCHOICE: "call_prompt_no_userchoice",
+  CANCEL_PROMPT_AND_NAVIGATE: "cancel_prompt_and_navigate",
   CANCEL_PROMPT: "cancel_prompt",
   STASH_EVENT: "stash_event",
 };
@@ -69,8 +70,8 @@ function addPromptListener(action) {
       case Action.CALL_PROMPT_NO_USERCHOICE:
         setTimeout(() => e.prompt(), 0);
         break;
-      case Action.CANCEL_PROMPT:
-        // Navigate the window to trigger the banner cancellation.
+      case Action.CANCEL_PROMPT_AND_NAVIGATE:
+        // Navigate the window to trigger cancellation in the renderer.
         window.location.href = "/";
         break;
       case Action.STASH_EVENT:
@@ -115,6 +116,7 @@ function initialize() {
     case Action.CALL_PROMPT_DELAYED:
     case Action.CALL_PROMPT_IN_HANDLER:
     case Action.CALL_PROMPT_NO_USERCHOICE:
+    case Action.CANCEL_PROMPT_AND_NAVIGATE:
     case Action.CANCEL_PROMPT:
     case Action.STASH_EVENT:
       addPromptListener(action);
