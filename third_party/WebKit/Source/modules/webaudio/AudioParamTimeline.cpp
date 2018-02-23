@@ -542,10 +542,13 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
   if (!events_.size() &&
       (event->GetType() == ParamEvent::kLinearRampToValue ||
        event->GetType() == ParamEvent::kExponentialRampToValue)) {
-    // There are no events preceding these ramps.  Insert a new setValueAtTime
-    // event to set the starting point for these events.
+    // There are no events preceding these ramps.  Insert a new
+    // setValueAtTime event to set the starting point for these
+    // events.  Use a time of 0 to make sure it preceeds all other
+    // events.  This will get fixed when when handle new events.
     events_.insert(0, AudioParamTimeline::ParamEvent::CreateSetValueEvent(
-                          event->InitialValue(), event->CallTime()));
+                          event->InitialValue(), 0));
+    new_events_.insert(events_[0].get());
   }
 
   for (i = 0; i < events_.size(); ++i) {
