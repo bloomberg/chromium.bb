@@ -3283,12 +3283,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_FWD_KF
-    if (cm->reset_decoder_state && !frame_bufs[frame_to_show].intra_only) {
+    if (cm->reset_decoder_state &&
+        frame_bufs[frame_to_show].frame_type != KEY_FRAME) {
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-          "show_existing_frame to reset state on non-intra_only");
+          "show_existing_frame to reset state on KEY_FRAME only");
     }
-    aom_wb_write_bit(wb, cm->reset_decoder_state);
 #endif  // CONFIG_FWD_KF
 
     return;

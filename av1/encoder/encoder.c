@@ -5852,6 +5852,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // frame type has been decided outside of this function call
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
+  cm->cur_frame->frame_type = cm->frame_type;
   cm->use_ref_frame_mvs = !cpi->oxcf.disable_tempmv &&
                           !cm->cur_frame->intra_only &&
                           frame_might_use_prev_frame_mvs(cm);
