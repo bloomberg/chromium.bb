@@ -19,7 +19,8 @@ namespace ws {
 
 std::string WindowIdToString(Id id) {
   return (id == 0) ? "null"
-                   : base::StringPrintf("%d,%d", HiWord(id), LoWord(id));
+                   : base::StringPrintf("%d,%d", ClientIdFromTransportId(id),
+                                        ClientWindowIdFromTransportId(id));
 }
 
 namespace {
@@ -404,7 +405,7 @@ void TestChangeTracker::OnWindowInputEvent(
 }
 
 void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
-                                               uint32_t window_id) {
+                                               Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_POINTER_WATCHER_EVENT;
   change.event_action = static_cast<int32_t>(event.type());

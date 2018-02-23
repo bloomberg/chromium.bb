@@ -69,7 +69,7 @@ class WindowTreeClientPrivate {
 
   bool HasPointerWatcher();
 
-  Window* GetWindowByServerId(Id id);
+  Window* GetWindowByServerId(ui::Id id);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
                                      const ui::mojom::WindowData& window_data);
@@ -85,6 +85,6 @@ class WindowTreeClientPrivate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPrivate);
 };
 
-}  // namespace ui
+}  // namespace aura
 
 #endif  // UI_AURA_TEST_MUS_WINDOW_TREE_CLIENT_PRIVATE_H_

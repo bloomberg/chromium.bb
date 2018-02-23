@@ -256,17 +256,17 @@ void RendererWindowTreeClient::OnWindowTransformChanged(
     const gfx::Transform& new_transform) {}
 
 void RendererWindowTreeClient::OnClientAreaChanged(
-    uint32_t window_id,
+    ui::Id window_id,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {}
 
 void RendererWindowTreeClient::OnTransientWindowAdded(
-    uint32_t window_id,
-    uint32_t transient_window_id) {}
+    ui::Id window_id,
+    ui::Id transient_window_id) {}
 
 void RendererWindowTreeClient::OnTransientWindowRemoved(
-    uint32_t window_id,
-    uint32_t transient_window_id) {}
+    ui::Id window_id,
+    ui::Id transient_window_id) {}
 
 void RendererWindowTreeClient::OnWindowHierarchyChanged(
     ui::Id window_id,
@@ -311,7 +311,7 @@ void RendererWindowTreeClient::OnWindowInputEvent(
 
 void RendererWindowTreeClient::OnPointerEventObserved(
     std::unique_ptr<ui::Event> event,
-    uint32_t window_id,
+    ui::Id window_id,
     int64_t display_id) {
   NOTREACHED();
 }
@@ -359,7 +359,7 @@ void RendererWindowTreeClient::OnCompleteDrop(
     const OnCompleteDropCallback& callback) {}
 
 void RendererWindowTreeClient::OnPerformDragDropCompleted(
-    uint32_t window,
+    uint32_t change_id,
     bool success,
     uint32_t action_taken) {}
 
@@ -373,7 +373,7 @@ void RendererWindowTreeClient::OnChangeCompleted(uint32_t change_id,
   // controls the visibility of the root frame).
 }
 
-void RendererWindowTreeClient::RequestClose(uint32_t window_id) {}
+void RendererWindowTreeClient::RequestClose(ui::Id window_id) {}
 
 void RendererWindowTreeClient::GetWindowManager(
     mojo::AssociatedInterfaceRequest<ui::mojom::WindowManager> internal) {

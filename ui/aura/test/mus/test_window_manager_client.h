@@ -33,10 +33,10 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
 
  private:
   // ui::mojom::WindowManagerClient:
-  void AddActivationParent(Id transport_window_id) override;
-  void RemoveActivationParent(Id transport_window_id) override;
+  void AddActivationParent(ui::Id transport_window_id) override;
+  void RemoveActivationParent(ui::Id transport_window_id) override;
   void SetExtendedHitRegionForChildren(
-      Id window_id,
+      ui::Id window_id,
       const gfx::Insets& mouse_insets,
       const gfx::Insets& touch_insets) override;
   void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
@@ -47,7 +47,7 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void SetDisplayRoot(const display::Display& display,
                       ui::mojom::WmViewportMetricsPtr viewport_metrics,
                       bool is_primary_display,
-                      Id window_id,
+                      ui::Id window_id,
                       const std::vector<display::Display>& mirrors,
                       const SetDisplayRootCallback& callback) override;
   void SetDisplayConfiguration(
@@ -65,10 +65,10 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
       const SetBlockingContainersCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
-  void WmRequestClose(Id transport_window_id) override;
+  void WmRequestClose(ui::Id transport_window_id) override;
   void WmSetFrameDecorationValues(
       ui::mojom::FrameDecorationValuesPtr values) override;
-  void WmSetNonClientCursor(uint32_t window_id,
+  void WmSetNonClientCursor(ui::Id window_id,
                             ui::CursorData cursor_data) override;
   void WmLockCursor() override;
   void WmUnlockCursor() override;
@@ -82,7 +82,7 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
                                int64_t display_id) override;
   void WmSetCursorTouchVisible(bool enabled) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
-                                 Id transport_window_id) override;
+                                 ui::Id transport_window_id) override;
   void OnAcceleratorAck(
       uint32_t event_id,
       ui::mojom::EventResult result,

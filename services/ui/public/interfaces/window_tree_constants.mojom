@@ -10,13 +10,13 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 struct WindowData {
   // Unique identifier of the parent. If the client can not see the parent an
   // id of 0 is supplied.
-  uint32 parent_id;
+  uint64 parent_id;
 
   // Unique identifier of the window.
-  uint32 window_id;
+  uint64 window_id;
 
   // Id of the transient parent, 0 if there isn't one.
-  uint32 transient_parent_id;
+  uint64 transient_parent_id;
 
   gfx.mojom.Rect bounds;
 

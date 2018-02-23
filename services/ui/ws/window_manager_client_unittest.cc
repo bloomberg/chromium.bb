@@ -36,8 +36,7 @@ Id server_id(aura::Window* window) {
   return aura::WindowMus::Get(window)->server_id();
 }
 
-aura::Window* GetChildWindowByServerId(aura::WindowTreeClient* client,
-                                       aura::Id id) {
+aura::Window* GetChildWindowByServerId(aura::WindowTreeClient* client, Id id) {
   return aura::WindowTreeClientPrivate(client).GetWindowByServerId(id);
 }
 
@@ -331,8 +330,9 @@ TEST_F(WindowServerTest, Embed) {
   // WindowTreeHost::window() is the single root of the embed.
   EXPECT_EQ(1u, embed_result->window_tree_client->GetRoots().size());
   EXPECT_EQ(embed_root, GetFirstRoot(embed_result->window_tree_client.get()));
-  EXPECT_EQ(LoWord(server_id(window)), LoWord(server_id(embed_root)));
-  EXPECT_NE(0u, server_id(embed_root) >> 16);
+  EXPECT_EQ(ClientWindowIdFromTransportId(server_id(window)),
+            ClientWindowIdFromTransportId(server_id(embed_root)));
+  EXPECT_NE(0u, ClientIdFromTransportId(server_id(embed_root)));
   EXPECT_EQ(nullptr, embed_root->parent());
   EXPECT_TRUE(embed_root->children().empty());
 }
@@ -345,8 +345,9 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
   std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
   ASSERT_TRUE(embed_result->IsValid());
   aura::Window* embed_root = embed_result->window_tree_host->window();
-  EXPECT_EQ(LoWord(server_id(window)), LoWord(server_id(embed_root)));
-  EXPECT_NE(0u, server_id(embed_root) >> 16);
+  EXPECT_EQ(ClientWindowIdFromTransportId(server_id(window)),
+            ClientWindowIdFromTransportId(server_id(embed_root)));
+  EXPECT_NE(0u, ClientIdFromTransportId(server_id(embed_root)));
   EXPECT_EQ(nullptr, embed_root->parent());
   EXPECT_TRUE(embed_root->children().empty());
 }
@@ -453,9 +454,11 @@ TEST_F(WindowServerTest, Reorder) {
   // |embedded|'s WindowTree has an id_ of embedded_client_id, so window11's
   // client_id part should be embedded_client_id in the WindowTree for
   // window_manager(). Similar for window12.
-  ClientSpecificId embedded_client_id = test::kWindowManagerClientId + 1;
-  Id window11_in_wm = embedded_client_id << 16 | LoWord(server_id(window11));
-  Id window12_in_wm = embedded_client_id << 16 | LoWord(server_id(window12));
+  Id embedded_client_id = test::kWindowManagerClientId + 1;
+  Id window11_in_wm = embedded_client_id << 32 |
+                      ClientWindowIdFromTransportId(server_id(window11));
+  Id window12_in_wm = embedded_client_id << 32 |
+                      ClientWindowIdFromTransportId(server_id(window12));
 
   {
     window11->parent()->StackChildAtTop(window11);

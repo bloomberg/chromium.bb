@@ -157,7 +157,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // Contains data needed to identify a change from the server.
   struct ServerChangeData {
     // Applies to ADD, ADD_TRANSIENT, REMOVE, REMOVE_TRANSIENT, and REORDER.
-    Id child_id;
+    ui::Id child_id;
     // Applies to BOUNDS. This should be in dip.
     gfx::Rect bounds_in_dip;
     // Applies to VISIBLE.

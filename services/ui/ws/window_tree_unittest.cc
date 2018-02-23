@@ -110,7 +110,7 @@ class TestMoveLoopWindowManager : public TestWindowManager {
   ~TestMoveLoopWindowManager() override {}
 
   void WmPerformMoveLoop(uint32_t change_id,
-                         uint32_t window_id,
+                         Id window_id,
                          mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override {
     static_cast<mojom::WindowManagerClient*>(tree_)->WmResponse(

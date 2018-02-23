@@ -7,20 +7,14 @@
 
 #include <stdint.h>
 
+#include "services/ui/common/types.h"
+
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.
 
 namespace aura {
 
-// Used to identify windows and change ids.
-using Id = uint32_t;
-
-// Used to identify a client as well as a client-specific window id. For
-// example, the Id for a window consists of the ClientSpecificId of the client
-// and the ClientSpecificId of the window.
-using ClientSpecificId = uint16_t;
-
-constexpr Id kInvalidServerId = 0;
+constexpr ui::Id kInvalidServerId = 0;
 
 enum class WindowMusType {
   // The window is an embed root. That is, the client received this window by

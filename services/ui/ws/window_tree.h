@@ -603,7 +603,7 @@ class WindowTree : public mojom::WindowTree,
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
-  void WmSetNonClientCursor(uint32_t window_id, ui::CursorData cursor) override;
+  void WmSetNonClientCursor(Id window_id, ui::CursorData cursor) override;
   void WmLockCursor() override;
   void WmUnlockCursor() override;
   void WmSetCursorVisible(bool visible) override;
