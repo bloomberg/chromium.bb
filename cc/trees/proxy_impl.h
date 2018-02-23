@@ -64,8 +64,6 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   void RequestBeginMainFrameNotExpected(bool new_state) override;
 
-  NOINLINE void DumpForBeginMainFrameHang();
-
  private:
   // The members of this struct should be accessed on the impl thread only when
   // the main thread is blocked for a commit.
