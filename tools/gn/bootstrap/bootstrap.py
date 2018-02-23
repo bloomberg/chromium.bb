@@ -557,7 +557,6 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/threading/scoped_blocking_call.cc',
       'base/threading/sequence_local_storage_map.cc',
       'base/threading/sequenced_task_runner_handle.cc',
-      'base/threading/sequenced_worker_pool.cc',
       'base/threading/simple_thread.cc',
       'base/threading/thread.cc',
       'base/threading/thread_checker_impl.cc',
