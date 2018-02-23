@@ -102,7 +102,8 @@ struct GpuInfo {
   bool direct_composition;
   bool supports_overlays;
   bool can_support_threaded_texture_mailbox;
-  DxDiagNode? dx_diagnostics;
+  [EnableIf=is_win]
+  DxDiagNode dx_diagnostics;
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;
