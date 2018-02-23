@@ -23,7 +23,7 @@ class ChromeBrowserState;
 @protocol BrowserCommands;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
-@protocol IncognitoViewControllerDelegate;
+@protocol NewTabPageControllerDelegate;
 @protocol NewTabPagePanelProtocol;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
@@ -64,7 +64,7 @@ class ChromeBrowserState;
                   loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
             browserState:(ios::ChromeBrowserState*)browserState
-         toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate
+         toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
@@ -29,11 +30,13 @@
 @interface PrimaryToolbarViewController ()
 // Redefined to be a PrimaryToolbarView.
 @property(nonatomic, strong) PrimaryToolbarView* view;
+@property(nonatomic, assign) BOOL isNTP;
 @end
 
 @implementation PrimaryToolbarViewController
 
 @synthesize delegate = _delegate;
+@synthesize isNTP = _isNTP;
 @dynamic view;
 
 #pragma mark - Public
@@ -68,6 +71,15 @@
   self.view.locationBarContainer.hidden = NO;
 }
 
+#pragma mark - NewTabPageControllerDelegate
+
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  [super setScrollProgressForTabletOmnibox:progress];
+  DCHECK(IsIPadIdiom());
+  self.view.locationBarBottomConstraint.constant =
+      -kLocationBarVerticalMargin * progress;
+  self.view.locationBarContainer.alpha = progress;
+}
 #pragma mark - UIViewController
 
 - (void)loadView {
@@ -111,6 +123,17 @@
 
 - (void)setLocationBarView:(UIView*)locationBarView {
   self.view.locationBarView = locationBarView;
+}
+
+- (void)setIsNTP:(BOOL)isNTP {
+  if (isNTP == _isNTP)
+    return;
+  _isNTP = isNTP;
+  if (!isNTP && self.view.cr_widthSizeClass == REGULAR &&
+      self.view.cr_heightSizeClass == REGULAR) {
+    // Reset any location bar view updates when not an NTP.
+    [self setScrollProgressForTabletOmnibox:1];
+  }
 }
 
 #pragma mark - ActivityServicePositioner

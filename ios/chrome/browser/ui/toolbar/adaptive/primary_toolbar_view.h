@@ -53,6 +53,10 @@
 @property(nonatomic, strong, readonly)
     NSMutableArray<NSLayoutConstraint*>* unfocusedConstraints;
 
+// Constraint for the bottom of the location bar.
+@property(nonatomic, strong, readwrite)
+    NSLayoutConstraint* locationBarBottomConstraint;
+
 // Sets all the subviews and constraints of the view. The |topSafeAnchor| needs
 // to be set before calling this.
 - (void)setUp;

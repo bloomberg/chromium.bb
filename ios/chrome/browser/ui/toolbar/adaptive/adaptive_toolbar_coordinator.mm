@@ -90,6 +90,10 @@
   // TODO(crbug.com/803379): Implement that.
 }
 
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  [self.viewController setScrollProgressForTabletOmnibox:progress];
+}
+
 #pragma mark - ToolbarCommands
 
 - (void)triggerToolsMenuButtonAnimation {

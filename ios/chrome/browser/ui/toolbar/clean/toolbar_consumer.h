@@ -25,6 +25,8 @@
 - (void)setVoiceSearchEnabled:(BOOL)enabled;
 // Sets whether the share menu is enabled.
 - (void)setShareMenuEnabled:(BOOL)enabled;
+// Sets whether the toolbar is displaying for an NTP.
+- (void)setIsNTP:(BOOL)isNTP;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_

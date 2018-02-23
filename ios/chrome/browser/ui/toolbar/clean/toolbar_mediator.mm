@@ -8,6 +8,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -239,6 +240,7 @@
   [self.consumer setLoadingState:self.webState->IsLoading()];
   [self updateBookmarksForWebState:self.webState];
   [self updateShareMenuForWebState:self.webState];
+  [self.consumer setIsNTP:self.webState->GetVisibleURL() == kChromeUINewTabURL];
 }
 
 // Updates the consumer with the new forward and back states.

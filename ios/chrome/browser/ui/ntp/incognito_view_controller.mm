@@ -9,7 +9,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
-#import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 
@@ -25,7 +25,7 @@ const CGFloat kDistanceToFadeToolbar = 50.0;
 // The scrollview containing the actual views.
 @property(nonatomic, strong) IncognitoView* incognitoView;
 
-@property(nonatomic, weak) id<IncognitoViewControllerDelegate> toolbarDelegate;
+@property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 @property(nonatomic, weak) id<UrlLoader> loader;
 @end
 
@@ -39,7 +39,7 @@ const CGFloat kDistanceToFadeToolbar = 50.0;
 @synthesize delegate = _delegate;
 
 - (id)initWithLoader:(id<UrlLoader>)loader
-     toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate {
+     toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate {
   self = [super init];
   if (self) {
     _loader = loader;
