@@ -20,6 +20,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -156,6 +157,19 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage() const {
 }
 
 void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
+  // TODO(afakhry): Unify all platform-specific logic from callers to this
+  // function here. https://crbug.com/815031.
+  const Profile* profile = browser_view()->browser()->profile();
+  const bool is_incognito =
+      profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+
+  // In the touch-optimized UI, we don't show the incognito icon in the browser
+  // frame. It's instead shown in the new tab button. However, we still show an
+  // avatar icon for the teleported browser windows between multi-user sessions
+  // (Chrome OS only). Note that you can't teleport an incognito window.
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() && is_incognito)
+    return;
+
   if (!profile_indicator_icon_) {
     profile_indicator_icon_ = new ProfileIndicatorIcon();
     profile_indicator_icon_->set_id(VIEW_ID_PROFILE_INDICATOR_ICON);
@@ -166,8 +180,7 @@ void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
   }
 
   gfx::Image icon;
-  const Profile* profile = browser_view()->browser()->profile();
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
+  if (is_incognito) {
     icon = gfx::Image(GetIncognitoAvatarIcon());
   } else {
 #if defined(OS_CHROMEOS)

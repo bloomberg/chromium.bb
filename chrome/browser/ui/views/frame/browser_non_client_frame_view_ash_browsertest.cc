@@ -320,10 +320,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                            profiles::kAvatarIconHeight / 2);
   // The increased header height in the touch-optimized UI affects the expected
   // result.
-  // TODO(afakhry): Once the height of the tab is increased to match the
-  // touch-optimized UI, change this hit test to hit the client area.
   int expected_value = GetParam() ? HTCAPTION : HTCLIENT;
   EXPECT_EQ(expected_value, frame_view->NonClientHitTest(avatar_center));
+  EXPECT_FALSE(frame_view->profile_indicator_icon());
 
   const AccountId current_user =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
@@ -337,6 +336,24 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Clicking on the avatar icon should have same behaviour like clicking on
   // the caption area, i.e., allow the user to drag the browser window around.
   EXPECT_EQ(HTCAPTION, frame_view->NonClientHitTest(avatar_center));
+  EXPECT_TRUE(frame_view->profile_indicator_icon());
+}
+
+// Tests that for an incognito browser, there is an avatar icon view, unless in
+// touch-optimized mode.
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, IncognitoAvatar) {
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(incognito_browser);
+  Widget* widget = browser_view->GetWidget();
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+
+  const bool should_have_avatar = !GetParam();
+  const bool has_avatar = !!frame_view->profile_indicator_icon();
+  EXPECT_EQ(should_have_avatar, has_avatar);
 }
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to
