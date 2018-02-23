@@ -537,6 +537,12 @@ specialize qw/av1_highbd_convolve_2d_scale sse4_1/;
 if (aom_config("CONFIG_JNT_COMP") eq "yes") {
   add_proto qw/void av1_highbd_jnt_convolve_2d/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
   specialize qw/av1_highbd_jnt_convolve_2d sse4_1/;
+
+  add_proto qw/void av1_highbd_jnt_convolve_x/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
+  
+  add_proto qw/void av1_highbd_jnt_convolve_y/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
+
+  add_proto qw/void av1_highbd_jnt_convolve_2d_copy/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params, int bd";
 }
 
 # INTRA_EDGE functions

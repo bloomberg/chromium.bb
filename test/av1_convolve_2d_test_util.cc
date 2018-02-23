@@ -577,6 +577,8 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
     highbd_convolve_2d_func test_impl) {
   const int w = kMaxSize, h = kMaxSize;
   const int bd = GET_PARAM(0);
+  const int has_subx = GET_PARAM(2);
+  const int has_suby = GET_PARAM(3);
   int hfilter, vfilter, subx, suby;
   uint16_t input[kMaxSize * kMaxSize];
   DECLARE_ALIGNED(32, CONV_BUF_TYPE, output[MAX_SB_SQUARE]);
@@ -608,8 +610,10 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
           conv_params1.use_jnt_comp_avg = 0;
           conv_params2.use_jnt_comp_avg = 0;
 
-          for (subx = 0; subx < 16; ++subx) {
-            for (suby = 0; suby < 16; ++suby) {
+          const int subx_range = has_subx ? 16 : 1;
+          const int suby_range = has_suby ? 16 : 1;
+          for (subx = 0; subx < subx_range; ++subx) {
+            for (suby = 0; suby < suby_range; ++suby) {
               // Choose random locations within the source block
               const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
               const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
@@ -644,8 +648,10 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
               conv_params2.fwd_offset = quant_dist_lookup_table[k][l][0];
               conv_params2.bck_offset = quant_dist_lookup_table[k][l][1];
 
-              for (subx = 0; subx < 16; ++subx) {
-                for (suby = 0; suby < 16; ++suby) {
+              const int subx_range = has_subx ? 16 : 1;
+              const int suby_range = has_suby ? 16 : 1;
+              for (subx = 0; subx < subx_range; ++subx) {
+                for (suby = 0; suby < suby_range; ++suby) {
                   // Choose random locations within the source block
                   const int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
                   const int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);

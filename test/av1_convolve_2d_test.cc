@@ -178,6 +178,18 @@ TEST_P(AV1HighbdJntConvolve2DTest, CheckOutput) {
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdJntConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_jnt_convolve_2d_sse4_1, 1, 1, 1));
+
+INSTANTIATE_TEST_CASE_P(C_X, AV1HighbdJntConvolve2DTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_jnt_convolve_x_c, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(C_Y, AV1HighbdJntConvolve2DTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_jnt_convolve_y_c, 0, 1, 1));
+
+INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdJntConvolve2DTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_jnt_convolve_2d_copy_c, 0, 0, 1));
 #endif  // CONFIG_JNT_COMP
 #endif
 
