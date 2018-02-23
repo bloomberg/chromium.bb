@@ -61,7 +61,7 @@ class PLATFORM_EXPORT TimeDomain {
 
  protected:
   friend class internal::TaskQueueImpl;
-  friend class TaskQueueManager;
+  friend class TaskQueueManagerImpl;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -88,7 +88,7 @@ class PLATFORM_EXPORT TimeDomain {
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(
-      TaskQueueManager* task_queue_manager) = 0;
+      TaskQueueManagerImpl* task_queue_manager) = 0;
 
   // The implementation will schedule task processing to run at time |run_time|
   // within the TimeDomain's time line. Only called from the main thread.

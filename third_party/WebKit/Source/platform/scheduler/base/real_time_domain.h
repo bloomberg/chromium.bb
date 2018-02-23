@@ -27,14 +27,14 @@ class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
 
  protected:
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManager* task_queue_manager) override;
+      TaskQueueManagerImpl* task_queue_manager) override;
   void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
   void CancelWakeUpAt(base::TimeTicks run_time) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
 
  private:
-  TaskQueueManager* task_queue_manager_;  // NOT OWNED
+  TaskQueueManagerImpl* task_queue_manager_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };

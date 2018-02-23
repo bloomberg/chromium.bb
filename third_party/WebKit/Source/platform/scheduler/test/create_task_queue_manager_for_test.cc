@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 
-#include "platform/scheduler/base/task_queue_manager.h"
+#include "platform/scheduler/base/task_queue_manager_impl.h"
 #include "platform/scheduler/base/thread_controller_impl.h"
 
 namespace blink {
@@ -12,13 +12,13 @@ namespace scheduler {
 
 namespace {
 
-class TaskQueueManagerForTest : public TaskQueueManager {
+class TaskQueueManagerForTest : public TaskQueueManagerImpl {
  public:
   explicit TaskQueueManagerForTest(
       std::unique_ptr<internal::ThreadController> thread_controller)
-      : TaskQueueManager(std::move(thread_controller)) {}
+      : TaskQueueManagerImpl(std::move(thread_controller)) {}
 
-  using TaskQueueManager::SetRandomSeed;
+  using TaskQueueManagerImpl::SetRandomSeed;
 };
 
 class ThreadControllerForTest : public internal::ThreadControllerImpl {

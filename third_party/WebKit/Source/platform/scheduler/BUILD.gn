@@ -22,8 +22,9 @@ blink_platform_sources("scheduler") {
     "base/task_queue.h",
     "base/task_queue_impl.cc",
     "base/task_queue_impl.h",
-    "base/task_queue_manager.cc",
     "base/task_queue_manager.h",
+    "base/task_queue_manager_impl.cc",
+    "base/task_queue_manager_impl.h",
     "base/task_queue_selector.cc",
     "base/task_queue_selector.h",
     "base/task_time_observer.h",
@@ -179,7 +180,7 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "base/intrusive_heap_unittest.cc",
-    "base/task_queue_manager_unittest.cc",
+    "base/task_queue_manager_impl_unittest.cc",
     "base/task_queue_selector_unittest.cc",
     "base/test_count_uses_time_source.cc",
     "base/test_count_uses_time_source.h",

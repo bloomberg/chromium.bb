@@ -29,7 +29,7 @@ namespace blink {
 namespace scheduler {
 class LazyNow;
 class TimeDomain;
-class TaskQueueManager;
+class TaskQueueManagerImpl;
 
 namespace internal {
 class WorkQueue;
@@ -63,7 +63,7 @@ class WorkQueueSets;
 // tasks (normally the most common type) don't starve out immediate work.
 class PLATFORM_EXPORT TaskQueueImpl {
  public:
-  TaskQueueImpl(TaskQueueManager* task_queue_manager,
+  TaskQueueImpl(TaskQueueManagerImpl* task_queue_manager,
                 TimeDomain* time_domain,
                 const TaskQueue::Spec& spec);
 
@@ -283,7 +283,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
                        base::Optional<base::TimeDelta> thread_time);
   bool RequiresTaskTiming() const;
 
-  base::WeakPtr<TaskQueueManager> GetTaskQueueManagerWeakPtr();
+  base::WeakPtr<TaskQueueManagerImpl> GetTaskQueueManagerWeakPtr();
 
   scoped_refptr<GracefulQueueShutdownHelper> GetGracefulQueueShutdownHelper();
 
@@ -300,28 +300,30 @@ class PLATFORM_EXPORT TaskQueueImpl {
   friend class WorkQueueTest;
 
   struct AnyThread {
-    AnyThread(TaskQueueManager* task_queue_manager, TimeDomain* time_domain);
+    AnyThread(TaskQueueManagerImpl* task_queue_manager,
+              TimeDomain* time_domain);
     ~AnyThread();
 
-    // TaskQueueManager, TimeDomain and Observer are maintained in two copies:
-    // inside AnyThread and inside MainThreadOnly. They can be changed only from
-    // main thread, so it should be locked before accessing from other threads.
-    TaskQueueManager* task_queue_manager;
+    // TaskQueueManagerImpl, TimeDomain and Observer are maintained in two
+    // copies: inside AnyThread and inside MainThreadOnly. They can be changed
+    // only from main thread, so it should be locked before accessing from other
+    // threads.
+    TaskQueueManagerImpl* task_queue_manager;
     TimeDomain* time_domain;
     // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;
   };
 
   struct MainThreadOnly {
-    MainThreadOnly(TaskQueueManager* task_queue_manager,
+    MainThreadOnly(TaskQueueManagerImpl* task_queue_manager,
                    TaskQueueImpl* task_queue,
                    TimeDomain* time_domain);
     ~MainThreadOnly();
 
-    // Another copy of TaskQueueManager, TimeDomain and Observer
+    // Another copy of TaskQueueManagerImpl, TimeDomain and Observer
     // for lock-free access from the main thread.
     // See description inside struct AnyThread for details.
-    TaskQueueManager* task_queue_manager;
+    TaskQueueManagerImpl* task_queue_manager;
     TimeDomain* time_domain;
     // Callback corresponding to TaskQueue::Observer::OnQueueNextChanged.
     OnNextWakeUpChangedCallback on_next_wake_up_changed_callback;

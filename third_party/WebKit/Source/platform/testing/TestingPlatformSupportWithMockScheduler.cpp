@@ -112,7 +112,7 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
     // task, but don't pass |deadline|.
     if (!task_queue_manager->HasImmediateWorkForTesting()) {
       base::TimeTicks next_delayed_task;
-      if (!task_queue_manager->real_time_domain()->NextScheduledRunTime(
+      if (!task_queue_manager->GetRealTimeDomain()->NextScheduledRunTime(
               &next_delayed_task) ||
           next_delayed_task > deadline) {
         break;

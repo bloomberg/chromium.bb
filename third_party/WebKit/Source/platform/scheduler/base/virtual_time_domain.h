@@ -31,7 +31,7 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
 
  protected:
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManager* task_queue_manager) override;
+      TaskQueueManagerImpl* task_queue_manager) override;
   void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
   void CancelWakeUpAt(base::TimeTicks run_time) override;
   void AsValueIntoInternal(
@@ -43,7 +43,7 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
   mutable base::Lock lock_;  // Protects |now_ticks_|
   base::TimeTicks now_ticks_;
 
-  TaskQueueManager* task_queue_manager_;  // NOT OWNED
+  TaskQueueManagerImpl* task_queue_manager_;  // NOT OWNED
   base::Closure do_work_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualTimeDomain);
