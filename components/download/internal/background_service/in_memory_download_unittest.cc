@@ -8,10 +8,12 @@
 #include "base/guid.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
+#include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +32,14 @@ void DrainPreviousTasks(
                                 run_loop.QuitClosure());
 
   run_loop.Run();
+}
+
+// Dummy callback used for IO_PENDING state in blob operations, this is not
+// called when the blob operation is done, but called when chained with other
+// IO operations that might return IO_PENDING.
+template <typename T>
+void SetValue(T* address, T value) {
+  *address = value;
 }
 
 class MockDelegate : public InMemoryDownload::Delegate {
@@ -108,18 +118,60 @@ class InMemoryDownloadTest : public testing::Test {
     return request_context_getter_;
   }
 
+  // Verifies if data read from |blob| is identical as |expected|.
+  void VerifyBlobData(const std::string& expected,
+                      storage::BlobDataHandle* blob) {
+    base::RunLoop run_loop;
+    // BlobReader needs to work on IO thread of BlobStorageContext.
+    io_thread_->task_runner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&InMemoryDownloadTest::VerifyBlobDataOnIO,
+                       base::Unretained(this), expected, blob),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
  private:
+  void VerifyBlobDataOnIO(const std::string& expected,
+                          storage::BlobDataHandle* blob) {
+    DCHECK(blob);
+    int bytes_read = 0;
+    int async_bytes_read = 0;
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(expected.size()));
+
+    auto blob_reader = blob->CreateReader();
+
+    int blob_size = 0;
+    blob_reader->CalculateSize(base::BindRepeating(&SetValue<int>, &blob_size));
+    EXPECT_EQ(blob_size, 0) << "In memory blob read data synchronously.";
+    EXPECT_FALSE(blob->IsBeingBuilt())
+        << "InMemoryDownload ensures blob construction completed.";
+    storage::BlobReader::Status status = blob_reader->Read(
+        buffer.get(), expected.size(), &bytes_read,
+        base::BindRepeating(&SetValue<int>, &async_bytes_read));
+    EXPECT_EQ(storage::BlobReader::Status::DONE, status);
+    EXPECT_EQ(bytes_read, static_cast<int>(expected.size()));
+    EXPECT_EQ(async_bytes_read, 0);
+    for (size_t i = 0; i < expected.size(); i++) {
+      EXPECT_EQ(expected[i], buffer->data()[i]);
+    }
+  }
+
   // IO thread used by network and blob IO tasks.
   std::unique_ptr<base::Thread> io_thread_;
 
-  // Message loop for the main thread.
-  base::MessageLoop main_loop;
+  // Created before other objects to provide test environment.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<InMemoryDownloadImpl> download_;
   MockDelegate mock_delegate_;
 
+  // Used by URLFetcher network backend.
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+
+  // Memory backed blob storage that can never page to disk.
   std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
+
   net::EmbeddedTestServer test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryDownloadTest);
@@ -132,11 +184,13 @@ TEST_F(InMemoryDownloadTest, DownloadTest) {
   download()->Start();
   delegate()->WaitForCompletion();
 
-  base::FilePath path = GetTestDataDirectory().AppendASCII("text_data.json");
-  std::string data;
-  EXPECT_TRUE(ReadFileToString(path, &data));
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
-  // TODO(xingliu): Read the blob and verify data.
+  auto blob = download()->ResultAsBlob();
+
+  std::string expected;
+  EXPECT_TRUE(ReadFileToString(
+      GetTestDataDirectory().AppendASCII("text_data.json"), &expected));
+  VerifyBlobData(expected, blob.get());
 }
 
 TEST_F(InMemoryDownloadTest, PauseResume) {
@@ -155,9 +209,13 @@ TEST_F(InMemoryDownloadTest, PauseResume) {
   download()->Resume();
   delegate()->WaitForCompletion();
 
-  base::FilePath path = GetTestDataDirectory().AppendASCII("text_data.json");
   EXPECT_EQ(InMemoryDownload::State::COMPLETE, download()->state());
-  // TODO(xingliu): Read the blob and verify data.
+  auto blob = download()->ResultAsBlob();
+
+  std::string expected;
+  EXPECT_TRUE(ReadFileToString(
+      GetTestDataDirectory().AppendASCII("text_data.json"), &expected));
+  VerifyBlobData(expected, blob.get());
 }
 
 }  // namespace
