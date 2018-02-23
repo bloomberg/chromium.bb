@@ -16,11 +16,11 @@ namespace {
 
 void RunCallbackIfNotCanceled(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const IconManager::IconRequestCallback& callback,
+    IconManager::IconRequestCallback callback,
     gfx::Image* image) {
   if (is_canceled.Run())
     return;
-  callback.Run(image);
+  std::move(callback).Run(image);
 }
 
 }  // namespace
@@ -47,18 +47,18 @@ gfx::Image* IconManager::LookupIconFromFilepath(const base::FilePath& file_path,
 base::CancelableTaskTracker::TaskId IconManager::LoadIcon(
     const base::FilePath& file_path,
     IconLoader::IconSize size,
-    const IconRequestCallback& callback,
+    IconRequestCallback callback,
     base::CancelableTaskTracker* tracker) {
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
   base::CancelableTaskTracker::TaskId id =
       tracker->NewTrackedTaskId(&is_canceled);
-  IconRequestCallback callback_runner = base::Bind(
-      &RunCallbackIfNotCanceled, is_canceled, callback);
+  IconRequestCallback callback_runner = base::BindOnce(
+      &RunCallbackIfNotCanceled, is_canceled, std::move(callback));
 
   IconLoader* loader = IconLoader::Create(
       file_path, size,
-      base::Bind(&IconManager::OnIconLoaded, weak_factory_.GetWeakPtr(),
-                 callback_runner, file_path, size));
+      base::BindOnce(&IconManager::OnIconLoaded, weak_factory_.GetWeakPtr(),
+                     std::move(callback_runner), file_path, size));
   loader->Start();
 
   return id;
@@ -74,10 +74,10 @@ void IconManager::OnIconLoaded(IconRequestCallback callback,
   // null.
   CacheKey key(group, size);
   if (result) {
-    callback.Run(result.get());
+    std::move(callback).Run(result.get());
     icon_cache_[key] = std::move(result);
   } else {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     icon_cache_.erase(key);
   }
 

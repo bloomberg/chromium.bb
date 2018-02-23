@@ -44,7 +44,7 @@ class IconLoader {
   // - The icon that was loaded, or null if there was a failure to load it.
   // - The determined group from the original requested path.
   using IconLoadedCallback =
-      base::Callback<void(std::unique_ptr<gfx::Image>, const IconGroup&)>;
+      base::OnceCallback<void(std::unique_ptr<gfx::Image>, const IconGroup&)>;
 
   // Creates an IconLoader, which owns itself. If the IconLoader might outlive
   // the caller, be sure to use a weak pointer in the |callback|.

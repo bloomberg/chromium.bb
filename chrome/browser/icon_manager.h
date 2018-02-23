@@ -68,7 +68,7 @@ class IconManager {
   gfx::Image* LookupIconFromFilepath(const base::FilePath& file_path,
                                      IconLoader::IconSize size);
 
-  using IconRequestCallback = base::Callback<void(gfx::Image*)>;
+  using IconRequestCallback = base::OnceCallback<void(gfx::Image*)>;
 
   // Asynchronous call to lookup and return the icon associated with file. The
   // work is done on the file thread, with the callbacks running on the thread
@@ -83,7 +83,7 @@ class IconManager {
   base::CancelableTaskTracker::TaskId LoadIcon(
       const base::FilePath& file_name,
       IconLoader::IconSize size,
-      const IconRequestCallback& callback,
+      IconRequestCallback callback,
       base::CancelableTaskTracker* tracker);
 
  private:
