@@ -239,37 +239,37 @@ class OptionalBase {
   ~OptionalBase() = default;
 
   OptionalBase& operator=(const OptionalBase& other) {
-    if (!other.storage_.is_populated_) {
-      FreeIfNeeded();
-      return *this;
-    }
-
-    InitOrAssign(other.storage_.value_);
+    CopyAssign(other);
     return *this;
   }
 
   OptionalBase& operator=(OptionalBase&& other) {
-    if (!other.storage_.is_populated_) {
-      FreeIfNeeded();
-      return *this;
-    }
-
-    InitOrAssign(std::move(other.storage_.value_));
+    MoveAssign(std::move(other));
     return *this;
   }
 
-  void InitOrAssign(const T& value) {
-    if (!storage_.is_populated_)
-      storage_.Init(value);
+  template <typename U>
+  void CopyAssign(const OptionalBase<U>& other) {
+    if (other.storage_.is_populated_)
+      InitOrAssign(other.storage_.value_);
     else
-      storage_.value_ = value;
+      FreeIfNeeded();
   }
 
-  void InitOrAssign(T&& value) {
-    if (!storage_.is_populated_)
-      storage_.Init(std::move(value));
+  template <typename U>
+  void MoveAssign(OptionalBase<U>&& other) {
+    if (other.storage_.is_populated_)
+      InitOrAssign(std::move(other.storage_.value_));
     else
-      storage_.value_ = std::move(value);
+      FreeIfNeeded();
+  }
+
+  template <typename U>
+  void InitOrAssign(U&& value) {
+    if (storage_.is_populated_)
+      storage_.value_ = std::forward<U>(value);
+    else
+      storage_.Init(std::forward<U>(value));
   }
 
   void FreeIfNeeded() {
@@ -339,7 +339,7 @@ struct MoveAssignable<false> {
   MoveAssignable& operator=(MoveAssignable&&) = delete;
 };
 
-// Helper to conditionally enable converting constructors.
+// Helper to conditionally enable converting constructors and assign operators.
 template <typename T, typename U>
 struct IsConvertibleFromOptional
     : std::integral_constant<
@@ -352,6 +352,16 @@ struct IsConvertibleFromOptional
               std::is_convertible<const Optional<U>&, T>::value ||
               std::is_convertible<Optional<U>&&, T>::value ||
               std::is_convertible<const Optional<U>&&, T>::value> {};
+
+template <typename T, typename U>
+struct IsAssignableFromOptional
+    : std::integral_constant<
+          bool,
+          IsConvertibleFromOptional<T, U>::value ||
+              std::is_assignable<T&, Optional<U>&>::value ||
+              std::is_assignable<T&, const Optional<U>&>::value ||
+              std::is_assignable<T&, Optional<U>&&>::value ||
+              std::is_assignable<T&, const Optional<U>&&>::value> {};
 
 // Forward compatibility for C++20.
 template <typename T>
@@ -486,11 +496,39 @@ class Optional
     return *this;
   }
 
-  template <class U>
-  typename std::enable_if<std::is_same<std::decay_t<U>, T>::value,
-                          Optional&>::type
+  // Perfect-forwarded assignment.
+  template <typename U>
+  std::enable_if_t<
+      !std::is_same<internal::RemoveCvRefT<U>, Optional<T>>::value &&
+          std::is_constructible<T, U>::value &&
+          std::is_assignable<T&, U>::value &&
+          (!std::is_scalar<T>::value ||
+           !std::is_same<std::decay_t<U>, T>::value),
+      Optional&>
   operator=(U&& value) {
     InitOrAssign(std::forward<U>(value));
+    return *this;
+  }
+
+  // Copy assign the state of other.
+  template <typename U>
+  std::enable_if_t<!internal::IsAssignableFromOptional<T, U>::value &&
+                       std::is_constructible<T, const U&>::value &&
+                       std::is_assignable<T&, const U&>::value,
+                   Optional&>
+  operator=(const Optional<U>& other) {
+    CopyAssign(other);
+    return *this;
+  }
+
+  // Move assign the state of other.
+  template <typename U>
+  std::enable_if_t<!internal::IsAssignableFromOptional<T, U>::value &&
+                       std::is_constructible<T, U>::value &&
+                       std::is_assignable<T&, U>::value,
+                   Optional&>
+  operator=(Optional<U>&& other) {
+    MoveAssign(std::move(other));
     return *this;
   }
 
@@ -605,8 +643,10 @@ class Optional
  private:
   // Accessing template base class's protected member needs explicit
   // declaration to do so.
+  using internal::OptionalBase<T>::CopyAssign;
   using internal::OptionalBase<T>::FreeIfNeeded;
   using internal::OptionalBase<T>::InitOrAssign;
+  using internal::OptionalBase<T>::MoveAssign;
   using internal::OptionalBase<T>::storage_;
 };
 
