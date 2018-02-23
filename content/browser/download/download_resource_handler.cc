@@ -13,11 +13,11 @@
 #include "base/strings/stringprintf.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_controller.h"
@@ -78,7 +78,8 @@ static void StartOnUIThread(
                      download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 
     if (stream)
-      GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+      download::GetDownloadTaskRunner()->DeleteSoon(FROM_HERE,
+                                                    stream.release());
     return;
   }
 

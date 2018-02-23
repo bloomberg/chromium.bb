@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "components/download/public/common/download_item.h"
-#include "content/browser/download/download_task_runner.h"
+#include "components/download/public/common/download_task_runner.h"
 
 namespace content {
 
@@ -16,14 +16,14 @@ namespace content {
 //               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
     : file_(download::DownloadItem::kInvalidId), info_(info) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   DCHECK(info);
   DCHECK(info->path.empty());
 }
 
 SaveFile::~SaveFile() {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 }
 
 download::DownloadInterruptReason SaveFile::Initialize() {

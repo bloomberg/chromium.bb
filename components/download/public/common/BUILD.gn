@@ -25,6 +25,7 @@ component("public") {
     "download_save_info.cc",
     "download_save_info.h",
     "download_source.h",
+    "download_task_runner.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "rate_estimator.h",

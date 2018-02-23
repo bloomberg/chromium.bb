@@ -4,14 +4,14 @@
 
 #include "content/public/browser/download_manager.h"
 
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
-#include "content/browser/download/download_task_runner.h"
 
 namespace content {
 
 // static
 scoped_refptr<base::SequencedTaskRunner> DownloadManager::GetTaskRunner() {
-  return GetDownloadTaskRunner();
+  return download::GetDownloadTaskRunner();
 }
 
 DownloadManager::InputStream::InputStream(

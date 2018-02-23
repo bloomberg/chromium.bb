@@ -10,11 +10,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -129,11 +129,11 @@ DownloadFileWithError::DownloadFileWithError(
   // DownloadFile to be destroyed and creates another one (as happens during
   // download resumption), then the DestructionCallback for the old DownloadFile
   // is run before the ConstructionCallback for the next DownloadFile.
-  GetDownloadTaskRunner()->PostTask(FROM_HERE, ctor_callback);
+  download::GetDownloadTaskRunner()->PostTask(FROM_HERE, ctor_callback);
 }
 
 DownloadFileWithError::~DownloadFileWithError() {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   destruction_callback_.Run();
 }
 

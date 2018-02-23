@@ -25,13 +25,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/filename_generation/filename_generation.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
@@ -645,7 +645,7 @@ void SavePackage::Stop(bool cancel_download_item) {
   for (const auto& it : saved_failed_items_)
     save_item_ids.push_back(it.first);
 
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SaveFileManager::RemoveSavedFileFromFileMap,
                                 file_manager_, save_item_ids));
 
@@ -673,7 +673,7 @@ void SavePackage::CheckFinish() {
   for (const auto& it : saved_success_items_)
     final_names.insert(std::make_pair(it.first, it.second->full_path()));
 
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveFileManager::RenameAllFiles, file_manager_,
                      final_names, dir,
@@ -710,7 +710,7 @@ void SavePackage::Finish() {
     list_of_failed_save_item_ids.push_back(save_item->id());
   }
 
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SaveFileManager::RemoveSavedFileFromFileMap,
                                 file_manager_, list_of_failed_save_item_ids));
 
@@ -776,7 +776,7 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
 void SavePackage::SaveCanceled(const SaveItem* save_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_manager_->RemoveSaveFile(save_item->id(), this);
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SaveFileManager::CancelSave, file_manager_,
                                 save_item->id()));
 }
@@ -938,7 +938,7 @@ void SavePackage::GetSerializedHtmlWithLocalLinks() {
       number_of_frames_pending_response_++;
     } else {
       // Notify SaveFileManager about the failure to save this SaveItem.
-      GetDownloadTaskRunner()->PostTask(
+      download::GetDownloadTaskRunner()->PostTask(
           FROM_HERE,
           base::BindOnce(&SaveFileManager::SaveFinished, file_manager_,
                          save_item->id(), id(), false));
@@ -1052,7 +1052,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     memcpy(new_data->data(), data.data(), data.size());
 
     // Call write file functionality in download sequence.
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&SaveFileManager::UpdateSaveProgress, file_manager_,
                        save_item->id(), base::RetainedRef(new_data),
@@ -1063,7 +1063,7 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
   if (end_of_data) {
     DVLOG(20) << __func__ << "() save_item_id = " << save_item->id()
               << " url = \"" << save_item->url().spec() << "\"";
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SaveFileManager::SaveFinished, file_manager_,
                                   save_item->id(), id(), true));
     number_of_frames_pending_response_--;
@@ -1259,7 +1259,7 @@ void SavePackage::GetSaveInfo() {
   std::string mime_type = web_contents()->GetContentsMimeType();
   bool can_save_as_complete = CanSaveAsComplete(mime_type);
   base::PostTaskAndReplyWithResult(
-      GetDownloadTaskRunner().get(), FROM_HERE,
+      download::GetDownloadTaskRunner().get(), FROM_HERE,
       base::Bind(&SavePackage::CreateDirectoryOnFileThread, title_, page_url_,
                  can_save_as_complete, mime_type, website_save_dir,
                  download_save_dir, skip_dir_check),
@@ -1276,7 +1276,7 @@ base::FilePath SavePackage::CreateDirectoryOnFileThread(
     const base::FilePath& website_save_dir,
     const base::FilePath& download_save_dir,
     bool skip_dir_check) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   base::FilePath suggested_filename = filename_generation::GenerateFilename(
       title, page_url, can_save_as_complete, mime_type);

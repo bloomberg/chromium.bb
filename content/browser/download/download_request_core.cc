@@ -19,12 +19,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -272,8 +272,9 @@ bool DownloadRequestCore::OnResponseStarted(
 
   // Create the ByteStream for sending data to the download sink.
   std::unique_ptr<ByteStreamReader> stream_reader;
-  CreateByteStream(base::ThreadTaskRunnerHandle::Get(), GetDownloadTaskRunner(),
-                   kDownloadByteStreamSize, &stream_writer_, &stream_reader);
+  CreateByteStream(base::ThreadTaskRunnerHandle::Get(),
+                   download::GetDownloadTaskRunner(), kDownloadByteStreamSize,
+                   &stream_writer_, &stream_reader);
   stream_writer_->RegisterCallback(
       base::Bind(&DownloadRequestCore::ResumeRequest, AsWeakPtr()));
 

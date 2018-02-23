@@ -724,8 +724,6 @@ jumbo_source_set("browser") {
     "download/download_response_handler.h",
     "download/download_stats.cc",
     "download/download_stats.h",
-    "download/download_task_runner.cc",
-    "download/download_task_runner.h",
     "download/download_ukm_helper.cc",
     "download/download_ukm_helper.h",
     "download/download_utils.cc",
