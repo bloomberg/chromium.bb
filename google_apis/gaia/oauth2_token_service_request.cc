@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 
@@ -38,7 +38,7 @@ OAuth2TokenServiceRequest::TokenServiceProvider::~TokenServiceProvider() {
 //
 // 5. Core is destroyed on owner thread.
 class OAuth2TokenServiceRequest::Core
-    : public base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core> {
+    : public base::RefCountedDeleteOnSequence<OAuth2TokenServiceRequest::Core> {
  public:
   // Note the thread where an instance of Core is constructed is referred to as
   // the "owner thread" here.
@@ -67,16 +67,18 @@ class OAuth2TokenServiceRequest::Core
   // Called on the token service thread.
   virtual void StopOnTokenServiceThread() = 0;
 
-  base::SingleThreadTaskRunner* token_service_task_runner();
+  const base::SingleThreadTaskRunner* token_service_task_runner() const {
+    return token_service_task_runner_.get();
+  }
   OAuth2TokenService* token_service();
   OAuth2TokenServiceRequest* owner();
 
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  friend class base::RefCountedThreadSafe<OAuth2TokenServiceRequest::Core>;
-
-  void DoNothing();
+  friend class base::RefCountedDeleteOnSequence<
+      OAuth2TokenServiceRequest::Core>;
+  friend class base::DeleteHelper<OAuth2TokenServiceRequest::Core>;
 
   scoped_refptr<base::SingleThreadTaskRunner> token_service_task_runner_;
   OAuth2TokenServiceRequest* owner_;
@@ -92,11 +94,14 @@ class OAuth2TokenServiceRequest::Core
 OAuth2TokenServiceRequest::Core::Core(
     OAuth2TokenServiceRequest* owner,
     const scoped_refptr<TokenServiceProvider>& provider)
-    : owner_(owner), provider_(provider) {
+    : RefCountedDeleteOnSequence<OAuth2TokenServiceRequest::Core>(
+          base::SequencedTaskRunnerHandle::Get()),
+      owner_(owner),
+      provider_(provider) {
   DCHECK(owner_);
   DCHECK(provider_.get());
   token_service_task_runner_ = provider_->GetTokenServiceTaskRunner();
-  DCHECK(token_service_task_runner_.get());
+  DCHECK(token_service_task_runner());
 }
 
 OAuth2TokenServiceRequest::Core::~Core() {
@@ -118,15 +123,12 @@ void OAuth2TokenServiceRequest::Core::Stop() {
   // if |Stop()| has never been called.
   owner_ = NULL;
 
-  // We are stopping and will likely be destroyed soon.  Use a reply closure
-  // (DoNothing) to retain "this" and ensure we are destroyed in the owner
-  // thread, not the task runner thread.  PostTaskAndReply guarantees that the
-  // reply closure will execute after StopOnTokenServiceThread has completed.
-  token_service_task_runner_->PostTaskAndReply(
+  // Stop on the token service thread.  RefCountedDeleteOnSequence ensures we
+  // will be destroyed on the owner thread.
+  token_service_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&OAuth2TokenServiceRequest::Core::StopOnTokenServiceThread,
-                 this),
-      base::Bind(&OAuth2TokenServiceRequest::Core::DoNothing, this));
+                 this));
 }
 
 bool OAuth2TokenServiceRequest::Core::IsStopped() const {
@@ -134,23 +136,14 @@ bool OAuth2TokenServiceRequest::Core::IsStopped() const {
   return owner_ == NULL;
 }
 
-base::SingleThreadTaskRunner*
-OAuth2TokenServiceRequest::Core::token_service_task_runner() {
-  return token_service_task_runner_.get();
-}
-
 OAuth2TokenService* OAuth2TokenServiceRequest::Core::token_service() {
-  DCHECK(token_service_task_runner_->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   return provider_->GetTokenService();
 }
 
 OAuth2TokenServiceRequest* OAuth2TokenServiceRequest::Core::owner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return owner_;
-}
-
-void OAuth2TokenServiceRequest::Core::DoNothing() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 namespace {
@@ -187,7 +180,6 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
                                     base::Time expiration_time);
   void InformOwnerOnGetTokenFailure(GoogleServiceAuthError error);
 
-  scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner_;
   OAuth2TokenService::Consumer* const consumer_;
   std::string account_id_;
   OAuth2TokenService::ScopeSet scopes_;
@@ -208,7 +200,6 @@ RequestCore::RequestCore(
     const OAuth2TokenService::ScopeSet& scopes)
     : OAuth2TokenServiceRequest::Core(owner, provider),
       OAuth2TokenService::Consumer("oauth2_token_service"),
-      owner_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       consumer_(consumer),
       account_id_(account_id),
       scopes_(scopes) {
@@ -221,34 +212,31 @@ RequestCore::~RequestCore() {
 }
 
 void RequestCore::StartOnTokenServiceThread() {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   request_ = token_service()->StartRequest(account_id_, scopes_, this);
 }
 
 void RequestCore::StopOnTokenServiceThread() {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   request_.reset();
 }
 
 void RequestCore::OnGetTokenSuccess(const OAuth2TokenService::Request* request,
                                     const std::string& access_token,
                                     const base::Time& expiration_time) {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(request_.get(), request);
-  owner_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RequestCore::InformOwnerOnGetTokenSuccess,
-                 this,
-                 access_token,
-                 expiration_time));
+  owning_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&RequestCore::InformOwnerOnGetTokenSuccess, this,
+                            access_token, expiration_time));
   request_.reset();
 }
 
 void RequestCore::OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                     const GoogleServiceAuthError& error) {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(request_.get(), request);
-  owner_task_runner_->PostTask(
+  owning_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&RequestCore::InformOwnerOnGetTokenFailure, this, error));
   request_.reset();
@@ -316,12 +304,12 @@ InvalidateCore::~InvalidateCore() {
 }
 
 void InvalidateCore::StartOnTokenServiceThread() {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   token_service()->InvalidateAccessToken(account_id_, scopes_, access_token_);
 }
 
 void InvalidateCore::StopOnTokenServiceThread() {
-  DCHECK(token_service_task_runner()->BelongsToCurrentThread());
+  DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   // Nothing to do.
 }
 
