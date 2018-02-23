@@ -37943,6 +37943,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="NAVIGATION_EVENT_NOT_FOUND"/>
 </enum>
 
+<enum name="SafeBrowsingOptIn">
+  <int value="0" label="No opt-in preference in manifest"/>
+  <int value="1" label="Explicit opt-in via manifest"/>
+  <int value="2" label="Explicit opt-out via manifest"/>
+</enum>
+
 <enum name="SafeBrowsingParseV4HashResult">
   <int value="0" label="PARSE_FROM_STRING_ERROR"/>
   <int value="1" label="UNEXPECTED_THREAT_ENTRY_TYPE_ERROR"/>
