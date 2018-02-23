@@ -83,7 +83,8 @@ class VrShell : device::GvrGamepadDataProvider,
           float display_width_meters,
           float display_height_meters,
           int display_width_pixels,
-          int display_height_pixels);
+          int display_height_pixels,
+          bool pause_content);
   void SwapContents(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jobject>& web_contents);
@@ -158,6 +159,8 @@ class VrShell : device::GvrGamepadDataProvider,
                              int selection_end,
                              int composition_start,
                              int composition_end);
+  void ResumeContentRendering(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
 
   void ContentWebContentsDestroyed();
 

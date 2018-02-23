@@ -159,11 +159,13 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
                      gvr_context* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
-                     bool start_in_web_vr_mode)
+                     bool start_in_web_vr_mode,
+                     bool pause_content)
     : ui_(std::move(ui)),
       web_vr_mode_(start_in_web_vr_mode),
       surfaceless_rendering_(reprojected_rendering),
       daydream_support_(daydream_support),
+      content_paused_(pause_content),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       browser_(browser_interface),
@@ -463,7 +465,19 @@ void VrShellGl::SetAlertDialogSize(int width, int height) {
   ui_->SetAlertDialogSize(width, height);
 }
 
+void VrShellGl::ResumeContentRendering() {
+  if (!content_paused_)
+    return;
+  content_paused_ = false;
+
+  // Note that we have to UpdateTexImage here because OnContentFrameAvailable
+  // won't be fired again until we've updated.
+  content_surface_texture_->UpdateTexImage();
+}
+
 void VrShellGl::OnContentFrameAvailable() {
+  if (content_paused_)
+    return;
   content_surface_texture_->UpdateTexImage();
   content_frame_available_ = true;
 }

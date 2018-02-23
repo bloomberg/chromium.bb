@@ -81,7 +81,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
             gvr_context* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
-            bool start_in_web_vr_mode);
+            bool start_in_web_vr_mode,
+            bool pause_content);
   ~VrShellGl() override;
 
   void Initialize();
@@ -104,6 +105,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size);
   void UIBoundsChanged(int width, int height);
+  void ResumeContentRendering();
 
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
@@ -261,6 +263,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   const bool surfaceless_rendering_;
   bool daydream_support_;
   bool is_exiting_ = false;
+  bool content_paused_;
 
   std::unique_ptr<VrController> controller_;
 
