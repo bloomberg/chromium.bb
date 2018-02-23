@@ -11,6 +11,7 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
@@ -73,8 +74,9 @@ class UserActivityLoggerTest : public testing::Test {
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
         &fake_power_manager_client_, &session_manager_,
         mojo::MakeRequest(&observer), &fake_user_manager_);
-    activity_logger_->SetTaskRunnerForTesting(task_runner_,
-                                              task_runner_->GetMockClock());
+    activity_logger_->SetTaskRunnerForTesting(
+        task_runner_, std::make_unique<FakeBootClock>(
+                          task_runner_, base::TimeDelta::FromSeconds(10)));
   }
 
   ~UserActivityLoggerTest() override = default;
@@ -154,8 +156,8 @@ class UserActivityLoggerTest : public testing::Test {
 // UserActivityEvent.
 TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportUserActivity(nullptr);
 
@@ -173,8 +175,8 @@ TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
 TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   EXPECT_EQ(0U, delegate_.events().size());
 }
@@ -184,8 +186,8 @@ TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
 TEST_F(UserActivityLoggerTest, LogSecondEvent) {
   ReportUserActivity(nullptr);
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   // Another user event.
   ReportUserActivity(nullptr);
 
@@ -202,14 +204,13 @@ TEST_F(UserActivityLoggerTest, LogSecondEvent) {
 // Log multiple events.
 TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   // First user event.
   ReportUserActivity(nullptr);
 
   // Trigger an idle event.
-  now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  ReportIdleEvent(data);
   // Second user event.
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportUserActivity(nullptr);
@@ -234,8 +235,8 @@ TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
 TEST_F(UserActivityLoggerTest, UserCloseLid) {
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
@@ -246,8 +247,8 @@ TEST_F(UserActivityLoggerTest, UserCloseLid) {
 TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   // We don't care about battery percentage change, but only power source.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 25.0f);
@@ -265,8 +266,8 @@ TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
 
 TEST_F(UserActivityLoggerTest, VideoActivity) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportVideoStart();
   const auto& events = delegate_.events();
@@ -281,8 +282,8 @@ TEST_F(UserActivityLoggerTest, VideoActivity) {
 
 TEST_F(UserActivityLoggerTest, SystemIdle) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportScreenIdle();
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
@@ -302,8 +303,8 @@ TEST_F(UserActivityLoggerTest, SystemIdle) {
 // We should only observe user activity.
 TEST_F(UserActivityLoggerTest, SystemIdleInterrupted) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportScreenIdle();
   // User interruptted after 1 second.
@@ -323,8 +324,8 @@ TEST_F(UserActivityLoggerTest, SystemIdleInterrupted) {
 
 TEST_F(UserActivityLoggerTest, ScreenLock) {
   // Trigger an idle event.
-  base::Time now = GetTaskRunner()->Now();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportScreenLocked();
   const auto& events = delegate_.events();
@@ -339,8 +340,8 @@ TEST_F(UserActivityLoggerTest, ScreenLock) {
 
 TEST_F(UserActivityLoggerTest, SuspendIdle) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 2 * UserActivityLogger::kMinSuspendDuration);
@@ -355,8 +356,8 @@ TEST_F(UserActivityLoggerTest, SuspendIdle) {
 
 TEST_F(UserActivityLoggerTest, SuspendIdleCancelled) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 UserActivityLogger::kMinSuspendDuration -
@@ -372,8 +373,8 @@ TEST_F(UserActivityLoggerTest, SuspendIdleCancelled) {
 
 TEST_F(UserActivityLoggerTest, SuspendLidClosed) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
                 2 * UserActivityLogger::kMinSuspendDuration);
@@ -388,8 +389,8 @@ TEST_F(UserActivityLoggerTest, SuspendLidClosed) {
 
 TEST_F(UserActivityLoggerTest, SuspendLidClosedCancelled) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_LID_CLOSED,
                 UserActivityLogger::kMinSuspendDuration -
@@ -405,8 +406,8 @@ TEST_F(UserActivityLoggerTest, SuspendLidClosedCancelled) {
 
 TEST_F(UserActivityLoggerTest, SuspendOther) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
                 UserActivityLogger::kMinSuspendDuration);
@@ -421,8 +422,8 @@ TEST_F(UserActivityLoggerTest, SuspendOther) {
 
 TEST_F(UserActivityLoggerTest, SuspendOtherCancelled) {
   // Trigger an idle event.
-  base::Time now = base::Time::UnixEpoch();
-  ReportIdleEvent({now, now});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
 
   ReportSuspend(power_manager::SuspendImminent_Reason_OTHER,
                 UserActivityLogger::kMinSuspendDuration -
@@ -442,7 +443,13 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
 
-  ReportIdleEvent({});
+  IdleEventNotifier::ActivityData data;
+  data.last_activity_day = UserActivityEvent_Features_DayOfWeek_MON;
+  data.last_activity_time_of_day = base::TimeDelta::FromSeconds(100);
+  data.recent_time_active = base::TimeDelta::FromSeconds(10);
+  data.time_since_last_mouse = base::TimeDelta::FromSeconds(20);
+
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
   const auto& events = delegate_.events();
@@ -454,12 +461,20 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   EXPECT_FALSE(features.on_battery());
   EXPECT_EQ(UserActivityEvent::Features::UNMANAGED,
             features.device_management());
+  EXPECT_EQ(UserActivityEvent_Features_DayOfWeek_MON,
+            features.last_activity_day());
+  EXPECT_EQ(100, features.last_activity_time_sec());
+  EXPECT_EQ(10, features.recent_time_active_sec());
+  EXPECT_EQ(20, features.time_since_last_mouse_sec());
+  EXPECT_FALSE(features.has_last_user_activity_time_sec());
+  EXPECT_FALSE(features.has_time_since_last_key_sec());
 }
 
 TEST_F(UserActivityLoggerTest, ManagedDevice) {
   fake_user_manager_.set_is_enterprise_managed(true);
 
-  ReportIdleEvent({});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
   const auto& events = delegate_.events();
@@ -470,7 +485,8 @@ TEST_F(UserActivityLoggerTest, ManagedDevice) {
 }
 
 TEST_F(UserActivityLoggerTest, UpdateOpenTabsURLsCalledTimes) {
-  ReportIdleEvent({});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
   EXPECT_EQ(1, delegate_.num_update_open_tabs_urls_calls());
 
@@ -483,7 +499,8 @@ TEST_F(UserActivityLoggerTest, DimAndOffDelays) {
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(3000) /* screen_off_delay */);
-  ReportIdleEvent({});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
   const auto& events = delegate_.events();
@@ -498,7 +515,8 @@ TEST_F(UserActivityLoggerTest, DimDelays) {
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta() /* screen_off_delay */);
-  ReportIdleEvent({});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
   const auto& events = delegate_.events();
@@ -513,7 +531,8 @@ TEST_F(UserActivityLoggerTest, OffDelays) {
   ReportInactivityDelays(
       base::TimeDelta() /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(4000) /* screen_off_delay */);
-  ReportIdleEvent({});
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
   ReportUserActivity(nullptr);
 
   const auto& events = delegate_.events();
