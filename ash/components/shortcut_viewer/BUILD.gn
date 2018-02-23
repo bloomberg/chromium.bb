@@ -4,7 +4,7 @@
 
 # ksv: Keyboard Shortcut Viewer
 source_set("ksv") {
-  output_name = "ui_chromeos_ksv"
+  output_name = "ash_components_ksv"
   sources = [
     "keyboard_shortcut_item.cc",
     "keyboard_shortcut_item.h",
@@ -26,14 +26,14 @@ source_set("ksv") {
   defines = [ "KSV_IMPLEMENTATION" ]
 
   deps = [
+    "//ash/components/resources",
+    "//ash/components/shortcut_viewer/vector_icons",
+    "//ash/components/strings",
     "//ash/public/cpp",
-    "//base:i18n",
     "//cc/paint",
     "//ui/aura",
     "//ui/chromeos/events",
-    "//ui/chromeos/ksv/vector_icons",
     "//ui/chromeos/search_box",
-    "//ui/chromeos/strings",
     "//ui/events:events_base",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/views",
@@ -47,8 +47,8 @@ source_set("ksv_unittests") {
   ]
   deps = [
     ":ksv",
+    "//ash:test_support_without_content",
     "//testing/gtest",
     "//ui/views",
-    "//ui/views:test_support",
   ]
 }

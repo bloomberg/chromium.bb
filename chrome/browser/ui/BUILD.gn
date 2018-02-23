@@ -2112,6 +2112,7 @@ split_static_library("ui") {
     deps += [
       "//ash",
       "//ash:ash_with_content",
+      "//ash/components/shortcut_viewer:ksv",
       "//ash/public/cpp",
       "//ash/public/cpp/vector_icons",
       "//ash/resources/vector_icons",
@@ -2137,7 +2138,6 @@ split_static_library("ui") {
       "//ui/base/ime",
       "//ui/chromeos",
       "//ui/chromeos/events",
-      "//ui/chromeos/ksv",
       "//ui/keyboard:mojom",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_KSV_VIEWS_KSV_SEARCH_BOX_VIEW_H_
-#define UI_CHROMEOS_KSV_VIEWS_KSV_SEARCH_BOX_VIEW_H_
+#ifndef ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KSV_SEARCH_BOX_VIEW_H_
+#define ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KSV_SEARCH_BOX_VIEW_H_
 
 #include "base/macros.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
@@ -43,4 +43,4 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
 
 }  // namespace keyboard_shortcut_viewer
 
-#endif  // UI_CHROMEOS_KSV_VIEWS_KSV_SEARCH_BOX_VIEW_H_
+#endif  // ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KSV_SEARCH_BOX_VIEW_H_

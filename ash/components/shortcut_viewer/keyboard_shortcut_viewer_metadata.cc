@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
+#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 
+#include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
+#include "ash/components/strings/grit/ash_components_strings.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_item.h"
-#include "ui/chromeos/ksv/vector_icons/vector_icons.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

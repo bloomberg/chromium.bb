@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/views/keyboard_shortcut_view.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 
 #include <algorithm>
 
+#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
+#include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
+#include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/i18n/string_search.h"
 #include "ui/aura/window.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
-#include "ui/chromeos/ksv/vector_icons/vector_icons.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_list_view.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
-#include "ui/chromeos/ksv/views/ksv_search_box_view.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -86,7 +86,8 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 // static
 views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
   if (g_ksv_view) {
-    // If there is a KeyboardShortcutView window open already, just activate it.
+    // If there is a KeyboardShortcutView window open already, just activate
+    // it.
     g_ksv_view->GetWidget()->Activate();
   } else {
     constexpr gfx::Size kKSVWindowSize(768, 512);
@@ -259,9 +260,10 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
       size_t match_index = -1;
       size_t match_length = 0;
       // Only highlight |description_label_view_| in KeyboardShortcutItemView.
-      // |shortcut_label_view_| has customized style ranges for bubble views so
-      // it may have overlappings with the searched ranges. The highlighted
-      // behaviors are not defined so we don't highlight |shortcut_label_view_|.
+      // |shortcut_label_view_| has customized style ranges for bubble views
+      // so it may have overlappings with the searched ranges. The highlighted
+      // behaviors are not defined so we don't highlight
+      // |shortcut_label_view_|.
       if (finder.Search(description_text, &match_index, &match_length) ||
           finder.Search(shortcut_text, nullptr, nullptr)) {
         const ShortcutCategory category = item_view->category();

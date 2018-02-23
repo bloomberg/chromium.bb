@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/wm/window_util.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_view.h"
 
 namespace keyboard_shortcut_viewer_util {
 

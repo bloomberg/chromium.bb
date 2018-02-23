@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/views/keyboard_shortcut_view.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 
 #include <set>
 
+#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
+#include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 namespace keyboard_shortcut_viewer {
 
-class KeyboardShortcutViewTest : public views::ViewsTestBase {
+class KeyboardShortcutViewTest : public ash::AshTestBase {
  public:
   KeyboardShortcutViewTest() = default;
   ~KeyboardShortcutViewTest() override = default;
@@ -46,7 +46,7 @@ class KeyboardShortcutViewTest : public views::ViewsTestBase {
 // Shows and closes the widget for KeyboardShortcutViewer.
 TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
   // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(GetContext());
+  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
   EXPECT_TRUE(widget);
 
   // Cleaning up.
@@ -56,7 +56,7 @@ TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
 // Test that the number of side tabs equals to the number of categories.
 TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(GetContext());
+  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
 
   int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;

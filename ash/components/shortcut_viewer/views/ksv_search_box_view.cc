@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/views/ksv_search_box_view.h"
+#include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 
+#include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
+#include "ash/components/strings/grit/ash_components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/ksv/vector_icons/vector_icons.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
