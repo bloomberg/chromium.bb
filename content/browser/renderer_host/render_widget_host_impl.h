@@ -30,6 +30,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/legacy_ipc_widget_input_handler.h"
@@ -108,6 +109,7 @@ struct TextInputState;
 // embedders of content, and adds things only visible to content.
 class CONTENT_EXPORT RenderWidgetHostImpl
     : public RenderWidgetHost,
+      public FrameTokenMessageQueue::Client,
       public InputRouterImplClient,
       public InputDispositionHandler,
       public TouchEmulatorClient,
@@ -645,6 +647,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds) override;
   void OnImeCancelComposition() override;
 
+  // FrameTokenMessageQueue::Client:
+  void OnInvalidFrameToken(uint32_t frame_token) override;
+  void OnMessageDispatchError(const IPC::Message& message) override;
+  void OnProcessSwapMessage(const IPC::Message& message) override;
+
   void ProgressFling(base::TimeTicks current_time);
   void StopFling();
 
@@ -817,10 +824,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
   void StopHangMonitorTimeout();
-
-  // Once both the frame and its swap messages arrive, we call this method to
-  // process the messages. Virtual for tests.
-  virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
 
   // viz::SharedBitmapAllocationObserver implementation.
   void OnSharedBitmapAllocatedByChild(
@@ -1054,13 +1057,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   viz::CompositorFrameMetadata last_frame_metadata_;
 
-  // Last non-zero frame token received from the renderer. Any swap messsages
-  // having a token less than or equal to this value will be processed.
-  uint32_t last_received_frame_token_ = 0;
-
-  // List of all swap messages that their corresponding frames have not arrived.
-  // Sorted by frame token.
-  base::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
+  std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
 
   // If a CompositorFrame is submitted that references SharedBitmaps that don't
   // exist yet, we keep it here until they are available.

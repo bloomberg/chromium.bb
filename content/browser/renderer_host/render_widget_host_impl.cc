@@ -48,6 +48,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
@@ -361,6 +362,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       current_content_source_id_(0),
       monitoring_composition_info_(false),
       compositor_frame_sink_binding_(this),
+      frame_token_message_queue_(
+          std::make_unique<FrameTokenMessageQueue>(this)),
       frame_sink_id_(base::checked_cast<uint32_t>(process_->GetID()),
                      base::checked_cast<uint32_t>(routing_id_)),
       weak_factory_(this) {
@@ -1683,26 +1686,8 @@ void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
 void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
     uint32_t frame_token,
     std::vector<IPC::Message> messages) {
-  // Zero token is invalid.
-  if (!frame_token) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_INVALID_FRAME_TOKEN);
-    return;
-  }
-
-  // Frame tokens always increase.
-  if (queued_messages_.size() && frame_token <= queued_messages_.back().first) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_INVALID_FRAME_TOKEN);
-    return;
-  }
-
-  if (frame_token <= last_received_frame_token_) {
-    ProcessSwapMessages(std::move(messages));
-    return;
-  }
-
-  queued_messages_.push(std::make_pair(frame_token, std::move(messages)));
+  frame_token_message_queue_->OnFrameSwapMessagesReceived(frame_token,
+                                                          std::move(messages));
 }
 
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
@@ -1758,8 +1743,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   current_content_source_id_ = 0;
 
-  last_received_frame_token_ = 0;
-  auto doomed = std::move(queued_messages_);
+  frame_token_message_queue_->Reset();
 }
 
 void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
@@ -2159,6 +2143,21 @@ void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
 void RenderWidgetHostImpl::OnImeCancelComposition() {
   if (view_)
     view_->ImeCancelComposition();
+}
+
+void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
+  bad_message::ReceivedBadMessage(GetProcess(),
+                                  bad_message::RWH_INVALID_FRAME_TOKEN);
+}
+
+void RenderWidgetHostImpl::OnMessageDispatchError(const IPC::Message& message) {
+  RenderProcessHost* rph = GetProcess();
+  rph->OnBadMessageReceived(message);
+}
+
+void RenderWidgetHostImpl::OnProcessSwapMessage(const IPC::Message& message) {
+  RenderProcessHost* rph = GetProcess();
+  rph->OnMessageReceived(message);
 }
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
@@ -2836,31 +2835,7 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
-  // Frame tokens always increase.
-  if (frame_token <= last_received_frame_token_) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_INVALID_FRAME_TOKEN);
-    return;
-  }
-
-  last_received_frame_token_ = frame_token;
-
-  while (queued_messages_.size() &&
-         queued_messages_.front().first <= frame_token) {
-    ProcessSwapMessages(std::move(queued_messages_.front().second));
-    queued_messages_.pop();
-  }
-}
-
-void RenderWidgetHostImpl::ProcessSwapMessages(
-    std::vector<IPC::Message> messages) {
-  RenderProcessHost* rph = GetProcess();
-  for (std::vector<IPC::Message>::const_iterator i = messages.begin();
-       i != messages.end(); ++i) {
-    rph->OnMessageReceived(*i);
-    if (i->dispatch_error())
-      rph->OnBadMessageReceived(*i);
-  }
+  frame_token_message_queue_->DidProcessFrame(frame_token);
 }
 
 #if defined(OS_MACOSX)
