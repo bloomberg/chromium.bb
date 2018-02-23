@@ -56,9 +56,7 @@ bool IsUnready(const syncer::DataTypeStatusTable& data_type_status_table,
 // simply omit types that may be USS from these cases.
 ModelTypeSet UnifiedSyncServiceTypes() {
   ModelTypeSet set;
-  if (FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
-    set.Put(syncer::AUTOFILL);
-  }
+  set.Put(syncer::AUTOFILL);
   if (FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
     set.Put(syncer::TYPED_URLS);
   }

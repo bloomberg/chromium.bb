@@ -14,7 +14,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -52,16 +51,8 @@ void InitSyncableServicesOnDBSequence(
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
-    autofill::AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
-        autofill_web_data.get(), autofill_backend);
-  } else {
-    autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-        autofill_web_data.get(), autofill_backend);
-    autofill::AutocompleteSyncableService::FromWebDataService(
-        autofill_web_data.get())
-        ->InjectStartSyncFlare(sync_flare);
-  }
+  autofill::AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
+      autofill_web_data.get(), autofill_backend);
 
   autofill::AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
       autofill_web_data.get(), autofill_backend, app_locale);
