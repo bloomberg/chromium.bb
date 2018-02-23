@@ -998,6 +998,8 @@ component("ash") {
     "wm/window_state_observer.h",
     "wm/window_state_util.cc",
     "wm/window_state_util.h",
+    "wm/window_transient_descendant_iterator.cc",
+    "wm/window_transient_descendant_iterator.h",
     "wm/window_util.cc",
     "wm/window_util.h",
     "wm/wm_event.cc",

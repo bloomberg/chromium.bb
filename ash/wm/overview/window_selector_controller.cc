@@ -228,8 +228,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
   }
 
   // Snap the window selector item and remove it from the grid.
-  item_to_snap->EnsureVisible();
-  item_to_snap->RestoreWindow();
+  // The transform will be reset later after the window is snapped.
+  item_to_snap->RestoreWindow(/*reset_transform=*/false);
   aura::Window* window = item_to_snap->GetWindow();
   window_selector_->RemoveWindowSelectorItem(item_to_snap);
   split_view_controller->SnapWindow(window, SplitViewController::LEFT);
@@ -254,12 +254,17 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 // TODO(flackr): Make WindowSelectorController observe the activation of
 // windows, so we can remove WindowSelectorDelegate.
 void WindowSelectorController::OnSelectionEnded() {
+  if (is_shutting_down_)
+    return;
+  is_shutting_down_ = true;
+  Shell::Get()->NotifyOverviewModeEnding();
   window_selector_->Shutdown();
   // Don't delete |window_selector_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                   window_selector_.release());
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
+  is_shutting_down_ = false;
 }
 
 void WindowSelectorController::AddDelayedAnimationObserver(

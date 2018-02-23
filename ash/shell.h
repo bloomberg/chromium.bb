@@ -542,6 +542,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   // windows get re-arranged).
   void NotifyOverviewModeStarting();
 
+  // Notifies observers that overview mode is about to end (bofore the windows
+  // restore themselves).
+  void NotifyOverviewModeEnding();
+
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();
 

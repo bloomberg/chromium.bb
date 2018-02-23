@@ -48,6 +48,10 @@ class ASH_EXPORT ShellObserver {
   // get re-arranged).
   virtual void OnOverviewModeStarting() {}
 
+  // Called when the overview mode is about to end (bofore the windows restore
+  // themselves).
+  virtual void OnOverviewModeEnding() {}
+
   // Called after overview mode has ended.
   virtual void OnOverviewModeEnded() {}
 

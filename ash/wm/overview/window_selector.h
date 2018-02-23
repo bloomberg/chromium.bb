@@ -126,6 +126,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Positions all of the windows in the overview.
   void PositionWindows(bool animate);
 
+  // If we are in middle of ending overview mode.
+  bool IsShuttingDown() const;
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   bool restoring_minimized_windows() const {
@@ -133,8 +136,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   }
 
   int text_filter_bottom() const { return text_filter_bottom_; }
-
-  bool is_shut_down() const { return is_shut_down_; }
 
   const std::vector<std::unique_ptr<WindowGrid>>& grid_list_for_testing()
       const {
@@ -260,8 +261,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.
   int text_filter_bottom_ = 0;
-
-  bool is_shut_down_ = false;
 
   // The selected item when exiting overview mode. nullptr if no window
   // selected.

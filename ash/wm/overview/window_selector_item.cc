@@ -675,10 +675,10 @@ aura::Window* WindowSelectorItem::GetWindowForStacking() {
              : GetWindow();
 }
 
-void WindowSelectorItem::RestoreWindow() {
+void WindowSelectorItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
-  transform_window_.RestoreWindow();
+  transform_window_.RestoreWindow(reset_transform);
   if (background_view_) {
     background_view_->OnItemRestored();
     background_view_ = nullptr;

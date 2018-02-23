@@ -58,6 +58,8 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
 
+  bool is_shutting_down() const { return is_shutting_down_; }
+
   // WindowSelectorDelegate:
   void OnSelectionEnded() override;
   void AddDelayedAnimationObserver(
@@ -80,6 +82,9 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   std::vector<std::unique_ptr<DelayedAnimationObserver>> delayed_animations_;
   std::unique_ptr<WindowSelector> window_selector_;
   base::Time last_selection_time_;
+
+  // If we are in middle of ending overview mode.
+  bool is_shutting_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };
