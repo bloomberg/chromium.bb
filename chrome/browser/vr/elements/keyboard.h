@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
+#include "chrome/browser/vr/renderers/base_renderer.h"
 
 namespace vr {
 
@@ -30,6 +31,16 @@ class Keyboard : public UiElement {
   void OnMove(const gfx::PointF& position) override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
+
+  class Renderer : public BaseRenderer {
+   public:
+    Renderer();
+    ~Renderer() override;
+    void Draw(const CameraModel& camera_model, KeyboardDelegate* delegate);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Renderer);
+  };
 
  private:
   bool OnBeginFrame(const base::TimeTicks& time,
