@@ -324,6 +324,17 @@ public class VrShellImpl
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
         mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        // We're supposed to be in landscape at this point, but it's possible for us to get here
+        // before the change has fully propogated. In this case, the width and height are swapped,
+        // which causes an incorrect display size to be used, and the page to appear zoomed in.
+        if (dm.widthPixels < dm.heightPixels) {
+            int tempWidth = dm.heightPixels;
+            dm.heightPixels = dm.widthPixels;
+            dm.widthPixels = tempWidth;
+            float tempXDpi = dm.ydpi;
+            dm.xdpi = dm.ydpi;
+            dm.ydpi = tempXDpi;
+        }
         float displayWidthMeters = (dm.widthPixels / dm.xdpi) * INCHES_TO_METERS;
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
 
