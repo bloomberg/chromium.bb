@@ -88,7 +88,7 @@ class URLRequestContextBuilder;
 class URLRequestJobFactoryImpl;
 
 #if BUILDFLAG(ENABLE_REPORTING)
-class NetworkErrorLoggingDelegate;
+class NetworkErrorLoggingService;
 class ReportingService;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 }  // namespace net
@@ -306,9 +306,9 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_REPORTING)
     void SetReportingService(
         std::unique_ptr<net::ReportingService> reporting_service);
-    void SetNetworkErrorLoggingDelegate(
-        std::unique_ptr<net::NetworkErrorLoggingDelegate>
-            network_error_logging_delegate);
+    void SetNetworkErrorLoggingService(
+        std::unique_ptr<net::NetworkErrorLoggingService>
+            network_error_logging_service);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
    private:
@@ -321,8 +321,8 @@ class ProfileIOData {
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
 #if BUILDFLAG(ENABLE_REPORTING)
     std::unique_ptr<net::ReportingService> reporting_service_;
-    std::unique_ptr<net::NetworkErrorLoggingDelegate>
-        network_error_logging_delegate_;
+    std::unique_ptr<net::NetworkErrorLoggingService>
+        network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   };
 

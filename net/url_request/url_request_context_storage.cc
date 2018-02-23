@@ -26,8 +26,8 @@
 #include "net/url_request/url_request_throttler_manager.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace net {
@@ -157,12 +157,11 @@ void URLRequestContextStorage::set_reporting_service(
   reporting_service_ = std::move(reporting_service);
 }
 
-void URLRequestContextStorage::set_network_error_logging_delegate(
-    std::unique_ptr<NetworkErrorLoggingDelegate>
-        network_error_logging_delegate) {
-  context_->set_network_error_logging_delegate(
-      network_error_logging_delegate.get());
-  network_error_logging_delegate_ = std::move(network_error_logging_delegate);
+void URLRequestContextStorage::set_network_error_logging_service(
+    std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service) {
+  context_->set_network_error_logging_service(
+      network_error_logging_service.get());
+  network_error_logging_service_ = std::move(network_error_logging_service);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

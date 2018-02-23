@@ -44,8 +44,8 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using base::Time;
@@ -1164,15 +1164,15 @@ void URLRequest::OnCallToDelegateComplete() {
 
 #if BUILDFLAG(ENABLE_REPORTING)
 void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
-  NetworkErrorLoggingDelegate* delegate =
-      context()->network_error_logging_delegate();
-  if (!delegate)
+  NetworkErrorLoggingService* service =
+      context()->network_error_logging_service();
+  if (!service)
     return;
 
   // TODO(juliatuttle): Figure out whether we should be ignoring errors from
   // non-HTTPS origins.
 
-  NetworkErrorLoggingDelegate::RequestDetails details;
+  NetworkErrorLoggingService::RequestDetails details;
 
   details.uri = url();
   details.referrer = GURL(referrer());
@@ -1196,7 +1196,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
       context()->reporting_service() &&
       context()->reporting_service()->RequestIsUpload(*this);
 
-  delegate->OnRequest(details);
+  service->OnRequest(details);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

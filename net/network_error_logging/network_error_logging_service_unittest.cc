@@ -117,9 +117,9 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     reporting_service_.reset();
   }
 
-  NetworkErrorLoggingDelegate::RequestDetails
+  NetworkErrorLoggingService::RequestDetails
   MakeRequestDetails(GURL url, Error error_type, int status_code = 0) {
-    NetworkErrorLoggingDelegate::RequestDetails details;
+    NetworkErrorLoggingService::RequestDetails details;
 
     details.uri = url;
     details.referrer = kReferrer_;

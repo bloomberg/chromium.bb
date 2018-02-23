@@ -48,7 +48,7 @@ URLRequestContext::URLRequestContext()
       network_quality_estimator_(nullptr),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_service_(nullptr),
-      network_error_logging_delegate_(nullptr),
+      network_error_logging_service_(nullptr),
 #endif  // BUILDFLAG(ENABLE_REPORTING)
       url_requests_(std::make_unique<std::set<const URLRequest*>>()),
       enable_brotli_(false),
@@ -87,7 +87,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_network_quality_estimator(other->network_quality_estimator_);
 #if BUILDFLAG(ENABLE_REPORTING)
   set_reporting_service(other->reporting_service_);
-  set_network_error_logging_delegate(other->network_error_logging_delegate_);
+  set_network_error_logging_service(other->network_error_logging_service_);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   set_enable_brotli(other->enable_brotli_);
   set_check_cleartext_permitted(other->check_cleartext_permitted_);

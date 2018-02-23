@@ -132,9 +132,9 @@
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using base::UserMetricsAction;
@@ -279,10 +279,10 @@ void ClearNetworkErrorLoggingOnIOThread(
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::NetworkErrorLoggingDelegate* delegate =
-      context->GetURLRequestContext()->network_error_logging_delegate();
-  if (delegate)
-    delegate->RemoveBrowsingData(origin_filter);
+  net::NetworkErrorLoggingService* service =
+      context->GetURLRequestContext()->network_error_logging_service();
+  if (service)
+    service->RemoveBrowsingData(origin_filter);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

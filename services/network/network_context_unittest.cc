@@ -283,8 +283,8 @@ TEST_F(NetworkContextTest, DisableNetworkErrorLogging) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_FALSE(network_context->GetURLRequestContext()
-                   ->network_error_logging_delegate());
+  EXPECT_FALSE(
+      network_context->GetURLRequestContext()->network_error_logging_service());
 }
 
 TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
@@ -293,8 +293,8 @@ TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
-  EXPECT_TRUE(network_context->GetURLRequestContext()
-                  ->network_error_logging_delegate());
+  EXPECT_TRUE(
+      network_context->GetURLRequestContext()->network_error_logging_service());
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

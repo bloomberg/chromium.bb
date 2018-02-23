@@ -76,9 +76,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
@@ -855,14 +855,14 @@ void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
 
   HttpResponseHeaders* headers = GetResponseHeaders();
   std::string value;
-  if (!headers->GetNormalizedHeader(NetworkErrorLoggingDelegate::kHeaderName,
+  if (!headers->GetNormalizedHeader(NetworkErrorLoggingService::kHeaderName,
                                     &value)) {
     return;
   }
 
-  NetworkErrorLoggingDelegate* delegate =
-      request_->context()->network_error_logging_delegate();
-  if (!delegate)
+  NetworkErrorLoggingService* service =
+      request_->context()->network_error_logging_service();
+  if (!service)
     return;
 
   // Only accept Report-To headers on HTTPS connections that have no
@@ -871,7 +871,7 @@ void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status))
     return;
 
-  delegate->OnHeader(url::Origin::Create(request_info_.url), value);
+  service->OnHeader(url::Origin::Create(request_info_.url), value);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

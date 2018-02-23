@@ -52,7 +52,7 @@ class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 
 #if BUILDFLAG(ENABLE_REPORTING)
-class NetworkErrorLoggingDelegate;
+class NetworkErrorLoggingService;
 class ReportingService;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -253,12 +253,12 @@ class NET_EXPORT URLRequestContext
     reporting_service_ = reporting_service;
   }
 
-  NetworkErrorLoggingDelegate* network_error_logging_delegate() const {
-    return network_error_logging_delegate_;
+  NetworkErrorLoggingService* network_error_logging_service() const {
+    return network_error_logging_service_;
   }
-  void set_network_error_logging_delegate(
-      NetworkErrorLoggingDelegate* network_error_logging_delegate) {
-    network_error_logging_delegate_ = network_error_logging_delegate;
+  void set_network_error_logging_service(
+      NetworkErrorLoggingService* network_error_logging_service) {
+    network_error_logging_service_ = network_error_logging_service;
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -319,7 +319,7 @@ class NET_EXPORT URLRequestContext
   NetworkQualityEstimator* network_quality_estimator_;
 #if BUILDFLAG(ENABLE_REPORTING)
   ReportingService* reporting_service_;
-  NetworkErrorLoggingDelegate* network_error_logging_delegate_;
+  NetworkErrorLoggingService* network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // ---------------------------------------------------------------------------

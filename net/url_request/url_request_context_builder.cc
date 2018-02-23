@@ -62,7 +62,6 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace net {
@@ -150,11 +149,11 @@ class ContainerURLRequestContext final : public URLRequestContext {
 
   ~ContainerURLRequestContext() override {
 #if BUILDFLAG(ENABLE_REPORTING)
-    // Destroy the NetworkErrorLoggingDelegate so that destroying the
+    // Destroy the NetworkErrorLoggingService so that destroying the
     // ReportingService (which might abort in-flight URLRequests, generating
     // network errors) won't recursively try to queue more network error
     // reports.
-    storage_.set_network_error_logging_delegate(nullptr);
+    storage_.set_network_error_logging_service(nullptr);
 
     // Destroy the ReportingService before the rest of the URLRequestContext, so
     // it cancels any pending requests it may have.
@@ -641,7 +640,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (network_error_logging_enabled_) {
-    storage->set_network_error_logging_delegate(
+    storage->set_network_error_logging_service(
         NetworkErrorLoggingService::Create());
   }
 
@@ -649,8 +648,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   // connect them so Network Error Logging can use Reporting to deliver error
   // reports.
   if (context->reporting_service() &&
-      context->network_error_logging_delegate()) {
-    context->network_error_logging_delegate()->SetReportingService(
+      context->network_error_logging_service()) {
+    context->network_error_logging_service()->SetReportingService(
         context->reporting_service());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
