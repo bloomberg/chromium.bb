@@ -315,4 +315,10 @@ void CastWindowManagerAura::CastWindowManagerAura::
   }
 }
 
+void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(
+    bool enable) {
+  DCHECK(window_tree_host_);
+  window_tree_host_->window()->layer()->SetLayerInverted(enable);
+}
+
 }  // namespace chromecast
