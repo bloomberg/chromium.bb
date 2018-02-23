@@ -113,7 +113,7 @@ void Keyboard::Render(UiElementRenderer* renderer,
   if (!delegate_)
     return;
 
-  delegate_->Draw(camera_model);
+  renderer->DrawKeyboard(camera_model, delegate_);
 }
 
 void Keyboard::OnSetFocusable() {
@@ -128,6 +128,15 @@ void Keyboard::UpdateDelegateVisibility() {
     delegate_->ShowKeyboard();
   else
     delegate_->HideKeyboard();
+}
+
+Keyboard::Renderer::Renderer() {}
+
+Keyboard::Renderer::~Renderer() {}
+
+void Keyboard::Renderer::Draw(const CameraModel& camera_model,
+                              KeyboardDelegate* delegate) {
+  delegate->Draw(camera_model);
 }
 
 }  // namespace vr
