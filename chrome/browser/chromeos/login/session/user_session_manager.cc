@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -1349,6 +1350,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     if (lock_screen_apps::StateController::IsEnabled())
       lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
+    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
+    // self-destructs on logout.
+    policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
     TetherService* tether_service = TetherService::Get(profile);
