@@ -8,10 +8,11 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 
-import org.chromium.base.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.chromium.base.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,6 +26,7 @@ import java.util.Locale;
 import java.util.Scanner;
 
 /** Helper for fetching and modifying the host list. */
+@SuppressWarnings("JavaLangClash")
 public class HostListManager {
     public enum Error {
         AUTH_FAILED,

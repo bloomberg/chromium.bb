@@ -23,8 +23,6 @@ import colorama
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   # TODO(crbug.com/801210): Follow steps in bug.
   'SynchronizeOnNonFinalField',
-  # TODO(crbug.com/801253): Follow steps in bug.
-  'JavaLangClash',
   # TODO(crbug.com/801261): Follow steps in bug
   'ArgumentSelectionDefectChecker',
   # TODO(crbug.com/801268): Follow steps in bug.
@@ -101,6 +99,7 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
   'FloatingPointLiteralPrecision',
+  'JavaLangClash',
   'MissingOverride',
   'ParameterName',
   'StaticQualifiedUsingExpression',

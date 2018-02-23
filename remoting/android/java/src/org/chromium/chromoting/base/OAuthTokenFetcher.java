@@ -21,6 +21,7 @@ import java.io.IOException;
  * This helper class fetches an OAuth token on a separate thread, and properly handles the various
  * error-conditions that can occur (such as, starting an Activity to prompt user for input).
  */
+@SuppressWarnings("JavaLangClash")
 public class OAuthTokenFetcher {
     /**
      * Callback interface to receive the token, or an error notification. These will be called
