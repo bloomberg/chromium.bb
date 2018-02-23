@@ -149,6 +149,12 @@ enum DiskImageStatus {
 
   // Unable to create the disk image.
   DISK_STATUS_FAILED = 3;
+
+  // Specified Disk does not exist.
+  DISK_STATUS_DOES_NOT_EXIST = 4;
+
+  // The specified disk was destroyed.
+  DISK_STATUS_DESTROYED = 5;
 }
 
 // Request to concierge to create a disk image.
@@ -180,5 +186,27 @@ message CreateDiskImageResponse {
   string disk_path = 2;
 
   // The failure reason if the disk image could not be created or doesn't exist.
+  string failure_reason = 3;
+}
+
+// Request to concierge to destroy a disk image.
+message DestroyDiskImageRequest {
+  // The cryptohome id for the user's encrypted storage.
+  string cryptohome_id = 1;
+
+  // The path to the disk image. This must be a relative path.
+  string disk_path = 2;
+
+  // The storage location for the disk image.
+  StorageLocation storage_location = 3;
+}
+
+// Response to a DestroyDiskImageRequest.
+message DestroyDiskImageResponse {
+  // If DISK_STATUS_DESTROYED, the disk image has been successfully destroyed.
+  // If DISK_STATUS_DOES_NOT_EXIST, the disk image had already been removed.
+  DiskImageStatus status = 1;
+
+  // The failure reason if the disk image could not be destroyed or doesn't exist.
   string failure_reason = 3;
 }

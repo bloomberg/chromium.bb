@@ -17,6 +17,7 @@ const char kStopVmMethod[] = "StopVm";
 const char kStopAllVmsMethod[] = "StopAllVms";
 const char kGetVmInfoMethod[] = "GetVmInfo";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
+const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
 
 }  // namespace concierge
 }  // namespace vm_tools
