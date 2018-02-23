@@ -92,6 +92,14 @@ class GetPagesTask : public Task {
       const SingleOfflinePageItemCallback& callback,
       int64_t offline_id);
 
+  // Creates |GetPagesTask| reading a single page matching provided |file_size|
+  // and |digest| from DB.
+  static std::unique_ptr<GetPagesTask> CreateTaskMatchingSizeAndDigest(
+      OfflinePageMetadataStoreSQL* store,
+      const SingleOfflinePageItemCallback& callback,
+      int64_t file_size,
+      const std::string& digest);
+
   // Creates |GetPagesTask| selecting persistent items having a non-zero
   // remaining upgrade attempts.
   // Order of items is determined by number of remaining attempts (descending)

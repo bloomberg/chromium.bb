@@ -34,6 +34,7 @@ class OfflinePageItemGenerator {
   void SetLastAccessTime(base::Time time);
   void SetAccessCount(int access_count);
   void SetArchiveDirectory(const base::FilePath& archive_dir);
+  void SetDigest(const std::string& digest);
 
  private:
   std::string namespace_ = kDefaultNamespace;
@@ -45,6 +46,7 @@ class OfflinePageItemGenerator {
   base::Time last_access_time_;
   int access_count_ = 0;
   base::FilePath archive_dir_;
+  std::string digest_;
 };
 }  // namespace offline_pages
 

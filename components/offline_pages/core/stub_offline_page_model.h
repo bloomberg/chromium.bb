@@ -58,6 +58,10 @@ class StubOfflinePageModel : public OfflinePageModel {
   void GetPagesByRequestOrigin(
       const std::string& origin,
       const MultipleOfflinePageItemCallback& callback) override;
+  void GetPageBySizeAndDigest(
+      int64_t file_size,
+      const std::string& digest,
+      const SingleOfflinePageItemCallback& callback) override;
   void GetPagesRemovedOnCacheReset(
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesByNamespace(

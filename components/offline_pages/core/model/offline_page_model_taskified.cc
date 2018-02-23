@@ -322,6 +322,17 @@ void OfflinePageModelTaskified::GetPagesByRequestOrigin(
   task_queue_.AddTask(std::move(task));
 }
 
+void OfflinePageModelTaskified::GetPageBySizeAndDigest(
+    int64_t file_size,
+    const std::string& digest,
+    const SingleOfflinePageItemCallback& callback) {
+  DCHECK_GT(file_size, 0);
+  DCHECK(!digest.empty());
+  auto task = GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store_.get(), callback, file_size, digest);
+  task_queue_.AddTask(std::move(task));
+}
+
 void OfflinePageModelTaskified::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {
