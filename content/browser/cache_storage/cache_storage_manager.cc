@@ -424,7 +424,7 @@ void CacheStorageManager::DeleteOriginDidClose(
   cache_storage.reset();
 
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin,
       blink::mojom::StorageType::kTemporary, -1 * origin_size);
   NotifyCacheListChanged(origin);
 

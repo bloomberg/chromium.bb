@@ -106,7 +106,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   }
 
   void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              blink::mojom::StorageType type) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
     EXPECT_EQ(blink::mojom::StorageType::kTemporary, type);
@@ -114,7 +114,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   }
 
   void NotifyStorageModified(storage::QuotaClient::ID client_id,
-                             const GURL& origin,
+                             const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
@@ -124,14 +124,14 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   }
 
   // Not needed for our tests.
-  void NotifyOriginInUse(const GURL& origin) override {}
-  void NotifyOriginNoLongerInUse(const GURL& origin) override {}
+  void NotifyOriginInUse(const url::Origin& origin) override {}
+  void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
   void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
-                            const GURL& origin,
+                            const url::Origin& origin,
                             blink::mojom::StorageType type,
                             bool enabled) override {}
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
-                        const GURL& origin,
+                        const url::Origin& origin,
                         blink::mojom::StorageType type,
                         const UsageAndQuotaCallback& callback) override {}
 
@@ -142,9 +142,11 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     }
   }
 
-  bool WasAccessNotified(const GURL& origin) { return accesses_[origin] != 0; }
+  bool WasAccessNotified(const url::Origin& origin) {
+    return accesses_[origin] != 0;
+  }
 
-  bool WasModificationNotified(const GURL& origin, int64_t amount) {
+  bool WasModificationNotified(const url::Origin& origin, int64_t amount) {
     return modifications_[origin].first != 0 &&
            modifications_[origin].second == amount;
   }
@@ -157,10 +159,10 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   storage::QuotaClient* registered_client_;
 
   // Map from origin to count of access notifications.
-  std::map<GURL, int> accesses_;
+  std::map<url::Origin, int> accesses_;
 
   // Map from origin to <count, sum of deltas>
-  std::map<GURL, std::pair<int, int64_t>> modifications_;
+  std::map<url::Origin, std::pair<int, int64_t>> modifications_;
 
  protected:
   ~TestQuotaManagerProxy() override { EXPECT_FALSE(registered_client_); }
@@ -429,8 +431,9 @@ class DatabaseTracker_TestHelper_Test {
   }
 
   static void DatabaseTrackerQuotaIntegration() {
-    const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
+    const url::Origin kOrigin(url::Origin::Create(GURL(kOrigin1Url)));
+    const std::string kOriginId =
+        storage::GetIdentifierFromOrigin(kOrigin.GetURL());
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 

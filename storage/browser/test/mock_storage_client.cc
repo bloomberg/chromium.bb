@@ -181,8 +181,7 @@ void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
   OriginDataMap::iterator itr = origin_data_.find(make_pair(origin, type));
   if (itr != origin_data_.end()) {
     int64_t delta = itr->second;
-    quota_manager_proxy_->NotifyStorageModified(id(), origin.GetURL(), type,
-                                                -delta);
+    quota_manager_proxy_->NotifyStorageModified(id(), origin, type, -delta);
     origin_data_.erase(itr);
   }
 

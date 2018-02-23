@@ -19,6 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -94,37 +95,37 @@ class AppCacheHostTest : public testing::Test {
     // Not needed for our tests.
     void RegisterClient(storage::QuotaClient* client) override {}
     void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
-                               const GURL& origin,
+                               const url::Origin& origin,
                                blink::mojom::StorageType type) override {}
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
-                               const GURL& origin,
+                               const url::Origin& origin,
                                blink::mojom::StorageType type,
                                int64_t delta) override {}
     void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
-                              const GURL& origin,
+                              const url::Origin& origin,
                               blink::mojom::StorageType type,
                               bool enabled) override {}
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
-                          const GURL& origin,
+                          const url::Origin& origin,
                           blink::mojom::StorageType type,
                           const UsageAndQuotaCallback& callback) override {}
 
-    void NotifyOriginInUse(const GURL& origin) override { inuse_[origin] += 1; }
+    void NotifyOriginInUse(const url::Origin& origin) override {
+      inuse_[origin] += 1;
+    }
 
-    void NotifyOriginNoLongerInUse(const GURL& origin) override {
+    void NotifyOriginNoLongerInUse(const url::Origin& origin) override {
       inuse_[origin] -= 1;
     }
 
-    int GetInUseCount(const GURL& origin) {
-      return inuse_[origin];
-    }
+    int GetInUseCount(const url::Origin& origin) { return inuse_[origin]; }
 
     void reset() {
       inuse_.clear();
     }
 
     // Map from origin to count of inuse notifications.
-    std::map<GURL, int> inuse_;
+    std::map<url::Origin, int> inuse_;
 
    protected:
     ~MockQuotaManagerProxy() override {}
@@ -189,10 +190,11 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
     host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL());
-    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
@@ -208,7 +210,7 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
     EXPECT_FALSE(host.is_selection_pending());
     EXPECT_TRUE(host.preferred_manifest_url().is_empty());
   }
-  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kOrigin));
   service_.set_quota_manager_proxy(nullptr);
 }
 
@@ -418,12 +420,13 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
     host.first_party_url_ = kDocAndOriginUrl;
     host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
-    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // MockAppCacheService::LoadOrCreateGroup is asynchronous, so we shouldn't
     // have received an OnCacheSelected msg yet.
@@ -438,7 +441,7 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
 
     EXPECT_TRUE(host.is_selection_pending());
   }
-  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kOrigin));
   service_.set_quota_manager_proxy(nullptr);
 }
 
@@ -458,12 +461,13 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
+  const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
     host.first_party_url_ = kDocAndOriginUrl;
     host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
-    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+    EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
@@ -484,7 +488,7 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     EXPECT_FALSE(host.is_selection_pending());
     EXPECT_TRUE(host.preferred_manifest_url().is_empty());
   }
-  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
+  EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kOrigin));
   service_.set_quota_manager_proxy(nullptr);
 }
 

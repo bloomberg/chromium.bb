@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -36,17 +35,17 @@ void MockQuotaManagerProxy::SimulateQuotaManagerDestroyed() {
 
 void MockQuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::StorageType type,
     const QuotaManager::UsageAndQuotaCallback& callback) {
   if (mock_manager()) {
-    mock_manager()->GetUsageAndQuota(origin, type, callback);
+    mock_manager()->GetUsageAndQuota(origin.GetURL(), type, callback);
   }
 }
 
 void MockQuotaManagerProxy::NotifyStorageAccessed(
     QuotaClient::ID client_id,
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::StorageType type) {
   ++storage_accessed_count_;
   last_notified_origin_ = origin;
@@ -55,7 +54,7 @@ void MockQuotaManagerProxy::NotifyStorageAccessed(
 
 void MockQuotaManagerProxy::NotifyStorageModified(
     QuotaClient::ID client_id,
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::StorageType type,
     int64_t delta) {
   ++storage_modified_count_;
@@ -63,7 +62,7 @@ void MockQuotaManagerProxy::NotifyStorageModified(
   last_notified_type_ = type;
   last_notified_delta_ = delta;
   if (mock_manager())
-    mock_manager()->UpdateUsage(origin, type, delta);
+    mock_manager()->UpdateUsage(origin.GetURL(), type, delta);
 }
 
 MockQuotaManagerProxy::~MockQuotaManagerProxy() {

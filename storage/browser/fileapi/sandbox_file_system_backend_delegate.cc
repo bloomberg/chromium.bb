@@ -32,6 +32,7 @@
 #include "storage/browser/fileapi/sandbox_quota_observer.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -267,7 +268,8 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
       (quota_manager_proxy_.get())
           ? base::BindOnce(&QuotaManagerProxy::NotifyStorageAccessed,
                            quota_manager_proxy_,
-                           storage::QuotaClient::kFileSystem, origin_url,
+                           storage::QuotaClient::kFileSystem,
+                           url::Origin::Create(origin_url),
                            FileSystemTypeToQuotaStorageType(type))
           : base::BindOnce(&base::DoNothing);
 
@@ -348,10 +350,9 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       origin_url, GetTypeString(type));
   if (result && proxy && usage) {
-    proxy->NotifyStorageModified(storage::QuotaClient::kFileSystem,
-                                 origin_url,
-                                 FileSystemTypeToQuotaStorageType(type),
-                                 -usage);
+    proxy->NotifyStorageModified(
+        storage::QuotaClient::kFileSystem, url::Origin::Create(origin_url),
+        FileSystemTypeToQuotaStorageType(type), -usage);
   }
 
   if (result)
