@@ -439,8 +439,6 @@ void ClientControlledShellSurface::OnSurfaceCommit() {
 
         case ash::mojom::WindowStateType::MAXIMIZED:
         case ash::mojom::WindowStateType::FULLSCREEN:
-        case ash::mojom::WindowStateType::LEFT_SNAPPED:
-        case ash::mojom::WindowStateType::RIGHT_SNAPPED:
           animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
           break;
 

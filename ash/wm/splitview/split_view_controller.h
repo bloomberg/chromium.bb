@@ -142,7 +142,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
+  void OnOverviewModeEnding() override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -255,6 +255,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // screen orientation and split divider position.
   gfx::Point GetEndDragLocationInScreen(aura::Window* window,
                                         const gfx::Point& location_in_screen);
+
+  // Restore |window| transform to identity transform if applicable and activate
+  // the window. Also Stack the other snapped window below |window| so that the
+  // two snapped windows are always the top two windows when split view mode is
+  // active.
+  void RestoreAndActivateSnappedWindow(aura::Window* window);
 
   // Starts/Ends overview mode if the overview mode is inactive/active.
   void StartOverview();

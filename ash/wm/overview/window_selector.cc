@@ -23,6 +23,7 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
@@ -340,7 +341,6 @@ void WindowSelector::Init(const WindowList& windows,
 // may cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
 // calls to restoring_minimized_windows() on a partially destructed object.
 void WindowSelector::Shutdown() {
-  is_shut_down_ = true;
   // Stop observing screen metrics changes first to avoid auto-positioning
   // windows in response to work area changes from window activation.
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -357,7 +357,7 @@ void WindowSelector::Shutdown() {
                                                 OverviewTransition::kExit);
     }
     for (const auto& window_selector_item : window_grid->window_list())
-      window_selector_item->RestoreWindow();
+      window_selector_item->RestoreWindow(/*reset_transform=*/true);
     remaining_items += window_grid->size();
   }
 
@@ -594,6 +594,10 @@ void WindowSelector::ResetDraggedWindowGesture() {
 void WindowSelector::PositionWindows(bool animate) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
     grid->PositionWindows(animate);
+}
+
+bool WindowSelector::IsShuttingDown() const {
+  return Shell::Get()->window_selector_controller()->is_shutting_down();
 }
 
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,

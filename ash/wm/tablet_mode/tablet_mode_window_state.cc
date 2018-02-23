@@ -394,6 +394,8 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
       // avoid flashing.
       if (window_state->IsMaximized())
         window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+      else if (window_state->IsSnapped())
+        window_state->SetBoundsDirect(bounds_in_parent);
       else
         window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }

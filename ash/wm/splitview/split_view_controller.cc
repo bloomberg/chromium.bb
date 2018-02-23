@@ -17,10 +17,14 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -103,6 +107,17 @@ mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
       NOTREACHED();
       return mojom::SplitViewState::NO_SNAP;
   }
+}
+
+mojom::WindowStateType GetStateTypeFromSnapPostion(
+    SplitViewController::SnapPosition snap_position) {
+  DCHECK(snap_position != SplitViewController::NONE);
+  if (snap_position == SplitViewController::LEFT)
+    return mojom::WindowStateType::LEFT_SNAPPED;
+  if (snap_position == SplitViewController::RIGHT)
+    return mojom::WindowStateType::RIGHT_SNAPPED;
+  NOTREACHED();
+  return mojom::WindowStateType::DEFAULT;
 }
 
 }  // namespace
@@ -230,16 +245,19 @@ void SplitViewController::SnapWindow(aura::Window* window,
   UpdateSnappedWindowsAndDividerBounds();
 
   StartObserving(window);
-  const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
-                                                  : wm::WM_EVENT_SNAP_RIGHT);
-  wm::GetWindowState(window)->OnWMEvent(&event);
 
-  // Stack the other snapped window below the current active window so that
-  // the snapped two windows are always the top two windows while resizing.
-  aura::Window* stacking_target =
-      (window == left_window_) ? right_window_ : left_window_;
-  if (stacking_target)
-    window->parent()->StackChildBelow(stacking_target, window);
+  if (wm::GetWindowState(window)->GetStateType() ==
+      GetStateTypeFromSnapPostion(snap_position)) {
+    // If the window has already been snapped, just activate it. Restore its
+    // transform if applicable.
+    RestoreAndActivateSnappedWindow(window);
+  } else {
+    // Otherwise, try to snap it. It will be activated later after the window is
+    // snapped.
+    const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
+                                                    : wm::WM_EVENT_SNAP_RIGHT);
+    wm::GetWindowState(window)->OnWMEvent(&event);
+  }
 
   NotifySplitViewStateChanged(previous_state, state_);
   base::RecordAction(base::UserMetricsAction("SplitView_SnapWindow"));
@@ -482,7 +500,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
   DCHECK(IsSplitViewModeActive());
 
   if (window_state->IsSnapped()) {
-    wm::ActivateWindow(window_state->window());
+    RestoreAndActivateSnappedWindow(window_state->window());
   } else if (window_state->IsFullscreen() || window_state->IsMaximized()) {
     // End split view mode if one of the snapped windows gets maximized /
     // full-screened. Also end overview mode if overview mode is active at the
@@ -544,21 +562,41 @@ void SplitViewController::OnOverviewModeStarting() {
   NotifySplitViewStateChanged(previous_state, state_);
 }
 
-void SplitViewController::OnOverviewModeEnded() {
+void SplitViewController::OnOverviewModeEnding() {
   DCHECK(IsSplitViewModeActive());
 
-  // If split view mode is active but only has one snapped window, use the MRU
-  // window list to auto select another window to snap.
-  if (state_ != BOTH_SNAPPED) {
-    aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-    for (auto* window : windows) {
+  if (state_ == BOTH_SNAPPED)
+    return;
+
+  WindowSelector* window_selector =
+      Shell::Get()->window_selector_controller()->window_selector();
+  WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
+      GetDefaultSnappedWindow()->GetRootWindow());
+  if (!current_grid)
+    return;
+
+  // If split view mode is active but only has one snapped window when overview
+  // mode is ending, retrieve the first snappable window in the overview window
+  // grid and snap it.
+  const auto& windows = current_grid->window_list();
+  if (windows.size() > 0) {
+    for (const auto& window_selector_item : windows) {
+      aura::Window* window = window_selector_item->GetWindow();
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
-        // OnWindowActivated() will do the right thing to snap the |window|.
-        wm::ActivateWindow(window);
-        break;
+        window_selector->RemoveWindowSelectorItem(window_selector_item.get());
+        if (default_snap_position_ == LEFT)
+          SnapWindow(window, SplitViewController::RIGHT);
+        else if (default_snap_position_ == RIGHT)
+          SnapWindow(window, SplitViewController::LEFT);
+        return;
       }
     }
+
+    // Arriving here we know there is no window in the window grid can be
+    // snapped, in this case end the splitview mode and show cannot snap
+    // toast.
+    EndSplitView();
+    ShowAppCannotSnapToast();
   }
 }
 
@@ -1041,6 +1079,31 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
       break;
   }
   return end_location;
+}
+
+void SplitViewController::RestoreAndActivateSnappedWindow(
+    aura::Window* window) {
+  DCHECK(window == left_window_ || window == right_window_);
+
+  // Restore the window's transform first if its transform is not identity. In
+  // this case the window must come from the overview window grid.
+  if (!window->layer()->GetTargetTransform().IsIdentity()) {
+    for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+      ScopedOverviewAnimationSettings animation_settings(
+          ash::OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
+          window_iter);
+      window_iter->SetTransform(gfx::Transform());
+    }
+  }
+  wm::ActivateWindow(window);
+
+  // Stack the other snapped window below the current active window so that the
+  // two snapped window are always the top two windows when split view mode is
+  // active.
+  aura::Window* stacking_target =
+      (window == left_window_) ? right_window_ : left_window_;
+  if (stacking_target)
+    window->parent()->StackChildBelow(stacking_target, window);
 }
 
 void SplitViewController::StartOverview() {

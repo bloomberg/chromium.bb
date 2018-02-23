@@ -553,6 +553,11 @@ void Shell::NotifyOverviewModeStarting() {
     observer.OnOverviewModeStarting();
 }
 
+void Shell::NotifyOverviewModeEnding() {
+  for (auto& observer : shell_observers_)
+    observer.OnOverviewModeEnding();
+}
+
 void Shell::NotifyOverviewModeEnded() {
   for (auto& observer : shell_observers_)
     observer.OnOverviewModeEnded();

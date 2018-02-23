@@ -17,6 +17,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -68,125 +69,6 @@ ScopedTransformOverviewWindow::GridWindowFillMode GetWindowDimensionsType(
   }
 
   return ScopedTransformOverviewWindow::GridWindowFillMode::kNormal;
-}
-
-// An iterator class that traverses an aura::Window and all of its transient
-// descendants.
-class TransientDescendantIterator {
- public:
-  // Creates an empty iterator.
-  TransientDescendantIterator();
-
-  // Copy constructor required for iterator purposes.
-  TransientDescendantIterator(const TransientDescendantIterator& other) =
-      default;
-
-  // Iterates over |root_window| and all of its transient descendants.
-  // Note |root_window| must not have a transient parent.
-  explicit TransientDescendantIterator(aura::Window* root_window);
-
-  // Prefix increment operator.  This assumes there are more items (i.e.
-  // *this != TransientDescendantIterator()).
-  const TransientDescendantIterator& operator++();
-
-  // Comparison for STL-based loops.
-  bool operator!=(const TransientDescendantIterator& other) const;
-
-  // Dereference operator for STL-compatible iterators.
-  aura::Window* operator*() const;
-
- private:
-  // Explicit assignment operator defined because an explicit copy constructor
-  // is needed and therefore the DISALLOW_COPY_AND_ASSIGN macro cannot be used.
-  TransientDescendantIterator& operator=(
-      const TransientDescendantIterator& other) = default;
-
-  // The current window that |this| refers to. A null |current_window_| denotes
-  // an empty iterator and is used as the last possible value in the traversal.
-  aura::Window* current_window_;
-};
-
-// Provides a virtual container implementing begin() and end() for a sequence of
-// TransientDescendantIterators. This can be used in range-based for loops.
-class TransientDescendantIteratorRange {
- public:
-  explicit TransientDescendantIteratorRange(
-      const TransientDescendantIterator& begin);
-
-  // Copy constructor required for iterator purposes.
-  TransientDescendantIteratorRange(
-      const TransientDescendantIteratorRange& other) = default;
-
-  const TransientDescendantIterator& begin() const { return begin_; }
-  const TransientDescendantIterator& end() const { return end_; }
-
- private:
-  // Explicit assignment operator defined because an explicit copy constructor
-  // is needed and therefore the DISALLOW_COPY_AND_ASSIGN macro cannot be used.
-  TransientDescendantIteratorRange& operator=(
-      const TransientDescendantIteratorRange& other) = default;
-
-  TransientDescendantIterator begin_;
-  TransientDescendantIterator end_;
-};
-
-TransientDescendantIterator::TransientDescendantIterator()
-    : current_window_(nullptr) {}
-
-TransientDescendantIterator::TransientDescendantIterator(
-    aura::Window* root_window)
-    : current_window_(root_window) {
-  DCHECK(!::wm::GetTransientParent(root_window));
-}
-
-// Performs a pre-order traversal of the transient descendants.
-const TransientDescendantIterator& TransientDescendantIterator::operator++() {
-  DCHECK(current_window_);
-
-  const aura::Window::Windows transient_children =
-      ::wm::GetTransientChildren(current_window_);
-
-  if (!transient_children.empty()) {
-    current_window_ = transient_children.front();
-  } else {
-    while (current_window_) {
-      aura::Window* parent = ::wm::GetTransientParent(current_window_);
-      if (!parent) {
-        current_window_ = nullptr;
-        break;
-      }
-      const aura::Window::Windows transient_siblings =
-          ::wm::GetTransientChildren(parent);
-      auto iter = std::find(transient_siblings.begin(),
-                            transient_siblings.end(), current_window_);
-      ++iter;
-      if (iter != transient_siblings.end()) {
-        current_window_ = *iter;
-        break;
-      }
-      current_window_ = ::wm::GetTransientParent(current_window_);
-    }
-  }
-  return *this;
-}
-
-bool TransientDescendantIterator::operator!=(
-    const TransientDescendantIterator& other) const {
-  return current_window_ != other.current_window_;
-}
-
-aura::Window* TransientDescendantIterator::operator*() const {
-  return current_window_;
-}
-
-TransientDescendantIteratorRange::TransientDescendantIteratorRange(
-    const TransientDescendantIterator& begin)
-    : begin_(begin) {}
-
-TransientDescendantIteratorRange GetTransientTreeIterator(
-    aura::Window* window) {
-  return TransientDescendantIteratorRange(
-      TransientDescendantIterator(GetTransientRoot(window)));
 }
 
 }  // namespace
@@ -279,7 +161,6 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
       window_(window),
       ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
-      original_transform_(window->layer()->GetTargetTransform()),
       original_opacity_(window->layer()->GetTargetOpacity()),
       weak_ptr_factory_(this) {
   if (IsNewOverviewUi())
@@ -288,7 +169,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() = default;
 
-void ScopedTransformOverviewWindow::RestoreWindow() {
+void ScopedTransformOverviewWindow::RestoreWindow(bool reset_transform) {
   ::wm::SetShadowElevation(window_, original_shadow_elevation_);
 
   wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
@@ -300,17 +181,21 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
     return;
   }
 
-  ScopedAnimationSettings animation_settings_list;
-  BeginScopedAnimation(selector_item_->GetExitTransformAnimationType(),
-                       &animation_settings_list);
-  SetTransform(window()->GetRootWindow(), original_transform_);
-  // Add requests to cache render surface and perform trilinear filtering for
-  // the exit animation of overview mode. The requests will be removed when the
-  // exit animation finishes.
-  if (switches::IsTrilinearFilteringEnabled()) {
-    for (auto& settings : animation_settings_list) {
-      settings->CacheRenderSurface();
-      settings->TrilinearFiltering();
+  if (reset_transform) {
+    ScopedAnimationSettings animation_settings_list;
+    BeginScopedAnimation(selector_item_->GetExitTransformAnimationType(),
+                         &animation_settings_list);
+    // Use identity transform directly to reset window's transform when exiting
+    // overview.
+    SetTransform(window()->GetRootWindow(), gfx::Transform());
+    // Add requests to cache render surface and perform trilinear filtering for
+    // the exit animation of overview mode. The requests will be removed when
+    // the exit animation finishes.
+    if (switches::IsTrilinearFilteringEnabled()) {
+      for (auto& settings : animation_settings_list) {
+        settings->CacheRenderSurface();
+        settings->TrilinearFiltering();
+      }
     }
   }
 
@@ -338,7 +223,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
       window_->layer()->SetMaskLayer(original_mask_layer_);
     }
   }
-  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
+  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
         animation_type, window);
     settings->DeferPaint();
@@ -366,7 +251,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
 }
 
 bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : wm::GetTransientTreeIterator(window_)) {
     if (window->Contains(target))
       return true;
   }
@@ -377,7 +262,7 @@ bool ScopedTransformOverviewWindow::Contains(const aura::Window* target) const {
 gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   gfx::Rect bounds;
   aura::Window* overview_window = GetOverviewWindow();
-  for (auto* window : GetTransientTreeIterator(overview_window)) {
+  for (auto* window : wm::GetTransientTreeIterator(overview_window)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
     if (window != overview_window &&
@@ -396,7 +281,7 @@ gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
   const int top_inset = GetTopInset();
   gfx::Rect bounds;
   aura::Window* overview_window = GetOverviewWindow();
-  for (auto* window : GetTransientTreeIterator(overview_window)) {
+  for (auto* window : wm::GetTransientTreeIterator(overview_window)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
     if (window != overview_window &&
@@ -427,7 +312,7 @@ gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
 }
 
 SkColor ScopedTransformOverviewWindow::GetTopColor() const {
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : wm::GetTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
@@ -443,7 +328,7 @@ int ScopedTransformOverviewWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
   if (minimized_widget_)
     return 0;
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : wm::GetTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
@@ -486,7 +371,7 @@ void ScopedTransformOverviewWindow::SetTransform(
       selector_item_->window_grid()->window_animation_observer();
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
-  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
+  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
     aura::Window* parent_window = window->parent();
     gfx::Rect original_bounds(window->GetTargetBounds());
     ::wm::ConvertRectToScreen(parent_window, &original_bounds);
@@ -508,7 +393,7 @@ void ScopedTransformOverviewWindow::SetTransform(
 }
 
 void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
-  for (auto* window : GetTransientTreeIterator(GetOverviewWindow()))
+  for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
 }
 
@@ -617,7 +502,7 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   // enter animation and the whole time during overview mode. For the exit
   // animation of overview mode, we need to add those requests again.
   if (switches::IsTrilinearFilteringEnabled()) {
-    for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
+    for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
       cached_and_filtered_layer_observers_.push_back(
           std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
     }

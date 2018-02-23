@@ -119,7 +119,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   int GetTopInset() const;
 
   // Restores and animates the managed window to its non overview mode state.
-  void RestoreWindow();
+  // If |reset_transform| equals false, the window's transform will not be reset
+  // to identity transform when exiting the overview mode. See
+  // WindowSelectorItem::RestoreWindow() for details why we need this.
+  void RestoreWindow(bool reset_transform);
 
   // Informs the ScopedTransformOverviewWindow that the window being watched was
   // destroyed. This resets the internal window pointer.
@@ -203,9 +206,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow
 
   // True if the window has been transformed for overview mode.
   bool overview_started_;
-
-  // The original transform of the window before entering overview mode.
-  gfx::Transform original_transform_;
 
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
