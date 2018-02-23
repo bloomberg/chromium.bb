@@ -11,7 +11,7 @@
 # always ooo 135-135
 # word foobar =
 
-# The dot pattern 124-135-135-12-1235 will back-translate to fooobar
+# The dot pattern 124-135-135-12-1-1235 will back-translate to fooobar
 # as specified by the first rule.
 
 # Not a very practical example, I admit, but it demonstrates the
