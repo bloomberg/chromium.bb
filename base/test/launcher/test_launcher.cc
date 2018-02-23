@@ -833,6 +833,13 @@ bool LoadFilterFile(const FilePath& file_path,
         TrimWhitespaceASCII(filter_line.substr(0, hash_pos), TRIM_ALL)
             .as_string();
 
+    if (trimmed_line.substr(0, 2) == "//") {
+      LOG(ERROR) << "Line " << line_num << " in " << file_path
+                 << " starts with //, use # for comments.";
+      return false;
+    }
+
+    // Treat a line starting with '//' as a comment.
     if (trimmed_line.empty())
       continue;
 
@@ -963,7 +970,8 @@ bool TestLauncher::Init() {
     return false;
   }
 
-  CombinePositiveTestFilters(positive_gtest_filter, positive_file_filter);
+  CombinePositiveTestFilters(std::move(positive_gtest_filter),
+                             std::move(positive_file_filter));
 
   if (!results_tracker_.Init(*command_line)) {
     LOG(ERROR) << "Failed to initialize test results tracker.";
@@ -1065,9 +1073,9 @@ void TestLauncher::CombinePositiveTestFilters(
       }
     }
   } else if (!filter_a.empty()) {
-    positive_test_filter_ = filter_a;
+    positive_test_filter_ = std::move(filter_a);
   } else {
-    positive_test_filter_ = filter_b;
+    positive_test_filter_ = std::move(filter_b);
   }
 }
 
