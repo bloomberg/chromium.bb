@@ -623,10 +623,10 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         context->reporting_service()->GetPolicy(), context));
   }
 
-  if (context->network_error_logging_delegate()) {
-    context->SetNetworkErrorLoggingDelegate(
+  if (context->network_error_logging_service()) {
+    context->SetNetworkErrorLoggingService(
         net::NetworkErrorLoggingService::Create());
-    context->network_error_logging_delegate()->SetReportingService(
+    context->network_error_logging_service()->SetReportingService(
         context->reporting_service());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)

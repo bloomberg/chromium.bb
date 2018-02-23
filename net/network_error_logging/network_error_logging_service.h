@@ -14,9 +14,12 @@
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/url_request/network_error_logging_delegate.h"
+#include "net/socket/next_proto.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Value;
@@ -36,9 +39,30 @@ extern const base::Feature NET_EXPORT kNetworkErrorLogging;
 
 namespace net {
 
-class NET_EXPORT NetworkErrorLoggingService
-    : public NetworkErrorLoggingDelegate {
+class NET_EXPORT NetworkErrorLoggingService {
  public:
+  // The details of a network error that are included in an NEL report.
+  //
+  // See http://wicg.github.io/network-error-logging/#dfn-network-error-object
+  // for details on the semantics of each field.
+  struct NET_EXPORT RequestDetails {
+    RequestDetails();
+    RequestDetails(const RequestDetails& other);
+    ~RequestDetails();
+
+    GURL uri;
+    GURL referrer;
+    IPAddress server_ip;
+    NextProto protocol;
+    int status_code;
+    base::TimeDelta elapsed_time;
+    Error type;
+
+    bool is_reporting_upload;
+  };
+
+  static const char kHeaderName[];
+
   static const char kReportType[];
 
   // Keys for data included in report bodies. Exposed for tests.
@@ -52,26 +76,38 @@ class NET_EXPORT NetworkErrorLoggingService
   static const char kElapsedTimeKey[];
   static const char kTypeKey[];
 
-  // Creates the NetworkErrorLoggingService.
-  //
-  // Will return nullptr if Network Error Logging is disabled via
-  // base::FeatureList.
   static std::unique_ptr<NetworkErrorLoggingService> Create();
 
-  // NetworkErrorLoggingDelegate implementation:
+  virtual ~NetworkErrorLoggingService();
 
-  ~NetworkErrorLoggingService() override;
+  // Ingests a "NEL:" header received from |orogin| with normalized value
+  // |value|. May or may not actually set a policy for that origin.
+  virtual void OnHeader(const url::Origin& origin, const std::string& value);
 
-  void SetReportingService(ReportingService* reporting_service) override;
+  // Considers queueing a network error report for the request described in
+  // |details|. Note that Network Error Logging can report a fraction of
+  // successful requests as well (to calculate error rates), so this should be
+  // called on *all* requests.
+  virtual void OnRequest(const RequestDetails& details);
 
-  void OnHeader(const url::Origin& origin, const std::string& value) override;
+  // Removes browsing data (origin policies) associated with any origin for
+  // which |origin_filter| returns true, or for all origins if
+  // |origin_filter.is_null()|.
+  virtual void RemoveBrowsingData(
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
-  void OnRequest(const RequestDetails& details) override;
+  // Sets the ReportingService that will be used to queue network error reports.
+  // If |nullptr| is passed, reports will be queued locally or discarded.
+  // |reporting_service| must outlive the NetworkErrorLoggingService.
+  void SetReportingService(ReportingService* reporting_service);
 
-  void RemoveBrowsingData(
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
-
+  // Sets a base::TickClock (used to track policy expiration) for tests.
+  // |tick_clock| must outlive the NetworkErrorLoggingService, and cannot be
+  // nullptr.
   void SetTickClockForTesting(base::TickClock* tick_clock);
+
+ protected:
+  NetworkErrorLoggingService();
 
  private:
   // NEL Policy set by an origin.
@@ -102,8 +138,6 @@ class NET_EXPORT NetworkErrorLoggingService
   // PolicyMap.
   using WildcardPolicyMap =
       std::map<std::string, std::set<const OriginPolicy*>>;
-
-  NetworkErrorLoggingService();
 
   // Would be const, but base::TickClock::NowTicks isn't.
   bool ParseHeader(const std::string& json_value, OriginPolicy* policy_out);

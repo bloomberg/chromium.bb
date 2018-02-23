@@ -1838,8 +1838,6 @@ component("net") {
         "reporting/reporting_service.h",
         "reporting/reporting_uploader.cc",
         "reporting/reporting_uploader.h",
-        "url_request/network_error_logging_delegate.cc",
-        "url_request/network_error_logging_delegate.h",
       ]
     }
 

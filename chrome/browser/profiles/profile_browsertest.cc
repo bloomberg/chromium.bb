@@ -562,9 +562,9 @@ void CompareURLRequestContexts(
     EXPECT_NE(extension_context->reporting_service(),
               main_context->reporting_service());
   }
-  if (extension_context->network_error_logging_delegate()) {
-    EXPECT_NE(extension_context->network_error_logging_delegate(),
-              main_context->network_error_logging_delegate());
+  if (extension_context->network_error_logging_service()) {
+    EXPECT_NE(extension_context->network_error_logging_service(),
+              main_context->network_error_logging_service());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

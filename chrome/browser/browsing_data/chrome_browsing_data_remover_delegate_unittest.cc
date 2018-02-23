@@ -115,10 +115,10 @@
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using content::BrowsingDataFilterBuilder;
@@ -1053,14 +1053,13 @@ class ClearReportingCacheTester {
   net::ReportingService* old_service_;
 };
 
-class MockNetworkErrorLoggingDelegate
-    : public net::NetworkErrorLoggingDelegate {
+class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
  public:
-  MockNetworkErrorLoggingDelegate() = default;
+  MockNetworkErrorLoggingService() = default;
 
-  // net::NetworkErrorLoggingDelegate implementation:
+  // net::NetworkErrorLoggingService implementation:
 
-  ~MockNetworkErrorLoggingDelegate() override = default;
+  ~MockNetworkErrorLoggingService() override = default;
 
   void OnHeader(const url::Origin& origin, const std::string& value) override {
     NOTREACHED();
@@ -1074,8 +1073,6 @@ class MockNetworkErrorLoggingDelegate
     last_origin_filter_ = origin_filter;
   }
 
-  void SetReportingService(net::ReportingService* reporting_service) override {}
-
   int remove_calls() const { return remove_calls_; }
   const base::RepeatingCallback<bool(const GURL&)>& last_origin_filter() const {
     return last_origin_filter_;
@@ -1085,7 +1082,7 @@ class MockNetworkErrorLoggingDelegate
   int remove_calls_ = 0;
   base::RepeatingCallback<bool(const GURL&)> last_origin_filter_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkErrorLoggingDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkErrorLoggingService);
 };
 
 class ClearNetworkErrorLoggingTester {
@@ -1093,34 +1090,33 @@ class ClearNetworkErrorLoggingTester {
   ClearNetworkErrorLoggingTester(TestingProfile* profile, bool create_service)
       : profile_(profile) {
     if (create_service)
-      delegate_ = std::make_unique<MockNetworkErrorLoggingDelegate>();
+      service_ = std::make_unique<MockNetworkErrorLoggingService>();
 
     net::URLRequestContext* request_context =
         profile_->GetRequestContext()->GetURLRequestContext();
 
-    request_context->set_network_error_logging_delegate(delegate_.get());
+    request_context->set_network_error_logging_service(service_.get());
   }
 
   ~ClearNetworkErrorLoggingTester() {
     net::URLRequestContext* request_context =
         profile_->GetRequestContext()->GetURLRequestContext();
-    DCHECK_EQ(delegate_.get(),
-              request_context->network_error_logging_delegate());
-    request_context->set_network_error_logging_delegate(nullptr);
+    DCHECK_EQ(service_.get(), request_context->network_error_logging_service());
+    request_context->set_network_error_logging_service(nullptr);
   }
 
   void GetMockInfo(
       int* remove_calls_out,
       base::RepeatingCallback<bool(const GURL&)>* last_origin_filter_out) {
-    DCHECK_NE(nullptr, delegate_.get());
+    DCHECK_NE(nullptr, service_.get());
 
-    *remove_calls_out = delegate_->remove_calls();
-    *last_origin_filter_out = delegate_->last_origin_filter();
+    *remove_calls_out = service_->remove_calls();
+    *last_origin_filter_out = service_->last_origin_filter();
   }
 
  private:
   TestingProfile* profile_;
-  std::unique_ptr<MockNetworkErrorLoggingDelegate> delegate_;
+  std::unique_ptr<MockNetworkErrorLoggingService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearNetworkErrorLoggingTester);
 };

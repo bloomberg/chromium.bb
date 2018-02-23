@@ -173,8 +173,8 @@
 #endif  // defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using content::BrowserContext;
@@ -645,17 +645,17 @@ void ProfileIOData::AppRequestContext::SetReportingService(
   set_reporting_service(reporting_service_.get());
 }
 
-void ProfileIOData::AppRequestContext::SetNetworkErrorLoggingDelegate(
-    std::unique_ptr<net::NetworkErrorLoggingDelegate>
-        network_error_logging_delegate) {
-  network_error_logging_delegate_ = std::move(network_error_logging_delegate);
-  set_network_error_logging_delegate(network_error_logging_delegate_.get());
+void ProfileIOData::AppRequestContext::SetNetworkErrorLoggingService(
+    std::unique_ptr<net::NetworkErrorLoggingService>
+        network_error_logging_service) {
+  network_error_logging_service_ = std::move(network_error_logging_service);
+  set_network_error_logging_service(network_error_logging_service_.get());
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 ProfileIOData::AppRequestContext::~AppRequestContext() {
 #if BUILDFLAG(ENABLE_REPORTING)
-  SetNetworkErrorLoggingDelegate(nullptr);
+  SetNetworkErrorLoggingService(nullptr);
   SetReportingService(nullptr);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   AssertNoURLRequests();

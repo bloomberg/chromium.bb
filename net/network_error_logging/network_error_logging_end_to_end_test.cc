@@ -69,7 +69,7 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
     url_request_context_ = builder.Build();
 
     EXPECT_TRUE(url_request_context_->reporting_service());
-    EXPECT_TRUE(url_request_context_->network_error_logging_delegate());
+    EXPECT_TRUE(url_request_context_->network_error_logging_service());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &NetworkErrorLoggingEndToEndTest::HandleConfigureRequest,

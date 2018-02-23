@@ -115,7 +115,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check Reporting and Network Error Logging are enabled (can be disabled at
   // build time).
   EXPECT_TRUE(context->reporting_service());
-  EXPECT_TRUE(context->network_error_logging_delegate());
+  EXPECT_TRUE(context->network_error_logging_service());
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Check IPv6 is disabled when on wifi.

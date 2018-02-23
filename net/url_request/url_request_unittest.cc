@@ -143,9 +143,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
@@ -7207,7 +7207,7 @@ TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHttps) {
 
 namespace {
 
-class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
+class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
  public:
   struct Header {
     Header() = default;
@@ -7220,13 +7220,9 @@ class TestNetworkErrorLoggingDelegate : public NetworkErrorLoggingDelegate {
   const std::vector<Header>& headers() { return headers_; }
   const std::vector<RequestDetails>& errors() { return errors_; }
 
-  // NetworkErrorLoggingDelegate implementation:
+  // NetworkErrorLoggingService implementation:
 
-  ~TestNetworkErrorLoggingDelegate() override = default;
-
-  void SetReportingService(ReportingService* reporting_service) override {
-    NOTREACHED();
-  }
+  ~TestNetworkErrorLoggingService() override = default;
 
   void OnHeader(const url::Origin& origin, const std::string& value) override {
     Header header;
@@ -7254,7 +7250,7 @@ std::unique_ptr<test_server::HttpResponse> SendNelHeader(
   std::unique_ptr<test_server::BasicHttpResponse> http_response(
       new test_server::BasicHttpResponse);
   http_response->set_code(HTTP_OK);
-  http_response->AddCustomHeader(NetworkErrorLoggingDelegate::kHeaderName,
+  http_response->AddCustomHeader(NetworkErrorLoggingService::kHeaderName,
                                  "foo");
   return std::move(http_response);
 }
@@ -7291,10 +7287,10 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
   GURL request_url = http_test_server()->GetURL("/");
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7303,7 +7299,7 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderHttp) {
   request->Start();
   base::RunLoop().Run();
 
-  EXPECT_TRUE(nel_delegate.headers().empty());
+  EXPECT_TRUE(nel_service.headers().empty());
 }
 
 TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
@@ -7313,10 +7309,10 @@ TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
   GURL request_url = https_test_server.GetURL("/");
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7325,9 +7321,9 @@ TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
   request->Start();
   base::RunLoop().Run();
 
-  ASSERT_EQ(1u, nel_delegate.headers().size());
-  EXPECT_EQ(url::Origin::Create(request_url), nel_delegate.headers()[0].origin);
-  EXPECT_EQ("foo", nel_delegate.headers()[0].value);
+  ASSERT_EQ(1u, nel_service.headers().size());
+  EXPECT_EQ(url::Origin::Create(request_url), nel_service.headers()[0].origin);
+  EXPECT_EQ("foo", nel_service.headers()[0].value);
 }
 
 TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
@@ -7338,10 +7334,10 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
   GURL request_url = https_test_server.GetURL("/");
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7353,7 +7349,7 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
 
   EXPECT_TRUE(d.have_certificate_errors());
   EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
-  EXPECT_TRUE(nel_delegate.headers().empty());
+  EXPECT_TRUE(nel_service.headers().empty());
 }
 
 TEST_F(URLRequestTestHTTP, DontForwardErrorToNelNoDelegate) {
@@ -7385,10 +7381,10 @@ TEST_F(URLRequestTestHTTP, DISABLED_DontForwardErrorToNelHttp) {
       URLRequestFailedJob::GetMockHttpUrl(ERR_CONNECTION_REFUSED);
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7397,7 +7393,7 @@ TEST_F(URLRequestTestHTTP, DISABLED_DontForwardErrorToNelHttp) {
   request->Start();
   base::RunLoop().Run();
 
-  EXPECT_TRUE(nel_delegate.errors().empty());
+  EXPECT_TRUE(nel_service.errors().empty());
 
   URLRequestFilter::GetInstance()->ClearHandlers();
 }
@@ -7409,10 +7405,10 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Mock) {
       URLRequestFailedJob::GetMockHttpsUrl(ERR_CONNECTION_REFUSED);
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7421,10 +7417,10 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Mock) {
   request->Start();
   base::RunLoop().Run();
 
-  ASSERT_EQ(1u, nel_delegate.errors().size());
-  EXPECT_EQ(request_url, nel_delegate.errors()[0].uri);
-  EXPECT_EQ(0, nel_delegate.errors()[0].status_code);
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, nel_delegate.errors()[0].type);
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ(request_url, nel_service.errors()[0].uri);
+  EXPECT_EQ(0, nel_service.errors()[0].status_code);
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, nel_service.errors()[0].type);
 
   URLRequestFilter::GetInstance()->ClearHandlers();
 }
@@ -7439,10 +7435,10 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Real) {
   GURL request_url = https_test_server.GetURL("/");
 
   TestNetworkDelegate network_delegate;
-  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestNetworkErrorLoggingService nel_service;
   TestURLRequestContext context(true);
   context.set_network_delegate(&network_delegate);
-  context.set_network_error_logging_delegate(&nel_delegate);
+  context.set_network_error_logging_service(&nel_service);
   context.Init();
 
   TestDelegate d;
@@ -7451,10 +7447,10 @@ TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps_Real) {
   request->Start();
   base::RunLoop().Run();
 
-  ASSERT_EQ(1u, nel_delegate.errors().size());
-  EXPECT_EQ(request_url, nel_delegate.errors()[0].uri);
-  EXPECT_EQ(0, nel_delegate.errors()[0].status_code);
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, nel_delegate.errors()[0].type);
+  ASSERT_EQ(1u, nel_service.errors().size());
+  EXPECT_EQ(request_url, nel_service.errors()[0].uri);
+  EXPECT_EQ(0, nel_service.errors()[0].status_code);
+  EXPECT_EQ(ERR_EMPTY_RESPONSE, nel_service.errors()[0].type);
 }
 
 #endif  // BUILDFLAG(ENABLE_REPORTING)

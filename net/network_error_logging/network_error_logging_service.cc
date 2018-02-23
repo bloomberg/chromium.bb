@@ -20,7 +20,6 @@
 #include "net/base/net_errors.h"
 #include "net/reporting/reporting_service.h"
 #include "net/socket/next_proto.h"
-#include "net/url_request/network_error_logging_delegate.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -110,9 +109,27 @@ bool GetTypeFromNetError(Error error, std::string* type_out) {
   return false;
 }
 
+bool IsHttpError(const NetworkErrorLoggingService::RequestDetails& request) {
+  return request.status_code >= 400 && request.status_code < 600;
+}
+
+bool RequestWasSuccessful(
+    const NetworkErrorLoggingService::RequestDetails& request) {
+  return request.type == OK && !IsHttpError(request);
+}
+
 }  // namespace
 
 // static:
+
+NetworkErrorLoggingService::RequestDetails::RequestDetails() = default;
+
+NetworkErrorLoggingService::RequestDetails::RequestDetails(
+    const RequestDetails& other) = default;
+
+NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
+
+const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
 const char NetworkErrorLoggingService::kUriKey[] = "uri";
@@ -134,11 +151,6 @@ NetworkErrorLoggingService::Create() {
 }
 
 NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;
-
-void NetworkErrorLoggingService::SetReportingService(
-    ReportingService* reporting_service) {
-  reporting_service_ = reporting_service;
-}
 
 void NetworkErrorLoggingService::OnHeader(const url::Origin& origin,
                                           const std::string& value) {
@@ -191,10 +203,10 @@ void NetworkErrorLoggingService::OnRequest(const RequestDetails& details) {
   if (!GetTypeFromNetError(details.type, &type_string))
     return;
 
-  if (details.IsHttpError())
+  if (IsHttpError(details))
     type_string = kHttpErrorType;
 
-  double sampling_fraction = details.RequestWasSuccessful()
+  double sampling_fraction = RequestWasSuccessful(details)
                                  ? policy->success_fraction
                                  : policy->failure_fraction;
   if (base::RandDouble() >= sampling_fraction)
@@ -225,6 +237,11 @@ void NetworkErrorLoggingService::RemoveBrowsingData(
     MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
     policies_.erase(*it);
   }
+}
+
+void NetworkErrorLoggingService::SetReportingService(
+    ReportingService* reporting_service) {
+  reporting_service_ = reporting_service;
 }
 
 void NetworkErrorLoggingService::SetTickClockForTesting(
@@ -366,7 +383,7 @@ void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
 std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
     const std::string& type,
     double sampling_fraction,
-    const NetworkErrorLoggingDelegate::RequestDetails& details) const {
+    const NetworkErrorLoggingService::RequestDetails& details) const {
   auto body = std::make_unique<base::DictionaryValue>();
 
   body->SetString(kUriKey, details.uri.spec());
