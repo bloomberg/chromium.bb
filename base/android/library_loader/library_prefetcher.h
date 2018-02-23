@@ -42,8 +42,9 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // dumps it to disk.
   static void PeriodicallyCollectResidency();
 
-  // Calls madvise(MADV_RANDOM) on the native library executable code range.
-  static void MadviseRandomText();
+  // Calls madvise() on the native library executable, using orderfile
+  // information to decide how to advise each part of the library.
+  static void MadviseForOrderfile();
 
  private:
   // Returns the percentage of [start, end] currently resident in

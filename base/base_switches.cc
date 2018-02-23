@@ -128,9 +128,10 @@ const char kEnableCrashReporterForTesting[] =
 #endif
 
 #if defined(OS_ANDROID)
-// Calls madvise(MADV_RANDOM) on executable code right after the library is
-// loaded, from all processes.
-const char kMadviseRandomExecutableCode[] = "madvise-random-executable-code";
+// Optimizes memory layout of the native library using the orderfile symbols
+// given in base/android/library_loader/anchor_functions.h, via madvise and
+// changing the library prefetch behavior.
+const char kOrderfileMemoryOptimization[] = "orderfile-memory-optimization";
 #endif
 
 }  // namespace switches

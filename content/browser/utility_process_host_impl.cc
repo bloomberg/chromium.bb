@@ -314,7 +314,7 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kUtilityStartupDialog,
       switches::kUseGL,
 #if defined(OS_ANDROID)
-      switches::kMadviseRandomExecutableCode,
+      switches::kOrderfileMemoryOptimization,
 #endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
