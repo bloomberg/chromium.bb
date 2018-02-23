@@ -26,6 +26,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
 
+  const views::View* profile_indicator_icon() const {
+    return profile_indicator_icon_;
+  }
+  views::View* profile_indicator_icon() { return profile_indicator_icon_; }
+
   // Called when BrowserView creates all it's child views.
   virtual void OnBrowserViewInitViewsComplete();
 
@@ -104,13 +109,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void LayoutIncognitoButton();
 
   void PaintToolbarBackground(gfx::Canvas* canvas) const;
-
-  const views::View* profile_indicator_icon() const {
-    return profile_indicator_icon_;
-  }
-  views::View* profile_indicator_icon() {
-    return profile_indicator_icon_;
-  }
 
   // views::NonClientFrameView:
   void ActivationChanged(bool active) override;
