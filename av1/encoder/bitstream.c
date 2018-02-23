@@ -3091,6 +3091,10 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
+#if CONFIG_JNT_COMP
+  aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
+#endif
+
   if (seq_params->force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, 1);
   } else {

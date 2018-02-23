@@ -326,6 +326,9 @@ typedef struct AV1EncoderConfig {
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;
+#if CONFIG_JNT_COMP
+  int enable_jnt_comp;
+#endif
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

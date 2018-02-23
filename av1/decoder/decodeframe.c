@@ -2434,6 +2434,10 @@ void read_sequence_header(SequenceHeader *seq_params,
 
   seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
+#if CONFIG_JNT_COMP
+  seq_params->enable_jnt_comp = aom_rb_read_bit(rb);
+#endif
+
   if (aom_rb_read_bit(rb)) {
     seq_params->force_screen_content_tools = 2;
   } else {
