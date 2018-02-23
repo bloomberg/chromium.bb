@@ -22,9 +22,5 @@ const base::Feature kNewFileDownload{"NewFileDownload",
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPreloadWebViewWhenNavigatingFromNativeContentOnIOS11_3{
-    "PreloadWebViewWhenNavigatingFromNativeContentOnIOS11_3",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace web
