@@ -71,6 +71,36 @@ print_preview.DestinationCertificateStatus = {
 };
 
 /**
+ * @typedef {{
+ *   display_name: (string),
+ *   type: (string | undefined),
+ *   value: (number | string | boolean),
+ *   is_default: (boolean | undefined),
+ * }}
+ */
+print_preview.VendorCapabilitySelectOption;
+
+/**
+ * Specifies a custom vendor capability.
+ * @typedef {{
+ *   id: (string),
+ *   display_name: (string),
+ *   localized_display_name: (string | undefined),
+ *   type: (string),
+ *   select_cap: ({
+ *     option: (Array<!print_preview.VendorCapabilitySelectOption>|undefined),
+ *   }|undefined),
+ *   typed_value_cap: ({
+ *     default: (number | string | boolean | undefined),
+ *   }|undefined),
+ *   range_cap: ({
+ *     default: (number),
+ *   }),
+ * }}
+ */
+print_preview.VendorCapability;
+
+/**
  * Capabilities of a print destination represented in a CDD.
  *
  * @typedef {{

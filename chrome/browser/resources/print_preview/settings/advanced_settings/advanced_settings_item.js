@@ -1,24 +1,6 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * Specifies a custom vendor capability.
- * @typedef {{
- *   id: (string),
- *   display_name: (string),
- *   localized_display_name: (string | undefined),
- *   type: (string),
- *   select_cap: ({
- *     option: (Array<{
- *       display_name: (string),
- *       type: (string | undefined),
- *       value: (number | string | boolean),
- *       is_default: (boolean | undefined)
- *     }>|undefined)
- *   }|undefined)
- * }}
- */
-print_preview.VendorCapability;
 
 cr.define('print_preview', function() {
   'use strict';
