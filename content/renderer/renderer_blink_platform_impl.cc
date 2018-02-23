@@ -573,6 +573,18 @@ RendererBlinkPlatformImpl::CreateSessionStorageNamespace(
   return std::make_unique<WebStorageNamespaceImpl>(namespace_id.as_string());
 }
 
+void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
+    const std::string& source_namespace,
+    const std::string& destination_namespace) {
+  if (!local_storage_cached_areas_) {
+    local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
+        RenderThreadImpl::current()->GetStoragePartitionService(),
+        renderer_scheduler_));
+  }
+  local_storage_cached_areas_->CloneNamespace(source_namespace,
+                                              destination_namespace);
+}
+
 //------------------------------------------------------------------------------
 
 WebIDBFactory* RendererBlinkPlatformImpl::IdbFactory() {

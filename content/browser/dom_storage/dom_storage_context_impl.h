@@ -160,9 +160,6 @@ class CONTENT_EXPORT DOMStorageContextImpl
       const DOMStorageArea* area,
       const GURL& page_url);
 
-  // May be called on any thread.
-  std::string AllocateSessionId();
-
   // Must be called on the background thread.
   base::Optional<bad_message::BadMessageReason> DiagnoseSessionNamespaceId(
       const std::string& namespace_id);

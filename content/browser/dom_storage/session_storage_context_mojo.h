@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "url/origin.h"
 
@@ -42,9 +43,9 @@ class CONTENT_EXPORT SessionStorageContextMojo {
       std::string leveldb_name);
   ~SessionStorageContextMojo();
 
-  void OpenSessionStorage(const std::string& namespace_id,
-                          const url::Origin& origin,
-                          mojom::LevelDBWrapperRequest request);
+  void OpenSessionStorage(int process_id,
+                          const std::string& namespace_id,
+                          mojom::SessionStorageNamespaceRequest request);
 
   void CreateSessionNamespace(const std::string& namespace_id);
   void CloneSessionNamespace(const std::string& namespace_id_to_clone,

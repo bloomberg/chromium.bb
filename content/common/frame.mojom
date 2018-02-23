@@ -155,6 +155,11 @@ struct CreateNewWindowParams {
   // The session storage namespace ID this window should use.
   string session_storage_namespace_id;
 
+  // The session storage namespace ID this window should clone from.
+  // TODO(dmurph): Remove this once session storage is fully mojo'd, as the
+  // clone call happens on a different interface. https://crbug.com/716490
+  string clone_from_session_storage_namespace_id;
+
   // The name of the resulting frame that should be created (empty if none
   // has been specified). UTF8 encoded string.
   string frame_name;

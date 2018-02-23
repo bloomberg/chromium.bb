@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/render_thread_impl.h"
 
@@ -42,31 +43,44 @@ LocalStorageCachedAreas::GetSessionStorageArea(const std::string& namespace_id,
   return GetCachedArea(namespace_id, origin, renderer_scheduler_);
 }
 
+void LocalStorageCachedAreas::CloneNamespace(
+    const std::string& source_namespace,
+    const std::string& destination_namespace) {
+  DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+  auto namespace_it = cached_namespaces_.find(source_namespace);
+  if (namespace_it != cached_namespaces_.end()) {
+    namespace_it->second.session_storage_namespace->Clone(
+        destination_namespace);
+    return;
+  }
+  // The clone call still has to be sent, as we can have a case where the
+  // storage is never opened but there is still data there (from a restore or
+  // an earlier clone).
+  mojom::SessionStorageNamespacePtr session_storage_namespace;
+  storage_partition_service_->OpenSessionStorage(
+      source_namespace, mojo::MakeRequest(&session_storage_namespace));
+  session_storage_namespace->Clone(destination_namespace);
+}
+
 size_t LocalStorageCachedAreas::TotalCacheSize() const {
   size_t total = 0;
-  for (const auto& it : cached_areas_)
-    total += it.second.get()->memory_used();
+  for (const auto& it : cached_namespaces_)
+    total += it.second.TotalCacheSize();
   return total;
 }
 
 void LocalStorageCachedAreas::ClearAreasIfNeeded() {
   if (TotalCacheSize() < total_cache_limit_)
     return;
-  auto it = cached_areas_.begin();
-  while (it != cached_areas_.end()) {
-    if (it->second->HasOneRef())
-      it = cached_areas_.erase(it);
-    else
-      ++it;
-  }
+
+  base::EraseIf(cached_namespaces_,
+                [](auto& pair) { return pair.second.CleanUpUnusedAreas(); });
 }
 
 scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const std::string& namespace_id,
     const url::Origin& origin,
     blink::scheduler::RendererScheduler* scheduler) {
-  AreaKey key(namespace_id, origin);
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class CacheMetrics {
@@ -76,16 +90,25 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     kMaxValue
   };
 
-  auto it = cached_areas_.find(key);
+  auto namespace_it = cached_namespaces_.find(namespace_id);
   CacheMetrics metric;
-  if (it != cached_areas_.end()) {
-    if (it->second->HasOneRef()) {
-      metric = CacheMetrics::kHit;
-    } else {
-      metric = CacheMetrics::kUnused;
-    }
-  } else {
+  scoped_refptr<LocalStorageCachedArea> result;
+  DOMStorageNamespace* dom_namespace = nullptr;
+  if (namespace_it == cached_namespaces_.end()) {
     metric = CacheMetrics::kMiss;
+  } else {
+    dom_namespace = &namespace_it->second;
+    auto cache_it = dom_namespace->cached_areas.find(origin);
+    if (cache_it == dom_namespace->cached_areas.end()) {
+      metric = CacheMetrics::kMiss;
+    } else {
+      if (cache_it->second->HasOneRef()) {
+        metric = CacheMetrics::kHit;
+      } else {
+        metric = CacheMetrics::kUnused;
+      }
+      result = cache_it->second;
+    }
   }
   if (namespace_id == kLocalStorageNamespaceId) {
     UMA_HISTOGRAM_ENUMERATION("LocalStorage.RendererAreaCacheHit", metric,
@@ -95,19 +118,44 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
                                 CacheMetrics::kMaxValue);
   }
 
-  if (it == cached_areas_.end()) {
+  if (!result) {
     ClearAreasIfNeeded();
-    scoped_refptr<LocalStorageCachedArea> area;
+    if (!dom_namespace) {
+      dom_namespace = &cached_namespaces_[namespace_id];
+    }
     if (namespace_id == kLocalStorageNamespaceId) {
-      area = base::MakeRefCounted<LocalStorageCachedArea>(
+      result = base::MakeRefCounted<LocalStorageCachedArea>(
           origin, storage_partition_service_, this, scheduler);
     } else {
-      area = base::MakeRefCounted<LocalStorageCachedArea>(
-          namespace_id, origin, storage_partition_service_, this, scheduler);
+      DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+      storage_partition_service_->OpenSessionStorage(
+          namespace_id,
+          mojo::MakeRequest(&dom_namespace->session_storage_namespace));
+      result = base::MakeRefCounted<LocalStorageCachedArea>(
+          namespace_id, origin, dom_namespace->session_storage_namespace.get(),
+          this, scheduler);
     }
-    it = cached_areas_.emplace(key, std::move(area)).first;
+    dom_namespace->cached_areas.emplace(origin, result);
   }
-  return it->second;
+  return result;
+}
+
+LocalStorageCachedAreas::DOMStorageNamespace::DOMStorageNamespace() {}
+LocalStorageCachedAreas::DOMStorageNamespace::~DOMStorageNamespace() {}
+LocalStorageCachedAreas::DOMStorageNamespace::DOMStorageNamespace(
+    LocalStorageCachedAreas::DOMStorageNamespace&& other) = default;
+
+size_t LocalStorageCachedAreas::DOMStorageNamespace::TotalCacheSize() const {
+  size_t total = 0;
+  for (const auto& it : cached_areas)
+    total += it.second.get()->memory_used();
+  return total;
+}
+
+bool LocalStorageCachedAreas::DOMStorageNamespace::CleanUpUnusedAreas() {
+  base::EraseIf(cached_areas,
+                [](auto& pair) { return pair.second->HasOneRef(); });
+  return cached_areas.empty();
 }
 
 }  // namespace content

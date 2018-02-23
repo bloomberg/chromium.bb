@@ -845,7 +845,7 @@ PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    mojo::InterfaceRequest<mojom::LevelDBWrapper> request) {
+    mojom::LevelDBWrapperRequest request) {
   int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {
@@ -857,15 +857,9 @@ void StoragePartitionImpl::OpenLocalStorage(
 
 void StoragePartitionImpl::OpenSessionStorage(
     const std::string& namespace_id,
-    const url::Origin& origin,
-    mojo::InterfaceRequest<mojom::LevelDBWrapper> request) {
+    mojom::SessionStorageNamespaceRequest request) {
   int process_id = bindings_.dispatch_context();
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin.GetURL())) {
-    bindings_.ReportBadMessage("Access denied for sessionStorage request");
-    return;
-  }
-  dom_storage_context_->OpenSessionStorage(namespace_id, origin,
+  dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
                                            std::move(request));
 }
 

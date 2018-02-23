@@ -31,9 +31,11 @@ scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
 scoped_refptr<SessionStorageNamespaceImpl>
 SessionStorageNamespaceImpl::CloneFrom(
     scoped_refptr<DOMStorageContextWrapper> context,
+    std::string namepace_id,
     const std::string& namepace_id_to_clone) {
-  return base::WrapRefCounted(new SessionStorageNamespaceImpl(
-      DOMStorageSession::CloneFrom(std::move(context), namepace_id_to_clone)));
+  return base::WrapRefCounted(
+      new SessionStorageNamespaceImpl(DOMStorageSession::CloneFrom(
+          std::move(context), std::move(namepace_id), namepace_id_to_clone)));
 }
 
 const std::string& SessionStorageNamespaceImpl::id() const {

@@ -41,6 +41,7 @@
 #include "cc/base/switches.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
@@ -88,6 +89,7 @@
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
@@ -1260,7 +1262,16 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   if (GetContentClient()->renderer()->AllowPopup())
     params->user_gesture = true;
   params->window_container_type = WindowFeaturesToContainerType(features);
-  params->session_storage_namespace_id = session_storage_namespace_id_;
+
+  params->session_storage_namespace_id = AllocateSessionStorageNamespaceId();
+  params->clone_from_session_storage_namespace_id =
+      session_storage_namespace_id_;
+  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
+    RenderThreadImpl::current_blink_platform_impl()
+        ->CloneSessionStorageNamespace(session_storage_namespace_id_,
+                                       params->session_storage_namespace_id);
+  }
+
   const std::string& frame_name_utf8 = frame_name.Utf8(
       WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   params->frame_name = frame_name_utf8;

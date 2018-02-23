@@ -31,10 +31,11 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
       scoped_refptr<DOMStorageContextWrapper> context,
       const std::string& namepace_id);
 
-  // Constructs a |SessionStorageNamespaceImpl| by cloning
-  // |namespace_to_clone|. Allocates it a new ID.
+  // Constructs a |SessionStorageNamespaceImpl| with id |namespace_id| by
+  // cloning |namespace_to_clone|.
   static scoped_refptr<SessionStorageNamespaceImpl> CloneFrom(
       scoped_refptr<DOMStorageContextWrapper> context,
+      std::string namepace_id,
       const std::string& namepace_id_to_clone);
 
   // SessionStorageNamespace implementation.

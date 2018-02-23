@@ -270,6 +270,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
   CreateNetworkURLLoaderFactory();
 
+  // Clones the source namespace to the destination namespace.
+  void CloneSessionStorageNamespace(const std::string& source_namespace,
+                                    const std::string& destination_namespace);
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 

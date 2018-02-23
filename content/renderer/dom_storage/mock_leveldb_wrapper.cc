@@ -2,9 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
 
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+
 namespace content {
+
+class MockLevelDBWrapper::MockSessionStorageNamespace
+    : public mojom::SessionStorageNamespace {
+ public:
+  MockSessionStorageNamespace(std::string namespace_id,
+                              MockLevelDBWrapper* wrapper)
+      : namespace_id_(std::move(namespace_id)), wrapper_(wrapper) {}
+
+  void OpenArea(const url::Origin& origin,
+                mojom::LevelDBWrapperAssociatedRequest database) override {
+    bindings_.AddBinding(wrapper_, std::move(database));
+  }
+
+  void Clone(const std::string& clone_to_namespace) override {
+    wrapper_->observed_clone_ = true;
+    wrapper_->observed_clone_from_namespace_ = namespace_id_;
+    wrapper_->observed_clone_to_namespace_ = clone_to_namespace;
+  }
+
+ private:
+  std::string namespace_id_;
+  MockLevelDBWrapper* wrapper_;
+  mojo::AssociatedBindingSet<mojom::LevelDBWrapper> bindings_;
+};
 
 MockLevelDBWrapper::MockLevelDBWrapper() {}
 MockLevelDBWrapper::~MockLevelDBWrapper() {}
@@ -17,9 +45,10 @@ void MockLevelDBWrapper::OpenLocalStorage(
 
 void MockLevelDBWrapper::OpenSessionStorage(
     const std::string& namespace_id,
-    const url::Origin& origin,
-    mojom::LevelDBWrapperRequest database) {
-  bindings_.AddBinding(this, std::move(database));
+    mojom::SessionStorageNamespaceRequest request) {
+  namespace_bindings_.AddBinding(
+      std::make_unique<MockSessionStorageNamespace>(namespace_id, this),
+      std::move(request));
 }
 
 void MockLevelDBWrapper::AddObserver(
