@@ -2139,22 +2139,11 @@
   'mash_browser_tests': {
     'remove_from': [
       # chromium.memory
+      # Unclear why this isn't run. http://crbug.com/814403
       'Linux Chromium OS ASan LSan Tests (1)',
+      # Not needed on chromium.fyi because suite is on main waterfall.
+      'Mojo ChromiumOS',
     ],
-    'modifications': {
-      # chromium.chromiumos
-      'linux-chromeos-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter',
-        ],
-      },
-      # chromium.fyi
-      'Mojo ChromiumOS': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mash.browser_tests.filter',
-        ],
-      },
-    },
   },
   'mash_unittests': {
     'remove_from': [
