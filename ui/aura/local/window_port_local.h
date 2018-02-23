@@ -46,7 +46,6 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
-  viz::SurfaceId GetSurfaceId() const override;
   void AllocateLocalSurfaceId() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
   viz::FrameSinkId GetFrameSinkId() const override;

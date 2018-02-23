@@ -143,7 +143,7 @@ class CONTENT_EXPORT DelegatedFrameHost
                                   const ReadbackRequestCallback& callback,
                                   const SkColorType preferred_color_type);
   bool CanCopyFromCompositingSurface() const;
-  viz::FrameSinkId GetFrameSinkId();
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   // Given the SurfaceID of a Surface that is contained within this class'
   // Surface, find the relative transform between the Surfaces and apply it
@@ -276,8 +276,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // This lock is for waiting for a front surface to become available to draw.
   std::unique_ptr<ui::CompositorLock> released_front_lock_;
-
-  base::TimeTicks last_draw_ended_;
 
   bool needs_begin_frame_ = false;
 

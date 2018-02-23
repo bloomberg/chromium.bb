@@ -181,10 +181,6 @@ bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
          active_device_scale_factor_ != 0.f;
 }
 
-viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
-  return frame_sink_id_;
-}
-
 bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
@@ -594,9 +590,7 @@ void DelegatedFrameHost::OnCompositingDidCommit(ui::Compositor* compositor) {
 }
 
 void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
-                                              base::TimeTicks start_time) {
-  last_draw_ended_ = start_time;
-}
+                                              base::TimeTicks start_time) {}
 
 void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
 

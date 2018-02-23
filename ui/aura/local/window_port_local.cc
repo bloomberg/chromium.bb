@@ -134,10 +134,6 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   return std::move(frame_sink);
 }
 
-viz::SurfaceId WindowPortLocal::GetSurfaceId() const {
-  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
-}
-
 void WindowPortLocal::AllocateLocalSurfaceId() {
   last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
   last_size_ = window_->bounds().size();

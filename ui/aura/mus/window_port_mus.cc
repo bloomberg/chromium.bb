@@ -595,10 +595,6 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   return frame_sink;
 }
 
-viz::SurfaceId WindowPortMus::GetSurfaceId() const {
-  return viz::SurfaceId(window_->embed_frame_sink_id(), local_surface_id_);
-}
-
 void WindowPortMus::OnWindowAddedToRootWindow() {
   if (base::FeatureList::IsEnabled(features::kMash))
     return;

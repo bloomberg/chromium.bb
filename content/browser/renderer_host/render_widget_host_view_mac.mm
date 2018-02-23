@@ -1530,7 +1530,7 @@ viz::LocalSurfaceId RenderWidgetHostViewMac::GetLocalSurfaceId() const {
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
-  return browser_compositor_->GetDelegatedFrameHost()->GetFrameSinkId();
+  return browser_compositor_->GetDelegatedFrameHost()->frame_sink_id();
 }
 
 bool RenderWidgetHostViewMac::ShouldRouteEvent(

@@ -963,8 +963,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
-  if (window_)
-    window_->set_embed_frame_sink_id(frame_sink_id_);
   if (frame.metadata.selection.start != selection_start_ ||
       frame.metadata.selection.end != selection_end_) {
     selection_start_ = frame.metadata.selection.start;
