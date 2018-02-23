@@ -441,8 +441,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CancelBannerDirect) {
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
   RunBannerTest(browser(), manager.get(),
-                GetBannerURLWithAction("cancel_prompt"), engagement_scores,
-                WebappInstallSource::COUNT, RENDERER_CANCELLED, false);
+                GetBannerURLWithAction("cancel_prompt_and_navigate"),
+                engagement_scores, WebappInstallSource::COUNT,
+                RENDERER_CANCELLED, false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PromptBanner) {
@@ -477,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   RunBannerTest(browser(), manager.get(),
                 GetBannerURLWithManifestAndQuery(
                     "/banners/manifest_different_start_url.json", "action",
-                    "cancel_prompt"),
+                    "cancel_prompt_and_navigate"),
                 engagement_scores, WebappInstallSource::COUNT,
                 RENDERER_CANCELLED, false);
 }
