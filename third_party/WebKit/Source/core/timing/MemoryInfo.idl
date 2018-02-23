@@ -34,7 +34,7 @@
 [
     NoInterfaceObject
 ] interface MemoryInfo {
-    [Measure] readonly attribute unsigned long? totalJSHeapSize;
-    [Measure] readonly attribute unsigned long? usedJSHeapSize;
+    [Measure] readonly attribute unsigned long totalJSHeapSize;
+    [Measure] readonly attribute unsigned long usedJSHeapSize;
     [Measure] readonly attribute unsigned long jsHeapSizeLimit;
 };

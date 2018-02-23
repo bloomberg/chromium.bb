@@ -30,8 +30,6 @@
 
 #include "core/timing/MemoryInfo.h"
 
-#include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -53,40 +51,6 @@ TEST(MemoryInfo, quantizeMemorySize) {
   EXPECT_EQ(10000000u, QuantizeMemorySize(3));
   EXPECT_EQ(10000000u, QuantizeMemorySize(1));
   EXPECT_EQ(10000000u, QuantizeMemorySize(0));
-}
-
-TEST(MemoryInfo, nullableValues) {
-  RuntimeEnabledFeatures::SetPreciseMemoryInfoEnabled(true);
-  // Having a single page, MemoryInfo provides all values.
-  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
-  Page::OrdinaryPages().insert(&page_holder->GetPage());
-  Persistent<MemoryInfo> info(MemoryInfo::Create());
-  bool is_null;
-  EXPECT_LT(0U, info->totalJSHeapSize(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_LT(0U, info->usedJSHeapSize(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_LT(0U, info->jsHeapSizeLimit());
-
-  // Now two pages total. MemoryInfo should only provide jsHeapSizeLimit.
-  std::unique_ptr<DummyPageHolder> other_page_holder =
-      DummyPageHolder::Create();
-  Page::OrdinaryPages().insert(&other_page_holder->GetPage());
-  info = MemoryInfo::Create();
-  EXPECT_EQ(0U, info->totalJSHeapSize(is_null));
-  EXPECT_TRUE(is_null);
-  EXPECT_EQ(0U, info->usedJSHeapSize(is_null));
-  EXPECT_TRUE(is_null);
-  EXPECT_LT(0U, info->jsHeapSizeLimit());
-
-  // Remove both pages. MemoryInfo should now provide all values.
-  Page::OrdinaryPages().clear();
-  info = MemoryInfo::Create();
-  EXPECT_LT(0U, info->totalJSHeapSize(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_LT(0U, info->usedJSHeapSize(is_null));
-  EXPECT_FALSE(is_null);
-  EXPECT_LT(0U, info->jsHeapSizeLimit());
 }
 
 }  // namespace blink
