@@ -273,6 +273,7 @@ void LockStateController::OnLockFailTimeout() {
 }
 
 void LockStateController::StartLockToShutdownTimer() {
+  DCHECK(shutdown_reason_);
   shutdown_after_lock_ = false;
   lock_to_shutdown_timer_.Stop();
   lock_to_shutdown_timer_.Start(
@@ -332,8 +333,9 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
+  DCHECK(shutdown_reason_);
   // Shut down or reboot based on device policy.
-  shutdown_controller_->ShutDownOrReboot(shutdown_reason_);
+  shutdown_controller_->ShutDownOrReboot(*shutdown_reason_);
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {

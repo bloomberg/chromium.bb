@@ -11,6 +11,7 @@
 #include "ash/shutdown_reason.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -42,19 +43,14 @@ void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
 
   // On real Chrome OS hardware the power manager handles shutdown.
   using chromeos::DBusThreadManager;
-  constexpr char kDescription[] = "UI request from ash";
+  std::string description = base::StringPrintf("UI request from ash: %s",
+                                               ShutdownReasonToString(reason));
   if (reboot_on_shutdown_) {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
-        reason == ShutdownReason::UNKNOWN
-            ? power_manager::REQUEST_RESTART_OTHER
-            : power_manager::REQUEST_RESTART_FOR_USER,
-        kDescription);
+        power_manager::REQUEST_RESTART_FOR_USER, description);
   } else {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown(
-        reason == ShutdownReason::UNKNOWN
-            ? power_manager::REQUEST_SHUTDOWN_OTHER
-            : power_manager::REQUEST_SHUTDOWN_FOR_USER,
-        kDescription);
+        power_manager::REQUEST_SHUTDOWN_FOR_USER, description);
   }
 }
 

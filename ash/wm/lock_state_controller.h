@@ -13,6 +13,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
@@ -197,7 +198,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   bool shutting_down_ = false;
 
   // The reason (e.g. user action) for a pending shutdown.
-  ShutdownReason shutdown_reason_ = ShutdownReason::UNKNOWN;
+  base::Optional<ShutdownReason> shutdown_reason_;
 
   // Indicates whether controller should proceed to (cancellable) shutdown after
   // locking.
