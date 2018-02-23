@@ -46,6 +46,8 @@ class CastWindowManagerAura : public CastWindowManager,
   void RemoveSideSwipeGestureHandler(
       CastSideSwipeGestureHandlerInterface* handler) override;
 
+  void SetColorInversion(bool enable) override;
+
  private:
   friend class CastWindowManager;
 

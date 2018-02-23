@@ -67,6 +67,9 @@ class CastWindowManager {
   // Remove the registration of a system side swipe event handler.
   virtual void RemoveSideSwipeGestureHandler(
       CastSideSwipeGestureHandlerInterface* handler) = 0;
+
+  // Enable/Disable color inversion.
+  virtual void SetColorInversion(bool enable) = 0;
 };
 
 }  // namespace chromecast
