@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_ukm_helper.h"
+#include "components/download/public/common/download_ukm_helper.h"
 
 #include "services/metrics/public/cpp/ukm_builders.h"
 
-namespace content {
+namespace download {
 
 namespace {
 // Return the "size" of the bucket based on the allowed percent_error.
@@ -20,11 +20,10 @@ int DownloadUkmHelper::CalcExponentialBucket(int value) {
   return static_cast<int>(floor(log10(value + 1) / CalcBucketIncrement()));
 }
 
-void DownloadUkmHelper::RecordDownloadStarted(
-    int download_id,
-    ukm::SourceId source_id,
-    download::DownloadContent file_type,
-    download::DownloadSource download_source) {
+void DownloadUkmHelper::RecordDownloadStarted(int download_id,
+                                              ukm::SourceId source_id,
+                                              DownloadContent file_type,
+                                              DownloadSource download_source) {
   ukm::builders::Download_Started(source_id)
       .SetDownloadId(download_id)
       .SetFileType(static_cast<int>(file_type))
@@ -35,7 +34,7 @@ void DownloadUkmHelper::RecordDownloadStarted(
 void DownloadUkmHelper::RecordDownloadInterrupted(
     int download_id,
     base::Optional<int> change_in_file_size,
-    download::DownloadInterruptReason reason,
+    DownloadInterruptReason reason,
     int resulting_file_size,
     const base::TimeDelta& time_since_start) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
@@ -54,7 +53,7 @@ void DownloadUkmHelper::RecordDownloadInterrupted(
 
 void DownloadUkmHelper::RecordDownloadResumed(
     int download_id,
-    download::ResumeMode mode,
+    ResumeMode mode,
     const base::TimeDelta& time_since_start) {
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::Download_Resumed(source_id)
@@ -79,11 +78,9 @@ void DownloadUkmHelper::RecordDownloadCompleted(
 
 void DownloadUkmHelper::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
                                         ukm::SourceId source_id,
-                                        WebContents* web_contents) {
-  if (ukm_recorder) {
-    ukm_recorder->UpdateSourceURL(source_id,
-                                  web_contents->GetLastCommittedURL());
-  }
+                                        const GURL& url) {
+  if (ukm_recorder)
+    ukm_recorder->UpdateSourceURL(source_id, url);
 }
 
-}  // namespace content
+}  // namespace download

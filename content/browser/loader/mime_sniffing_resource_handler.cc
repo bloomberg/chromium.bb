@@ -15,9 +15,9 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -595,8 +595,10 @@ bool MimeSniffingResourceHandler::MustDownload() {
     must_download_ = false;
   }
 
-  if (GetRequestInfo()->suggested_filename().has_value() && !must_download_)
-    RecordDownloadCount(CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
+  if (GetRequestInfo()->suggested_filename().has_value() && !must_download_) {
+    download::RecordDownloadCount(
+        download::CROSS_ORIGIN_DOWNLOAD_WITHOUT_CONTENT_DISPOSITION);
+  }
 
   return must_download_;
 }

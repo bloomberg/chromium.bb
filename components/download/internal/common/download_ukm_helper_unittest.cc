@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_ukm_helper.h"
+#include "components/download/public/common/download_ukm_helper.h"
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -17,7 +17,7 @@ using UkmDownloadInterrupted = ukm::builders::Download_Interrupted;
 using UkmDownloadResumed = ukm::builders::Download_Resumed;
 using UkmDownloadCompleted = ukm::builders::Download_Completed;
 
-namespace content {
+namespace download {
 
 class DownloadUkmHelperTest : public testing::Test {
  public:
@@ -54,8 +54,8 @@ class DownloadUkmHelperTest : public testing::Test {
 TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
   // RecordDownloadStarted
   ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  download::DownloadContent file_type = download::DownloadContent::AUDIO;
-  download::DownloadSource download_source = download::DownloadSource::UNKNOWN;
+  DownloadContent file_type = DownloadContent::AUDIO;
+  DownloadSource download_source = DownloadSource::UNKNOWN;
   DownloadUkmHelper::RecordDownloadStarted(download_id_, source_id, file_type,
                                            download_source);
 
@@ -68,8 +68,7 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
 
   // RecordDownloadInterrupted, has change in file size.
   int change_in_file_size = 1000;
-  download::DownloadInterruptReason reason =
-      download::DOWNLOAD_INTERRUPT_REASON_NONE;
+  DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   int resulting_file_size = 2000;
   int time_since_start = 250;
   DownloadUkmHelper::RecordDownloadInterrupted(
@@ -90,7 +89,7 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
        time_since_start});
 
   // RecordDownloadResumed.
-  download::ResumeMode mode = download::ResumeMode::IMMEDIATE_RESTART;
+  ResumeMode mode = ResumeMode::IMMEDIATE_RESTART;
   int time_since_start_resume = 300;
   DownloadUkmHelper::RecordDownloadResumed(
       download_id_, mode,
@@ -119,4 +118,4 @@ TEST_F(DownloadUkmHelperTest, TestBasicReporting) {
        time_since_start_completed});
 }
 
-}  // namespace content
+}  // namespace download

@@ -4,19 +4,19 @@
 
 // Holds helpers for gathering UKM stats about downloads.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UKM_HELPER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UKM_HELPER_H_
 
 #include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/resume_mode.h"
-#include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "url/gurl.h"
 
-namespace content {
+namespace download {
 
-class CONTENT_EXPORT DownloadUkmHelper {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadUkmHelper {
  public:
   // Calculate which exponential bucket the value falls in. This is used to mask
   // the actual value of the metric due to privacy concerns for certain metrics
@@ -26,8 +26,8 @@ class CONTENT_EXPORT DownloadUkmHelper {
   // Record when the download has started.
   static void RecordDownloadStarted(int download_id,
                                     ukm::SourceId source_id,
-                                    download::DownloadContent file_type,
-                                    download::DownloadSource download_source);
+                                    DownloadContent file_type,
+                                    DownloadSource download_source);
 
   // Record when the download is interrupted.
   static void RecordDownloadInterrupted(
@@ -39,7 +39,7 @@ class CONTENT_EXPORT DownloadUkmHelper {
 
   // Record when the download is resumed.
   static void RecordDownloadResumed(int download_id,
-                                    download::ResumeMode mode,
+                                    ResumeMode mode,
                                     const base::TimeDelta& time_since_start);
 
   // Record when the download is completed.
@@ -50,7 +50,7 @@ class CONTENT_EXPORT DownloadUkmHelper {
   // Friended Helper for recording main frame URLs to UKM.
   static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
                               ukm::SourceId source_id,
-                              WebContents* web_contents);
+                              const GURL& url);
 
  private:
   DownloadUkmHelper();
@@ -59,6 +59,6 @@ class CONTENT_EXPORT DownloadUkmHelper {
   DISALLOW_COPY_AND_ASSIGN(DownloadUkmHelper);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_UKM_HELPER_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UKM_HELPER_H_

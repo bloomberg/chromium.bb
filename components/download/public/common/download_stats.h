@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Holds helpers for gathering UMA stats about downloads.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,9 +16,9 @@
 #include "base/optional.h"
 #include "components/download/public/common/download_content.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
-#include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -27,9 +27,9 @@ class FilePath;
 class Time;
 class TimeDelta;
 class TimeTicks;
-}
+}  // namespace base
 
-namespace content {
+namespace download {
 
 // We keep a count of how often various events occur in the
 // histogram "Download.Counts".
@@ -186,105 +186,122 @@ enum class ParallelDownloadCreationEvent {
 };
 
 // Increment one of the above counts.
-void RecordDownloadCount(DownloadCountTypes type);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCount(DownloadCountTypes type);
 
 // Record download count with download source.
-void RecordDownloadCountWithSource(DownloadCountTypes type,
-                                   download::DownloadSource download_source);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCountWithSource(
+    DownloadCountTypes type,
+    DownloadSource download_source);
 
 // Record COMPLETED_COUNT and how long the download took.
-void RecordDownloadCompleted(const base::TimeTicks& start,
-                             int64_t download_len,
-                             bool is_parallelizable,
-                             download::DownloadSource download_source);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
+    const base::TimeTicks& start,
+    int64_t download_len,
+    bool is_parallelizable,
+    DownloadSource download_source);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
-void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
-                               int64_t received,
-                               int64_t total,
-                               bool is_parallelizable,
-                               bool is_parallel_download_enabled,
-                               download::DownloadSource download_source);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
+    DownloadInterruptReason reason,
+    int64_t received,
+    int64_t total,
+    bool is_parallelizable,
+    bool is_parallel_download_enabled,
+    DownloadSource download_source);
 
 // Record that a download has been classified as malicious.
-void RecordMaliciousDownloadClassified(
-    download::DownloadDangerType danger_type);
+COMPONENTS_DOWNLOAD_EXPORT void RecordMaliciousDownloadClassified(
+    DownloadDangerType danger_type);
 
 // Record a dangerous download accept event.
-void RecordDangerousDownloadAccept(download::DownloadDangerType danger_type,
-                                   const base::FilePath& file_path);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadAccept(
+    DownloadDangerType danger_type,
+    const base::FilePath& file_path);
 
 // Record a dangerous download discard event.
-void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    download::DownloadDangerType danger_type,
-                                    const base::FilePath& file_path);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadDiscard(
+    DownloadDiscardReason reason,
+    DownloadDangerType danger_type,
+    const base::FilePath& file_path);
 
 // Returns the type of download.
-download::DownloadContent DownloadContentFromMimeType(
-    const std::string& mime_type_string,
-    bool record_content_subcategory);
+COMPONENTS_DOWNLOAD_EXPORT DownloadContent
+DownloadContentFromMimeType(const std::string& mime_type_string,
+                            bool record_content_subcategory);
 
 // Records the mime type of the download.
-void RecordDownloadMimeType(const std::string& mime_type);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadMimeType(
+    const std::string& mime_type);
 
 // Records the mime type of the download for normal profile.
-void RecordDownloadMimeTypeForNormalProfile(const std::string& mime_type);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadMimeTypeForNormalProfile(
+    const std::string& mime_type);
 
 // Records usage of Content-Disposition header.
-void RecordDownloadContentDisposition(const std::string& content_disposition);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadContentDisposition(
+    const std::string& content_disposition);
 
 // Record the number of buffers piled up by the IO thread
 // before the file thread gets to draining them.
-void RecordFileThreadReceiveBuffers(size_t num_buffers);
+COMPONENTS_DOWNLOAD_EXPORT void RecordFileThreadReceiveBuffers(
+    size_t num_buffers);
 
 // Record the time of both the first open and all subsequent opens since the
 // download completed.
-void RecordOpen(const base::Time& end, bool first);
+COMPONENTS_DOWNLOAD_EXPORT void RecordOpen(const base::Time& end, bool first);
 
 // Record whether or not the server accepts ranges, and the download size. Also
 // counts if a strong validator is supplied. The combination of range request
 // support and ETag indicates downloads that are candidates for partial
 // resumption.
-void RecordAcceptsRanges(const std::string& accepts_ranges,
-                         int64_t download_len,
-                         bool has_strong_validator);
+COMPONENTS_DOWNLOAD_EXPORT void RecordAcceptsRanges(
+    const std::string& accepts_ranges,
+    int64_t download_len,
+    bool has_strong_validator);
 
 // Record the number of completed unopened downloads when a download is opened.
-void RecordOpensOutstanding(int size);
+COMPONENTS_DOWNLOAD_EXPORT void RecordOpensOutstanding(int size);
 
 // Record how long we block the file thread at a time.
-void RecordContiguousWriteTime(base::TimeDelta time_blocked);
+COMPONENTS_DOWNLOAD_EXPORT void RecordContiguousWriteTime(
+    base::TimeDelta time_blocked);
 
 // Record the percentage of time we had to block the network (i.e.
 // how often, for each download, something other than the network
 // was the bottleneck).
-void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
-                           base::TimeDelta resource_handler_blocked_time);
+COMPONENTS_DOWNLOAD_EXPORT void RecordNetworkBlockage(
+    base::TimeDelta resource_handler_lifetime,
+    base::TimeDelta resource_handler_blocked_time);
 
 // Record overall bandwidth stats at the file end.
 // Does not count in any hash computation or file open/close time.
-void RecordFileBandwidth(size_t length,
-                         base::TimeDelta disk_write_time,
-                         base::TimeDelta elapsed_time);
+COMPONENTS_DOWNLOAD_EXPORT void RecordFileBandwidth(
+    size_t length,
+    base::TimeDelta disk_write_time,
+    base::TimeDelta elapsed_time);
 
 // Records the size of the download from content-length header.
-void RecordParallelizableContentLength(int64_t content_length);
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableContentLength(
+    int64_t content_length);
 
 // Increment one of the count for parallelizable download.
-void RecordParallelizableDownloadCount(DownloadCountTypes type,
-                                       bool is_parallel_download_enabled);
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableDownloadCount(
+    DownloadCountTypes type,
+    bool is_parallel_download_enabled);
 
 // Records the actual total number of requests sent for a parallel download,
 // including the initial request.
-void RecordParallelDownloadRequestCount(int request_count);
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelDownloadRequestCount(
+    int request_count);
 
 // Records if each byte stream is successfully added to download sink.
-void RecordParallelDownloadAddStreamSuccess(bool success);
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelDownloadAddStreamSuccess(
+    bool success);
 
 // Records the bandwidth for parallelizable download and estimates the saved
 // time at the file end. Does not count in any hash computation or file
 // open/close time.
-void RecordParallelizableDownloadStats(
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableDownloadStats(
     size_t bytes_downloaded_with_parallel_streams,
     base::TimeDelta time_with_parallel_streams,
     size_t bytes_downloaded_without_parallel_streams,
@@ -293,18 +310,19 @@ void RecordParallelizableDownloadStats(
 
 // Records the average bandwidth, time, and file size for parallelizable
 // download.
-CONTENT_EXPORT void RecordParallelizableDownloadAverageStats(
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelizableDownloadAverageStats(
     int64_t bytes_downloaded,
     const base::TimeDelta& time_span);
 
 // Records the parallel download creation counts and the reasons why the
 // download falls back to non-parallel download.
-void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event);
+COMPONENTS_DOWNLOAD_EXPORT void RecordParallelDownloadCreationEvent(
+    ParallelDownloadCreationEvent event);
 
 // Record the result of a download file rename.
-void RecordDownloadFileRenameResultAfterRetry(
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,
-    download::DownloadInterruptReason interrupt_reason);
+    DownloadInterruptReason interrupt_reason);
 
 enum SavePackageEvent {
   // The user has started to save a page as a package.
@@ -329,29 +347,32 @@ enum SavePackageEvent {
   SAVE_PACKAGE_LAST_ENTRY
 };
 
-void RecordSavePackageEvent(SavePackageEvent event);
+COMPONENTS_DOWNLOAD_EXPORT void RecordSavePackageEvent(SavePackageEvent event);
 
 enum OriginStateOnResumption {
-  ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS = 1<<0,
-  ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED = 1<<1,
-  ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED = 1<<2,
-  ORIGIN_STATE_ON_RESUMPTION_MAX = 1<<3
+  ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS = 1 << 0,
+  ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED = 1 << 1,
+  ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED = 1 << 2,
+  ORIGIN_STATE_ON_RESUMPTION_MAX = 1 << 3
 };
 
 // Record the state of the origin information across a download resumption
 // request. |state| is a combination of values from OriginStateOnResumption
 // enum.
-void RecordOriginStateOnResumption(bool is_partial,
-                                   OriginStateOnResumption state);
+COMPONENTS_DOWNLOAD_EXPORT void RecordOriginStateOnResumption(
+    bool is_partial,
+    OriginStateOnResumption state);
 
-void RecordDownloadConnectionSecurity(const GURL& download_url,
-                                      const std::vector<GURL>& url_chain);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionSecurity(
+    const GURL& download_url,
+    const std::vector<GURL>& url_chain);
 
-void RecordDownloadSourcePageTransitionType(
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadSourcePageTransitionType(
     const base::Optional<ui::PageTransition>& transition);
 
-void RecordDownloadHttpResponseCode(int response_code);
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadHttpResponseCode(
+    int response_code);
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

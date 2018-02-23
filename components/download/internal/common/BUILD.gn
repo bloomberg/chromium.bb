@@ -12,7 +12,9 @@ source_set("internal") {
   sources = [
     "download_create_info.cc",
     "download_interrupt_reasons_impl.cc",
+    "download_stats.cc",
     "download_task_runner.cc",
+    "download_ukm_helper.cc",
     "download_utils.cc",
     "rate_estimator.cc",
   ]
@@ -20,6 +22,7 @@ source_set("internal") {
   deps = [
     "//base",
     "//net",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }
 
@@ -27,12 +30,17 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "download_stats_unittest.cc",
+    "download_ukm_helper_unittest.cc",
     "rate_estimator_unittest.cc",
   ]
 
   deps = [
     "//base/test:test_support",
     "//components/download/public/common:public",
+    "//components/ukm:test_support",
+    "//services/metrics/public/cpp:ukm_builders",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
