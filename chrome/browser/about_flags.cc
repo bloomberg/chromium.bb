@@ -3763,6 +3763,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kOmniboxVoiceSearchAlwaysVisible)},
 #endif  // OS_ANDROID
 
+#if defined(OS_CHROMEOS)
+    {"enable-new-wallpaper-picker",
+     flag_descriptions::kEnableNewWallpaperPickerName,
+     flag_descriptions::kEnableNewWallpaperPickerDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kNewWallpaperPicker)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

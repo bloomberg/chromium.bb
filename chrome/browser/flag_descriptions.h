@@ -1882,6 +1882,9 @@ extern const char kAshShelfColorSchemeLightMuted[];
 extern const char kAshShelfColorSchemeNormalMuted[];
 extern const char kAshShelfColorSchemeDarkMuted[];
 
+extern const char kEnableNewWallpaperPickerName[];
+extern const char kEnableNewWallpaperPickerDescription[];
+
 extern const char kMaterialDesignInkDropAnimationSpeedName[];
 extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
 extern const char kMaterialDesignInkDropAnimationFast[];
