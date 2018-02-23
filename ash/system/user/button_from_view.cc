@@ -46,8 +46,8 @@ ButtonFromView::ButtonFromView(views::View* content,
 
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 
-  SetBackground(features::IsNewSystemMenuEnabled()
-                    ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+  SetBackground(features::IsSystemTrayUnifiedEnabled()
+                    ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
                     : views::CreateThemedSolidBackground(
                           this, ui::NativeTheme::kColorId_BubbleBackground));
 }

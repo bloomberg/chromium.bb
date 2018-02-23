@@ -253,8 +253,8 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       back_button_(nullptr) {
   box_layout_ = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  SetBackground(features::IsNewSystemMenuEnabled()
-                    ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+  SetBackground(features::IsSystemTrayUnifiedEnabled()
+                    ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
                     : views::CreateThemedSolidBackground(
                           this, ui::NativeTheme::kColorId_BubbleBackground));
 }
@@ -311,8 +311,8 @@ void TrayDetailsView::CreateScrollableList() {
   scroller_ = new views::ScrollView;
   scroller_->SetContents(scroll_content_);
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
-  if (features::IsNewSystemMenuEnabled()) {
-    scroller_->SetBackgroundColor(kNewMenuBackgroundColor);
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    scroller_->SetBackgroundColor(kUnifiedMenuBackgroundColor);
   } else {
     scroller_->SetBackgroundThemeColorId(
         ui::NativeTheme::kColorId_BubbleBackground);

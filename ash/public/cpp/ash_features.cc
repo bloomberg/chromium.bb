@@ -7,11 +7,11 @@
 namespace ash {
 namespace features {
 
-const base::Feature kAshNewSystemMenu{"AshNewSystemMenu",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSystemTrayUnified{"SystemTrayUnified",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsNewSystemMenuEnabled() {
-  return base::FeatureList::IsEnabled(kAshNewSystemMenu);
+bool IsSystemTrayUnifiedEnabled() {
+  return base::FeatureList::IsEnabled(kSystemTrayUnified);
 }
 
 }  // namespace features
