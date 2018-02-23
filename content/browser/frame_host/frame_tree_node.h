@@ -401,7 +401,7 @@ class CONTENT_EXPORT FrameTreeNode {
   const int frame_tree_node_id_;
 
   // The parent node of this frame. |nullptr| if this node is the root.
-  FrameTreeNode* parent_;
+  FrameTreeNode* const parent_;
 
   // The frame that opened this frame, if any.  Will be set to null if the
   // opener is closed, or if this frame disowns its opener by setting its
