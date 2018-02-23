@@ -30,6 +30,7 @@ class WebString;
 }
 
 namespace media {
+class GpuMemoryBufferVideoFramePool;
 class MediaLog;
 }
 
@@ -219,6 +220,10 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void Reload();
   void ReloadVideo();
   void ReloadAudio();
+
+  // Helper method used for testing.
+  void SetGpuMemoryBufferVideoForTesting(
+      media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
   blink::WebLocalFrame* const frame_;
 

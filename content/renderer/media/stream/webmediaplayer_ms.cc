@@ -17,6 +17,7 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
+#include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
@@ -34,6 +35,7 @@
 #include "media/base/video_rotation.h"
 #include "media/base/video_types.h"
 #include "media/blink/webmediaplayer_util.h"
+#include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
@@ -59,18 +61,35 @@ namespace content {
 class WebMediaPlayerMS::FrameDeliverer {
  public:
   FrameDeliverer(const base::WeakPtr<WebMediaPlayerMS>& player,
-                 const MediaStreamVideoRenderer::RepaintCB& enqueue_frame_cb)
+                 const MediaStreamVideoRenderer::RepaintCB& enqueue_frame_cb,
+                 scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+                 scoped_refptr<base::TaskRunner> worker_task_runner,
+                 media::GpuVideoAcceleratorFactories* gpu_factories)
       : last_frame_opaque_(true),
         last_frame_rotation_(media::VIDEO_ROTATION_0),
         received_first_frame_(false),
         main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
+        media_task_runner_(media_task_runner),
         weak_factory_(this) {
     io_thread_checker_.DetachFromThread();
+
+    if (gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
+        base::FeatureList::IsEnabled(
+            features::kWebRtcUseGpuMemoryBufferVideoFrames)) {
+      gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
+          media_task_runner, worker_task_runner, gpu_factories));
+    }
   }
 
-  ~FrameDeliverer() { DCHECK(io_thread_checker_.CalledOnValidThread()); }
+  ~FrameDeliverer() {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+    if (gpu_memory_buffer_pool_) {
+      media_task_runner_->DeleteSoon(FROM_HERE,
+                                     gpu_memory_buffer_pool_.release());
+    }
+  }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
@@ -80,13 +99,33 @@ class WebMediaPlayerMS::FrameDeliverer {
       return;
 #endif  // defined(OS_ANDROID)
 
+    if (!gpu_memory_buffer_pool_) {
+      FrameReady(frame);
+      return;
+    }
+
+    //  |gpu_memory_buffer_pool_| deletion is going to be posted to
+    //  |media_task_runner_|. base::Unretained() usage is fine since
+    //  |gpu_memory_buffer_pool_| outlives the task.
+    media_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
+            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
+            media::BindToCurrentLoop(base::BindRepeating(
+                &FrameDeliverer::FrameReady, weak_factory_.GetWeakPtr()))));
+  }
+
+  void FrameReady(const scoped_refptr<media::VideoFrame>& frame) {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+
     base::TimeTicks render_time;
     if (frame->metadata()->GetTimeTicks(
             media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-      TRACE_EVENT1("webmediaplayerms", "OnVideoFrame", "Ideal Render Instant",
+      TRACE_EVENT1("webmediaplayerms", "FrameReady", "Ideal Render Instant",
                    render_time.ToInternalValue());
     } else {
-      TRACE_EVENT0("webmediaplayerms", "OnVideoFrame");
+      TRACE_EVENT0("webmediaplayerms", "FrameReady");
     }
 
     const bool is_opaque = media::IsOpaque(frame->format());
@@ -132,6 +171,8 @@ class WebMediaPlayerMS::FrameDeliverer {
   }
 
  private:
+  friend class WebMediaPlayerMS;
+
   bool last_frame_opaque_;
   media::VideoRotation last_frame_rotation_;
   bool received_first_frame_;
@@ -143,6 +184,10 @@ class WebMediaPlayerMS::FrameDeliverer {
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const base::WeakPtr<WebMediaPlayerMS> player_;
   const MediaStreamVideoRenderer::RepaintCB enqueue_frame_cb_;
+
+  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
+  std::unique_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   base::ThreadChecker io_thread_checker_;
@@ -252,13 +297,14 @@ void WebMediaPlayerMS::Load(LoadType load_type,
 
   frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
       AsWeakPtr(),
-      base::Bind(&WebMediaPlayerMSCompositor::EnqueueFrame, compositor_)));
+      base::BindRepeating(&WebMediaPlayerMSCompositor::EnqueueFrame,
+                          compositor_),
+      media_task_runner_, worker_task_runner_, gpu_factories_));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream_,
       media::BindToCurrentLoop(
           base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
-      frame_deliverer_->GetRepaintCallback(), io_task_runner_,
-      media_task_runner_, worker_task_runner_, gpu_factories_);
+      frame_deliverer_->GetRepaintCallback(), io_task_runner_);
 
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
 
@@ -363,8 +409,7 @@ void WebMediaPlayerMS::ReloadVideo() {
           web_stream_,
           media::BindToCurrentLoop(
               base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr())),
-          frame_deliverer_->GetRepaintCallback(), io_task_runner_,
-          media_task_runner_, worker_task_runner_, gpu_factories_);
+          frame_deliverer_->GetRepaintCallback(), io_task_runner_);
       DCHECK(video_frame_provider_);
       video_frame_provider_->Start();
       break;
@@ -917,6 +962,12 @@ void WebMediaPlayerMS::TriggerResize() {
     get_client()->SizeChanged();
 
   delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
+}
+
+void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(
+    media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
+  CHECK(frame_deliverer_);
+  frame_deliverer_->gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
 }
 
 }  // namespace content

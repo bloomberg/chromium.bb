@@ -17,8 +17,6 @@
 #include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
-#include "media/video/gpu_video_accelerator_factories.h"
-#include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -57,10 +55,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
                    base::Unretained(this)),
-        child_process_->io_task_runner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        nullptr /* gpu_factories */);
+        child_process_->io_task_runner());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(IsInStoppedState());
@@ -100,12 +95,6 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     RunIOUntilIdle();
-  }
-
-  void SetGpuMemoryBufferVideoForTesting(
-      media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
-    media_stream_video_renderer_sink_->SetGpuMemoryBufferVideoForTesting(
-        gpu_memory_buffer_pool);
   }
 
   scoped_refptr<MediaStreamVideoRendererSink> media_stream_video_renderer_sink_;
@@ -167,35 +156,6 @@ TEST_F(MediaStreamVideoRendererSinkTest, EncodeVideoFrames) {
   media_stream_video_renderer_sink_->Stop();
 }
 
-class MediaStreamVideoRendererSinkAsyncAddFrameReadyTest
-    : public MediaStreamVideoRendererSinkTest {
- public:
-  MediaStreamVideoRendererSinkAsyncAddFrameReadyTest() {
-    media_stream_video_renderer_sink_->Start();
-    SetGpuMemoryBufferVideoForTesting(
-        new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
-    base::RunLoop().RunUntilIdle();
-  }
-
- protected:
-  std::vector<base::OnceClosure> frame_ready_cbs_;
-};
-
-TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
-       CreateHardwareFrames) {
-  InSequence s;
-  const scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
-  OnVideoFrame(video_frame);
-  ASSERT_EQ(1u, frame_ready_cbs_.size());
-
-  EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
-  std::move(frame_ready_cbs_[0]).Run();
-  base::RunLoop().RunUntilIdle();
-
-  media_stream_video_renderer_sink_->Stop();
-}
-
 class MediaStreamVideoRendererSinkTransparencyTest
     : public MediaStreamVideoRendererSinkTest {
  public:
@@ -207,10 +167,7 @@ class MediaStreamVideoRendererSinkTransparencyTest
         base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
                        VerifyTransparentFrame,
                    base::Unretained(this)),
-        child_process_->io_task_runner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner(),
-        nullptr /* gpu_factories */);
+        child_process_->io_task_runner());
   }
 
   void VerifyTransparentFrame(scoped_refptr<media::VideoFrame> frame) {

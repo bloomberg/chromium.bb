@@ -14,6 +14,8 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
+#include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
+#include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
@@ -369,10 +371,8 @@ class MockRenderFactory : public MediaStreamRendererFactory {
       const blink::WebMediaStream& web_stream,
       const base::Closure& error_cb,
       const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      media::GpuVideoAcceleratorFactories* gpu_factories) override;
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      override;
 
   MockMediaStreamVideoRenderer* provider() {
     return static_cast<MockMediaStreamVideoRenderer*>(provider_.get());
@@ -409,10 +409,7 @@ scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
     const blink::WebMediaStream& web_stream,
     const base::Closure& error_cb,
     const MediaStreamVideoRenderer::RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
   if (!support_video_renderer_)
     return nullptr;
 
@@ -451,6 +448,7 @@ class WebMediaPlayerMSTest
   WebMediaPlayerMSTest()
       : render_factory_(new MockRenderFactory(message_loop_.task_runner(),
                                               &message_loop_controller_)),
+        gpu_factories_(new media::MockGpuVideoAcceleratorFactories(nullptr)),
         player_(new WebMediaPlayerMS(
             nullptr,
             this,
@@ -461,7 +459,7 @@ class WebMediaPlayerMSTest
             message_loop_.task_runner(),
             message_loop_.task_runner(),
             message_loop_.task_runner(),
-            nullptr,
+            gpu_factories_.get(),
             blink::WebString(),
             blink::WebSecurityOrigin())),
         web_layer_set_(false),
@@ -541,6 +539,11 @@ class WebMediaPlayerMSTest
     background_rendering_ = background_rendering;
   }
 
+  void SetGpuMemoryBufferVideoForTesting() {
+    player_->SetGpuMemoryBufferVideoForTesting(
+        new media::MockGpuMemoryBufferVideoFramePool(&frame_ready_cbs_));
+  }
+
  protected:
   MOCK_METHOD0(DoStartRendering, void());
   MOCK_METHOD0(DoStopRendering, void());
@@ -553,12 +556,14 @@ class WebMediaPlayerMSTest
 
   base::MessageLoop message_loop_;
   MockRenderFactory* render_factory_;
+  std::unique_ptr<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
   FakeWebMediaPlayerDelegate delegate_;
   std::unique_ptr<WebMediaPlayerMS> player_;
   WebMediaPlayerMSCompositor* compositor_;
   ReusableMessageLoopEvent message_loop_controller_;
   blink::WebLayer* web_layer_;
   bool is_audio_element_ = false;
+  std::vector<base::OnceClosure> frame_ready_cbs_;
 
  private:
   // Main function trying to ask WebMediaPlayerMS to submit a frame for
@@ -1044,6 +1049,39 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
                          gfx::Size(kStandardWidth * 2, kStandardHeight * 2)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoStopRendering());
+}
+
+// Tests that GpuMemoryBufferVideoFramePool is called in the expected sequence.
+TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
+  SetGpuMemoryBufferVideoForTesting();
+
+  const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
+  static int tokens[] = {0, kTestBrake};
+  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  provider->QueueFrames(timestamps);
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+
+  ASSERT_EQ(1u, frame_ready_cbs_.size());
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStartRendering());
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  std::move(frame_ready_cbs_[0]).Run();
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+
+  auto frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  ASSERT_TRUE(frame != nullptr);
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetWebLayer(false));

@@ -13,12 +13,9 @@
 #include "content/child/child_process.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/render_thread.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
-#include "media/video/gpu_memory_buffer_video_frame_pool.h"
-#include "media/video/gpu_video_accelerator_factories.h"
 
 const int kMinFrameSize = 2;
 
@@ -31,33 +28,16 @@ namespace content {
 // should be destructed on the IO thread.
 class MediaStreamVideoRendererSink::FrameDeliverer {
  public:
-  FrameDeliverer(const RepaintCB& repaint_cb,
-                 scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-                 scoped_refptr<base::TaskRunner> worker_task_runner,
-                 media::GpuVideoAcceleratorFactories* gpu_factories)
+  FrameDeliverer(const RepaintCB& repaint_cb)
       : repaint_cb_(repaint_cb),
         state_(STOPPED),
-        frame_size_(kMinFrameSize, kMinFrameSize),
-        media_task_runner_(media_task_runner),
-        weak_factory_(this) {
+        frame_size_(kMinFrameSize, kMinFrameSize) {
     io_thread_checker_.DetachFromThread();
-    if (gpu_factories &&
-        gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
-        base::FeatureList::IsEnabled(
-            features::kWebRtcUseGpuMemoryBufferVideoFrames)) {
-      gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
-          media_task_runner, worker_task_runner, gpu_factories));
-    }
   }
 
   ~FrameDeliverer() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(state_ == STARTED || state_ == PAUSED) << state_;
-
-    if (gpu_memory_buffer_pool_) {
-      media_task_runner_->DeleteSoon(FROM_HERE,
-                                     gpu_memory_buffer_pool_.release());
-    }
   }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
@@ -72,30 +52,6 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 
     if (state_ != STARTED)
       return;
-
-    if (!gpu_memory_buffer_pool_) {
-      FrameReady(frame);
-      return;
-    }
-    //  |gpu_memory_buffer_pool_| deletion is going to be posted to
-    //  |media_task_runner_|. base::Unretained() usage is fine since
-    //  |gpu_memory_buffer_pool_| outlives the task.
-    media_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
-            base::Unretained(gpu_memory_buffer_pool_.get()), frame,
-            media::BindToCurrentLoop(base::Bind(&FrameDeliverer::FrameReady,
-                                                weak_factory_.GetWeakPtr()))));
-  }
-
-  void FrameReady(const scoped_refptr<media::VideoFrame>& frame) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    DCHECK(frame);
-    TRACE_EVENT_INSTANT1(
-        "webrtc", "MediaStreamVideoRendererSink::FrameDeliverer::FrameReady",
-        TRACE_EVENT_SCOPE_THREAD, "timestamp",
-        frame->timestamp().InMilliseconds());
 
     frame_size_ = frame->natural_size();
     repaint_cb_.Run(frame);
@@ -140,24 +96,12 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
  private:
   friend class MediaStreamVideoRendererSink;
 
-  void SetGpuMemoryBufferVideoForTesting(
-      media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
-  }
-
   const RepaintCB repaint_cb_;
   State state_;
   gfx::Size frame_size_;
 
-  // Pool of GpuMemoryBuffers and resources used to create hardware frames.
-  std::unique_ptr<media::GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
-  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   base::ThreadChecker io_thread_checker_;
-
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
@@ -166,25 +110,19 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
     const base::Closure& error_cb,
     const RepaintCB& repaint_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner,
-    media::GpuVideoAcceleratorFactories* gpu_factories)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : error_cb_(error_cb),
       repaint_cb_(repaint_cb),
       video_track_(video_track),
-      io_task_runner_(io_task_runner),
-      media_task_runner_(media_task_runner),
-      worker_task_runner_(worker_task_runner),
-      gpu_factories_(gpu_factories) {}
+      io_task_runner_(io_task_runner) {}
 
 MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {}
 
 void MediaStreamVideoRendererSink::Start() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  frame_deliverer_.reset(new MediaStreamVideoRendererSink::FrameDeliverer(
-      repaint_cb_, media_task_runner_, worker_task_runner_, gpu_factories_));
+  frame_deliverer_.reset(
+      new MediaStreamVideoRendererSink::FrameDeliverer(repaint_cb_));
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FrameDeliverer::Start,
                                 base::Unretained(frame_deliverer_.get())));
@@ -253,17 +191,6 @@ MediaStreamVideoRendererSink::GetStateForTesting() {
   if (!frame_deliverer_)
     return STOPPED;
   return frame_deliverer_->state_;
-}
-
-void MediaStreamVideoRendererSink::SetGpuMemoryBufferVideoForTesting(
-    media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  CHECK(frame_deliverer_);
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FrameDeliverer::SetGpuMemoryBufferVideoForTesting,
-                     base::Unretained(frame_deliverer_.get()),
-                     gpu_memory_buffer_pool));
 }
 
 }  // namespace content
