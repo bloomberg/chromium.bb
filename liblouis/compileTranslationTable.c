@@ -4242,19 +4242,10 @@ compileString(const char *inString, CharacterClass **characterClasses,
 
 static int
 setDefaults(TranslationTableHeader *table) {
-	//  makeDoubleRule (CTO_FirstWordItalRule,
-	//  &table->emphRules[emph1Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph1Rule][firstWordOffset]);
 	if (!table->emphRules[emph1Rule][lenPhraseOffset])
 		table->emphRules[emph1Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordUnderRule,
-	//  &table->emphRules[emph2Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph2Rule][firstWordOffset]);
 	if (!table->emphRules[emph2Rule][lenPhraseOffset])
 		table->emphRules[emph2Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordBoldRule,
-	//  &table->emphRules[emph3Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph3Rule][firstWordOffset]);
 	if (!table->emphRules[emph3Rule][lenPhraseOffset])
 		table->emphRules[emph3Rule][lenPhraseOffset] = 4;
 	if (table->numPasses == 0) table->numPasses = 1;
