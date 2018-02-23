@@ -85,9 +85,6 @@ class AURA_EXPORT WindowPort {
   virtual std::unique_ptr<cc::LayerTreeFrameSink>
   CreateLayerTreeFrameSink() = 0;
 
-  // Get the current viz::SurfaceId.
-  virtual viz::SurfaceId GetSurfaceId() const = 0;
-
   // Forces the window to allocate a new viz::LocalSurfaceId for the next
   // CompositorFrame submission in anticipation of a synchronization operation
   // that does not involve a resize or a device scale factor change.

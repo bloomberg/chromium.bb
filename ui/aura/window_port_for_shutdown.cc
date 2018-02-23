@@ -57,10 +57,6 @@ WindowPortForShutdown::CreateLayerTreeFrameSink() {
   return nullptr;
 }
 
-viz::SurfaceId WindowPortForShutdown::GetSurfaceId() const {
-  return viz::SurfaceId();
-}
-
 void WindowPortForShutdown::AllocateLocalSurfaceId() {}
 
 const viz::LocalSurfaceId& WindowPortForShutdown::GetLocalSurfaceId() {
