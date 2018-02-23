@@ -39,9 +39,13 @@ void DoomHttpCache(std::unique_ptr<disk_cache::Backend*> backend,
                    int error) {
   // |*backend| may be null in case of error.
   if (*backend) {
-    (*backend)->DoomEntriesBetween(
+    const int rv = (*backend)->DoomEntriesBetween(
         delete_begin, delete_end,
         base::Bind(&PostCallback, client_task_runner, callback));
+    // DoomEntriesBetween does not invoke callback unless rv is ERR_IO_PENDING.
+    if (rv != net::ERR_IO_PENDING) {
+      client_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, rv));
+    }
   } else {
     client_task_runner->PostTask(FROM_HERE, base::Bind(callback, error));
   }
@@ -70,8 +74,7 @@ void ClearHttpCacheOnIOThread(
       base::Bind(&DoomHttpCache, base::Passed(std::move(backend)),
                  client_task_runner, delete_begin, delete_end, callback);
 
-  int rv = http_cache->GetBackend(backend_ptr, doom_callback);
-
+  const int rv = http_cache->GetBackend(backend_ptr, doom_callback);
   if (rv != net::ERR_IO_PENDING) {
     // GetBackend doesn't call the callback if it completes synchronously, so
     // call it directly here.
