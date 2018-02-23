@@ -148,6 +148,11 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.state', chrome.developerPrivate.ExtensionState.DISABLED);
       Polymer.dom.flush();
       assertTrue(extensionOptions.disabled);
+
+      expectFalse(testIsVisible('#error-icon'));
+      item.set('data.runtimeWarnings', ['Dummy warning']);
+      Polymer.dom.flush();
+      expectTrue(testIsVisible('#error-icon'));
     });
 
     test(assert(TestNames.LayoutSource), function() {
@@ -204,6 +209,11 @@ cr.define('extension_detail_view_tests', function() {
       mockDelegate.testClickingCalls(
           item.$$('#load-path > a[is=\'action-link\']'),
           'showInFolder', [extensionData.id]);
+      mockDelegate.testClickingCalls(
+          item.$$('#reload-button'),
+          'reloadItem',
+          [extensionData.id],
+          Promise.resolve());
     });
 
     test(assert(TestNames.Indicator), function() {
@@ -220,6 +230,15 @@ cr.define('extension_detail_view_tests', function() {
         f(extension_test_util.isVisible(item, id));
       };
 
+      testWarningVisible('#runtime-warnings', false);
+      testWarningVisible('#corrupted-warning', false);
+      testWarningVisible('#suspicious-warning', false);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.runtimeWarnings', ['Dummy warning']);
+      Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', false);
       testWarningVisible('#suspicious-warning', false);
       testWarningVisible('#blacklisted-warning', false);
@@ -227,6 +246,7 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.disableReasons.corruptInstall', true);
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);
       testWarningVisible('#suspicious-warning', false);
       testWarningVisible('#blacklisted-warning', false);
@@ -234,6 +254,7 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.disableReasons.suspiciousInstall', true);
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);
       testWarningVisible('#suspicious-warning', true);
       testWarningVisible('#blacklisted-warning', false);
@@ -241,6 +262,7 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.blacklistText', 'This item is blacklisted');
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);
       testWarningVisible('#suspicious-warning', true);
       testWarningVisible('#blacklisted-warning', true);
@@ -248,6 +270,7 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.blacklistText', undefined);
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);
       testWarningVisible('#suspicious-warning', true);
       testWarningVisible('#blacklisted-warning', false);
@@ -255,15 +278,18 @@ cr.define('extension_detail_view_tests', function() {
 
       item.set('data.disableReasons.updateRequired', true);
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', true);
       testWarningVisible('#corrupted-warning', true);
       testWarningVisible('#suspicious-warning', true);
       testWarningVisible('#blacklisted-warning', false);
       testWarningVisible('#update-required-warning', true);
 
+      item.set('data.runtimeWarnings', []);
       item.set('data.disableReasons.corruptInstall', false);
       item.set('data.disableReasons.suspiciousInstall', false);
       item.set('data.disableReasons.updateRequired', false);
       Polymer.dom.flush();
+      testWarningVisible('#runtime-warnings', false);
       testWarningVisible('#corrupted-warning', false);
       testWarningVisible('#suspicious-warning', false);
       testWarningVisible('#blacklisted-warning', false);

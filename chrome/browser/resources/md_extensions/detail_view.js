@@ -101,7 +101,8 @@ cr.define('extensions', function() {
     hasWarnings_: function() {
       return this.data.disableReasons.corruptInstall ||
           this.data.disableReasons.suspiciousInstall ||
-          this.data.disableReasons.updateRequired || !!this.data.blacklistText;
+          this.data.disableReasons.updateRequired ||
+          !!this.data.blacklistText || this.data.runtimeWarnings.length > 0;
     },
 
     /**
@@ -176,6 +177,13 @@ cr.define('extensions', function() {
     /** @private */
     onExtensionOptionsTap_: function() {
       this.delegate.showItemOptionsPage(this.data);
+    },
+
+    /** @private */
+    onReloadTap_: function() {
+      this.delegate.reloadItem(this.data.id).catch(loadError => {
+        this.fire('load-error', loadError);
+      });
     },
 
     /** @private */

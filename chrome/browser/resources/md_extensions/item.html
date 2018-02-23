@@ -108,6 +108,13 @@
         margin-bottom: 8px;
       }
 
+      #error-icon {
+        --iron-icon-fill-color: var(--google-red-700);
+        -webkit-margin-end: 4px;
+        height: 18px;
+        width: 18px;
+      }
+
       #description,
       #version,
       #extension-id,
@@ -255,28 +262,29 @@
             [[data.description]]
           </div>
           <template is="dom-if" if="[[hasWarnings_(data.*)]]">
-            <div id="warnings" >
-              <div id="runtime-warnings" aria-describedby="a11yAssociation"
+            <div id="warnings">
+              <iron-icon id="error-icon" icon="error"></iron-icon>
+              <span id="runtime-warnings" aria-describedby="a11yAssociation"
                   hidden$="[[!data.runtimeWarnings.length]]">
                 <template is="dom-repeat" items="[[data.runtimeWarnings]]">
                   [[item]]
                 </template>
-              </div>
-              <div id="suspicious-warning" aria-describedby="a11yAssociation"
+              </span>
+              <span id="suspicious-warning" aria-describedby="a11yAssociation"
                   hidden$="[[!data.disableReasons.suspiciousInstall]]">
                 $i18n{itemSuspiciousInstall}
                 <a target="_blank" id="learn-more-link"
                     href="$i18n{suspiciousInstallHelpUrl}">
                   $i18n{learnMore}
                 </a>
-              </div>
-              <div id="corrupted-warning" aria-describedby="a11yAssociation"
+              </span>
+              <span id="corrupted-warning" aria-describedby="a11yAssociation"
                   hidden$="[[!data.disableReasons.corruptInstall]]">
                 $i18n{itemCorruptInstall}
-              </div>
-              <div id="blacklisted-warning"><!-- No whitespace
+              </span>
+              <span id="blacklisted-warning"><!-- No whitespace
                 -->[[data.blacklistText]]<!-- so we can use :empty in css.
-             --></div>
+             --></span>
             </div>
           </template>
           <template is="dom-if" if="[[inDevMode]]">
