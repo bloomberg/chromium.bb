@@ -52,8 +52,8 @@ TEST_F(UpdaterStateTest, Serialize) {
   EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // MacOS does not serialize "ismachine".
-  EXPECT(0, UpdaterState::GetState(false).count("ismachine"));
-  EXPECT(0, UpdaterState::GetState(true).count("ismachine"));
+  EXPECT_EQ(0UL, UpdaterState::GetState(false)->count("ismachine"));
+  EXPECT_EQ(0UL, UpdaterState::GetState(true)->count("ismachine"));
   EXPECT_STREQ("Keystone", UpdaterState::GetState(false)->at("name").c_str());
 #endif  // OS_WIN
 #endif  // GOOGLE_CHROME_BUILD
