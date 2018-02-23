@@ -190,6 +190,10 @@ class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd> {
         aom_memalign(32, sizeof(uint16_t) * CFL_BUF_SQUARE));
     sub_luma_pels = reinterpret_cast<int16_t *>(
         aom_memalign(32, sizeof(int16_t) * CFL_BUF_SQUARE));
+    memset(chroma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+    memset(sub_luma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+    memset(chroma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
+    memset(sub_luma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
   }
 
   virtual void TearDown() {
