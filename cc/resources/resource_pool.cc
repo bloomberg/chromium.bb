@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/format_macros.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/shared_memory_handle.h"
@@ -26,6 +27,10 @@ using base::trace_event::MemoryDumpLevelOfDetail;
 
 namespace cc {
 namespace {
+
+// Process-unique number for each resource pool.
+base::AtomicSequenceNumber g_next_tracing_id;
+
 bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
                                    const gfx::Size& actual_size,
                                    bool disallow_non_exact_reuse) {
@@ -69,6 +74,7 @@ ResourcePool::ResourcePool(
       task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
+      tracing_id_(g_next_tracing_id.GetNext()),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -519,13 +525,16 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     total_memory_usage_bytes_);
   } else {
     for (const auto& resource : unused_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, true /* is_free */);
+      resource->OnMemoryDump(pmd, tracing_id_, resource_provider_,
+                             true /* is_free */);
     }
     for (const auto& resource : busy_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+      resource->OnMemoryDump(pmd, tracing_id_, resource_provider_,
+                             false /* is_free */);
     }
     for (const auto& entry : in_use_resources_) {
-      entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
+      entry.second->OnMemoryDump(pmd, tracing_id_, resource_provider_,
+                                 false /* is_free */);
     }
   }
   return true;
@@ -555,6 +564,7 @@ ResourcePool::PoolResource::~PoolResource() = default;
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
+    int tracing_id,
     const LayerTreeResourceProvider* resource_provider,
     bool is_free) const {
   base::UnguessableToken shm_guid;
@@ -580,11 +590,10 @@ void ResourcePool::PoolResource::OnMemoryDump(
   if (shm_guid.is_empty() && backing_guid.empty())
     return;
 
-  // Resource IDs are not process-unique, so log with the
-  // LayerTreeResourceProvider's unique id.
-  std::string dump_name =
-      base::StringPrintf("cc/tile_memory/provider_%d/resource_%zd",
-                         resource_provider->tracing_id(), unique_id_);
+  // Resource IDs are not process-unique, so log with the ResourcePool's unique
+  // tracing id.
+  std::string dump_name = base::StringPrintf(
+      "cc/tile_memory/provider_%d/resource_%zd", tracing_id, unique_id_);
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
 
   // The importance value used here needs to be greater than the importance
