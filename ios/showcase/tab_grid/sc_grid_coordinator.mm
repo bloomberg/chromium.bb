@@ -4,31 +4,66 @@
 
 #import "ios/showcase/tab_grid/sc_grid_coordinator.h"
 
+#import "ios/chrome/browser/ui/tab_grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid_view_controller.h"
+#import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SCGridCoordinator ()
+@interface SCGridCoordinator ()<UINavigationControllerDelegate,
+                                GridImageDataSource>
+@property(nonatomic, strong) ProtocolAlerter* alerter;
+@property(nonatomic, strong) GridViewController* gridViewController;
 @end
 
 @implementation SCGridCoordinator
 @synthesize baseViewController = _baseViewController;
+@synthesize alerter = _alerter;
+@synthesize gridViewController = _gridViewController;
 
 - (void)start {
+  self.baseViewController.delegate = self;
+  self.alerter = [[ProtocolAlerter alloc]
+      initWithProtocols:@[ @protocol(GridViewControllerDelegate) ]];
   GridViewController* gridViewController = [[GridViewController alloc] init];
-  GridItem* item1 = [[GridItem alloc] init];
-  item1.title = @"Basecamp: project with an attitude.";
-  GridItem* item2 = [[GridItem alloc] init];
-  item2.title = @"Basecamp: project with an attitude.";
-  GridItem* item3 = [[GridItem alloc] init];
-  item3.title = @"Basecamp: project with an attitude.";
-  NSArray* items = @[ item1, item2, item3 ];
+  gridViewController.theme = GridThemeLight;
+  gridViewController.delegate =
+      static_cast<id<GridViewControllerDelegate>>(self.alerter);
+  gridViewController.imageDataSource = self;
+  self.alerter.baseViewController = gridViewController;
+
+  NSMutableArray* items = [[NSMutableArray alloc] init];
+  for (int i = 0; i < 20; i++) {
+    GridItem* item = [[GridItem alloc] init];
+    item.title = @"The New York Times - Breaking News";
+    [items addObject:item];
+  }
   [gridViewController populateItems:items selectedIndex:1];
   gridViewController.title = @"Grid UI";
   [self.baseViewController pushViewController:gridViewController animated:YES];
+  self.gridViewController = gridViewController;
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+// This delegate method is used as a way to have a completion handler after
+// pushing onto a navigation controller.
+- (void)navigationController:(UINavigationController*)navigationController
+       didShowViewController:(UIViewController*)viewController
+                    animated:(BOOL)animated {
+}
+
+- (void)snapshotForIdentifier:(NSString*)identifier
+                   completion:(void (^)(UIImage*))completion {
+  completion([UIImage imageNamed:@"Sample-screenshot-portrait"]);
+}
+
+- (void)faviconForIdentifier:(NSString*)identifier
+                  completion:(void (^)(UIImage*))completion {
+  completion(nil);
 }
 
 @end

@@ -9,6 +9,7 @@
 
 // Model object representing an item in a grid.
 @interface GridItem : NSObject
+@property(nonatomic, copy) NSString* identifier;
 @property(nonatomic, copy) NSString* title;
 @end
 
