@@ -76,7 +76,8 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
-    scoped_refptr<device::BluetoothAdapter> adapter) {
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    session_manager::SessionManager* session_manager) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
@@ -84,7 +85,7 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
       cryptauth_service, tether_host_fetcher, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
-      network_connection_handler, adapter);
+      network_connection_handler, adapter, session_manager);
 }
 
 // static
@@ -111,12 +112,13 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
-    scoped_refptr<device::BluetoothAdapter> adapter) {
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    session_manager::SessionManager* session_manager) {
   return base::WrapUnique(new TetherComponentImpl(
       cryptauth_service, tether_host_fetcher, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
-      network_connection_handler, adapter));
+      network_connection_handler, adapter, session_manager));
 }
 
 TetherComponentImpl::TetherComponentImpl(
@@ -129,7 +131,8 @@ TetherComponentImpl::TetherComponentImpl(
     ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
-    scoped_refptr<device::BluetoothAdapter> adapter)
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    session_manager::SessionManager* session_manager)
     : asynchronous_shutdown_object_container_(
           AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
               adapter,
@@ -147,7 +150,8 @@ TetherComponentImpl::TetherComponentImpl(
               pref_service,
               network_state_handler,
               network_connect,
-              network_connection_handler)),
+              network_connection_handler,
+              session_manager)),
       crash_recovery_manager_(CrashRecoveryManagerImpl::Factory::NewInstance(
           network_state_handler,
           synchronous_shutdown_object_container_->active_host(),
