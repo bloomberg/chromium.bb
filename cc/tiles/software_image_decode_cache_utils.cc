@@ -65,7 +65,8 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(const CacheKey& key,
   SkImageInfo target_info = CreateImageInfo(target_size, color_type);
   std::unique_ptr<base::DiscardableMemory> target_pixels =
       AllocateDiscardable(target_info);
-  DCHECK(target_pixels);
+  if (!target_pixels || !target_pixels->data())
+    return nullptr;
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCacheUtils::DoDecodeImage - "
