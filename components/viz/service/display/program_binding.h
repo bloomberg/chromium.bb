@@ -322,9 +322,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
 
  private:
   void InitializeDebugBorderProgram() {
-    // Initialize vertex program.
-    vertex_shader_.has_matrix_ = true;
-
     // Initialize fragment program.
     fragment_shader_.input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
     fragment_shader_.frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
@@ -333,7 +330,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
   void InitializeSolidColorProgram(const ProgramKey& key) {
     // Initialize vertex program.
     vertex_shader_.position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    vertex_shader_.has_matrix_ = true;
 #if defined(OS_ANDROID)
     if (key.aa_mode_ == NO_AA)
       vertex_shader_.has_dummy_variables_ = true;
@@ -349,7 +345,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     vertex_shader_.position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     vertex_shader_.tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    vertex_shader_.has_matrix_ = true;
 
     // Initialize fragment program.
     fragment_shader_.has_tex_clamp_rect_ = key.has_tex_clamp_rect_;
@@ -377,7 +372,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     // Initialize vertex program.
     vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     vertex_shader_.tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
-    vertex_shader_.has_matrix_ = true;
     vertex_shader_.has_vertex_opacity_ = true;
     vertex_shader_.use_uniform_arrays_ = !key.has_tex_clamp_rect_;
 
@@ -389,7 +383,6 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
 
   void InitializeRenderPassProgram(const ProgramKey& key) {
     // Initialize vertex program.
-    vertex_shader_.has_matrix_ = true;
     if (key.aa_mode_ == NO_AA) {
       vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
       vertex_shader_.tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
@@ -416,13 +409,11 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
   void InitializeVideoStreamProgram(const ProgramKey& key) {
     vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     vertex_shader_.tex_coord_transform_ = TEX_COORD_TRANSFORM_MATRIX;
-    vertex_shader_.has_matrix_ = true;
     DCHECK_EQ(key.sampler_, SAMPLER_TYPE_EXTERNAL_OES);
   }
 
   void InitializeYUVVideo(const ProgramKey& key) {
     vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    vertex_shader_.has_matrix_ = true;
     vertex_shader_.is_ya_uv_ = true;
 
     fragment_shader_.input_color_type_ = INPUT_COLOR_SOURCE_YUV_TEXTURES;
