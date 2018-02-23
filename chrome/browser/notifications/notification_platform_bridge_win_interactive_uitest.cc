@@ -28,7 +28,7 @@ base::string16 GetToastString(const base::string16& notification_id,
                               const base::string16& profile_id,
                               bool incognito) {
   return base::StringPrintf(
-      LR"(<toast launch="0|%ls|%d|https://foo.com/|%ls"></toast>)",
+      LR"(<toast launch="0|0|%ls|%d|https://foo.com/|%ls"></toast>)",
       profile_id.c_str(), incognito, notification_id.c_str());
 }
 
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
     return;
 
   const wchar_t kXmlDoc[] =
-      LR"(<toast launch="0|Default|0|https://example.com/|notification_id">
+      LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id">
  <visual>
   <binding template="ToastGeneric">
    <text>My Title</text>
@@ -161,7 +161,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
 )";
 
   MockIToastNotification toast(kXmlDoc, L"tag");
-  MockIToastActivatedEventArgs args(L"buttonIndex=1");
+  MockIToastActivatedEventArgs args(
+      L"1|1|0|Default|0|https://example.com/|notification_id");
 
   base::RunLoop run_loop;
   display_service_tester_->SetProcessNotificationOperationDelegate(

@@ -31,6 +31,7 @@
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_image_retainer.h"
+#include "chrome/browser/notifications/notification_launch_id.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/installer/util/install_util.h"
@@ -276,9 +277,9 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    std::string launch_id = NotificationPlatformBridgeWin::EncodeLaunchId(
-        notification_type, notification->id(), profile_id, incognito,
-        notification->origin_url());
+    NotificationLaunchId launch_id(notification_type, notification->id(),
+                                   profile_id, incognito,
+                                   notification->origin_url());
     std::unique_ptr<NotificationTemplateBuilder> notification_template =
         NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
                                            profile_id, *notification);
@@ -449,19 +450,15 @@ class NotificationPlatformBridgeWinImpl
     auto displayed_notifications = std::make_unique<std::set<std::string>>();
     for (winui::Notifications::IToastNotification* notification :
          notifications) {
-      std::string launch_id = GetNotificationLaunchId(notification);
-      std::string decoded_notification_id;
-      std::string decoded_profile_id;
-      bool decoded_incognito;
-      if (!NotificationPlatformBridgeWin::DecodeLaunchId(
-              launch_id, nullptr, &decoded_notification_id, &decoded_profile_id,
-              &decoded_incognito, nullptr)) {
+      NotificationLaunchId launch_id(GetNotificationLaunchId(notification));
+      if (!launch_id.is_valid()) {
         LOG(ERROR) << "Failed to decode notification ID";
         continue;
       }
-      if (decoded_profile_id != profile_id || decoded_incognito != incognito)
+      if (launch_id.profile_id() != profile_id ||
+          launch_id.incognito() != incognito)
         continue;
-      displayed_notifications->insert(decoded_notification_id);
+      displayed_notifications->insert(launch_id.notification_id());
     }
 
     content::BrowserThread::PostTask(
@@ -480,16 +477,8 @@ class NotificationPlatformBridgeWinImpl
                    NotificationCommon::Operation operation,
                    const base::Optional<int>& action_index,
                    const base::Optional<bool>& by_user) {
-    NotificationHandler::Type notification_type;
-    std::string notification_id;
-    std::string profile_id;
-    bool incognito;
-    GURL origin_url;
-
-    std::string launch_id = GetNotificationLaunchId(notification);
-    if (!NotificationPlatformBridgeWin::DecodeLaunchId(
-            launch_id, &notification_type, &notification_id, &profile_id,
-            &incognito, &origin_url)) {
+    NotificationLaunchId launch_id(GetNotificationLaunchId(notification));
+    if (!launch_id.is_valid()) {
       LOG(ERROR) << "Failed to decode launch ID for operation " << operation;
       return;
     }
@@ -497,8 +486,9 @@ class NotificationPlatformBridgeWinImpl
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::BindOnce(&ForwardNotificationOperationOnUiThread, operation,
-                       notification_type, origin_url, notification_id,
-                       profile_id, incognito, action_index, by_user));
+                       launch_id.notification_type(), launch_id.origin_url(),
+                       launch_id.notification_id(), launch_id.profile_id(),
+                       launch_id.incognito(), action_index, by_user));
   }
 
   base::Optional<int> ParseActionIndex(
@@ -509,20 +499,10 @@ class NotificationPlatformBridgeWinImpl
       return base::nullopt;
 
     ScopedHString arguments_scoped(arguments);
-    std::string arguments_str = arguments_scoped.GetAsUTF8();
-    std::vector<std::string> tokens = base::SplitString(
-        arguments_str, "$", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    std::string button_index = tokens[0];
-
-    std::vector<std::string> parts = base::SplitString(
-        button_index, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (parts.size() < 2 || base::CompareCaseInsensitiveASCII(
-                                parts[0], kNotificationButtonIndex) != 0)
+    NotificationLaunchId launch_id(arguments_scoped.GetAsUTF8());
+    if (!launch_id.is_valid() || launch_id.button_index() < 0)
       return base::nullopt;
-    int index;
-    if (!base::StringToInt(parts[1], &index))
-      return base::nullopt;
-    return index;
+    return launch_id.button_index();
   }
 
   void ForwardHandleEventForTesting(
@@ -548,13 +528,13 @@ class NotificationPlatformBridgeWinImpl
     return base::UintToString16(base::Hash(notification_id));
   }
 
-  std::string GetNotificationLaunchId(
+  NotificationLaunchId GetNotificationLaunchId(
       winui::Notifications::IToastNotification* notification) const {
     mswr::ComPtr<winxml::Dom::IXmlDocument> document;
     HRESULT hr = notification->get_Content(&document);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get XML document";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     ScopedHString tag = ScopedHString::Create(kNotificationToastElement);
@@ -562,28 +542,28 @@ class NotificationPlatformBridgeWinImpl
     hr = document->GetElementsByTagName(tag.get(), &elements);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get <toast> elements from document";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     UINT32 length;
     hr = elements->get_Length(&length);
     if (length == 0) {
       LOG(ERROR) << "No <toast> elements in document.";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<winxml::Dom::IXmlNode> node;
     hr = elements->Item(0, &node);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get first <toast> element";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<winxml::Dom::IXmlNamedNodeMap> attributes;
     hr = node->get_Attributes(&attributes);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get attributes of <toast>";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<winxml::Dom::IXmlNode> leaf;
@@ -591,39 +571,39 @@ class NotificationPlatformBridgeWinImpl
     hr = attributes->GetNamedItem(id.get(), &leaf);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get launch attribute of <toast>";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<winxml::Dom::IXmlNode> child;
     hr = leaf->get_FirstChild(&child);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get content of launch attribute";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<IInspectable> inspectable;
     hr = child->get_NodeValue(&inspectable);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get node value of launch attribute";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     mswr::ComPtr<winfoundtn::IPropertyValue> property_value;
     hr = inspectable.As<winfoundtn::IPropertyValue>(&property_value);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to convert node value of launch attribute";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     HSTRING value_hstring;
     hr = property_value->GetString(&value_hstring);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get string for launch attribute";
-      return std::string();
+      return NotificationLaunchId();
     }
 
     ScopedHString value(value_hstring);
-    return value.GetAsUTF8();
+    return NotificationLaunchId(value.GetAsUTF8());
   }
 
   HRESULT OnActivated(winui::Notifications::IToastNotification* notification,
@@ -787,62 +767,4 @@ HRESULT NotificationPlatformBridgeWin::GetToastNotificationForTesting(
   return impl_->GetToastNotification(
       notification, notification_template_builder, "UnusedValue",
       false /* incognito */, toast_notification);
-}
-
-// static
-bool NotificationPlatformBridgeWin::DecodeLaunchId(
-    const std::string& launch_id,
-    NotificationHandler::Type* notification_type,
-    std::string* notification_id,
-    std::string* profile_id,
-    bool* incognito,
-    GURL* origin_url) {
-  DCHECK(notification_id);
-  const char kDelimiter[] = "|";
-  const int kMinVectorSize = 5;
-  std::vector<std::string> split = base::SplitString(
-      launch_id, kDelimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (split.size() < kMinVectorSize)
-    return false;
-
-  if (notification_type) {
-    int type = -1;
-    if (!base::StringToInt(split[0], &type))
-      return false;
-    if (type < 0 || type > static_cast<int>(NotificationHandler::Type::MAX))
-      return false;
-    *notification_type = static_cast<NotificationHandler::Type>(type);
-  }
-
-  if (profile_id)
-    *profile_id = split[1];
-  if (incognito)
-    *incognito = split[2] == "1" ? true : false;
-  if (origin_url)
-    *origin_url = GURL(split[3]);
-
-  notification_id->clear();
-  // Notification IDs is the rest of the string (delimeters not stripped off).
-  for (size_t i = kMinVectorSize - 1; i < split.size(); ++i) {
-    if (i > kMinVectorSize - 1)
-      *notification_id += kDelimiter;
-    *notification_id += split[i];
-  }
-
-  return true;
-}
-
-// static
-std::string NotificationPlatformBridgeWin::EncodeLaunchId(
-    NotificationHandler::Type notification_type,
-    const std::string& notification_id,
-    const std::string& profile_id,
-    bool incognito,
-    const GURL& origin_url) {
-  // The pipe was chosen as delimeter because it is invalid for directory paths
-  // and unsafe for origins -- and should therefore be encoded (as per
-  // http://www.ietf.org/rfc/rfc1738.txt).
-  return base::StringPrintf(
-      "%d|%s|%d|%s|%s", static_cast<int>(notification_type), profile_id.c_str(),
-      incognito, origin_url.spec().c_str(), notification_id.c_str());
 }

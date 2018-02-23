@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/notification_image_retainer.h"
+#include "chrome/browser/notifications/notification_launch_id.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
@@ -72,7 +73,6 @@ const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
 
 }  // namespace
 
-const char kNotificationButtonIndex[] = "buttonIndex";
 const char kNotificationToastElement[] = "toast";
 const char kNotificationLaunchAttribute[] = "launch";
 
@@ -82,13 +82,13 @@ const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
 // static
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
     NotificationImageRetainer* notification_image_retainer,
-    const std::string& launch_attribute,
+    const NotificationLaunchId& launch_id,
     const std::string& profile_id,
     const message_center::Notification& notification) {
   std::unique_ptr<NotificationTemplateBuilder> builder = base::WrapUnique(
       new NotificationTemplateBuilder(notification_image_retainer, profile_id));
 
-  builder->StartToastElement(launch_attribute, notification);
+  builder->StartToastElement(launch_id, notification);
   builder->StartVisualElement();
 
   builder->StartBindingElement(kDefaultTemplate);
@@ -129,7 +129,7 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
 
   builder->StartActionsElement();
   if (!notification.buttons().empty())
-    builder->AddActions(notification, launch_attribute);
+    builder->AddActions(notification, launch_id);
   builder->AddContextMenu();
   builder->EndActionsElement();
 
@@ -173,10 +173,11 @@ std::string NotificationTemplateBuilder::FormatOrigin(
 }
 
 void NotificationTemplateBuilder::StartToastElement(
-    const std::string& launch_attribute,
+    const NotificationLaunchId& launch_id,
     const message_center::Notification& notification) {
   xml_writer_->StartElement(kNotificationToastElement);
-  xml_writer_->AddAttribute(kNotificationLaunchAttribute, launch_attribute);
+  xml_writer_->AddAttribute(kNotificationLaunchAttribute,
+                            launch_id.Serialize());
 
   // Note: If the notification doesn't include a button, then Windows will
   // ignore the Reminder flag.
@@ -290,7 +291,7 @@ void NotificationTemplateBuilder::WriteProgressElement(
 
 void NotificationTemplateBuilder::AddActions(
     const message_center::Notification& notification,
-    const std::string& launch_attribute) {
+    const NotificationLaunchId& launch_id) {
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
   bool inline_reply = false;
@@ -313,8 +314,7 @@ void NotificationTemplateBuilder::AddActions(
   }
 
   for (size_t i = 0; i < buttons.size(); ++i)
-    WriteActionElement(buttons[i], i, notification.origin_url(),
-                       launch_attribute);
+    WriteActionElement(buttons[i], i, notification.origin_url(), launch_id);
 }
 
 void NotificationTemplateBuilder::AddContextMenu() {
@@ -343,14 +343,12 @@ void NotificationTemplateBuilder::WriteActionElement(
     const message_center::ButtonInfo& button,
     int index,
     const GURL& origin,
-    const std::string& launch_attribute) {
+    NotificationLaunchId launch_id) {
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
   xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
-  std::string param = base::StringPrintf("%s=%s$%s", kNotificationButtonIndex,
-                                         base::IntToString(index).c_str(),
-                                         launch_attribute.c_str());
-  xml_writer_->AddAttribute(kArguments, param);
+  launch_id.set_button_index(index);
+  xml_writer_->AddAttribute(kArguments, launch_id.Serialize());
 
   if (!button.icon.IsEmpty()) {
     base::FilePath path = image_retainer_->RegisterTemporaryImage(
