@@ -46,7 +46,7 @@ extern const char kEnableCrashReporterForTesting[];
 #endif
 
 #if defined(OS_ANDROID)
-extern const char kMadviseRandomExecutableCode[];
+extern const char kOrderfileMemoryOptimization[];
 #endif
 
 }  // namespace switches

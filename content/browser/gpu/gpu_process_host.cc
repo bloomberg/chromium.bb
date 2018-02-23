@@ -171,7 +171,7 @@ static const char* const kSwitchNames[] = {
     switches::kUseCmdDecoder,
     switches::kForceVideoOverlays,
 #if defined(OS_ANDROID)
-    switches::kMadviseRandomExecutableCode,
+    switches::kOrderfileMemoryOptimization,
 #endif
 };
 

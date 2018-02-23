@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <algorithm>
+#include <atomic>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -81,7 +82,7 @@ bool Mincore(size_t start, size_t end, std::vector<unsigned char>* residency) {
 // Returns the start and end of .text, aligned to the lower and upper page
 // boundaries, respectively.
 std::pair<size_t, size_t> GetTextRange() {
-  // |kStartOftext| may not be at the beginning of a page, since .plt can be
+  // |kStartOfText| may not be at the beginning of a page, since .plt can be
   // before it, yet in the same mapping for instance.
   size_t start_page = kStartOfText - kStartOfText % kPageSize;
   // Set the end to the page on which the beginning of the last symbol is. The
@@ -89,6 +90,29 @@ std::pair<size_t, size_t> GetTextRange() {
   // outside of the executable code range anyway.
   size_t end_page = base::bits::Align(kEndOfText, kPageSize);
   return {start_page, end_page};
+}
+
+// Returns the start and end pages of the unordered section of .text, aligned to
+// lower and upper page boundaries, respectively.
+std::pair<size_t, size_t> GetOrderedTextRange() {
+  size_t start_page = kStartOfOrderedText - kStartOfOrderedText % kPageSize;
+  // kEndOfUnorderedText is not considered ordered, but the byte immediately
+  // before is considered ordered and so can not be contained in the start page.
+  size_t end_page = base::bits::Align(kEndOfOrderedText, kPageSize);
+  return {start_page, end_page};
+}
+
+// Calls madvise(advice) on the specified range. Does nothing if the range is
+// empty.
+void MadviseOnRange(const std::pair<size_t, size_t>& range, int advice) {
+  if (range.first >= range.second) {
+    return;
+  }
+  size_t size = range.second - range.first;
+  int err = madvise(reinterpret_cast<void*>(range.first), size, advice);
+  if (err) {
+    PLOG(ERROR) << "madvise() failed";
+  }
 }
 
 // Timestamp in ns since Unix Epoch, and residency, as returned by mincore().
@@ -241,14 +265,13 @@ void NativeLibraryPrefetcher::PeriodicallyCollectResidency() {
 }
 
 // static
-void NativeLibraryPrefetcher::MadviseRandomText() {
+void NativeLibraryPrefetcher::MadviseForOrderfile() {
   CHECK(IsOrderingSane());
-  const auto& range = GetTextRange();
-  size_t size = range.second - range.first;
-  int err = madvise(reinterpret_cast<void*>(range.first), size, MADV_RANDOM);
-  if (err) {
-    PLOG(ERROR) << "madvise() failed";
-  }
+  LOG(WARNING) << "Performing experimental madvise from orderfile information";
+  // First MADV_RANDOM on all of text, then turn the ordered text range back to
+  // normal. The ordered range may be placed anywhere within .text.
+  MadviseOnRange(GetTextRange(), MADV_RANDOM);
+  MadviseOnRange(GetOrderedTextRange(), MADV_NORMAL);
 }
 
 }  // namespace android

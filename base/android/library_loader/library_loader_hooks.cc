@@ -86,6 +86,13 @@ void RecordLibraryPreloaderRendereHistogram() {
   }
 }
 
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+bool ShouldDoOrderfileMemoryOptimization() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kOrderfileMemoryOptimization);
+}
+#endif
+
 }  // namespace
 
 static void JNI_LibraryLoader_RegisterChromiumAndroidLinkerRendererHistogram(
@@ -168,15 +175,11 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
 static jboolean JNI_LibraryLoader_LibraryLoaded(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMadviseRandomExecutableCode)) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-    NativeLibraryPrefetcher::MadviseRandomText();
-#else
-    LOG(WARNING) << switches::kMadviseRandomExecutableCode
-                 << " is not supported on this architecture.";
-#endif
+  if (ShouldDoOrderfileMemoryOptimization()) {
+    NativeLibraryPrefetcher::MadviseForOrderfile();
   }
+#endif
 
   if (g_native_initialization_hook && !g_native_initialization_hook())
     return false;
@@ -196,10 +199,15 @@ static jboolean JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
-#else
-  return false;
+  // Calling madvise(MADV_RANDOM) and prefetching the same region have the
+  // opposite effects.
+  // TODO(crbug.com/758566): add library prefetching that only prefetches
+  // regions not madvise(MADV_RANDOM)'d.
+  if (!ShouldDoOrderfileMemoryOptimization()) {
+    return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
+  }
 #endif
+  return false;
 }
 
 static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
