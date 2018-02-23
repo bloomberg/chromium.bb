@@ -248,6 +248,7 @@ public abstract class ChromeFeatureList {
     public static final String SOLE_INTEGRATION = "SoleIntegration";
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
+    public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";

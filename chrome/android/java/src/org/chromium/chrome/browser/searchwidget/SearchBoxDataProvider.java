@@ -109,4 +109,9 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     public int getSecurityIconResource() {
         return 0;
     }
+
+    @Override
+    public boolean isDisplayingQueryTerms() {
+        return false;
+    }
 }

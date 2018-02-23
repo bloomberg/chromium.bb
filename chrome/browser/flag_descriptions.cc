@@ -1220,6 +1220,11 @@ const char kPushApiBackgroundModeDescription[] =
     "running after the last window is closed, and to launch at OS startup, if "
     "the Push API needs it.";
 
+const char kQueryInOmniboxName[] = "Query in Omnibox";
+const char kQueryInOmniboxDescription[] =
+    "Only display query terms in the omnibox when viewing a search results "
+    "page.";
+
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 

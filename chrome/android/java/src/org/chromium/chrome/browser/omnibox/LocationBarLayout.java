@@ -1349,9 +1349,11 @@ public class LocationBarLayout extends FrameLayout
         } else {
             // For the default toolbar color, use a green or red icon.
             if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
+                assert !provider.isDisplayingQueryTerms();
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
-            } else if (securityLevel == ConnectionSecurityLevel.SECURE
-                    || securityLevel == ConnectionSecurityLevel.EV_SECURE) {
+            } else if (!provider.isDisplayingQueryTerms()
+                    && (securityLevel == ConnectionSecurityLevel.SECURE
+                               || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
             } else {
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
@@ -2192,7 +2194,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Changes the text on the url bar
+     * Changes the text on the url bar.
      * @param originalText The original text (URL or search terms) for copy/cut.
      * @param displayText The text (URL or search terms) for user display.
      * @return Whether the URL was changed as a result of this call.
@@ -2303,7 +2305,7 @@ public class LocationBarLayout extends FrameLayout
 
     /**
      * Update the location bar visuals based on a loading state change.
-     * @param updateUrl Whether to update the URL as a result of the this call.
+     * @param updateUrl Whether to update the URL as a result of this call.
      */
     @Override
     public void updateLoadingState(boolean updateUrl) {

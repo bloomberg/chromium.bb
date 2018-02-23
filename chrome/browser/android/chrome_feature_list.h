@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_CHROME_FEATURE_LIST_H_
 #define CHROME_BROWSER_ANDROID_CHROME_FEATURE_LIST_H_
 
+#include <base/feature_list.h>
 #include <jni.h>
-
-#include "base/feature_list.h"
 
 namespace chrome {
 namespace android {
@@ -72,6 +71,7 @@ extern const base::Feature kPhysicalWebSharing;
 extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;
+extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;

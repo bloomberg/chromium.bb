@@ -86,6 +86,10 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   void SetFilteringEnabled(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            jboolean filtering_enabled);
+  base::android::ScopedJavaLocalRef<jstring> ExtractSearchTermsFromUrl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jurl);
 
   // Adds a custom search engine, sets |jkeyword| as its short_name and keyword,
   // and sets its date_created as |age_in_days| days before the current time.
