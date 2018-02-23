@@ -88,7 +88,6 @@ public class ModalDialogView implements View.OnClickListener {
     public static final int BUTTON_NEGATIVE = 1;
 
     private final Controller mController;
-    private final Context mContext;
     private final Params mParams;
 
     private final View mDialogView;
@@ -99,16 +98,22 @@ public class ModalDialogView implements View.OnClickListener {
     private final Button mNegativeButton;
 
     /**
+     * @return The {@link Context} with the modal dialog theme set.
+     */
+    public static Context getContext() {
+        return new ContextThemeWrapper(
+                ContextUtils.getApplicationContext(), R.style.ModalDialogTheme);
+    }
+
+    /**
      * Constructor for initializing controller and views.
      * @param controller The controller for this dialog.
      */
     public ModalDialogView(@NonNull Controller controller, @NonNull Params params) {
         mController = controller;
-        mContext = new ContextThemeWrapper(
-                ContextUtils.getApplicationContext(), R.style.ModalDialogTheme);
         mParams = params;
 
-        mDialogView = LayoutInflater.from(mContext).inflate(R.layout.modal_dialog_view, null);
+        mDialogView = LayoutInflater.from(getContext()).inflate(R.layout.modal_dialog_view, null);
         mTitleView = mDialogView.findViewById(R.id.title);
         mMessageView = mDialogView.findViewById(R.id.message);
         mCustomView = mDialogView.findViewById(R.id.custom);
@@ -172,13 +177,6 @@ public class ModalDialogView implements View.OnClickListener {
         } else {
             mNegativeButton.setVisibility(View.GONE);
         }
-    }
-
-    /**
-     * @return The {@link Context} with the modal dialog theme set.
-     */
-    public Context getContext() {
-        return mContext;
     }
 
     /**
