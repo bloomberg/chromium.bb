@@ -88,5 +88,11 @@ bool LoadHtml(WKWebView* web_view, NSString* html, NSURL* base_url) {
   });
 }
 
+bool WaitForInjectedScripts(WKWebView* web_view) {
+  return WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return !![ExecuteJavaScript(web_view, @"!!__gCrWeb") isEqual:@YES];
+  });
+}
+
 }  // namespace web
 

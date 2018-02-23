@@ -43,6 +43,9 @@ bool LoadHtml(WKWebView* web_view,
               NSString* html,
               NSURL* base_url) WARN_UNUSED_RESULT;
 
+// Waits until custom javascript is injected into __gCrWeb.
+bool WaitForInjectedScripts(WKWebView* web_view) WARN_UNUSED_RESULT;
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_JS_TEST_UTIL_H_
