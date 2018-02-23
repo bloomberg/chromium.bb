@@ -220,6 +220,9 @@ __gCrWeb.common.getFavicons = function() {
       if (rel == 'shortcut icon' || rel == 'icon' ||
           rel == 'apple-touch-icon' || rel == 'apple-touch-icon-precomposed') {
         var favicon = {rel: links[i].rel.toLowerCase(), href: links[i].href};
+        if (links[i].sizes && links[i].sizes.value) {
+          favicon.sizes = links[i].sizes.value;
+        }
         favicons.push(favicon);
       }
     }

@@ -85,7 +85,7 @@ TEST_F(FaviconCallbackTest, ShortcutIconFavicon) {
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
-// Tests page with icon link.
+// Tests page with icon link and no sizes attribute.
 TEST_F(FaviconCallbackTest, IconFavicon) {
   ASSERT_TRUE(observer()->favicon_url_candidates().empty());
   LoadHtml(@"<link rel='icon' href='http://fav.ico'>");
@@ -242,6 +242,37 @@ TEST_F(FaviconCallbackTest, EmptyFaviconUrl) {
   EXPECT_EQ(GURL("https://chromium.test/"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
+};
+
+// Tests page with icon links and a sizes attribute.
+TEST_F(FaviconCallbackTest, IconFaviconSizes) {
+  ASSERT_TRUE(observer()->favicon_url_candidates().empty());
+  LoadHtml(
+      @"<link rel='icon' href='http://fav.ico' sizes='10x20 30x40'><link "
+      @"rel='apple-touch-icon' href='http://fav2.ico' sizes='10x20 asdfx'>");
+
+  WaitForCondition(^{
+    return observer()->favicon_url_updated();
+  });
+
+  const std::vector<FaviconURL>& favicons =
+      observer()->favicon_url_candidates();
+  ASSERT_EQ(2U, favicons.size());
+  EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
+
+  ASSERT_EQ(2U, favicons[0].icon_sizes.size());
+  EXPECT_EQ(10, favicons[0].icon_sizes[0].width());
+  EXPECT_EQ(20, favicons[0].icon_sizes[0].height());
+  EXPECT_EQ(30, favicons[0].icon_sizes[1].width());
+  EXPECT_EQ(40, favicons[0].icon_sizes[1].height());
+
+  EXPECT_EQ(GURL("http://fav2.ico"), favicons[1].icon_url);
+  EXPECT_EQ(FaviconURL::IconType::kTouchIcon, favicons[1].icon_type);
+
+  ASSERT_EQ(1U, favicons[1].icon_sizes.size());
+  EXPECT_EQ(10, favicons[1].icon_sizes[0].width());
+  EXPECT_EQ(20, favicons[1].icon_sizes[0].height());
 };
 
 }  // namespace web
