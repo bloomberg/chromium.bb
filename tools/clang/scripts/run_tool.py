@@ -49,6 +49,7 @@ apply_edits.py reads edit lines from stdin and applies the edits
 
 import argparse
 import functools
+import json
 import multiprocessing
 import os
 import os.path
@@ -139,6 +140,31 @@ def _GetFilesFromCompileDB(build_directory):
   """
   return [os.path.join(entry['directory'], entry['file'])
           for entry in compile_db.Read(build_directory)]
+
+
+def _UpdateCompileCommandsIfNeeded(compile_commands, files_list):
+  """ Filters compile database to only include required files, and makes it
+  more clang-tool friendly on Windows.
+
+  Args:
+    compile_commands: List of the contents of compile database.
+    files_list: List of required files for processing. Can be None to specify
+      no filtering.
+  Returns:
+    List of the contents of the compile database after processing.
+  """
+  if sys.platform == 'win32' and files_list:
+    relative_paths = set([os.path.relpath(f) for f in files_list])
+    filtered_compile_commands = []
+    for entry in compile_commands:
+      file_path = os.path.relpath(
+          os.path.join(entry['directory'], entry['file']))
+      if file_path in relative_paths:
+        filtered_compile_commands.append(entry)
+  else:
+    filtered_compile_commands = compile_commands
+
+  return compile_db.ProcessCompileDatabaseIfNeeded(filtered_compile_commands)
 
 
 def _ExecuteTool(toolname, tool_args, build_directory, filename):
@@ -276,12 +302,10 @@ def main():
           os.path.dirname(__file__),
           '../../../third_party/llvm-build/Release+Asserts/bin'))
 
-  if args.generate_compdb:
-    with open(os.path.join(args.p, 'compile_commands.json'), 'w') as f:
-      f.write(compile_db.GenerateWithNinja(args.p))
-
   if args.all:
-    source_filenames = set(_GetFilesFromCompileDB(args.p))
+    # Reading source files is postponed to after possible regeneration of
+    # compile_commands.json.
+    source_filenames = None
   else:
     git_filenames = set(_GetFilesFromGit(args.path_filter))
     # Filter out files that aren't C/C++/Obj-C/Obj-C++.
@@ -289,6 +313,16 @@ def main():
     source_filenames = [f
                         for f in git_filenames
                         if os.path.splitext(f)[1] in extensions]
+
+  if args.generate_compdb:
+    compile_commands = compile_db.GenerateWithNinja(args.p)
+    compile_commands = _UpdateCompileCommandsIfNeeded(
+        compile_commands, source_filenames)
+    with open(os.path.join(args.p, 'compile_commands.json'), 'w') as f:
+      f.write(json.dumps(compile_commands, indent=2))
+
+  if args.all:
+    source_filenames = set(_GetFilesFromCompileDB(args.p))
 
   if args.shard:
     total_length = len(source_filenames)
