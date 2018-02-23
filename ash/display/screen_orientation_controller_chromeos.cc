@@ -15,7 +15,6 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -289,10 +288,8 @@ void ScreenOrientationController::OnAccelerometerUpdated(
     return;
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity
-  if (ui::IsAccelerometerReadingStable(*update,
-                                       chromeos::ACCELEROMETER_SOURCE_SCREEN)) {
+  if (update->IsReadingStable(chromeos::ACCELEROMETER_SOURCE_SCREEN))
     HandleScreenRotation(update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
-  }
 }
 
 void ScreenOrientationController::OnDisplayConfigurationChanged() {
