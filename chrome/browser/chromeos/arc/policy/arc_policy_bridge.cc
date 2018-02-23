@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
@@ -199,6 +200,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
 }
 
 std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
+                                    const std::string& guid,
                                     bool is_affiliated) {
   base::DictionaryValue filtered_policies;
   // Parse ArcPolicy as JSON string before adding other policies to the
@@ -244,6 +246,8 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
 
   if (!is_affiliated)
     filtered_policies.RemoveKey("apkCacheEnabled");
+
+  filtered_policies.SetString("guid", guid);
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);
@@ -330,6 +334,7 @@ ArcPolicyBridge::ArcPolicyBridge(content::BrowserContext* context,
     : context_(context),
       arc_bridge_service_(bridge_service),
       policy_service_(policy_service),
+      instance_guid_(base::GenerateGUID()),
       weak_ptr_factory_(this) {
   VLOG(2) << "ArcPolicyBridge::ArcPolicyBridge";
   arc_bridge_service_->policy()->SetHost(this);
@@ -340,6 +345,18 @@ ArcPolicyBridge::~ArcPolicyBridge() {
   VLOG(2) << "ArcPolicyBridge::~ArcPolicyBridge";
   arc_bridge_service_->policy()->RemoveObserver(this);
   arc_bridge_service_->policy()->SetHost(nullptr);
+}
+
+const std::string& ArcPolicyBridge::GetInstanceGuidForTesting() {
+  return instance_guid_;
+}
+
+void ArcPolicyBridge::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ArcPolicyBridge::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
@@ -364,7 +381,11 @@ void ArcPolicyBridge::OnConnectionClosed() {
 
 void ArcPolicyBridge::GetPolicies(GetPoliciesCallback callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
-  std::move(callback).Run(GetCurrentJSONPolicies());
+  const std::string policy = GetCurrentJSONPolicies();
+  for (Observer& observer : observers_) {
+    observer.OnPolicySent(policy);
+  }
+  std::move(callback).Run(policy);
 }
 
 void ArcPolicyBridge::ReportCompliance(const std::string& request,
@@ -420,7 +441,8 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
   const user_manager::User* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
 
-  return GetFilteredJSONPolicies(policy_map, user->IsAffiliated());
+  return GetFilteredJSONPolicies(policy_map, instance_guid_,
+                                 user->IsAffiliated());
 }
 
 void ArcPolicyBridge::OnReportComplianceParseSuccess(
@@ -432,8 +454,12 @@ void ArcPolicyBridge::OnReportComplianceParseSuccess(
       prefs::kArcPolicyComplianceReported, true);
 
   const base::DictionaryValue* dict = nullptr;
-  if (parsed_json->GetAsDictionary(&dict))
+  if (parsed_json->GetAsDictionary(&dict)) {
     UpdateComplianceReportMetrics(dict);
+    for (Observer& observer : observers_) {
+      observer.OnComplianceReportReceived(parsed_json.get());
+    }
+  }
 }
 
 void ArcPolicyBridge::UpdateComplianceReportMetrics(
