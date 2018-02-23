@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_WORKLET_ANIMATION_H_
 #define CC_ANIMATION_WORKLET_ANIMATION_H_
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/keyframe_effect.h"
@@ -45,6 +46,11 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   double CurrentTime(base::TimeTicks monotonic_time,
                      const ScrollTree& scroll_tree);
 
+  // Returns true if the worklet animation needs to be updated which happens iff
+  // its current time is going to be different from last time given these input.
+  bool NeedsUpdate(base::TimeTicks monotonic_time,
+                   const ScrollTree& scroll_tree);
+
   // KeyframeEffect::AnimationTimeProvider:
   base::TimeTicks GetTimeForKeyframeModel(
       const KeyframeModel& keyframe_model) const override;
@@ -65,6 +71,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   std::unique_ptr<ScrollTimeline> scroll_timeline_;
 
   base::TimeDelta local_time_;
+
+  base::Optional<double> last_current_time_;
 };
 
 }  // namespace cc

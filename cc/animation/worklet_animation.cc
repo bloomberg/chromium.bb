@@ -15,7 +15,8 @@ WorkletAnimation::WorkletAnimation(
     std::unique_ptr<ScrollTimeline> scroll_timeline)
     : SingleKeyframeEffectAnimation(id),
       name_(name),
-      scroll_timeline_(std::move(scroll_timeline)) {}
+      scroll_timeline_(std::move(scroll_timeline)),
+      last_current_time_(base::nullopt) {}
 
 WorkletAnimation::~WorkletAnimation() = default;
 
@@ -56,6 +57,14 @@ double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
 
   // TODO(crbug.com/783333): Support DocumentTimeline's originTime concept.
   return (monotonic_time - base::TimeTicks()).InMillisecondsF();
+}
+
+bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
+                                   const ScrollTree& scroll_tree) {
+  double current_time = CurrentTime(monotonic_time, scroll_tree);
+  bool needs_update = last_current_time_ != current_time;
+  last_current_time_ = current_time;
+  return needs_update;
 }
 
 base::TimeTicks WorkletAnimation::GetTimeForKeyframeModel(

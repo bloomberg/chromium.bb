@@ -29,6 +29,13 @@
 
 namespace cc {
 
+namespace {
+WorkletAnimation* ToWorkletAnimation(Animation* animation) {
+  DCHECK(animation->IsWorkletAnimation());
+  return static_cast<WorkletAnimation*>(animation);
+}
+}  // namespace
+
 std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
   return base::WrapUnique(new AnimationHost(ThreadInstance::MAIN));
 }
@@ -273,19 +280,28 @@ bool AnimationHost::SupportsScrollAnimations() const {
 }
 
 bool AnimationHost::NeedsTickAnimations() const {
-  return NeedsTickAnimation() || NeedsTickMutator();
-}
-
-bool AnimationHost::NeedsTickMutator() const {
-  return mutator_ && mutator_->HasAnimators();
-}
-
-bool AnimationHost::NeedsTickAnimation() const {
   return !ticking_animations_.empty();
 }
 
+bool AnimationHost::NeedsTickMutator(base::TimeTicks monotonic_time,
+                                     const ScrollTree& scroll_tree) const {
+  if (!mutator_ || !mutator_->HasAnimators())
+    return false;
+
+  for (auto& animation : ticking_animations_) {
+    if (!animation->IsWorkletAnimation())
+      continue;
+
+    if (ToWorkletAnimation(animation.get())
+            ->NeedsUpdate(monotonic_time, scroll_tree))
+      return true;
+  }
+
+  return false;
+}
+
 bool AnimationHost::ActivateAnimations() {
-  if (!NeedsTickAnimation())
+  if (!NeedsTickAnimations())
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
@@ -301,14 +317,14 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   TRACE_EVENT0("cc", "AnimationHost::TickAnimations");
   bool did_animate = false;
 
-  if (NeedsTickAnimation()) {
+  if (NeedsTickAnimations()) {
     AnimationsList ticking_animations_copy = ticking_animations_;
     for (auto& it : ticking_animations_copy)
       it->Tick(monotonic_time);
 
     did_animate = true;
   }
-  if (NeedsTickMutator()) {
+  if (NeedsTickMutator(monotonic_time, scroll_tree)) {
     // TODO(majidvp): At the moment we call this for both active and pending
     // trees similar to other animations. However our final goal is to only call
     // it once, ideally after activation, and only when the input
@@ -322,16 +338,18 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
 
 void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
                                          const ScrollTree& scroll_tree) {
-  // TODO(majidvp) For now the logic simply assumes all AnimationWorklet
-  // animations depend on scroll offset but this is inefficient. We need a more
+  // TODO(majidvp) For now the logic simply generates an update when at least
+  // one animation needs updating but this is inefficient. We need a more
   // fine-grained approach based on invalidating individual ScrollTimelines and
-  // then ticking the animations attached to those timelines. To make this
-  // happen we probably need to move "ticking" animations to timeline.
+  // then ticking the animations attached to those timelines. To make
+  // this happen we probably need to move "ticking" animations to timeline.
+  if (!NeedsTickMutator(monotonic_time, scroll_tree))
+    return;
+  DCHECK(mutator_);
 
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
-  if (mutator_)
-    mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
+  mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
@@ -345,8 +363,7 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
     if (!animation->IsWorkletAnimation())
       continue;
 
-    WorkletAnimation* worklet_animation =
-        static_cast<WorkletAnimation*>(animation.get());
+    WorkletAnimation* worklet_animation = ToWorkletAnimation(animation.get());
     MutatorInputState::AnimationState state{
         worklet_animation->id(), worklet_animation->name(),
         worklet_animation->CurrentTime(monotonic_time, scroll_tree)};
@@ -359,7 +376,7 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
 
 bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
                                          MutatorEvents* mutator_events) {
-  if (!NeedsTickAnimation())
+  if (!NeedsTickAnimations())
     return false;
 
   auto* animation_events = static_cast<AnimationEvents*>(mutator_events);
@@ -622,10 +639,8 @@ void AnimationHost::SetMutationUpdate(
       continue;
 
     DCHECK(to_update->get()->IsWorkletAnimation());
-    WorkletAnimation* worklet_animation_to_update =
-        static_cast<WorkletAnimation*>(to_update->get());
-
-    worklet_animation_to_update->SetLocalTime(animation_state.local_time);
+    ToWorkletAnimation(to_update->get())
+        ->SetLocalTime(animation_state.local_time);
   }
 }
 
