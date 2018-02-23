@@ -3072,4 +3072,26 @@ TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {
   EXPECT_EQ("", prop2.ToDiffString(prop2));
 }
 
+// If a navigation happens while the widget is hidden, we shouldn't show
+// contents of the previous page when we become visible.
+TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
+  // When visible, navigation does not immediately call into
+  // ClearDisplayedGraphics.
+  host_->WasShown(ui::LatencyInfo());
+  host_->DidNavigate(5);
+  EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
+
+  // Hide then show. ClearDisplayedGraphics must be called.
+  host_->WasHidden();
+  host_->WasShown(ui::LatencyInfo());
+  EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
+  host_->reset_new_content_rendering_timeout_fired();
+
+  // Hide, navigate, then show. ClearDisplayedGraphics must be called.
+  host_->WasHidden();
+  host_->DidNavigate(6);
+  host_->WasShown(ui::LatencyInfo());
+  EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
+}
+
 }  // namespace content

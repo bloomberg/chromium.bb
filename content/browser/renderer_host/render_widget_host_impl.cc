@@ -678,6 +678,14 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::WasShown");
   is_hidden_ = false;
 
+  // If we navigated in background, clear the displayed graphics of the
+  // previous page before going visible.
+  if (new_content_rendering_timeout_ &&
+      new_content_rendering_timeout_->IsRunning()) {
+    new_content_rendering_timeout_->Stop();
+    ClearDisplayedGraphics();
+  }
+
   SendScreenRects();
   RestartHangMonitorTimeoutIfNecessary();
 
