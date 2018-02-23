@@ -6,22 +6,19 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['generic_access']}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('generic_access'))
-    .then(service => service.getCharacteristic('gap.device_name'))
-    .then(characteristic => {
-      assert_equals(characteristic.value, null);
-      let textEncoder = new TextEncoder();
-      let newValue = textEncoder.encode('foo');
-      return characteristic.writeValue(newValue).then(() => {
-        assert_array_equals(new Uint8Array(characteristic.value.buffer),
-                            new Uint8Array(newValue.buffer));
-      });
-    });
-}, 'A regular write request to a writable characteristic should update value.');
+const test_desc = 'A regular write request to a writable characteristic ' +
+    'should update value.';
+const newValue = new TextEncoder().encode('foo');
+let characteristic, fake_characteristic;
+
+bluetooth_test(() => getMeasurementIntervalCharacteristic()
+    .then(_ => ({characteristic, fake_characteristic} = _))
+    .then(() => assert_equals(characteristic.value, null))
+    .then(() => fake_characteristic.setNextWriteResponse({GATT_SUCCESS}))
+    .then(() => characteristic.writeValue(newValue))
+    .then(() => assert_array_equals(
+        new Uint8Array(characteristic.value.buffer), newValue))
+    .then(() => fake_characteristic.getLastWrittenValue())
+    .then(lastValue => assert_array_equals(lastValue, newValue)),
+    test_desc);
 </script>
