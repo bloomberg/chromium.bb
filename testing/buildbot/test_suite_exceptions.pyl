@@ -2560,6 +2560,43 @@
       },
     },
   },
+  'notification_helper_unittests': {
+    'remove_from': [
+      # chromium.win, this unit test requires WinRT, which only exists on Windows 8 or above.
+      'Win 7 Tests x64 (1)',
+      'Win7 (32) Tests',
+      'Win7 Tests (1)',
+      'Win7 Tests (dbg)(1)',
+      # chromium.clang, the following bots run on Windows 7, where the unit test doesn't run.
+      'CrWinAsan',
+      'CrWinAsan(dll)',
+      'CrWinAsanCov',
+      'CrWinClang',
+      'CrWinClang(dbg)',
+      'CrWinClang(shared)',
+      'CrWinClang64',
+      'CrWinClang64(dbg)',
+      'CrWinClang64(dll)',
+      'CrWinClangLLD',
+      'CrWinClangLLD64',
+      'CrWinClngLLD64dbg',
+      'CrWinClngLLDdbg',
+      'ToTWin',
+      'ToTWin(dbg)',
+      'ToTWin(dll)',
+      'ToTWin64',
+      'ToTWin64(dbg)',
+      'ToTWin64(dll)',
+      'ToTWinCFI',
+      'ToTWinCFI64',
+      'ToTWinThinLTO64',
+      # chromium.fyi
+      'CrWinAsan tester',
+      'CrWinAsan(dll) tester',
+      'CrWinAsanCov tester',
+      'Out of Process Profiling Windows',
+    ],
+  },
   'printing_unittests': {
     'remove_from': [
       # chromium.chromiumos
