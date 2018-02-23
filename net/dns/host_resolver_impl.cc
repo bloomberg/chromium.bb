@@ -1039,8 +1039,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
             key_.hostname,
             family == ADDRESS_FAMILY_IPV6 ? dns_protocol::kTypeAAAA
                                           : dns_protocol::kTypeA,
-            base::Bind(&DnsTask::OnTransactionComplete, base::Unretained(this),
-                       base::TimeTicks::Now()),
+            base::BindOnce(&DnsTask::OnTransactionComplete,
+                           base::Unretained(this), base::TimeTicks::Now()),
             net_log_);
     trans->SetRequestContext(delegate_->url_request_context());
     trans->SetRequestPriority(delegate_->priority());

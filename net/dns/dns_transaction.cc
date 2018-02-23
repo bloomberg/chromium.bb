@@ -835,14 +835,14 @@ class DnsTransactionImpl : public DnsTransaction,
   DnsTransactionImpl(DnsSession* session,
                      const std::string& hostname,
                      uint16_t qtype,
-                     const DnsTransactionFactory::CallbackType& callback,
+                     DnsTransactionFactory::CallbackType& callback,
                      const NetLogWithSource& net_log,
                      const OptRecordRdata* opt_rdata)
       : session_(session),
         hostname_(hostname),
         qtype_(qtype),
         opt_rdata_(opt_rdata),
-        callback_(callback),
+        callback_(std::move(callback)),
         net_log_(net_log),
         qnames_initial_size_(0),
         attempts_count_(0),
@@ -1354,7 +1354,7 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
   std::unique_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
       uint16_t qtype,
-      const CallbackType& callback,
+      CallbackType callback,
       const NetLogWithSource& net_log) override {
     return std::unique_ptr<DnsTransaction>(new DnsTransactionImpl(
         session_.get(), hostname, qtype, callback, net_log, opt_rdata_.get()));
