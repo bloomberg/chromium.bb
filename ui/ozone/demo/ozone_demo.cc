@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -26,9 +27,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
-#include "ui/ozone/demo/gl_renderer.h"
+#include "ui/ozone/demo/skia_renderer.h"
 #include "ui/ozone/demo/software_renderer.h"
-#include "ui/ozone/demo/surfaceless_gl_renderer.h"
+#include "ui/ozone/demo/surfaceless_skia_renderer.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -39,7 +40,6 @@ const int kTestWindowWidth = 800;
 const int kTestWindowHeight = 600;
 
 const char kDisableGpu[] = "disable-gpu";
-
 const char kDisableSurfaceless[] = "disable-surfaceless";
 
 const char kWindowSize[] = "window-size";
@@ -58,7 +58,7 @@ scoped_refptr<gl::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
 class RendererFactory {
  public:
   enum RendererType {
-    GL,
+    SKIA,
     SOFTWARE,
   };
 
@@ -176,7 +176,8 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void StartOnGpu() {
     renderer_ =
         renderer_factory_->CreateRenderer(GetAcceleratedWidget(), GetSize());
-    renderer_->Initialize();
+    if (!renderer_->Initialize())
+      LOG(ERROR) << "Failed to initialize renderer.";
   }
 
   WindowManager* window_manager_;      // Not owned.
@@ -211,7 +212,7 @@ bool RendererFactory::Initialize() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
       gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
-    type_ = GL;
+    type_ = SKIA;
   } else {
     type_ = SOFTWARE;
   }
@@ -223,16 +224,15 @@ std::unique_ptr<ui::Renderer> RendererFactory::CreateRenderer(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
   switch (type_) {
-    case GL: {
+    case SKIA: {
       scoped_refptr<gl::GLSurface> surface = CreateGLSurface(widget);
       if (!surface)
         LOG(FATAL) << "Failed to create GL surface";
       if (surface->IsSurfaceless()) {
-        return std::make_unique<ui::SurfacelessGlRenderer>(widget, surface,
-                                                           size);
-      } else {
-        return std::make_unique<ui::GlRenderer>(widget, surface, size);
+        return std::make_unique<ui::SurfacelessSkiaRenderer>(widget, surface,
+                                                             size);
       }
+      return std::make_unique<ui::SkiaRenderer>(widget, surface, size);
     }
     case SOFTWARE:
       return std::make_unique<ui::SoftwareRenderer>(widget, size);
@@ -334,6 +334,8 @@ void WindowManager::OnDisplayConfigured(const gfx::Rect& bounds, bool success) {
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
+
+  base::debug::EnableInProcessStackDumping();
 
   // Initialize logging so we can enable VLOG messages.
   logging::LoggingSettings settings;

@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/demo/surfaceless_gl_renderer.h"
+#include "ui/ozone/demo/surfaceless_skia_renderer.h"
 
 #include <stddef.h>
 
@@ -10,6 +10,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_bindings.h"
@@ -25,6 +31,10 @@
 namespace ui {
 
 namespace {
+
+const char kPartialPrimaryPlane[] = "partial-primary-plane";
+const char kEnableOverlay[] = "enable-overlay";
+const char kDisablePrimaryPlane[] = "disable-primary-plane";
 
 OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
                                              gfx::Rect bounds_rect,
@@ -58,23 +68,43 @@ OverlaySurfaceCandidate MakeOverlayCandidate(int z_order,
 
 }  // namespace
 
-SurfacelessGlRenderer::BufferWrapper::BufferWrapper() {
-}
+class SurfacelessSkiaRenderer::BufferWrapper {
+ public:
+  BufferWrapper();
+  ~BufferWrapper();
 
-SurfacelessGlRenderer::BufferWrapper::~BufferWrapper() {
-  if (gl_fb_)
-    glDeleteFramebuffersEXT(1, &gl_fb_);
+  gl::GLImage* image() const { return image_.get(); }
+  SkSurface* sk_surface() const { return sk_surface_.get(); }
 
+  bool Initialize(GrContext* gr_context,
+                  gfx::AcceleratedWidget widget,
+                  const gfx::Size& size);
+  void BindFramebuffer();
+
+  const gfx::Size size() const { return size_; }
+
+ private:
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
+  gfx::Size size_;
+
+  scoped_refptr<gl::GLImage> image_;
+  unsigned int gl_tex_ = 0;
+  sk_sp<SkSurface> sk_surface_;
+};
+
+SurfacelessSkiaRenderer::BufferWrapper::BufferWrapper() = default;
+
+SurfacelessSkiaRenderer::BufferWrapper::~BufferWrapper() {
   if (gl_tex_) {
     image_->ReleaseTexImage(GL_TEXTURE_2D);
     glDeleteTextures(1, &gl_tex_);
   }
 }
 
-bool SurfacelessGlRenderer::BufferWrapper::Initialize(
+bool SurfacelessSkiaRenderer::BufferWrapper::Initialize(
+    GrContext* gr_context,
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
-  glGenFramebuffersEXT(1, &gl_fb_);
   glGenTextures(1, &gl_tex_);
 
   gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
@@ -90,82 +120,82 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
   }
   image_ = image;
 
-  glBindFramebufferEXT(GL_FRAMEBUFFER, gl_fb_);
   glBindTexture(GL_TEXTURE_2D, gl_tex_);
   image_->BindTexImage(GL_TEXTURE_2D);
-
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                            gl_tex_, 0);
-  if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "Failed to create framebuffer "
-               << glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-    return false;
-  }
 
   widget_ = widget;
   size_ = size;
 
+  GrGLTextureInfo texture_info;
+  texture_info.fTarget = GL_TEXTURE_2D;
+  texture_info.fID = gl_tex_;
+  texture_info.fFormat = GL_RGBA;
+  GrBackendTexture backend_texture(size_.width(), size_.height(),
+                                   kRGBA_8888_GrPixelConfig, texture_info);
+  sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, 0, nullptr,
+      nullptr);
+  if (!sk_surface_) {
+    LOG(ERROR) << "Failed to create skia surface";
+    return false;
+  }
+
   return true;
 }
 
-void SurfacelessGlRenderer::BufferWrapper::BindFramebuffer() {
-  glBindFramebufferEXT(GL_FRAMEBUFFER, gl_fb_);
-}
-
-SurfacelessGlRenderer::SurfacelessGlRenderer(
+SurfacelessSkiaRenderer::SurfacelessSkiaRenderer(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
-    : GlRenderer(widget, surface, size),
+    : SkiaRenderer(widget, surface, size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
       weak_ptr_factory_(this) {}
 
-SurfacelessGlRenderer::~SurfacelessGlRenderer() {
+SurfacelessSkiaRenderer::~SurfacelessSkiaRenderer() {
   // Need to make current when deleting the framebuffer resources allocated in
   // the buffers.
-  context_->MakeCurrent(surface_.get());
+  gl_context_->MakeCurrent(gl_surface_.get());
 }
 
-bool SurfacelessGlRenderer::Initialize() {
-  if (!GlRenderer::Initialize())
+bool SurfacelessSkiaRenderer::Initialize() {
+  if (!SkiaRenderer::Initialize())
     return false;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch("partial-primary-plane"))
+  if (command_line->HasSwitch(kPartialPrimaryPlane))
     primary_plane_rect_ = gfx::Rect(200, 200, 800, 800);
   else
     primary_plane_rect_ = gfx::Rect(size_);
 
   for (size_t i = 0; i < arraysize(buffers_); ++i) {
     buffers_[i].reset(new BufferWrapper());
-    if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
+    if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
+                                 primary_plane_rect_.size()))
       return false;
   }
 
-  if (command_line->HasSwitch("enable-overlay")) {
+  if (command_line->HasSwitch(kEnableOverlay)) {
     gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
     for (size_t i = 0; i < arraysize(overlay_buffer_); ++i) {
       overlay_buffer_[i].reset(new BufferWrapper());
-      overlay_buffer_[i]->Initialize(gfx::kNullAcceleratedWidget, overlay_size);
-
-      glViewport(0, 0, overlay_size.width(), overlay_size.height());
-      glClearColor(i, 1.0, 0.0, 1.0);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      overlay_buffer_[i]->Initialize(gr_context_.get(),
+                                     gfx::kNullAcceleratedWidget, overlay_size);
+      SkCanvas* sk_canvas = overlay_buffer_[i]->sk_surface()->getCanvas();
+      sk_canvas->clear(SkColorSetARGB(255, 255 * i, 255, 0));
     }
   }
 
-  disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
+  disable_primary_plane_ = command_line->HasSwitch(kDisablePrimaryPlane);
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
-void SurfacelessGlRenderer::RenderFrame() {
-  TRACE_EVENT0("ozone", "SurfacelessGlRenderer::RenderFrame");
+void SurfacelessSkiaRenderer::RenderFrame() {
+  TRACE_EVENT0("ozone", "SurfacelessSkiaRenderer::RenderFrame");
 
-  float fraction = NextFraction();
-
+  float fraction = CurrentFraction();
   gfx::Rect overlay_rect;
 
   OverlayCandidatesOzone::OverlaySurfaceCandidateList overlay_list;
@@ -198,44 +228,51 @@ void SurfacelessGlRenderer::RenderFrame() {
   // later time.
   overlay_checker_->CheckOverlaySupport(&overlay_list);
 
-  context_->MakeCurrent(surface_.get());
-  buffers_[back_buffer_]->BindFramebuffer();
+  gl_context_->MakeCurrent(gl_surface_.get());
 
-  glViewport(0, 0, size_.width(), size_.height());
-  glClearColor(1 - fraction, 0.0, fraction, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  SkSurface* sk_surface = buffers_[back_buffer_]->sk_surface();
+  if (use_ddl_) {
+    StartDDLRenderThreadIfNecessary(sk_surface);
+    auto ddl = GetDDL();
+    sk_surface->draw(ddl.get());
+  } else {
+    Draw(sk_surface->getCanvas(), NextFraction());
+  }
+  gr_context_->flush();
+  glFinish();
 
   if (!disable_primary_plane_) {
     CHECK(overlay_list.front().overlay_handled);
-    surface_->ScheduleOverlayPlane(0, gfx::OVERLAY_TRANSFORM_NONE,
-                                   buffers_[back_buffer_]->image(),
-                                   primary_plane_rect_, gfx::RectF(0, 0, 1, 1));
+    gl_surface_->ScheduleOverlayPlane(
+        0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
+        primary_plane_rect_, gfx::RectF(0, 0, 1, 1));
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
-    surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
-                                   overlay_buffer_[back_buffer_]->image(),
-                                   overlay_rect, gfx::RectF(0, 0, 1, 1));
+    gl_surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
+                                      overlay_buffer_[back_buffer_]->image(),
+                                      overlay_rect, gfx::RectF(0, 0, 1, 1));
   }
 
   back_buffer_ ^= 1;
-  surface_->SwapBuffersAsync(
-      base::Bind(&SurfacelessGlRenderer::PostRenderFrameTask,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind([](const gfx::PresentationFeedback&) {}));
+  gl_surface_->SwapBuffersAsync(
+      base::BindRepeating(&SurfacelessSkiaRenderer::PostRenderFrameTask,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating([](const gfx::PresentationFeedback&) {}));
 }
 
-void SurfacelessGlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
+void SurfacelessSkiaRenderer::PostRenderFrameTask(gfx::SwapResult result) {
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < arraysize(buffers_); ++i) {
         buffers_[i].reset(new BufferWrapper());
-        if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
+        if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
+                                     primary_plane_rect_.size()))
           LOG(FATAL) << "Failed to recreate buffer";
       }
       FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
-      GlRenderer::PostRenderFrameTask(result);
+      SkiaRenderer::PostRenderFrameTask(result);
       break;
     case gfx::SwapResult::SWAP_FAILED:
       LOG(FATAL) << "Failed to swap buffers";

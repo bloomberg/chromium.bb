@@ -17,6 +17,7 @@ class RendererBase : public Renderer {
   ~RendererBase() override;
 
  protected:
+  float CurrentFraction() const;
   float NextFraction();
 
   gfx::AcceleratedWidget widget_;
