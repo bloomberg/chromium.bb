@@ -232,8 +232,8 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 
 			/* inhibit rule */
 			if (rule->dotslen > braille_len ||
-					rule->charslen == text_len && rule->dotslen < braille_len ||
-					rule->dotslen == braille_len && rule->charslen < text_len)
+					(rule->charslen == text_len && rule->dotslen < braille_len) ||
+					(rule->dotslen == braille_len && rule->charslen < text_len))
 				goto inhibit;
 			for (k = 0; k < rule->dotslen; k++)
 				if (_lou_getCharFromDots(rule->charsdots[rule->charslen + k]) !=
