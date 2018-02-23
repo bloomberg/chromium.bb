@@ -2802,6 +2802,7 @@ TEST_F(GLRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
       CreateTestRenderPass(id, rect, transform_to_root);
 
   bool swizzle_contents = true;
+  bool contents_premultiplied = true;
   bool needs_blending = false;
   bool nearest_neighbor = true;
   bool force_anti_aliasing_off = true;
@@ -2814,7 +2815,8 @@ TEST_F(GLRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   TileDrawQuad* hole = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   hole->SetNew(hole_shared_state, rect, rect, needs_blending, mapped_resource,
                gfx::RectF(gfx::Rect(tile_size)), tile_size, swizzle_contents,
-               nearest_neighbor, force_anti_aliasing_off);
+               contents_premultiplied, nearest_neighbor,
+               force_anti_aliasing_off);
 
   gfx::Transform green_quad_to_target_transform;
   SharedQuadState* green_shared_state = CreateTestSharedQuadState(
@@ -3197,6 +3199,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool swizzle_contents = true;
+  bool contents_premultiplied = true;
   bool needs_blending = true;
   bool nearest_neighbor = true;
   bool force_anti_aliasing_off = false;
@@ -3239,7 +3242,8 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   auto* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(shared_state, viewport, viewport, needs_blending,
                mapped_resource, gfx::RectF(gfx::Rect(tile_size)), tile_size,
-               swizzle_contents, nearest_neighbor, force_anti_aliasing_off);
+               swizzle_contents, contents_premultiplied, nearest_neighbor,
+               force_anti_aliasing_off);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -3727,6 +3731,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
 TEST_F(GLRendererPixelTest, TileQuadClamping) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool swizzle_contents = true;
+  bool contents_premultiplied = true;
   bool needs_blending = true;
   bool nearest_neighbor = false;
   bool use_aa = false;
@@ -3780,7 +3785,8 @@ TEST_F(GLRendererPixelTest, TileQuadClamping) {
   auto* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   quad->SetNew(quad_shared, gfx::Rect(layer_size), gfx::Rect(layer_size),
                needs_blending, mapped_resource, tex_coord_rect, tile_size,
-               swizzle_contents, nearest_neighbor, use_aa);
+               swizzle_contents, contents_premultiplied, nearest_neighbor,
+               use_aa);
 
   // Green background.
   SharedQuadState* background_shared =

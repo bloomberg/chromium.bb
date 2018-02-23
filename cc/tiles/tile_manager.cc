@@ -1291,9 +1291,11 @@ void TileManager::OnRasterTaskCompleted(
   TileDrawInfo& draw_info = tile->draw_info();
   bool needs_swizzle =
       raster_buffer_provider_->IsResourceSwizzleRequired(!tile->is_opaque());
+  bool is_premultiplied =
+      raster_buffer_provider_->IsResourcePremultiplied(!tile->is_opaque());
   draw_info.SetResource(std::move(resource),
                         raster_task_was_scheduled_with_checker_images,
-                        needs_swizzle);
+                        needs_swizzle, is_premultiplied);
   if (raster_task_was_scheduled_with_checker_images)
     num_of_tiles_with_checker_images_++;
 

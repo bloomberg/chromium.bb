@@ -470,7 +470,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
               offset_visible_geometry_rect, needs_blending,
               draw_info.resource_id_for_export(), texture_rect,
               draw_info.resource_size(), draw_info.contents_swizzled(),
-              nearest_neighbor_,
+              draw_info.is_premultiplied(), nearest_neighbor_,
               !layer_tree_impl()->settings().enable_edge_anti_aliasing);
           ValidateQuadResources(quad);
           has_draw_quad = true;

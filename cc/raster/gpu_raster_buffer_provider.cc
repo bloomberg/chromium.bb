@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -37,6 +38,54 @@
 
 namespace cc {
 namespace {
+
+class ScopedSkSurfaceForUnpremultiplyAndDither {
+ public:
+  ScopedSkSurfaceForUnpremultiplyAndDither(
+      viz::RasterContextProvider* context_provider,
+      const gfx::Rect& playback_rect,
+      const gfx::Rect& raster_full_rect,
+      GLuint texture_id,
+      const gfx::Size& size,
+      bool use_distance_field_text,
+      bool can_use_lcd_text,
+      int msaa_sample_count)
+      : context_provider_(context_provider),
+        texture_id_(texture_id),
+        offset_(playback_rect.OffsetFromOrigin() -
+                raster_full_rect.OffsetFromOrigin()),
+        size_(playback_rect.size()) {
+    // Allocate a 32-bit surface for raster. We will copy from that into our
+    // actual surface in destruction.
+    SkImageInfo n32Info =
+        SkImageInfo::MakeN32Premul(size.width(), size.height());
+    SkSurfaceProps surface_props =
+        LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
+            use_distance_field_text, can_use_lcd_text);
+    surface_ = SkSurface::MakeRenderTarget(
+        context_provider->GrContext(), SkBudgeted::kYes, n32Info,
+        msaa_sample_count, kTopLeft_GrSurfaceOrigin, &surface_props);
+  }
+
+  ~ScopedSkSurfaceForUnpremultiplyAndDither() {
+    GrBackendObject handle =
+        surface_->getTextureHandle(SkSurface::kFlushRead_BackendHandleAccess);
+    const GrGLTextureInfo* info =
+        skia::GrBackendObjectToGrGLTextureInfo(handle);
+    context_provider_->RasterInterface()->UnpremultiplyAndDitherCopyCHROMIUM(
+        info->fID, texture_id_, offset_.x(), offset_.y(), size_.width(),
+        size_.height());
+  }
+
+  SkSurface* surface() { return surface_.get(); }
+
+ private:
+  viz::RasterContextProvider* context_provider_;
+  GLuint texture_id_;
+  gfx::Vector2d offset_;
+  gfx::Size size_;
+  sk_sp<SkSurface> surface_;
+};
 
 static void RasterizeSourceOOP(
     const RasterSource* raster_source,
@@ -85,6 +134,9 @@ static void RasterizeSourceOOP(
                      raster_source->requires_clear());
   ri->EndRasterCHROMIUM();
 
+  // TODO(ericrk): Handle unpremultiply+dither for 4444 cases.
+  // https://crbug.com/789153
+
   ri->DeleteTextures(1, &texture_id);
 }
 
@@ -125,7 +177,8 @@ static void RasterizeSource(
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
     bool use_distance_field_text,
-    int msaa_sample_count) {
+    int msaa_sample_count,
+    bool unpremultiply_and_dither) {
   ScopedGrContextAccess gr_context_access(context_provider);
 
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
@@ -139,12 +192,23 @@ static void RasterizeSource(
   }
 
   {
-    LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
-        context_provider->GrContext(), texture_id, texture_target,
-        resource_size, resource_format, use_distance_field_text,
-        playback_settings.use_lcd_text, msaa_sample_count);
-
-    SkSurface* surface = scoped_surface.surface();
+    base::Optional<LayerTreeResourceProvider::ScopedSkSurface> scoped_surface;
+    base::Optional<ScopedSkSurfaceForUnpremultiplyAndDither>
+        scoped_dither_surface;
+    SkSurface* surface;
+    if (!unpremultiply_and_dither) {
+      scoped_surface.emplace(context_provider->GrContext(), texture_id,
+                             texture_target, resource_size, resource_format,
+                             use_distance_field_text,
+                             playback_settings.use_lcd_text, msaa_sample_count);
+      surface = scoped_surface->surface();
+    } else {
+      scoped_dither_surface.emplace(
+          context_provider, playback_rect, raster_full_rect, texture_id,
+          resource_size, use_distance_field_text,
+          playback_settings.use_lcd_text, msaa_sample_count);
+      surface = scoped_dither_surface->surface();
+    }
 
     // Allocating an SkSurface will fail after a lost context.  Pretend we
     // rasterized, as the contents of the resource don't matter anymore.
@@ -166,6 +230,15 @@ static void RasterizeSource(
   }
 
   ri->DeleteTextures(1, &texture_id);
+}
+
+bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) {
+  switch (format) {
+    case viz::RGBA_4444:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace
@@ -357,6 +430,12 @@ bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
   return false;
 }
 
+bool GpuRasterBufferProvider::IsResourcePremultiplied(
+    bool must_support_alpha) const {
+  return !ShouldUnpremultiplyAndDitherResource(
+      GetResourceFormat(must_support_alpha));
+}
+
 bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   // Partial raster doesn't support MSAA, as the MSAA resolve is unaware of clip
   // rects.
@@ -467,7 +546,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
                     texture_storage_allocated, resource_size, resource_format,
                     color_space, raster_full_rect, playback_rect, transform,
                     playback_settings, worker_context_provider_,
-                    use_distance_field_text_, msaa_sample_count_);
+                    use_distance_field_text_, msaa_sample_count_,
+                    ShouldUnpremultiplyAndDitherResource(resource_format));
   }
 
   // Generate sync token for cross context synchronization.

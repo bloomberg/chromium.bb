@@ -30,6 +30,7 @@ class VIZ_COMMON_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool swizzle_contents,
+              bool is_premultiplied,
               bool nearest_neighbor,
               bool force_anti_aliasing_off);
 
@@ -44,6 +45,7 @@ class VIZ_COMMON_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool swizzle_contents,
+              bool is_premultiplied,
               bool nearest_neighbor,
               bool force_anti_aliasing_off);
 
