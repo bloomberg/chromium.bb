@@ -90,6 +90,8 @@ typedef enum {
   GVR_KEYBOARD_MODE_DEFAULT = 0,
   /// Keyboard layout for inputing numbers.
   GVR_KEYBOARD_MODE_NUMERIC = 1,
+  /// Keyboard layout for inputing password.
+  GVR_KEYBOARD_MODE_PASSWORD = 2,
 } gvr_keyboard_input_mode;
 
 typedef struct gvr_mat4f gvr_mat4f;
@@ -183,6 +185,15 @@ bool gvr_keyboard_update_controller_ray(gvr_keyboard_context* context,
                                         const gvr_vec3f* start,
                                         const gvr_vec3f* end,
                                         gvr_vec3f* hit);
+
+/// Updates the touch state of the controller.
+///
+/// @param context A pointer to the keyboard's context.
+/// @param touched Whether touch pad is being touched.
+/// @param pos Touch position.
+void gvr_keyboard_update_controller_touch(gvr_keyboard_context* context,
+                                          bool touched,
+                                          const gvr_vec2f* pos);
 
 /// Gets the contents of the keyboard's text field.
 ///
