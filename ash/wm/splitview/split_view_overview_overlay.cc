@@ -17,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -30,9 +32,6 @@ namespace {
 
 // The amount of round applied to the corners of the highlight views.
 constexpr int kHighlightScreenRoundRectRadiusDp = 4;
-
-// An alpha value for the highlight views.
-constexpr SkColor kHighlightBackgroundAlpha = 0x4D;
 
 // Creates the widget responsible for displaying the indicators.
 std::unique_ptr<views::Widget> CreateWidget() {
@@ -67,12 +66,12 @@ gfx::Transform ComputeRotateAroundCenterTransform(const gfx::Rect& bounds,
 // of the screen. kPhantomLeft and kPhantomRight correspond with LEFT_SNAPPED
 // and RIGHT_SNAPPED which do not always correspond to the physical left and
 // right of the screen. See split_view_controller.h for more details.
-bool IsPhantomOnLeftTopOfScreen(IndicatorState indicator_type) {
+bool IsPhantomOnLeftTopOfScreen(IndicatorState indicator_state) {
   const blink::WebScreenOrientationLockType orientation =
       Shell::Get()->split_view_controller()->screen_orientation();
-  return (indicator_type == IndicatorState::kPhantomLeft &&
+  return (indicator_state == IndicatorState::kPhantomLeft &&
           SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(orientation)) ||
-         (indicator_type == IndicatorState::kPhantomRight &&
+         (indicator_state == IndicatorState::kPhantomRight &&
           !SplitViewController::IsLeftWindowOnTopOrLeftOfScreen(orientation));
 }
 
@@ -121,9 +120,12 @@ class SplitViewOverviewOverlay::RotatedImageLabelView : public RoundedRectView {
 // drag a selected window in order to initiate splitview. Each highlight has a
 // label with instructions to further guide users. The highlights are on the
 // left and right of the display in landscape mode, and on the top and bottom of
-// the display in landscape mode.
+// the display in landscape mode. The highlights can expand and shrink if a
+// window has entered a snap region to display the bounds of the window, if it
+// were to get snapped.
 class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
-    : public views::View {
+    : public views::View,
+      public ui::ImplicitAnimationObserver {
  public:
   SplitViewOverviewOverlayView() {
     left_hightlight_view_ =
@@ -142,8 +144,8 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     left_rotated_view_ = new RotatedImageLabelView();
     right_rotated_view_ = new RotatedImageLabelView();
 
-    left_hightlight_view_->AddChildView(left_rotated_view_);
-    right_hightlight_view_->AddChildView(right_rotated_view_);
+    AddChildView(left_rotated_view_);
+    AddChildView(right_rotated_view_);
 
     // Nothing is shown initially.
     left_hightlight_view_->layer()->SetOpacity(0.f);
@@ -152,44 +154,50 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     right_rotated_view_->layer()->SetOpacity(0.f);
   }
 
-  ~SplitViewOverviewOverlayView() override = default;
+  ~SplitViewOverviewOverlayView() override {}
 
   // Called by parent widget when the state machine changes. Handles setting the
   // opacity of the highlights and labels based on the state.
-  void OnIndicatorTypeChanged(IndicatorState indicator_type) {
-    DCHECK_NE(indicator_type_, indicator_type);
+  void OnIndicatorTypeChanged(IndicatorState indicator_state) {
+    DCHECK_NE(indicator_state_, indicator_state);
 
-    indicator_type_ = indicator_type;
+    indicator_state_ = indicator_state;
 
-    switch (indicator_type) {
+    switch (indicator_state) {
       case IndicatorState::kNone:
-        AnimateSplitviewLabelOpacity(left_hightlight_view_->layer(), 0.f);
-        AnimateSplitviewLabelOpacity(right_hightlight_view_->layer(), 0.f);
-        left_rotated_view_->layer()->SetOpacity(0.f);
-        right_rotated_view_->layer()->SetOpacity(0.f);
+        DoSplitviewOpacityAnimation(left_hightlight_view_->layer(),
+                                    SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+        DoSplitviewOpacityAnimation(right_hightlight_view_->layer(),
+                                    SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+        DoSplitviewOpacityAnimation(left_rotated_view_->layer(),
+                                    SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
+        DoSplitviewOpacityAnimation(right_rotated_view_->layer(),
+                                    SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
         return;
       case IndicatorState::kDragArea:
       case IndicatorState::kCannotSnap: {
-        SetLabelsText(l10n_util::GetStringUTF16(
-            indicator_type == IndicatorState::kCannotSnap
-                ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
-                : IDS_ASH_SPLIT_VIEW_GUIDANCE));
-        const SkColor color = indicator_type == IndicatorState::kCannotSnap
-                                  ? SK_ColorBLACK
-                                  : SK_ColorWHITE;
-        const float opacity = Shell::Get()->split_view_controller()->state() ==
-                                      SplitViewController::NO_SNAP
-                                  ? 1.f
-                                  : 0.f;
-        AnimateSplitviewLabelOpacity(left_hightlight_view_->layer(), 1.f);
-        AnimateSplitviewLabelOpacity(right_hightlight_view_->layer(), 1.f);
-        left_rotated_view_->layer()->SetOpacity(opacity);
-        right_rotated_view_->layer()->SetOpacity(opacity);
+        const bool show = Shell::Get()->split_view_controller()->state() ==
+                          SplitViewController::NO_SNAP;
 
-        left_hightlight_view_->SetBackgroundColor(
-            SkColorSetA(color, kHighlightBackgroundAlpha));
-        right_hightlight_view_->SetBackgroundColor(
-            SkColorSetA(color, kHighlightBackgroundAlpha));
+        for (RotatedImageLabelView* view : GetTextViews()) {
+          view->SetLabelText(l10n_util::GetStringUTF16(
+              indicator_state == IndicatorState::kCannotSnap
+                  ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
+                  : IDS_ASH_SPLIT_VIEW_GUIDANCE));
+          DoSplitviewOpacityAnimation(view->layer(),
+                                      show ? SPLITVIEW_ANIMATION_TEXT_FADE_IN
+                                           : SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
+        }
+
+        for (RoundedRectView* view : GetHighlightViews()) {
+          view->SetBackgroundColor(
+              indicator_state == IndicatorState::kCannotSnap ? SK_ColorBLACK
+                                                             : SK_ColorWHITE);
+          DoSplitviewOpacityAnimation(
+              view->layer(), show ? SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN
+                                  : SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+        }
+
         Layout();
         return;
       }
@@ -197,12 +205,19 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
       case IndicatorState::kPhantomRight: {
         left_rotated_view_->layer()->SetOpacity(0.f);
         right_rotated_view_->layer()->SetOpacity(0.f);
-        if (IsPhantomOnLeftTopOfScreen(indicator_type)) {
-          left_hightlight_view_->layer()->SetOpacity(1.f);
-          right_hightlight_view_->layer()->SetOpacity(0.f);
+
+        if (IsPhantomOnLeftTopOfScreen(indicator_state_)) {
+          DoSplitviewOpacityAnimation(left_hightlight_view_->layer(),
+                                      SPLITVIEW_ANIMATION_PHANTOM_FADE_IN);
+          DoSplitviewOpacityAnimation(
+              right_hightlight_view_->layer(),
+              SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
         } else {
-          left_hightlight_view_->layer()->SetOpacity(0.f);
-          right_hightlight_view_->layer()->SetOpacity(1.f);
+          DoSplitviewOpacityAnimation(
+              left_hightlight_view_->layer(),
+              SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
+          DoSplitviewOpacityAnimation(right_hightlight_view_->layer(),
+                                      SPLITVIEW_ANIMATION_PHANTOM_FADE_IN);
         }
         Layout();
         return;
@@ -256,14 +271,14 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     // |main_transform|. The other window, which will shrink and fade out, will
     // be transformed by |other_transform|.
     gfx::Transform main_transform, other_transform;
-    const bool phantom_left = IsPhantomOnLeftTopOfScreen(indicator_type_);
-    if (indicator_type_ == IndicatorState::kPhantomLeft ||
-        indicator_type_ == IndicatorState::kPhantomRight) {
+    const bool phantom_left = IsPhantomOnLeftTopOfScreen(indicator_state_);
+    if (indicator_state_ == IndicatorState::kPhantomLeft ||
+        indicator_state_ == IndicatorState::kPhantomRight) {
       // Get the phantom window bounds from the split view controller.
       gfx::Rect phantom_bounds =
           Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
               GetWidget()->GetNativeWindow(),
-              indicator_type_ == IndicatorState::kPhantomLeft
+              indicator_state_ == IndicatorState::kPhantomLeft
                   ? SplitViewController::LEFT
                   : SplitViewController::RIGHT);
       phantom_bounds.Inset(kHighlightScreenEdgePaddingDp,
@@ -291,7 +306,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
           other_transform.Translate(gfx::Vector2dF(highlight_width, 0.f));
         }
         // Scale the other window so that it becomes hidden.
-        other_transform.Scale(0.0, 1.0);
+        other_transform.Scale(1.0 / static_cast<double>(highlight_width), 1.0);
       } else {
         if (!phantom_left) {
           // |main_transform| corresponds to the bottom window, which changes y
@@ -310,38 +325,25 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
           other_transform.Translate(gfx::Vector2dF(0.f, highlight_height));
         }
         // Scale the other window so that it becomes hidden.
-        other_transform.Scale(1.0, 0.0);
+        other_transform.Scale(1.0, 1.0 / static_cast<double>(highlight_height));
       }
     }
 
-    // The rounding after scaling the element looks very weird, even after
-    // applying the reverse scale, possibly because of the differences in the x
-    // and y scaling. Remove the rounding when a phantom window shows up.
-    // TODO(sammiequon): Investigate a method which does not require
-    // transforming the rounded edges, perhaps a three layered element where the
-    // middle is a rectangle which gets transformed, and the left and right only
-    // shift bounds. This would also optimized repainting.
-    auto apply_new_rounding = [](RoundedRectView* rrv) {
-      const gfx::Vector2dF scale = rrv->layer()->transform().Scale2d();
-      if (scale.x() == 1.f && scale.y() == 1.f)
-        rrv->SetCornerRadius(kHighlightScreenRoundRectRadiusDp);
-      else
-        rrv->SetCornerRadius(0);
-    };
-
-    left_hightlight_view_->layer()->SetTransform(
-        phantom_left ? main_transform : other_transform);
+    DoSplitviewTransformAnimation(
+        left_hightlight_view_->layer(),
+        SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
+        phantom_left ? main_transform : other_transform, this);
     left_hightlight_view_->SetBounds(kHighlightScreenEdgePaddingDp,
                                      kHighlightScreenEdgePaddingDp,
                                      highlight_width, highlight_height);
-    apply_new_rounding(left_hightlight_view_);
 
-    right_hightlight_view_->layer()->SetTransform(
-        phantom_left ? other_transform : main_transform);
+    DoSplitviewTransformAnimation(
+        right_hightlight_view_->layer(),
+        SPLITVIEW_ANIMATION_PHANTOM_SLIDE_IN_OUT,
+        phantom_left ? other_transform : main_transform, nullptr);
     right_hightlight_view_->SetBounds(right_bottom_origin.x(),
                                       right_bottom_origin.y(), highlight_width,
                                       highlight_height);
-    apply_new_rounding(right_hightlight_view_);
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.
@@ -349,9 +351,12 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
         left_rotated_view_->GetPreferredSize().width(),
         std::max(kSplitviewLabelPreferredHeightDp,
                  left_rotated_view_->GetPreferredSize().height()));
-    const gfx::Rect rotated_bounds(highlight_width / 2 - size.width() / 2,
-                                   highlight_height / 2 - size.height() / 2,
-                                   size.width(), size.height());
+    gfx::Rect left_rotated_bounds(highlight_width / 2 - size.width() / 2,
+                                  highlight_height / 2 - size.height() / 2,
+                                  size.width(), size.height());
+    gfx::Rect right_rotated_bounds = left_rotated_bounds;
+    right_rotated_bounds.Offset(right_bottom_origin.x(),
+                                right_bottom_origin.y());
 
     // In portrait mode, there is no need to rotate the text and warning icon.
     // In landscape mode, rotate the left text 90 degrees clockwise in rtl and
@@ -360,17 +365,37 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
     double left_rotation_angle = 0.0;
     if (landscape)
       left_rotation_angle = 90.0 * (base::i18n::IsRTL() ? 1 : -1);
-    left_rotated_view_->OnBoundsUpdated(rotated_bounds,
+
+    left_rotated_view_->OnBoundsUpdated(left_rotated_bounds,
                                         left_rotation_angle /* angle */);
-    right_rotated_view_->OnBoundsUpdated(rotated_bounds,
+    right_rotated_view_->OnBoundsUpdated(right_rotated_bounds,
                                          -left_rotation_angle /* angle */);
   }
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    // The rounding after scaling the element looks very weird, even after
+    // applying the reverse scale, possibly because of the differences in the x
+    // and y scaling. Remove the rounding when a phantom window shows up.
+    // TODO(sammiequon): Investigate a method which does not require
+    // transforming the rounded edges, perhaps a three layered element where the
+    // middle is a rectangle which gets transformed, and the left and right only
+    // shift bounds. This would also optimized repainting.
+    for (RoundedRectView* view : GetHighlightViews()) {
+      const gfx::Vector2dF scale = view->layer()->transform().Scale2d();
+      if (scale.x() == 1.f && scale.y() == 1.f)
+        view->SetCornerRadius(kHighlightScreenRoundRectRadiusDp);
+      else
+        view->SetCornerRadius(0);
+    }
+  }
+
  private:
-  void SetLabelsText(const base::string16& text) {
-    left_rotated_view_->SetLabelText(text);
-    right_rotated_view_->SetLabelText(text);
-    Layout();
+  std::vector<RoundedRectView*> GetHighlightViews() {
+    return {left_hightlight_view_, right_hightlight_view_};
+  }
+  std::vector<RotatedImageLabelView*> GetTextViews() {
+    return {left_rotated_view_, right_rotated_view_};
   }
 
   RoundedRectView* left_hightlight_view_ = nullptr;
@@ -378,7 +403,7 @@ class SplitViewOverviewOverlay::SplitViewOverviewOverlayView
   RotatedImageLabelView* left_rotated_view_ = nullptr;
   RotatedImageLabelView* right_rotated_view_ = nullptr;
 
-  IndicatorState indicator_type_ = IndicatorState::kNone;
+  IndicatorState indicator_state_ = IndicatorState::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewOverviewOverlayView);
 };
