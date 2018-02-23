@@ -18,6 +18,10 @@
 // installer where dependencies should be limited. Instead, have files
 // directly include your switch file.
 
+namespace base {
+class CommandLine;
+}
+
 namespace switches {
 
 // -----------------------------------------------------------------------------
@@ -323,6 +327,13 @@ extern const char kEnableNewAppMenuIcon[];
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 extern const char kUseSystemDefaultPrinter[];
+#endif
+
+bool ExtensionsDisabled(const base::CommandLine& command_line);
+bool ExtensionsDisabled();
+
+#if defined(OS_CHROMEOS)
+bool PowerOverlayEnabled();
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
