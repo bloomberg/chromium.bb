@@ -641,13 +641,10 @@ void AnimationHost::SetAnimationCounts(
     size_t main_thread_compositable_animations_count,
     bool current_frame_had_raf,
     bool next_frame_has_pending_raf) {
-  // The |total_animations_count| is the total number of blink::Animations.
-  // A blink::Animation holds a CompositorAnimationHolder, which holds
-  // a CompositorAnimation, which holds a Animation. In other
-  // words, if a blink::Animation can be accelerated on compositor, it would
-  // have a 1:1 mapping to a Animation.
-  // So to check how many main thread animations there are, we subtract the
-  // number of Animation from |total_animations_count|.
+  // If an animation is being run on the compositor, it will have a ticking
+  // Animation (which will have a corresponding impl-thread version). Therefore
+  // to find the count of main-only animations, we can simply subtract the
+  // number of ticking players from the total count.
   size_t ticking_animations_count = ticking_animations_.size();
   if (main_thread_animations_count_ !=
       total_animations_count - ticking_animations_count) {

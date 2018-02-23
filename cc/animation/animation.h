@@ -26,18 +26,18 @@ class AnimationHost;
 class AnimationTimeline;
 struct AnimationEvent;
 
-// An Animation manages grouped sets of KeyframeModels (each set of which
-// are stored in a KeyframeEffect), and handles the interaction with the
-// AnimationHost and AnimationTimeline.
+// An Animation is responsible for managing animating properties for a set of
+// targets. Each target is represented by a KeyframeEffect and can be animating
+// multiple properties on that target; see the KeyframeEffect class.
 //
-// This class is a CC counterpart for blink::Animation, currently in a 1:1
-// relationship. Currently the blink logic is responsible for handling of
-// conflicting same-property animations.
+// A particular Animation may not own all the KeyframeEffects for a given
+// target. Animation is only a grouping mechanism for related effects, and the
+// grouping relationship is defined by the client. It is also the client's
+// responsibility to deal with any conflicts that arise from animating the same
+// property of the same target across multiple Animations.
 //
-// Each cc Animation has a copy on the impl thread, and will take care of
-// synchronizing properties to/from the impl thread when requested.
-//
-// There is a 1:n relationship between Animation and KeyframeEffect.
+// Each Animation has a copy on the impl thread, and will take care of
+// synchronizing to/from the impl thread when requested.
 class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
  public:
   static scoped_refptr<Animation> Create(int id);

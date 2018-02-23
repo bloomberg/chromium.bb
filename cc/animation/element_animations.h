@@ -37,8 +37,9 @@ enum class UpdateTickingType { NORMAL, FORCE };
 // An ElementAnimations owns a list of all KeyframeEffects attached to a single
 // target (represented by an ElementId).
 //
-// This is a CC counterpart for blink::ElementAnimations (in 1:1 relationship).
-// No pointer to/from respective blink::ElementAnimations object for now.
+// Note that a particular target may not actually be an element in the web sense
+// of the word; this naming is a legacy leftover. A target is just an amorphous
+// blob that has properties that can be animated.
 class CC_ANIMATION_EXPORT ElementAnimations
     : public AnimationTarget,
       public base::RefCounted<ElementAnimations> {
