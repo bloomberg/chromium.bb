@@ -40,23 +40,22 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
   std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
       const SharedBitmapId&) override;
+  bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                                  const SharedBitmapId& id) override;
+  void ChildDeletedSharedBitmap(const SharedBitmapId& id) override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   size_t AllocatedBitmapCount() const;
-
   void FreeSharedMemoryFromMap(const SharedBitmapId& id);
 
+  bool ChildAllocatedSharedBitmapForTest(size_t buffer_size,
+                                         const base::SharedMemoryHandle& handle,
+                                         const SharedBitmapId& id);
+
  private:
-  friend class SharedBitmapAllocationNotifierImpl;
-
-  bool ChildAllocatedSharedBitmap(size_t buffer_size,
-                                  const base::SharedMemoryHandle& handle,
-                                  const SharedBitmapId& id);
-  void ChildDeletedSharedBitmap(const SharedBitmapId& id);
-
   mutable base::Lock lock_;
 
   std::unordered_map<SharedBitmapId,

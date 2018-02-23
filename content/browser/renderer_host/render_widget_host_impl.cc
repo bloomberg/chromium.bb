@@ -91,6 +91,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -2004,6 +2005,21 @@ void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
     view_->OnDidNotProduceFrame(modified_ack);
 }
 
+void RenderWidgetHostImpl::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  if (!viz::ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+          std::move(buffer), id)) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_SHARED_BITMAP);
+  }
+}
+
+void RenderWidgetHostImpl::DidDeleteSharedBitmap(
+    const viz::SharedBitmapId& id) {
+  viz::ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+}
+
 void RenderWidgetHostImpl::OnResizeOrRepaintACK(
     const ViewHostMsg_ResizeOrRepaint_ACK_Params& params) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnResizeOrRepaintACK");
@@ -2871,7 +2887,8 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
 }
 #endif
 
-void RenderWidgetHostImpl::DidAllocateSharedBitmap(uint32_t sequence_number) {
+void RenderWidgetHostImpl::OnSharedBitmapAllocatedByChild(
+    uint32_t sequence_number) {
   if (saved_frame_.local_surface_id.is_valid() &&
       sequence_number >= saved_frame_.max_shared_bitmap_sequence_number) {
     bool tracing_enabled;

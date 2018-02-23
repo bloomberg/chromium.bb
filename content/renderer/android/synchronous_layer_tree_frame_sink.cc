@@ -342,6 +342,21 @@ void SynchronousLayerTreeFrameSink::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
 }
 
+void SynchronousLayerTreeFrameSink::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  // Webview does not use software compositing (other than resourceless draws,
+  // but this is called for software /resources/).
+  NOTREACHED();
+}
+
+void SynchronousLayerTreeFrameSink::DidDeleteSharedBitmap(
+    const viz::SharedBitmapId& id) {
+  // Webview does not use software compositing (other than resourceless draws,
+  // but this is called for software /resources/).
+  NOTREACHED();
+}
+
 void SynchronousLayerTreeFrameSink::CancelFallbackTick() {
   fallback_tick_.Cancel();
   fallback_tick_pending_ = false;

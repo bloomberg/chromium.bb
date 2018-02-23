@@ -72,4 +72,25 @@ TestSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
   return std::make_unique<UnownedSharedBitmap>(pixels, id);
 }
 
+bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  // TestSharedBitmapManager is both the client and service side. So the
+  // notification here should be about a bitmap that was previously allocated
+  // with AllocateSharedBitmap().
+  DCHECK(bitmap_map_.find(id) != bitmap_map_.end());
+  // The same bitmap id should not be notified more than once.
+  DCHECK_EQ(notified_set_.count(id), 0u);
+  notified_set_.insert(id);
+  return true;
+}
+
+void TestSharedBitmapManager::ChildDeletedSharedBitmap(
+    const viz::SharedBitmapId& id) {
+  // The bitmap id should previously have been given to
+  // ChildAllocatedSharedBitmap().
+  DCHECK_EQ(notified_set_.count(id), 1u);
+  notified_set_.erase(id);
+}
+
 }  // namespace cc

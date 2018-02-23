@@ -131,6 +131,17 @@ void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   support_->DidNotProduceFrame(ack);
 }
 
+void DirectLayerTreeFrameSink::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  bool ok = support_->DidAllocateSharedBitmap(std::move(buffer), id);
+  DCHECK(ok);
+}
+
+void DirectLayerTreeFrameSink::DidDeleteSharedBitmap(const SharedBitmapId& id) {
+  support_->DidDeleteSharedBitmap(id);
+}
+
 void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
   is_lost_ = true;
   client_->DidLoseLayerTreeFrameSink();

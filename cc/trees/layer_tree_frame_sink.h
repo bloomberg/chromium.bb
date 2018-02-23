@@ -17,8 +17,10 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/color_space.h"
 
 namespace gpu {
@@ -135,6 +137,14 @@ class CC_EXPORT LayerTreeFrameSink : public viz::ContextLostObserver {
   // Signals that a BeginFrame issued by the viz::BeginFrameSource provided to
   // the client did not lead to a CompositorFrame submission.
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
+
+  // Associates a SharedBitmapId with a shared buffer handle.
+  virtual void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                                       const viz::SharedBitmapId& id) = 0;
+
+  // Disassociates a SharedBitmapId previously passed to
+  // DidAllocateSharedBitmap.
+  virtual void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) = 0;
 
  protected:
   class ContextLostForwarder;

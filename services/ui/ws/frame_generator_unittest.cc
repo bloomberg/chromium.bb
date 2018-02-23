@@ -55,6 +55,11 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
     last_begin_frame_ack_ = ack;
   }
 
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override {}
+
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override {}
+
   void SetNeedsBeginFrame(bool needs_begin_frame) override {
     if (needs_begin_frame == observing_begin_frames_)
       return;

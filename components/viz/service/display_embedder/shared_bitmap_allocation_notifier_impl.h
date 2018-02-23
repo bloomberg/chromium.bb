@@ -19,7 +19,7 @@ class ServerSharedBitmapManager;
 
 class SharedBitmapAllocationObserver {
  public:
-  virtual void DidAllocateSharedBitmap(uint32_t sequence_number) = 0;
+  virtual void OnSharedBitmapAllocatedByChild(uint32_t sequence_number) = 0;
 };
 
 class VIZ_SERVICE_EXPORT SharedBitmapAllocationNotifierImpl
@@ -40,8 +40,7 @@ class VIZ_SERVICE_EXPORT SharedBitmapAllocationNotifierImpl
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 
-  void ChildAllocatedSharedBitmap(size_t buffer_size,
-                                  const base::SharedMemoryHandle& handle,
+  void ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                   const SharedBitmapId& id);
 
   void ChildDied();

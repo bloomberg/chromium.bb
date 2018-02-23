@@ -172,6 +172,18 @@ void ClientLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   compositor_frame_sink_ptr_->DidNotProduceFrame(ack);
 }
 
+void ClientLayerTreeFrameSink::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  DCHECK(compositor_frame_sink_ptr_);
+  compositor_frame_sink_ptr_->DidAllocateSharedBitmap(std::move(buffer), id);
+}
+
+void ClientLayerTreeFrameSink::DidDeleteSharedBitmap(const SharedBitmapId& id) {
+  DCHECK(compositor_frame_sink_ptr_);
+  compositor_frame_sink_ptr_->DidDeleteSharedBitmap(id);
+}
+
 void ClientLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

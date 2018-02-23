@@ -62,6 +62,21 @@ void CompositorFrameSinkImpl::DidNotProduceFrame(
   support_->DidNotProduceFrame(begin_frame_ack);
 }
 
+void CompositorFrameSinkImpl::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  if (!support_->DidAllocateSharedBitmap(std::move(buffer), id)) {
+    DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
+                << "SharedBitmapId";
+    compositor_frame_sink_binding_.Close();
+    OnClientConnectionLost();
+  }
+}
+
+void CompositorFrameSinkImpl::DidDeleteSharedBitmap(const SharedBitmapId& id) {
+  support_->DidDeleteSharedBitmap(id);
+}
+
 void CompositorFrameSinkImpl::OnClientConnectionLost() {
   support_->frame_sink_manager()->OnClientConnectionLost(
       support_->frame_sink_id());

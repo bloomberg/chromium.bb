@@ -42,5 +42,16 @@ void CompositorFrameSinkClientBinding::DidNotProduceFrame(
   compositor_frame_sink_->DidNotProduceFrame(ack);
 }
 
+void CompositorFrameSinkClientBinding::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  compositor_frame_sink_->DidAllocateSharedBitmap(std::move(buffer), id);
+}
+
+void CompositorFrameSinkClientBinding::DidDeleteSharedBitmap(
+    const viz::SharedBitmapId& id) {
+  compositor_frame_sink_->DidDeleteSharedBitmap(id);
+}
+
 }  // namespace ws
 }  // namespace ui

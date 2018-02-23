@@ -34,8 +34,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
       public SurfaceClient,
-      public CapturableFrameSink,
-      public mojom::CompositorFrameSink {
+      public CapturableFrameSink {
  public:
   // Possible outcomes of MaybeSubmitCompositorFrame().
   enum SubmitResult {
@@ -90,15 +89,19 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) override;
 
-  // mojom::CompositorFrameSink implementation.
-  void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
-  void DidNotProduceFrame(const BeginFrameAck& ack) override;
+  // mojom::CompositorFrameSink helpers.
+  void SetNeedsBeginFrame(bool needs_begin_frame);
+  void SetWantsAnimateOnlyBeginFrames();
+  void DidNotProduceFrame(const BeginFrameAck& ack);
   void SubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
       mojom::HitTestRegionListPtr hit_test_region_list = nullptr,
-      uint64_t submit_time = 0) override;
+      uint64_t submit_time = 0);
+  // Returns false if the notification was not valid (a duplicate).
+  bool DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const SharedBitmapId& id);
+  void DidDeleteSharedBitmap(const SharedBitmapId& id);
 
   void EvictCurrentSurface();
 
