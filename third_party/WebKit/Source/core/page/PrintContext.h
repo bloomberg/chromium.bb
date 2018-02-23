@@ -54,7 +54,7 @@ class CORE_EXPORT PrintContext
   // TODO(rhogan): Decide if this quirk is still required.
   static constexpr float kPrintingMaximumShrinkFactor = 2;
 
-  explicit PrintContext(LocalFrame*);
+  PrintContext(LocalFrame*, bool use_printing_layout);
   virtual ~PrintContext();
 
   LocalFrame* GetFrame() const { return frame_; }
@@ -123,6 +123,9 @@ class CORE_EXPORT PrintContext
   // Used to prevent misuses of BeginPrintMode() and EndPrintMode() (e.g., call
   // EndPrintMode() without BeginPrintMode()).
   bool is_printing_;
+
+  // True when printing layout needs to be applied.
+  bool use_printing_layout_;
 
   HeapHashMap<String, Member<Element>> linked_destinations_;
   bool linked_destinations_valid_;

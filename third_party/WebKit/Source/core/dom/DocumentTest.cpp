@@ -397,10 +397,10 @@ TEST_F(DocumentTest, PrintRelayout) {
   FloatSize page_size(400, 400);
   float maximum_shrink_ratio = 1.6;
 
-  GetDocument().GetFrame()->SetPrinting(true, page_size, page_size,
-                                        maximum_shrink_ratio);
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size,
+                                          maximum_shrink_ratio);
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 400);
-  GetDocument().GetFrame()->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  GetDocument().GetFrame()->EndPrinting();
   EXPECT_EQ(GetDocument().documentElement()->OffsetWidth(), 800);
 }
 

@@ -1053,9 +1053,9 @@ TEST_F(TextAutosizerTest, AfterPrint) {
   Element* target = GetDocument().getElementById("target");
   EXPECT_FLOAT_EQ(20.0f * device_scale,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
-  GetDocument().GetFrame()->SetPrinting(true, print_size, print_size, 1.0);
+  GetDocument().GetFrame()->StartPrinting(print_size, print_size, 1.0);
   EXPECT_FLOAT_EQ(8.0f, target->GetLayoutObject()->Style()->ComputedFontSize());
-  GetDocument().GetFrame()->SetPrinting(false, print_size, print_size, 1.0);
+  GetDocument().GetFrame()->EndPrinting();
   EXPECT_FLOAT_EQ(20.0f * device_scale,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
 }

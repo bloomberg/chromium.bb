@@ -444,12 +444,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
                                     GetCSSPropertyColor()));
 
   FloatSize page_size(400, 400);
-  GetDocument().GetFrame()->SetPrinting(true, page_size, page_size, 1);
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size, 1);
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                   GetCSSPropertyColor()));
 
-  GetDocument().GetFrame()->SetPrinting(false, FloatSize(), FloatSize(), 0);
+  GetDocument().GetFrame()->EndPrinting();
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));

@@ -133,7 +133,7 @@ TEST_F(TextPainterTest,
       CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
   FloatSize page_size(500, 800);
-  GetFrame().SetPrinting(true, page_size, page_size, 1);
+  GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
@@ -155,7 +155,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
       CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
   FloatSize page_size(500, 800);
-  GetFrame().SetPrinting(true, page_size, page_size, 1);
+  GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(

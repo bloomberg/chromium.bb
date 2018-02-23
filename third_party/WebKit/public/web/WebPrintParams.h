@@ -58,27 +58,37 @@ struct WebPrintParams {
   // printable area. (This is used only by plugin printing).
   WebPrintScalingOption print_scaling_option;
 
+  // Specifies whether printing layout needs to be applied.
+  bool use_printing_layout;
+
   WebPrintParams()
       : printer_dpi(72),
-        print_scaling_option(kWebPrintScalingOptionFitToPrintableArea) {}
+        print_scaling_option(kWebPrintScalingOptionFitToPrintableArea),
+        use_printing_layout(true) {}
 
   WebPrintParams(const WebSize& paper_size)
+      : WebPrintParams(paper_size, true) {}
+
+  WebPrintParams(const WebSize& paper_size, bool use_printing_layout)
       : print_content_area(WebRect(0, 0, paper_size.width, paper_size.height)),
         printable_area(WebRect(0, 0, paper_size.width, paper_size.height)),
         paper_size(paper_size),
         printer_dpi(72),
-        print_scaling_option(kWebPrintScalingOptionSourceSize) {}
+        print_scaling_option(kWebPrintScalingOptionSourceSize),
+        use_printing_layout(use_printing_layout) {}
 
   WebPrintParams(const WebRect& print_content_area,
                  const WebRect& printable_area,
                  const WebSize& paper_size,
                  int printer_dpi,
-                 WebPrintScalingOption print_scaling_option)
+                 WebPrintScalingOption print_scaling_option,
+                 bool use_printing_layout)
       : print_content_area(print_content_area),
         printable_area(printable_area),
         paper_size(paper_size),
         printer_dpi(printer_dpi),
-        print_scaling_option(print_scaling_option) {}
+        print_scaling_option(print_scaling_option),
+        use_printing_layout(use_printing_layout) {}
 };
 
 }  // namespace blink

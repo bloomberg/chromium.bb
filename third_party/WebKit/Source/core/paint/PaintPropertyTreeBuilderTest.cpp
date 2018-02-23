@@ -4982,7 +4982,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
 
   // When the main frame is printing, it should not have content clip.
   FloatSize page_size(100, 100);
-  GetFrame().SetPrinting(true, page_size, page_size, 1);
+  GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     EXPECT_EQ(nullptr, FrameContentClip(main_frame_view));
@@ -4994,12 +4994,12 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
             FrameContentClip(child_frame_view)->ClipRect().Rect());
 
-  GetFrame().SetPrinting(false, page_size, page_size, 1);
+  GetFrame().EndPrinting();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // When only the child frame is printing, it should not have content clip but
   // the main frame still have (which doesn't matter though).
-  ChildFrame().SetPrinting(true, page_size, page_size, 1);
+  ChildFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   ASSERT_NE(nullptr, FrameContentClip(main_frame_view));
   EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),

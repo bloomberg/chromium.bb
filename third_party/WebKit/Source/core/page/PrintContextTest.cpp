@@ -70,7 +70,8 @@ class PrintContextTest : public RenderingTest {
 
   void SetUp() override {
     RenderingTest::SetUp();
-    print_context_ = new PrintContext(GetDocument().GetFrame());
+    print_context_ = new PrintContext(GetDocument().GetFrame(),
+                                      /*use_printing_layout=*/true);
   }
 
   PrintContext& GetPrintContext() { return *print_context_.Get(); }
@@ -364,6 +365,78 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
   EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
   EXPECT_EQ(MockPageContextCanvas::kDrawRect, operations[2].type);
   EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[2].rect);
+}
+
+// This tests that we properly resize and re-layout pages for printing.
+TEST_F(PrintContextFrameTest, BasicPrintPageLayout) {
+  FloatSize page_size(400, 400);
+  float maximum_shrink_ratio = 1.1;
+  auto* node = GetDocument().documentElement();
+
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size,
+                                          maximum_shrink_ratio);
+  EXPECT_EQ(node->OffsetWidth(), 400);
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(node->OffsetWidth(), 800);
+
+  SetBodyInnerHTML(R"HTML(
+      <div style='border: 0px; margin: 0px; background-color: #0000FF;
+      width:800px; height:400px'></div>)HTML");
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size,
+                                          maximum_shrink_ratio);
+  EXPECT_EQ(node->OffsetWidth(), 440);
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(node->OffsetWidth(), 800);
+}
+
+// This tests that we don't resize or re-layout subframes in printed
+// content.
+TEST_F(PrintContextFrameTest, SubframePrintPageLayout) {
+  SetBodyInnerHTML(R"HTML(
+      <div style='border: 0px; margin: 0px; background-color: #0000FF;
+      width:800px; height:400px'></div>
+      <iframe id="target" src='http://b.com/' width='100%' height='100%'
+      style='border: 0px; margin: 0px; position: absolute; top: 0px;
+      left: 0px'></iframe>)HTML");
+  FloatSize page_size(400, 400);
+  float maximum_shrink_ratio = 1.1;
+  auto* parent = GetDocument().documentElement();
+  // The child document element inside iframe.
+  auto* child = ChildDocument().documentElement();
+  // The iframe element in the document.
+  auto* target = GetDocument().getElementById("target");
+
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size,
+                                          maximum_shrink_ratio);
+  EXPECT_EQ(parent->OffsetWidth(), 440);
+  EXPECT_EQ(child->OffsetWidth(), 800);
+  EXPECT_EQ(target->OffsetWidth(), 440);
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(parent->OffsetWidth(), 800);
+  EXPECT_EQ(child->OffsetWidth(), 800);
+  EXPECT_EQ(target->OffsetWidth(), 800);
+
+  GetDocument().GetFrame()->StartPrintingWithoutPrintingLayout();
+  EXPECT_EQ(parent->OffsetWidth(), 800);
+  EXPECT_EQ(child->OffsetWidth(), 800);
+  EXPECT_EQ(target->OffsetWidth(), 800);
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(parent->OffsetWidth(), 800);
+  EXPECT_EQ(child->OffsetWidth(), 800);
+  EXPECT_EQ(target->OffsetWidth(), 800);
+
+  ASSERT_TRUE(ChildDocument() != GetDocument());
+  ChildDocument().GetFrame()->StartPrinting(page_size, page_size,
+                                            maximum_shrink_ratio);
+  EXPECT_EQ(parent->OffsetWidth(), 800);
+  EXPECT_EQ(child->OffsetWidth(), 400);
+  EXPECT_EQ(target->OffsetWidth(), 800);
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(parent->OffsetWidth(), 800);
+  // Child document requires relayout triggered from higher level
+  // to return back to the original size.
+  EXPECT_EQ(child->OffsetWidth(), 400);
+  EXPECT_EQ(target->OffsetWidth(), 800);
 }
 
 }  // namespace blink

@@ -187,10 +187,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // See GraphicsLayerClient.h for accepted flags.
   String GetLayerTreeAsTextForTesting(unsigned flags = 0) const;
 
-  void SetPrinting(bool printing,
-                   const FloatSize& page_size,
-                   const FloatSize& original_page_size,
-                   float maximum_shrink_ratio);
+  // Begin printing with the given page size information.
+  // The frame content will fit to the page size with specified shrink ratio.
+  void StartPrinting(const FloatSize& page_size,
+                     const FloatSize& original_page_size,
+                     float maximum_shrink_ratio);
+
+  // Begin printing without changing the the frame's layout. This is used for
+  // child frames because they don't need to fit to a page size.
+  void StartPrintingWithoutPrintingLayout();
+
+  void EndPrinting();
   bool ShouldUsePrintingLayout() const;
   FloatSize ResizePageRectsKeepingRatio(const FloatSize& original_size,
                                         const FloatSize& expected_size) const;
@@ -339,6 +346,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
 
   void PropagateInertToChildFrames();
+
+  // Internal implementation for starting or ending printing.
+  // |printing| is true when printing starts, false when printing ends.
+  // |page_size|, |original_page_size|, and |maximum_shrink_ratio| are only
+  // meaningful when starting to print with printing layout -- both |printing|
+  // and |use_printing_layout| are true.
+  void SetPrinting(bool printing,
+                   bool use_printing_layout,
+                   const FloatSize& page_size,
+                   const FloatSize& original_page_size,
+                   float maximum_shrink_ratio);
 
   std::unique_ptr<WebFrameScheduler> frame_scheduler_;
 

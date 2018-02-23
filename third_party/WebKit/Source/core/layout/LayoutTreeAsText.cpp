@@ -886,7 +886,7 @@ String ExternalRepresentation(LocalFrame* frame,
     return String();
   LayoutBox* layout_box = ToLayoutBox(layout_object);
 
-  PrintContext print_context(frame);
+  PrintContext print_context(frame, /*use_printing_layout=*/true);
   bool is_text_printing_mode = !!(behavior & kLayoutAsTextPrintingMode);
   if (is_text_printing_mode) {
     print_context.BeginPrintMode(layout_box->ClientWidth(),
