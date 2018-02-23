@@ -4,6 +4,12 @@
 
 #include "chrome/common/chrome_switches.h"
 
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "build/build_config.h"
+#include "ppapi/features/features.h"
+#include "printing/features/features.h"
+
 namespace switches {
 
 // -----------------------------------------------------------------------------
@@ -992,6 +998,22 @@ const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 // Uses the system default printer as the initially selected destination in
 // print preview, instead of the most recently used destination.
 const char kUseSystemDefaultPrinter[] = "use-system-default-printer";
+#endif
+
+bool ExtensionsDisabled(const base::CommandLine& command_line) {
+  return command_line.HasSwitch(switches::kDisableExtensions) ||
+         command_line.HasSwitch(switches::kDisableExtensionsExcept);
+}
+
+bool ExtensionsDisabled() {
+  return ExtensionsDisabled(*base::CommandLine::ForCurrentProcess());
+}
+
+#if defined(OS_CHROMEOS)
+bool PowerOverlayEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnablePowerOverlay);
+}
 #endif
 
 // -----------------------------------------------------------------------------

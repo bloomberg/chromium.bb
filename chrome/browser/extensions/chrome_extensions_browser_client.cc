@@ -77,11 +77,6 @@ namespace {
 // new chrome update.
 bool g_did_chrome_update_for_testing = false;
 
-bool ExtensionsDisabled(const base::CommandLine& command_line) {
-  return command_line.HasSwitch(switches::kDisableExtensions) ||
-         command_line.HasSwitch(switches::kDisableExtensionsExcept);
-}
-
 }  // namespace
 
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
@@ -101,7 +96,7 @@ bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
     const base::CommandLine& command_line,
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return ExtensionsDisabled(command_line) ||
+  return switches::ExtensionsDisabled(command_line) ||
          profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions);
 }
 
