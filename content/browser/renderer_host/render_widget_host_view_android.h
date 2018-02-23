@@ -137,6 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTooltipText(const base::string16& tooltip_text) override;
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
+  gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;

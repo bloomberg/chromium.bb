@@ -649,6 +649,13 @@ void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
     callback->Run();
 }
 
+gfx::Vector2d RenderWidgetHostViewChildFrame::GetOffsetFromRootSurface() {
+  // This function is called by RenderWidgetHostInputEventRouter only for
+  // root-views.
+  NOTREACHED();
+  return gfx::Vector2d();
+}
+
 gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
   gfx::Rect rect;
   if (frame_connector_) {

@@ -987,6 +987,10 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }
 
+gfx::Vector2d RenderWidgetHostViewAura::GetOffsetFromRootSurface() {
+  return window_->GetBoundsInRootWindow().OffsetFromOrigin();
+}
+
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   aura::Window* top_level = window_->GetToplevelWindow();
   gfx::Rect bounds(top_level->GetBoundsInScreen());

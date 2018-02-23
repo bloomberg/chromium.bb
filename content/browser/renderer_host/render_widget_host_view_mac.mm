@@ -1452,6 +1452,10 @@ void RenderWidgetHostViewMac::ClearCompositorFrame() {
   browser_compositor_->ClearCompositorFrame();
 }
 
+gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
+  return gfx::Vector2d();
+}
+
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve

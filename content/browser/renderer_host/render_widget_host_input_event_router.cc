@@ -274,9 +274,9 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     // |point_in_screen| is in the coordinate space of of the screen, but the
     // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
+    // TODO(riajiang): Get rid of |point_in_screen| since it's not used.
     gfx::Point point_in_root =
-        gfx::ToFlooredPoint(point_in_screen) -
-        root_view->GetBoundsInRootWindow().OffsetFromOrigin();
+        gfx::ToFlooredPoint(point) + root_view->GetOffsetFromRootSurface();
     viz::HitTestQuery* query = iter->second.get();
     // TODO(kenrb): Add the short circuit to avoid hit testing when there is
     // only one RenderWidgetHostView in the map. It is absent right now to
