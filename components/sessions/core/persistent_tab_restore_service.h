@@ -35,6 +35,7 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   void BrowserClosing(LiveTabContext* context) override;
   void BrowserClosed(LiveTabContext* context) override;
   void ClearEntries() override;
+  void DeleteNavigationEntries(const DeletionPredicate& predicate) override;
   const Entries& entries() const override;
   std::vector<LiveTab*> RestoreMostRecentEntry(
       LiveTabContext* context) override;

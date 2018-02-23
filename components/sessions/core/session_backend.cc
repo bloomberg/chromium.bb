@@ -231,7 +231,8 @@ void SessionBackend::AppendCommands(
       !AppendCommandsToFile(current_session_file_.get(), commands)) {
     current_session_file_.reset(nullptr);
   }
-  empty_file_ = false;
+  if (!commands.empty())
+    empty_file_ = false;
 }
 
 void SessionBackend::ReadLastSessionCommands(
