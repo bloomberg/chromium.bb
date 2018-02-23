@@ -226,6 +226,8 @@ class CORE_EXPORT DocumentLoader
 
   void SetUserActivated();
 
+  const AtomicString& RequiredCSP();
+
   void Trace(blink::Visitor*) override;
 
   // For automation driver-initiated navigations over the devtools protocol,

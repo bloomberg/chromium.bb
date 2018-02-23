@@ -444,6 +444,10 @@ void DocumentLoader::SetUserActivated() {
   user_activated_ = true;
 }
 
+const AtomicString& DocumentLoader::RequiredCSP() {
+  return GetFrameLoader().RequiredCSP();
+}
+
 void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   DCHECK(frame_->Loader().StateMachine()->CreatingInitialEmptyDocument() ||
          !frame_->GetPage()->Paused() ||

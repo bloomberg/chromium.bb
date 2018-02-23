@@ -441,7 +441,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool HasHeaderDeliveredPolicy() const { return header_delivered_; }
 
-  static bool IsValidCSPAttr(const String& attr);
+  static bool IsValidCSPAttr(const String& attr,
+                             const String& context_required_csp);
 
   // Returns the 'wasm-eval' source is supported.
   bool SupportsWasmEval() const { return supports_wasm_eval_; }

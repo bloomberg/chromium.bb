@@ -7167,6 +7167,10 @@ Policy* Document::policy() {
   return policy_.Get();
 }
 
+const AtomicString& Document::RequiredCSP() {
+  return Loader() ? Loader()->RequiredCSP() : g_null_atom;
+}
+
 void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(imports_controller_);
   visitor->Trace(doc_type_);

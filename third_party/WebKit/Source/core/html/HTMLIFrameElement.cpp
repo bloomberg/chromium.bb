@@ -172,15 +172,16 @@ void HTMLIFrameElement::ParseAttribute(
     }
   } else if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
              name == cspAttr) {
-    if (!ContentSecurityPolicy::IsValidCSPAttr(value.GetString())) {
-      csp_ = g_null_atom;
+    if (!ContentSecurityPolicy::IsValidCSPAttr(
+            value.GetString(), GetDocument().RequiredCSP().GetString())) {
+      required_csp_ = g_null_atom;
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kOtherMessageSource, kErrorMessageLevel,
           "'csp' attribute is not a valid policy: " + value));
       return;
     }
-    if (csp_ != value) {
-      csp_ = value;
+    if (required_csp_ != value) {
+      required_csp_ = value;
       FrameOwnerPropertiesChanged();
     }
   } else if (name == allowAttr) {
@@ -304,8 +305,23 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
     ContainerNode* insertion_point) {
   InsertionNotificationRequest result =
       HTMLFrameElementBase::InsertedInto(insertion_point);
-  if (insertion_point->IsInDocumentTree() && GetDocument().IsHTMLDocument())
+
+  if (insertion_point->IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
     ToHTMLDocument(GetDocument()).AddNamedItem(name_);
+
+    if (!ContentSecurityPolicy::IsValidCSPAttr(
+            required_csp_, GetDocument().RequiredCSP().GetString())) {
+      if (!required_csp_.IsEmpty()) {
+        GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+            kOtherMessageSource, kErrorMessageLevel,
+            "'csp' attribute is not a valid policy: " + required_csp_));
+      }
+      if (required_csp_ != GetDocument().RequiredCSP()) {
+        required_csp_ = GetDocument().RequiredCSP();
+        FrameOwnerPropertiesChanged();
+      }
+    }
+  }
   LogAddElementIfIsolatedWorldAndInDocument("iframe", srcAttr);
   return result;
 }
