@@ -132,9 +132,7 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
                               LengthResolveType type) {
   DCHECK(!length.IsMaxSizeNone());
   DCHECK_NE(type, LengthResolveType::kMarginBorderPaddingSize);
-  // TODO(layout-dev) enable this DCHECK
-  // DCHECK_EQ(constraint_space.WritingMode(),
-  //          style.GetWritingMode());
+  DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
   if (constraint_space.IsAnonymous())
     return content_size;
