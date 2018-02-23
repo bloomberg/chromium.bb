@@ -8,11 +8,13 @@
 namespace ash {
 
 enum class ShutdownReason {
-  UNKNOWN,                 // Reason unknown or not applicable.
   POWER_BUTTON,            // User pressed the (physical) power button.
   LOGIN_SHUT_DOWN_BUTTON,  // User pressed the login screen shut down button.
   TRAY_SHUT_DOWN_BUTTON,   // User pressed the tray shut down button.
 };
+
+// Returns a string describing |reason|.
+const char* ShutdownReasonToString(ShutdownReason reason);
 
 }  // namespace ash
 

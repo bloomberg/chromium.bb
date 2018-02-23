@@ -457,6 +457,8 @@ component("ash") {
     "shell_port_mus.h",
     "shutdown_controller.cc",
     "shutdown_controller.h",
+    "shutdown_reason.cc",
+    "shutdown_reason.h",
     "sidebar/sidebar.cc",
     "sidebar/sidebar.h",
     "sidebar/sidebar_widget.cc",
