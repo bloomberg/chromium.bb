@@ -334,20 +334,17 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         // These items don't belong to any official group so they are added to a possible visible
         // list.
-        int index = ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
-                ? groupedItems.size() - 1
-                : 0;
-        addValidItems(groupedItems.get(groupedItems.size() - 1 - index).second, OTHER_GROUP,
+        addValidItems(groupedItems.get(groupedItems.size() - 1).second, OTHER_GROUP,
                 supportedOptions, disabledOptions);
         if (mMode == CUSTOM_TAB_MODE) {
-            addValidItemsToFront(groupedItems.get(index).second, CUSTOM_TAB_GROUP, supportedOptions,
+            addValidItemsToFront(groupedItems.get(0).second, CUSTOM_TAB_GROUP, supportedOptions,
                     disabledOptions);
         }
 
         // If there are no items from the extra items within OTHER_GROUP and CUSTOM_TAB_GROUP, then
         // it's removed since there is nothing to show at all.
-        if (groupedItems.get(index).second.isEmpty()) {
-            groupedItems.remove(index);
+        if (groupedItems.get(0).second.isEmpty()) {
+            groupedItems.remove(0);
         }
 
         if (!groupedItems.isEmpty()) {
