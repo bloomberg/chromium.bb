@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_with_source.h"
@@ -72,8 +72,10 @@ DownloadResponseHandler::DownloadResponseHandler(
       has_strong_validators_(false),
       is_partial_request_(save_info_->offset > 0),
       abort_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE) {
-  if (!is_parallel_request)
-    RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
+  if (!is_parallel_request) {
+    download::RecordDownloadCountWithSource(download::UNTHROTTLED_COUNT,
+                                            download_source);
+  }
   if (resource_request->request_initiator.has_value())
     origin_ = resource_request->request_initiator.value().GetURL();
 }
@@ -94,8 +96,9 @@ void DownloadResponseHandler::OnReceiveResponse(
   // |RecordDownloadSourcePageTransitionType| here.
   if (head.headers) {
     has_strong_validators_ = head.headers->HasStrongValidators();
-    RecordDownloadHttpResponseCode(head.headers->response_code());
-    RecordDownloadContentDisposition(create_info_->content_disposition);
+    download::RecordDownloadHttpResponseCode(head.headers->response_code());
+    download::RecordDownloadContentDisposition(
+        create_info_->content_disposition);
   }
 
   // Blink verifies that the requester of this download is allowed to set a

@@ -1,14 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_stats.h"
+#include "components/download/public/common/download_stats.h"
 
 #include "base/test/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -36,4 +36,4 @@ TEST(DownloadStatsTest, ParallelizableAverageStats) {
                                    base::TimeDelta::FromSeconds(1));
 }
 
-}  // namespace content
+}  // namespace download

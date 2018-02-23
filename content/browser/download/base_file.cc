@@ -19,8 +19,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_stats.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
-#include "content/browser/download/download_stats.h"
 #include "content/public/common/quarantine.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
@@ -124,7 +124,7 @@ download::DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   // NOTE(benwells): The above DCHECK won't be present in release builds,
   // so we log any occurences to see how common this error is in the wild.
   if (detached_)
-    RecordDownloadCount(APPEND_TO_DETACHED_FILE_COUNT);
+    download::RecordDownloadCount(download::APPEND_TO_DETACHED_FILE_COUNT);
 
   if (!file_.IsValid())
     return LogInterruptReason("No file stream on append", 0,

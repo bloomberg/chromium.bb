@@ -51,8 +51,11 @@ namespace content {
 class CrossSiteDocumentResourceHandler;
 class WebContentsImpl;
 class PluginServiceImpl;
-class DownloadUkmHelper;
 }  // namespace content
+
+namespace download {
+class DownloadUkmHelper;
+}
 
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
@@ -135,9 +138,9 @@ class METRICS_EXPORT UkmRecorder {
   friend blink::UkmTimeAggregator;
   friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
-  friend content::DownloadUkmHelper;
   friend content::PluginServiceImpl;
   friend content::WebContentsImpl;
+  friend download::DownloadUkmHelper;
   friend internal::SourceUrlRecorderWebContentsObserver;
   friend internal::UkmEntryBuilderBase;
   friend media::MediaMetricsProvider;

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DOWNLOAD_URL_DOWNLOAD_HANDLER
 
 #include "components/download/public/common/download_url_parameters.h"
-#include "content/browser/byte_stream.h"
 #include "content/public/browser/download_manager.h"
 
 namespace download {

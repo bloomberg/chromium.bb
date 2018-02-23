@@ -28,6 +28,7 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
@@ -37,7 +38,6 @@
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/resource_downloader.h"
 #include "content/browser/download/url_downloader.h"
@@ -532,7 +532,7 @@ void DownloadManagerImpl::StartDownload(
   DVLOG(20) << __func__ << "() result="
             << download::DownloadInterruptReasonToString(info->result);
   if (new_download)
-    RecordDownloadConnectionSecurity(info->url(), info->url_chain);
+    download::RecordDownloadConnectionSecurity(info->url(), info->url_chain);
   base::Callback<void(uint32_t)> got_id(base::Bind(
       &DownloadManagerImpl::StartDownloadWithId, weak_factory_.GetWeakPtr(),
       base::Passed(&info), base::Passed(&stream), on_started, new_download));
@@ -913,8 +913,9 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK_EQ("POST", params->method());
   }
 
-  RecordDownloadCountWithSource(DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
-                                params->download_source());
+  download::RecordDownloadCountWithSource(
+      download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
+      params->download_source());
   BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
                         download::DownloadItem::kInvalidId);
 }
@@ -1076,7 +1077,7 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
         !item->GetOpened())
       ++num_unopened;
   }
-  RecordOpensOutstanding(num_unopened);
+  download::RecordOpensOutstanding(num_unopened);
 
   if (delegate_)
     delegate_->OpenDownload(download);

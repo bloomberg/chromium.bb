@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "components/download/public/common/download_stats.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_job.h"
 #include "content/browser/download/download_job_impl.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/parallel_download_job.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/download/save_package_download_job.h"
@@ -54,34 +54,39 @@ bool IsParallelizableDownload(const download::DownloadCreateInfo& create_info,
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
 
-  RecordParallelDownloadCreationEvent(
+  download::RecordParallelDownloadCreationEvent(
       is_parallelizable
-          ? ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
-          : ParallelDownloadCreationEvent::FELL_BACK_TO_NORMAL_DOWNLOAD);
+          ? download::ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
+          : download::ParallelDownloadCreationEvent::
+                FELL_BACK_TO_NORMAL_DOWNLOAD);
 
   if (!has_strong_validator) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_STRONG_VALIDATORS);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::
+            FALLBACK_REASON_STRONG_VALIDATORS);
   }
   if (!create_info.accept_range) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_ACCEPT_RANGE_HEADER);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::
+            FALLBACK_REASON_ACCEPT_RANGE_HEADER);
   }
   if (!has_content_length) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_CONTENT_LENGTH_HEADER);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::
+            FALLBACK_REASON_CONTENT_LENGTH_HEADER);
   }
   if (!satisfy_min_file_size) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_FILE_SIZE);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::FALLBACK_REASON_FILE_SIZE);
   }
   if (!satisfy_connection_type) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_CONNECTION_TYPE);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::
+            FALLBACK_REASON_CONNECTION_TYPE);
   }
   if (!http_get_method) {
-    RecordParallelDownloadCreationEvent(
-        ParallelDownloadCreationEvent::FALLBACK_REASON_HTTP_METHOD);
+    download::RecordParallelDownloadCreationEvent(
+        download::ParallelDownloadCreationEvent::FALLBACK_REASON_HTTP_METHOD);
   }
 
   return is_parallelizable;

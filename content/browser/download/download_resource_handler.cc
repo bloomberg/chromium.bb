@@ -14,11 +14,11 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/download_ukm_helper.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -109,8 +109,9 @@ void InitializeDownloadTabInfoOnUIThread(
       tab_info->tab_referrer_url = entry->GetReferrer().url;
 
       tab_info->ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
-      DownloadUkmHelper::UpdateSourceURL(ukm::UkmRecorder::Get(),
-                                         tab_info->ukm_source_id, web_contents);
+      download::DownloadUkmHelper::UpdateSourceURL(
+          ukm::UkmRecorder::Get(), tab_info->ukm_source_id,
+          web_contents->GetLastCommittedURL());
     }
   }
 }

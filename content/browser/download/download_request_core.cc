@@ -19,12 +19,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -162,8 +162,10 @@ DownloadRequestCore::DownloadRequestCore(
       download_source_(download_source) {
   DCHECK(request_);
   DCHECK(delegate_);
-  if (!is_parallel_request)
-    RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
+  if (!is_parallel_request) {
+    download::RecordDownloadCountWithSource(download::UNTHROTTLED_COUNT,
+                                            download_source);
+  }
 
   // Request Wake Lock.
   service_manager::Connector* connector =
@@ -250,7 +252,7 @@ bool DownloadRequestCore::OnResponseStarted(
           : download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (request()->response_headers()) {
-    RecordDownloadHttpResponseCode(
+    download::RecordDownloadHttpResponseCode(
         request()->response_headers()->response_code());
   }
 
@@ -307,8 +309,9 @@ bool DownloadRequestCore::OnResponseStarted(
     create_info->save_info->suggested_name.clear();
   }
 
-  RecordDownloadContentDisposition(create_info->content_disposition);
-  RecordDownloadSourcePageTransitionType(create_info->transition_type);
+  download::RecordDownloadContentDisposition(create_info->content_disposition);
+  download::RecordDownloadSourcePageTransitionType(
+      create_info->transition_type);
 
   delegate_->OnStart(std::move(create_info), std::move(stream_reader),
                      base::ResetAndReturn(&on_started_callback_));
@@ -405,9 +408,10 @@ void DownloadRequestCore::OnResponseCompleted(
     request()->response_headers()->EnumerateHeader(nullptr, "Accept-Ranges",
                                                    &accept_ranges);
   }
-  RecordAcceptsRanges(accept_ranges, bytes_read_, has_strong_validators);
-  RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
-                        total_pause_time_);
+  download::RecordAcceptsRanges(accept_ranges, bytes_read_,
+                                has_strong_validators);
+  download::RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
+                                  total_pause_time_);
 
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.

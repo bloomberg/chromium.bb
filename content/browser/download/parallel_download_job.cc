@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_create_info.h"
-#include "content/browser/download/download_stats.h"
+#include "components/download/public/common/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/storage_partition_impl.h"
@@ -126,7 +126,7 @@ void ParallelDownloadJob::OnInputStreamReady(
     std::unique_ptr<DownloadManager::InputStream> input_stream) {
   bool success = DownloadJob::AddInputStream(
       std::move(input_stream), worker->offset(), worker->length());
-  RecordParallelDownloadAddStreamSuccess(success);
+  download::RecordParallelDownloadAddStreamSuccess(success);
 
   // Destroy the request if the sink is gone.
   if (!success) {
@@ -189,8 +189,9 @@ void ParallelDownloadJob::BuildParallelRequests() {
           content_length_ - first_slice_offset + initial_request_offset_,
           GetParallelRequestCount(), GetMinSliceSize());
     } else {
-      RecordParallelDownloadCreationEvent(
-          ParallelDownloadCreationEvent::FALLBACK_REASON_REMAINING_TIME);
+      download::RecordParallelDownloadCreationEvent(
+          download::ParallelDownloadCreationEvent::
+              FALLBACK_REASON_REMAINING_TIME);
     }
   }
 
@@ -203,7 +204,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
     slices_to_download.pop_back();
 
   ForkSubRequests(slices_to_download);
-  RecordParallelDownloadRequestCount(
+  download::RecordParallelDownloadRequestCount(
       static_cast<int>(slices_to_download.size()));
   requests_sent_ = true;
 }

@@ -15,10 +15,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_stats.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
-#include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -472,9 +472,10 @@ void DownloadFileImpl::RenameWithRetryInternal(
     return;
   }
 
-  if (!parameters->time_of_first_failure.is_null())
-    RecordDownloadFileRenameResultAfterRetry(
+  if (!parameters->time_of_first_failure.is_null()) {
+    download::RecordDownloadFileRenameResultAfterRetry(
         base::TimeTicks::Now() - parameters->time_of_first_failure, reason);
+  }
 
   if (reason == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
       (parameters->option & ANNOTATE_WITH_SOURCE_INFORMATION)) {
@@ -643,9 +644,9 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   }
 
   if (total_incoming_data_size)
-    RecordFileThreadReceiveBuffers(num_buffers);
+    download::RecordFileThreadReceiveBuffers(num_buffers);
 
-  RecordContiguousWriteTime(now - start);
+  download::RecordContiguousWriteTime(now - start);
 
   if (state == SourceStream::COMPLETE)
     OnStreamCompleted(source_stream);
@@ -698,10 +699,10 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
 
     // All the stream reader are completed, shut down file IO processing.
     if (IsDownloadCompleted()) {
-      RecordFileBandwidth(bytes_seen_, disk_writes_time_,
-                          base::TimeTicks::Now() - download_start_);
+      download::RecordFileBandwidth(bytes_seen_, disk_writes_time_,
+                                    base::TimeTicks::Now() - download_start_);
       if (record_stream_bandwidth_) {
-        RecordParallelizableDownloadStats(
+        download::RecordParallelizableDownloadStats(
             bytes_seen_with_parallel_streams_,
             download_time_with_parallel_streams_,
             bytes_seen_without_parallel_streams_,

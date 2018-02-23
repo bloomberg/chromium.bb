@@ -25,14 +25,14 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/download_ukm_helper.h"
 #include "components/filename_generation/filename_generation.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
@@ -238,7 +238,7 @@ void SavePackage::Cancel(bool user_action, bool cancel_download_item) {
       disk_error_occurred_ = true;
     Stop(cancel_download_item);
   }
-  RecordSavePackageEvent(SAVE_PACKAGE_CANCELLED);
+  download::RecordSavePackageEvent(download::SAVE_PACKAGE_CANCELLED);
 }
 
 // Init() can be called directly, or indirectly via GetSaveInfo(). In both
@@ -254,7 +254,7 @@ void SavePackage::InternalInit() {
           web_contents()->GetBrowserContext()));
   DCHECK(download_manager_);
 
-  RecordSavePackageEvent(SAVE_PACKAGE_STARTED);
+  download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
 }
 
 bool SavePackage::Init(
@@ -279,9 +279,10 @@ bool SavePackage::Init(
 
   // The download manager keeps ownership but adds us as an observer.
   ukm::SourceId ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
-  DownloadUkmHelper::UpdateSourceURL(ukm::UkmRecorder::Get(), ukm_source_id,
-                                     web_contents());
 
+  download::DownloadUkmHelper::UpdateSourceURL(
+      ukm::UkmRecorder::Get(), ukm_source_id,
+      web_contents()->GetLastCommittedURL());
   RenderFrameHost* frame_host = web_contents()->GetMainFrame();
   download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_, page_url_,
@@ -692,14 +693,14 @@ void SavePackage::Finish() {
   finished_ = true;
 
   // Record finish.
-  RecordSavePackageEvent(SAVE_PACKAGE_FINISHED);
+  download::RecordSavePackageEvent(download::SAVE_PACKAGE_FINISHED);
 
   // Record any errors that occurred.
   if (wrote_to_completed_file_)
-    RecordSavePackageEvent(SAVE_PACKAGE_WRITE_TO_COMPLETED);
+    download::RecordSavePackageEvent(download::SAVE_PACKAGE_WRITE_TO_COMPLETED);
 
   if (wrote_to_failed_file_)
-    RecordSavePackageEvent(SAVE_PACKAGE_WRITE_TO_FAILED);
+    download::RecordSavePackageEvent(download::SAVE_PACKAGE_WRITE_TO_FAILED);
 
   // This vector contains the save ids of the save files which SaveFileManager
   // needs to remove from its |save_file_map_|.

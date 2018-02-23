@@ -42,7 +42,9 @@
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/download_ukm_helper.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
@@ -50,8 +52,6 @@
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -474,8 +474,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   if (IsDone() || !IsDangerous())
     return;
 
-  RecordDangerousDownloadAccept(GetDangerType(),
-                                GetTargetFilePath());
+  download::RecordDangerousDownloadAccept(GetDangerType(), GetTargetFilePath());
 
   danger_type_ = download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
@@ -630,7 +629,7 @@ void DownloadItemImpl::OpenDownload() {
   // program that opens the file.  So instead we spawn a check to update
   // the UI if the file has been deleted in parallel with the open.
   delegate_->CheckForFileRemoval(this);
-  RecordOpen(GetEndTime(), !GetOpened());
+  download::RecordOpen(GetEndTime(), !GetOpened());
   opened_ = true;
   last_access_time_ = base::Time::Now();
   for (auto& observer : observers_)
@@ -1201,17 +1200,18 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   int origin_state = 0;
   bool is_partial = GetReceivedBytes() > 0;
   if (chain_iter != new_create_info.url_chain.end())
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS;
+    origin_state |= download::ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS;
   if (etag_ != new_create_info.etag ||
       last_modified_time_ != new_create_info.last_modified) {
     received_slices_.clear();
     destination_info_.received_bytes = 0;
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
+    origin_state |= download::ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
   }
   if (content_disposition_ != new_create_info.content_disposition)
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
-  RecordOriginStateOnResumption(
-      is_partial, static_cast<OriginStateOnResumption>(origin_state));
+    origin_state |=
+        download::ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
+  download::RecordOriginStateOnResumption(
+      is_partial, static_cast<download::OriginStateOnResumption>(origin_state));
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
                                  new_create_info.url_chain.end());
@@ -1264,12 +1264,12 @@ void DownloadItemImpl::OnAllDataSaved(
 
   if (received_bytes_at_length_mismatch_ > 0) {
     if (total_bytes > received_bytes_at_length_mismatch_) {
-      RecordDownloadCountWithSource(
-          MORE_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
+      download::RecordDownloadCountWithSource(
+          download::MORE_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
           download_source_);
     } else if (total_bytes == received_bytes_at_length_mismatch_) {
-      RecordDownloadCountWithSource(
-          NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
+      download::RecordDownloadCountWithSource(
+          download::NO_BYTES_RECEIVED_AFTER_CONTENT_LENGTH_MISMATCH_COUNT,
           download_source_);
     } else {
       // This could happen if the content changes on the server.
@@ -1406,13 +1406,15 @@ void DownloadItemImpl::Start(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
-  RecordDownloadCountWithSource(START_COUNT, download_source_);
+  download::RecordDownloadCountWithSource(download::START_COUNT,
+                                          download_source_);
 
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
                                        new_create_info, false);
   if (job_->IsParallelizable()) {
-    RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
+    download::RecordParallelizableDownloadCount(download::START_COUNT,
+                                                IsParallelDownloadEnabled());
   }
 
   deferred_interrupt_reason_ = download::DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -1462,25 +1464,26 @@ void DownloadItemImpl::Start(
   }
 
   if (state_ == INITIAL_INTERNAL) {
-    RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT, download_source_);
+    download::RecordDownloadCountWithSource(download::NEW_DOWNLOAD_COUNT,
+                                            download_source_);
     if (job_->IsParallelizable()) {
-      RecordParallelizableDownloadCount(NEW_DOWNLOAD_COUNT,
-                                        IsParallelDownloadEnabled());
+      download::RecordParallelizableDownloadCount(download::NEW_DOWNLOAD_COUNT,
+                                                  IsParallelDownloadEnabled());
     }
-    RecordDownloadMimeType(mime_type_);
+    download::RecordDownloadMimeType(mime_type_);
     download::DownloadContent file_type =
-        DownloadContentFromMimeType(mime_type_, false);
+        download::DownloadContentFromMimeType(mime_type_, false);
     auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
     if (in_progress_entry) {
-      DownloadUkmHelper::RecordDownloadStarted(
+      download::DownloadUkmHelper::RecordDownloadStarted(
           in_progress_entry->ukm_download_id, new_create_info.ukm_source_id,
           file_type, download_source_);
     }
 
     if (!GetBrowserContext()->IsOffTheRecord()) {
-      RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE,
-                                    download_source_);
-      RecordDownloadMimeTypeForNormalProfile(mime_type_);
+      download::RecordDownloadCountWithSource(
+          download::NEW_DOWNLOAD_COUNT_NORMAL_PROFILE, download_source_);
+      download::RecordDownloadMimeTypeForNormalProfile(mime_type_);
     }
   }
 
@@ -1528,8 +1531,8 @@ void DownloadItemImpl::DetermineDownloadTarget() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __func__ << "() " << DebugString(true);
 
-  RecordDownloadCountWithSource(DETERMINE_DOWNLOAD_TARGET_COUNT,
-                                download_source_);
+  download::RecordDownloadCountWithSource(
+      download::DETERMINE_DOWNLOAD_TARGET_COUNT, download_source_);
   delegate_->DetermineDownloadTarget(
       this, base::Bind(&DownloadItemImpl::OnDownloadTargetDetermined,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -1555,8 +1558,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
             << DownloadInterruptReasonToString(interrupt_reason)
             << " this:" << DebugString(true);
 
-  RecordDownloadCountWithSource(DOWNLOAD_TARGET_DETERMINED_COUNT,
-                                download_source_);
+  download::RecordDownloadCountWithSource(
+      download::DOWNLOAD_TARGET_DETERMINED_COUNT, download_source_);
 
   if (IsCancellation(interrupt_reason) || target_path.empty()) {
     Cancel(true);
@@ -1807,15 +1810,15 @@ void DownloadItemImpl::Completed() {
   TransitionTo(COMPLETE_INTERNAL);
 
   bool is_parallelizable = job_ && job_->IsParallelizable();
-  RecordDownloadCompleted(start_tick_, GetReceivedBytes(), is_parallelizable,
-                          download_source_);
+  download::RecordDownloadCompleted(start_tick_, GetReceivedBytes(),
+                                    is_parallelizable, download_source_);
   if (!GetBrowserContext()->IsOffTheRecord()) {
-    RecordDownloadCountWithSource(COMPLETED_COUNT_NORMAL_PROFILE,
-                                  download_source_);
+    download::RecordDownloadCountWithSource(
+        download::COMPLETED_COUNT_NORMAL_PROFILE, download_source_);
   }
   if (is_parallelizable) {
-    RecordParallelizableDownloadCount(COMPLETED_COUNT,
-                                      IsParallelDownloadEnabled());
+    download::RecordParallelizableDownloadCount(download::COMPLETED_COUNT,
+                                                IsParallelDownloadEnabled());
     int64_t content_length = -1;
     if (response_headers_->response_code() != net::HTTP_PARTIAL_CONTENT) {
       content_length = response_headers_->GetContentLength();
@@ -1826,7 +1829,7 @@ void DownloadItemImpl::Completed() {
                                                &content_length);
     }
     if (content_length > 0)
-      RecordParallelizableContentLength(content_length);
+      download::RecordParallelizableContentLength(content_length);
   }
 
   if (auto_opened_) {
@@ -1851,7 +1854,7 @@ void DownloadItemImpl::Completed() {
 
   auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
   if (in_progress_entry) {
-    DownloadUkmHelper::RecordDownloadCompleted(
+    download::DownloadUkmHelper::RecordDownloadCompleted(
         in_progress_entry->ukm_download_id, resulting_file_size,
         time_since_start);
   }
@@ -1980,26 +1983,28 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   if (IsCancellation(reason)) {
     if (IsDangerous()) {
-      RecordDangerousDownloadDiscard(
+      download::RecordDangerousDownloadDiscard(
           reason == download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
-              ? DOWNLOAD_DISCARD_DUE_TO_USER_ACTION
-              : DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN,
+              ? download::DOWNLOAD_DISCARD_DUE_TO_USER_ACTION
+              : download::DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN,
           GetDangerType(), GetTargetFilePath());
     }
 
-    RecordDownloadCountWithSource(CANCELLED_COUNT, download_source_);
+    download::RecordDownloadCountWithSource(download::CANCELLED_COUNT,
+                                            download_source_);
     if (job_ && job_->IsParallelizable()) {
-      RecordParallelizableDownloadCount(CANCELLED_COUNT,
-                                        IsParallelDownloadEnabled());
+      download::RecordParallelizableDownloadCount(download::CANCELLED_COUNT,
+                                                  IsParallelDownloadEnabled());
     }
     DCHECK_EQ(last_reason_, reason);
     TransitionTo(CANCELLED_INTERNAL);
     return;
   }
 
-  RecordDownloadInterrupted(reason, GetReceivedBytes(), total_bytes_,
-                            job_ && job_->IsParallelizable(),
-                            IsParallelDownloadEnabled(), download_source_);
+  download::RecordDownloadInterrupted(reason, GetReceivedBytes(), total_bytes_,
+                                      job_ && job_->IsParallelizable(),
+                                      IsParallelDownloadEnabled(),
+                                      download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
@@ -2010,7 +2015,7 @@ void DownloadItemImpl::InterruptWithPartialState(
       change_in_file_size = total_bytes_ - resulting_file_size;
     }
 
-    DownloadUkmHelper::RecordDownloadInterrupted(
+    download::DownloadUkmHelper::RecordDownloadInterrupted(
         in_progress_entry->ukm_download_id, change_in_file_size, reason,
         resulting_file_size, time_since_start);
   }
@@ -2020,8 +2025,8 @@ void DownloadItemImpl::InterruptWithPartialState(
   }
 
   if (!GetWebContents())
-    RecordDownloadCountWithSource(INTERRUPTED_WITHOUT_WEBCONTENTS,
-                                  download_source_);
+    download::RecordDownloadCountWithSource(
+        download::INTERRUPTED_WITHOUT_WEBCONTENTS, download_source_);
 
   // TODO(asanka): This is not good. We can transition to interrupted from
   // target-pending, which is something we don't want to do. Perhaps we should
@@ -2249,7 +2254,7 @@ void DownloadItemImpl::SetDangerType(download::DownloadDangerType danger_type) {
        danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
        danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
        danger_type == download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)) {
-    RecordMaliciousDownloadClassified(danger_type);
+    download::RecordMaliciousDownloadClassified(danger_type);
   }
   danger_type_ = danger_type;
 }
@@ -2368,16 +2373,17 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
 
   TransitionTo(RESUMING_INTERNAL);
-  RecordDownloadCountWithSource(source == ResumptionRequestSource::USER
-                                    ? MANUAL_RESUMPTION_COUNT
-                                    : AUTO_RESUMPTION_COUNT,
-                                download_source_);
+  download::RecordDownloadCountWithSource(
+      source == ResumptionRequestSource::USER
+          ? download::MANUAL_RESUMPTION_COUNT
+          : download::AUTO_RESUMPTION_COUNT,
+      download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   auto in_progress_entry = GetInProgressEntry(guid_, GetBrowserContext());
   if (in_progress_entry) {
-    DownloadUkmHelper::RecordDownloadResumed(in_progress_entry->ukm_download_id,
-                                             GetResumeMode(), time_since_start);
+    download::DownloadUkmHelper::RecordDownloadResumed(
+        in_progress_entry->ukm_download_id, GetResumeMode(), time_since_start);
   }
 
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());

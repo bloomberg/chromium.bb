@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_stats.h"
+#include "components/download/public/common//download_stats.h"
 
 #include <map>
 
@@ -15,7 +15,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_util.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -61,8 +61,8 @@ void RecordContentDispositionCount(ContentDispositionCountTypes type,
                                    bool record) {
   if (!record)
     return;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.ContentDisposition", type, CONTENT_DISPOSITION_LAST_ENTRY);
+  UMA_HISTOGRAM_ENUMERATION("Download.ContentDisposition", type,
+                            CONTENT_DISPOSITION_LAST_ENTRY);
 }
 
 void RecordContentDispositionCountFlag(
@@ -232,7 +232,7 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".dht"),         FILE_PATH_LITERAL(".shtml"),      // 306
     FILE_PATH_LITERAL(".shtm"),        FILE_PATH_LITERAL(".sht"),        // 308
     // NOTE! When you add a type here, please add the UMA value as a comment.
-    // These must all match download::DownloadItem.DangerousFileType in
+    // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
     // SBClientDownloadExtensions.
 };
@@ -267,39 +267,38 @@ void RecordBandwidthMetric(const std::string& metric, int bandwidth) {
 }
 
 // Records a histogram with download source suffix.
-std::string CreateHistogramNameWithSuffix(
-    const std::string& name,
-    download::DownloadSource download_source) {
+std::string CreateHistogramNameWithSuffix(const std::string& name,
+                                          DownloadSource download_source) {
   std::string suffix;
   switch (download_source) {
-    case download::DownloadSource::UNKNOWN:
+    case DownloadSource::UNKNOWN:
       suffix = "UnknownSource";
       break;
-    case download::DownloadSource::NAVIGATION:
+    case DownloadSource::NAVIGATION:
       suffix = "Navigation";
       break;
-    case download::DownloadSource::DRAG_AND_DROP:
+    case DownloadSource::DRAG_AND_DROP:
       suffix = "DragAndDrop";
       break;
-    case download::DownloadSource::FROM_RENDERER:
+    case DownloadSource::FROM_RENDERER:
       suffix = "FromRenderer";
       break;
-    case download::DownloadSource::EXTENSION_API:
+    case DownloadSource::EXTENSION_API:
       suffix = "ExtensionAPI";
       break;
-    case download::DownloadSource::EXTENSION_INSTALLER:
+    case DownloadSource::EXTENSION_INSTALLER:
       suffix = "ExtensionInstaller";
       break;
-    case download::DownloadSource::INTERNAL_API:
+    case DownloadSource::INTERNAL_API:
       suffix = "InternalAPI";
       break;
-    case download::DownloadSource::WEB_CONTENTS_API:
+    case DownloadSource::WEB_CONTENTS_API:
       suffix = "WebContentsAPI";
       break;
-    case download::DownloadSource::OFFLINE_PAGE:
+    case DownloadSource::OFFLINE_PAGE:
       suffix = "OfflinePage";
       break;
-    case download::DownloadSource::CONTEXT_MENU:
+    case DownloadSource::CONTEXT_MENU:
       suffix = "ContextMenu";
       break;
   }
@@ -310,12 +309,12 @@ std::string CreateHistogramNameWithSuffix(
 }  // namespace
 
 void RecordDownloadCount(DownloadCountTypes type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
+  UMA_HISTOGRAM_ENUMERATION("Download.Counts", type,
+                            DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 void RecordDownloadCountWithSource(DownloadCountTypes type,
-                                   download::DownloadSource download_source) {
+                                   DownloadSource download_source) {
   RecordDownloadCount(type);
 
   std::string name =
@@ -326,15 +325,12 @@ void RecordDownloadCountWithSource(DownloadCountTypes type,
 void RecordDownloadCompleted(const base::TimeTicks& start,
                              int64_t download_len,
                              bool is_parallelizable,
-                             download::DownloadSource download_source) {
+                             DownloadSource download_source) {
   RecordDownloadCountWithSource(COMPLETED_COUNT, download_source);
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
-  download_len /= 1024;  // In Kilobytes
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize",
-                              download_len,
-                              1,
-                              max,
+  download_len /= 1024;              // In Kilobytes
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize", download_len, 1, max,
                               256);
   if (is_parallelizable) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
@@ -342,12 +338,12 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
   }
 }
 
-void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
+void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
                                int64_t total,
                                bool is_parallelizable,
                                bool is_parallel_download_enabled,
-                               download::DownloadSource download_source) {
+                               DownloadSource download_source) {
   RecordDownloadCountWithSource(INTERRUPTED_COUNT, download_source);
   if (is_parallelizable) {
     RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
@@ -379,11 +375,8 @@ void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
   bool unknown_size = total <= 0;
   int64_t received_kb = received / 1024;
   int64_t total_kb = total / 1024;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK",
-                              received_kb,
-                              1,
-                              kMaxKb,
-                              kBuckets);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK", received_kb,
+                              1, kMaxKb, kBuckets);
   if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
@@ -391,11 +384,8 @@ void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
   }
 
   if (!unknown_size) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK",
-                                total_kb,
-                                1,
-                                kMaxKb,
-                                kBuckets);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK", total_kb, 1,
+                                kMaxKb, kBuckets);
     if (is_parallel_download_enabled) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Download.InterruptedTotalSizeK.ParallelDownload", total_kb, 1,
@@ -415,10 +405,7 @@ void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
       }
     } else if (delta_bytes > 0) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
-                                  delta_bytes,
-                                  1,
-                                  kMaxKb,
-                                  kBuckets);
+                                  delta_bytes, 1, kMaxKb, kBuckets);
       if (is_parallel_download_enabled) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Download.InterruptedOverrunBytes.ParallelDownload", delta_bytes, 1,
@@ -426,10 +413,7 @@ void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
       }
     } else {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
-                                  -delta_bytes,
-                                  1,
-                                  kMaxKb,
-                                  kBuckets);
+                                  -delta_bytes, 1, kMaxKb, kBuckets);
       if (is_parallel_download_enabled) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Download.InterruptedUnderrunBytes.ParallelDownload", -delta_bytes,
@@ -441,17 +425,16 @@ void RecordDownloadInterrupted(download::DownloadInterruptReason reason,
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
-void RecordMaliciousDownloadClassified(
-    download::DownloadDangerType danger_type) {
+void RecordMaliciousDownloadClassified(DownloadDangerType danger_type) {
   UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified", danger_type,
-                            download::DOWNLOAD_DANGER_TYPE_MAX);
+                            DOWNLOAD_DANGER_TYPE_MAX);
 }
 
-void RecordDangerousDownloadAccept(download::DownloadDangerType danger_type,
+void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
                                    const base::FilePath& file_path) {
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated", danger_type,
-                            download::DOWNLOAD_DANGER_TYPE_MAX);
-  if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+                            DOWNLOAD_DANGER_TYPE_MAX);
+  if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
     base::UmaHistogramSparse(
         "Download.DangerousFile.DangerousDownloadValidated",
         GetDangerousFileType(file_path));
@@ -459,21 +442,21 @@ void RecordDangerousDownloadAccept(download::DownloadDangerType danger_type,
 }
 
 void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
-                                    download::DownloadDangerType danger_type,
+                                    DownloadDangerType danger_type,
                                     const base::FilePath& file_path) {
   switch (reason) {
     case DOWNLOAD_DISCARD_DUE_TO_USER_ACTION:
       UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", danger_type,
-                                download::DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+                                DOWNLOAD_DANGER_TYPE_MAX);
+      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
         base::UmaHistogramSparse("Download.DangerousFile.UserDiscard",
                                  GetDangerousFileType(file_path));
       }
       break;
     case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
       UMA_HISTOGRAM_ENUMERATION("Download.Discard", danger_type,
-                                download::DOWNLOAD_DANGER_TYPE_MAX);
-      if (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
+                                DOWNLOAD_DANGER_TYPE_MAX);
+      if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
         base::UmaHistogramSparse("Download.DangerousFile.Discard",
                                  GetDangerousFileType(file_path));
       }
@@ -487,29 +470,20 @@ void RecordAcceptsRanges(const std::string& accepts_ranges,
                          int64_t download_len,
                          bool has_strong_validator) {
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
-  download_len /= 1024;  // In Kilobytes
+  download_len /= 1024;              // In Kilobytes
   static const int kBuckets = 50;
 
   if (base::LowerCaseEqualsASCII(accepts_ranges, "none")) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesNone.KBytes",
-                                download_len,
-                                1,
-                                max,
-                                kBuckets);
+                                download_len, 1, max, kBuckets);
   } else if (base::LowerCaseEqualsASCII(accepts_ranges, "bytes")) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesBytes.KBytes",
-                                download_len,
-                                1,
-                                max,
-                                kBuckets);
+                                download_len, 1, max, kBuckets);
     if (has_strong_validator)
       RecordDownloadCount(STRONG_VALIDATOR_AND_ACCEPTS_RANGES);
   } else {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesMissingOrInvalid.KBytes",
-                                download_len,
-                                1,
-                                max,
-                                kBuckets);
+                                download_len, 1, max, kBuckets);
   }
 }
 
@@ -525,61 +499,56 @@ int GetMimeTypeMatch(const std::string& mime_type_string,
   return 0;
 }
 
-static std::map<std::string, download::DownloadContent>
+static std::map<std::string, DownloadContent>
 getMimeTypeToDownloadContentMap() {
-  return {{"application/octet-stream", download::DownloadContent::OCTET_STREAM},
-          {"binary/octet-stream", download::DownloadContent::OCTET_STREAM},
-          {"application/pdf", download::DownloadContent::PDF},
-          {"application/msword", download::DownloadContent::DOCUMENT},
-          {"application/"
-           "vnd.openxmlformats-officedocument.wordprocessingml.document",
-           download::DownloadContent::DOCUMENT},
-          {"application/rtf", download::DownloadContent::DOCUMENT},
-          {"application/vnd.oasis.opendocument.text",
-           download::DownloadContent::DOCUMENT},
-          {"application/vnd.google-apps.document",
-           download::DownloadContent::DOCUMENT},
-          {"application/vnd.ms-excel", download::DownloadContent::SPREADSHEET},
-          {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-           download::DownloadContent::SPREADSHEET},
-          {"application/vnd.oasis.opendocument.spreadsheet",
-           download::DownloadContent::SPREADSHEET},
-          {"application/vnd.google-apps.spreadsheet",
-           download::DownloadContent::SPREADSHEET},
-          {"application/vns.ms-powerpoint",
-           download::DownloadContent::PRESENTATION},
-          {"application/"
-           "vnd.openxmlformats-officedocument.presentationml.presentation",
-           download::DownloadContent::PRESENTATION},
-          {"application/vnd.oasis.opendocument.presentation",
-           download::DownloadContent::PRESENTATION},
-          {"application/vnd.google-apps.presentation",
-           download::DownloadContent::PRESENTATION},
-          {"application/zip", download::DownloadContent::ARCHIVE},
-          {"application/x-gzip", download::DownloadContent::ARCHIVE},
-          {"application/x-rar-compressed", download::DownloadContent::ARCHIVE},
-          {"application/x-tar", download::DownloadContent::ARCHIVE},
-          {"application/x-bzip", download::DownloadContent::ARCHIVE},
-          {"application/x-bzip2", download::DownloadContent::ARCHIVE},
-          {"application/x-7z-compressed", download::DownloadContent::ARCHIVE},
-          {"application/x-exe", download::DownloadContent::EXECUTABLE},
-          {"application/java-archive", download::DownloadContent::EXECUTABLE},
-          {"application/vnd.apple.installer+xml",
-           download::DownloadContent::EXECUTABLE},
-          {"application/x-csh", download::DownloadContent::EXECUTABLE},
-          {"application/x-sh", download::DownloadContent::EXECUTABLE},
-          {"application/x-apple-diskimage", download::DownloadContent::DMG},
-          {"application/x-chrome-extension", download::DownloadContent::CRX},
-          {"application/xhtml+xml", download::DownloadContent::WEB},
-          {"application/xml", download::DownloadContent::WEB},
-          {"application/javascript", download::DownloadContent::WEB},
-          {"application/json", download::DownloadContent::WEB},
-          {"application/typescript", download::DownloadContent::WEB},
-          {"application/vnd.mozilla.xul+xml", download::DownloadContent::WEB},
-          {"application/vnd.amazon.ebook", download::DownloadContent::EBOOK},
-          {"application/epub+zip", download::DownloadContent::EBOOK},
-          {"application/vnd.android.package-archive",
-           download::DownloadContent::APK}};
+  return {
+      {"application/octet-stream", DownloadContent::OCTET_STREAM},
+      {"binary/octet-stream", DownloadContent::OCTET_STREAM},
+      {"application/pdf", DownloadContent::PDF},
+      {"application/msword", DownloadContent::DOCUMENT},
+      {"application/"
+       "vnd.openxmlformats-officedocument.wordprocessingml.document",
+       DownloadContent::DOCUMENT},
+      {"application/rtf", DownloadContent::DOCUMENT},
+      {"application/vnd.oasis.opendocument.text", DownloadContent::DOCUMENT},
+      {"application/vnd.google-apps.document", DownloadContent::DOCUMENT},
+      {"application/vnd.ms-excel", DownloadContent::SPREADSHEET},
+      {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+       DownloadContent::SPREADSHEET},
+      {"application/vnd.oasis.opendocument.spreadsheet",
+       DownloadContent::SPREADSHEET},
+      {"application/vnd.google-apps.spreadsheet", DownloadContent::SPREADSHEET},
+      {"application/vns.ms-powerpoint", DownloadContent::PRESENTATION},
+      {"application/"
+       "vnd.openxmlformats-officedocument.presentationml.presentation",
+       DownloadContent::PRESENTATION},
+      {"application/vnd.oasis.opendocument.presentation",
+       DownloadContent::PRESENTATION},
+      {"application/vnd.google-apps.presentation",
+       DownloadContent::PRESENTATION},
+      {"application/zip", DownloadContent::ARCHIVE},
+      {"application/x-gzip", DownloadContent::ARCHIVE},
+      {"application/x-rar-compressed", DownloadContent::ARCHIVE},
+      {"application/x-tar", DownloadContent::ARCHIVE},
+      {"application/x-bzip", DownloadContent::ARCHIVE},
+      {"application/x-bzip2", DownloadContent::ARCHIVE},
+      {"application/x-7z-compressed", DownloadContent::ARCHIVE},
+      {"application/x-exe", DownloadContent::EXECUTABLE},
+      {"application/java-archive", DownloadContent::EXECUTABLE},
+      {"application/vnd.apple.installer+xml", DownloadContent::EXECUTABLE},
+      {"application/x-csh", DownloadContent::EXECUTABLE},
+      {"application/x-sh", DownloadContent::EXECUTABLE},
+      {"application/x-apple-diskimage", DownloadContent::DMG},
+      {"application/x-chrome-extension", DownloadContent::CRX},
+      {"application/xhtml+xml", DownloadContent::WEB},
+      {"application/xml", DownloadContent::WEB},
+      {"application/javascript", DownloadContent::WEB},
+      {"application/json", DownloadContent::WEB},
+      {"application/typescript", DownloadContent::WEB},
+      {"application/vnd.mozilla.xul+xml", DownloadContent::WEB},
+      {"application/vnd.amazon.ebook", DownloadContent::EBOOK},
+      {"application/epub+zip", DownloadContent::EBOOK},
+      {"application/vnd.android.package-archive", DownloadContent::APK}};
 }
 
 // NOTE: Keep in sync with DownloadImageType in
@@ -716,11 +685,9 @@ void RecordDownloadVideoType(const std::string& mime_type_string) {
 
 }  // namespace
 
-download::DownloadContent DownloadContentFromMimeType(
-    const std::string& mime_type_string,
-    bool record_content_subcategory) {
-  download::DownloadContent download_content =
-      download::DownloadContent::UNRECOGNIZED;
+DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
+                                            bool record_content_subcategory) {
+  DownloadContent download_content = DownloadContent::UNRECOGNIZED;
   for (const auto& entry : getMimeTypeToDownloadContentMap()) {
     if (entry.first == mime_type_string) {
       download_content = entry.second;
@@ -728,30 +695,30 @@ download::DownloadContent DownloadContentFromMimeType(
   }
 
   // Do partial matches.
-  if (download_content == download::DownloadContent::UNRECOGNIZED) {
+  if (download_content == DownloadContent::UNRECOGNIZED) {
     if (base::StartsWith(mime_type_string, "text/",
                          base::CompareCase::SENSITIVE)) {
-      download_content = download::DownloadContent::TEXT;
+      download_content = DownloadContent::TEXT;
       if (record_content_subcategory)
         RecordDownloadTextType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "image/",
                                 base::CompareCase::SENSITIVE)) {
-      download_content = download::DownloadContent::IMAGE;
+      download_content = DownloadContent::IMAGE;
       if (record_content_subcategory)
         RecordDownloadImageType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "audio/",
                                 base::CompareCase::SENSITIVE)) {
-      download_content = download::DownloadContent::AUDIO;
+      download_content = DownloadContent::AUDIO;
       if (record_content_subcategory)
         RecordDownloadAudioType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "video/",
                                 base::CompareCase::SENSITIVE)) {
-      download_content = download::DownloadContent::VIDEO;
+      download_content = DownloadContent::VIDEO;
       if (record_content_subcategory)
         RecordDownloadVideoType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "font/",
                                 base::CompareCase::SENSITIVE)) {
-      download_content = download::DownloadContent::FONT;
+      download_content = DownloadContent::FONT;
     }
   }
 
@@ -759,10 +726,10 @@ download::DownloadContent DownloadContentFromMimeType(
 }
 
 void RecordDownloadMimeType(const std::string& mime_type_string) {
-  download::DownloadContent download_content =
+  DownloadContent download_content =
       DownloadContentFromMimeType(mime_type_string, true);
   UMA_HISTOGRAM_ENUMERATION("Download.Start.ContentType", download_content,
-                            download::DownloadContent::MAX);
+                            DownloadContent::MAX);
 }
 
 void RecordDownloadMimeTypeForNormalProfile(
@@ -770,7 +737,7 @@ void RecordDownloadMimeTypeForNormalProfile(
   UMA_HISTOGRAM_ENUMERATION(
       "Download.Start.ContentType.NormalProfile",
       DownloadContentFromMimeType(mime_type_string, false),
-      download::DownloadContent::MAX);
+      DownloadContent::MAX);
 }
 
 void RecordDownloadContentDisposition(
@@ -793,9 +760,8 @@ void RecordDownloadContentDisposition(
   RecordContentDispositionCountFlag(
       CONTENT_DISPOSITION_HAS_UNKNOWN_TYPE, result,
       net::HttpContentDisposition::HAS_UNKNOWN_DISPOSITION_TYPE);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_FILENAME, result,
-      net::HttpContentDisposition::HAS_FILENAME);
+  RecordContentDispositionCountFlag(CONTENT_DISPOSITION_HAS_FILENAME, result,
+                                    net::HttpContentDisposition::HAS_FILENAME);
   RecordContentDispositionCountFlag(
       CONTENT_DISPOSITION_HAS_EXT_FILENAME, result,
       net::HttpContentDisposition::HAS_EXT_FILENAME);
@@ -811,9 +777,8 @@ void RecordDownloadContentDisposition(
 }
 
 void RecordFileThreadReceiveBuffers(size_t num_buffers) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Download.FileThreadReceiveBuffers", num_buffers, 1,
-      100, 100);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.FileThreadReceiveBuffers", num_buffers,
+                              1, 100, 100);
 }
 
 void RecordOpen(const base::Time& end, bool first) {
@@ -821,17 +786,14 @@ void RecordOpen(const base::Time& end, bool first) {
     UMA_HISTOGRAM_LONG_TIMES("Download.OpenTime", (base::Time::Now() - end));
     if (first) {
       UMA_HISTOGRAM_LONG_TIMES("Download.FirstOpenTime",
-                              (base::Time::Now() - end));
+                               (base::Time::Now() - end));
     }
   }
 }
 
 void RecordOpensOutstanding(int size) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.OpensOutstanding",
-                              size,
-                              1/*min*/,
-                              (1 << 10)/*max*/,
-                              64/*num_buckets*/);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.OpensOutstanding", size, 1 /*min*/,
+                              (1 << 10) /*max*/, 64 /*num_buckets*/);
 }
 
 void RecordContiguousWriteTime(base::TimeDelta time_blocked) {
@@ -994,8 +956,8 @@ void RecordParallelDownloadCreationEvent(ParallelDownloadCreationEvent event) {
 
 void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,
-    download::DownloadInterruptReason interrupt_reason) {
-  if (interrupt_reason == download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    DownloadInterruptReason interrupt_reason) {
+  if (interrupt_reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
     UMA_HISTOGRAM_TIMES("Download.TimeToRenameSuccessAfterInitialFailure",
                         time_since_first_failure);
   } else {
@@ -1005,8 +967,7 @@ void RecordDownloadFileRenameResultAfterRetry(
 }
 
 void RecordSavePackageEvent(SavePackageEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Download.SavePackage",
-                            event,
+  UMA_HISTOGRAM_ENUMERATION("Download.SavePackage", event,
                             SAVE_PACKAGE_LAST_ENTRY);
 }
 
@@ -1101,4 +1062,4 @@ void RecordDownloadHttpResponseCode(int response_code) {
       net::HttpUtil::GetStatusCodesForHistogram());
 }
 
-}  // namespace content
+}  // namespace download
