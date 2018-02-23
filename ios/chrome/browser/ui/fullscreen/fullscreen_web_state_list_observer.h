@@ -5,6 +5,8 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_LIST_OBSERVER_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_LIST_OBSERVER_H_
 
+#include <set>
+
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -40,6 +42,16 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
                            web::WebState* new_web_state,
                            int active_index,
                            int reason) override;
+  void WebStateDetachedAt(WebStateList* web_state_list,
+                          web::WebState* web_state,
+                          int index) override;
+  void WillCloseWebStateAt(WebStateList* web_state_list,
+                           web::WebState* web_state,
+                           int index,
+                           bool user_action) override;
+
+  // Whether |web_state| has been activated during the lifetime of this object.
+  bool HasWebStateBeenActivated(web::WebState* web_state);
 
   // The model passed on construction.
   FullscreenModel* model_;
@@ -47,6 +59,8 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
   WebStateList* web_state_list_;
   // The observer for the active WebState.
   FullscreenWebStateObserver web_state_observer_;
+  // The WebStates that have been activated in |web_state_list_|.
+  std::set<web::WebState*> activated_web_states_;
 };
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_WEB_STATE_LIST_OBSERVER_H_

@@ -18,11 +18,35 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// A TestWebState subclass that returns mock objects for the view proxies.
+class TestWebStateWithProxy : public web::TestWebState {
+ public:
+  TestWebStateWithProxy() {
+    scroll_view_proxy_ = OCMClassMock([CRWWebViewScrollViewProxy class]);
+    id web_view_proxy_mock = OCMProtocolMock(@protocol(CRWWebViewProxy));
+    [[[web_view_proxy_mock stub] andReturn:scroll_view_proxy_] scrollViewProxy];
+    web_view_proxy_ = web_view_proxy_mock;
+  }
+  id<CRWWebViewProxy> GetWebViewProxy() const override {
+    return web_view_proxy_;
+  }
+
+ private:
+  // The mocked proxy objects.
+  __strong CRWWebViewScrollViewProxy* scroll_view_proxy_;
+  __strong id<CRWWebViewProxy> web_view_proxy_;
+};
+}  // namespace
 
 class FullscreenWebStateListObserverTest : public PlatformTest {
  public:
@@ -54,9 +78,9 @@ class FullscreenWebStateListObserverTest : public PlatformTest {
 TEST_F(FullscreenWebStateListObserverTest, ObserveActiveWebState) {
   // Insert a WebState into the list.  The observer should create a
   // FullscreenWebStateObserver for the newly activated WebState.
-  std::unique_ptr<web::TestWebState> inserted_web_state =
-      std::make_unique<web::TestWebState>();
-  web::TestWebState* web_state = inserted_web_state.get();
+  std::unique_ptr<TestWebStateWithProxy> inserted_web_state =
+      std::make_unique<TestWebStateWithProxy>();
+  TestWebStateWithProxy* web_state = inserted_web_state.get();
   web_state_list().InsertWebState(0, std::move(inserted_web_state),
                                   WebStateList::INSERT_ACTIVATE,
                                   WebStateOpener());

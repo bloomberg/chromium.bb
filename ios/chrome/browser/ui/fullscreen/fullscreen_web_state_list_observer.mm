@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_content_adjustment_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_scroll_view_replacement_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -44,13 +44,15 @@ void FullscreenWebStateListObserver::WebStateReplacedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int index) {
+  if (HasWebStateBeenActivated(old_web_state))
+    activated_web_states_.erase(old_web_state);
   if (new_web_state == web_state_list->GetActiveWebState()) {
     // Reset the model if the active WebState is replaced.
     web_state_observer_.SetWebState(new_web_state);
     model_->ResetForNavigation();
     if (new_web_state) {
-      UpdateFullscreenWebViewProxyForReplacedScrollView(
-          new_web_state->GetWebViewProxy(), model_);
+      MoveContentBelowHeader(new_web_state->GetWebViewProxy(), model_);
+      activated_web_states_.insert(new_web_state);
     }
   }
 }
@@ -62,4 +64,32 @@ void FullscreenWebStateListObserver::WebStateActivatedAt(
     int active_index,
     int reason) {
   web_state_observer_.SetWebState(new_web_state);
+  // If this is the first time the WebState was activated, move its content
+  // below the header.
+  if (new_web_state && !HasWebStateBeenActivated(new_web_state)) {
+    MoveContentBelowHeader(new_web_state->GetWebViewProxy(), model_);
+    activated_web_states_.insert(new_web_state);
+  }
+}
+
+void FullscreenWebStateListObserver::WebStateDetachedAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index) {
+  if (HasWebStateBeenActivated(web_state))
+    activated_web_states_.erase(web_state);
+}
+
+void FullscreenWebStateListObserver::WillCloseWebStateAt(
+    WebStateList* web_state_list,
+    web::WebState* web_state,
+    int index,
+    bool user_action) {
+  if (HasWebStateBeenActivated(web_state))
+    activated_web_states_.erase(web_state);
+}
+
+bool FullscreenWebStateListObserver::HasWebStateBeenActivated(
+    web::WebState* web_state) {
+  return activated_web_states_.find(web_state) != activated_web_states_.end();
 }
