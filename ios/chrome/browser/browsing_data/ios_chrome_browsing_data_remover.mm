@@ -29,8 +29,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -38,6 +40,7 @@
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/session_util.h"
@@ -76,6 +79,21 @@ enum CookieOrCacheDeletionChoice {
 
 bool AllDomainsPredicate(const std::string& domain) {
   return true;
+}
+
+void BookmarkClearedAdapter(std::unique_ptr<BookmarkRemoverHelper> remover,
+                            base::OnceClosure callback,
+                            bool success) {
+  CHECK(success) << "Failed to remove all user bookmarks.";
+  std::move(callback).Run();
+}
+
+void ReadingListClearedAdapter(
+    std::unique_ptr<reading_list::ReadingListRemoverHelper> remover,
+    base::OnceClosure callback,
+    bool success) {
+  CHECK(success) << "Failed to remove all user reading list items.";
+  std::move(callback).Run();
 }
 
 void NetCompletionCallbackAdapter(base::OnceClosure callback, int) {
@@ -199,17 +217,21 @@ void IOSChromeBrowsingDataRemover::Remove(browsing_data::TimePeriod time_period,
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
   // In incognito, only data removal for all time is currently supported.
-  DCHECK(time_period == browsing_data::TimePeriod::ALL_TIME ||
-         !browser_state_->IsOffTheRecord());
+  DCHECK(!browser_state_->IsOffTheRecord() ||
+         time_period == browsing_data::TimePeriod::ALL_TIME);
 
   // Cookies and server bound certificates should have the same lifetime.
   DCHECK_EQ(
       IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
       IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
 
-  // Partial clearing of downloads is not supported.
-  DCHECK(time_period == browsing_data::TimePeriod::ALL_TIME ||
-         !IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS));
+  // Partial clearing of downloads, bookmarks or reading lists is not supported.
+  DCHECK(
+      !(IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS) ||
+        IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_BOOKMARKS) ||
+        IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_READING_LIST)) ||
+      time_period == browsing_data::TimePeriod::ALL_TIME);
 
   // Removing visited links requires clearing the cookies.
   DCHECK(
@@ -450,6 +472,45 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
           base::TimeDelta::FromSeconds(0),
           CreatePendingTaskCompletionClosure());
     }
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_BOOKMARKS)) {
+    auto bookmarks_remover_helper =
+        std::make_unique<BookmarkRemoverHelper>(browser_state_);
+    auto* bookmarks_remover_helper_ptr = bookmarks_remover_helper.get();
+
+    // Pass the ownership of BookmarkRemoverHelper to the callback. This is
+    // safe as the callback is always invoked, even if ChromeBrowserState is
+    // destroyed, and BookmarkRemoverHelper supports being deleted while the
+    // callback is run.
+    bookmarks_remover_helper_ptr->RemoveAllUserBookmarksIOS(base::BindOnce(
+        &BookmarkClearedAdapter, std::move(bookmarks_remover_helper),
+        CreatePendingTaskCompletionClosure()));
+  }
+
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_READING_LIST)) {
+    auto reading_list_remover_helper =
+        std::make_unique<reading_list::ReadingListRemoverHelper>(
+            browser_state_);
+    auto* reading_list_remover_helper_ptr = reading_list_remover_helper.get();
+
+    // Pass the ownership of reading_list::ReadingListRemoverHelper to the
+    // callback. This is safe as the callback is always invoked, even if
+    // ChromeBrowserState is destroyed, and ReadingListRemoverHelper supports
+    // being deleted while the callback is run..
+    reading_list_remover_helper_ptr->RemoveAllUserReadingListItemsIOS(
+        base::BindOnce(&ReadingListClearedAdapter,
+                       std::move(reading_list_remover_helper),
+                       CreatePendingTaskCompletionClosure()));
+  }
+
+  if (IsRemoveDataMaskSet(mask,
+                          BrowsingDataRemoveMask::REMOVE_LAST_USER_ACCOUNT)) {
+    // The user just changed the account and chose to clear the previously
+    // existing data. As browsing data is being cleared, it is fine to clear the
+    // last username, as there will be no data to be merged.
+    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+    browser_state_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
   }
 
   // Always wipe accumulated network related data (TransportSecurityState and

@@ -61,11 +61,6 @@ class ChromeBrowserState;
 @property(nonatomic, getter=isTabSwitcherActive) BOOL tabSwitcherActive;
 @property(nonatomic, readonly) BOOL dismissingTabSwitcher;
 
-// Sets up MainController for testing; clears history, closes all tabs and
-// switches to the main BVC. |completionHandler| is called when MainController
-// is completely set up for testing.
-- (void)setUpForTestingWithCompletionHandler:(ProceduralBlock)completionHandler;
-
 // Sets the internal startup state to indicate that the launch was triggered
 // by an external app opening the given URL.
 - (void)setStartupParametersWithURL:(const GURL&)launchURL;

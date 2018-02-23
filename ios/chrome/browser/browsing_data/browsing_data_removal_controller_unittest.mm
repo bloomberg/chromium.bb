@@ -49,7 +49,18 @@ TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
       [[BrowsingDataRemovalController alloc] init];
 
   __block BOOL block_was_called = NO;
-  const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
+
+  // Remove everything except for bookmarks and reading list items as there
+  // are no services for TestChromeBrowserState and they CHECK in that case.
+  const BrowsingDataRemoveMask mask =
+      BrowsingDataRemoveMask::REMOVE_SITE_DATA |
+      BrowsingDataRemoveMask::REMOVE_CACHE |
+      BrowsingDataRemoveMask::REMOVE_DOWNLOADS |
+      BrowsingDataRemoveMask::REMOVE_FORM_DATA |
+      BrowsingDataRemoveMask::REMOVE_HISTORY |
+      BrowsingDataRemoveMask::REMOVE_PASSWORDS |
+      BrowsingDataRemoveMask::REMOVE_LAST_USER_ACCOUNT;
+
   [removal_controller
       removeBrowsingDataFromBrowserState:browser_state_.get()
                                     mask:mask
