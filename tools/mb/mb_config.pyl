@@ -207,6 +207,8 @@
       'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols',
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
 
+      'Blink Heap Incremental Marking': 'debug_bot_enable_blink_heap_incremental_marking',
+
       'EarlGreyiOS': 'ios',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
@@ -1238,6 +1240,10 @@
       'debug_bot', 'arm64',
     ],
 
+    'debug_bot_enable_blink_heap_incremental_marking': [
+      'debug_bot', 'enable_blink_heap_incremental_marking',
+    ],
+
     'debug_bot_fuchsia': [
       'debug_bot', 'fuchsia',
     ],
@@ -1860,6 +1866,10 @@
 
     'edge': {
       'gn_args': 'sanitizer_coverage_flags="trace-pc-guard"',
+    },
+
+    'enable_blink_heap_incremental_marking': {
+      'gn_args': 'enable_blink_heap_incremental_marking=true',
     },
 
     # This mixin is used to force configs that use it to fail. It

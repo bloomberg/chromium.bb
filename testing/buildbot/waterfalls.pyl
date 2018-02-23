@@ -903,6 +903,11 @@
         'os_type': 'android',
         'skip_output_links': True,
       },
+      'Blink Heap Incremental Markup': {
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'CFI Linux (icall)': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
