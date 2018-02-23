@@ -586,6 +586,8 @@ static void wiener_filter_stripe(const RestorationUnitInfo *rui,
 static void boxsum1(int32_t *src, int width, int height, int src_stride,
                     int sqr, int32_t *dst, int dst_stride) {
   int i, j, a, b, c;
+  assert(width > 2 * SGRPROJ_BORDER_HORZ);
+  assert(height > 2 * SGRPROJ_BORDER_VERT);
 
   // Vertical sum over 3-pixel regions, from src into dst.
   if (!sqr) {
@@ -651,6 +653,8 @@ static void boxsum1(int32_t *src, int width, int height, int src_stride,
 static void boxsum2(int32_t *src, int width, int height, int src_stride,
                     int sqr, int32_t *dst, int dst_stride) {
   int i, j, a, b, c, d, e;
+  assert(width > 2 * SGRPROJ_BORDER_HORZ);
+  assert(height > 2 * SGRPROJ_BORDER_VERT);
 
   // Vertical sum over 5-pixel regions, from src into dst.
   if (!sqr) {
