@@ -990,65 +990,70 @@ class ParserTest(unittest.TestCase):
     source4 = """\
         [Attr0=0] module my_module;
 
-        [Attr1=1] struct MyStruct {
-          [Attr2=2] int32 a;
+        [Attr1=1] import "my_import";
+
+        [Attr2=2] struct MyStruct {
+          [Attr3=3] int32 a;
         };
-        [Attr3=3] union MyUnion {
-          [Attr4=4] int32 a;
+        [Attr4=4] union MyUnion {
+          [Attr5=5] int32 a;
         };
-        [Attr5=5] enum MyEnum {
-          [Attr6=6] a
+        [Attr6=6] enum MyEnum {
+          [Attr7=7] a
         };
-        [Attr7=7] interface MyInterface {
-          [Attr8=8] MyMethod([Attr9=9] int32 a) => ([Attr10=10] bool b);
+        [Attr8=8] interface MyInterface {
+          [Attr9=9] MyMethod([Attr10=10] int32 a) => ([Attr11=11] bool b);
         };
-        [Attr11=11] const double kMyConst = 1.23;
+        [Attr12=12] const double kMyConst = 1.23;
         """
     expected4 = ast.Mojom(
         ast.Module(('IDENTIFIER', 'my_module'),
                    ast.AttributeList([ast.Attribute("Attr0", 0)])),
-        ast.ImportList(),
+        ast.ImportList(ast.Import(
+            ast.AttributeList([ast.Attribute("Attr1", 1)]),
+            "my_import")),
         [ast.Struct(
              'MyStruct',
-             ast.AttributeList(ast.Attribute("Attr1", 1)),
+             ast.AttributeList(ast.Attribute("Attr2", 2)),
              ast.StructBody(
                  ast.StructField(
-                     'a', ast.AttributeList([ast.Attribute("Attr2", 2)]),
+                     'a', ast.AttributeList([ast.Attribute("Attr3", 3)]),
                      None, 'int32', None))),
          ast.Union(
              'MyUnion',
-             ast.AttributeList(ast.Attribute("Attr3", 3)),
+             ast.AttributeList(ast.Attribute("Attr4", 4)),
              ast.UnionBody(
                  ast.UnionField(
-                     'a', ast.AttributeList([ast.Attribute("Attr4", 4)]), None,
+                     'a', ast.AttributeList([ast.Attribute("Attr5", 5)]), None,
                      'int32'))),
          ast.Enum(
              'MyEnum',
-             ast.AttributeList(ast.Attribute("Attr5", 5)),
+             ast.AttributeList(ast.Attribute("Attr6", 6)),
              ast.EnumValueList(
                  ast.EnumValue(
-                     'VALUE', ast.AttributeList([ast.Attribute("Attr6", 6)]),
+                     'VALUE', ast.AttributeList([ast.Attribute("Attr7", 7)]),
                      None))),
          ast.Interface(
             'MyInterface',
-            ast.AttributeList(ast.Attribute("Attr7", 7)),
+            ast.AttributeList(ast.Attribute("Attr8", 8)),
             ast.InterfaceBody(
                 ast.Method(
                     'MyMethod',
-                    ast.AttributeList(ast.Attribute("Attr8", 8)),
+                    ast.AttributeList(ast.Attribute("Attr9", 9)),
                     None,
                     ast.ParameterList(
                         ast.Parameter(
-                            'a', ast.AttributeList([ast.Attribute("Attr9", 9)]),
+                            'a',
+                            ast.AttributeList([ast.Attribute("Attr10", 10)]),
                             None, 'int32')),
                     ast.ParameterList(
                         ast.Parameter(
                             'b',
-                            ast.AttributeList([ast.Attribute("Attr10", 10)]),
+                            ast.AttributeList([ast.Attribute("Attr11", 11)]),
                             None, 'bool'))))),
          ast.Const(
             'kMyConst',
-            ast.AttributeList(ast.Attribute("Attr11", 11)),
+            ast.AttributeList(ast.Attribute("Attr12", 12)),
             'double', '1.23')])
     self.assertEquals(parser.Parse(source4, "my_file.mojom"), expected4)
 
@@ -1090,7 +1095,7 @@ class ParserTest(unittest.TestCase):
     source1 = "import \"somedir/my.mojom\";"
     expected1 = ast.Mojom(
         None,
-        ast.ImportList(ast.Import("somedir/my.mojom")),
+        ast.ImportList(ast.Import(None, "somedir/my.mojom")),
         [])
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
 
@@ -1101,8 +1106,8 @@ class ParserTest(unittest.TestCase):
         """
     expected2 = ast.Mojom(
         None,
-        ast.ImportList([ast.Import("somedir/my1.mojom"),
-                        ast.Import("somedir/my2.mojom")]),
+        ast.ImportList([ast.Import(None, "somedir/my1.mojom"),
+                        ast.Import(None, "somedir/my2.mojom")]),
         [])
     self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
 
@@ -1114,8 +1119,8 @@ class ParserTest(unittest.TestCase):
         """
     expected3 = ast.Mojom(
         ast.Module(('IDENTIFIER', 'my_module'), None),
-        ast.ImportList([ast.Import("somedir/my1.mojom"),
-                        ast.Import("somedir/my2.mojom")]),
+        ast.ImportList([ast.Import(None, "somedir/my1.mojom"),
+                        ast.Import(None, "somedir/my2.mojom")]),
         [])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
