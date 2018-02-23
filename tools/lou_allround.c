@@ -327,20 +327,20 @@ main(int argc, char **argv) {
 				if (showSizes)
 					printf("input length = %d; output length = %d.\n", translen, outlen);
 				if (outlen == realInlen) {
-				  int k;
-				  for (k = 0; k < realInlen; k++)
-				    if (inbuf[k] != outbuf[k]) break;
-				  if (k == realInlen) printf("Perfect roundtrip!\n");
+					int k;
+					for (k = 0; k < realInlen; k++)
+						if (inbuf[k] != outbuf[k]) break;
+					if (k == realInlen) printf("Perfect roundtrip!\n");
 				}
 			}
 		else
 			while (1) {
 				memset(emphasis, 0, sizeof(formtype) * BUFSIZE);
 				{
-				  size_t k = 0;
-				  for (k = 0; k < strlen(enteredEmphasis); k++)
-				    emphasis[k] = (formtype)enteredEmphasis[k] - '0';
-				  emphasis[k] = 0;
+					size_t k = 0;
+					for (k = 0; k < strlen(enteredEmphasis); k++)
+						emphasis[k] = (formtype)enteredEmphasis[k] - '0';
+					emphasis[k] = 0;
 				}
 				strcpy(spacing, enteredSpacing);
 				cursorPos = enteredCursorPos;
@@ -415,7 +415,7 @@ main(int argc, char **argv) {
 				}
 				if (!(forwardOnly || backOnly)) {
 					if (outlen == realInlen) {
-					  int k;
+						int k;
 						for (k = 0; k < realInlen; k++)
 							if (inbuf[k] != outbuf[k]) break;
 						if (k == realInlen) printf("Perfect roundtrip!\n");
