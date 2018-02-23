@@ -403,119 +403,22 @@ void WASAPIAudioInputStream::Run() {
 
   bool recording = true;
   bool error = false;
-  double volume = GetVolume();
   HANDLE wait_array[2] = {stop_capture_event_.Get(),
                           audio_samples_ready_event_.Get()};
 
-  Microsoft::WRL::ComPtr<IAudioClock> audio_clock;
-  audio_client_->GetService(IID_PPV_ARGS(&audio_clock));
-  if (!audio_clock)
-    LOG(WARNING) << "IAudioClock unavailable, capture times may be inaccurate.";
-
   while (recording && !error) {
-    HRESULT hr = S_FALSE;
-
     // Wait for a close-down event or a new capture event.
     DWORD wait_result = WaitForMultipleObjects(2, wait_array, FALSE, INFINITE);
     switch (wait_result) {
-      case WAIT_FAILED:
-        error = true;
-        break;
       case WAIT_OBJECT_0 + 0:
         // |stop_capture_event_| has been set.
         recording = false;
         break;
-      case WAIT_OBJECT_0 + 1: {
-        TRACE_EVENT1("audio", "WASAPIAudioInputStream::Run_0", "sample rate",
-                     input_format_.nSamplesPerSec);
+      case WAIT_OBJECT_0 + 1:
         // |audio_samples_ready_event_| has been set.
-        BYTE* data_ptr = NULL;
-        UINT32 num_frames_to_read = 0;
-        DWORD flags = 0;
-        UINT64 device_position = 0;
-
-        // Note: The units on this are 100ns intervals. Both GetBuffer() and
-        // GetPosition() will handle the translation from the QPC value, so we
-        // just need to convert from 100ns units into us. Which is just dividing
-        // by 10.0 since 10x100ns = 1us.
-        UINT64 capture_time_100ns = 0;
-
-        // Retrieve the amount of data in the capture endpoint buffer,
-        // replace it with silence if required, create callbacks for each
-        // packet and store non-delivered data for the next event.
-        hr = audio_capture_client_->GetBuffer(&data_ptr, &num_frames_to_read,
-                                              &flags, &device_position,
-                                              &capture_time_100ns);
-        if (FAILED(hr)) {
-          DLOG(ERROR) << "Failed to get data from the capture buffer";
-          continue;
-        }
-
-        // TODO(dalecurtis, olka): Is this ever false?
-        if (audio_clock) {
-          // The reported timestamp from GetBuffer is not as reliable as the
-          // clock from the client.  We've seen timestamps reported for
-          // USB audio devices, be off by several days.  Furthermore we've
-          // seen them jump back in time every 2 seconds or so.
-          audio_clock->GetPosition(&device_position, &capture_time_100ns);
-        }
-
-        base::TimeTicks capture_time;
-        if (capture_time_100ns) {
-          // See conversion notes on |capture_time_100ns|.
-          capture_time +=
-              base::TimeDelta::FromMicroseconds(capture_time_100ns / 10.0);
-        } else {
-          // We may not have an IAudioClock or GetPosition() may return zero.
-          capture_time = base::TimeTicks::Now();
-        }
-
-        // Adjust |capture_time| for the FIFO before pushing.
-        capture_time -= AudioTimestampHelper::FramesToTime(
-            fifo_->GetAvailableFrames(), input_format_.nSamplesPerSec);
-
-        if (num_frames_to_read != 0) {
-          if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-            fifo_->PushSilence(num_frames_to_read);
-          } else {
-            fifo_->Push(data_ptr, num_frames_to_read,
-                        input_format_.wBitsPerSample / 8);
-          }
-        }
-
-        hr = audio_capture_client_->ReleaseBuffer(num_frames_to_read);
-        DLOG_IF(ERROR, FAILED(hr)) << "Failed to release capture buffer";
-
-        // Get a cached AGC volume level which is updated once every second
-        // on the audio manager thread. Note that, |volume| is also updated
-        // each time SetVolume() is called through IPC by the render-side AGC.
-        GetAgcVolume(&volume);
-
-        // Deliver captured data to the registered consumer using a packet
-        // size which was specified at construction.
-        while (fifo_->available_blocks()) {
-          if (converter_) {
-            if (imperfect_buffer_size_conversion_ &&
-                fifo_->available_blocks() == 1) {
-              // Special case. We need to buffer up more audio before we can
-              // convert or else we'll suffer an underrun.
-              break;
-            }
-            converter_->Convert(convert_bus_.get());
-            sink_->OnData(convert_bus_.get(), capture_time, volume);
-
-            // Move the capture time forward for each vended block.
-            capture_time += AudioTimestampHelper::FramesToTime(
-                convert_bus_->frames(), output_format_.nSamplesPerSec);
-          } else {
-            sink_->OnData(fifo_->Consume(), capture_time, volume);
-
-            // Move the capture time forward for each vended block.
-            capture_time += AudioTimestampHelper::FramesToTime(
-                packet_size_frames_, input_format_.nSamplesPerSec);
-          }
-        }
-      } break;
+        PullCaptureDataAndPushToSink();
+        break;
+      case WAIT_FAILED:
       default:
         error = true;
         break;
@@ -535,6 +438,121 @@ void WASAPIAudioInputStream::Run() {
   }
 
   fifo_.reset();
+}
+
+void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
+  TRACE_EVENT1("audio", "WASAPIAudioInputStream::Run_0", "sample rate",
+               input_format_.nSamplesPerSec);
+
+  Microsoft::WRL::ComPtr<IAudioClock> audio_clock;
+  audio_client_->GetService(IID_PPV_ARGS(&audio_clock));
+  if (!audio_clock)
+    LOG(WARNING) << "IAudioClock unavailable, capture times may be inaccurate.";
+
+  // Pull data from the capture endpoint buffer until it's empty or an error
+  // occurs.
+  while (true) {
+    BYTE* data_ptr = nullptr;
+    UINT32 num_frames_to_read = 0;
+    DWORD flags = 0;
+    UINT64 device_position = 0;
+
+    // Note: The units on this are 100ns intervals. Both GetBuffer() and
+    // GetPosition() will handle the translation from the QPC value, so we just
+    // need to convert from 100ns units into us. Which is just dividing by 10.0
+    // since 10x100ns = 1us.
+    UINT64 capture_time_100ns = 0;
+
+    // Retrieve the amount of data in the capture endpoint buffer, replace it
+    // with silence if required, create callbacks for each packet and store
+    // non-delivered data for the next event.
+    // TODO(grunell): Should we handle
+    // |flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY|?
+    HRESULT hr =
+        audio_capture_client_->GetBuffer(&data_ptr, &num_frames_to_read, &flags,
+                                         &device_position, &capture_time_100ns);
+    if (hr == AUDCLNT_S_BUFFER_EMPTY)
+      break;
+
+    // TODO(grunell): Should we handle different errors explicitly? Perhaps exit
+    // by setting |error = true|. What are the assumptions here that makes us
+    // rely on the next WaitForMultipleObjects? Do we expect the next wait to be
+    // successful sometimes?
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failed to get data from the capture buffer";
+      break;
+    }
+
+    // TODO(dalecurtis, olka, grunell): Is this ever false? If it is, should we
+    // handle |flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR|?
+    if (audio_clock) {
+      // The reported timestamp from GetBuffer is not as reliable as the clock
+      // from the client.  We've seen timestamps reported for USB audio devices,
+      // be off by several days.  Furthermore we've seen them jump back in time
+      // every 2 seconds or so.
+      audio_clock->GetPosition(&device_position, &capture_time_100ns);
+    }
+
+    base::TimeTicks capture_time;
+    if (capture_time_100ns) {
+      // See conversion notes on |capture_time_100ns|.
+      capture_time +=
+          base::TimeDelta::FromMicroseconds(capture_time_100ns / 10.0);
+    } else {
+      // We may not have an IAudioClock or GetPosition() may return zero.
+      capture_time = base::TimeTicks::Now();
+    }
+
+    // Adjust |capture_time| for the FIFO before pushing.
+    capture_time -= AudioTimestampHelper::FramesToTime(
+        fifo_->GetAvailableFrames(), input_format_.nSamplesPerSec);
+
+    // TODO(grunell): Since we check |hr == AUDCLNT_S_BUFFER_EMPTY| above,
+    // should we instead assert that |num_frames_to_read != 0|?
+    if (num_frames_to_read != 0) {
+      if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
+        fifo_->PushSilence(num_frames_to_read);
+      } else {
+        fifo_->Push(data_ptr, num_frames_to_read,
+                    input_format_.wBitsPerSample / 8);
+      }
+    }
+
+    hr = audio_capture_client_->ReleaseBuffer(num_frames_to_read);
+    DLOG_IF(ERROR, FAILED(hr)) << "Failed to release capture buffer";
+
+    // Get a cached AGC volume level which is updated once every second on the
+    // audio manager thread. Note that, |volume| is also updated each time
+    // SetVolume() is called through IPC by the render-side AGC.
+    double volume = 0.0;
+    GetAgcVolume(&volume);
+
+    // Deliver captured data to the registered consumer using a packet size
+    // which was specified at construction.
+    while (fifo_->available_blocks()) {
+      if (converter_) {
+        if (imperfect_buffer_size_conversion_ &&
+            fifo_->available_blocks() == 1) {
+          // Special case. We need to buffer up more audio before we can convert
+          // or else we'll suffer an underrun.
+          // TODO(grunell): Verify this is really true.
+          break;
+        }
+        converter_->Convert(convert_bus_.get());
+        sink_->OnData(convert_bus_.get(), capture_time, volume);
+
+        // Move the capture time forward for each vended block.
+        capture_time += AudioTimestampHelper::FramesToTime(
+            convert_bus_->frames(), output_format_.nSamplesPerSec);
+      } else {
+        sink_->OnData(fifo_->Consume(), capture_time, volume);
+
+        // Move the capture time forward for each vended block.
+        capture_time += AudioTimestampHelper::FramesToTime(
+            packet_size_frames_, input_format_.nSamplesPerSec);
+      }
+    }
+  }  // while (true)
 }
 
 void WASAPIAudioInputStream::HandleError(HRESULT err) {
@@ -908,7 +926,7 @@ void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
         input_format_.cbSize,
         output_format_.wFormatTag, output_format_.nChannels,
         output_format_.nSamplesPerSec, output_format_.wBitsPerSample,
-        output_format_.nBlockAlign,output_format_.nAvgBytesPerSec,
+        output_format_.nBlockAlign, output_format_.nAvgBytesPerSec,
         output_format_.cbSize));
     // clang-format on
   }
