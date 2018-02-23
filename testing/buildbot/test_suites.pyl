@@ -990,6 +990,7 @@
       'args': [
         '--enable-features=Mash',
         '--override-use-software-gl-for-tests',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter',
       ],
       'swarming': {
         'hard_timeout': 1800,
