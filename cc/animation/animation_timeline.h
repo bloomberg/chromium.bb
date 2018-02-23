@@ -18,10 +18,9 @@ class Animation;
 class AnimationHost;
 
 // An AnimationTimeline owns a group of Animations.
-// This is a cc counterpart for blink::AnimationTimeline (in 1:1 relationship).
-// Each AnimationTimeline and its Animations have their copies on
-// the impl thread. We synchronize main thread and impl thread instances
-// using integer IDs.
+//
+// Each AnimationTimeline and its Animations have copies on the impl thread. We
+// synchronize the main and impl thread instances using their IDs.
 class CC_ANIMATION_EXPORT AnimationTimeline
     : public base::RefCounted<AnimationTimeline> {
  public:
