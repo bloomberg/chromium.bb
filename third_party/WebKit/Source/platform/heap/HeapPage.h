@@ -784,7 +784,7 @@ class PLATFORM_EXPORT BaseArena {
 #if DCHECK_IS_ON()
   virtual bool IsConsistentForGC() = 0;
 #endif
-  size_t ObjectPayloadSizeForTesting();
+  virtual size_t ObjectPayloadSizeForTesting();
   void PrepareForSweep();
 #if defined(ADDRESS_SANITIZER)
   void PoisonArena();
@@ -844,6 +844,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   bool PagesToBeSweptContains(Address);
 #endif
   void TakeFreelistSnapshot(const String& dump_base_name) override;
+  size_t ObjectPayloadSizeForTesting() override;
 
   Address AllocateObject(size_t allocation_size, size_t gc_info_index);
 
