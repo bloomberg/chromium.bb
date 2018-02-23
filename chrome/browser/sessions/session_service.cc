@@ -75,6 +75,7 @@ SessionService::SessionService(Profile* profile)
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
+      rebuild_on_next_save_(false),
       weak_factory_(this) {
   // We should never be created when incognito.
   DCHECK(!profile->IsOffTheRecord());
@@ -91,6 +92,7 @@ SessionService::SessionService(const base::FilePath& save_path)
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
+      rebuild_on_next_save_(false),
       weak_factory_(this) {
   Init();
 }
@@ -241,6 +243,11 @@ void SessionService::WindowOpened(Browser* browser) {
 void SessionService::WindowClosing(const SessionID& window_id) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
+
+  // If Chrome is closed immediately after a history deletion, we have to
+  // rebuild commands before this window is closed, otherwise these tabs would
+  // be lost.
+  RebuildCommandsIfRequired();
 
   // The window is about to close. If there are other tabbed browsers with the
   // same original profile commit the close immediately.
@@ -404,6 +411,17 @@ void SessionService::TabNavigationPathPrunedFromFront(
       sessions::CreateTabNavigationPathPrunedFromFrontCommand(tab_id, count));
 }
 
+void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
+                                                     const SessionID& tab_id) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  // Multiple tabs might be affected by this deletion, so the rebuild is
+  // delayed until next save.
+  rebuild_on_next_save_ = true;
+  base_session_service_->StartSaveTimer();
+}
+
 void SessionService::UpdateTabNavigation(
     const SessionID& window_id,
     const SessionID& tab_id,
@@ -506,6 +524,16 @@ base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
 
 bool SessionService::ShouldUseDelayedSave() {
   return should_use_delayed_save_;
+}
+
+void SessionService::OnWillSaveCommands() {
+  RebuildCommandsIfRequired();
+}
+
+void SessionService::RebuildCommandsIfRequired() {
+  if (rebuild_on_next_save_ && pending_window_close_ids_.empty()) {
+    ScheduleResetCommands();
+  }
 }
 
 void SessionService::Init() {
@@ -732,6 +760,7 @@ void SessionService::ScheduleResetCommands() {
   base_session_service_->ClearPendingCommands();
   tab_to_available_range_.clear();
   windows_tracking_.clear();
+  rebuild_on_next_save_ = false;
   BuildCommandsFromBrowsers(&tab_to_available_range_,
                             &windows_tracking_);
   if (!windows_tracking_.empty()) {

@@ -6,7 +6,12 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/common/features.h"
 #include "components/browsing_data/core/features.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -21,6 +26,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
+
 namespace {
 
 bool TimeRangeMatcher(base::Time begin,
@@ -30,28 +40,30 @@ bool TimeRangeMatcher(base::Time begin,
          (entry.GetTimestamp() < end || end.is_null());
 }
 
+bool TimeRangeMatcherForSession(
+    base::Time begin,
+    base::Time end,
+    const sessions::SerializedNavigationEntry& entry) {
+  return begin <= entry.timestamp() &&
+         (entry.timestamp() < end || end.is_null());
+}
+
 bool UrlMatcher(const base::flat_set<GURL>& urls,
                 const content::NavigationEntry& entry) {
   return urls.find(entry.GetURL()) != urls.end();
 }
 
-// Create a predicate to select NavigationEntries that should be deleted.
-// If a valid time_range is supplied, the decision will be based on time and
-// |deleted_rows| is ignored.
-// Otherwise entries matching |deleted_rows| will be selected.
-content::NavigationController::DeletionPredicate CreateDeletionPredicate(
-    const history::DeletionTimeRange& time_range,
-    const history::URLRows& deleted_rows) {
-  if (time_range.IsValid()) {
-    return base::BindRepeating(&TimeRangeMatcher, time_range.begin(),
-                               time_range.end());
-  }
+bool UrlMatcherForSession(const base::flat_set<GURL>& urls,
+                          const sessions::SerializedNavigationEntry& entry) {
+  return urls.find(entry.virtual_url()) != urls.end();
+}
+
+base::flat_set<GURL> CreateUrlSet(const history::URLRows& deleted_rows) {
   std::vector<GURL> urls;
   for (const history::URLRow& row : deleted_rows) {
     urls.push_back(row.url());
   }
-  return base::BindRepeating(&UrlMatcher,
-                             base::flat_set<GURL>(std::move(urls)));
+  return base::flat_set<GURL>(std::move(urls));
 }
 
 // Desktop is using |TabStripModel|, Android |TabModel|. They don't have a
@@ -73,20 +85,14 @@ void DeleteNavigationEntries(
   }
 }
 
-}  // namespace
-
-namespace browsing_data {
-
-void RemoveNavigationEntries(Profile* profile,
-                             const history::DeletionTimeRange& time_range,
-                             const history::URLRows& deleted_rows) {
-  DCHECK(profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE);
-  if (!base::FeatureList::IsEnabled(
-          browsing_data::features::kRemoveNavigationHistory)) {
-    return;
-  }
-
-  auto predicate = CreateDeletionPredicate(time_range, deleted_rows);
+void DeleteTabNavigationEntries(Profile* profile,
+                                const history::DeletionTimeRange& time_range,
+                                const base::flat_set<GURL>& url_set) {
+  auto predicate =
+      time_range.IsValid()
+          ? base::BindRepeating(&TimeRangeMatcher, time_range.begin(),
+                                time_range.end())
+          : base::BindRepeating(&UrlMatcher, base::ConstRef(url_set));
 
 #if defined(OS_ANDROID)
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
@@ -103,6 +109,97 @@ void RemoveNavigationEntries(Profile* profile,
     }
   }
 #endif
+}
+
+void PerformTabRestoreDeletion(
+    sessions::TabRestoreService* service,
+    const sessions::TabRestoreService::DeletionPredicate& predicate) {
+  service->DeleteNavigationEntries(predicate);
+  service->DeleteLastSession();
+}
+
+// This class waits until TabRestoreService is loaded, then deletes
+// navigation entries using |predicate| and deletes itself afterwards.
+class TabRestoreDeletionHelper : public sessions::TabRestoreServiceObserver {
+ public:
+  TabRestoreDeletionHelper(
+      sessions::TabRestoreService* service,
+      const sessions::TabRestoreService::DeletionPredicate& predicate)
+      : service_(service), deletion_predicate_(predicate) {
+    DCHECK(!service->IsLoaded());
+    service->AddObserver(this);
+    service->LoadTabsFromLastSession();
+  }
+
+  // sessions::TabRestoreServiceObserver:
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override {
+    delete this;
+  }
+
+  void TabRestoreServiceLoaded(sessions::TabRestoreService* service) override {
+    PerformTabRestoreDeletion(service, deletion_predicate_);
+    delete this;
+  }
+
+ private:
+  ~TabRestoreDeletionHelper() override { service_->RemoveObserver(this); }
+
+  sessions::TabRestoreService* service_;
+  sessions::TabRestoreService::DeletionPredicate deletion_predicate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabRestoreDeletionHelper);
+};
+
+void DeleteTabRestoreEntries(Profile* profile,
+                             const history::DeletionTimeRange& time_range,
+                             const base::flat_set<GURL>& url_set) {
+  sessions::TabRestoreService* tab_service =
+      TabRestoreServiceFactory::GetForProfile(profile);
+  if (tab_service) {
+    auto predicate =
+        time_range.IsValid()
+            ? base::BindRepeating(&TimeRangeMatcherForSession,
+                                  time_range.begin(), time_range.end())
+            : base::BindRepeating(&UrlMatcherForSession, url_set);
+    if (tab_service->IsLoaded()) {
+      PerformTabRestoreDeletion(tab_service, predicate);
+    } else {
+      // The helper deletes itself when the tab entry deletion is finished.
+      new TabRestoreDeletionHelper(tab_service, predicate);
+    }
+  }
+}
+
+void DeleteLastSessionFromSessionService(Profile* profile) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfile(profile);
+  if (session_service)
+    session_service->DeleteLastSession();
+#endif
+}
+
+}  // namespace
+
+namespace browsing_data {
+
+void RemoveNavigationEntries(Profile* profile,
+                             const history::DeletionTimeRange& time_range,
+                             const history::URLRows& deleted_rows) {
+  DCHECK(profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE);
+  if (!base::FeatureList::IsEnabled(
+          browsing_data::features::kRemoveNavigationHistory)) {
+    return;
+  }
+
+  base::flat_set<GURL> url_set;
+  if (!time_range.IsValid())
+    url_set = CreateUrlSet(deleted_rows);
+
+  DeleteTabNavigationEntries(profile, time_range, url_set);
+  DeleteTabRestoreEntries(profile, time_range, url_set);
+  DeleteLastSessionFromSessionService(profile);
 }
 
 }  // namespace browsing_data

@@ -6,12 +6,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/core/features.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -237,4 +240,31 @@ IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, GoBackAndDelete) {
       browser()->profile(), history::DeletionTimeRange::AllTime(), {});
 
   ExpectEntries({url_b_}, GetEntries());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabDeletion) {
+  AddNavigations(browser(), {url_a_, url_b_});
+  AddTab(browser(), {url_c_});
+  AddTab(browser(), {url_d_});
+  chrome::CloseTab(browser());
+  chrome::CloseTab(browser());
+
+  sessions::TabRestoreService* tab_service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(2U, tab_service->entries().size());
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_c_, base::Time())});
+  content::RunAllTasksUntilIdle();
+  EXPECT_EQ(1U, tab_service->entries().size());
+  auto* tab = static_cast<sessions::TabRestoreService::Tab*>(
+      tab_service->entries().front().get());
+  EXPECT_EQ(url_d_, tab->navigations.back().virtual_url());
+  EXPECT_TRUE(tab_service->IsLoaded());
+
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_d_, base::Time())});
+  EXPECT_EQ(0U, tab_service->entries().size());
 }
