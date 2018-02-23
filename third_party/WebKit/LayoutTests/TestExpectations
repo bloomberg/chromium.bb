@@ -3349,3 +3349,5 @@ crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-table-cell-vert
 crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
 crbug.com/815050 [ Mac ] http/tests/serviceworker/chromium/memory-cache.html [ Failure Pass ]
+
+crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
