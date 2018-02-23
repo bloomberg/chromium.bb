@@ -20,6 +20,10 @@ namespace cryptauth {
 class CryptAuthService;
 }  // namespace cryptauth
 
+namespace session_manager {
+class SessionManager;
+}  // namespace session_manager
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
@@ -59,7 +63,8 @@ class TetherComponentImpl : public TetherComponent {
             managed_network_configuration_handler,
         NetworkConnect* network_connect,
         NetworkConnectionHandler* network_connection_handler,
-        scoped_refptr<device::BluetoothAdapter> adapter);
+        scoped_refptr<device::BluetoothAdapter> adapter,
+        session_manager::SessionManager* session_manager);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -76,7 +81,8 @@ class TetherComponentImpl : public TetherComponent {
             managed_network_configuration_handler,
         NetworkConnect* network_connect,
         NetworkConnectionHandler* network_connection_handler,
-        scoped_refptr<device::BluetoothAdapter> adapter);
+        scoped_refptr<device::BluetoothAdapter> adapter,
+        session_manager::SessionManager* session_manager);
 
    private:
     static Factory* factory_instance_;
@@ -99,7 +105,8 @@ class TetherComponentImpl : public TetherComponent {
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
-      scoped_refptr<device::BluetoothAdapter> adapter);
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      session_manager::SessionManager* session_manager);
 
  private:
   void OnPreCrashStateRestored();

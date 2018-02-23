@@ -49,14 +49,15 @@ SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler) {
+    NetworkConnectionHandler* network_connection_handler,
+    session_manager::SessionManager* session_manager) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
-      network_connect, network_connection_handler);
+      network_connect, network_connection_handler, session_manager);
 }
 
 // static
@@ -75,11 +76,12 @@ SynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler) {
+    NetworkConnectionHandler* network_connection_handler,
+    session_manager::SessionManager* session_manager) {
   return base::WrapUnique(new SynchronousShutdownObjectContainerImpl(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
-      network_connect, network_connection_handler));
+      network_connect, network_connection_handler, session_manager));
 }
 
 SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
@@ -89,7 +91,8 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     NetworkConnect* network_connect,
-    NetworkConnectionHandler* network_connection_handler)
+    NetworkConnectionHandler* network_connection_handler,
+    session_manager::SessionManager* session_manager)
     : network_state_handler_(network_state_handler),
       network_list_sorter_(std::make_unique<NetworkListSorter>()),
       tether_host_response_recorder_(
@@ -138,6 +141,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
                                                         clock_.get())),
       host_scanner_(std::make_unique<HostScannerImpl>(
           network_state_handler_,
+          session_manager,
           asychronous_container->tether_host_fetcher(),
           asychronous_container->ble_connection_manager(),
           host_scan_device_prioritizer_.get(),
