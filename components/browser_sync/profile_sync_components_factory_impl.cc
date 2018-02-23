@@ -147,17 +147,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // Autocomplete sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL)) {
-      if (FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
-        sync_service->RegisterDataTypeController(
-            std::make_unique<autofill::WebDataModelTypeController>(
-                syncer::AUTOFILL, sync_client_, db_thread_, web_data_service_,
-                base::Bind(
-                    &autofill::AutocompleteSyncBridge::FromWebDataService)));
-      } else {
-        sync_service->RegisterDataTypeController(
-            std::make_unique<AutofillDataTypeController>(
-                db_thread_, error_callback, sync_client_, web_data_service_));
-      }
+      sync_service->RegisterDataTypeController(
+          std::make_unique<autofill::WebDataModelTypeController>(
+              syncer::AUTOFILL, sync_client_, db_thread_, web_data_service_,
+              base::Bind(
+                  &autofill::AutocompleteSyncBridge::FromWebDataService)));
     }
 
     // Autofill sync is enabled by default.  Register unless explicitly
