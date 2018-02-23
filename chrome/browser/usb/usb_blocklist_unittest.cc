@@ -2,95 +2,136 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/usb/usb_blocklist.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class UsbBlocklistTest : public testing::Test {
  public:
-  UsbBlocklistTest()
-      : field_trial_list_(new base::FieldTrialList(nullptr)),
-        list_(UsbBlocklist::Get()) {}
+  UsbBlocklistTest() : blocklist_(UsbBlocklist::Get()) {}
 
+  const UsbBlocklist& list() { return blocklist_; }
+
+  void SetDynamicBlocklist(base::StringPiece list) {
+    params_manager_.ClearAllVariationParams();
+
+    std::map<std::string, std::string> params;
+    params["blocklist_additions"] = list.as_string();
+    params_manager_.SetVariationParams("WebUSBBlocklist", params);
+
+    blocklist_.ResetToDefaultValuesForTest();
+  }
+
+ private:
   void TearDown() override {
     // Because UsbBlocklist is a singleton it must be cleared after tests run
     // to prevent leakage between tests.
-    field_trial_list_.reset();
-    list_.ResetToDefaultValuesForTest();
+    params_manager_.ClearAllVariationParams();
+    blocklist_.ResetToDefaultValuesForTest();
   }
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  UsbBlocklist& list_;
+  variations::testing::VariationParamsManager params_manager_;
+  UsbBlocklist& blocklist_;
 };
 
 TEST_F(UsbBlocklistTest, BasicExclusions) {
-  list_.Exclude({0x18D1, 0x58F0, 0x0100});
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x0100}));
-  EXPECT_FALSE(list_.IsExcluded({0x18D1, 0x58F1, 0x0100}));
-  EXPECT_FALSE(list_.IsExcluded({0x18D0, 0x58F0, 0x0100}));
-  EXPECT_FALSE(list_.IsExcluded({0x18D1, 0x58F0, 0x0200}));
+  SetDynamicBlocklist("18D1:58F0:0100");
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0100}));
+  // An older device version is also blocked.
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0090}));
+  // A newer device version is not blocked.
+  EXPECT_FALSE(list().IsExcluded({0x18D1, 0x58F0, 0x0200}));
+  // Other devices with nearby vendor and product IDs are not blocked.
+  EXPECT_FALSE(list().IsExcluded({0x18D1, 0x58F1, 0x0100}));
+  EXPECT_FALSE(list().IsExcluded({0x18D1, 0x58EF, 0x0100}));
+  EXPECT_FALSE(list().IsExcluded({0x18D0, 0x58F0, 0x0100}));
+  EXPECT_FALSE(list().IsExcluded({0x18D2, 0x58F0, 0x0100}));
 }
 
 TEST_F(UsbBlocklistTest, StringsWithNoValidEntries) {
-  size_t previous_list_size = list_.size();
-  list_.Exclude("");
-  list_.Exclude("~!@#$%^&*()-_=+[]{}/*-");
-  list_.Exclude(":");
-  list_.Exclude("::");
-  list_.Exclude(",");
-  list_.Exclude(",,");
-  list_.Exclude(",::,");
-  list_.Exclude("1:2:3");
-  list_.Exclude("18D1:2:3000");
-  list_.Exclude("☯");
-  EXPECT_EQ(previous_list_size, list_.size());
+  SetDynamicBlocklist("");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("~!@#$%^&*()-_=+[]{}/*-");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist(":");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("::");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist(",");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist(",,");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist(",::,");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("1:2:3");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("18D1:2:3000");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("0000:0x00:0000");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("0000:   0:0000");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("000g:0000:0000");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
+
+  SetDynamicBlocklist("☯");
+  EXPECT_EQ(0u, list().GetDynamicEntryCountForTest());
 }
 
 TEST_F(UsbBlocklistTest, StringsWithOneValidEntry) {
-  size_t previous_list_size = list_.size();
-  list_.Exclude("18D1:58F0:0101");
-  EXPECT_EQ(++previous_list_size, list_.size());
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x0101}));
+  SetDynamicBlocklist("18D1:58F0:0101");
+  EXPECT_EQ(1u, list().GetDynamicEntryCountForTest());
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0101}));
 
-  list_.Exclude(" 18D1:58F0:0200  ");
-  EXPECT_EQ(++previous_list_size, list_.size());
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x0200}));
+  SetDynamicBlocklist(" 18D1:58F0:0200  ");
+  EXPECT_EQ(1u, list().GetDynamicEntryCountForTest());
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0200}));
 
-  list_.Exclude(", 18D1:58F0:0201,  ");
-  EXPECT_EQ(++previous_list_size, list_.size());
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x0201}));
+  SetDynamicBlocklist(", 18D1:58F0:0201,  ");
+  EXPECT_EQ(1u, list().GetDynamicEntryCountForTest());
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0201}));
 
-  list_.Exclude("18D1:58F0:0202, 0000:1:0000");
-  EXPECT_EQ(++previous_list_size, list_.size());
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x0202}));
+  SetDynamicBlocklist("18D1:58F0:0202, 0000:1:0000");
+  EXPECT_EQ(1u, list().GetDynamicEntryCountForTest());
+  EXPECT_TRUE(list().IsExcluded({0x18D1, 0x58F0, 0x0202}));
 }
 
-TEST_F(UsbBlocklistTest, ServerProvidedBlocklist) {
-  if (base::FieldTrialList::TrialExists("WebUSBBlocklist")) {
-    // This code checks to make sure that when a field trial is launched it
-    // still contains our test data.
-    LOG(INFO) << "WebUSBBlocklist field trial already configured.";
-    ASSERT_NE(variations::GetVariationParamValue("WebUSBBlocklist",
-                                                 "blocklist_additions")
-                  .find("18D1:58F0:1BAD"),
-              std::string::npos)
-        << "ERROR: A WebUSBBlocklist field trial has been configured in\n"
-           "testing/variations/fieldtrial_testing_config.json and must\n"
-           "include this test's excluded device ID '18D1:58F0:1BAD' in\n"
-           "blocklist_additions.\n";
-  } else {
-    LOG(INFO) << "Creating WebUSBBlocklist field trial for test.";
-    // Create a field trial with test parameter.
-    std::map<std::string, std::string> params;
-    params["blocklist_additions"] = "18D1:58F0:1BAD";
-    variations::AssociateVariationParams("WebUSBBlocklist", "TestGroup",
-                                         params);
-    base::FieldTrialList::CreateFieldTrial("WebUSBBlocklist", "TestGroup");
-    // Refresh the blocklist based on the new field trial.
-    list_.ResetToDefaultValuesForTest();
-  }
+TEST_F(UsbBlocklistTest, StaticEntries) {
+  // The specific versions of these devices that we want to block are unknown.
+  // The device versions listed here are abitrary chosen to test that any device
+  // will be matched.
 
-  EXPECT_TRUE(list_.IsExcluded({0x18D1, 0x58F0, 0x1BAD}));
-  EXPECT_FALSE(list_.IsExcluded({0x18D1, 0x58F0, 0x0100}));
+  // Yubikey NEO - OTP and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0111, 0x0100}));
+  // Yubikey NEO - CCID only
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0112, 0x0100}));
+  // Yubikey NEO - U2F and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0115, 0x0100}));
+  // Yubikey NEO - OTP, U2F and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0116, 0x0100}));
+  // Google Gnubby (WinUSB firmware)
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0211, 0x0100}));
+  // Yubikey 4 - CCID only
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0404, 0x0100}));
+  // Yubikey 4 - OTP and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0405, 0x0100}));
+  // Yubikey 4 - U2F and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0406, 0x0100}));
+  // Yubikey 4 - OTP, U2F and CCID
+  EXPECT_TRUE(list().IsExcluded({0x1050, 0x0407, 0x0100}));
+
+  // The non-WinUSB version of the Google Gnubby firmware is not in the static
+  // list. Check that it is not matched despite a similar product ID.
+  EXPECT_FALSE(list().IsExcluded({0x1050, 0x0200, 0x0100}));
 }
