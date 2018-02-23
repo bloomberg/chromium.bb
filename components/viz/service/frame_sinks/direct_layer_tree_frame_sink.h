@@ -47,14 +47,6 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       SharedBitmapManager* shared_bitmap_manager,
       bool use_viz_hit_test);
-  DirectLayerTreeFrameSink(
-      const FrameSinkId& frame_sink_id,
-      CompositorFrameSinkSupportManager* support_manager,
-      FrameSinkManagerImpl* frame_sink_manager,
-      Display* display,
-      mojom::DisplayClient* display_client,
-      scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-      bool use_viz_hit_test);
   ~DirectLayerTreeFrameSink() override;
 
   // LayerTreeFrameSink implementation.

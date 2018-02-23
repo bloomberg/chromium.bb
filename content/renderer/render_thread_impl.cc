@@ -57,7 +57,6 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
@@ -2141,22 +2140,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
   params.pipes.client_request =
       mojo::MakeRequest(&compositor_frame_sink_client);
-
-  if (command_line.HasSwitch(switches::kEnableVulkan)) {
-    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
-        viz::VulkanInProcessContextProvider::Create();
-    if (vulkan_context_provider) {
-      DCHECK(!layout_test_mode());
-      frame_sink_provider_->CreateForWidget(
-          routing_id, std::move(compositor_frame_sink_request),
-          std::move(compositor_frame_sink_client),
-          std::move(render_frame_metadata_observer_client_request),
-          std::move(render_frame_metadata_observer_ptr));
-      callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
-          std::move(vulkan_context_provider), &params));
-      return;
-    }
-  }
 
   if (is_gpu_compositing_disabled_) {
     DCHECK(!layout_test_mode());

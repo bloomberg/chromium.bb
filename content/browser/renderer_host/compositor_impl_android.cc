@@ -750,8 +750,7 @@ void CompositorImpl::CreateVulkanOutputSurface() {
   if (!vulkan_surface->Initialize(window_))
     return;
 
-  InitializeDisplay(std::move(vulkan_surface),
-                    std::move(vulkan_context_provider), nullptr);
+  InitializeDisplay(std::move(vulkan_surface), nullptr);
 }
 #endif
 
@@ -812,13 +811,12 @@ void CompositorImpl::OnGpuChannelEstablished(
   auto display_output_surface = std::make_unique<AndroidOutputSurface>(
       context_provider,
       base::Bind(&CompositorImpl::DidSwapBuffers, base::Unretained(this)));
-  InitializeDisplay(std::move(display_output_surface), nullptr,
+  InitializeDisplay(std::move(display_output_surface),
                     std::move(context_provider));
 }
 
 void CompositorImpl::InitializeDisplay(
     std::unique_ptr<viz::OutputSurface> display_output_surface,
-    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<viz::ContextProvider> context_provider) {
   DCHECK(layer_tree_frame_sink_request_pending_);
 
@@ -852,19 +850,12 @@ void CompositorImpl::InitializeDisplay(
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
       task_runner);
 
-  auto layer_tree_frame_sink =
-      vulkan_context_provider
-          ? std::make_unique<viz::DirectLayerTreeFrameSink>(
-                frame_sink_id_, GetHostFrameSinkManager(), manager,
-                display_.get(), nullptr /* display_client */,
-                vulkan_context_provider, features::IsVizHitTestingEnabled())
-          : std::make_unique<viz::DirectLayerTreeFrameSink>(
-                frame_sink_id_, GetHostFrameSinkManager(), manager,
-                display_.get(), nullptr /* display_client */, context_provider,
-                nullptr /* worker_context_provider */, task_runner,
-                gpu_memory_buffer_manager,
-                viz::ServerSharedBitmapManager::current(),
-                features::IsVizHitTestingEnabled());
+  auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
+      frame_sink_id_, GetHostFrameSinkManager(), manager, display_.get(),
+      nullptr /* display_client */, context_provider,
+      nullptr /* worker_context_provider */, task_runner,
+      gpu_memory_buffer_manager, viz::ServerSharedBitmapManager::current(),
+      features::IsVizHitTestingEnabled());
 
   display_->SetVisible(true);
   display_->Resize(size_);

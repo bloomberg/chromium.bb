@@ -66,10 +66,6 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
       scoped_refptr<RasterContextProvider> worker_context_provider,
       InitParams* params);
 
-  ClientLayerTreeFrameSink(
-      scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-      InitParams* params);
-
   ~ClientLayerTreeFrameSink() override;
 
   base::WeakPtr<ClientLayerTreeFrameSink> GetWeakPtr();
