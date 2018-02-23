@@ -208,6 +208,7 @@ void IconLoader::ReadIcon() {
   image_skia.MakeThreadSafe();
   std::unique_ptr<gfx::Image> image = base::MakeUnique<gfx::Image>(image_skia);
   target_task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback_, base::Passed(&image), group_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), std::move(image), group_));
   delete this;
 }

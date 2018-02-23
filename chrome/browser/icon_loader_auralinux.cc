@@ -50,6 +50,7 @@ void IconLoader::ReadIcon() {
   }
 
   target_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(callback_, std::move(image), group_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), std::move(image), group_));
   delete this;
 }
