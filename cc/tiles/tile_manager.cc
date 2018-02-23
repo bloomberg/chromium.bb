@@ -41,13 +41,6 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
-// TODO(enne): remove this histogram and its monitoring in M58 once there is
-// enough new data from the other two raster task timers.
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedGeneralRasterTaskTimer,
-    "Compositing.%s.RasterTask.RasterUs",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs2");
-
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedSoftwareRasterTaskTimer,
     "Compositing.%s.RasterTask.RasterUs.Software",
@@ -68,7 +61,6 @@ class ScopedRasterTaskTimer {
   }
 
   void SetArea(int area) {
-    general_timer_.SetArea(area);
     if (software_timer_)
       software_timer_->SetArea(area);
     if (gpu_timer_)
@@ -76,7 +68,6 @@ class ScopedRasterTaskTimer {
   }
 
  private:
-  ScopedGeneralRasterTaskTimer general_timer_;
   base::Optional<ScopedSoftwareRasterTaskTimer> software_timer_;
   base::Optional<ScopedGpuRasterTaskTimer> gpu_timer_;
 };
