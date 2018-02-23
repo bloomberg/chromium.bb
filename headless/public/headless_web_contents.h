@@ -84,10 +84,13 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // sockets are not allowed.
   virtual HeadlessTabSocket* GetHeadlessTabSocket() const = 0;
 
+  // Returns the main frame's process id or -1 if there's no main frame.
   virtual int GetMainFrameRenderProcessId() const = 0;
 
+  // Returns the main frame's node id or -1 if there's no main frame.
   virtual int GetMainFrameTreeNodeId() const = 0;
 
+  // Returns the main frame's devtools id or "" if there's no main frame.
   virtual std::string GetMainFrameDevToolsId() const = 0;
 
  protected:
