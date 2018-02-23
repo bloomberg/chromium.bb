@@ -91,6 +91,9 @@ class SynchronousLayerTreeFrameSink
   void DetachFromClient() override;
   void SubmitCompositorFrame(viz::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
   void Invalidate() override;
 
   // Partial SynchronousCompositor API implementation.

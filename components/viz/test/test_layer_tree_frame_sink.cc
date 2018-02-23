@@ -13,9 +13,11 @@
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace viz {
 
@@ -184,6 +186,18 @@ void TestLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
   DCHECK(!ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
   support_->DidNotProduceFrame(ack);
+}
+
+void TestLayerTreeFrameSink::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  bool ok = shared_bitmap_manager()->ChildAllocatedSharedBitmap(
+      std::move(buffer), id);
+  DCHECK(ok);
+}
+
+void TestLayerTreeFrameSink::DidDeleteSharedBitmap(const SharedBitmapId& id) {
+  shared_bitmap_manager()->ChildDeletedSharedBitmap(id);
 }
 
 void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(

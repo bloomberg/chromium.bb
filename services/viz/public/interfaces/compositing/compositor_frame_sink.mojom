@@ -11,6 +11,7 @@ import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
 import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "gpu/ipc/common/mailbox.mojom";
 
 
 // A CompositorFrameSink is an interface for receiving CompositorFrame
@@ -22,7 +23,7 @@ interface CompositorFrameSink {
   // Lets the display compositor know that the client wishes to receive the next
   // BeginFrame event.
   SetNeedsBeginFrame(bool needs_begin_frame);
-  
+
   // Lets the display compositor know that the client also wants to receive
   // BeginFrames with the animate_only flag set. Only clients that opt in
   // will receive such BeginFrames.
@@ -49,6 +50,18 @@ interface CompositorFrameSink {
   // Notifies the frame sink that a BeginFrame was completed, but that no
   // CompositorFrame was produced as a result of it.
   DidNotProduceFrame(BeginFrameAck ack);
+
+  // Informs the display compositor that the client allocated a shared bitmap.
+  // The |id| can then be used in subsequent CompositorFrames given to
+  // SubmitCompositorFrame. The |id| is a Mailbox type which doubles as a
+  // SharedBitmapId for this case.
+  DidAllocateSharedBitmap(handle<shared_buffer> buffer, gpu.mojom.Mailbox id);
+
+  // Informs the display compositor that the client deleted a shared bitmap. This
+  // allows the service to free the shared memory that was previously given to it
+  // via DidAllocateSharedBitmap(). The |id| is a Mailbox type which doubles as a
+  // SharedBitmapId for this case.
+  DidDeleteSharedBitmap(gpu.mojom.Mailbox id);
 };
 
 interface CompositorFrameSinkClient {

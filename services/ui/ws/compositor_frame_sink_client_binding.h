@@ -37,6 +37,9 @@ class CompositorFrameSinkClientBinding
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> binding_;
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;

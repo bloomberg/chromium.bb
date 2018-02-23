@@ -614,6 +614,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   // Signals that a frame with token |frame_token| was finished processing. If
   // there are any queued messages belonging to it, they will be processed.
@@ -820,7 +823,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
 
   // viz::SharedBitmapAllocationObserver implementation.
-  void DidAllocateSharedBitmap(
+  void OnSharedBitmapAllocatedByChild(
       uint32_t last_shared_bitmap_sequence_number) override;
   void SetupInputRouter();
 

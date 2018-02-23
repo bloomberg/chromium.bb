@@ -130,6 +130,22 @@ void RootCompositorFrameSinkImpl::DidNotProduceFrame(
   support_->DidNotProduceFrame(begin_frame_ack);
 }
 
+void RootCompositorFrameSinkImpl::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  if (!support_->DidAllocateSharedBitmap(std::move(buffer), id)) {
+    DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
+                << "SharedBitmapId";
+    compositor_frame_sink_binding_.Close();
+    OnClientConnectionLost();
+  }
+}
+
+void RootCompositorFrameSinkImpl::DidDeleteSharedBitmap(
+    const SharedBitmapId& id) {
+  support_->DidDeleteSharedBitmap(id);
+}
+
 void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
   // TODO(staraz): Implement this. Client should hear about context/output
   // surface lost.

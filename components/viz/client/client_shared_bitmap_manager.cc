@@ -149,6 +149,20 @@ std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::GetSharedBitmapFromId(
   return nullptr;
 }
 
+bool ClientSharedBitmapManager::ChildAllocatedSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  // Display compositor only.
+  NOTREACHED();
+  return false;
+}
+
+void ClientSharedBitmapManager::ChildDeletedSharedBitmap(
+    const SharedBitmapId& id) {
+  // Display compositor only.
+  NOTREACHED();
+}
+
 std::unique_ptr<SharedBitmap>
 ClientSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
   SharedBitmapId id = SharedBitmap::GenerateId();

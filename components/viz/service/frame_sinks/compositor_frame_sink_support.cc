@@ -11,9 +11,11 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_reference.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace viz {
 
@@ -181,6 +183,18 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   const auto result = MaybeSubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
   DCHECK_EQ(result, ACCEPTED);
+}
+
+bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const SharedBitmapId& id) {
+  return ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+      std::move(buffer), id);
+}
+
+void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
+    const SharedBitmapId& id) {
+  ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
 }
 
 CompositorFrameSinkSupport::SubmitResult

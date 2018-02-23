@@ -97,6 +97,19 @@ void LayerTreeFrameSinkLocal::DidNotProduceFrame(
   support_->DidNotProduceFrame(ack);
 }
 
+void LayerTreeFrameSinkLocal::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  // No software compositing used with this implementation.
+  NOTIMPLEMENTED();
+}
+
+void LayerTreeFrameSinkLocal::DidDeleteSharedBitmap(
+    const viz::SharedBitmapId& id) {
+  // No software compositing used with this implementation.
+  NOTIMPLEMENTED();
+}
+
 void LayerTreeFrameSinkLocal::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(thread_checker_);

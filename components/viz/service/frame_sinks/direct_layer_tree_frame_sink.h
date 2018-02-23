@@ -62,6 +62,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;

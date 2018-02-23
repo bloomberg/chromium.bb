@@ -85,6 +85,9 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 
  private:
   // mojom::CompositorFrameSinkClient implementation:

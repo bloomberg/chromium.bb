@@ -6,6 +6,7 @@
 #define CC_TEST_FAKE_LAYER_TREE_FRAME_SINK_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/logging.h"
@@ -98,10 +99,13 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   // LayerTreeFrameSink implementation.
-  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   bool BindToClient(LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   viz::CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
@@ -114,6 +118,10 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
   gfx::Rect last_swap_rect() const { return last_swap_rect_; }
 
+  const std::vector<viz::SharedBitmapId>& shared_bitmaps() const {
+    return shared_bitmaps_;
+  }
+
   void ReturnResourcesHeldByParent();
 
  protected:
@@ -124,6 +132,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
   TestSharedBitmapManager test_shared_bitmap_manager_;
 
+  std::vector<viz::SharedBitmapId> shared_bitmaps_;
   std::unique_ptr<viz::CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   std::vector<viz::TransferableResource> resources_held_by_parent_;

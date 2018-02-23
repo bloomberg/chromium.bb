@@ -54,6 +54,9 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(viz::CompositorFrame frame) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
   // viz::mojom::CompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck(

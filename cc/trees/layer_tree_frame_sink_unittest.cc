@@ -17,9 +17,9 @@
 namespace cc {
 namespace {
 
-class TestLayerTreeFrameSink : public LayerTreeFrameSink {
+class StubLayerTreeFrameSink : public LayerTreeFrameSink {
  public:
-  explicit TestLayerTreeFrameSink(
+  explicit StubLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
@@ -33,6 +33,9 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink {
     client_->DidReceiveCompositorFrameAck();
   }
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override {}
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override {}
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override {}
 };
 
 TEST(LayerTreeFrameSinkTest, ContextLossInformsClient) {
@@ -40,7 +43,7 @@ TEST(LayerTreeFrameSinkTest, ContextLossInformsClient) {
   scoped_refptr<TestContextProvider> worker_provider =
       TestContextProvider::CreateWorker();
   auto task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestLayerTreeFrameSink layer_tree_frame_sink(provider, worker_provider,
+  StubLayerTreeFrameSink layer_tree_frame_sink(provider, worker_provider,
                                                task_runner);
   EXPECT_FALSE(layer_tree_frame_sink.HasClient());
 
@@ -66,7 +69,7 @@ TEST(LayerTreeFrameSinkTest, ContextLossFailsBind) {
   context_provider->UnboundTestContext3d()->set_context_lost(true);
 
   auto task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestLayerTreeFrameSink layer_tree_frame_sink(context_provider,
+  StubLayerTreeFrameSink layer_tree_frame_sink(context_provider,
                                                worker_provider, task_runner);
   EXPECT_FALSE(layer_tree_frame_sink.HasClient());
 
@@ -80,7 +83,7 @@ TEST(LayerTreeFrameSinkTest, WorkerContextLossInformsClient) {
   scoped_refptr<TestContextProvider> worker_provider =
       TestContextProvider::CreateWorker();
   auto task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestLayerTreeFrameSink layer_tree_frame_sink(provider, worker_provider,
+  StubLayerTreeFrameSink layer_tree_frame_sink(provider, worker_provider,
                                                task_runner);
   EXPECT_FALSE(layer_tree_frame_sink.HasClient());
 
@@ -111,7 +114,7 @@ TEST(LayerTreeFrameSinkTest, WorkerContextLossFailsBind) {
   worker_provider->UnboundTestContext3d()->set_context_lost(true);
 
   auto task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestLayerTreeFrameSink layer_tree_frame_sink(context_provider,
+  StubLayerTreeFrameSink layer_tree_frame_sink(context_provider,
                                                worker_provider, task_runner);
   EXPECT_FALSE(layer_tree_frame_sink.HasClient());
 

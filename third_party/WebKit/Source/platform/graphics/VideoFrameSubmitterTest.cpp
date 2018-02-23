@@ -57,16 +57,30 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
   MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void());
 
+  MOCK_METHOD2(DoSubmitCompositorFrame,
+               void(const viz::LocalSurfaceId&, viz::CompositorFrame*));
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& id,
       viz::CompositorFrame frame,
-      ::viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
-      uint64_t submit_time) {
+      viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time) override {
     DoSubmitCompositorFrame(id, &frame);
   }
-  MOCK_METHOD2(DoSubmitCompositorFrame,
-               void(const viz::LocalSurfaceId&, viz::CompositorFrame*));
+
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
+
+  MOCK_METHOD2(DidAllocateSharedBitmap_,
+               void(mojo::ScopedSharedBufferHandle* buffer,
+                    gpu::mojom::blink::MailboxPtr* id));
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               gpu::mojom::blink::MailboxPtr id) override {
+    DidAllocateSharedBitmap_(&buffer, &id);
+  }
+
+  MOCK_METHOD1(DidDeleteSharedBitmap_, void(gpu::mojom::blink::MailboxPtr* id));
+  void DidDeleteSharedBitmap(gpu::mojom::blink::MailboxPtr id) override {
+    DidDeleteSharedBitmap_(&id);
+  }
 
  private:
   mojo::Binding<viz::mojom::blink::CompositorFrameSink> binding_;
