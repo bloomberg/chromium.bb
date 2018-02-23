@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/pickle.h"
@@ -30,6 +31,19 @@ namespace {
 
 const char kRendererDestroyed[] = "The tab was closed.";
 const char kFrameRemoved[] = "The frame was removed.";
+
+// Generates an injection key based on the host ID and either the file URL, if
+// available, or the code string. The format of the key is
+// "<type><host_id><digest>", where <type> is one of "F" (file) and "C" (code),
+// <host_id> is the host ID, and <digest> is the hash digest (base::Hash) of
+// the file URL or the code string, respectively.
+const std::string GenerateInjectionKey(const HostID& host_id,
+                                       const GURL& file_url,
+                                       const std::string& code) {
+  const std::string& source = file_url.is_valid() ? file_url.spec() : code;
+  return base::StringPrintf("%c%s%u", file_url.is_valid() ? 'F' : 'C',
+                            host_id.id().c_str(), base::Hash(source));
+}
 
 // A handler for a single injection request. On creation this will send the
 // injection request to the renderer, and it will be destroyed after either the
@@ -270,6 +284,11 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.wants_result = (result_type == JSON_SERIALIZED_RESULT);
   params.user_gesture = user_gesture;
   params.css_origin = css_origin;
+
+  // Generate an injection key if this is a CSS injection from an extension
+  // (i.e. tabs.insertCSS).
+  if (host_id.type() == HostID::EXTENSIONS && script_type == CSS)
+    params.injection_key = GenerateInjectionKey(host_id, file_url, code);
 
   // Handler handles IPCs and deletes itself on completion.
   new Handler(script_observers_, web_contents_, params, frame_scope, frame_id,
