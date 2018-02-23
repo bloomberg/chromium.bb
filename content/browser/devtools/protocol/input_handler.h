@@ -15,7 +15,6 @@
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/gfx/geometry/size_f.h"
 
 namespace viz {
 class CompositorFrameMetadata;
@@ -159,7 +158,6 @@ class InputHandler : public DevToolsDomainHandler,
   base::circular_deque<std::unique_ptr<DispatchMouseEventCallback>>
       pending_mouse_callbacks_;
   float page_scale_factor_;
-  gfx::SizeF scrollable_viewport_size_;
   int last_id_;
   bool ignore_input_events_ = false;
   base::flat_map<int, blink::WebTouchPoint> touch_points_;
