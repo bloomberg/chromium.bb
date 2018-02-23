@@ -247,7 +247,7 @@ class ResizingVideoSource : public ::libaom_test::DummyVideoSource {
  public:
   ResizingVideoSource() {
     SetSize(kInitialWidth, kInitialHeight);
-    limit_ = 350;
+    limit_ = 250;
   }
   int flag_codec_;
   virtual ~ResizingVideoSource() {}
@@ -290,6 +290,9 @@ TEST_P(ResizeTest, TestExternalResizeWorks) {
   video.flag_codec_ = 0;
   cfg_.g_lag_in_frames = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
 
   for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
        info != frame_info_list_.end(); ++info) {
@@ -505,6 +508,9 @@ TEST_P(ResizeRealtimeTest, TestExternalResizeWorks) {
   mismatch_nframes_ = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
+
   for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
        info != frame_info_list_.end(); ++info) {
     const unsigned int frame = static_cast<unsigned>(info->pts);
@@ -706,6 +712,9 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = 48;
   cfg_.g_lag_in_frames = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+
+  // Check we decoded the same number of frames as we attempted to encode
+  ASSERT_EQ(frame_info_list_.size(), video.limit());
 }
 
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,

@@ -4313,6 +4313,7 @@ static void dump_ref_frame_images(AV1_COMP *cpi) {
 // LAST_FRAME -> LAST2_FRAME -> LAST3_FRAME
 // when the LAST_FRAME is updated.
 static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
+  // TODO(isbs): shift the scaled indices as well
   int ref_frame;
   for (ref_frame = LAST_REF_FRAMES - 1; ref_frame > 0; --ref_frame) {
     cpi->lst_fb_idxes[ref_frame] = cpi->lst_fb_idxes[ref_frame - 1];
@@ -4633,37 +4634,14 @@ static void scale_references(AV1_COMP *cpi) {
 static void release_scaled_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   int i;
-  if (cpi->oxcf.pass == 0) {
-    // Only release scaled references under certain conditions:
-    // if reference will be updated, or if scaled reference has same resolution.
-    int refresh[INTER_REFS_PER_FRAME];
-    refresh[0] = (cpi->refresh_last_frame) ? 1 : 0;
-    refresh[1] = refresh[2] = 0;
-    refresh[3] = (cpi->refresh_golden_frame) ? 1 : 0;
-    refresh[4] = (cpi->refresh_bwd_ref_frame) ? 1 : 0;
-    refresh[5] = (cpi->refresh_alt2_ref_frame) ? 1 : 0;
-    refresh[6] = (cpi->refresh_alt_ref_frame) ? 1 : 0;
-    for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-      const int idx = cpi->scaled_ref_idx[i - 1];
-      RefCntBuffer *const buf =
-          idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[idx] : NULL;
-      const YV12_BUFFER_CONFIG *const ref = get_ref_frame_buffer(cpi, i);
-      if (buf != NULL &&
-          (refresh[i - 1] || (buf->buf.y_crop_width == ref->y_crop_width &&
-                              buf->buf.y_crop_height == ref->y_crop_height))) {
-        --buf->ref_count;
-        cpi->scaled_ref_idx[i - 1] = INVALID_IDX;
-      }
-    }
-  } else {
-    for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
-      const int idx = cpi->scaled_ref_idx[i];
-      RefCntBuffer *const buf =
-          idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[idx] : NULL;
-      if (buf != NULL) {
-        --buf->ref_count;
-        cpi->scaled_ref_idx[i] = INVALID_IDX;
-      }
+  // TODO(isbs): only refresh the necessary frames, rather than all of them
+  for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
+    const int idx = cpi->scaled_ref_idx[i];
+    RefCntBuffer *const buf =
+        idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[idx] : NULL;
+    if (buf != NULL) {
+      --buf->ref_count;
+      cpi->scaled_ref_idx[i] = INVALID_IDX;
     }
   }
 }
