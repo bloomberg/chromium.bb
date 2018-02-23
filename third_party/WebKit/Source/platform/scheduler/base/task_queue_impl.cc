@@ -9,7 +9,7 @@
 
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
-#include "platform/scheduler/base/task_queue_manager.h"
+#include "platform/scheduler/base/task_queue_manager_impl.h"
 #include "platform/scheduler/base/time_domain.h"
 #include "platform/scheduler/base/work_queue.h"
 #include "platform/scheduler/util/tracing_helper.h"
@@ -38,7 +38,7 @@ const char* TaskQueue::PriorityToString(TaskQueue::QueuePriority priority) {
 
 namespace internal {
 
-TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
+TaskQueueImpl::TaskQueueImpl(TaskQueueManagerImpl* task_queue_manager,
                              TimeDomain* time_domain,
                              const TaskQueue::Spec& spec)
     : name_(spec.name),
@@ -54,9 +54,10 @@ TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
 TaskQueueImpl::~TaskQueueImpl() {
 #if DCHECK_IS_ON()
   base::AutoLock lock(any_thread_lock_);
-  // NOTE this check shouldn't fire because |TaskQueueManager::queues_|
-  // contains a strong reference to this TaskQueueImpl and the TaskQueueManager
-  // destructor calls UnregisterTaskQueue on all task queues.
+  // NOTE this check shouldn't fire because |TaskQueueManagerImpl::queues_|
+  // contains a strong reference to this TaskQueueImpl and the
+  // TaskQueueManagerImpl destructor calls UnregisterTaskQueue on all task
+  // queues.
   DCHECK(any_thread().task_queue_manager == nullptr)
       << "UnregisterTaskQueue must be called first!";
   DCHECK(main_thread_only().on_task_started_handler.is_null());
@@ -104,14 +105,14 @@ TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
   sequence_num = sequence_number;
 }
 
-TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
+TaskQueueImpl::AnyThread::AnyThread(TaskQueueManagerImpl* task_queue_manager,
                                     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager), time_domain(time_domain) {}
 
 TaskQueueImpl::AnyThread::~AnyThread() = default;
 
 TaskQueueImpl::MainThreadOnly::MainThreadOnly(
-    TaskQueueManager* task_queue_manager,
+    TaskQueueManagerImpl* task_queue_manager,
     TaskQueueImpl* task_queue,
     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager),
@@ -845,8 +846,8 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
 
     ScheduleDelayedWorkInTimeDomain(main_thread_only().time_domain->Now());
 
-    // Note the selector calls TaskQueueManager::OnTaskQueueEnabled which posts
-    // a DoWork if needed.
+    // Note the selector calls TaskQueueManagerImpl::OnTaskQueueEnabled which
+    // posts a DoWork if needed.
     main_thread_only()
         .task_queue_manager->main_thread_only()
         .selector.EnableQueue(this);
@@ -1007,7 +1008,8 @@ bool TaskQueueImpl::IsUnregistered() const {
   return !any_thread().task_queue_manager;
 }
 
-base::WeakPtr<TaskQueueManager> TaskQueueImpl::GetTaskQueueManagerWeakPtr() {
+base::WeakPtr<TaskQueueManagerImpl>
+TaskQueueImpl::GetTaskQueueManagerWeakPtr() {
   return main_thread_only().task_queue_manager->GetWeakPtr();
 }
 

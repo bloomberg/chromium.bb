@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "platform/scheduler/base/task_queue_manager_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/lazy_thread_controller_for_test.h"
 
@@ -17,11 +18,12 @@ namespace scheduler {
 
 namespace {
 
-class TaskQueueManagerForRendererSchedulerTest : public TaskQueueManager {
+// TODO(kraynov): Use CreateTaskQueueManagerForTest instead.
+class TaskQueueManagerForRendererSchedulerTest : public TaskQueueManagerImpl {
  public:
   explicit TaskQueueManagerForRendererSchedulerTest(
       std::unique_ptr<internal::ThreadController> thread_controller)
-      : TaskQueueManager(std::move(thread_controller)) {}
+      : TaskQueueManagerImpl(std::move(thread_controller)) {}
 };
 
 }  // namespace

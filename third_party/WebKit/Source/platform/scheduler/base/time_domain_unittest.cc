@@ -48,7 +48,7 @@ class MockTimeDomain : public TimeDomain {
   }
   const char* GetName() const override { return "Test"; }
   void OnRegisterWithTaskQueueManager(
-      TaskQueueManager* task_queue_manager) override {}
+      TaskQueueManagerImpl* task_queue_manager) override {}
 
   MOCK_METHOD2(RequestWakeUpAt,
                void(base::TimeTicks now, base::TimeTicks run_time));

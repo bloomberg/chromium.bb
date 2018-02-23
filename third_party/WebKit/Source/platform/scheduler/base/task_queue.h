@@ -34,7 +34,7 @@ class TaskQueueImpl;
 }
 
 class TimeDomain;
-class TaskQueueManager;
+class TaskQueueManagerImpl;
 
 class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   };
 
   // Unregisters the task queue after which no tasks posted to it will run and
-  // the TaskQueueManager's reference to it will be released soon.
+  // the TaskQueueManagerImpl's reference to it will be released soon.
   virtual void ShutdownTaskQueue();
 
   enum QueuePriority {
@@ -267,7 +267,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
  private:
   friend class internal::TaskQueueImpl;
-  friend class TaskQueueManager;
+  friend class TaskQueueManagerImpl;
 
   friend class task_queue_throttler_unittest::TaskQueueThrottlerTest;
 
@@ -288,7 +288,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   const base::PlatformThreadId thread_id_;
 
-  const base::WeakPtr<TaskQueueManager> task_queue_manager_;
+  const base::WeakPtr<TaskQueueManagerImpl> task_queue_manager_;
 
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_queue_shutdown_helper_;

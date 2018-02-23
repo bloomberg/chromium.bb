@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/task_queue_manager.h"
+#include "platform/scheduler/base/task_queue_manager_impl.h"
 
 #include <stddef.h>
 #include <memory>
@@ -48,15 +48,15 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace task_queue_manager_unittest {
 
-class TaskQueueManagerForTest : public TaskQueueManager {
+class TaskQueueManagerForTest : public TaskQueueManagerImpl {
  public:
   explicit TaskQueueManagerForTest(
       std::unique_ptr<internal::ThreadController> thread_controller)
-      : TaskQueueManager(std::move(thread_controller)) {}
+      : TaskQueueManagerImpl(std::move(thread_controller)) {}
 
-  using TaskQueueManager::ActiveQueuesCount;
-  using TaskQueueManager::QueuesToShutdownCount;
-  using TaskQueueManager::QueuesToDeleteCount;
+  using TaskQueueManagerImpl::ActiveQueuesCount;
+  using TaskQueueManagerImpl::QueuesToShutdownCount;
+  using TaskQueueManagerImpl::QueuesToDeleteCount;
 };
 
 class ThreadControllerForTest : public internal::ThreadControllerImpl {
@@ -154,7 +154,7 @@ class TaskQueueManagerTest : public ::testing::Test {
       if (manager_->main_thread_only()
               .selector.AllEnabledWorkQueuesAreEmpty()) {
         base::TimeTicks run_time;
-        if (manager_->real_time_domain()->NextScheduledRunTime(&run_time)) {
+        if (manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time)) {
           now_src_.SetNowTicks(run_time);
           per_run_time_callback.Run();
         } else {
@@ -1220,7 +1220,7 @@ TEST_F(TaskQueueManagerTest, TaskObserverRemoving) {
   base::RunLoop().RunUntilIdle();
 }
 
-void RemoveObserverTask(TaskQueueManager* manager,
+void RemoveObserverTask(TaskQueueManagerImpl* manager,
                         base::MessageLoop::TaskObserver* observer) {
   manager->RemoveTaskObserver(observer);
 }
@@ -1306,42 +1306,42 @@ TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime) {
 
   // With no delayed tasks.
   base::TimeTicks run_time;
-  EXPECT_FALSE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_FALSE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
 
   // With a non-delayed task.
   runners_[0]->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
-  EXPECT_FALSE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_FALSE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
 
   // With a delayed task.
   base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(50);
   runners_[0]->PostDelayedTask(FROM_HERE, base::BindRepeating(&NopTask),
                                expected_delay);
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks() + expected_delay, run_time);
 
   // With another delayed task in the same queue with a longer delay.
   runners_[0]->PostDelayedTask(FROM_HERE, base::BindRepeating(&NopTask),
                                base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks() + expected_delay, run_time);
 
   // With another delayed task in the same queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(20);
   runners_[0]->PostDelayedTask(FROM_HERE, base::BindRepeating(&NopTask),
                                expected_delay);
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks() + expected_delay, run_time);
 
   // With another delayed task in a different queue with a shorter delay.
   expected_delay = base::TimeDelta::FromMilliseconds(10);
   runners_[1]->PostDelayedTask(FROM_HERE, base::BindRepeating(&NopTask),
                                expected_delay);
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks() + expected_delay, run_time);
 
   // Test it updates as time progresses
   now_src_.Advance(expected_delay);
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks(), run_time);
 }
 
@@ -1360,7 +1360,7 @@ TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime_MultipleQueues) {
   runners_[0]->PostTask(FROM_HERE, base::BindRepeating(&NopTask));
 
   base::TimeTicks run_time;
-  EXPECT_TRUE(manager_->real_time_domain()->NextScheduledRunTime(&run_time));
+  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
   EXPECT_EQ(now_src_.NowTicks() + delay2, run_time);
 }
 
@@ -1680,7 +1680,7 @@ namespace {
 void ShutdownQueue(scoped_refptr<TaskQueue> queue) {
   queue->ShutdownTaskQueue();
 }
-}
+}  // namespace
 
 TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_InTasks) {
   Initialize(3u);
@@ -2353,11 +2353,11 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NoTaskRunning) {
 
 namespace {
 void CurrentlyExecutingTaskQueueTestTask(
-    TaskQueueManager* task_queue_manager,
+    TaskQueueManagerImpl* task_queue_manager,
     std::vector<internal::TaskQueueImpl*>* task_sources) {
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 }
-}
+}  // namespace
 
 TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_TaskRunning) {
   Initialize(2u);
@@ -2382,7 +2382,7 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_TaskRunning) {
 namespace {
 void RunloopCurrentlyExecutingTaskQueueTestTask(
     base::MessageLoop* message_loop,
-    TaskQueueManager* task_queue_manager,
+    TaskQueueManagerImpl* task_queue_manager,
     std::vector<internal::TaskQueueImpl*>* task_sources,
     std::vector<std::pair<base::Closure, TestTaskQueue*>>* tasks) {
   base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
@@ -2395,7 +2395,7 @@ void RunloopCurrentlyExecutingTaskQueueTestTask(
   base::RunLoop().RunUntilIdle();
   task_sources->push_back(task_queue_manager->currently_executing_task_queue());
 }
-}
+}  // namespace
 
 TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
   InitializeWithRealMessageLoop(3u);

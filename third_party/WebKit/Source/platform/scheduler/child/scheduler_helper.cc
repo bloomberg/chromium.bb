@@ -102,7 +102,7 @@ void SchedulerHelper::SweepCanceledDelayedTasks() {
 RealTimeDomain* SchedulerHelper::real_time_domain() const {
   CheckOnValidThread();
   DCHECK(task_queue_manager_);
-  return task_queue_manager_->real_time_domain();
+  return task_queue_manager_->GetRealTimeDomain();
 }
 
 void SchedulerHelper::RegisterTimeDomain(TimeDomain* time_domain) {

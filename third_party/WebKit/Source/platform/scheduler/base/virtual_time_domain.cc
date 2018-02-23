@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager.h"
+#include "platform/scheduler/base/task_queue_manager_impl.h"
 
 namespace blink {
 namespace scheduler {
@@ -17,7 +17,7 @@ VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time_ticks)
 VirtualTimeDomain::~VirtualTimeDomain() = default;
 
 void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
-    TaskQueueManager* task_queue_manager) {
+    TaskQueueManagerImpl* task_queue_manager) {
   task_queue_manager_ = task_queue_manager;
   DCHECK(task_queue_manager_);
 }
@@ -35,7 +35,7 @@ base::TimeTicks VirtualTimeDomain::Now() const {
 void VirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
                                         base::TimeTicks run_time) {
   // We don't need to do anything here because the caller of AdvanceTo is
-  // responsible for calling TaskQueueManager::MaybeScheduleImmediateWork if
+  // responsible for calling TaskQueueManagerImpl::MaybeScheduleImmediateWork if
   // needed.
 }
 
