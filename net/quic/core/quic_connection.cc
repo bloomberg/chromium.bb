@@ -2205,14 +2205,7 @@ void QuicConnection::TearDownLocalConnectionState(
   }
   connected_ = false;
   DCHECK(visitor_ != nullptr);
-  // TODO(rtenneti): crbug.com/546668. A temporary fix. Added a check for null
-  // |visitor_| to fix crash bug. Delete |visitor_| check and histogram after
-  // fix is merged.
-  if (visitor_ != nullptr) {
-    visitor_->OnConnectionClosed(error, error_details, source);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicCloseConnection.NullVisitor", true);
-  }
+  visitor_->OnConnectionClosed(error, error_details, source);
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnConnectionClosed(error, error_details, source);
   }
