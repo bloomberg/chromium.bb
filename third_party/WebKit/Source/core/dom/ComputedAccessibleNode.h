@@ -55,8 +55,13 @@ class ComputedAccessibleNode : public ScriptWrappable {
   bool atomic(bool& is_null) const;
   bool busy(bool& is_null) const;
   bool disabled(bool& is_null) const;
-  bool modal(bool& is_null) const;
   bool readOnly(bool& is_null) const;
+  bool expanded(bool& is_null) const;
+  bool modal(bool& is_null) const;
+  bool multiline(bool& is_null) const;
+  bool multiselectable(bool& is_null) const;
+  bool required(bool& is_null) const;
+  bool selected(bool& is_null) const;
 
   int32_t colCount(bool& is_null) const;
   int32_t colIndex(bool& is_null) const;

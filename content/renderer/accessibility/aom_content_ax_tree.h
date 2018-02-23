@@ -49,6 +49,9 @@ class AomContentAxTree : public blink::WebComputedAXTree {
   bool GetRestrictionAttributeForAXNode(int32_t,
                                         blink::WebAOMBoolAttribute,
                                         bool* out_param);
+  bool GetStateAttributeForAXNode(int32_t,
+                                  blink::WebAOMBoolAttribute,
+                                  bool* out_param);
   ui::AXTree tree_;
   RenderFrameImpl* render_frame_;
   DISALLOW_COPY_AND_ASSIGN(AomContentAxTree);

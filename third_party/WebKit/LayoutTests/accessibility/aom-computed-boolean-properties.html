@@ -70,3 +70,26 @@ promise_test(async function(t) {
 }, "ComputedAccessibleNode.readOnly");
 
 </script>
+
+<form>
+  <input id="native-required" type="text" required><br>
+  <div id="aria-required" type="text" aria-required="true"></div>
+  <div id="optional" type="text" aria-required="false"></div>
+</form>
+
+<script>
+
+promise_test(async function(t) {
+  var nativeRequired = document.getElementById("native-required");
+  var ariaRequired = document.getElementById("aria-required");
+  var optional = document.getElementById("optional");
+  var nativeCaxNode = await window.getComputedAccessibleNode(nativeRequired);
+  var ariaCaxNode = await window.getComputedAccessibleNode(ariaRequired);
+  var optionalCaxNode = await window.getComputedAccessibleNode(optional);
+
+  assert_equals(nativeCaxNode.required, true);
+  assert_equals(ariaCaxNode.required, true);
+  assert_equals(optionalCaxNode.required, false);
+}, "ComputedAccessibleNode.required");
+
+</script>

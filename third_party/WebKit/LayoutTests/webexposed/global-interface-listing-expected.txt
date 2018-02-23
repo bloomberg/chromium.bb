@@ -1083,11 +1083,14 @@ interface ComputedAccessibleNode
     getter colIndex
     getter colSpan
     getter disabled
+    getter expanded
     getter firstChild
     getter keyShortcuts
     getter lastChild
     getter level
     getter modal
+    getter multiline
+    getter multiselectable
     getter name
     getter nextSibling
     getter parent
@@ -1095,11 +1098,13 @@ interface ComputedAccessibleNode
     getter posInSet
     getter previousSibling
     getter readOnly
+    getter required
     getter role
     getter roleDescription
     getter rowCount
     getter rowIndex
     getter rowSpan
+    getter selected
     getter setSize
     getter valueMax
     getter valueMin

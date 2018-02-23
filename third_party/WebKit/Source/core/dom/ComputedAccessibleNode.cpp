@@ -114,13 +114,11 @@ bool ComputedAccessibleNode::busy(bool& is_null) const {
 }
 
 bool ComputedAccessibleNode::disabled(bool& is_null) const {
-  bool out;
-  is_null = true;
-  if (tree_->GetBoolAttributeForAXNode(
-          ax_id_, WebAOMBoolAttribute::AOM_ATTR_DISABLED, &out)) {
-    is_null = false;
-  }
-  return out;
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_DISABLED, is_null);
+}
+
+bool ComputedAccessibleNode::expanded(bool& is_null) const {
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_EXPANDED, is_null);
 }
 
 bool ComputedAccessibleNode::modal(bool& is_null) const {
@@ -128,13 +126,27 @@ bool ComputedAccessibleNode::modal(bool& is_null) const {
 }
 
 bool ComputedAccessibleNode::readOnly(bool& is_null) const {
-  bool out;
-  is_null = true;
-  if (tree_->GetBoolAttributeForAXNode(
-          ax_id_, WebAOMBoolAttribute::AOM_ATTR_READONLY, &out)) {
-    is_null = false;
-  }
-  return out;
+  return GetBoolAttribute(WebAOMBoolAttribute::AOM_ATTR_READONLY, is_null);
+}
+
+bool ComputedAccessibleNode::multiline(bool& is_null) const {
+  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_MULTILINE,
+                          is_null);
+}
+
+bool ComputedAccessibleNode::multiselectable(bool& is_null) const {
+  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_MULTISELECTABLE,
+                          is_null);
+}
+
+bool ComputedAccessibleNode::required(bool& is_null) const {
+  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_REQUIRED,
+                          is_null);
+}
+
+bool ComputedAccessibleNode::selected(bool& is_null) const {
+  return GetBoolAttribute(blink::WebAOMBoolAttribute::AOM_ATTR_SELECTED,
+                          is_null);
 }
 
 const String ComputedAccessibleNode::autocomplete() const {

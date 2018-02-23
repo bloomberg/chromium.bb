@@ -101,6 +101,23 @@ ax::mojom::Restriction GetCorrespondingRestrictionFlag(
   }
 }
 
+ax::mojom::State GetCorrespondingStateFlag(blink::WebAOMBoolAttribute attr) {
+  switch (attr) {
+    case blink::WebAOMBoolAttribute::AOM_ATTR_EXPANDED:
+      return ax::mojom::State::kExpanded;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_MULTILINE:
+      return ax::mojom::State::kMultiline;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_MULTISELECTABLE:
+      return ax::mojom::State::kMultiselectable;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_REQUIRED:
+      return ax::mojom::State::kRequired;
+    case blink::WebAOMBoolAttribute::AOM_ATTR_SELECTED:
+      return ax::mojom::State::kSelected;
+    default:
+      return ax::mojom::State::kNone;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -134,10 +151,12 @@ bool AomContentAxTree::GetBoolAttributeForAXNode(
   ui::AXNode* node = tree_.GetFromId(ax_id);
   if (!node)
     return false;
-  if (attr == blink::WebAOMBoolAttribute::AOM_ATTR_DISABLED ||
-      attr == blink::WebAOMBoolAttribute::AOM_ATTR_READONLY) {
+  if (GetCorrespondingRestrictionFlag(attr) != ax::mojom::Restriction::kNone) {
     return GetRestrictionAttributeForAXNode(ax_id, attr, out_param);
+  } else if (GetCorrespondingStateFlag(attr) != ax::mojom::State::kNone) {
+    return GetStateAttributeForAXNode(ax_id, attr, out_param);
   }
+
   ax::mojom::BoolAttribute ax_attr = GetCorrespondingAXAttribute(attr);
   return node->data().GetBoolAttribute(ax_attr, out_param);
 }
@@ -189,6 +208,18 @@ bool AomContentAxTree::GetFloatAttributeForAXNode(
     return false;
   ax::mojom::FloatAttribute ax_attr = GetCorrespondingAXAttribute(attr);
   return node->data().GetFloatAttribute(ax_attr, out_param);
+}
+
+bool AomContentAxTree::GetStateAttributeForAXNode(
+    int32_t ax_id,
+    blink::WebAOMBoolAttribute attr,
+    bool* out_param) {
+  ui::AXNode* node = tree_.GetFromId(ax_id);
+  if (!node)
+    return false;
+
+  *out_param = node->data().HasState(GetCorrespondingStateFlag(attr));
+  return true;
 }
 
 bool AomContentAxTree::GetStringAttributeForAXNode(

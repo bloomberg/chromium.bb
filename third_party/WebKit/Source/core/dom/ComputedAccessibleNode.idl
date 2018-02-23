@@ -12,8 +12,13 @@
     readonly attribute boolean? atomic;
     readonly attribute boolean? busy;
     readonly attribute boolean? disabled;
+    readonly attribute boolean? expanded;
     readonly attribute boolean? modal;
+    readonly attribute boolean? multiline;
+    readonly attribute boolean? multiselectable;
     readonly attribute boolean? readOnly;
+    readonly attribute boolean? required;
+    readonly attribute boolean? selected;
 
     readonly attribute long? colCount;
     readonly attribute unsigned long? colIndex;
