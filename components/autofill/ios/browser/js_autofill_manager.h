@@ -49,6 +49,9 @@
 // Marks up the form with autofill field prediction data (diagnostic tool).
 - (void)fillPredictionData:(NSString*)dataString;
 
+// Adds a delay between filling the form fields.
+- (void)addJSDelay;
+
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

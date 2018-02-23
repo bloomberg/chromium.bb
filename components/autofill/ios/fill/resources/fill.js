@@ -306,10 +306,7 @@ __gCrWeb.fill.createAndDispatchHTMLEvent = function(
   // update the backend store.
   changeEvent.simulated = true;
 
-  // A timer is used to avoid reentering JavaScript evaluation.
-  window.setTimeout(function() {
-    element.dispatchEvent(changeEvent);
-  }, 0);
+  element.dispatchEvent(changeEvent);
 };
 
 

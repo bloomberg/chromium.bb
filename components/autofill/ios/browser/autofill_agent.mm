@@ -716,6 +716,7 @@ void GetFormAndField(autofill::FormData* form,
   if (pageProcessed_)
     return;
   pageProcessed_ = YES;
+  [jsAutofillManager_ addJSDelay];
 
   popupDelegate_.reset();
   suggestionsAvailableCompletion_ = nil;

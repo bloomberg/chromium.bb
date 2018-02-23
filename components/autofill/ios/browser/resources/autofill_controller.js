@@ -140,6 +140,16 @@ __gCrWeb.autofill.EXTRACT_MASK_OPTIONS = 1 << 2;
 __gCrWeb.autofill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 
 /**
+ * The delay between filling two fields
+ *
+ * Page need time to propagate the events after setting one field. Add a delay
+ * between filling two fields. In milliseconds.
+ *
+ * @type {number}
+ */
+__gCrWeb.autofill.delayBetweenFieldFillingMs = 50;
+
+/**
  * The last element that was autofilled.
  *
  * @type {Element}
@@ -152,6 +162,15 @@ __gCrWeb.autofill.lastAutoFilledElement = null;
  * @type {boolean}
  */
 __gCrWeb.autofill.styleInjected = false;
+
+/**
+ * Sets the delay between fields when autofilling forms.
+ *
+ * @param {number} delay The new delay in milliseconds.
+ */
+__gCrWeb.autofill.setDelay = function(delay) {
+  __gCrWeb.autofill.delayBetweenFieldFillingMs = delay;
+};
 
 /**
  * Searches an element's ancestors to see if the element is inside a <form> or
@@ -607,6 +626,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     controlElements =
         getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
   }
+  var delay = 0;
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
     if (!__gCrWeb.autofill.isAutofillableElement(element)) {
@@ -630,14 +650,19 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     if (__gCrWeb.autofill.isTextInput(element) ||
         __gCrWeb.autofill.isTextAreaElement(element) ||
         __gCrWeb.autofill.isSelectElement(element)) {
-      __gCrWeb.fill.setInputElementValue(value, element, true);
+      (function (_element, _value, _delay) {
+        window.setTimeout(function() {
+          __gCrWeb.fill.setInputElementValue(_value, _element, true);
+          _element.setAttribute('chrome-autofilled', '');
+          _element.isAutofilled = true;
+          _element.addEventListener('input', controlElementInputListener);
+        }, _delay);})(element, value, delay);
+      delay = delay + __gCrWeb.autofill.delayBetweenFieldFillingMs;
+    } else if (__gCrWeb.autofill.isCheckableElement(element)) {
+      // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
+      // true. |is_checked| is not currently passed in by the caller.
     }
-    // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
-    // true. |is_checked| is not currently passed in by the caller.
 
-    element.setAttribute('chrome-autofilled', '');
-    element.isAutofilled = true;
-    element.addEventListener('input', controlElementInputListener);
   }
 
   if (form) {
@@ -676,26 +701,33 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
     controlElements =
         getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
   }
+  var delay = 0;
 
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
     if (!element.isAutofilled || element.disabled) continue;
 
+    var value = null;
     if (__gCrWeb.autofill.isTextInput(element) ||
         __gCrWeb.autofill.isTextAreaElement(element)) {
-      __gCrWeb.fill.setInputElementValue('', element, true);
+      value = '';
     } else if (__gCrWeb.autofill.isSelectElement(element)) {
       // Reset to the first index.
       // TODO(bondd): Store initial values and reset to the correct one here.
-      __gCrWeb.fill.setInputElementValue(
-          element.options[0].value, element, true);
+      value = element.options[0].value;
     } else if (__gCrWeb.autofill.isCheckableElement(element)) {
       // TODO(bondd): Handle checkable elements. They aren't properly supported
       // by iOS Autofill yet.
     }
-
-    element.removeAttribute('chrome-autofilled');
-    element.isAutofilled = false;
+    if (value !== null) {
+      (function (_element, _value, _delay) {
+        window.setTimeout(function() {
+          __gCrWeb.fill.setInputElementValue(_value, _element, true);
+          _element.removeAttribute('chrome-autofilled');
+          _element.isAutofilled = false;
+        }, _delay);})(element, value, delay);
+      delay = delay + __gCrWeb.autofill.delayBetweenFieldFillingMs;
+    }
   }
 };
 
