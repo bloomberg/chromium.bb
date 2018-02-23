@@ -3130,7 +3130,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (experimental_flags::IsRecentTabsUIRebootEnabled()) {
     // New RecentTabs UIReboot coordinator.
     RecentTabsTableCoordinator* recentTabsCoordinator =
-        [[RecentTabsTableCoordinator alloc] initWithBaseViewController:self];
+        [[RecentTabsTableCoordinator alloc]
+            initWithBaseViewController:self
+                          browserState:_browserState];
+    recentTabsCoordinator.loader = self;
     recentTabsCoordinator.dispatcher = self.dispatcher;
     self.recentTabsCoordinator = recentTabsCoordinator;
   } else {

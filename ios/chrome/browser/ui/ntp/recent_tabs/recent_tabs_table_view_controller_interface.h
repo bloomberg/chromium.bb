@@ -22,13 +22,6 @@ class TabRestoreService;
 // RecentTabs TableViewController public interface.
 @protocol RecentTabsTableViewControllerInterface<NSObject>
 
-// Designated initializer. The controller opens link with |loader|.
-// |browserState|
-// and |loader| must not be nil.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              loader:(id<UrlLoader>)loader
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
-
 // Refreshes the table view to match the current sync state.
 - (void)refreshUserState:(SessionsSyncUserState)state;
 
