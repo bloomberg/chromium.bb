@@ -932,7 +932,8 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
             rb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
             ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0, ACCT_STR) +
         SGRPROJ_PRJ_MIN0;
-    sgrproj_info->xqd[1] = 0;
+    sgrproj_info->xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - sgrproj_info->xqd[0],
+                                 SGRPROJ_PRJ_MIN1, SGRPROJ_PRJ_MAX1);
   } else {
     sgrproj_info->xqd[0] =
         aom_read_primitive_refsubexpfin(

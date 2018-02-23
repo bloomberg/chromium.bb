@@ -752,7 +752,6 @@ void decode_xq(const int *xqd, int *xq, const sgr_params_type *params) {
     xq[0] = 0;
     xq[1] = (1 << SGRPROJ_PRJ_BITS) - xqd[1];
   } else if (params->r1 == 0) {
-    assert(xqd[1] == 0);
     xq[0] = xqd[0];
     xq[1] = 0;
   } else {

@@ -450,7 +450,8 @@ void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
                    SGRPROJ_PRJ_MAX1);
   } else if (params->r1 == 0) {
     xqd[0] = clamp(xq[0], SGRPROJ_PRJ_MIN0, SGRPROJ_PRJ_MAX0);
-    xqd[1] = 0;
+    xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xqd[0], SGRPROJ_PRJ_MIN1,
+                   SGRPROJ_PRJ_MAX1);
   } else {
     xqd[0] = clamp(xq[0], SGRPROJ_PRJ_MIN0, SGRPROJ_PRJ_MAX0);
     xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xqd[0] - xq[1], SGRPROJ_PRJ_MIN1,
