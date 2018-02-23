@@ -1519,6 +1519,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_handle.h",
     "service_worker/service_worker_info.cc",
     "service_worker/service_worker_info.h",
+    "service_worker/service_worker_installed_script_reader.cc",
+    "service_worker/service_worker_installed_script_reader.h",
     "service_worker/service_worker_installed_scripts_sender.cc",
     "service_worker/service_worker_installed_scripts_sender.h",
     "service_worker/service_worker_internals_ui.cc",
