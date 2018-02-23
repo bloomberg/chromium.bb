@@ -102,6 +102,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
+#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -436,9 +437,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     RepostFormTabHelperDelegate,
                                     SideSwipeControllerDelegate,
                                     SigninPresenter,
-                                    SKStoreProductViewControllerDelegate,
                                     SnapshotGeneratorDelegate,
-                                    StoreKitLauncher,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
                                     TabHistoryPresentation,
@@ -609,6 +608,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for the Download Manager UI.
   DownloadManagerCoordinator* _downloadManagerCoordinator;
+
+  // Coordinator for presenting SKStoreProductViewController.
+  StoreKitCoordinator* _storeKitCoordinator;
 
   // Coordinator for the language selection UI.
   LanguageSelectionCoordinator* _languageSelectionCoordinator;
@@ -1015,6 +1017,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
+
+    _storeKitCoordinator =
+        [[StoreKitCoordinator alloc] initWithBaseViewController:self];
 
     _languageSelectionCoordinator =
         [[LanguageSelectionCoordinator alloc] initWithBaseViewController:self];
@@ -2967,11 +2972,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
-  // BrowserViewController presents SKStoreKitViewController on behalf of a
-  // tab.
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
   if (tabHelper)
-    tabHelper->SetLauncher(self);
+    tabHelper->SetLauncher(_storeKitCoordinator);
   tab.webState->SetDelegate(_webStateDelegate.get());
   // BrowserViewController owns the coordinator that displays the Sad Tab.
   if (!SadTabTabHelper::FromWebState(tab.webState)) {
@@ -5300,27 +5303,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
           didFinishWithResult:(MFMailComposeResult)result
                         error:(NSError*)error {
   [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - SKStoreProductViewControllerDelegate
-
-- (void)productViewControllerDidFinish:
-    (SKStoreProductViewController*)viewController {
-  [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark - StoreKitLauncher methods
-
-- (void)openAppStore:(NSString*)appId {
-  if (![appId length])
-    return;
-  NSDictionary* product =
-      @{SKStoreProductParameterITunesItemIdentifier : appId};
-  SKStoreProductViewController* storeViewController =
-      [[SKStoreProductViewController alloc] init];
-  [storeViewController setDelegate:self];
-  [storeViewController loadProductWithParameters:product completionBlock:nil];
-  [self presentViewController:storeViewController animated:YES completion:nil];
 }
 
 #pragma mark - TabDialogDelegate methods
