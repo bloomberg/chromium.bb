@@ -17,6 +17,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -305,6 +306,16 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
   if (host_.find('*') != std::string::npos)
     return PARSE_ERROR_INVALID_HOST_WILDCARD;
 
+  if (!host_.empty()) {
+    // If |host_| is present (i.e., isn't a wildcard), we need to canonicalize
+    // it.
+    url::CanonHostInfo host_info;
+    host_ = net::CanonicalizeHost(host_, &host_info);
+    // net::CanonicalizeHost() returns an empty string on failure.
+    if (host_.empty())
+      return PARSE_ERROR_INVALID_HOST;
+  }
+
   // Null characters are not allowed in hosts.
   if (host_.find('\0') != std::string::npos)
     return PARSE_ERROR_INVALID_HOST;
@@ -437,7 +448,10 @@ bool URLPattern::MatchesScheme(base::StringPiece test) const {
 }
 
 bool URLPattern::MatchesHost(base::StringPiece host) const {
-  // TODO(devlin): This is a bit sad. Parsing urls is expensive.
+  // TODO(devlin): This is a bit sad. Parsing urls is expensive. However, it's
+  // important that we do this conversion to a GURL in order to canonicalize the
+  // host (the pattern's host_ already is canonicalized from Parse()). We can't
+  // just do string comparison.
   return MatchesHost(
       GURL(base::StringPrintf("%s%s%s/", url::kHttpScheme,
                               url::kStandardSchemeSeparator, host.data())));
