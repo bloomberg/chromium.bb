@@ -77,6 +77,7 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
             host()->compositor()->root_layer()->subpixel_position_offset());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
   aura::WindowEventDispatcher* dispatcher = host()->dispatcher();
 
@@ -98,6 +99,7 @@ TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
   // Pointer moves should be routed normally after commit.
   EXPECT_FALSE(dispatcher_api.HoldingPointerMoves());
 }
+#endif
 
 TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
   CounterEventRewriter event_rewriter;

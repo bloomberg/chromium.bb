@@ -297,7 +297,9 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
       base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization,
       ui::IsPixelCanvasRecordingEnabled(), external_begin_frames_enabled,
       force_software_compositor));
+#if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
+#endif
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
