@@ -134,6 +134,7 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
+         prefs->GetBoolean(prefs::kDockedMagnifierEnabled) ||
          prefs->GetBoolean(prefs::kNightLightEnabled);
 }
 

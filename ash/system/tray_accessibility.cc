@@ -10,7 +10,9 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/ash_view_ids.h"
+#include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/accessibility_types.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -58,6 +60,7 @@ enum AccessibilityState {
   A11Y_STICKY_KEYS = 1 << 11,
   A11Y_TAP_DRAGGING = 1 << 12,
   A11Y_SELECT_TO_SPEAK = 1 << 13,
+  A11Y_DOCKED_MAGNIFIER = 1 << 14,
 };
 
 uint32_t GetAccessibilityState() {
@@ -91,8 +94,11 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_STICKY_KEYS;
   if (delegate->IsTapDraggingEnabled())
     state |= A11Y_TAP_DRAGGING;
-  if (controller->IsSelectToSpeakEnabled()) {
+  if (controller->IsSelectToSpeakEnabled())
     state |= A11Y_SELECT_TO_SPEAK;
+  if (switches::IsDockedMagnifierEnabled() &&
+      Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
+    state |= A11Y_DOCKED_MAGNIFIER;
   }
   return state;
 }
@@ -174,6 +180,13 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
                                             screen_magnifier_enabled_);
 
+  if (switches::IsDockedMagnifierEnabled()) {
+    docked_magnifier_enabled_ =
+        Shell::Get()->docked_magnifier_controller()->GetEnabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(docked_magnifier_view_,
+                                              docked_magnifier_enabled_);
+  }
+
   autoclick_enabled_ = controller->IsAutoclickEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(autoclick_view_,
                                             autoclick_enabled_);
@@ -247,6 +260,16 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_);
+
+  if (switches::IsDockedMagnifierEnabled()) {
+    docked_magnifier_enabled_ =
+        Shell::Get()->docked_magnifier_controller()->GetEnabled();
+    docked_magnifier_view_ = AddScrollListCheckableItem(
+        kSystemMenuAccessibilityScreenMagnifierIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER),
+        docked_magnifier_enabled_);
+  }
 
   autoclick_enabled_ = controller->IsAutoclickEnabled();
   autoclick_view_ = AddScrollListCheckableItem(
@@ -338,6 +361,15 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_MagnifierDisabled")
                      : UserMetricsAction("StatusArea_MagnifierEnabled"));
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
+  } else if (switches::IsDockedMagnifierEnabled() &&
+             view == docked_magnifier_view_) {
+    auto* docked_magnifier_controller =
+        Shell::Get()->docked_magnifier_controller();
+    const bool new_state = !docked_magnifier_controller->GetEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_DockedMagnifierEnabled")
+                     : UserMetricsAction("StatusArea_DockedMagnifierDisabled"));
+    docked_magnifier_controller->SetEnabled(new_state);
   } else if (large_cursor_view_ && view == large_cursor_view_) {
     bool new_state = !controller->IsLargeCursorEnabled();
     RecordAction(new_state

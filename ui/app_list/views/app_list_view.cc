@@ -1102,6 +1102,14 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
     case AppListViewState::HALF:
       target_state_y = std::max(0, display_height - kHalfAppListHeight);
       break;
+    case AppListViewState::FULLSCREEN_ALL_APPS:
+    case AppListViewState::FULLSCREEN_SEARCH:
+      // The ChromeVox panel as well as the Docked Magnifier viewport affect the
+      // workarea of the display. We need to account for that when applist is in
+      // fullscreen to avoid being shown below them.
+      target_state_y = GetDisplayNearestView().work_area().y();
+      break;
+
     case AppListViewState::CLOSED:
       // The close animation is handled by the delegate.
       return;

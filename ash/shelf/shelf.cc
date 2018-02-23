@@ -201,6 +201,12 @@ int Shelf::GetAccessibilityPanelHeight() const {
                                : 0;
 }
 
+int Shelf::GetDockedMagnifierHeight() const {
+  return shelf_layout_manager_
+             ? shelf_layout_manager_->docked_magnifier_height()
+             : 0;
+}
+
 gfx::Rect Shelf::GetIdealBounds() {
   return shelf_layout_manager_->GetIdealBounds();
 }

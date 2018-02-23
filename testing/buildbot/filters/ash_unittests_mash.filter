@@ -40,6 +40,13 @@
 -DisplayManagerTest.UpdateMouseCursorAfterRotateZoom
 -DisplayManagerTestDisableMultiMirroring.SoftwareMirroringWithCompositingCursor
 
+# TODO: Docked magnifier needs reflector to work in mash.
+# https://crbug.com/814481.
+-DockedMagnifierTest.AddRemoveDisplays
+-DockedMagnifierTest.DisplaysWorkAreas
+-DockedMagnifierTest.TextInputFieldEvents
+-DockedMagnifierTest.TransformSimple
+
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -DragWindowResizerTest.CursorDeviceScaleFactor
 
