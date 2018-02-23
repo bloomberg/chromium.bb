@@ -8,8 +8,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/canvas_painter.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/test/menu_test_utils.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/vector_icons.h"
 
 namespace views {
 
@@ -141,6 +145,71 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   ASSERT_EQ(MenuItemView::kEmptyMenuItemViewID, empty_item->id());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU),
             empty_item->title());
+}
+
+class MenuItemViewPaintUnitTest : public ViewsTestBase {
+ public:
+  MenuItemViewPaintUnitTest() {}
+  ~MenuItemViewPaintUnitTest() override {}
+
+  MenuItemView* menu_item_view() { return menu_item_view_; }
+  MenuRunner* menu_runner() { return menu_runner_.get(); }
+  Widget* widget() { return widget_.get(); }
+
+  // ViewsTestBase implementation.
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    menu_delegate_.reset(new test::TestMenuDelegate);
+    menu_item_view_ = new MenuItemView(menu_delegate_.get());
+
+    widget_.reset(new Widget);
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    widget_->Init(params);
+    widget_->Show();
+
+    menu_runner_.reset(new MenuRunner(menu_item_view_, 0));
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    ViewsTestBase::TearDown();
+  }
+
+ private:
+  // Owned by MenuRunner.
+  MenuItemView* menu_item_view_;
+
+  std::unique_ptr<test::TestMenuDelegate> menu_delegate_;
+  std::unique_ptr<MenuRunner> menu_runner_;
+  std::unique_ptr<Widget> widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewPaintUnitTest);
+};
+
+// Provides assertion coverage for painting minor text and icons.
+TEST_F(MenuItemViewPaintUnitTest, MinorTextAndIconAssertionCoverage) {
+  auto AddItem = [this](auto label, auto minor_label, auto minor_icon) {
+    menu_item_view()->AddMenuItemAt(
+        0, 1000, base::ASCIIToUTF16(label), base::string16(), minor_label,
+        minor_icon, gfx::ImageSkia(), views::MenuItemView::NORMAL,
+        ui::NORMAL_SEPARATOR);
+  };
+  AddItem("No minor content", base::string16(), nullptr);
+  AddItem("Minor text only", base::ASCIIToUTF16("minor text"), nullptr);
+  AddItem("Minor icon only", base::string16(), &views::kMenuCheckIcon);
+  AddItem("Minor text and icon", base::ASCIIToUTF16("minor text"),
+          &views::kMenuCheckIcon);
+
+  menu_runner()->RunMenuAt(widget(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                           ui::MENU_SOURCE_KEYBOARD);
+
+  SkBitmap bitmap;
+  gfx::Size size = menu_item_view()->GetMirroredBounds().size();
+  ui::CanvasPainter canvas_painter(&bitmap, size, 1.f, SK_ColorTRANSPARENT,
+                                   false);
+  menu_item_view()->GetSubmenu()->Paint(
+      PaintInfo::CreateRootPaintInfo(canvas_painter.context(), size));
 }
 
 }  // namespace views

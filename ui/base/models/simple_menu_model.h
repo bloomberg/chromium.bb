@@ -128,6 +128,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   // Sets the minor text for the item at |index|.
   void SetMinorText(int index, const base::string16& minor_text);
 
+  // Sets the minor icon for the item at |index|.
+  void SetMinorIcon(int index, const gfx::VectorIcon& minor_icon);
+
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
 
@@ -144,6 +147,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   base::string16 GetLabelAt(int index) const override;
   base::string16 GetSublabelAt(int index) const override;
   base::string16 GetMinorTextAt(int index) const override;
+  const gfx::VectorIcon* GetMinorIconAt(int index) const override;
   bool IsItemDynamicAt(int index) const override;
   bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const override;
   bool IsItemCheckedAt(int index) const override;
@@ -187,6 +191,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     base::string16 label;
     base::string16 sublabel;
     base::string16 minor_text;
+    const gfx::VectorIcon* minor_icon = nullptr;
     gfx::Image icon;
     int group_id = -1;
     MenuModel* submenu = nullptr;

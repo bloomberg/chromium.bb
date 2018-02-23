@@ -89,14 +89,10 @@ class MenuItemViewTestInsert : public MenuTestBase {
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(2, submenu->GetMenuItemCount());
 
-    inserted_item_ = menu()->AddMenuItemAt(INSERT_INDEX,
-                                           1000,
-                                           ASCIIToUTF16("inserted item"),
-                                           base::string16(),
-                                           base::string16(),
-                                           gfx::ImageSkia(),
-                                           views::MenuItemView::NORMAL,
-                                           ui::NORMAL_SEPARATOR);
+    inserted_item_ = menu()->AddMenuItemAt(
+        INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
+        base::string16(), nullptr, gfx::ImageSkia(),
+        views::MenuItemView::NORMAL, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();
 
@@ -188,14 +184,10 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
 
   // Insert item at INSERT_INDEX.
   void Step2() {
-    inserted_item_ = menu()->AddMenuItemAt(INSERT_INDEX,
-                                           1000,
-                                           ASCIIToUTF16("inserted item"),
-                                           base::string16(),
-                                           base::string16(),
-                                           gfx::ImageSkia(),
-                                           views::MenuItemView::NORMAL,
-                                           ui::NORMAL_SEPARATOR);
+    inserted_item_ = menu()->AddMenuItemAt(
+        INSERT_INDEX, 1000, ASCIIToUTF16("inserted item"), base::string16(),
+        base::string16(), nullptr, gfx::ImageSkia(),
+        views::MenuItemView::NORMAL, ui::NORMAL_SEPARATOR);
     ASSERT_TRUE(inserted_item_);
     menu()->ChildrenChanged();
 
