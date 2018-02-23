@@ -61,6 +61,8 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
   // Returns the printer with |id| from storage if it could be found.
   base::Optional<sync_pb::PrinterSpecifics> GetPrinter(
       const std::string& id) const;
+  // Returns whether or not the printer with |id| is contained in the storage.
+  bool HasPrinter(const std::string& id) const;
 
   class Observer {
    public:

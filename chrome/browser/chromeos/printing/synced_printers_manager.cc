@@ -141,7 +141,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
         PrinterConfigurer::SetupFingerprint(printer);
 
     // Register this printer if it's the first time we're using it.
-    if (GetPrinterLocked(printer.id()) == nullptr) {
+    if (!IsPrinterRegistered(printer.id())) {
       UpdateConfiguredPrinterLocked(printer);
     }
   }
@@ -189,6 +189,14 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     base::Optional<sync_pb::PrinterSpecifics> printer =
         sync_bridge_->GetPrinter(printer_id);
     return printer.has_value() ? SpecificsToPrinter(*printer) : nullptr;
+  }
+
+  // Determines whether or not the printer with the given |printer_id| has
+  // already been registered.
+  bool IsPrinterRegistered(const std::string& printer_id) {
+    return enterprise_printers_.find(printer_id) !=
+               enterprise_printers_.end() ||
+           sync_bridge_->HasPrinter(printer_id);
   }
 
   void UpdateConfiguredPrinterLocked(const Printer& printer_arg) {
