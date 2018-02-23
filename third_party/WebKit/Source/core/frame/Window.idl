@@ -174,7 +174,7 @@
     [MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
 
     // Accessibility Object Model
-    // https://github.com/WICG/aom/blob/master/explainer.md
+    // https://github.com/WICG/aom/blob/HEAD/explainer.md
     [RuntimeEnabled=AccessibilityObjectModel, CallWith=ScriptState] Promise<ComputedAccessibleNode> getComputedAccessibleNode(Element element);
 
     // Non-standard APIs
