@@ -13,5 +13,10 @@
 @synthesize countOfBytesReceived = _countOfBytesReceived;
 @synthesize countOfBytesExpectedToReceive = _countOfBytesExpectedToReceive;
 @synthesize state = _state;
+@synthesize installDriveButtonVisible = _installDriveButtonVisible;
+
+- (void)setInstallDriveButtonVisible:(BOOL)visible animated:(BOOL)animated {
+  _installDriveButtonVisible = visible;
+}
 
 @end
