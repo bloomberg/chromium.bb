@@ -132,17 +132,16 @@ void ResetScreen::Show() {
     // availability test to initialize the dialog. This avoids a race condition
     // where the powerwash dialog gets shown immediately after reboot before the
     // init job to determine update availability has completed.
-    GetContextEditor().SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable,
-                                  true);
+    context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, true);
   } else {
     // If a TPM firmware update hasn't previously been requested, check the
     // system to see whether to offer the checkbox to update TPM firmware. Note
     // that due to the asynchronous availability check, the decision might not
-    // be available immediately, so set a timeout of 5 seconds.
+    // be available immediately, so set a timeout of a couple seconds.
     tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
         base::BindOnce(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(5));
+        base::TimeDelta::FromSeconds(10));
   }
 
   context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked,
@@ -222,7 +221,7 @@ void ResetScreen::OnPowerwash() {
     DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
   } else if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
     VLOG(1) << "Starting TPM firmware update";
-    // Re-check availability with a timeout of 5 seconds. This addresses the
+    // Re-check availability with a couple seconds timeout. This addresses the
     // case where the powerwash dialog gets shown immediately after reboot and
     // the decision on whether the update is available is not known immediately.
     tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
@@ -238,7 +237,7 @@ void ResetScreen::OnPowerwash() {
               ->GetSessionManagerClient()
               ->StartTPMFirmwareUpdate("first_boot");
         }),
-        base::TimeDelta::FromSeconds(5));
+        base::TimeDelta::FromSeconds(10));
   } else {
     VLOG(1) << "Starting Powerwash";
     DBusThreadManager::Get()->GetSessionManagerClient()->StartDeviceWipe();
@@ -248,7 +247,11 @@ void ResetScreen::OnPowerwash() {
 void ResetScreen::OnRestart() {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+  if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
+    prefs->SetBoolean(prefs::kFactoryResetTPMFirmwareUpdateRequested, true);
+  } else {
+    prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+  }
   prefs->CommitPendingWrite();
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
