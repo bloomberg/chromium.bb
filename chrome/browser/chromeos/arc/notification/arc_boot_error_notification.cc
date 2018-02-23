@@ -49,8 +49,6 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
   }
   message_center::ButtonInfo storage_settings(
       l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_BUTTON));
-  storage_settings.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_STORAGE_MANAGER_BUTTON);
   message_center::RichNotificationData optional_fields;
   optional_fields.buttons.push_back(storage_settings);
 
