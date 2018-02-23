@@ -83,10 +83,7 @@ void OpenNewWindowForProfile(Profile* profile) {
 }
 
 void DeleteProfileAtPath(base::FilePath file_path,
-                         content::WebUI* web_ui,
                          ProfileMetrics::ProfileDelete deletion_source) {
-  DCHECK(web_ui);
-
   if (!profiles::IsMultipleProfilesEnabled())
     return;
   g_browser_process->profile_manager()->MaybeScheduleProfileForDeletion(

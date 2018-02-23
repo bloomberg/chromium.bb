@@ -36184,6 +36184,9 @@ Called by update_net_trust_anchors.py.-->
     browsing window of the profile was still open, profile deletion was
     cancelled.
   </int>
+  <int value="5" label="Dice web signout">
+    The user signed out on the web, and Chrome signout was prohibited.
+  </int>
 </enum>
 
 <enum name="ProfileDesktopMenu">

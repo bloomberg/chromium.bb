@@ -447,7 +447,6 @@ void SigninCreateProfileHandler::ShowProfileCreationError(
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile) {
     webui::DeleteProfileAtPath(profile->GetPath(),
-                               web_ui(),
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
@@ -717,7 +716,6 @@ void SigninCreateProfileHandler::CancelProfileRegistration(
   // RegisterAndInitSync() won't be called, so the cleanup must be done here.
   profile_path_being_created_.clear();
   webui::DeleteProfileAtPath(new_profile->GetPath(),
-                             web_ui(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
 }
 

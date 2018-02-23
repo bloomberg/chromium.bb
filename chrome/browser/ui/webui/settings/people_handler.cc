@@ -640,7 +640,6 @@ void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
 
   if (delete_profile) {
     webui::DeleteProfileAtPath(profile_->GetPath(),
-                               web_ui(),
                                ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
 }

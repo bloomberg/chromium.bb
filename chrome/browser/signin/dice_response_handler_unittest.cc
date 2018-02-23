@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -140,6 +141,7 @@ class DiceResponseHandlerTest : public testing::Test,
         reconcilor_unblocked_count_(0) {
     loop_.SetTaskRunner(task_runner_);
     DCHECK_EQ(task_runner_, base::ThreadTaskRunnerHandle::Get());
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     signin_client_.SetURLRequestContext(request_context_getter_.get());
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -156,7 +158,7 @@ class DiceResponseHandlerTest : public testing::Test,
     dice_response_handler_ = std::make_unique<DiceResponseHandler>(
         &signin_client_, &signin_manager_, &token_service_,
         &account_tracker_service_, account_reconcilor_.get(),
-        &about_signin_internals_);
+        &about_signin_internals_, temp_dir_.GetPath());
 
     account_tracker_service_.Initialize(&signin_client_);
     account_reconcilor_->AddObserver(this);
@@ -211,6 +213,7 @@ class DiceResponseHandlerTest : public testing::Test,
   void OnUnblockReconcile() override { ++reconcilor_unblocked_count_; }
 
   base::MessageLoop loop_;
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;

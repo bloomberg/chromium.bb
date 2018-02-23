@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
       content::NotificationService::AllSources());
   content::WindowedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
-  webui::DeleteProfileAtPath(original_browser->profile()->GetPath(), &web_ui,
+  webui::DeleteProfileAtPath(original_browser->profile()->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   open_observer.Wait();
   close_observer.Wait();
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
       content::NotificationService::AllSources());
   content::WindowedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
-  webui::DeleteProfileAtPath(original_browser->profile()->GetPath(), &web_ui,
+  webui::DeleteProfileAtPath(original_browser->profile()->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   open_observer.Wait();
   close_observer.Wait();
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteInactiveProfile) {
 
   content::BrowsingDataRemoverCompletionInhibitor inhibitor(
       content::BrowserContext::GetBrowsingDataRemover(additional_profile));
-  webui::DeleteProfileAtPath(additional_profile->GetPath(), &web_ui,
+  webui::DeleteProfileAtPath(additional_profile->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   inhibitor.BlockUntilNearCompletion();
   inhibitor.ContinueToCompletion();

@@ -13,12 +13,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -129,7 +131,8 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         AccountTrackerServiceFactory::GetForProfile(profile),
         AccountReconcilorFactory::GetForProfile(profile),
-        AboutSigninInternalsFactory::GetForProfile(profile));
+        AboutSigninInternalsFactory::GetForProfile(profile),
+        profile->GetPath());
   }
 };
 
@@ -234,13 +237,15 @@ DiceResponseHandler::DiceResponseHandler(
     ProfileOAuth2TokenService* profile_oauth2_token_service,
     AccountTrackerService* account_tracker_service,
     AccountReconcilor* account_reconcilor,
-    AboutSigninInternals* about_signin_internals)
+    AboutSigninInternals* about_signin_internals,
+    const base::FilePath& profile_path)
     : signin_manager_(signin_manager),
       signin_client_(signin_client),
       token_service_(profile_oauth2_token_service),
       account_tracker_service_(account_tracker_service),
       account_reconcilor_(account_reconcilor),
-      about_signin_internals_(about_signin_internals) {
+      about_signin_internals_(about_signin_internals),
+      profile_path_(profile_path) {
   DCHECK(signin_client_);
   DCHECK(signin_manager_);
   DCHECK(token_service_);
@@ -385,11 +390,18 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
         continue;
 
       VLOG(1) << "[Dice] Signing out all accounts.";
-      signin_manager_->SignOutAndRemoveAllAccounts(
-          signin_metrics::SERVER_FORCED_DISABLE,
-          signin_metrics::SignoutDelete::IGNORE_METRIC);
       // Cancel all Dice token fetches currently in flight.
       token_fetchers_.clear();
+      if (signin_manager_->IsSignoutProhibited()) {
+        // If signout is not allowed, delete the profile.
+        DCHECK(profiles::IsMultipleProfilesEnabled());
+        webui::DeleteProfileAtPath(
+            profile_path_, ProfileMetrics::DELETE_PROFILE_DICE_WEB_SIGNOUT);
+      } else {
+        signin_manager_->SignOutAndRemoveAllAccounts(
+            signin_metrics::SERVER_FORCED_DISABLE,
+            signin_metrics::SignoutDelete::IGNORE_METRIC);
+      }
       return;
     } else {
       accounts_to_revoke.push_back(signed_out_account);

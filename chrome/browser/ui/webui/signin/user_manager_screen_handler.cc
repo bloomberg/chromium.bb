@@ -537,7 +537,6 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   // The callback is run if the only profile has been deleted, and a new
   // profile has been created to replace it.
   webui::DeleteProfileAtPath(profile_path,
-                             web_ui(),
                              ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }
 
