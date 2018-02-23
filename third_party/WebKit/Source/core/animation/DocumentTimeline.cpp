@@ -117,6 +117,7 @@ Animation* DocumentTimeline::Play(AnimationEffectReadOnly* child) {
 }
 
 HeapVector<Member<Animation>> DocumentTimeline::getAnimations() {
+  document_->UpdateStyleAndLayoutTree();
   HeapVector<Member<Animation>> animations;
   for (const auto& animation : animations_) {
     if (animation->effect() &&

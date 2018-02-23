@@ -62,8 +62,9 @@ Animation* ElementAnimation::animate(ScriptState* script_state,
 
 HeapVector<Member<Animation>> ElementAnimation::getAnimations(
     Element& element) {
-  HeapVector<Member<Animation>> animations;
+  element.GetDocument().UpdateStyleAndLayoutTreeForNode(&element);
 
+  HeapVector<Member<Animation>> animations;
   if (!element.HasAnimations())
     return animations;
 
