@@ -16,45 +16,42 @@ namespace {
 
 ui::TouchDeviceTransform GetDeviceTransform(
     const ui::TouchscreenDevice& touchscreen,
-    display::Display display) {
-  gfx::RectF display_bounds = gfx::RectF(gfx::Rect(display.GetSizeInPixel()));
+    int64_t display_id,
+    display::Display::Rotation rotation,
+    const gfx::Rect& native_bounds_in_pixel) {
   gfx::SizeF touchscreen_size = gfx::SizeF(touchscreen.size);
 
   ui::TouchDeviceTransform touch_device_transform;
-  touch_device_transform.display_id = display.id();
+  touch_device_transform.display_id = display_id;
   touch_device_transform.device_id = touchscreen.id;
-  touch_device_transform.transform.Translate(display_bounds.x(),
-                                             display_bounds.y());
+  touch_device_transform.transform.Translate(native_bounds_in_pixel.x(),
+                                             native_bounds_in_pixel.y());
 
   float touchscreen_width = touchscreen_size.width();
   float touchscreen_height = touchscreen_size.height();
 
   // If the display orientation is rotated between portrait and landscape,
   // the width and height of the touchscreen must be swapped as well.
-  if (display.rotation() == display::Display::Rotation::ROTATE_90 ||
-      display.rotation() == display::Display::Rotation::ROTATE_270) {
+  if (rotation == display::Display::Rotation::ROTATE_90 ||
+      rotation == display::Display::Rotation::ROTATE_270) {
     touchscreen_width = touchscreen_size.height();
     touchscreen_height = touchscreen_size.width();
   }
 
   touch_device_transform.transform.Scale(
-      display_bounds.width() / touchscreen_width,
-      display_bounds.height() / touchscreen_height);
+      native_bounds_in_pixel.width() / touchscreen_width,
+      native_bounds_in_pixel.height() / touchscreen_height);
 
   return touch_device_transform;
 }
 
 }  // namespace
 
-CastTouchDeviceManager::CastTouchDeviceManager(CastScreen* cast_screen)
-    : cast_screen_(cast_screen) {
+CastTouchDeviceManager::CastTouchDeviceManager() {
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
-  cast_screen_->AddObserver(this);
-  UpdateTouchscreenConfiguration();
 }
 
 CastTouchDeviceManager::~CastTouchDeviceManager() {
-  cast_screen_->RemoveObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
@@ -62,32 +59,28 @@ void CastTouchDeviceManager::OnTouchscreenDeviceConfigurationChanged() {
   UpdateTouchscreenConfiguration();
 }
 
-void CastTouchDeviceManager::OnDisplayAdded(
-    const display::Display& new_display) {
-  UpdateTouchscreenConfiguration();
-}
-
-void CastTouchDeviceManager::OnDisplayRemoved(
-    const display::Display& old_display) {
-  UpdateTouchscreenConfiguration();
-}
-
-void CastTouchDeviceManager::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {
+void CastTouchDeviceManager::OnDisplayConfigured(
+    int64_t display_id,
+    display::Display::Rotation rotation,
+    const gfx::Rect& native_bounds_in_pixel) {
+  display_id_ = display_id;
+  display_rotation_ = rotation;
+  native_display_bounds_in_pixel_ = native_bounds_in_pixel;
   UpdateTouchscreenConfiguration();
 }
 
 void CastTouchDeviceManager::UpdateTouchscreenConfiguration() {
-  display::Display primary_display = cast_screen_->GetPrimaryDisplay();
   const std::vector<ui::TouchscreenDevice>& touchscreen_devices =
       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
+  if (native_display_bounds_in_pixel_ == gfx::Rect())
+    return;  // Waiting for display configuration.
   std::vector<ui::TouchDeviceTransform> touch_device_transforms;
 
   // All touchscreens are mapped onto primary display.
   for (const auto& touchscreen : touchscreen_devices) {
     touch_device_transforms.push_back(
-        GetDeviceTransform(touchscreen, primary_display));
+        GetDeviceTransform(touchscreen, display_id_, display_rotation_,
+                           native_display_bounds_in_pixel_));
   }
 
   ui::DeviceDataManager::GetInstance()->ConfigureTouchDevices(

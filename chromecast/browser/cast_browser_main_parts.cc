@@ -89,7 +89,6 @@
 // header, but is exported to allow injecting the overlay-composited
 // callback.
 #include "chromecast/browser/cast_display_configurator.h"
-#include "chromecast/browser/cast_touch_device_manager.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"  // nogncheck
@@ -455,8 +454,6 @@ int CastBrowserMainParts::PreCreateThreads() {
   display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
   display_configurator_ = std::make_unique<CastDisplayConfigurator>(
       cast_browser_process_->cast_screen());
-  touch_device_manager_ = std::make_unique<CastTouchDeviceManager>(
-      cast_browser_process_->cast_screen());
 #endif  // defined(USE_AURA)
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
@@ -616,7 +613,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   window_manager_.reset();
 
   display_configurator_.reset();
-  touch_device_manager_.reset();
 
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/display/display.h"
 #include "ui/display/types/native_display_observer.h"
 
 namespace display {
@@ -26,6 +27,7 @@ namespace chromecast {
 class CastScreen;
 
 namespace shell {
+class CastTouchDeviceManager;
 
 // The CastDisplayConfigurator class ensures native displays are initialized and
 // configured properly on platforms that need that (e.g. GBM/DRM graphics via
@@ -42,6 +44,8 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void OnConfigurationChanged() override;
   void OnDisplaySnapshotsInvalidated() override {}
 
+  void ConfigureDisplayFromCommandLine();
+
  private:
   void OnDisplaysAcquired(
       const std::vector<display::DisplaySnapshot*>& displays);
@@ -49,8 +53,13 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
                            const display::DisplayMode* mode,
                            const gfx::Point& origin,
                            bool success);
+  void UpdateScreen(int64_t display_id,
+                    const gfx::Rect& bounds,
+                    float device_scale_factor,
+                    display::Display::Rotation rotation);
 
   std::unique_ptr<display::NativeDisplayDelegate> delegate_;
+  std::unique_ptr<CastTouchDeviceManager> touch_device_manager_;
   CastScreen* const cast_screen_;
 
   base::WeakPtrFactory<CastDisplayConfigurator> weak_factory_;
