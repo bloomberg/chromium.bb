@@ -240,6 +240,14 @@ def run_executable(cmd, env, stdoutfile=None):
   cmd[0] = cmd[0].replace('/', os.path.sep)
   cmd = fix_python_path(cmd)
 
+  # Warm vpython virtualenv cache. Some tests are sensitive to vpython startup
+  # time when it has a cold cache (crbug.com/804174).
+  vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
+  subprocess.check_call([
+    vpython, '-vpython-spec', os.path.join(ROOT_DIR, '.vpython'),
+    '-vpython-tool', 'install',
+  ])
+
   print('Additional test environment:\n%s\n'
         'Command: %s\n' % (
         '\n'.join('    %s=%s' %
