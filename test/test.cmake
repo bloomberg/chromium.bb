@@ -513,6 +513,30 @@ function (setup_aom_test_targets)
   add_dependencies(runtests ${test_targets})
 
   set(AOM_APP_TARGETS ${AOM_APP_TARGETS} PARENT_SCOPE)
+
+  # Collect all variables containing libaom test source files.
+  get_cmake_property(all_cmake_vars VARIABLES)
+  foreach (var ${all_cmake_vars})
+    if ("${var}" MATCHES "_TEST_" AND NOT
+        "${var}" MATCHES "_DATA_\|_COMPILED\|_HOSTING\|_CMAKE_\|INTRA_PRED")
+      list(APPEND aom_test_source_vars ${var})
+    endif ()
+  endforeach ()
+
+  # Libaom_test_srcs.txt generation.
+  set(libaom_test_srcs_txt_file "${AOM_CONFIG_DIR}/libaom_test_srcs.txt")
+  file(WRITE "${libaom_test_srcs_txt_file}"
+       "# This file is generated. DO NOT EDIT.\n")
+
+  # Static source file list first.
+  foreach (aom_test_source_var ${aom_test_source_vars})
+    foreach (file ${${aom_test_source_var}})
+      if (NOT "${file}" MATCHES "${AOM_CONFIG_DIR}")
+        string(REPLACE "${AOM_ROOT}/" "" file "${file}")
+        file(APPEND "${libaom_test_srcs_txt_file}" "${file}\n")
+      endif ()
+    endforeach ()
+  endforeach ()
 endfunction ()
 
 endif ()  # AOM_TEST_TEST_CMAKE_
