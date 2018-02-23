@@ -21,9 +21,11 @@
 
 
 # This table contains braille codes for a part of the International Phonetic Alphabet (IPA, 2005).
-# WARNING! The IPA symbols in this table might conflict with other tables.
-#          (e.g. conflict: θ (Unicode 03B8) is the greek letter theta, french braille code is different between greek and phonetic)
-# WARNING! This table is not intended to be included in other tables. It serves as a reference to pick up some symbols for local braille codes.
+# WARNING! The IPA symbols in this table might conflict with other tables. (e.g. conflict: θ
+#          (Unicode 03B8) is the greek letter theta, french braille code is different between greek
+#          and phonetic)
+# WARNING! This table is not intended to be included in other tables. The symbol definitions that
+#          are safe to include in other tables are collected in IPA-unicode-range.uti.
 
 
 # --------REFERENCES--------
@@ -41,10 +43,12 @@
 
 
 #--------NOTES--------
-# Some lines are commented for reference:
+# This table includes:
+#   - Symbols defined in IPA-unicode-range.uti
 #   - Characters include in latinLetterDef6Dots.uti table (a, b, c...). 
 #   - Some current symbols (e.g. point '.')
 #   - 'Phonetic and Phonemic Enclosures'
+# Some lines are commented for reference:
 #   - Tricky character compositions, see end of 'Tones and Word Accents'
 # Some IPA unicode symbols are not present in the reference document so there is no braille equivalent.
 #   Example: \X02D4 for 'MODIFIER LETTER UP TACK',
@@ -53,49 +57,51 @@
 
 # Last updated on January 23, 2018
 
+# IPA symbols that do not conflict with other tables
+include IPA-unicode-range.uti
 
 #--------PULMONIC CONSONANTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
-# sign \X0070 1234      # p - lowercase p - voiceless bilabial plosive
-# sign \X0062 12        # b - lowercase b - voiced bilabial plosive
-# sign \X0074 2345      # t - lowercase t - voiceless alveolar plosive
-# sign \X0064 145       # d - lowercase d - voiced alveolar plosive
-# sign \X0063 14        # c - lowercase c - voiceless palatal plosive
-# sign \X006B 13        # k - lowercase k - voiceless velar plosive
-# sign \X0067 1245      # g - lowercase g - voiced velar plosive (alternate glyph)
-# sign \X0071 12345     # q - lowercase q - voiceless uvular plosive
-# sign \X006D 134       # m - lowercase m - voiced bilabial nasal
-# sign \X006E 1345      # n - lowercase n - voiced alveolar nasal
-# sign \X0072 1235      # r - lowercase r - voiced alveolar trill
+sign \X0070 1234        # p - lowercase p - voiceless bilabial plosive
+sign \X0062 12          # b - lowercase b - voiced bilabial plosive
+sign \X0074 2345        # t - lowercase t - voiceless alveolar plosive
+sign \X0064 145         # d - lowercase d - voiced alveolar plosive
+sign \X0063 14          # c - lowercase c - voiceless palatal plosive
+sign \X006B 13          # k - lowercase k - voiceless velar plosive
+sign \X0067 1245        # g - lowercase g - voiced velar plosive (alternate glyph)
+sign \X0071 12345       # q - lowercase q - voiceless uvular plosive
+sign \X006D 134         # m - lowercase m - voiced bilabial nasal
+sign \X006E 1345        # n - lowercase n - voiced alveolar nasal
+sign \X0072 1235        # r - lowercase r - voiced alveolar trill
 sign \X2C71 235-1236    #  (UTF-16) - right-hook v - labiodental flap
 sign \XF25F 235-1236    #  (UTF-16) - right-hook v - labiodental flap
 sign \X03B2 46-12       # β - beta - voiced bilabial fricative (WARNING: greek letter)
-# sign \X0066 124       # f - lowercase f - voiceless labiodental fricative
-# sign \X0076 1236      # v - lowercase v - voiced labiodental fricative
+sign \X0066 124         # f - lowercase f - voiceless labiodental fricative
+sign \X0076 1236        # v - lowercase v - voiced labiodental fricative
 sign \X03B8 46-1456     # θ - theta - voiceless dental fricative (WARNING: greek letter)
-# sign \X0073 234       # s - lowercase s - voiceless alveolar fricative
-# sign \X007A 1356      # z - lowercase z - voiced alveolar fricative
+sign \X0073 234         # s - lowercase s - voiceless alveolar fricative
+sign \X007A 1356        # z - lowercase z - voiced alveolar fricative
 sign \X00E7 235-14      # ç - c cedilla - voiceless palatal fricative
-# sign \X0078 1346      # x - lowercase x - voiceless velar fricative
+sign \X0078 1346        # x - lowercase x - voiceless velar fricative
 sign \X03C7 46-12346    # χ - chi - voiceless uvular fricative (WARNING: greek letter)
-# sign \X0068 125       # h - lowercase h - voiceless glottal fricative
-# sign \X006A 245       # j - lowercase j - voiced palatal approximant
-# sign \X006C 123       # l - lowercase l - voiced alveolar lateral approximant
+sign \X0068 125         # h - lowercase h - voiceless glottal fricative
+sign \X006A 245         # j - lowercase j - voiced palatal approximant
+sign \X006C 123         # l - lowercase l - voiced alveolar lateral approximant
 
 
 #--------OTHER PULMONIC CONSONANTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
-# sign \X0077 2456      # w - lowercase w - voiced labial-velar approximant
+sign \X0077 2456        # w - lowercase w - voiced labial-velar approximant
 
 
 #--------VOWELS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
-# sign \X0069 24        # i - lowercase i - close front unrounded vowel
-# sign \X0065 15        # e - lowercase e - close-mid front unrounded vowel
-# sign \X0061 1         # a - lowercase a - open front unrounded vowel
-# sign \X006F 135       # o - lowercase o - close-mid back rounded vowel
-# sign \X0075 136       # u - lowercase u - close back rounded vowel
-# sign \X0079 13456     # y - lowercase y - close front rounded vowel
+sign \X0069 24          # i - lowercase i - close front unrounded vowel
+sign \X0065 15          # e - lowercase e - close-mid front unrounded vowel
+sign \X0061 1           # a - lowercase a - open front unrounded vowel
+sign \X006F 135         # o - lowercase o - close-mid back rounded vowel
+sign \X0075 136         # u - lowercase u - close back rounded vowel
+sign \X0079 13456       # y - lowercase y - close front rounded vowel
 sign \X00F8 1256        # ø - slashed o - close-mid front rounded vowel
 sign \X0153 246         # œ - lowercase o-e ligature - open-mid front rounded vowel
 sign \X00E6 146         # æ - ash - near-open front unrounded vowel
@@ -103,8 +109,8 @@ sign \X00E6 146         # æ - ash - near-open front unrounded vowel
 
 #--------SUPRASEGMENTALS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
-# sign \X002E 3         # . - full stop - syllable break
-# sign \X007C 456-1256  # | - vertical line - minor (foot) group
+sign \X002E 3           # . - full stop - syllable break
+sign \X007C 456-1256    # | - vertical line - minor (foot) group
 
 #--------TONES AND WORD ACCENTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
@@ -116,6 +122,6 @@ sign \X00E6 146         # æ - ash - near-open front unrounded vowel
 #   sign \X02E8 + \X02E5 + \X02E8 456-256 # ˨˥˨ - rising-falling (151) tone bar - rising-falling contour tone
 
 #--------PHONETIC AND PHONEMIC ENCLOSURES--------
-# sign \X005B 45-12356  # [ - left square bracket - begin phonetic transcription
-# sign \X005D 45-23456  # ] - right square bracket - end phonetic transcription
-# sign \X002F 45-34     # / - slash - begin/end phonemic transcription
+sign \X005B 45-12356    # [ - left square bracket - begin phonetic transcription
+sign \X005D 45-23456    # ] - right square bracket - end phonetic transcription
+sign \X002F 45-34       # / - slash - begin/end phonemic transcription

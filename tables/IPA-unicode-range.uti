@@ -21,7 +21,7 @@
 
 # This table contains braille codes for a part of the International Phonetic Alphabet (IPA, 2005) :
 # The IPA symbols in this table do not conflict with other tables
-# The others IPA symbols might conflict with other tables are inclued in the 'IPA_extend.utb' table.
+# The others IPA symbols might conflict with other tables are inclued in the 'IPA.utb' table.
 # (e.g. conflict: θ (Unicode 03B8) is the greek letter theta, french braille code is different between greek and phonetic)
  
 

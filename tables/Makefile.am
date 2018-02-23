@@ -201,8 +201,8 @@ table_files = \
 	hyph_ru.dic \
 	hyph_sv_SE.dic \
 	hy.tbl \
-	IPA_base.utb \
-	IPA_extend.utb \
+	IPA-unicode-range.uti \
+	IPA.utb \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
 	is.ctb \

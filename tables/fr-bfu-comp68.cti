@@ -274,8 +274,8 @@ noback math \x2151 16-34-246 ⅑ 1/9
 noback math \x2152 16-34-16-3456 ⅒ 1/10
 
 # Alphabet phonétique international
-include IPA_base.utb
-# ajouts issus de la table IPA_extend.utb :
+include IPA-unicode-range.uti
+# ajouts issus de la table IPA.utb :
 # Conflit avec une autre table ? noback sign \X00F8 1256 # ø - slashed o - close-mid front rounded vowel
 # Conflit avec une autre table ? noback sign \X00E6 146  # æ - ash - near-open front unrounded vowel
 # ATTENTION ! Le symbole ci-dessous est très utilisé en phonétique (son anglais 'th' dans 'the' par exemple) mais le code braille phonétique entre en conflit avec la lettre grecque thêta.
