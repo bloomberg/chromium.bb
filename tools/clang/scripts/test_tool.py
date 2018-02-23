@@ -45,6 +45,8 @@ def _NumberOfTestsToString(tests):
 
 def _ApplyTool(tools_clang_scripts_directory,
                tool_to_test,
+               tool_path,
+               tool_args,
                test_directory_for_tool,
                actual_files,
                apply_edits):
@@ -69,6 +71,12 @@ def _ApplyTool(tools_clang_scripts_directory,
         extra_run_tool_args = extra_run_tool_args_file.readlines()
         args.extend([arg.strip() for arg in extra_run_tool_args])
     args.extend(['--tool', tool_to_test, '-p', test_directory_for_tool])
+
+    if tool_path:
+      args.extend(['--tool-path', tool_path])
+    if tool_args:
+      for arg in tool_args:
+        args.append('--tool-arg=%s' % arg)
 
     args.extend(actual_files)
     processes.append(subprocess.Popen(args, stdout=subprocess.PIPE))
@@ -123,6 +131,12 @@ def main(argv):
       action='store_true',
       help='Applies the edits to the original test files and compares the '
            'reformatted new files with the expected files.')
+  parser.add_argument(
+      '--tool-arg', nargs='?', action='append',
+      help='optional arguments passed to the tool')
+  parser.add_argument(
+      '--tool-path', nargs='?',
+      help='optional path to the tool directory')
   parser.add_argument('tool_name',
                       nargs=1,
                       help='Clang tool to be tested.')
@@ -174,6 +188,7 @@ def main(argv):
   # Run the tool.
   os.chdir(test_directory_for_tool)
   exitcode = _ApplyTool(tools_clang_scripts_directory, tool_to_test,
+                        args.tool_path, args.tool_arg,
                         test_directory_for_tool, actual_files,
                         args.apply_edits)
   if (exitcode != 0):
