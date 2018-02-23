@@ -107,6 +107,8 @@ void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
 }
 
 void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
+  if (touch_)
+    touch_->RemoveTouchPoints(window_map_[widget]);
   window_map_.erase(widget);
 }
 
@@ -272,6 +274,21 @@ void WaylandConnection::Capabilities(void* data,
     }
   } else if (connection->keyboard_) {
     connection->keyboard_.reset();
+  }
+  if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
+    if (!connection->touch_) {
+      wl_touch* touch = wl_seat_get_touch(connection->seat_.get());
+      if (!touch) {
+        LOG(ERROR) << "Failed to get wl_touch from seat";
+        return;
+      }
+      connection->touch_ = base::MakeUnique<WaylandTouch>(
+          touch, base::Bind(&WaylandConnection::DispatchUiEvent,
+                            base::Unretained(connection)));
+      connection->touch_->set_connection(connection);
+    }
+  } else if (connection->touch_) {
+    connection->touch_.reset();
   }
   connection->ScheduleFlush();
 }

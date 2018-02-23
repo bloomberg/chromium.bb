@@ -32,6 +32,8 @@ source_set("wayland") {
     "wayland_pointer.h",
     "wayland_surface_factory.cc",
     "wayland_surface_factory.h",
+    "wayland_touch.cc",
+    "wayland_touch.h",
     "wayland_window.cc",
     "wayland_window.h",
     "xdg_surface_wrapper.cc",
@@ -91,6 +93,7 @@ source_set("wayland_unittests") {
     "wayland_surface_factory_unittest.cc",
     "wayland_test.cc",
     "wayland_test.h",
+    "wayland_touch_unittest.cc",
     "wayland_window_unittest.cc",
   ]
 
