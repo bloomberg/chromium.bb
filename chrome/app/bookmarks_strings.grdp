@@ -204,7 +204,7 @@
   </message>
   <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to go to a more advanced bookmark editor">
-      Advanced
+      More...
     </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up the editor).">
       Choose another folder...
@@ -212,7 +212,7 @@
   </if>
   <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="In Title Case: Title of the button the user can click to go to a more advanced bookmark editor">
-      Advanced
+      More...
     </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up the editor).">
       Choose Another Folder...
