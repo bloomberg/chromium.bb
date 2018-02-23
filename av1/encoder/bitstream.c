@@ -2836,8 +2836,12 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 #if CONFIG_FRAME_SIZE
   int num_bits_width = 16;
   int num_bits_height = 16;
-  int max_frame_width = cpi->oxcf.width;
-  int max_frame_height = cpi->oxcf.height;
+  int max_frame_width = cpi->oxcf.forced_max_frame_width
+                            ? cpi->oxcf.forced_max_frame_width
+                            : cpi->oxcf.width;
+  int max_frame_height = cpi->oxcf.forced_max_frame_height
+                             ? cpi->oxcf.forced_max_frame_height
+                             : cpi->oxcf.height;
 
   seq_params->num_bits_width = num_bits_width;
   seq_params->num_bits_height = num_bits_height;

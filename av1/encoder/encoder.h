@@ -136,9 +136,13 @@ typedef enum {
 
 typedef struct AV1EncoderConfig {
   BITSTREAM_PROFILE profile;
-  aom_bit_depth_t bit_depth;     // Codec bit-depth.
-  int width;                     // width of data passed to the compressor
-  int height;                    // height of data passed to the compressor
+  aom_bit_depth_t bit_depth;  // Codec bit-depth.
+  int width;                  // width of data passed to the compressor
+  int height;                 // height of data passed to the compressor
+#if CONFIG_FRAME_SIZE
+  int forced_max_frame_width;   // forced maximum width of frame (if != 0)
+  int forced_max_frame_height;  // forced maximum height of frame (if != 0)
+#endif
   unsigned int input_bit_depth;  // Input bit depth.
   double init_framerate;         // set to passed in framerate
   int64_t target_bandwidth;      // bandwidth to be used in bits per second

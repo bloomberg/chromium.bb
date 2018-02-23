@@ -282,6 +282,20 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int g_h;
 
+  /*!\brief Forced maximum width of the frame
+   *
+   * If this value is non-zero then it is used to force the maximum frame
+   * width written in write_sequence_header().
+   */
+  unsigned int g_forced_max_frame_width;
+
+  /*!\brief Forced maximum height of the frame
+   *
+   * If this value is non-zero then it is used to force the maximum frame
+   * height written in write_sequence_header().
+   */
+  unsigned int g_forced_max_frame_height;
+
   /*!\brief Bit-depth of the codec
    *
    * This value identifies the bit_depth of the codec,
