@@ -384,13 +384,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int nav_entry_id() const { return nav_entry_id_; }
   void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }
 
-  // A NavigationRequest for the pending navigation in this frame, if any. This
-  // is cleared when the navigation commits.
+  // A NavigationRequest for a pending cross-document navigation in this frame,
+  // if any. This is cleared when the navigation commits.
   NavigationRequest* navigation_request() { return navigation_request_.get(); }
+
+  // A NavigationRequest for a pending same-document navigation in this frame,
+  // if any. This is cleared when the navigation commits.
+  NavigationRequest* same_document_navigation_request() {
+    return same_document_navigation_request_.get();
+  }
 
   // Returns the NavigationHandleImpl stored in the NavigationRequest returned
   // by GetNavigationRequest(), if any.
   NavigationHandleImpl* GetNavigationHandle();
+
+  // Resets the NavigationRequests stored in this RenderFrameHost.
+  void ResetNavigationRequests();
 
   // Called when a navigation is ready to commit in this
   // RenderFrameHost. Transfers ownership of the NavigationRequest associated
@@ -1308,8 +1317,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       frame_resource_coordinator_;
 
   // Holds a NavigationRequest while waiting for the navigation it is tracking
-  // to commit.
+  // to commit. This NavigationRequest is for a cross-document navigation.
   std::unique_ptr<NavigationRequest> navigation_request_;
+
+  // Holds a same-document NavigationRequest while waiting for the navigation it
+  // is tracking to commit.
+  std::unique_ptr<NavigationRequest> same_document_navigation_request_;
 
   // The associated WebUIImpl and its type. They will be set if the current
   // document is from WebUI source. Otherwise they will be null and
