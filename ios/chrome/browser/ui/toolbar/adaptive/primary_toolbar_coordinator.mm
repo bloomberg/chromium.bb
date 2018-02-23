@@ -113,7 +113,8 @@
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
   [self.orchestrator
       transitionToStateOmniboxFocused:focused
-                      toolbarExpanded:focused && IsSplitToolbarMode()
+                      toolbarExpanded:focused &&
+                                      IsSplitToolbarMode(self.viewController)
                              animated:YES];
 }
 
@@ -124,7 +125,8 @@
   BOOL omniboxFocused = self.isOmniboxFirstResponder;
   [self.orchestrator
       transitionToStateOmniboxFocused:omniboxFocused
-                      toolbarExpanded:omniboxFocused && IsSplitToolbarMode()
+                      toolbarExpanded:omniboxFocused &&
+                                      IsSplitToolbarMode(self.viewController)
                              animated:NO];
 }
 

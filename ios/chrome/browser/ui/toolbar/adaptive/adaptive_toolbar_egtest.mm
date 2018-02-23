@@ -30,6 +30,7 @@
 #endif
 
 namespace {
+
 const char kPageURL[] = "/test-page.html";
 const char kPageURL2[] = "/test-page-2.html";
 const char kPageURL3[] = "/test-page-3.html";
@@ -87,6 +88,36 @@ id<GREYMatcher> VisibleInSecondaryToolbar() {
   return grey_allOf(
       grey_ancestor(grey_kindOfClass([SecondaryToolbarView class])),
       grey_sufficientlyVisible(), nil);
+}
+
+// Rotate the device if it is an iPhone or change the trait collection to
+// compact width if it is an iPad. Returns the new trait collection.
+UITraitCollection* RotateOrChangeTraitCollection(
+    UITraitCollection* originalTraitCollection,
+    UIViewController* topViewController) {
+  // Change the orientation or the trait collection.
+  UITraitCollection* secondTraitCollection = nil;
+  if (IsIPadIdiom()) {
+    // Simulate a multitasking by overriding the trait collections of the view
+    // controllers. The rotation doesn't work on iPad.
+    UITraitCollection* horizontalCompact = [UITraitCollection
+        traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+    secondTraitCollection =
+        [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+          originalTraitCollection, horizontalCompact
+        ]];
+    for (UIViewController* child in topViewController.childViewControllers) {
+      [topViewController setOverrideTraitCollection:secondTraitCollection
+                             forChildViewController:child];
+    }
+
+  } else {
+    // On iPhone rotate to test the the landscape orientation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                             errorOrNil:nil];
+    secondTraitCollection = topViewController.traitCollection;
+  }
+  return secondTraitCollection;
 }
 
 // Check that the button displayed are the ones which should be displayed in the
@@ -159,7 +190,40 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection) {
     }
   }
 }
+
+// Check that the button displayed are the ones which should be displayed when
+// the omnibox is focused, in the environment described by |traitCollection|.
+void CheckToolbarButtonVisibilityWithOmniboxFocused(
+    UITraitCollection* traitCollection) {
+  if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+      traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
+    // Check that the cancel button is shown.
+    [[EarlGrey selectElementWithMatcher:
+                   grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                                  IDS_CANCEL),
+                              VisibleInPrimaryToolbar(), nil)]
+        assertWithMatcher:grey_notNil()];
+
+    // Check that controls are faded out.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
+        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  } else {
+    // Check that the cancel button is shown.
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_allOf(
+                chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CANCEL),
+                VisibleInPrimaryToolbar(), nil)] assertWithMatcher:grey_nil()];
+
+    // The toolbar should be in the contracted state, which is the same as the
+    // non-focused omnibox state.
+    CheckToolbarButtonVisibility(traitCollection);
+  }
 }
+
+}  // namespace
 
 #pragma mark - TestCase
 
@@ -230,6 +294,85 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection) {
       assertWithMatcher:grey_not(firstResponder())];
 }
 
+// Check the button visibility of the toolbar when the omnibox is focused from a
+// different orientation than the default one.
+- (void)testFocusOmniboxFromOtherOrientation {
+  // Load a page to have the toolbar visible (hidden on NTP).
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+
+  // Get the original trait collection.
+  UIViewController* topViewController =
+      top_view_controller::TopPresentedViewController();
+  UITraitCollection* originalTraitCollection =
+      topViewController.traitCollection;
+
+  // Change the orientation or the trait collection.
+  UITraitCollection* secondTraitCollection =
+      RotateOrChangeTraitCollection(originalTraitCollection, topViewController);
+
+  // Focus the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_tap()];
+
+  // Check the visiblity when focusing the omnibox.
+  CheckToolbarButtonVisibilityWithOmniboxFocused(secondTraitCollection);
+
+  // Revert the orientation/trait collection to the original.
+  if (IsIPadIdiom()) {
+    // Remove the override.
+    for (UIViewController* child in topViewController.childViewControllers) {
+      [topViewController setOverrideTraitCollection:originalTraitCollection
+                             forChildViewController:child];
+    }
+  } else {
+    // Cancel the rotation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                             errorOrNil:nil];
+  }
+
+  // Check the visiblity after a rotation.
+  CheckToolbarButtonVisibilityWithOmniboxFocused(originalTraitCollection);
+}
+
+// Check the button visibility of the toolbar when the omnibox is focused from
+// the default orientation.
+- (void)testFocusOmniboxFromPortrait {
+  // Load a page to have the toolbar visible (hidden on NTP).
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+
+  // Focus the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_tap()];
+
+  // Get the original trait collection.
+  UIViewController* topViewController =
+      top_view_controller::TopPresentedViewController();
+  UITraitCollection* originalTraitCollection =
+      topViewController.traitCollection;
+
+  // Check the button visibility.
+  CheckToolbarButtonVisibilityWithOmniboxFocused(originalTraitCollection);
+
+  // Change the orientation or the trait collection.
+  UITraitCollection* secondTraitCollection =
+      RotateOrChangeTraitCollection(originalTraitCollection, topViewController);
+
+  // Check the visiblity after a size class change.
+  CheckToolbarButtonVisibilityWithOmniboxFocused(secondTraitCollection);
+
+  if (IsIPadIdiom()) {
+    // Remove the override.
+    for (UIViewController* child in topViewController.childViewControllers) {
+      [topViewController setOverrideTraitCollection:originalTraitCollection
+                             forChildViewController:child];
+    }
+  } else {
+    // Cancel the rotation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
+                             errorOrNil:nil];
+  }
+}
+
 // Verifies that the back/forward buttons are working and are correctly enabled
 // during navigations.
 - (void)testNavigationButtons {
@@ -292,6 +435,25 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection) {
       assertWithMatcher:grey_not(grey_enabled())];
 }
 
+// Tests that it is possible to navigate to chrome://flags to disable it if
+// needed.
+// TODO(crbug.com/800266): Remove the test when the flag is enabled by default.
+- (void)testNavigationToFlags {
+  if (IsIPadIdiom()) {
+    // TODO(crbug.com/753098): grey_typeText() doesn't work on iPad.
+    return;
+  }
+  if (IsSplitToolbarMode()) {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kToolbarOmniboxButtonIdentifier)]
+        performAction:grey_tap()];
+  }
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText(@"chrome://flags\n")];
+
+  [ChromeEarlGrey waitForWebViewContainingText:"Experiments"];
+}
+
 // Tests that tapping the omnibox button focuses the omnibox.
 - (void)testOmniboxButton {
   if (!IsSplitToolbarMode()) {
@@ -337,27 +499,9 @@ void CheckToolbarButtonVisibility(UITraitCollection* traitCollection) {
   // Check the button visibility.
   CheckToolbarButtonVisibility(originalTraitCollection);
 
-  UITraitCollection* secondTraitCollection = nil;
-  if (IsIPadIdiom()) {
-    // Simulate a multitasking by overriding the trait collections of the view
-    // controllers. The rotation doesn't work on iPad.
-    UITraitCollection* horizontalCompact = [UITraitCollection
-        traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
-    secondTraitCollection =
-        [UITraitCollection traitCollectionWithTraitsFromCollections:@[
-          originalTraitCollection, horizontalCompact
-        ]];
-    for (UIViewController* child in topViewController.childViewControllers) {
-      [topViewController setOverrideTraitCollection:secondTraitCollection
-                             forChildViewController:child];
-    }
-
-  } else {
-    // On iPhone rotate to test the the landscape orientation.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                             errorOrNil:nil];
-    secondTraitCollection = topViewController.traitCollection;
-  }
+  // Change the orientation or the trait collection.
+  UITraitCollection* secondTraitCollection =
+      RotateOrChangeTraitCollection(originalTraitCollection, topViewController);
 
   // Check the visiblity after a size class change.
   CheckToolbarButtonVisibility(secondTraitCollection);
