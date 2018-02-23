@@ -7,7 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"

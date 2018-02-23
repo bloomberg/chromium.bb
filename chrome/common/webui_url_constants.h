@@ -11,7 +11,7 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_features.h"
 #include "printing/features/features.h"

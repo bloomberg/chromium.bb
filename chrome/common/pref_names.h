@@ -10,7 +10,7 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/offline_pages/features/features.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"

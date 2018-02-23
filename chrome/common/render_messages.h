@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/browser_controls_state_param_traits.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "chrome/common/web_application_info_provider_param_traits.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"

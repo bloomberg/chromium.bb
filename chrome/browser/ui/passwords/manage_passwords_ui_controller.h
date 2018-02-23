@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

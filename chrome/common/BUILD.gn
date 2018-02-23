@@ -30,8 +30,8 @@ grit("resources") {
   ]
 }
 
-buildflag_header("buildflags") {
-  header = "buildflags.h"
+buildflag_header("features") {
+  header = "features.h"
   flags = [
     "ENABLE_APP_LIST=$enable_app_list",
     "ENABLE_BACKGROUND_MODE=$enable_background_mode",
@@ -200,10 +200,10 @@ static_library("common") {
   ]
 
   public_deps = [
-    ":buildflags",
     ":channel_info",
     ":client_hints_mojom",
     ":common_param_traits_macros",
+    ":features",
     ":ini_parser",
     ":mojo_bindings",
     ":page_load_metrics_mojom",
@@ -555,7 +555,7 @@ static_library("constants") {
   ]
 
   public_deps = [
-    ":buildflags",
+    ":features",
     ":non_code_constants",
     "//content/public/common:result_codes",
     "//extensions/features",

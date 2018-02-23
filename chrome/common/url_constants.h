@@ -17,7 +17,7 @@
 #include <stddef.h>
 
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ppapi/features/features.h"

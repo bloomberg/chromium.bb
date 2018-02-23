@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/version.h"
-#include "chromecast/chromecast_buildflags.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

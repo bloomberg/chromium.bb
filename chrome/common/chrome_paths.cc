@@ -13,9 +13,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/features.h"
 #include "media/cdm/cdm_paths.h"
 #include "media/media_features.h"
 

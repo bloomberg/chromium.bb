@@ -26,7 +26,7 @@ cast_source_set("renderer") {
 
   deps = [
     "//base",
-    "//chromecast:chromecast_buildflags",
+    "//chromecast:chromecast_features",
     "//chromecast/base",
     "//chromecast/common:interfaces",
     "//chromecast/common/media",

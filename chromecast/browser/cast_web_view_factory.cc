@@ -5,7 +5,7 @@
 #include "chromecast/browser/cast_web_view_factory.h"
 
 #include "chromecast/browser/cast_web_view_default.h"
-#include "chromecast/chromecast_buildflags.h"
+#include "chromecast/chromecast_features.h"
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/browser/cast_web_view_extension.h"

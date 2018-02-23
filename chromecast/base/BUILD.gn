@@ -86,7 +86,7 @@ cast_source_set("base") {
 
   deps = [
     "//base",
-    "//chromecast:chromecast_buildflags",
+    "//chromecast:chromecast_features",
   ]
 
   if (is_android) {
@@ -120,7 +120,7 @@ cast_source_set("init_shlib") {
 
   deps = [
     "//base",
-    "//chromecast:chromecast_buildflags",
+    "//chromecast:chromecast_features",
   ]
 }
 

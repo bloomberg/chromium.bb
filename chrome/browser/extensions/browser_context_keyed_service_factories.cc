@@ -48,7 +48,7 @@
 #include "chrome/browser/extensions/warning_badge_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "ppapi/features/features.h"

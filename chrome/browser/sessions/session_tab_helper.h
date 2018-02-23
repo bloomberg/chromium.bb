@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SESSIONS_SESSION_TAB_HELPER_H_
 
 #include "base/macros.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
