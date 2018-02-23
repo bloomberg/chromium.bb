@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS getting document color attributes with no body
-PASS setting document color attributes with no body
-PASS document color attributes when the root element is a test element (iframe)
-PASS document color attributes when the root element is a test element (createHTMLDocument)
-PASS getting document color attributes when document.body is a frameset
-FAIL setting document color attributes when document.body is a frameset assert_equals: attributes.length on the frameset expected 0 but got 5
-Harness: the test ran to completion.
-
