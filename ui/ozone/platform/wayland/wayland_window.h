@@ -35,7 +35,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   bool Initialize();
 
-  wl_surface* surface() { return surface_.get(); }
+  wl_surface* surface() const { return surface_.get(); }
 
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.
@@ -46,6 +46,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   // Set whether this window has keyboard focus and should dispatch key events.
   void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
+
+  // Set whether this window has touch focus and should dispatch touch events.
+  void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
 
   // PlatformWindow
   void Show() override;
@@ -109,6 +112,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   gfx::Rect restored_bounds_;
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
+  bool has_touch_focus_ = false;
 
   // Stores current states of the window.
   ui::PlatformWindowState state_;

@@ -20,6 +20,7 @@ struct wl_seat;
 struct wl_shm;
 struct wl_shm_pool;
 struct wl_surface;
+struct wl_touch;
 struct xdg_shell;
 struct xdg_surface;
 struct zxdg_shell_v6;
@@ -101,6 +102,12 @@ template <>
 struct ObjectTraits<wl_surface> {
   static const wl_interface* interface;
   static void (*deleter)(wl_surface*);
+};
+
+template <>
+struct ObjectTraits<wl_touch> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_touch*);
 };
 
 template <>

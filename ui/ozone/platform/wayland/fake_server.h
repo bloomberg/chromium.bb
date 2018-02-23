@@ -119,6 +119,15 @@ class MockKeyboard : public ServerObject {
   DISALLOW_COPY_AND_ASSIGN(MockKeyboard);
 };
 
+class MockTouch : public ServerObject {
+ public:
+  explicit MockTouch(wl_resource* resource);
+  ~MockTouch() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTouch);
+};
+
 struct GlobalDeleter {
   void operator()(wl_global* global);
 };
@@ -188,7 +197,11 @@ class MockOutput : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockOutput);
 };
 
-// Manage wl_seat object: group of input devices.
+// Manage wl_seat object. A seat is a group of keyboards, pointer and touch
+// devices. This object is published as a global during start up, or when such a
+// device is hot plugged. A seat typically has a pointer and maintains a
+// keyboard focus and a pointer focus.
+// https://people.freedesktop.org/~whot/wayland-doxygen/wayland/Server/structwl__seat__interface.html
 class MockSeat : public Global {
  public:
   MockSeat();
@@ -196,6 +209,7 @@ class MockSeat : public Global {
 
   std::unique_ptr<MockPointer> pointer;
   std::unique_ptr<MockKeyboard> keyboard;
+  std::unique_ptr<MockTouch> touch;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSeat);

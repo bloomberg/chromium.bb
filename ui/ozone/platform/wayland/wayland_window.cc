@@ -240,6 +240,8 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& native_event) {
     return has_pointer_focus_;
   if (event->IsKeyEvent())
     return has_keyboard_focus_;
+  if (event->IsTouchEvent())
+    return has_touch_focus_;
   return false;
 }
 

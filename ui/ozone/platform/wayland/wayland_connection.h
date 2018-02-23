@@ -14,6 +14,7 @@
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_output.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/wayland_touch.h"
 
 namespace ui {
 
@@ -93,6 +94,7 @@ class WaylandConnection : public PlatformEventSource,
 
   std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandKeyboard> keyboard_;
+  std::unique_ptr<WaylandTouch> touch_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;
