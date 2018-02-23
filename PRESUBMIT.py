@@ -1400,6 +1400,40 @@ def _CheckForAnonymousVariables(input_api, output_api):
   return []
 
 
+def _CheckUniquePtr(input_api, output_api):
+  file_inclusion_pattern = r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST),
+      white_list=(file_inclusion_pattern,))
+  return_construct_pattern = input_api.re.compile(
+      r'(=|\breturn)\s*std::unique_ptr<.*?(?<!])>\([^)]+\)')
+  null_construct_pattern = input_api.re.compile(
+      r'\b(?<!<)std::unique_ptr<.*?>\(\)')
+  errors = []
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_number, line in f.ChangedContents():
+      # Disallow:
+      # return std::unique_ptr<T>(foo);
+      # bar = std::unique_ptr<T>(foo);
+      # But allow:
+      # return std::unique_ptr<T[]>(foo);
+      # bar = std::unique_ptr<T[]>(foo);
+      if return_construct_pattern.search(line):
+        errors.append(output_api.PresubmitError(
+          ('%s:%d uses explicit std::unique_ptr constructor. ' +
+           'Use std::make_unique<T>() instead.') %
+          (f.LocalPath(), line_number)))
+      # Disallow:
+      # std::unique_ptr<T>()
+      if null_construct_pattern.search(line):
+        errors.append(output_api.PresubmitError(
+          '%s:%d uses std::unique_ptr<T>(). Use nullptr instead.' %
+          (f.LocalPath(), line_number)))
+  return errors
+
+
 def _CheckUserActionUpdate(input_api, output_api):
   """Checks if any new user action has been added."""
   if any('actions.xml' == input_api.os_path.basename(f) for f in
@@ -2531,6 +2565,7 @@ def _CommonChecks(input_api, output_api):
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
+  results.extend(_CheckUniquePtr(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCss(input_api, output_api))
   results.extend(_CheckNoDeprecatedJs(input_api, output_api))
