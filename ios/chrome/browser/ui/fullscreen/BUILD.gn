@@ -46,6 +46,8 @@ source_set("coordinators") {
 
 source_set("internal") {
   sources = [
+    "fullscreen_content_adjustment_util.h",
+    "fullscreen_content_adjustment_util.mm",
     "fullscreen_controller_factory.mm",
     "fullscreen_controller_impl.h",
     "fullscreen_controller_impl.mm",
@@ -63,8 +65,6 @@ source_set("internal") {
     "fullscreen_web_state_observer.mm",
     "fullscreen_web_view_proxy_observer.h",
     "fullscreen_web_view_proxy_observer.mm",
-    "fullscreen_web_view_scroll_view_replacement_util.h",
-    "fullscreen_web_view_scroll_view_replacement_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -129,6 +129,7 @@ source_set("unit_tests") {
     "//ios/web/public",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_scroll_view_replacement_util.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_content_adjustment_util.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
@@ -13,9 +13,7 @@
 #error "This file requires ARC support."
 #endif
 
-void UpdateFullscreenWebViewProxyForReplacedScrollView(
-    id<CRWWebViewProxy> proxy,
-    FullscreenModel* model) {
+void MoveContentBelowHeader(id<CRWWebViewProxy> proxy, FullscreenModel* model) {
   DCHECK(proxy);
   DCHECK(model);
   CGFloat padding = model->progress() * model->GetToolbarHeight();

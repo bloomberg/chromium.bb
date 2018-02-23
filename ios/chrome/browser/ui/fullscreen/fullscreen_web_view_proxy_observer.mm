@@ -5,9 +5,10 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_content_adjustment_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_scroll_view_replacement_util.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
@@ -51,7 +52,7 @@
 
 - (void)webViewScrollViewProxyDidSetScrollView:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  UpdateFullscreenWebViewProxyForReplacedScrollView(self.proxy, self.model);
+  MoveContentBelowHeader(self.proxy, self.model);
 }
 
 - (BOOL)webViewScrollViewShouldScrollToTop:
