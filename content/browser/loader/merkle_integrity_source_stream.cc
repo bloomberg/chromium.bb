@@ -38,6 +38,8 @@ MerkleIntegritySourceStream::MerkleIntegritySourceStream(
   }
 }
 
+MerkleIntegritySourceStream::~MerkleIntegritySourceStream() = default;
+
 int MerkleIntegritySourceStream::FilterData(net::IOBuffer* output_buffer,
                                             int output_buffer_size,
                                             net::IOBuffer* input_buffer,
