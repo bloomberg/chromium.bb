@@ -710,8 +710,10 @@ void SkiaRenderer::UpdateRenderPassTextures(
 
     const RenderPassRequirements& requirements = render_pass_it->second;
     const RenderPassBacking& backing = pair.second;
-    bool size_appropriate = backing.size.width() >= requirements.size.width() &&
-                            backing.size.height() >= requirements.size.height();
+    SkSurface* backing_surface = pair.second.render_pass_surface.get();
+    bool size_appropriate =
+        backing_surface->width() >= requirements.size.width() &&
+        backing_surface->height() >= requirements.size.height();
     bool mipmap_appropriate = !requirements.mipmap || backing.mipmap;
     if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
@@ -756,7 +758,7 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
     bool mipmap,
     bool capability_bgra8888,
     const gfx::ColorSpace& color_space)
-    : size(size), mipmap(mipmap), color_space(color_space) {
+    : mipmap(mipmap), color_space(color_space) {
   ResourceFormat format;
   if (color_space.IsHDR()) {
     // If a platform does not support half-float renderbuffers then it should
@@ -784,14 +786,13 @@ SkiaRenderer::RenderPassBacking::~RenderPassBacking() {}
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
     SkiaRenderer::RenderPassBacking&& other)
-    : size(other.size), mipmap(other.mipmap), color_space(other.color_space) {
+    : mipmap(other.mipmap), color_space(other.color_space) {
   render_pass_surface = other.render_pass_surface;
   other.render_pass_surface = nullptr;
 }
 
 SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
     SkiaRenderer::RenderPassBacking&& other) {
-  size = other.size;
   mipmap = other.mipmap;
   color_space = other.color_space;
   render_pass_surface = other.render_pass_surface;
@@ -805,11 +806,12 @@ bool SkiaRenderer::IsRenderPassResourceAllocated(
   return it != render_pass_backings_.end();
 }
 
-gfx::Size SkiaRenderer::GetRenderPassTextureSize(
+gfx::Size SkiaRenderer::GetRenderPassBackingPixelSize(
     const RenderPassId& render_pass_id) {
   auto it = render_pass_backings_.find(render_pass_id);
   DCHECK(it != render_pass_backings_.end());
-  return it->second.size;
+  SkSurface* texture = it->second.render_pass_surface.get();
+  return gfx::Size(texture->height(), texture->width());
 }
 
 }  // namespace viz

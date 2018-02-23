@@ -104,7 +104,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
-  gfx::Size GetRenderPassTextureSize(
+  gfx::Size GetRenderPassBackingPixelSize(
       const RenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
   void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
