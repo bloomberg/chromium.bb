@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/application_media_capabilities.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/audio_codecs.h"

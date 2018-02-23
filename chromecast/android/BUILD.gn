@@ -17,7 +17,7 @@ cast_shared_library("libcast_shell_android") {
     "//base",
     "//chromecast:cast_shell_jni_registration",
     "//chromecast:cast_shell_lib",
-    "//chromecast:chromecast_features",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/app",
     "//chromecast/app:cast_crash_client",
     "//chromecast/base",

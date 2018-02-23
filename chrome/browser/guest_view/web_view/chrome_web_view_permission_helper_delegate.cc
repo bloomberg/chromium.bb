@@ -13,7 +13,7 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/render_frame_host.h"

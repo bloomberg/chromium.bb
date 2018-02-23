@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

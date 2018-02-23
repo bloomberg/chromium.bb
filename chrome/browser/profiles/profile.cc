@@ -13,7 +13,7 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"

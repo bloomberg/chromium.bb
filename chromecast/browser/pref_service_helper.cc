@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"

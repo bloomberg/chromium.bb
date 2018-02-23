@@ -18,7 +18,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_network_delegate.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_context.h"

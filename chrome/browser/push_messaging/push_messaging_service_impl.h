@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"

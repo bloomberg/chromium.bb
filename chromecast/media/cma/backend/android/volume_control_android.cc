@@ -21,7 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/serializers.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "jni/VolumeControl_jni.h"
 #include "jni/VolumeMap_jni.h"
 

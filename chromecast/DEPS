@@ -7,7 +7,7 @@ include_rules = [
 
   # Other Chromecast-wide dependencies.
   "+chromecast/base",
-  "+chromecast/chromecast_features.h",
+  "+chromecast/chromecast_buildflags.h",
   "+chromecast/public",
   "+third_party/boringssl/src/include",
 ]

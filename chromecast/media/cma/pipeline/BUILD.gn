@@ -47,7 +47,7 @@ cast_source_set("pipeline") {
   ]
 
   deps = [
-    ":cma_pipeline_features",
+    ":cma_pipeline_buildflags",
     "//base",
     "//chromecast/base",
     "//chromecast/base/metrics:metrics",
@@ -63,8 +63,8 @@ cast_source_set("pipeline") {
   ]
 }
 
-buildflag_header("cma_pipeline_features") {
-  header = "cma_pipeline_features.h"
+buildflag_header("cma_pipeline_buildflags") {
+  header = "cma_pipeline_buildflags.h"
 
   flags = [ "CMA_USE_ACCURATE_MEDIA_TIME=$cma_use_accurate_media_time" ]
 }

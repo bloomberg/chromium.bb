@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"

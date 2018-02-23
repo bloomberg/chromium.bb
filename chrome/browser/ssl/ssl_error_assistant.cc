@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"

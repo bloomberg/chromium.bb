@@ -90,7 +90,7 @@ template("libgtkui") {
              "//base:i18n",
              "//base/third_party/dynamic_annotations",
              "//cc/paint",
-             "//chrome/common:features",
+             "//chrome/common:buildflags",
              "//chrome:extra_resources",
              "//chrome:resources",
              "//chrome:strings",
