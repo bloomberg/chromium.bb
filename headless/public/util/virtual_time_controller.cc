@@ -31,7 +31,8 @@ void VirtualTimeController::StartVirtualTime() {
 
   TimeDelta next_budget;
   bool wait_for_navigation = false;
-  for (const auto& entry_pair : tasks_) {
+  for (auto& entry_pair : tasks_) {
+    entry_pair.second.ready_to_advance = true;
     if (entry_pair.first->start_policy() ==
         RepeatingTask::StartPolicy::WAIT_FOR_NAVIGATION) {
       wait_for_navigation = true;
