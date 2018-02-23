@@ -192,8 +192,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         continue;
       }
     }
-    render_passes_in_frame[pass->id] = {RenderPassTextureSize(pass.get()),
-                                        pass->generate_mipmap};
+    render_passes_in_frame[pass->id] = {
+        CalculateTextureSizeForRenderPass(pass.get()), pass->generate_mipmap};
   }
   UpdateRenderPassTextures(render_passes_in_draw_order, render_passes_in_frame);
 }
@@ -620,7 +620,7 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
     return;
   }
 
-  gfx::Size enlarged_size = RenderPassTextureSize(render_pass);
+  gfx::Size enlarged_size = CalculateTextureSizeForRenderPass(render_pass);
   enlarged_size.Enlarge(enlarge_pass_texture_amount_.width(),
                         enlarge_pass_texture_amount_.height());
 
@@ -635,7 +635,9 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   BindFramebufferToTexture(render_pass->id);
   InitializeViewport(current_frame(), render_pass->output_rect,
                      gfx::Rect(render_pass->output_rect.size()),
-                     GetRenderPassTextureSize(render_pass->id));
+                     // If the render pass backing is cached, we might have
+                     // bigger size comparing to the size that was generated.
+                     GetRenderPassBackingPixelSize(render_pass->id));
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
@@ -656,7 +658,8 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   return render_pass->damage_rect;
 }
 
-gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
+gfx::Size DirectRenderer::CalculateTextureSizeForRenderPass(
+    const RenderPass* render_pass) {
   // Round the size of the render pass backings to a multiple of 64 pixels. This
   // reduces memory fragmentation. https://crbug.com/146070. This also allows
   // backings to be more easily reused during a resize operation.

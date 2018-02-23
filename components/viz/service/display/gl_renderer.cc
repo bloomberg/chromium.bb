@@ -3815,7 +3815,7 @@ bool GLRenderer::IsRenderPassResourceAllocated(
   return texture_it != render_pass_textures_.end();
 }
 
-gfx::Size GLRenderer::GetRenderPassTextureSize(
+gfx::Size GLRenderer::GetRenderPassBackingPixelSize(
     const RenderPassId& render_pass_id) {
   auto texture_it = render_pass_textures_.find(render_pass_id);
   DCHECK(texture_it != render_pass_textures_.end());

@@ -818,7 +818,7 @@ bool SoftwareRenderer::IsRenderPassResourceAllocated(
   return it != render_pass_bitmaps_.end();
 }
 
-gfx::Size SoftwareRenderer::GetRenderPassTextureSize(
+gfx::Size SoftwareRenderer::GetRenderPassBackingPixelSize(
     const RenderPassId& render_pass_id) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
   DCHECK(it != render_pass_bitmaps_.end());
