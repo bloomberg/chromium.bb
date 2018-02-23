@@ -206,6 +206,12 @@ void ChromeVoxPanel::UpdateWidgetBounds() {
     bounds.set_height(0);
   }
 
+  // Make sure the ChromeVox panel is always below the Docked Magnifier viewport
+  // so it shows up and gets magnified.
+  const int docked_magnifier_height =
+      ash::Shelf::ForWindow(GetRootWindow())->GetDockedMagnifierHeight();
+  bounds.Offset(0, docked_magnifier_height);
+
   widget_->SetBounds(bounds);
 }
 

@@ -506,6 +506,11 @@ void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
   LayoutShelf();
 }
 
+void ShelfLayoutManager::SetDockedMagnifierHeight(int height) {
+  docked_magnifier_height_ = height;
+  LayoutShelf();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
@@ -698,7 +703,8 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   gfx::Rect available_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf_window);
-  available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
+  available_bounds.Inset(0, chromevox_panel_height_ + docked_magnifier_height_,
+                         0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
   int bottom_shelf_vertical_offset = available_bounds.bottom() - shelf_height;
@@ -741,11 +747,10 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     target_bounds->work_area_insets += keyboard_insets;
   }
 
-  // Also push in the work area insets for the ChromeVox panel if it's visible.
-  if (chromevox_panel_height_) {
-    gfx::Insets chromevox_insets(chromevox_panel_height_, 0, 0, 0);
-    target_bounds->work_area_insets += chromevox_insets;
-  }
+  // Also push in the work area insets for both the ChromeVox panel and the
+  // Docked Magnifier.
+  target_bounds->work_area_insets +=
+      gfx::Insets(chromevox_panel_height_ + docked_magnifier_height_, 0, 0, 0);
 
   target_bounds->opacity = ComputeTargetOpacity(state);
   target_bounds->status_opacity =

@@ -125,6 +125,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   int chromevox_panel_height() const { return chromevox_panel_height_; }
 
+  int docked_magnifier_height() const { return docked_magnifier_height_; }
+
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
@@ -199,6 +201,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Set the height of the ChromeVox panel, which takes away space from the
   // available work area from the top of the screen.
   void SetChromeVoxPanelHeight(int height);
+
+  // Set the height of the Docked Magnifier viewport at the top of the screen,
+  // which will reduce the available screen work area similarly to the ChromeVox
+  // panel height. The Docked Magnifier appears above the ChromeVox panel.
+  void SetDockedMagnifierHeight(int height);
 
  private:
   class UpdateShelfObserver;
@@ -389,6 +396,11 @@ class ASH_EXPORT ShelfLayoutManager
   // The height of the ChromeVox panel at the top of the screen, which
   // needs to be removed from the available work area.
   int chromevox_panel_height_ = 0;
+
+  // The height of the Docked Magnifier viewport at the top of the screen, which
+  // similarly to |chromevox_panel_height_| needs to be removed from the
+  // available work area.
+  int docked_magnifier_height_ = 0;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;

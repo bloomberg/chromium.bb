@@ -1425,6 +1425,8 @@ test("ash_unittests") {
     "login/ui/note_action_launch_button_unittest.cc",
     "magnifier/docked_magnifier_controller_unittest.cc",
     "magnifier/magnification_controller_unittest.cc",
+    "magnifier/magnifier_test_utils.cc",
+    "magnifier/magnifier_test_utils.h",
     "magnifier/partial_magnification_controller_unittest.cc",
     "message_center/message_center_view_unittest.cc",
     "message_center/message_list_view_unittest.cc",

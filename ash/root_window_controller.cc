@@ -955,6 +955,9 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(overlay_container);
   overlay_container->SetProperty(kUsesScreenCoordinatesKey, true);
 
+  CreateContainer(kShellWindowId_DockedMagnifierContainer,
+                  "DockedMagnifierContainer", lock_screen_related_containers);
+
   aura::Window* mouse_cursor_container =
       CreateContainer(kShellWindowId_MouseCursorContainer,
                       "MouseCursorContainer", screen_rotation_container);
