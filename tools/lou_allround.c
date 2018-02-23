@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "liblouis.h"
 #include "internal.h"
 #include <getopt.h>
@@ -242,7 +243,7 @@ getCommands(void) {
 
 int
 main(int argc, char **argv) {
-	char *charbuf;
+	uint8_t *charbuf;
 	size_t charlen;
 	widechar inbuf[BUFSIZE];
 	widechar transbuf[BUFSIZE];
