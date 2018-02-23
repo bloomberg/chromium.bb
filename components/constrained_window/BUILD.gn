@@ -16,8 +16,11 @@ static_library("constrained_window") {
     "native_web_contents_modal_dialog_manager_views_mac.mm",
   ]
 
-  if (is_mac && !mac_views_browser) {
+  if (is_mac) {
     sources += [ "show_modal_dialog_cocoa.cc" ]
+    if (mac_views_browser) {
+      sources += [ "show_modal_dialog_views.cc" ]
+    }
   } else {
     sources += [ "show_modal_dialog_views.cc" ]
   }

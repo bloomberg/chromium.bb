@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/constrained_window/native_web_contents_modal_dialog_manager_views.h"
 #include "components/web_modal/single_web_contents_dialog_manager.h"
@@ -15,6 +16,10 @@ namespace constrained_window {
 
 void ShowModalDialog(gfx::NativeWindow dialog,
                      content::WebContents* web_contents) {
+#if defined(OS_MACOSX)
+  if (web_modal::WebContentsModalDialogManager::IsCocoaBrowser())
+    return ShowModalDialogCocoa(dialog, web_contents);
+#endif
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
   DCHECK(manager);
