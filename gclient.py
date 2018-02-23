@@ -718,6 +718,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               # should suffice.
               'https://chrome-infra-packages.appspot.com')
         for package in dep_value.get('packages', []):
+          if 'version' in package:
+            # Matches version to vars value.
+            raw_version = package['version']
+            version = raw_version.format(**self.get_vars())
+            package['version'] = version
           deps_to_add.append(
               CipdDependency(
                   self, name, package, cipd_root,
