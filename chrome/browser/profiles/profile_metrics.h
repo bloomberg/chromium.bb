@@ -47,6 +47,9 @@ class ProfileMetrics {
     DELETE_PROFILE_SETTINGS_SHOW_WARNING,
     // Aborts profile deletion in an OnBeforeUnload event in any browser tab.
     DELETE_PROFILE_ABORTED,
+    // Delete profile from web signout with Dice, when Chrome signout is
+    // prohibited.
+    DELETE_PROFILE_DICE_WEB_SIGNOUT,
     NUM_DELETE_PROFILE_METRICS
   };
 
