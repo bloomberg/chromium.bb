@@ -27,7 +27,7 @@
 #include "media/filters/audio_renderer_algorithm.h"
 
 #if defined(OS_LINUX)
-#include "chromecast/media/cma/backend/audio_features.h"
+#include "chromecast/media/cma/backend/audio_buildflags.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)

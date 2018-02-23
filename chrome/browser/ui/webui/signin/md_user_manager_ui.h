@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_MD_USER_MANAGER_UI_H_
 
 #include "base/macros.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class SigninCreateProfileHandler;

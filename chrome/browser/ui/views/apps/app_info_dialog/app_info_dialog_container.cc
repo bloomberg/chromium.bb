@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"

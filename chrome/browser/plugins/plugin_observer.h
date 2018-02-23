@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_contents_binding_set.h"

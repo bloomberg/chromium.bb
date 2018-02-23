@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/net/net_switches.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"

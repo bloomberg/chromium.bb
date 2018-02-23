@@ -5,8 +5,8 @@
 import("//build/buildflag_header.gni")
 import("//chromeos/assistant/assistant.gni")
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
 
   flags = [
     "ENABLE_CROS_ASSISTANT=$enable_cros_assistant",

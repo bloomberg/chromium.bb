@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "url/gurl.h"
 
 namespace base {

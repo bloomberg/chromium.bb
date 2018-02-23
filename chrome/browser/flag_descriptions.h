@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/nacl/common/features.h"
 #include "device/vr/features/features.h"
 #include "media/media_features.h"

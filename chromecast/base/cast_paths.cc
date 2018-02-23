@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "chromecast/chromecast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 
 namespace chromecast {
 
