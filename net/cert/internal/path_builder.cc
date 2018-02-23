@@ -409,6 +409,23 @@ bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
       }
     }
 
+    // If the cert is trusted but is the leaf, treat it as having unspecified
+    // trust. This may allow a successful path to be built to a different root
+    // (or to the same cert if it's self-signed).
+    switch (next_issuer_.trust.type) {
+      case CertificateTrustType::TRUSTED_ANCHOR:
+      case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
+        if (cur_path_.Empty()) {
+          DVLOG(1) << "Leaf is a trust anchor, considering as UNSPECIFIED";
+          next_issuer_.trust = CertificateTrust::ForUnspecified();
+        }
+        break;
+      case CertificateTrustType::DISTRUSTED:
+      case CertificateTrustType::UNSPECIFIED:
+        // No override necessary.
+        break;
+    }
+
     switch (next_issuer_.trust.type) {
       // If the trust for this issuer is "known" (either becuase it is
       // distrusted, or because it is trusted) then stop building and return the

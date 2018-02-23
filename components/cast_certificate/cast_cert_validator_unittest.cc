@@ -256,9 +256,9 @@ TEST(VerifyCastDeviceCertTest, Unchained) {
 // trust anchors after all) it fails the test as it is not a *device
 // certificate*.
 TEST(VerifyCastDeviceCertTest, CastRootCa) {
-  RunTest(CastCertError::ERR_CERTS_VERIFY_GENERIC, "",
-          CastDeviceCertPolicy::NONE, "certificates/cast_root_ca.pem",
-          AprilFirst2016(), TRUST_STORE_BUILTIN, "");
+  RunTest(CastCertError::ERR_CERTS_RESTRICTIONS, "", CastDeviceCertPolicy::NONE,
+          "certificates/cast_root_ca.pem", AprilFirst2016(),
+          TRUST_STORE_BUILTIN, "");
 }
 
 // Tests verifying a valid certificate chain of length 2:

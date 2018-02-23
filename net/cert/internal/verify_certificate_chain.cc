@@ -1165,8 +1165,8 @@ void PathVerifier::Run(
     return;
   }
 
-  // TODO(eroman): Verifying a trusted leaf certificate is not currently
-  // permitted.
+  // Verifying a trusted leaf certificate is not permitted. (It isn't a
+  // well-specified operation.) See https://crbug.com/814994.
   if (certs.size() == 1) {
     errors->GetOtherErrors()->AddError(cert_errors::kChainIsLength1);
     return;

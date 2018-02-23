@@ -369,10 +369,7 @@ TEST_P(CertVerifyProcInternalTest, TrustedTargetCertWithEVPolicy) {
   int flags = CertVerifier::VERIFY_EV_CERT;
   int error = Verify(cert.get(), "policy_test.example", flags,
                      nullptr /*crl_set*/, CertificateList(), &verify_result);
-  // TODO(eroman): builtin verifier cannot verify a chain of length 1.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-  } else if (ScopedTestRootCanTrustTargetCert(verify_proc_type())) {
+  if (ScopedTestRootCanTrustTargetCert(verify_proc_type())) {
     EXPECT_THAT(error, IsOk());
     ASSERT_TRUE(verify_result.verified_cert);
     EXPECT_TRUE(verify_result.verified_cert->intermediate_buffers().empty());
@@ -409,10 +406,7 @@ TEST_P(CertVerifyProcInternalTest,
   int flags = CertVerifier::VERIFY_EV_CERT;
   int error = Verify(cert.get(), "policy_test.example", flags,
                      nullptr /*crl_set*/, CertificateList(), &verify_result);
-  // TODO(eroman): builtin verifier cannot verify a chain of length 1.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-  } else if (ScopedTestRootCanTrustTargetCert(verify_proc_type())) {
+  if (ScopedTestRootCanTrustTargetCert(verify_proc_type())) {
     EXPECT_THAT(error, IsOk());
     ASSERT_TRUE(verify_result.verified_cert);
     EXPECT_TRUE(verify_result.verified_cert->intermediate_buffers().empty());

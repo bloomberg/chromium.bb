@@ -106,8 +106,8 @@ void TrustStoreNSS::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
     return;
   }
 
-  // TODO(mattm): handle trusted server certs (CERTDB_TERMINAL_RECORD +
-  // CERTDB_TRUSTED)
+  // Trusted server certs (CERTDB_TERMINAL_RECORD + CERTDB_TRUSTED) are
+  // intentionally treated as unspecified. See https://crbug.com/814994.
 
   *out_trust = CertificateTrust::ForUnspecified();
   return;

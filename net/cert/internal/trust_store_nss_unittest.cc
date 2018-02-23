@@ -268,8 +268,9 @@ TEST_F(TrustStoreNSSTest, TrustedServer) {
   AddCertsToNSS();
   TrustServerCert(target_.get());
 
-  // TODO(mattm): server-trusted certificates are handled as UNSPECIFIED since
-  // we don't currently support the notion of explictly trusted server certs.
+  // Server-trusted certificates are handled as UNSPECIFIED since we don't
+  // support the notion of explictly trusted server certs. See
+  // https://crbug.com/814994.
   EXPECT_TRUE(HasTrust({oldroot_, newroot_, target_, oldintermediate_,
                         newintermediate_, newrootrollover_},
                        CertificateTrustType::UNSPECIFIED));
