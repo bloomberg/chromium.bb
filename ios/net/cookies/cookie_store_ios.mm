@@ -276,13 +276,13 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
   // The exclude_httponly() option would only be used by a javascript
   // engine.
   DCHECK(!options.exclude_httponly());
-
-  // If cookies are not allowed, they are stashed in the CookieMonster, and
-  // should be written there instead.
-  DCHECK(SystemCookiesAllowed());
 
   base::Time server_time =
       options.has_server_time() ? options.server_time() : base::Time();
@@ -325,6 +325,12 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
     bool secure_source,
     bool modify_http_only,
     SetCookiesCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
   DCHECK(cookie->IsCanonical());
   // The exclude_httponly() option would only be used by a javascript
   // engine.
@@ -354,9 +360,10 @@ void CookieStoreIOS::GetCookiesWithOptionsAsync(
     GetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // If cookies are not allowed, they are stashed in the CookieMonster, and
-  // should be read from there instead.
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
   DCHECK(SystemCookiesAllowed());
+
   // The exclude_httponly() option would only be used by a javascript
   // engine.
   DCHECK(!options.exclude_httponly());
@@ -373,13 +380,10 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
     const net::CookieOptions& options,
     GetCookieListCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!SystemCookiesAllowed()) {
-    // If cookies are not allowed, the cookies are stashed in the
-    // CookieMonster, so get them from there.
-    cookie_monster_->GetCookieListWithOptionsAsync(url, options,
-                                                   std::move(callback));
-    return;
-  }
+
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
 
   // TODO(mkwst): If/when iOS supports Same-Site cookies, we'll need to pass
   // options in here as well. https://crbug.com/459154
@@ -392,12 +396,10 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
 void CookieStoreIOS::GetAllCookiesAsync(GetCookieListCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!SystemCookiesAllowed()) {
-    // If cookies are not allowed, the cookies are stashed in the
-    // CookieMonster, so get them from there.
-    cookie_monster_->GetAllCookiesAsync(std::move(callback));
-    return;
-  }
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
   // TODO(crbug.com/459154): If/when iOS supports Same-Site cookies, we'll need
   // to pass options in here as well.
   system_store_->GetAllCookiesAsync(
@@ -409,6 +411,11 @@ void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
                                        const std::string& cookie_name,
                                        base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
   __block base::OnceClosure shared_callback = std::move(callback);
   base::WeakPtr<SystemCookieStore> weak_system_store =
       system_store_->GetWeakPtr();
@@ -431,6 +438,10 @@ void CookieStoreIOS::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                                 DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
   // This relies on the fact cookies are given unique creation dates.
   CookieFilterFunction filter = base::Bind(
       IsCookieCreatedBetween, cookie.CreationDate(), cookie.CreationDate());
@@ -443,7 +454,11 @@ void CookieStoreIOS::DeleteAllCreatedBetweenAsync(
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (metrics_enabled_)
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
+  if (metrics_enabled())
     ResetCookieCountMetrics();
 
   CookieFilterFunction filter = base::Bind(
@@ -458,7 +473,11 @@ void CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync(
     DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (metrics_enabled_)
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
+  if (metrics_enabled())
     ResetCookieCountMetrics();
 
   CookieFilterFunction filter = base::Bind(
@@ -469,7 +488,11 @@ void CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync(
 void CookieStoreIOS::DeleteSessionCookiesAsync(DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (metrics_enabled_)
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
+  if (metrics_enabled())
     ResetCookieCountMetrics();
 
   CookieFilterFunction filter = base::Bind(&IsCookieSessionCookie);
@@ -488,13 +511,8 @@ void CookieStoreIOS::FlushStore(base::OnceClosure closure) {
     return;
   }
 
-  cookie_monster_->FlushStore(std::move(closure));
-  flush_closure_.Cancel();
-}
-
-void CookieStoreIOS::FlushStoreFromCookies(base::OnceClosure closure,
-                                           NSArray<NSHTTPCookie*>* cookies) {
-  WriteToCookieMonster(cookies);
+  // This code path is used by a CookieStoreIOS subclass, which shares this
+  // implementation.
   cookie_monster_->FlushStore(std::move(closure));
   flush_closure_.Cancel();
 }
@@ -516,6 +534,13 @@ CookieStoreIOS::CookieStoreIOS(
 
   cookie_monster_->SetPersistSessionCookies(true);
   cookie_monster_->SetForceKeepSessionState();
+}
+
+void CookieStoreIOS::FlushStoreFromCookies(base::OnceClosure closure,
+                                           NSArray<NSHTTPCookie*>* cookies) {
+  WriteToCookieMonster(cookies);
+  cookie_monster_->FlushStore(std::move(closure));
+  flush_closure_.Cancel();
 }
 
 CookieStoreIOS::SetCookiesCallback CookieStoreIOS::WrapSetCallback(
