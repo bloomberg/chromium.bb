@@ -207,8 +207,7 @@ void VertexShader::Init(GLES2Interface* context,
     uniforms.push_back("uvTexScale");
     uniforms.push_back("uvTexOffset");
   }
-  if (has_matrix_)
-    uniforms.push_back("matrix");
+  uniforms.push_back("matrix");
   if (has_vertex_opacity_)
     uniforms.push_back("opacity");
   if (aa_mode_ == USE_AA) {
@@ -241,8 +240,7 @@ void VertexShader::Init(GLES2Interface* context,
     uv_tex_scale_location_ = locations[index++];
     uv_tex_offset_location_ = locations[index++];
   }
-  if (has_matrix_)
-    matrix_location_ = locations[index++];
+  matrix_location_ = locations[index++];
   if (has_vertex_opacity_)
     vertex_opacity_location_ = locations[index++];
   if (aa_mode_ == USE_AA) {
@@ -290,7 +288,6 @@ std::string VertexShader::GetShaderString() const {
       SRC("vec4 pos = vec4(quad[vertex_index], a_position.z, a_position.w);");
       break;
   }
-  if (has_matrix_) {
     if (use_uniform_arrays_) {
       HDR("uniform mat4 matrix[NUM_QUADS];");
       SRC("gl_Position = matrix[quad_index] * pos;");
@@ -298,9 +295,6 @@ std::string VertexShader::GetShaderString() const {
       HDR("uniform mat4 matrix;");
       SRC("gl_Position = matrix * pos;");
     }
-  } else {
-    SRC("gl_Position = pos;");
-  }
 
   // Compute the anti-aliasing edge distances.
   if (aa_mode_ == USE_AA) {
