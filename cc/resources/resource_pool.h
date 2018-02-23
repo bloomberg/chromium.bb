@@ -268,6 +268,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     void mark_avoid_reuse() { avoid_reuse_ = true; }
 
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                      int tracing_id,
                       const LayerTreeResourceProvider* resource_provider,
                       bool is_free) const;
 
@@ -334,6 +335,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const base::TimeDelta resource_expiration_delay_;
   const bool disallow_non_exact_reuse_ = false;
+  const int tracing_id_;
 
   size_t next_resource_unique_id_ = 1;
   size_t max_memory_usage_bytes_ = 0;
