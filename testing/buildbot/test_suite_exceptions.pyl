@@ -3676,6 +3676,11 @@
           'shards': 6,
         },
       },
+      'Fuchsia': {
+        'args': [
+          '--platform', 'fuchsia',
+        ],
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',

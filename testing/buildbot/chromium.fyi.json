@@ -4026,6 +4026,31 @@
         },
         "test": "ui_base_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--platform",
+          "fuchsia"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        }
+      }
     ]
   },
   "Fuchsia (dbg)": {
