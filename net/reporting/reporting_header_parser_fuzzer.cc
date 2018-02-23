@@ -34,9 +34,13 @@ void FuzzReportingHeaderParser(const std::string& data_json,
   net::TestReportingContext context(base::DefaultClock::GetInstance(),
                                     base::DefaultTickClock::GetInstance(),
                                     policy);
-  std::unique_ptr<base::Value> data_value = base::JSONReader::Read(data_json);
+  // Emulate what ReportingService::OnHeader does before calling
+  // ReportingHeaderParser::ParseHeader.
+  std::unique_ptr<base::Value> data_value =
+      base::JSONReader::Read("[" + data_json + "]");
   if (!data_value)
     return;
+
   net::ReportingHeaderParser::ParseHeader(&context, kUrl_,
                                           std::move(data_value));
   std::vector<const net::ReportingClient*> clients;
