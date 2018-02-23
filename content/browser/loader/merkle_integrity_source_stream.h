@@ -23,6 +23,7 @@ class CONTENT_EXPORT MerkleIntegritySourceStream
  public:
   MerkleIntegritySourceStream(const std::string& mi_header_value,
                               std::unique_ptr<SourceStream> upstream);
+  ~MerkleIntegritySourceStream() override;
 
   // net::FilterSourceStream
   int FilterData(net::IOBuffer* output_buffer,
