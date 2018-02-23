@@ -429,6 +429,8 @@ class ContextMenuJsFindElementAtPointTest : public web::WebTest {
   // Returns details of the DOM element at the given |x| and |y| coordinates.
   // The given point is in the device's coordinate space.
   id FindElementAtPoint(CGFloat x, CGFloat y) {
+    EXPECT_TRUE(web::WaitForInjectedScripts(web_view_));
+
     // Force layout
     web::ExecuteJavaScript(web_view_, @"document.getElementsByTagName('p')");
 
