@@ -714,9 +714,12 @@ public class NewTabPageView
      * Updates the padding for the tile grid based on what is shown above it.
      */
     private void updateTileGridPadding() {
+        int paddingWithLogoId = SuggestionsConfig.useModernLayout()
+                ? R.dimen.tile_grid_layout_modern_padding_top
+                : R.dimen.tile_grid_layout_padding_top;
         // Set a bit more top padding on the tile grid if there is no logo.
         final int paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
-                        ? R.dimen.tile_grid_layout_padding_top
+                        ? paddingWithLogoId
                         : R.dimen.tile_grid_layout_no_logo_padding_top);
         mSiteSectionViewHolder.itemView.setPadding(
                 0, paddingTop, 0, mSiteSectionViewHolder.itemView.getPaddingBottom());
