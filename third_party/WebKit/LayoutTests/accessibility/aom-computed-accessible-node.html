@@ -88,7 +88,7 @@ promise_test(async function(test) {
     radio1.setAttribute("aria-label", "pasta");
     assert_equals(caxNode1.name, "pizza");
 
-    caxNode1.ensureUpToDate();
+    await caxNode1.ensureUpToDate();
     assert_equals(caxNode1.name, "pasta");
 }, "ComputedAccessibleNode.ensureUpToDate");
 

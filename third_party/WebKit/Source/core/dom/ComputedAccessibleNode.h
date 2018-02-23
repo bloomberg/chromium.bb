@@ -26,20 +26,19 @@ class ComputedAccessibleNodePromiseResolver final
   ~ComputedAccessibleNodePromiseResolver() {}
 
   ScriptPromise Promise();
-
   void ComputeAccessibleNode();
-
+  void EnsureUpToDate();
   void Trace(blink::Visitor*);
 
  private:
   ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   void UpdateTreeAndResolve();
-
   class RequestAnimationFrameCallback;
 
   int continue_callback_request_id_ = 0;
   Member<Element> element_;
   Member<ScriptPromiseResolver> resolver_;
+  bool resolve_with_node_;
 };
 
 class ComputedAccessibleNode : public ScriptWrappable {
@@ -96,10 +95,6 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
  private:
   ComputedAccessibleNode(AXID, WebComputedAXTree*, LocalFrame*);
-
-  // content::ComputedAXTree callback.
-  void OnSnapshotResponse(ScriptPromiseResolver*);
-  void OnUpdateResponse(ScriptPromiseResolver*);
   bool GetBoolAttribute(WebAOMBoolAttribute, bool& is_null) const;
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   float GetFloatAttribute(WebAOMFloatAttribute, bool& is_null) const;
