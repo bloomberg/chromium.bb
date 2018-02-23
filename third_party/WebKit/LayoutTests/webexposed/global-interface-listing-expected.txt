@@ -5266,6 +5266,10 @@ interface RTCDTMFSender : EventTarget
     method constructor
     method insertDTMF
     setter ontonechange
+interface RTCDTMFToneChangeEvent : Event
+    attribute @@toStringTag
+    getter tone
+    method constructor
 interface RTCDataChannel : EventTarget
     attribute @@toStringTag
     getter binaryType
@@ -5370,6 +5374,7 @@ interface RTCRtpReceiver
     method getContributingSources
 interface RTCRtpSender
     attribute @@toStringTag
+    getter dtmf
     getter track
     method constructor
     method replaceTrack

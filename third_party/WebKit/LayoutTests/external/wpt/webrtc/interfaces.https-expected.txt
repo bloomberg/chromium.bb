@@ -247,7 +247,7 @@ FAIL RTCRtpSender interface: operation setParameters(RTCRtpParameters) assert_ow
 FAIL RTCRtpSender interface: operation getParameters() assert_own_property: interface prototype object missing non-static operation expected property "getParameters" missing
 PASS RTCRtpSender interface: operation replaceTrack(MediaStreamTrack)
 FAIL RTCRtpSender interface: operation getStats() assert_own_property: interface prototype object missing non-static operation expected property "getStats" missing
-FAIL RTCRtpSender interface: attribute dtmf assert_true: The prototype object must have a property "dtmf" expected true got false
+PASS RTCRtpSender interface: attribute dtmf
 FAIL RTCRtpSender must be primary interface of new RTCPeerConnection().addTransceiver('audio').sender assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: (intermediate value).addTransceiver is not a function"
 FAIL Stringification of new RTCPeerConnection().addTransceiver('audio').sender assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: (intermediate value).addTransceiver is not a function"
 FAIL RTCRtpSender interface: new RTCPeerConnection().addTransceiver('audio').sender must inherit property "track" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: (intermediate value).addTransceiver is not a function"
@@ -477,12 +477,12 @@ PASS RTCDTMFSender interface: existence and properties of interface prototype ob
 PASS RTCDTMFSender interface: operation insertDTMF(DOMString, unsigned long, unsigned long)
 PASS RTCDTMFSender interface: attribute ontonechange
 PASS RTCDTMFSender interface: attribute toneBuffer
-FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
-FAIL RTCDTMFToneChangeEvent interface object length assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
-FAIL RTCDTMFToneChangeEvent interface object name assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
-FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
-FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
-FAIL RTCDTMFToneChangeEvent interface: attribute tone assert_own_property: self does not have own property "RTCDTMFToneChangeEvent" expected property "RTCDTMFToneChangeEvent" missing
+FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCDTMFToneChangeEvent interface object length
+PASS RTCDTMFToneChangeEvent interface object name
+FAIL RTCDTMFToneChangeEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS RTCDTMFToneChangeEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS RTCDTMFToneChangeEvent interface: attribute tone
 PASS RTCStatsReport interface: existence and properties of interface object
 PASS RTCStatsReport interface object length
 PASS RTCStatsReport interface object name

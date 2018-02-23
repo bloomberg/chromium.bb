@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        MAYBE_CanSetupCallAndSendDtmf) {
-  MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
+  MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,ABC\');");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
