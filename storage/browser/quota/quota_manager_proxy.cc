@@ -55,7 +55,7 @@ void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
 }
 
 void QuotaManagerProxy::NotifyStorageAccessed(QuotaClient::ID client_id,
-                                              const GURL& origin,
+                                              const url::Origin& origin,
                                               blink::mojom::StorageType type) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
@@ -65,11 +65,11 @@ void QuotaManagerProxy::NotifyStorageAccessed(QuotaClient::ID client_id,
   }
 
   if (manager_)
-    manager_->NotifyStorageAccessed(client_id, origin, type);
+    manager_->NotifyStorageAccessed(client_id, origin.GetURL(), type);
 }
 
 void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
-                                              const GURL& origin,
+                                              const url::Origin& origin,
                                               blink::mojom::StorageType type,
                                               int64_t delta) {
   if (!io_thread_->BelongsToCurrentThread()) {
@@ -80,11 +80,10 @@ void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
   }
 
   if (manager_)
-    manager_->NotifyStorageModified(client_id, origin, type, delta);
+    manager_->NotifyStorageModified(client_id, origin.GetURL(), type, delta);
 }
 
-void QuotaManagerProxy::NotifyOriginInUse(
-    const GURL& origin) {
+void QuotaManagerProxy::NotifyOriginInUse(const url::Origin& origin) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,
@@ -93,11 +92,10 @@ void QuotaManagerProxy::NotifyOriginInUse(
   }
 
   if (manager_)
-    manager_->NotifyOriginInUse(origin);
+    manager_->NotifyOriginInUse(origin.GetURL());
 }
 
-void QuotaManagerProxy::NotifyOriginNoLongerInUse(
-    const GURL& origin) {
+void QuotaManagerProxy::NotifyOriginNoLongerInUse(const url::Origin& origin) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE, base::BindOnce(&QuotaManagerProxy::NotifyOriginNoLongerInUse,
@@ -105,11 +103,11 @@ void QuotaManagerProxy::NotifyOriginNoLongerInUse(
     return;
   }
   if (manager_)
-    manager_->NotifyOriginNoLongerInUse(origin);
+    manager_->NotifyOriginNoLongerInUse(origin.GetURL());
 }
 
 void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
-                                             const GURL& origin,
+                                             const url::Origin& origin,
                                              blink::mojom::StorageType type,
                                              bool enabled) {
   if (!io_thread_->BelongsToCurrentThread()) {
@@ -119,12 +117,12 @@ void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
     return;
   }
   if (manager_)
-    manager_->SetUsageCacheEnabled(client_id, origin, type, enabled);
+    manager_->SetUsageCacheEnabled(client_id, origin.GetURL(), type, enabled);
 }
 
 void QuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::StorageType type,
     const UsageAndQuotaCallback& callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
@@ -144,7 +142,7 @@ void QuotaManagerProxy::GetUsageAndQuota(
   TRACE_EVENT0("io", "QuotaManagerProxy::GetUsageAndQuota");
 
   manager_->GetUsageAndQuota(
-      origin, type,
+      origin.GetURL(), type,
       base::Bind(&DidGetUsageAndQuota, base::RetainedRef(original_task_runner),
                  callback));
 }

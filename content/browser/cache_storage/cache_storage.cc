@@ -612,7 +612,7 @@ void CacheStorage::OpenCache(const std::string& cache_name,
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
@@ -628,7 +628,7 @@ void CacheStorage::HasCache(const std::string& cache_name,
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
@@ -644,7 +644,7 @@ void CacheStorage::DoomCache(const std::string& cache_name,
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
@@ -659,7 +659,7 @@ void CacheStorage::EnumerateCaches(IndexCallback callback) {
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
@@ -678,7 +678,7 @@ void CacheStorage::MatchCache(
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(
@@ -697,7 +697,7 @@ void CacheStorage::MatchAllCaches(
     LazyInit();
 
   quota_manager_proxy_->NotifyStorageAccessed(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary);
 
   scheduler_->ScheduleOperation(base::BindOnce(
@@ -970,7 +970,7 @@ void CacheStorage::DeleteCacheFinalize(CacheStorageCache* doomed_cache) {
 void CacheStorage::DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
                                          int64_t cache_size) {
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       StorageType::kTemporary, -1 * cache_size);
 
   cache_loader_->CleanUpDeletedCache(doomed_cache);

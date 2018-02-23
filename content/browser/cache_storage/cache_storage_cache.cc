@@ -510,7 +510,7 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
   // GetUsageAndQuota is called before entering a scheduled operation since it
   // can call Size, another scheduled operation.
   quota_manager_proxy_->GetUsageAndQuota(
-      base::ThreadTaskRunnerHandle::Get().get(), origin_.GetURL(),
+      base::ThreadTaskRunnerHandle::Get().get(), origin_,
       blink::mojom::StorageType::kTemporary,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
@@ -557,7 +557,7 @@ void CacheStorageCache::BatchOperation(
     // Put runs, the cache might already be full and the origin will be larger
     // than it's supposed to be.
     quota_manager_proxy_->GetUsageAndQuota(
-        base::ThreadTaskRunnerHandle::Get().get(), origin_.GetURL(),
+        base::ThreadTaskRunnerHandle::Get().get(), origin_,
         blink::mojom::StorageType::kTemporary,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &CacheStorageCache::BatchDidGetUsageAndQuota,
@@ -726,7 +726,7 @@ void CacheStorageCache::SetObserver(CacheStorageCacheObserver* observer) {
 }
 
 CacheStorageCache::~CacheStorageCache() {
-  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_.GetURL());
+  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
 }
 
 CacheStorageCache::CacheStorageCache(
@@ -766,7 +766,7 @@ CacheStorageCache::CacheStorageCache(
     last_reported_size_ = cache_size_ + cache_padding_;
   }
 
-  quota_manager_proxy_->NotifyOriginInUse(origin_.GetURL());
+  quota_manager_proxy_->NotifyOriginInUse(origin_);
 }
 
 void CacheStorageCache::QueryCache(
@@ -1542,7 +1542,7 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
   last_reported_size_ = PaddedCacheSize();
 
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
+      storage::QuotaClient::kServiceWorkerCache, origin_,
       blink::mojom::StorageType::kTemporary, size_delta);
 
   if (cache_storage_)

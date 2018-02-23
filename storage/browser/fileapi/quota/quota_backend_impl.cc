@@ -17,6 +17,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -46,13 +47,11 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
   }
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->GetUsageAndQuota(
-      file_task_runner_.get(),
-      origin,
+      file_task_runner_.get(), url::Origin::Create(origin),
       FileSystemTypeToQuotaStorageType(type),
       base::Bind(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
                  weak_ptr_factory_.GetWeakPtr(),
-                 QuotaReservationInfo(origin, type, delta),
-                 callback));
+                 QuotaReservationInfo(origin, type, delta), callback));
 }
 
 void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,
@@ -143,10 +142,8 @@ void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(info.origin.is_valid());
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kFileSystem,
-      info.origin,
-      FileSystemTypeToQuotaStorageType(info.type),
-      info.delta);
+      storage::QuotaClient::kFileSystem, url::Origin::Create(info.origin),
+      FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 
 base::File::Error QuotaBackendImpl::GetUsageCachePath(

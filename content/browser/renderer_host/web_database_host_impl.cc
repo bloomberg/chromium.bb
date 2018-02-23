@@ -184,8 +184,7 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
   }
 
   db_tracker_->quota_manager_proxy()->GetUsageAndQuota(
-      db_tracker_->task_runner(), origin.GetURL(),
-      blink::mojom::StorageType::kTemporary,
+      db_tracker_->task_runner(), origin, blink::mojom::StorageType::kTemporary,
       base::Bind(
           [](GetSpaceAvailableCallback callback,
              blink::mojom::QuotaStatusCode status, int64_t usage,

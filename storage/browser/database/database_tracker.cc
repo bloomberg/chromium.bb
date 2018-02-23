@@ -27,6 +27,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -117,7 +118,8 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        url::Origin::Create(
+            storage::GetOriginFromIdentifier(origin_identifier)),
         blink::mojom::StorageType::kTemporary);
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
@@ -154,7 +156,8 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        url::Origin::Create(
+            storage::GetOriginFromIdentifier(origin_identifier)),
         blink::mojom::StorageType::kTemporary);
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
@@ -372,7 +375,8 @@ bool DatabaseTracker::DeleteClosedDatabase(
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        url::Origin::Create(
+            storage::GetOriginFromIdentifier(origin_identifier)),
         blink::mojom::StorageType::kTemporary, -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
@@ -432,7 +436,8 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kDatabase,
-        storage::GetOriginFromIdentifier(origin_identifier),
+        url::Origin::Create(
+            storage::GetOriginFromIdentifier(origin_identifier)),
         blink::mojom::StorageType::kTemporary, -deleted_size);
   }
 
@@ -629,7 +634,7 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
           storage::QuotaClient::kDatabase,
-          storage::GetOriginFromIdentifier(origin_id),
+          url::Origin::Create(storage::GetOriginFromIdentifier(origin_id)),
           blink::mojom::StorageType::kTemporary, new_size - old_size);
     for (auto& observer : observers_)
       observer.OnDatabaseSizeChanged(origin_id, name, new_size);

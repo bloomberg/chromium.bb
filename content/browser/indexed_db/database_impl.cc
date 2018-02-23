@@ -910,7 +910,7 @@ void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
   }
 
   indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
-      indexed_db_context_->TaskRunner(), origin_.GetURL(),
+      indexed_db_context_->TaskRunner(), origin_,
       blink::mojom::StorageType::kTemporary,
       base::Bind(&IDBSequenceHelper::OnGotUsageAndQuotaForCommit,
                  weak_factory_.GetWeakPtr(), transaction_id));
