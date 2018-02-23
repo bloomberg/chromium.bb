@@ -11,7 +11,6 @@ goog.provide('mr.presentation.webrtc.CloudWebRtcSession');
 goog.require('mr.MessagePortService');
 goog.require('mr.PromiseResolver');
 goog.require('mr.presentation.Session');
-goog.require('mr.webrtc.ChannelType');
 goog.require('mr.webrtc.Message');
 goog.require('mr.webrtc.MessageType');
 goog.require('mr.webrtc.OfferMessageData');
@@ -186,22 +185,8 @@ mr.presentation.webrtc.CloudWebRtcSession = class {
    * @private
    */
   sendMessageToMrp_(message) {
-    this.messagePort_.sendMessage(
-        message, CloudWebRtcSession.CLOUD_CHANNEL_EXTRA_INFO_);
+    this.messagePort_.sendMessage(message);
   }
-};
-
-const CloudWebRtcSession = mr.presentation.webrtc.CloudWebRtcSession;
-
-
-/**
- * The extra info to pass for cloud channel messages.
- * Gets passed as opt_extraInfo to mr.CloudProvider.sendRouteMessage.
- * @const {{channelType: mr.webrtc.ChannelType}}
- * @private
- */
-CloudWebRtcSession.CLOUD_CHANNEL_EXTRA_INFO_ = {
-  'channelType': mr.webrtc.ChannelType.CLOUD
 };
 
 });  // goog.scope

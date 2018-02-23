@@ -18,7 +18,8 @@ goog.scope(function() {
  * @enum {string}
  */
 mr.webrtc.ChannelType = {
-  CLOUD: 'cloud',
+  WEAVE: 'weave',
+  SLARTI: 'slarti',
   MESI: 'mesi'
 };
 
@@ -52,10 +53,11 @@ mr.webrtc.MessageType = {
   AUTH_READY: 'AUTH_READY',  // Response that auth token was updated.
 
   // Route details control messages.
-  MUTE: 'MUTE',                              // Request to mute audio.
-  LOCAL_PRESENT: 'LOCAL_PRESENT',            // Request to disable conf mode.
-  ROUTE_STATUS_REQUEST: 'STATUS_REQUEST',    // Request for route status update.
-  ROUTE_STATUS_RESPONSE: 'STATUS_RESPONSE',  // Reponse to route details status.
+  MUTE: 'MUTE',                            // Request to mute audio.
+  LOCAL_PRESENT: 'LOCAL_PRESENT',          // Request to disable conf mode.
+  ROUTE_STATUS_REQUEST: 'STATUS_REQUEST',  // Request for route status update.
+  ROUTE_STATUS_RESPONSE:
+      'STATUS_RESPONSE',  // Response to route details status.
 
   // Hangout issues.
   HANGOUT_INVALID: 'HANGOUT_INVALID',    // Hangout name could not be resolved.

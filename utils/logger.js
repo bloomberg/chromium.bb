@@ -8,6 +8,9 @@ goog.require('mr.Assertions');
 goog.require('mr.Config');
 
 
+/**
+ * An object for recording logs.
+ */
 mr.Logger = class {
   /**
    * @param {string} name
@@ -50,9 +53,13 @@ mr.Logger = class {
   }
 
   /**
+   * Logs a message at the specified log level with an optional exception.
+   *
    * @param {mr.Logger.Level} level
    * @param {mr.Logger.Loggable} message
-   * @param {*=} exception
+   * @param {*=} exception An exception to associate with the log message.  This
+   *     should normally be an Error instance for best results, but any type is
+   *     acceptable.
    */
   log(level, message, exception = undefined) {
     if (level < mr.Logger.level) {
@@ -143,7 +150,7 @@ mr.Logger = class {
   }
 
   /**
-   * Converts a numeric log level (as used in the Closure libary) into a log
+   * Converts a numeric log level (as used in the Closure library) into a log
    * level constant.
    * @param {number} levelValue
    * @return {mr.Logger.Level}
@@ -175,6 +182,7 @@ mr.Logger.instances_ = new Map();
 
 
 /**
+ * The available log levels.
  * @enum {number}
  */
 mr.Logger.Level = {
@@ -186,6 +194,7 @@ mr.Logger.Level = {
 
 
 /**
+ * The canonical names of log levels in ascending order of severity.
  * @private const {!Array<string>}
  */
 mr.Logger.LEVEL_NAMES_ = ['FINE', 'INFO', 'WARNING', 'SEVERE'];
@@ -217,6 +226,12 @@ mr.Logger.SINK_ID_REGEXP_ = /(dial|cast):<([a-zA-Z0-9]+)>/gi;
 
 
 /**
+ * An abstract represenation of a log message.
+ *
+ * The `time` field should be in the format returned by `Date.now()`.  The
+ * `exception` field will typically be an Error instance, but code that handles
+ * log records must be prepared to handle any type.
+ *
  * @typedef {{
  *   level: mr.Logger.Level,
  *   logger: string,
