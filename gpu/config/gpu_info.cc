@@ -75,11 +75,6 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
-      basic_info_state(kCollectInfoNone),
-      context_info_state(kCollectInfoNone),
-#if defined(OS_WIN)
-      dx_diagnostics_info_state(kCollectInfoNone),
-#endif
       jpeg_decode_accelerator_supported(false)
 #if defined(USE_X11)
       ,
@@ -135,10 +130,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool direct_composition;
     bool supports_overlays;
     bool can_support_threaded_texture_mailbox;
-    CollectInfoResult basic_info_state;
-    CollectInfoResult context_info_state;
 #if defined(OS_WIN)
-    CollectInfoResult dx_diagnostics_info_state;
     DxDiagNode dx_diagnostics;
 #endif
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
@@ -196,11 +188,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("supportsOverlays", supports_overlays);
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
-  enumerator->AddInt("basicInfoState", basic_info_state);
-  enumerator->AddInt("contextInfoState", context_info_state);
-#if defined(OS_WIN)
-  enumerator->AddInt("DxDiagnosticsInfoState", dx_diagnostics_info_state);
-#endif
   // TODO(kbr): add dx_diagnostics on Windows.
   enumerator->AddInt("videoDecodeAcceleratorFlags",
                      video_decode_accelerator_capabilities.flags);

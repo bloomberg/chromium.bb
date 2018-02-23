@@ -256,7 +256,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   bool gpu_changed = false;
   if (flags & kCGDisplayAddFlag) {
     gpu::GPUInfo gpu_info;
-    if (gpu::CollectBasicGraphicsInfo(&gpu_info) == gpu::kCollectInfoSuccess) {
+    if (gpu::CollectBasicGraphicsInfo(&gpu_info)) {
       gpu_changed = manager->UpdateActiveGpu(gpu_info.active_gpu().vendor_id,
                                              gpu_info.active_gpu().device_id);
     }
@@ -351,13 +351,6 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
   if (swiftshader_available)
     return true;
 
-  if (!gpu_process_accessible_) {
-    if (reason) {
-      *reason = "GPU process launch failed.";
-    }
-    return false;
-  }
-
   if (in_process_gpu_)
     return true;
 
@@ -400,9 +393,8 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
-  // Now we collect GPU info on the GPU side, so whatever returns is valid.
-  return (gpu_info_.basic_info_state != gpu::kCollectInfoNone ||
-          gpu_info_.context_info_state != gpu::kCollectInfoNone);
+  // We always update GPUInfo and GpuFeatureInfo from GPU process together.
+  return IsGpuFeatureInfoAvailable();
 }
 
 bool GpuDataManagerImplPrivate::IsGpuFeatureInfoAvailable() const {
@@ -578,11 +570,6 @@ void GpuDataManagerImplPrivate::OnGpuProcessBlocked() {
       gpu::ComputeGpuFeatureInfoWithNoGpuProcess();
   UpdateGpuFeatureInfo(gpu_feature_info);
 
-  // This is needed for IsEssentialGpuInfoAvailable() to return
-  // true. Otherwise some observers may keep waiting for the next
-  // GPUInfo update.
-  // TODO(zmo): Clean up this hack.
-  gpu_info_.context_info_state = gpu::kCollectInfoFatalFailure;
   // Some observers might be waiting.
   NotifyGpuInfoUpdate();
 }
@@ -752,7 +739,6 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       update_histograms_(true),
       domain_blocking_enabled_(true),
       owner_(owner),
-      gpu_process_accessible_(true),
       in_process_gpu_(false) {
   DCHECK(owner_);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -897,14 +883,19 @@ void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& top_origin_url,
 }
 
 void GpuDataManagerImplPrivate::OnGpuProcessInitFailure() {
-  gpu_process_accessible_ = false;
-  gpu_info_.context_info_state = gpu::kCollectInfoFatalFailure;
-#if defined(OS_WIN)
-  gpu_info_.dx_diagnostics_info_state = gpu::kCollectInfoFatalFailure;
-#endif
-  complete_gpu_info_already_requested_ = true;
-  // Some observers might be waiting.
-  NotifyGpuInfoUpdate();
+  if (!card_disabled_) {
+    DisableHardwareAcceleration();
+    return;
+  }
+  if (!swiftshader_blocked_) {
+    BlockSwiftShader();
+    return;
+  }
+  // If GPU process fails to launch with hardware GPU, and then fails
+  // to launch with SwiftShader if available, then GPU process should
+  // not launch again.
+  // TODO(zmo): In viz mode, we will have a GPU process no matter what.
+  NOTREACHED();
 }
 
 }  // namespace content

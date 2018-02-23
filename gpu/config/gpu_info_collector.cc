@@ -112,9 +112,8 @@ int StringContainsName(
 
 namespace gpu {
 
-CollectInfoResult CollectBasicGraphicsInfo(
-    const base::CommandLine* command_line,
-    GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
+                              GPUInfo* gpu_info) {
   const char* software_gl_impl_name =
       gl::GetGLImplementationName(gl::GetSoftwareGLImplementation());
   if ((command_line->GetSwitchValueASCII(switches::kUseGL) ==
@@ -133,27 +132,26 @@ CollectInfoResult CollectBasicGraphicsInfo(
     // blacklist rules.
     gpu_info->driver_vendor = software_gl_impl_name;
 
-    gpu_info->basic_info_state = gpu::kCollectInfoSuccess;
-    return kCollectInfoSuccess;
+    return true;
   }
 
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone);
 
   scoped_refptr<gl::GLSurface> surface(InitializeGLSurface());
   if (!surface.get()) {
     LOG(ERROR) << "Could not create surface for info collection.";
-    return kCollectInfoFatalFailure;
+    return false;
   }
 
   scoped_refptr<gl::GLContext> context(InitializeGLContext(surface.get()));
   if (!context.get()) {
     LOG(ERROR) << "Could not create context for info collection.";
-    return kCollectInfoFatalFailure;
+    return false;
   }
 
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
@@ -222,7 +220,8 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->vertex_shader_version = glsl_version;
 
   IdentifyActiveGPU(gpu_info);
-  return CollectDriverInfoGL(gpu_info);
+  CollectDriverInfoGL(gpu_info);
+  return true;
 }
 
 void IdentifyActiveGPU(GPUInfo* gpu_info) {

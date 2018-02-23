@@ -68,8 +68,7 @@ void GetAMDVideocardInfo(GPUInfo* gpu_info) {
 }
 #endif
 
-CollectInfoResult CollectDriverInfoD3D(const std::wstring& device_id,
-                                       GPUInfo* gpu_info) {
+bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
   // Display adapter class GUID from
@@ -84,7 +83,7 @@ CollectInfoResult CollectDriverInfoD3D(const std::wstring& device_id,
       ::SetupDiGetClassDevs(&display_class, NULL, NULL, DIGCF_PRESENT);
   if (device_info == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Creating device info failed";
-    return kCollectInfoNonFatalFailure;
+    return false;
   }
 
   struct GPUDriver {
@@ -224,19 +223,16 @@ CollectInfoResult CollectDriverInfoD3D(const std::wstring& device_id,
     }
   }
 
-  return found ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
+  return found;
 }
 
-CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
 
-  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
-  if (result != kCollectInfoSuccess) {
-    gpu_info->context_info_state = result;
-    return result;
-  }
+  if (!CollectGraphicsInfoGL(gpu_info))
+    return false;
 
   // ANGLE's renderer strings are of the form:
   // ANGLE (<adapter_identifier> Direct3D<version> vs_x_x ps_x_x)
@@ -295,15 +291,11 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
     // DirectX diagnostics are collected asynchronously because it takes a
     // couple of seconds.
-  } else {
-    gpu_info->dx_diagnostics_info_state = kCollectInfoNonFatalFailure;
   }
-
-  gpu_info->context_info_state = kCollectInfoSuccess;
-  return kCollectInfoSuccess;
+  return true;
 }
 
-CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
 
   DCHECK(gpu_info);
@@ -332,32 +324,24 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     // Chained DD" or the citrix display driver.
     if (wcscmp(dd.DeviceString, L"RDPUDD Chained DD") != 0 &&
         wcscmp(dd.DeviceString, L"Citrix Systems Inc. Display Driver") != 0) {
-      gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
-      return kCollectInfoNonFatalFailure;
+      return false;
     }
   }
 
   DeviceIDToVendorAndDevice(id, &gpu_info->gpu.vendor_id,
                             &gpu_info->gpu.device_id);
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
-  if (!CollectDriverInfoD3D(id, gpu_info)) {
-    gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
-    return kCollectInfoNonFatalFailure;
-  }
-
-  gpu_info->basic_info_state = kCollectInfoSuccess;
-  return kCollectInfoSuccess;
+  return CollectDriverInfoD3D(id, gpu_info);
 }
 
-CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoGL");
 
   if (!gpu_info->driver_version.empty())
-    return kCollectInfoSuccess;
+    return;
 
-  bool parsed = RE2::PartialMatch(
-      gpu_info->gl_version, "([\\d\\.]+)$", &gpu_info->driver_version);
-  return parsed ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
+  RE2::PartialMatch(gpu_info->gl_version, "([\\d\\.]+)$",
+                    &gpu_info->driver_version);
 }
 
 }  // namespace gpu

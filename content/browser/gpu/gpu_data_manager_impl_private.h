@@ -194,8 +194,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   GpuDataManagerImpl* owner_;
 
-  bool gpu_process_accessible_;
-
   // True if --single-process or --in-process-gpu is passed in.
   bool in_process_gpu_;
 

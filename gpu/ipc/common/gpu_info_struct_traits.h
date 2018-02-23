@@ -43,15 +43,6 @@ struct StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice> {
 };
 
 template <>
-struct EnumTraits<gpu::mojom::CollectInfoResult, gpu::CollectInfoResult> {
-  static gpu::mojom::CollectInfoResult ToMojom(
-      gpu::CollectInfoResult collect_info_result);
-
-  static bool FromMojom(gpu::mojom::CollectInfoResult input,
-                        gpu::CollectInfoResult* out);
-};
-
-template <>
 struct EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile> {
   static gpu::mojom::VideoCodecProfile ToMojom(
       gpu::VideoCodecProfile video_codec_profile);
@@ -248,13 +239,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.can_support_threaded_texture_mailbox;
   }
 
-  static gpu::CollectInfoResult basic_info_state(const gpu::GPUInfo& input) {
-    return input.basic_info_state;
-  }
-
-  static gpu::CollectInfoResult context_info_state(const gpu::GPUInfo& input) {
-    return input.context_info_state;
-  }
 #if defined(OS_WIN)
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
@@ -266,15 +250,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return dx_diag_node;
   }
 #endif
-
-  static gpu::CollectInfoResult dx_diagnostics_info_state(
-      const gpu::GPUInfo& input) {
-#if defined(OS_WIN)
-    return input.dx_diagnostics_info_state;
-#else
-    return gpu::CollectInfoResult::kCollectInfoNone;
-#endif
-  }
 
   static const gpu::VideoDecodeAcceleratorCapabilities&
   video_decode_accelerator_capabilities(const gpu::GPUInfo& input) {

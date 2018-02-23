@@ -380,7 +380,7 @@ TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
     gpu_info.gl_renderer = testStrings.gl_renderer;
     gpu_info.gl_vendor = testStrings.gl_vendor;
     gpu_info.gl_version = testStrings.gl_version;
-    EXPECT_EQ(kCollectInfoSuccess, CollectDriverInfoGL(&gpu_info));
+    CollectDriverInfoGL(&gpu_info);
     EXPECT_EQ(testStrings.expected_driver_version, gpu_info.driver_version);
     if (testStrings.expected_driver_vendor) {
       EXPECT_EQ(testStrings.expected_driver_vendor, gpu_info.driver_vendor);

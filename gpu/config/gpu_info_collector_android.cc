@@ -58,7 +58,7 @@ std::string GetDriverVersionFromString(const std::string& version_string) {
 
 namespace gpu {
 
-CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   // When command buffer is compiled as a standalone library, the process might
   // not have a Java environment.
   if (base::android::IsVMInitialized()) {
@@ -67,23 +67,19 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   // At this point GL bindings have been initialized already.
-  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
-  gpu_info->basic_info_state = result;
-  gpu_info->context_info_state = result;
-  return result;
+  return CollectGraphicsInfoGL(gpu_info);
 }
 
-CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   NOTREACHED();
-  return kCollectInfoNone;
+  return false;
 }
 
-CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
   gpu_info->driver_version = GetDriverVersionFromString(
       gpu_info->gl_version);
   gpu_info->gpu.vendor_string = gpu_info->gl_vendor;
   gpu_info->gpu.device_string = gpu_info->gl_renderer;
-  return kCollectInfoSuccess;
 }
 
 }  // namespace gpu

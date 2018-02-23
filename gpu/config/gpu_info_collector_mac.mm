@@ -9,32 +9,23 @@
 
 namespace gpu {
 
-CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
-  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
-  gpu_info->context_info_state = result;
-  return result;
+  return CollectGraphicsInfoGL(gpu_info);
 }
 
-CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   angle::SystemInfo system_info;
   bool success = angle::GetSystemInfo(&system_info);
   FillGPUInfoFromSystemInfo(gpu_info, &system_info);
-
-  if (success) {
-    gpu_info->basic_info_state = kCollectInfoSuccess;
-  } else {
-    gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
-  }
-
-  return gpu_info->basic_info_state;
+  return success;
 }
 
-CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   // Extract the OpenGL driver version string from the GL_VERSION string.
@@ -43,9 +34,8 @@ CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
   // Use some jiggery-pokery to turn that utf8 string into a std::wstring.
   size_t pos = gpu_info->gl_version.find_last_of('-');
   if (pos == std::string::npos)
-    return kCollectInfoNonFatalFailure;
+    return;
   gpu_info->driver_version = gpu_info->gl_version.substr(pos + 1);
-  return kCollectInfoSuccess;
 }
 
 }  // namespace gpu
