@@ -34,6 +34,25 @@
 
 namespace blink {
 
+namespace {
+
+void UpdateAnimationFlagsForEffect(const KeyframeEffectReadOnly& effect,
+                                   ComputedStyle& style) {
+  if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
+    style.SetHasCurrentOpacityAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyTransform())) ||
+      effect.Affects(PropertyHandle(GetCSSPropertyRotate())) ||
+      effect.Affects(PropertyHandle(GetCSSPropertyScale())) ||
+      effect.Affects(PropertyHandle(GetCSSPropertyTranslate())))
+    style.SetHasCurrentTransformAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyFilter())))
+    style.SetHasCurrentFilterAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
+    style.SetHasCurrentBackdropFilterAnimation(true);
+}
+
+}  // namespace
+
 ElementAnimations::ElementAnimations() : animation_style_change_(false) {}
 
 ElementAnimations::~ElementAnimations() = default;
@@ -46,19 +65,17 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
     DCHECK(animation.effect()->IsKeyframeEffectReadOnly());
     const KeyframeEffectReadOnly& effect =
         *ToKeyframeEffectReadOnly(animation.effect());
-    if (effect.IsCurrent()) {
-      if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
-        style.SetHasCurrentOpacityAnimation(true);
-      if (effect.Affects(PropertyHandle(GetCSSPropertyTransform())) ||
-          effect.Affects(PropertyHandle(GetCSSPropertyRotate())) ||
-          effect.Affects(PropertyHandle(GetCSSPropertyScale())) ||
-          effect.Affects(PropertyHandle(GetCSSPropertyTranslate())))
-        style.SetHasCurrentTransformAnimation(true);
-      if (effect.Affects(PropertyHandle(GetCSSPropertyFilter())))
-        style.SetHasCurrentFilterAnimation(true);
-      if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
-        style.SetHasCurrentBackdropFilterAnimation(true);
-    }
+    if (!effect.IsCurrent())
+      continue;
+    UpdateAnimationFlagsForEffect(effect, style);
+  }
+
+  for (const auto& entry : worklet_animations_) {
+    const KeyframeEffectReadOnly& effect = *entry->GetEffect();
+    // TODO(majidvp): we should check the effect's phase before updating the
+    // style once the timing of effect is ready to use.
+    // https://crbug.com/814851.
+    UpdateAnimationFlagsForEffect(effect, style);
   }
 
   if (style.HasCurrentOpacityAnimation()) {
@@ -92,6 +109,7 @@ void ElementAnimations::Trace(blink::Visitor* visitor) {
   visitor->Trace(css_animations_);
   visitor->Trace(effect_stack_);
   visitor->Trace(animations_);
+  visitor->Trace(worklet_animations_);
 }
 
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {

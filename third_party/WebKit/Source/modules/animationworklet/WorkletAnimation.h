@@ -71,6 +71,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }
 
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
+  KeyframeEffectReadOnly* GetEffect() const override { return effects_.at(0); }
 
   void Trace(blink::Visitor*) override;
 

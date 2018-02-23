@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/animation/EffectStack.h"
+#include "core/animation/WorkletAnimationBase.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashMap.h"
@@ -43,8 +44,10 @@ namespace blink {
 class CSSAnimations;
 
 using AnimationCountedSet = HeapHashCountedSet<WeakMember<Animation>>;
+using WorkletAnimationSet = HeapHashSet<WeakMember<WorkletAnimationBase>>;
 
-class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
+class CORE_EXPORT ElementAnimations
+    : public GarbageCollectedFinalized<ElementAnimations> {
  public:
   ElementAnimations();
   ~ElementAnimations();
@@ -62,6 +65,8 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
 
   // Animations which have effects targeting this element.
   AnimationCountedSet& Animations() { return animations_; }
+  // Worklet Animations which have effects targeting this element.
+  WorkletAnimationSet& GetWorkletAnimations() { return worklet_animations_; }
 
   bool IsEmpty() const {
     return effect_stack_.IsEmpty() && css_animations_.IsEmpty() &&
@@ -87,6 +92,7 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   EffectStack effect_stack_;
   CSSAnimations css_animations_;
   AnimationCountedSet animations_;
+  WorkletAnimationSet worklet_animations_;
   bool animation_style_change_;
   scoped_refptr<ComputedStyle> base_computed_style_;
 

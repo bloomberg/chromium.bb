@@ -4,11 +4,6 @@
   width: 100px;
   height: 100px;
   background-color: #00ff00;
-  /*
-  * Force compositing.
-  * TODO(majidvp): Should not be needed when http://crbug.com/776533 is fixed.
-  */
-  will-change: transform;
 }
 
 #covered {
@@ -21,11 +16,7 @@
   overflow: auto;
   height: 100px;
   width: 100px;
-  /*
-  * Force compositing.
-  * TODO(crbug.com/776533): Shouldn't be needed - we should fallback to main if scroller isn't composited.
-  */
-  will-change: transform;
+  will-change: transform; /* force compositing */
 }
 
 #contents {

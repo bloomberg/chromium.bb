@@ -198,18 +198,36 @@ String WorkletAnimation::playState() {
 
 void WorkletAnimation::play() {
   DCHECK(IsMainThread());
-  if (play_state_ != Animation::kPending) {
-    document_->GetWorkletAnimationController().AttachAnimation(*this);
-    play_state_ = Animation::kPending;
-  }
+  if (play_state_ == Animation::kPending)
+    return;
+  document_->GetWorkletAnimationController().AttachAnimation(*this);
+  play_state_ = Animation::kPending;
+
+  KeyframeEffectReadOnly* target_effect = effects_.at(0);
+  Element* target = target_effect->target();
+  if (!target)
+    return;
+  target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
+  // TODO(majidvp): This should be removed once worklet animation correctly
+  // updates its effect timing. https://crbug.com/814851.
+  target->SetNeedsAnimationStyleRecalc();
 }
 
 void WorkletAnimation::cancel() {
   DCHECK(IsMainThread());
-  if (play_state_ != Animation::kIdle) {
-    document_->GetWorkletAnimationController().DetachAnimation(*this);
-    play_state_ = Animation::kIdle;
-  }
+  if (play_state_ == Animation::kIdle)
+    return;
+  document_->GetWorkletAnimationController().DetachAnimation(*this);
+  play_state_ = Animation::kIdle;
+
+  KeyframeEffectReadOnly* target_effect = effects_.at(0);
+  Element* target = target_effect->target();
+  if (!target)
+    return;
+  target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
+  // TODO(majidvp): This should be removed once worklet animation correctly
+  // updates its effect timing. https://crbug.com/814851.
+  target->SetNeedsAnimationStyleRecalc();
 }
 
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
@@ -261,9 +279,6 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
           document_->Timeline().CompositorTimeline())
     compositor_timeline->AnimationAttached(*this);
 
-  // TODO(smcgruer): Creating a WorkletAnimation should be a hint to blink
-  // compositing that the animated element should be promoted. Otherwise this
-  // fails. http://crbug.com/776533
   CompositorAnimations::AttachCompositedLayers(target,
                                                compositor_animation_.get());
 

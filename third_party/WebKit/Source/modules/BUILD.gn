@@ -240,6 +240,7 @@ jumbo_source_set("unit_tests") {
     "accessibility/testing/AccessibilityTest.h",
     "animationworklet/AnimationWorkletGlobalScopeTest.cpp",
     "animationworklet/AnimationWorkletThreadTest.cpp",
+    "animationworklet/WorkletAnimationTest.cpp",
     "background_fetch/BackgroundFetchManagerTest.cpp",
     "cachestorage/CacheTest.cpp",
     "canvas/canvas2d/CanvasRenderingContext2DAPITest.cpp",

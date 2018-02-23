@@ -12,6 +12,7 @@
 namespace blink {
 
 class Document;
+class KeyframeEffectReadOnly;
 
 class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
  public:
@@ -27,6 +28,7 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
   virtual bool StartOnCompositor(String* failure_message) = 0;
 
   virtual Document* GetDocument() const = 0;
+  virtual KeyframeEffectReadOnly* GetEffect() const = 0;
 };
 
 }  // namespace blink
