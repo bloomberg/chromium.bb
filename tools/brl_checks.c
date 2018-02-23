@@ -287,7 +287,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 	}
 
 	if (in.direction == 2) // Additional reduced backward test
-			retval = reduced_backtrans_check(tableList, expected, input, in);
+			retval |= reduced_backtrans_check(tableList, expected, input, in);
 
 fail:
 	free(inbuf);
