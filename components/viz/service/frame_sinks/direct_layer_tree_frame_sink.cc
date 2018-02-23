@@ -50,25 +50,6 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
   capabilities_.delegated_sync_points_required = false;
 }
 
-DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
-    const FrameSinkId& frame_sink_id,
-    CompositorFrameSinkSupportManager* support_manager,
-    FrameSinkManagerImpl* frame_sink_manager,
-    Display* display,
-    mojom::DisplayClient* display_client,
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-    bool use_viz_hit_test)
-    : LayerTreeFrameSink(std::move(vulkan_context_provider)),
-      frame_sink_id_(frame_sink_id),
-      support_manager_(support_manager),
-      frame_sink_manager_(frame_sink_manager),
-      display_(display),
-      display_client_(display_client),
-      use_viz_hit_test_(use_viz_hit_test) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  capabilities_.must_always_swap = true;
-}
-
 DirectLayerTreeFrameSink::~DirectLayerTreeFrameSink() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }

@@ -634,23 +634,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
   // same ContextProvider as the Display's output surface.
-  auto layer_tree_frame_sink =
-      vulkan_context_provider
-          ? std::make_unique<viz::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetHostFrameSinkManager(),
-                GetFrameSinkManager(), data->display.get(),
-                data->display_client.get(),
-                static_cast<scoped_refptr<viz::VulkanContextProvider>>(
-                    vulkan_context_provider),
-                features::IsVizHitTestingEnabled())
-          : std::make_unique<viz::DirectLayerTreeFrameSink>(
-                compositor->frame_sink_id(), GetHostFrameSinkManager(),
-                GetFrameSinkManager(), data->display.get(),
-                data->display_client.get(), context_provider,
-                shared_worker_context_provider_, compositor->task_runner(),
-                GetGpuMemoryBufferManager(),
-                viz::ServerSharedBitmapManager::current(),
-                features::IsVizHitTestingEnabled());
+  auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
+      compositor->frame_sink_id(), GetHostFrameSinkManager(),
+      GetFrameSinkManager(), data->display.get(), data->display_client.get(),
+      context_provider, shared_worker_context_provider_,
+      compositor->task_runner(), GetGpuMemoryBufferManager(),
+      viz::ServerSharedBitmapManager::current(),
+      features::IsVizHitTestingEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));

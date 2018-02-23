@@ -55,22 +55,6 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
   DETACH_FROM_THREAD(thread_checker_);
 }
 
-ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-    InitParams* params)
-    : cc::LayerTreeFrameSink(std::move(vulkan_context_provider)),
-      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
-      local_surface_id_provider_(std::move(params->local_surface_id_provider)),
-      synthetic_begin_frame_source_(
-          std::move(params->synthetic_begin_frame_source)),
-      pipes_(std::move(params->pipes)),
-      client_binding_(this),
-      enable_surface_synchronization_(params->enable_surface_synchronization),
-      wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
-      weak_factory_(this) {
-  DETACH_FROM_THREAD(thread_checker_);
-}
-
 ClientLayerTreeFrameSink::~ClientLayerTreeFrameSink() {}
 
 base::WeakPtr<ClientLayerTreeFrameSink> ClientLayerTreeFrameSink::GetWeakPtr() {

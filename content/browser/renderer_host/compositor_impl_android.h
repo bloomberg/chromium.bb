@@ -45,7 +45,6 @@ class FrameSinkId;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 class OutputSurface;
-class VulkanContextProvider;
 }
 
 namespace content {
@@ -154,7 +153,6 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
   void InitializeDisplay(
       std::unique_ptr<viz::OutputSurface> display_output_surface,
-      scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers();
 
