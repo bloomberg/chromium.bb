@@ -8,3 +8,6 @@
 
 # Flaky, https://crbug.com/764015.
 -IPCChannelProxyTest.*MessageClassFilters
+
+# Flaky, https://crbug.com/756112.
+-IPCMojoBootstrapTest.Connect
