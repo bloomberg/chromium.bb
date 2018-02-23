@@ -40,7 +40,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
 
 scoped_refptr<base::SingleThreadTaskRunner> ParentFrameTaskRunners::Get(
     TaskType type) {
-  MutexLocker lock(task_runners_mutex_);
+  MutexLocker lock(mutex_);
   return task_runners_.at(type);
 }
 
@@ -49,7 +49,7 @@ void ParentFrameTaskRunners::Trace(blink::Visitor* visitor) {
 }
 
 void ParentFrameTaskRunners::ContextDestroyed(ExecutionContext*) {
-  MutexLocker lock(task_runners_mutex_);
+  MutexLocker lock(mutex_);
   for (auto& entry : task_runners_)
     entry.value = Platform::Current()->CurrentThread()->GetTaskRunner();
 }

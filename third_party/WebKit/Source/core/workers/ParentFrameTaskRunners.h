@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/TaskTypeTraits.h"
@@ -41,7 +42,8 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
   // Might return nullptr for unsupported task types. This can be called from
   // any threads.
-  scoped_refptr<base::SingleThreadTaskRunner> Get(TaskType);
+  scoped_refptr<base::SingleThreadTaskRunner> Get(TaskType)
+      LOCKS_EXCLUDED(mutex_);
 
   void Trace(blink::Visitor*) override;
 
@@ -55,10 +57,11 @@ class CORE_EXPORT ParentFrameTaskRunners final
   // particular local frame.
   explicit ParentFrameTaskRunners(LocalFrame*);
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext*) LOCKS_EXCLUDED(mutex_) override;
 
-  Mutex task_runners_mutex_;
-  TaskRunnerHashMap task_runners_;
+  Mutex mutex_;
+  TaskRunnerHashMap task_runners_ GUARDED_BY(mutex_);
+
   DISALLOW_COPY_AND_ASSIGN(ParentFrameTaskRunners);
 };
 
