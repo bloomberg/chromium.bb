@@ -286,6 +286,9 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'FormHandlingTest.testShouldSubmitAFormUsingTheEnterKey',
         'FormHandlingTest.testShouldSubmitAFormUsingTheNewlineLiteral',
         'JavascriptEnabledDriverTest.testShouldBeAbleToFindElementAfterJavascriptCausesANewPageToLoad',
+        'CorrectEventFiringTest.testSendingKeysToAnElementShouldCauseTheFocusEventToFire',
+        'CorrectEventFiringTest.testClearingAnElementShouldCauseTheOnChangeHandlerToFire',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToDetermineTheLocationOfAnElement',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
