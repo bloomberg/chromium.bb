@@ -182,6 +182,10 @@ class URLLoaderInterceptor::SubresourceWrapper {
 
 URLLoaderInterceptor::RequestParams::RequestParams() = default;
 URLLoaderInterceptor::RequestParams::~RequestParams() = default;
+URLLoaderInterceptor::RequestParams::RequestParams(RequestParams&& other) =
+    default;
+URLLoaderInterceptor::RequestParams& URLLoaderInterceptor::RequestParams::
+operator=(RequestParams&& other) = default;
 
 URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
     : callback_(callback) {

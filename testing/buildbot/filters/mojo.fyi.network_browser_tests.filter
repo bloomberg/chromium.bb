@@ -536,15 +536,6 @@
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/1
 
-# TODO(jam)
--CaptivePortalBrowserTest.HstsLogin
--CaptivePortalBrowserTest.HttpsToHttpRedirect
--CaptivePortalBrowserTest.HttpToHttpsRedirectLogin
--CaptivePortalBrowserTest.InterstitialTimerCertErrorAfterSlowLoad
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutSingleSite
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutThreeSites
--CaptivePortalBrowserTest.NavigateLoadingTabToTimeoutTwoSites
-
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702
 -OutOfProcessPPAPITest.FileRef1

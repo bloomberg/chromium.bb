@@ -52,6 +52,8 @@ class URLLoaderInterceptor {
   struct RequestParams {
     RequestParams();
     ~RequestParams();
+    RequestParams(RequestParams&& other);
+    RequestParams& operator=(RequestParams&& other);
     // This is the process_id of the process that is making the request (0 for
     // browser process).
     int process_id;
