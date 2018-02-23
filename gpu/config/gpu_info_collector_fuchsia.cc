@@ -6,22 +6,21 @@
 
 namespace gpu {
 
-CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   // TODO(crbug.com/707031): Implement this.
   NOTIMPLEMENTED();
-  return kCollectInfoFatalFailure;
+  return false;
 }
 
-CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   // TODO(crbug.com/707031): Implement this.
   NOTIMPLEMENTED();
-  return kCollectInfoFatalFailure;
+  return false;
 }
 
-CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {
+void CollectDriverInfoGL(GPUInfo* gpu_info) {
   // TODO(crbug.com/707031): Implement this.
   NOTIMPLEMENTED();
-  return kCollectInfoFatalFailure;
 }
 
 }  // namespace gpu

@@ -41,29 +41,13 @@ namespace gpu {
 
 namespace {
 #if !defined(OS_MACOSX)
-void CollectGraphicsInfo(GPUInfo* gpu_info) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
-  return;
-#else
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
-  CollectInfoResult result = CollectContextGraphicsInfo(gpu_info);
-  switch (result) {
-    case kCollectInfoFatalFailure:
-      LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
-      break;
-    case kCollectInfoNonFatalFailure:
-      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
-      break;
-    case kCollectInfoNone:
-      NOTREACHED();
-      break;
-    case kCollectInfoSuccess:
-      break;
-  }
+  bool success = CollectContextGraphicsInfo(gpu_info);
+  if (!success)
+    LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
 
 #if defined(OS_WIN)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
@@ -77,12 +61,12 @@ void CollectGraphicsInfo(GPUInfo* gpu_info) {
   }
 #endif  // defined(OS_WIN)
 
-  if (result != kCollectInfoFatalFailure) {
+  if (success) {
     base::TimeDelta collect_context_time =
         base::TimeTicks::Now() - before_collect_context_graphics_info;
     UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
   }
-#endif  // defined(OS_FUCHSIA)
+  return success;
 }
 #endif  // defined(OS_MACOSX)
 
@@ -228,8 +212,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // because the basic GPU information is passed down from the host process.
 #if !defined(OS_MACOSX)
   if (!use_swiftshader) {
-    CollectGraphicsInfo(&gpu_info_);
-    if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
+    if (!CollectGraphicsInfo(&gpu_info_))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(

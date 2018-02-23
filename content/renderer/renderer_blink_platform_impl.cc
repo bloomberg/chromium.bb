@@ -1052,25 +1052,14 @@ static void Collect3DContextInformation(
   DCHECK(gl_info);
   gl_info->vendor_id = gpu_info.gpu.vendor_id;
   gl_info->device_id = gpu_info.gpu.device_id;
-  switch (gpu_info.context_info_state) {
-    case gpu::kCollectInfoSuccess:
-    case gpu::kCollectInfoNonFatalFailure:
-      gl_info->renderer_info = WebString::FromUTF8(gpu_info.gl_renderer);
-      gl_info->vendor_info = WebString::FromUTF8(gpu_info.gl_vendor);
-      gl_info->driver_version = WebString::FromUTF8(gpu_info.driver_version);
-      gl_info->reset_notification_strategy =
-          gpu_info.gl_reset_notification_strategy;
-      gl_info->sandboxed = gpu_info.sandboxed;
-      gl_info->amd_switchable = gpu_info.amd_switchable;
-      gl_info->optimus = gpu_info.optimus;
-      break;
-    case gpu::kCollectInfoFatalFailure:
-    case gpu::kCollectInfoNone:
-      gl_info->error_message = WebString::FromUTF8(
-          "Failed to collect gpu information, GLSurface or GLContext "
-          "creation failed");
-      break;
-  }
+  gl_info->renderer_info = WebString::FromUTF8(gpu_info.gl_renderer);
+  gl_info->vendor_info = WebString::FromUTF8(gpu_info.gl_vendor);
+  gl_info->driver_version = WebString::FromUTF8(gpu_info.driver_version);
+  gl_info->reset_notification_strategy =
+      gpu_info.gl_reset_notification_strategy;
+  gl_info->sandboxed = gpu_info.sandboxed;
+  gl_info->amd_switchable = gpu_info.amd_switchable;
+  gl_info->optimus = gpu_info.optimus;
 }
 
 std::unique_ptr<blink::WebGraphicsContext3DProvider>

@@ -427,21 +427,10 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   if (in_host_process())
     return;
 
-  DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
-  gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
-  switch (result) {
-    case gpu::kCollectInfoFatalFailure:
-      LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
-      // TODO(piman): can we signal overall failure?
-      break;
-    case gpu::kCollectInfoNonFatalFailure:
-      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
-      break;
-    case gpu::kCollectInfoNone:
-      NOTREACHED();
-      break;
-    case gpu::kCollectInfoSuccess:
-      break;
+  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_);
+  if (!success) {
+    LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
+    // TODO(piman): can we signal overall failure?
   }
   gpu::SetKeysForCrashLogging(gpu_info_);
   std::move(on_gpu_info_updated).Run();
@@ -471,8 +460,6 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
           [](GpuServiceImpl* gpu_service, base::OnceClosure on_gpu_info_updated,
              const gpu::DxDiagNode& dx_diag_node) {
             gpu_service->gpu_info_.dx_diagnostics = dx_diag_node;
-            gpu_service->gpu_info_.dx_diagnostics_info_state =
-                gpu::kCollectInfoSuccess;
             std::move(on_gpu_info_updated).Run();
           },
           this, std::move(on_gpu_info_updated)));

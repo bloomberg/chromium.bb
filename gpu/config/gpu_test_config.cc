@@ -251,8 +251,7 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
     rt = false;
 #else
     GPUInfo my_gpu_info;
-    CollectInfoResult result = CollectBasicGraphicsInfo(&my_gpu_info);
-    if (result != kCollectInfoSuccess) {
+    if (!CollectBasicGraphicsInfo(&my_gpu_info)) {
       LOG(ERROR) << "Fail to identify GPU";
       rt = false;
     } else {

@@ -154,13 +154,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const bool passthrough_cmd_decoder = true;
   const bool direct_composition = true;
   const bool supports_overlays = true;
-  const gpu::CollectInfoResult basic_info_state =
-      gpu::CollectInfoResult::kCollectInfoSuccess;
-  const gpu::CollectInfoResult context_info_state =
-      gpu::CollectInfoResult::kCollectInfoSuccess;
 #if defined(OS_WIN)
-  const gpu::CollectInfoResult dx_diagnostics_info_state =
-      gpu::CollectInfoResult::kCollectInfoSuccess;
   const DxDiagNode dx_diagnostics;
 #endif
   const gpu::VideoDecodeAcceleratorCapabilities
@@ -202,10 +196,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
   input.direct_composition = direct_composition;
   input.supports_overlays = supports_overlays;
-  input.basic_info_state = basic_info_state;
-  input.context_info_state = context_info_state;
 #if defined(OS_WIN)
-  input.dx_diagnostics_info_state = dx_diagnostics_info_state;
   input.dx_diagnostics = dx_diagnostics;
 #endif
   input.video_decode_accelerator_capabilities =
@@ -263,10 +254,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);
   EXPECT_EQ(direct_composition, output.direct_composition);
   EXPECT_EQ(supports_overlays, output.supports_overlays);
-  EXPECT_EQ(basic_info_state, output.basic_info_state);
-  EXPECT_EQ(context_info_state, output.context_info_state);
 #if defined(OS_WIN)
-  EXPECT_EQ(output.dx_diagnostics_info_state, dx_diagnostics_info_state);
   EXPECT_EQ(dx_diagnostics.values, output.dx_diagnostics.values);
 #endif
   EXPECT_EQ(output.video_decode_accelerator_capabilities.flags,

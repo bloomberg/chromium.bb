@@ -20,46 +20,6 @@ bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
 }
 
 // static
-gpu::mojom::CollectInfoResult
-EnumTraits<gpu::mojom::CollectInfoResult, gpu::CollectInfoResult>::ToMojom(
-    gpu::CollectInfoResult collect_info_result) {
-  switch (collect_info_result) {
-    case gpu::CollectInfoResult::kCollectInfoNone:
-      return gpu::mojom::CollectInfoResult::kCollectInfoNone;
-    case gpu::CollectInfoResult::kCollectInfoSuccess:
-      return gpu::mojom::CollectInfoResult::kCollectInfoSuccess;
-    case gpu::CollectInfoResult::kCollectInfoNonFatalFailure:
-      return gpu::mojom::CollectInfoResult::kCollectInfoNonFatalFailure;
-    case gpu::CollectInfoResult::kCollectInfoFatalFailure:
-      return gpu::mojom::CollectInfoResult::kCollectInfoFatalFailure;
-  }
-  NOTREACHED() << "Invalid CollectInfoResult value:" << collect_info_result;
-  return gpu::mojom::CollectInfoResult::kCollectInfoNone;
-}
-
-// static
-bool EnumTraits<gpu::mojom::CollectInfoResult, gpu::CollectInfoResult>::
-    FromMojom(gpu::mojom::CollectInfoResult input,
-              gpu::CollectInfoResult* out) {
-  switch (input) {
-    case gpu::mojom::CollectInfoResult::kCollectInfoNone:
-      *out = gpu::CollectInfoResult::kCollectInfoNone;
-      return true;
-    case gpu::mojom::CollectInfoResult::kCollectInfoSuccess:
-      *out = gpu::CollectInfoResult::kCollectInfoSuccess;
-      return true;
-    case gpu::mojom::CollectInfoResult::kCollectInfoNonFatalFailure:
-      *out = gpu::CollectInfoResult::kCollectInfoNonFatalFailure;
-      return true;
-    case gpu::mojom::CollectInfoResult::kCollectInfoFatalFailure:
-      *out = gpu::CollectInfoResult::kCollectInfoFatalFailure;
-      return true;
-  }
-  NOTREACHED() << "Invalid CollectInfoResult value:" << input;
-  return false;
-}
-
-// static
 gpu::mojom::VideoCodecProfile
 EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
     gpu::VideoCodecProfile video_codec_profile) {
@@ -284,10 +244,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadGlWsVendor(&out->gl_ws_vendor) &&
          data.ReadGlWsVersion(&out->gl_ws_version) &&
          data.ReadGlWsExtensions(&out->gl_ws_extensions) &&
-         data.ReadBasicInfoState(&out->basic_info_state) &&
-         data.ReadContextInfoState(&out->context_info_state) &&
 #if defined(OS_WIN)
-         data.ReadDxDiagnosticsInfoState(&out->dx_diagnostics_info_state) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
 #endif
          data.ReadVideoDecodeAcceleratorCapabilities(
