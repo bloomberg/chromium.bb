@@ -596,6 +596,12 @@ void DownloadManagerImpl::StartDownloadWithId(
                           &default_download_directory, &skip_dir_check);
   }
 #endif
+  if (default_download_directory.empty()) {
+    // |default_download_directory| can still be empty if ContentBrowserClient
+    // returned an empty path for the downloads directory.
+    default_download_directory =
+        GetContentClient()->browser()->GetDefaultDownloadDirectory();
+  }
 
   if (delegate_) {
     download::InProgressCache* in_progress_cache =

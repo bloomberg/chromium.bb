@@ -21,7 +21,6 @@
 #include "components/download/public/common/download_item.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/quarantine.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
@@ -89,16 +88,9 @@ download::DownloadInterruptReason BaseFile::Initialize(
   DCHECK(!detached_);
 
   if (full_path.empty()) {
-    base::FilePath initial_directory(default_directory);
     base::FilePath temp_file;
-    if (initial_directory.empty()) {
-      initial_directory =
-          GetContentClient()->browser()->GetDefaultDownloadDirectory();
-    }
-    // |initial_directory| can still be empty if ContentBrowserClient returned
-    // an empty path for the downloads directory.
-    if ((initial_directory.empty() ||
-         !base::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
+    if ((default_directory.empty() ||
+         !base::CreateTemporaryFileInDir(default_directory, &temp_file)) &&
         !base::CreateTemporaryFile(&temp_file)) {
       return LogInterruptReason(
           "Unable to create", 0,

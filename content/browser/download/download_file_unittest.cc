@@ -10,6 +10,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -194,6 +195,8 @@ class DownloadFileTest : public testing::Test {
     EXPECT_CALL(*(observer_.get()), DestinationUpdate(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Invoke(this, &DownloadFileTest::SetUpdateDownloadInfo));
+    bool result = download_dir_.CreateUniqueTempDir();
+    CHECK(result);
   }
 
   // Mock calls to this function are forwarded here.
@@ -235,7 +238,7 @@ class DownloadFileTest : public testing::Test {
     save_info->length = length;
 
     download_file_.reset(new TestDownloadFileImpl(
-        std::move(save_info), base::FilePath(),
+        std::move(save_info), download_dir_.GetPath(),
         std::make_unique<DownloadManager::InputStream>(
             std::unique_ptr<ByteStreamReader>(input_stream_)),
         download::DownloadItem::kInvalidId, observer_factory_.GetWeakPtr()));
@@ -484,6 +487,8 @@ class DownloadFileTest : public testing::Test {
 
   // Sink callback data for stream.
   base::Closure sink_callback_;
+
+  base::ScopedTempDir download_dir_;
 
   // Latest update sent to the observer.
   int64_t bytes_;
