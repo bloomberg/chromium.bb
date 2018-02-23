@@ -29,6 +29,10 @@ const base::Feature kEnableSurfaceSynchronization{
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables running the Viz-assisted hit-test logic.
+const base::Feature kEnableVizHitTestDrawQuad{
+    "VizHitTestDrawQuad", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsSurfaceSynchronizationEnabled() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   return base::FeatureList::IsEnabled(kEnableSurfaceSynchronization) ||
@@ -37,9 +41,7 @@ bool IsSurfaceSynchronizationEnabled() {
 }
 
 bool IsVizHitTestingDrawQuadEnabled() {
-  // TODO(riajiang): Check feature flag as well. https://crbug.com/804888
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUseVizHitTestDrawQuad) ||
+  return base::FeatureList::IsEnabled(kEnableVizHitTestDrawQuad) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 

@@ -13,8 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/switches.h"
@@ -511,6 +512,7 @@ class EventDispatcherVizTargeterTest
     event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
   }
 
+  base::test::ScopedFeatureList feature_list_;
   WindowServerTestHelper ws_test_helper_;
 
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
@@ -523,8 +525,7 @@ class EventDispatcherVizTargeterTest
 };
 
 void EventDispatcherVizTargeterTest::SetUp() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kUseVizHitTestDrawQuad);
+  feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
   if (is_event_processing_async()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseAsyncEventTargeting);
