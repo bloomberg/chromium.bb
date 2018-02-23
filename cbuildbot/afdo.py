@@ -655,9 +655,25 @@ def GetCWPProfile(cpv, _arch, _buildroot, gs_context):
   ver_mat = r'([0-9]+)\.[0-9]+\.([0-9]+)\.([0-9]+)_rc-r[0-9]+'
   target = map(int, re.match(ver_mat, cpv.version).groups())
 
-  # For efficiency, we only check 3 most recent milestones.
+  # Check 2 most recent milestones.
+  #
+  # When a branch just happens, the milestone of master increases by 1. There
+  # will be no profile from that milestone until a dev release is pushed for a
+  # short period of time. Therefore, a profile from previous branches must be
+  # picked instead.
+  #
+  # Originally, we search toward root in the branch tree for a profile. Now we
+  # prefer to look at the previous milestone if there's no profile from current
+  # milestone, because:
+  #
+  # 1. dev channel has few samples. The profile quality is much better from
+  #    beta, which is always in a branch.
+  #
+  # 2. Master is actually closer to the branch tip than to the branch point,
+  #    assuming that most of the changes on a branch are cherry-picked from
+  #    master.
   versions = []
-  for milestone in (target[0] - i for i in (0, 1, 2)):
+  for milestone in (target[0], target[0] - 1):
     gs_ls_url = os.path.join(GSURL_BASE_CWP,
                              CWP_CHROME_PROFILE_NAME_PATTERN %
                              (milestone, '*', '*', '*'))
@@ -666,15 +682,6 @@ def GetCWPProfile(cpv, _arch, _buildroot, gs_context):
       versions += map(CWPProfileToVersionTuple, [r.url for r in res])
     except gs.GSNoSuchKey:
       pass
-
-  # Don't pick profiles from other branches.
-  #
-  # v[1] is major version. Two versions have the same major iff they are on the
-  # same branch.
-  #
-  # v[2] is minor version, which is always 0 in master. A target in branch,
-  # including master, can pick a profile from its ancestor.
-  versions = [v for v in versions if v[2] == 0 or v[1] == target[1]]
 
   if not versions:
     logging.info('profile not found for: %s', cpv.version)

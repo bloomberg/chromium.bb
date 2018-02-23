@@ -116,11 +116,13 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(profile, profiles[idx][:-3])
 
     _test('66.0.3300.0_rc-r1', 8)
-    _test('65.0.3283.0_rc-r1', 1)
-    _test('65.0.3283.1_rc-r1', 1)
+    _test('65.0.3283.0_rc-r1', 7)
+    _test('65.0.3283.1_rc-r1', 7)
     _test('64.0.3282.42_rc-r1', 7)
+    _test('64.0.3282.40_rc-r1', 6)
     _test('63.0.3239.30_rc-r1', 2)
     _test('63.0.3239.42_rc-r0', 2)
+    _test('63.0.3239.10_rc-r1', 1)
 
   def testCWPProfileToVersionTuple(self):
     self.assertEqual(
