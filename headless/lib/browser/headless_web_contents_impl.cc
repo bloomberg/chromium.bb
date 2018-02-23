@@ -425,14 +425,20 @@ void HeadlessWebContentsImpl::RenderViewReady() {
 }
 
 int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
+  if (!web_contents() || !web_contents()->GetMainFrame())
+    return -1;
   return web_contents()->GetMainFrame()->GetProcess()->GetID();
 }
 
 int HeadlessWebContentsImpl::GetMainFrameTreeNodeId() const {
+  if (!web_contents() || !web_contents()->GetMainFrame())
+    return -1;
   return web_contents()->GetMainFrame()->GetFrameTreeNodeId();
 }
 
 std::string HeadlessWebContentsImpl::GetMainFrameDevToolsId() const {
+  if (!web_contents() || !web_contents()->GetMainFrame())
+    return "";
   return web_contents()->GetMainFrame()->GetDevToolsFrameToken().ToString();
 }
 
