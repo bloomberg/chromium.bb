@@ -1038,6 +1038,28 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByRequestOrigin) {
   PumpLoop();
 }
 
+TEST_F(OfflinePageModelTaskifiedTest, GetPageBySizeAndDigest) {
+  static const int64_t kFileSize1 = 123LL;
+  static const int64_t kFileSize2 = 999999LL;
+  static const char kDigest1[] = "digest 1";
+  page_generator()->SetFileSize(kFileSize1);
+  page_generator()->SetDigest(kDigest1);
+  OfflinePageItem page1 = page_generator()->CreateItem();
+  page_generator()->SetFileSize(kFileSize2);
+  page_generator()->SetDigest(kDigest1);
+  OfflinePageItem page2 = page_generator()->CreateItem();
+  InsertPageIntoStore(page1);
+  InsertPageIntoStore(page2);
+
+  base::MockCallback<SingleOfflinePageItemCallback> callback;
+  EXPECT_CALL(callback, Run(Pointee(Eq(page2))));
+
+  model()->GetPageBySizeAndDigest(kFileSize2, kDigest1, callback.Get());
+  EXPECT_TRUE(task_queue()->HasRunningTask());
+
+  PumpLoop();
+}
+
 TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
   page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kTestClientId1.name_space);

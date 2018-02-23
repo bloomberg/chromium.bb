@@ -200,6 +200,12 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
       const std::string& request_origin,
       const MultipleOfflinePageItemCallback& callback) = 0;
 
+  // Returns zero or one offline pages associated with a specified |digest|.
+  virtual void GetPageBySizeAndDigest(
+      int64_t file_size,
+      const std::string& digest,
+      const SingleOfflinePageItemCallback& callback) = 0;
+
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(
       const ClientId& client_id,

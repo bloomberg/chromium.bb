@@ -120,6 +120,10 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   void GetPagesByRequestOrigin(
       const std::string& request_origin,
       const MultipleOfflinePageItemCallback& callback) override;
+  void GetPageBySizeAndDigest(
+      int64_t file_size,
+      const std::string& digest,
+      const SingleOfflinePageItemCallback& callback) override;
 
   void GetOfflineIdsForClientId(
       const ClientId& client_id,

@@ -263,6 +263,35 @@ TEST_F(GetPagesTaskTest, GetPageByOfflineId) {
   EXPECT_EQ(item_1, single_page_result());
 }
 
+TEST_F(GetPagesTaskTest, GetPageBySizeAndDigest) {
+  static const int64_t kFileSize1 = 123LL;
+  static const int64_t kFileSize2 = 999999LL;
+  static const char kDigest1[] = "digest 1";
+  static const char kDigest2[] = "digest 2";
+  generator()->SetFileSize(kFileSize1);
+  generator()->SetDigest(kDigest1);
+  OfflinePageItem item_1 = generator()->CreateItem();
+  store_util()->InsertItem(item_1);
+  generator()->SetDigest(kDigest2);
+  OfflinePageItem item_2 = generator()->CreateItem();
+  store_util()->InsertItem(item_2);
+  generator()->SetFileSize(kFileSize2);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_util()->InsertItem(item_3);
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), kFileSize1, "mismatched digest"));
+  EXPECT_EQ(OfflinePageItem(), single_page_result());
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), 0LL, kDigest1));
+  EXPECT_EQ(OfflinePageItem(), single_page_result());
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingSizeAndDigest(
+      store(), get_single_page_callback(), kFileSize2, kDigest2));
+  EXPECT_EQ(item_3, single_page_result());
+}
+
 TEST_F(GetPagesTaskTest, GetPagesSupportedByDownloads) {
   ClientPolicyController policy_controller;
   generator()->SetNamespace(kCCTNamespace);

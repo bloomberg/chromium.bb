@@ -235,6 +235,28 @@ ReadResult ReadPagesByOfflineId(int64_t offline_id, sql::Connection* db) {
   return result;
 }
 
+ReadResult ReadPagesBySizeAndDigest(int64_t file_size,
+                                    const std::string& digest,
+                                    sql::Connection* db) {
+  ReadResult result;
+  if (!db) {
+    result.success = false;
+    return result;
+  }
+
+  static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
+                             " FROM offlinepages_v1"
+                             " WHERE file_size = ? AND digest = ?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, file_size);
+  statement.BindString(1, digest);
+  while (statement.Step())
+    result.pages.emplace_back(MakeOfflinePageItem(&statement));
+
+  result.success = true;
+  return result;
+}
+
 void WrapInMultipleItemsCallback(const SingleOfflinePageItemCallback& callback,
                                  const std::vector<OfflinePageItem>& pages) {
   if (pages.size() == 0)
@@ -355,6 +377,17 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingOfflineId(
   return std::unique_ptr<GetPagesTask>(
       new GetPagesTask(store, base::BindOnce(&ReadPagesByOfflineId, offline_id),
                        base::Bind(&WrapInMultipleItemsCallback, callback)));
+}
+
+// static
+std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingSizeAndDigest(
+    OfflinePageMetadataStoreSQL* store,
+    const SingleOfflinePageItemCallback& callback,
+    int64_t file_size,
+    const std::string& digest) {
+  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesBySizeAndDigest, file_size, digest),
+      base::Bind(&WrapInMultipleItemsCallback, callback)));
 }
 
 // static

@@ -30,6 +30,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.file_size = file_size_;
   item.last_access_time = last_access_time_;
   item.access_count = access_count_;
+  item.digest = digest_;
   return item;
 }
 
@@ -83,6 +84,10 @@ void OfflinePageItemGenerator::SetAccessCount(int access_count) {
 void OfflinePageItemGenerator::SetArchiveDirectory(
     const base::FilePath& archive_dir) {
   archive_dir_ = archive_dir;
+}
+
+void OfflinePageItemGenerator::SetDigest(const std::string& digest) {
+  digest_ = digest;
 }
 
 }  // namespace offline_pages
