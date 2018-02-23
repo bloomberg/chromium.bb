@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
+#include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/print_dialog_gtk.h"
 #include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
@@ -633,10 +634,15 @@ bool GtkUi::IsStatusIconSupported() const {
 std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) const {
-  ++indicators_count;
-  return std::make_unique<libgtkui::AppIndicatorIcon>(
-      base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
-      image, tool_tip);
+  if (AppIndicatorIcon::CouldOpen()) {
+    ++indicators_count;
+    return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
+        base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
+        image, tool_tip));
+  } else {
+    return std::unique_ptr<views::StatusIconLinux>(
+        new Gtk2StatusIcon(image, tool_tip));
+  }
 }
 
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,

@@ -69,8 +69,7 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
       }
       return DESKTOP_ENVIRONMENT_UNITY;
     }
-    if (base::EndsWith(xdg_current_desktop, "GNOME",
-                       base::CompareCase::SENSITIVE))
+    if (xdg_current_desktop == "GNOME")
       return DESKTOP_ENVIRONMENT_GNOME;
     if (xdg_current_desktop == "X-Cinnamon")
       return DESKTOP_ENVIRONMENT_CINNAMON;
