@@ -243,12 +243,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
   }
-#else
-  static const base::Optional<gpu::DxDiagNode>& dx_diagnostics(
-      const gpu::GPUInfo& input) {
-    static const base::Optional<gpu::DxDiagNode> dx_diag_node(base::nullopt);
-    return dx_diag_node;
-  }
 #endif
 
   static const gpu::VideoDecodeAcceleratorCapabilities&
