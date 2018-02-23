@@ -289,7 +289,10 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 
   MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(cm->global_motion, xd, mi);
+      cm->switchable_motion_mode
+          ? motion_mode_allowed(cm->global_motion, xd, mi)
+          : SIMPLE_TRANSLATION;
+  assert(mbmi->motion_mode <= last_motion_mode_allowed);
   switch (last_motion_mode_allowed) {
     case SIMPLE_TRANSLATION: break;
     case OBMC_CAUSAL:
@@ -3493,6 +3496,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
     fix_interp_filter(cm, cpi->td.counts);
     write_frame_interp_filter(cm->interp_filter, wb);
+    aom_wb_write_bit(wb, cm->switchable_motion_mode);
     if (frame_might_use_prev_frame_mvs(cm)) {
       aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
     }

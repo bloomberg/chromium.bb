@@ -247,10 +247,11 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   }
 }
 
-static MOTION_MODE read_motion_mode(MACROBLOCKD *xd, MODE_INFO *mi,
-                                    aom_reader *r) {
+static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
 
+  if (cm->switchable_motion_mode == 0) return SIMPLE_TRANSLATION;
 #if CONFIG_EXT_SKIP
   if (mbmi->skip_mode) return SIMPLE_TRANSLATION;
 #endif  // CONFIG_EXT_SKIP
@@ -1924,7 +1925,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
-    mbmi->motion_mode = read_motion_mode(xd, mi, r);
+    mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
 
 #if CONFIG_JNT_COMP
   // init

@@ -7553,7 +7553,9 @@ static int64_t motion_mode_rd(
   rate2_nocoeff = rd_stats->rate;
   base_mbmi = *mbmi;
   MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(xd->global_motion, xd, mi);
+      cm->switchable_motion_mode
+          ? motion_mode_allowed(xd->global_motion, xd, mi)
+          : SIMPLE_TRANSLATION;
   assert(mbmi->ref_frame[1] != INTRA_FRAME);
 
   int64_t best_rd = INT64_MAX;
@@ -10743,10 +10745,7 @@ PALETTE_EXIT:
   // Note: this section is needed since the mode may have been forced to
   // GLOBALMV by the all-zero mode handling of ref-mv.
   if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
-    // Correct the motion mode for GLOBALMV
-    const MOTION_MODE last_motion_mode_allowed =
-        motion_mode_allowed(xd->global_motion, xd, xd->mi[0]);
-    if (mbmi->motion_mode > last_motion_mode_allowed) assert(0);
+    // Correct the interp filters for GLOBALMV
     if (is_nontrans_global_motion(xd)) {
       assert(mbmi->interp_filters ==
              av1_broadcast_interp_filter(

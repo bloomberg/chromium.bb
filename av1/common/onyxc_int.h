@@ -440,6 +440,8 @@ typedef struct AV1Common {
 
   InterpFilter interp_filter;
 
+  int switchable_motion_mode;
+
   loop_filter_info_n lf_info;
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   // The denominator of the superres scale; the numerator is fixed.

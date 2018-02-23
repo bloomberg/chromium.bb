@@ -3225,6 +3225,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     cm->interp_filter = EIGHTTAP_REGULAR;
 #endif  // CONFIG_EXT_TILE
 
+  cm->switchable_motion_mode = 1;
+
   if (cpi->oxcf.render_width > 0 && cpi->oxcf.render_height > 0) {
     cm->render_width = cpi->oxcf.render_width;
     cm->render_height = cpi->oxcf.render_height;
@@ -4761,6 +4763,7 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
   cpi->common.interp_filter = cpi->sf.default_interp_filter;
+  cpi->common.switchable_motion_mode = 1;
   if (!frame_is_intra_only(&cpi->common)) set_compound_tools(&cpi->common);
 }
 

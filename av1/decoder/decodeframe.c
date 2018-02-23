@@ -3016,6 +3016,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
 #endif
       cm->interp_filter = read_frame_interp_filter(rb);
+      cm->switchable_motion_mode = aom_rb_read_bit(rb);
       if (frame_might_use_prev_frame_mvs(cm))
         cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else

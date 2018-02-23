@@ -1225,7 +1225,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
         set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
         const MOTION_MODE motion_allowed =
-            motion_mode_allowed(xd->global_motion, xd, mi);
+            cm->switchable_motion_mode
+                ? motion_mode_allowed(xd->global_motion, xd, mi)
+                : SIMPLE_TRANSLATION;
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {
             counts->motion_mode[bsize][mbmi->motion_mode]++;
@@ -4611,6 +4613,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_EXT_TILE
     if (cm->large_scale_tile) cm->interp_filter = EIGHTTAP_REGULAR;
 #endif  // CONFIG_EXT_TILE
+
+    cm->switchable_motion_mode = 1;
 
     make_consistent_compound_tools(cm);
 
