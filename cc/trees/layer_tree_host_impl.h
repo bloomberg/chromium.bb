@@ -811,8 +811,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   LayerTreeFrameSink* layer_tree_frame_sink_;
 
-  viz::LocalSurfaceId local_surface_id_;
-
   // The following scoped variables must not outlive the
   // |layer_tree_frame_sink_|.
   // These should be transfered to viz::ContextCacheController's
