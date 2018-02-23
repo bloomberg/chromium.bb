@@ -5,34 +5,35 @@
 #ifndef CHROMECAST_BROWSER_CAST_TOUCH_DEVICE_MANAGER_H_
 #define CHROMECAST_BROWSER_CAST_TOUCH_DEVICE_MANAGER_H_
 
+#include <inttypes.h>
+
 #include "base/macros.h"
-#include "chromecast/graphics/cast_screen.h"
-#include "ui/display/display_observer.h"
+#include "ui/display/display.h"
 #include "ui/events/devices/input_device_event_observer.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace chromecast {
 namespace shell {
 
 // Manages touchscreen->display mapping for cast browser.
-class CastTouchDeviceManager : public display::DisplayObserver,
-                               public ui::InputDeviceEventObserver {
+class CastTouchDeviceManager : public ui::InputDeviceEventObserver {
  public:
-  explicit CastTouchDeviceManager(CastScreen* screen);
+  explicit CastTouchDeviceManager();
   ~CastTouchDeviceManager() override;
 
   // ui::InputDeviceEventObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;
 
-  // display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
+  void OnDisplayConfigured(int64_t display_id,
+                           display::Display::Rotation rotation,
+                           const gfx::Rect& native_bounds_in_pixel);
 
  private:
   void UpdateTouchscreenConfiguration();
 
-  CastScreen* cast_screen_ = nullptr;
+  int64_t display_id_;
+  display::Display::Rotation display_rotation_;
+  gfx::Rect native_display_bounds_in_pixel_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTouchDeviceManager);
 };

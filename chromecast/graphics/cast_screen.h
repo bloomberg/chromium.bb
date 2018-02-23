@@ -31,7 +31,10 @@ class CastScreen : public display::ScreenBase {
   display::Display GetDisplayNearestWindow(
       gfx::NativeWindow window) const override;
 
-  void OnDisplayChanged(float scale_factor, gfx::Rect bounds);
+  void OnDisplayChanged(int64_t display_id,
+                        float scale_factor,
+                        display::Display::Rotation rotation,
+                        const gfx::Rect& bounds);
 
  private:
   CastScreen();

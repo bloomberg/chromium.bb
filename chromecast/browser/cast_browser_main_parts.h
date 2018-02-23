@@ -46,7 +46,6 @@ class VideoPlaneController;
 namespace shell {
 class CastBrowserProcess;
 class CastDisplayConfigurator;
-class CastTouchDeviceManager;
 class URLRequestContextFactory;
 
 class CastBrowserMainParts : public content::BrowserMainParts {
@@ -93,7 +92,6 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<CastWindowManager> window_manager_;
 #if defined(USE_AURA)
   std::unique_ptr<CastDisplayConfigurator> display_configurator_;
-  std::unique_ptr<CastTouchDeviceManager> touch_device_manager_;
 #endif
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
