@@ -363,6 +363,27 @@ struct IsAssignableFromOptional
               std::is_assignable<T&, Optional<U>&&>::value ||
               std::is_assignable<T&, const Optional<U>&&>::value> {};
 
+// Forward compatibility for C++17.
+// Introduce one more deeper nested namespace to avoid leaking using std::swap.
+namespace swappable_impl {
+using std::swap;
+
+struct IsSwappableImpl {
+  // Tests if swap can be called. Check<T&>(0) returns true_type iff swap
+  // is available for T. Otherwise, Check's overload resolution falls back
+  // to Check(...) declared below thanks to SFINAE, so returns false_type.
+  template <typename T>
+  static auto Check(int)
+      -> decltype(swap(std::declval<T>(), std::declval<T>()), std::true_type());
+
+  template <typename T>
+  static std::false_type Check(...);
+};
+}  // namespace swappable_impl
+
+template <typename T>
+struct IsSwappable : decltype(swappable_impl::IsSwappableImpl::Check<T&>(0)) {};
+
 // Forward compatibility for C++20.
 template <typename T>
 using RemoveCvRefT = std::remove_cv_t<std::remove_reference_t<T>>;
@@ -532,15 +553,9 @@ class Optional
     return *this;
   }
 
-  constexpr const T* operator->() const {
-    DCHECK(storage_.is_populated_);
-    return &value();
-  }
+  constexpr const T* operator->() const { return &value(); }
 
-  constexpr T* operator->() {
-    DCHECK(storage_.is_populated_);
-    return &value();
-  }
+  constexpr T* operator->() { return &value(); }
 
   constexpr const T& operator*() const& { return value(); }
 
@@ -587,7 +602,7 @@ class Optional
   }
 
   template <class U>
-  T value_or(U&& default_value) && {
+  constexpr T value_or(U&& default_value) && {
     // TODO(mlamouri): add the following assert when possible:
     // static_assert(std::is_move_constructible<T>::value,
     //               "T must be move constructible");
@@ -623,18 +638,17 @@ class Optional
   }
 
   template <class... Args>
-  void emplace(Args&&... args) {
+  T& emplace(Args&&... args) {
     FreeIfNeeded();
     storage_.Init(std::forward<Args>(args)...);
+    return storage_.value_;
   }
 
-  template <
-      class U,
-      class... Args,
-      class = std::enable_if_t<std::is_constructible<value_type,
-                                                     std::initializer_list<U>&,
-                                                     Args...>::value>>
-  T& emplace(std::initializer_list<U> il, Args&&... args) {
+  template <class U, class... Args>
+  std::enable_if_t<
+      std::is_constructible<T, std::initializer_list<U>&, Args&&...>::value,
+      T&>
+  emplace(std::initializer_list<U> il, Args&&... args) {
     FreeIfNeeded();
     storage_.Init(il, std::forward<Args>(args)...);
     return storage_.value_;
@@ -829,8 +843,13 @@ constexpr bool operator>=(const U& value, const Optional<T>& opt) {
 }
 
 template <class T>
-constexpr Optional<typename std::decay<T>::type> make_optional(T&& value) {
-  return Optional<typename std::decay<T>::type>(std::forward<T>(value));
+constexpr Optional<std::decay_t<T>> make_optional(T&& value) {
+  return Optional<std::decay_t<T>>(std::forward<T>(value));
+}
+
+template <class T, class... Args>
+constexpr Optional<T> make_optional(Args&&... args) {
+  return Optional<T>(in_place, std::forward<Args>(args)...);
 }
 
 template <class T, class U, class... Args>
@@ -839,8 +858,14 @@ constexpr Optional<T> make_optional(std::initializer_list<U> il,
   return Optional<T>(in_place, il, std::forward<Args>(args)...);
 }
 
+// Partial specialization for a function template is not allowed. Also, it is
+// not allowed to add overload function to std namespace, while it is allowed
+// to specialize the template in std. Thus, swap() (kind of) overloading is
+// defined in base namespace, instead.
 template <class T>
-void swap(Optional<T>& lhs, Optional<T>& rhs) {
+std::enable_if_t<std::is_move_constructible<T>::value &&
+                 internal::IsSwappable<T>::value>
+swap(Optional<T>& lhs, Optional<T>& rhs) {
   lhs.swap(rhs);
 }
 
