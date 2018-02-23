@@ -735,6 +735,8 @@
           'all',
         ],
         'test_suites': {
+          # no "_and_gl":gl_unittests doesn't pass yet,
+          # crbug.com/https://crbug.com/815183
           'gtest_tests': 'chromium_linux_clang_gtests',
         },
       },
@@ -813,7 +815,9 @@
       },
       'UBSanVptr Linux': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          # no "_and_gl":gl_unittests doesn't pass yet,
+          # crbug.com/https://crbug.com/815183
+          'gtest_tests': 'chromium_linux_clang_gtests',
         },
       },
     },
