@@ -434,6 +434,9 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
           wpDocument.querySelector('#wallpaper-grid').classList.remove('small');
           Constants.WallpaperSyncStorage.get(
               Constants.AccessSyncSurpriseMeEnabledKey, function(item) {
+                // TODO(crbug.com/810169): Try to combine this part with
+                // |WallpaperManager.onSurpriseMeStateChanged_|. The logic is
+                // duplicate.
                 var enable = item[Constants.AccessSyncSurpriseMeEnabledKey];
                 if (enable) {
                   wpDocument.querySelector('#checkbox')
@@ -449,7 +452,12 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                         'visible';
                 }
                 wpDocument.querySelector('#categories-list').disabled = enable;
-                wpDocument.querySelector('#wallpaper-grid').disabled = enable;
+                chrome.commandLinePrivate.hasSwitch(
+                    'new-wallpaper-picker', useNewWallpaperPicker => {
+                      if (!useNewWallpaperPicker)
+                        wpDocument.querySelector('#wallpaper-grid').disabled =
+                            enable;
+                    });
               });
         }
       };

@@ -472,7 +472,11 @@ body.v2 {
   width: 160px;
 }
 
-.v2 .image-picker [role=listitem][selected] {
+.v2 .image-picker [role=listitem].daily-refresh-item {
+  pointer-events: none;
+}
+
+.v2 .image-picker [role=listitem][selected]:not(.daily-refresh-item) {
   -webkit-margin-end: 24px;
   -webkit-margin-start: 16px;
   height: 128px;
@@ -488,7 +492,7 @@ body.v2 {
   width: unset;
 }
 
-.v2 .close {
+.v2 #window-close-button {
   background-color: rgba(128, 134, 139, 0.3);
   border-radius: 4px;
   left: 734px;
@@ -561,4 +565,64 @@ body.v2 {
   left: 180px;
   position: absolute;
   top: 220px;
+}
+
+.v2 .slide-show {
+  transition: opacity 1000ms;
+}
+
+.v2 .daily-refresh-banner {
+  background-color: rgba(228, 228, 228, 0.9);
+  bottom: 0;
+  height: 40px;
+  position: absolute;
+  width: 100%;
+}
+
+.v2 .daily-refresh-slider {
+  background-color: rgba(128, 134, 139, 0.4);
+  border-radius: 30%;
+  height: 10px;
+  left: 116px;
+  pointer-events: auto;
+  position: absolute;
+  top: 15px;
+  transition: 400ms;
+  width: 28px;
+}
+
+.v2 .daily-refresh-slider::before {
+  background-color: #fff;
+  border-radius: 50%;
+  content: '';
+  height: 16px;
+  left: -2px;
+  position: absolute;
+  top: -3px;
+  transition: 400ms;
+  width: 16px;
+}
+
+.v2 .daily-refresh-slider.checked  {
+  background-color: rgb(66, 133, 244, 0.6);
+}
+
+.v2 .daily-refresh-slider.checked::before {
+  background-color: rgb(66, 133, 244);
+  transform: translateX(16px);
+}
+
+.v2 #daily-refresh-label {
+  color: rgb(66, 133, 244);
+  font-family: 'Roboto';
+  font-size: 13px;
+  font-weight: 500;
+  left: 18px;
+  position: absolute;
+  top: 12px;
+}
+
+body:not([surprise-me-disabled]).v2 [role=listitem]:not(.daily-refresh-item) {
+  opacity: 0.6;
+  pointer-events: none;
 }

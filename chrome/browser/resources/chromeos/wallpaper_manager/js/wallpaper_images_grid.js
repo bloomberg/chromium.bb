@@ -11,6 +11,12 @@ cr.define('wallpapers', function() {
   /** @const */ var ShowSpinnerDelayMs = 500;
 
   /**
+   * The number of images that appear in the slideshow of the daily refresh
+   * item.
+   */
+  var DAILY_REFRESH_IMAGES_NUM = 5;
+
+  /**
    * The following values should be kept in sync with the style sheet.
    */
   var GRID_SIZE_CSS = 160;
@@ -68,6 +74,11 @@ cr.define('wallpapers', function() {
       // Removes garbage created by GridItem.
       this.innerText = '';
 
+      if (this.dataItem.isDailyRefreshItem) {
+        this.callback_(this.dataModelId_);
+        return;
+      }
+
       if (this.thumbnail_) {
         this.appendChild(this.thumbnail_);
         this.callback_(this.dataModelId_);
@@ -79,14 +90,12 @@ cr.define('wallpapers', function() {
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
       imageEl.offline = this.dataItem.availableOffline;
       this.appendChild(imageEl);
-      var self = this;
 
       switch (this.dataItem.source) {
         case Constants.WallpaperSourceEnum.AddNew:
           this.id = 'add-new';
           this.addEventListener('click', function(e) {
-            var checkbox = $('surprise-me').querySelector('#checkbox');
-            if (!checkbox.classList.contains('checked'))
+            if (!WallpaperUtil.getSurpriseMeCheckboxValue())
               $('wallpaper-selection-container').hidden = false;
           });
           // Delay dispatching the completion callback until all items have
@@ -310,6 +319,18 @@ cr.define('wallpapers', function() {
     spinnerTimeout_: 0,
 
     /**
+     * The timer of the slideshow of the daily refresh item.
+     * @private
+     */
+    dailyRefreshTimer_: undefined,
+
+    /**
+     * The cached list of images that can be used in the slideshow.
+     * @private
+     */
+    dailyRefreshCacheList_: [],
+
+    /**
      * The item in data model which should have a checkmark.
      * @type {{baseURL: string, dynamicURL: string, layout: string,
      *         author: string, authorWebsite: string,
@@ -326,6 +347,32 @@ cr.define('wallpapers', function() {
 
     get activeItem() {
       return this.activeItem_;
+    },
+
+    /**
+     * Whether the daily refresh item is visible.
+     * @type {boolean}
+     */
+    get isShowingDailyRefresh() {
+      return this.dataModel.item(0).isDailyRefreshItem;
+    },
+
+    /**
+     * The grid item corresponding to daily refresh.
+     * @type {Object}
+     */
+    get dailyRefreshItem() {
+      return this.isShowingDailyRefresh ?
+          this.getListItem(this.dataModel.item(0)) :
+          null;
+    },
+
+    /**
+     * The list of images that are currently in the slideshow.
+     * @type {Array<Object>}
+     */
+    get dailyRefreshImages() {
+      return this.dailyRefreshItem.querySelectorAll('.slide-show');
     },
 
     /**
@@ -368,6 +415,14 @@ cr.define('wallpapers', function() {
             }, ShowSpinnerDelayMs);
           }
         }
+
+        // Add a daily refresh item as the first element of the grid when
+        // showing online wallpapers on the new wallpaper picker.
+        if (this.useNewWallpaperPicker_ &&
+            dataModel.item(0).source == Constants.WallpaperSourceEnum.Online) {
+          dataModel.splice(
+              0, 0, {isDailyRefreshItem: true, availableOffline: false});
+        }
       } else {
         // Sets dataModel to null should hide spinner immediately.
         $('spinner-container').hidden = true;
@@ -393,22 +448,28 @@ cr.define('wallpapers', function() {
      * @private
      */
     cropImageToFitGrid_: function(image) {
-      var aspectRatio = image.offsetWidth / image.offsetHeight;
       var newHeight;
       var newWidth;
-      if (aspectRatio > 1) {
+      if (image.offsetWidth == 0 || image.offsetHeight == 0) {
         newHeight = GRID_SIZE_CSS;
-        newWidth = GRID_SIZE_CSS * aspectRatio;
-        // The center portion is visible, and the overflow area on the left and
-        // right will be hidden.
-        image.style.left = (GRID_SIZE_CSS - newWidth) / 2 + 'px';
-      } else {
         newWidth = GRID_SIZE_CSS;
-        newHeight = GRID_SIZE_CSS / aspectRatio;
-        // The center portion is visible, and the overflow area on the top and
-        // buttom will be hidden.
-        image.style.top = (GRID_SIZE_CSS - newHeight) / 2 + 'px';
+      } else {
+        var aspectRatio = image.offsetWidth / image.offsetHeight;
+        if (aspectRatio > 1) {
+          newHeight = GRID_SIZE_CSS;
+          newWidth = GRID_SIZE_CSS * aspectRatio;
+          // The center portion is visible, and the overflow area on the left
+          // and right will be hidden.
+          image.style.left = (GRID_SIZE_CSS - newWidth) / 2 + 'px';
+        } else {
+          newWidth = GRID_SIZE_CSS;
+          newHeight = GRID_SIZE_CSS / aspectRatio;
+          // The center portion is visible, and the overflow area on the top and
+          // buttom will be hidden.
+          image.style.top = (GRID_SIZE_CSS - newHeight) / 2 + 'px';
+        }
       }
+
       image.style.height = newHeight + 'px';
       image.style.width = newWidth + 'px';
     },
@@ -431,8 +492,12 @@ cr.define('wallpapers', function() {
       if (opt_wallpaperId != null)
         this.thumbnailList_[opt_wallpaperId] = opt_thumbnail;
 
-      if (opt_thumbnail && this.useNewWallpaperPicker_)
+      if (opt_thumbnail && this.useNewWallpaperPicker_) {
         this.cropImageToFitGrid_(opt_thumbnail);
+
+        if (this.isShowingDailyRefresh)
+          this.cacheDailyRefreshThumbnailImages_(opt_thumbnail);
+      }
 
       if (this.pendingItems_ == 0) {
         this.style.visibility = 'visible';
@@ -443,7 +508,11 @@ cr.define('wallpapers', function() {
           // TODO(crbug.com/812725): Decide what to show in the top header bar
           // if the current wallpaper in use was not selected from the picker.
           // For now, show the info of the first wallpaper in this collection.
-          wallpaperManager.setWallpaperAttribution(this.dataModel.item(0));
+          var startingIndex = this.isShowingDailyRefresh ? 1 : 0;
+          wallpaperManager.setWallpaperAttribution(
+              this.dataModel.item(startingIndex));
+          if (this.isShowingDailyRefresh)
+            this.decorateDailyRefreshItem_();
         }
       }
     },
@@ -540,6 +609,89 @@ cr.define('wallpapers', function() {
       if (!selectedGridItem)
         return;
       selectedGridItem.appendChild(this.checkmark_);
+    },
+
+    /**
+     * Cache the thumbnail images so that they can be used in the slideshow of
+     * the daily refresh item.
+     * @param {Object} image The thumbnail image.
+     * @private
+     */
+    cacheDailyRefreshThumbnailImages_: function(image) {
+      // Decide heuristically if the image should be cached. There's no need to
+      // cache everything if the list already contains the number of images
+      // needed.
+      if (this.dailyRefreshCacheList_.length == 0 ||
+          Math.random() <
+              DAILY_REFRESH_IMAGES_NUM / this.dailyRefreshCacheList_.length) {
+        this.dailyRefreshCacheList_.push(image.cloneNode(true /*deep=*/));
+      }
+    },
+
+    /**
+     * Initializes the UI of the daily refresh item.
+     * @private
+     */
+    decorateDailyRefreshItem_: function() {
+      if (!this.isShowingDailyRefresh || !this.dailyRefreshItem ||
+          this.dailyRefreshImages.length >= DAILY_REFRESH_IMAGES_NUM ||
+          this.dailyRefreshCacheList_.length == 0) {
+        return;
+      }
+
+      this.dailyRefreshItem.classList.add('daily-refresh-item');
+
+      // Randomly select images from the cache list.
+      var startingIndex =
+          Math.floor(this.dailyRefreshCacheList_.length * Math.random());
+      var imageCount = Math.min(
+          DAILY_REFRESH_IMAGES_NUM, this.dailyRefreshCacheList_.length);
+      for (var i = 0; i < imageCount; ++i) {
+        var index = (startingIndex + i) % this.dailyRefreshCacheList_.length;
+        var image = this.dailyRefreshCacheList_[index];
+        image.classList.add('slide-show');
+        image.style.opacity = 0;
+        this.dailyRefreshItem.appendChild(image);
+      }
+
+      // Add the daily refresh label and toggle.
+      if (!this.dailyRefreshItem.querySelector('.daily-refresh-banner')) {
+        var dailyRefreshBanner = document.querySelector('.daily-refresh-banner')
+                                     .cloneNode(true /*deep=*/);
+        dailyRefreshBanner.hidden = false;
+        dailyRefreshBanner.querySelector('.daily-refresh-slider')
+            .addEventListener(
+                'click',
+                WallpaperManager.prototype.toggleSurpriseMe.bind(
+                    wallpaperManager));
+        this.dailyRefreshItem.appendChild(dailyRefreshBanner);
+      }
+
+      window.clearTimeout(this.dailyRefreshTimer_);
+      this.showNextImage_(0);
+    },
+
+    /**
+     * Shows the next image for the daily refresh item and hides the currently
+     * visible one.
+     * @param {number} index The index of the image to be shown.
+     * @private
+     */
+    showNextImage_: function(index) {
+      var images = this.dailyRefreshImages;
+      if (images.length == 0)
+        return;
+      images[index].style.opacity = 1;
+
+      if (images.length > 1) {
+        var previousIndex = (index - 1) % images.length;
+        if (previousIndex < 0)
+          previousIndex += images.length;
+        images[previousIndex].style.opacity = 0;
+        var nextIndex = (index + 1) % images.length;
+        this.dailyRefreshTimer_ =
+            window.setTimeout(this.showNextImage_.bind(this, nextIndex), 3000);
+      }
     },
 
     /**

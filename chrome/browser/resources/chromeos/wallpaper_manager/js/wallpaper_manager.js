@@ -18,7 +18,8 @@
 function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.document_ = dialogDom.ownerDocument;
-  this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL');
+  this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL') ||
+      loadTimeData.getBoolean('showBackdropWallpapers');
   this.selectedItem_ = null;
   this.progressManager_ = new ProgressManager();
   this.customWallpaperData_ = null;
@@ -328,32 +329,22 @@ WallpaperManager.prototype.onLoadManifestFailed_ = function() {
 /**
  * Toggle surprise me feature of wallpaper picker. It fires an storage
  * onChanged event. Event handler for that event is in event_page.js.
- * @private
  */
-WallpaperManager.prototype.toggleSurpriseMe_ = function() {
-  var self = this;
-  var checkbox = $('surprise-me').querySelector('#checkbox');
-  var shouldEnable = !checkbox.classList.contains('checked');
-  var onSuccess = function() {
+WallpaperManager.prototype.toggleSurpriseMe = function() {
+  var shouldEnable = !WallpaperUtil.getSurpriseMeCheckboxValue();
+  var onSuccess = () => {
     if (chrome.runtime.lastError == null) {
       if (shouldEnable) {
-        self.document_.body.removeAttribute('surprise-me-disabled');
-        checkbox.classList.add('checked');
         // Hides the wallpaper set by message if there is any.
         $('wallpaper-set-by-message').textContent = '';
-      } else {
+      } else if (this.wallpaperGrid_.activeItem) {
         // Unchecking the "Surprise me" checkbox falls back to the previous
         // wallpaper before "Surprise me" was turned on.
-        if (self.wallpaperGrid_.activeItem) {
-          self.setSelectedWallpaper_(self.wallpaperGrid_.activeItem);
-          self.onWallpaperChanged_(
-              self.wallpaperGrid_.activeItem, self.currentWallpaper_);
-        }
-        checkbox.classList.remove('checked');
-        self.document_.body.setAttribute('surprise-me-disabled', '');
+        this.setSelectedWallpaper_(this.wallpaperGrid_.activeItem);
+        this.onWallpaperChanged_(
+            this.wallpaperGrid_.activeItem, this.currentWallpaper_);
       }
-      $('categories-list').disabled = shouldEnable;
-      $('wallpaper-grid').disabled = shouldEnable;
+      this.onSurpriseMeStateChanged_(shouldEnable);
     } else {
       // TODO(bshe): show error message to user.
       console.error('Failed to save surprise me option to chrome storage.');
@@ -363,7 +354,7 @@ WallpaperManager.prototype.toggleSurpriseMe_ = function() {
   // To prevent the onChanged event being fired twice, we only save the value
   // to sync storage if the sync theme is enabled, otherwise save it to local
   // storage.
-  WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
+  WallpaperUtil.enabledSyncThemesCallback(syncEnabled => {
     if (syncEnabled)
       WallpaperUtil.saveToSyncStorage(
           Constants.AccessSyncSurpriseMeEnabledKey, shouldEnable, onSuccess);
@@ -446,81 +437,71 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
   });
 
   if (this.enableOnlineWallpaper_) {
-    var self = this;
-    self.document_.body.setAttribute('surprise-me-disabled', '');
+    this.document_.body.setAttribute('surprise-me-disabled', '');
     $('surprise-me').hidden = false;
     $('surprise-me')
-        .addEventListener('click', this.toggleSurpriseMe_.bind(this));
-    var onSurpriseMeEnabled = function() {
-      $('surprise-me').querySelector('#checkbox').classList.add('checked');
-      $('categories-list').disabled = true;
-      $('wallpaper-grid').disabled = true;
-      self.document_.body.removeAttribute('surprise-me-disabled');
-    };
+        .addEventListener('click', this.toggleSurpriseMe.bind(this));
 
-    WallpaperUtil.enabledSyncThemesCallback(function(syncEnabled) {
+    WallpaperUtil.enabledSyncThemesCallback(syncEnabled => {
       // Surprise me has been moved from local to sync storage, prefer
       // values from sync, but if unset check local and update synced pref
       // if applicable.
       if (syncEnabled) {
         Constants.WallpaperSyncStorage.get(
-            Constants.AccessSyncSurpriseMeEnabledKey, function(items) {
+            Constants.AccessSyncSurpriseMeEnabledKey, items => {
               if (items.hasOwnProperty(
                       Constants.AccessSyncSurpriseMeEnabledKey)) {
-                if (items[Constants.AccessSyncSurpriseMeEnabledKey]) {
-                  onSurpriseMeEnabled();
-                }
+                if (items[Constants.AccessSyncSurpriseMeEnabledKey])
+                  this.onSurpriseMeStateChanged_(true /*enabled=*/);
               } else {
                 Constants.WallpaperLocalStorage.get(
-                    Constants.AccessLocalSurpriseMeEnabledKey, function(items) {
+                    Constants.AccessLocalSurpriseMeEnabledKey, items => {
                       if (items.hasOwnProperty(
                               Constants.AccessLocalSurpriseMeEnabledKey)) {
                         WallpaperUtil.saveToSyncStorage(
                             Constants.AccessSyncSurpriseMeEnabledKey,
                             items[Constants.AccessLocalSurpriseMeEnabledKey]);
-                        if (items[Constants.AccessLocalSurpriseMeEnabledKey]) {
-                          onSurpriseMeEnabled();
-                        }
+                        if (items[Constants.AccessLocalSurpriseMeEnabledKey])
+                          this.onSurpriseMeStateChanged_(true /*enabled=*/);
                       }
                     });
               }
             });
       } else {
         Constants.WallpaperLocalStorage.get(
-            Constants.AccessLocalSurpriseMeEnabledKey, function(items) {
+            Constants.AccessLocalSurpriseMeEnabledKey, items => {
               if (items.hasOwnProperty(
                       Constants.AccessLocalSurpriseMeEnabledKey)) {
-                if (items[Constants.AccessLocalSurpriseMeEnabledKey]) {
-                  onSurpriseMeEnabled();
-                }
+                if (items[Constants.AccessLocalSurpriseMeEnabledKey])
+                  this.onSurpriseMeStateChanged_(true /*enabled=*/);
               }
             });
       }
     });
 
-    window.addEventListener('offline', function() {
-      chrome.wallpaperPrivate.getOfflineWallpaperList(function(lists) {
-        if (!self.downloadedListMap_)
-          self.downloadedListMap_ = {};
+    window.addEventListener('offline', () => {
+      chrome.wallpaperPrivate.getOfflineWallpaperList(lists => {
+        if (!this.downloadedListMap_)
+          this.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++) {
-          self.downloadedListMap_[lists[i]] = true;
+          this.downloadedListMap_[lists[i]] = true;
         }
-        var thumbnails = self.document_.querySelectorAll('.thumbnail');
+        var thumbnails = this.document_.querySelectorAll('.thumbnail');
         for (var i = 0; i < thumbnails.length; i++) {
           var thumbnail = thumbnails[i];
-          var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
+          var url = this.wallpaperGrid_.dataModel.item(i).baseURL;
           var fileName = getBaseName(url) +
               WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
-          if (self.downloadedListMap_ &&
-              self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
+          if (this.downloadedListMap_ &&
+              this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
             thumbnail.offline = true;
           }
         }
       });
       $('wallpaper-grid').classList.add('image-picker-offline');
     });
-    window.addEventListener('online', function() {
-      self.downloadedListMap_ = null;
+    window.addEventListener('online', () => {
+      this.downloadedListMap_ = null;
       $('wallpaper-grid').classList.remove('image-picker-offline');
     });
   }
@@ -664,7 +645,8 @@ WallpaperManager.prototype.initThumbnailsGrid_ = function() {
   wallpapers.WallpaperThumbnailsGrid.decorate(this.wallpaperGrid_);
 
   this.wallpaperGrid_.addEventListener('change', this.onChange_.bind(this));
-  this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
+  if (!this.useNewWallpaperPicker_)
+    this.wallpaperGrid_.addEventListener('dblclick', this.onClose_.bind(this));
 };
 
 /**
@@ -1261,6 +1243,25 @@ WallpaperManager.prototype.setCustomWallpaperLayout_ = function(layout) {
           this.wallpaperGrid_.activeItem, this.currentWallpaper_);
     }
   });
+};
+
+/**
+ * Handles UI changes based on whether surprise me is enabled.
+ * @param enabled Whether surprise me is enabled.
+ * @private
+ */
+WallpaperManager.prototype.onSurpriseMeStateChanged_ = function(enabled) {
+  WallpaperUtil.setSurpriseMeCheckboxValue(enabled);
+  $('categories-list').disabled = enabled;
+  if (enabled)
+    this.document_.body.removeAttribute('surprise-me-disabled');
+  else
+    this.document_.body.setAttribute('surprise-me-disabled', '');
+
+  // The wallpaper grid on the new picker contains UI elements that should
+  // not be disabled.
+  if (!this.useNewWallpaperPicker_)
+    $('wallpaper-grid').disabled = enabled;
 };
 
 /**
