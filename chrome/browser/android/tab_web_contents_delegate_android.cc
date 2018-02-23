@@ -274,13 +274,13 @@ content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
   if (vr::VrTabHelper::IsInVr(source) &&
-      (!base::FeatureList::IsEnabled(
-           chrome::android::kVrBrowsingNativeAndroidUi) ||
-       !base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog))) {
+      !base::FeatureList::IsEnabled(
+          chrome::android::kVrBrowsingNativeAndroidUi)) {
     vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kJavascriptDialog);
     return nullptr;
   }
-  if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog)) {
+  if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog) ||
+      vr::VrTabHelper::IsInVr(source)) {
     return JavaScriptDialogTabHelper::FromWebContents(source);
   }
   return app_modal::JavaScriptDialogManager::GetInstance();

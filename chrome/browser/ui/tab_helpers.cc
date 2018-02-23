@@ -267,9 +267,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog)) {
-    JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
-  }
+  JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
   if (OomInterventionTabHelper::IsEnabled()) {
     OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
