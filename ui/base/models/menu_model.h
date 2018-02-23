@@ -15,6 +15,7 @@
 namespace gfx {
 class FontList;
 class Image;
+struct VectorIcon;
 }
 
 namespace ui {
@@ -64,6 +65,10 @@ class UI_BASE_EXPORT MenuModel {
   // Returns the minor text of the item at the specified index. The minor text
   // is rendered to the right of the label and using the font GetLabelFontAt().
   virtual base::string16 GetMinorTextAt(int index) const;
+
+  // Returns the minor icon of the item at the specified index. The minor icon
+  // is rendered to the left of the minor text.
+  virtual const gfx::VectorIcon* GetMinorIconAt(int index) const;
 
   // Returns true if the menu item (label/sublabel/icon) at the specified
   // index can change over the course of the menu's lifetime. If this function

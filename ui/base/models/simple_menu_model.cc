@@ -229,6 +229,11 @@ void SimpleMenuModel::SetMinorText(int index,
   items_[ValidateItemIndex(index)].minor_text = minor_text;
 }
 
+void SimpleMenuModel::SetMinorIcon(int index,
+                                   const gfx::VectorIcon& minor_icon) {
+  items_[ValidateItemIndex(index)].minor_icon = &minor_icon;
+}
+
 void SimpleMenuModel::Clear() {
   items_.clear();
   MenuItemsChanged();
@@ -286,6 +291,10 @@ base::string16 SimpleMenuModel::GetMinorTextAt(int index) const {
   if (IsItemDynamicAt(index))
     return delegate_->GetMinorTextForCommandId(GetCommandIdAt(index));
   return items_[ValidateItemIndex(index)].minor_text;
+}
+
+const gfx::VectorIcon* SimpleMenuModel::GetMinorIconAt(int index) const {
+  return items_[ValidateItemIndex(index)].minor_icon;
 }
 
 bool SimpleMenuModel::IsItemDynamicAt(int index) const {

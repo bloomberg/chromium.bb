@@ -29,6 +29,7 @@
 
 namespace gfx {
 class FontList;
+struct VectorIcon;
 }
 
 namespace views {
@@ -154,6 +155,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                               const base::string16& label,
                               const base::string16& sublabel,
                               const base::string16& minor_text,
+                              const gfx::VectorIcon* minor_icon,
                               const gfx::ImageSkia& icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
@@ -209,6 +211,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                                    const base::string16& label,
                                    const base::string16& sublabel,
                                    const base::string16& minor_text,
+                                   const gfx::VectorIcon* minor_icon,
                                    const gfx::ImageSkia& icon,
                                    Type type,
                                    ui::MenuSeparatorType separator_style);
@@ -239,6 +242,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Sets the minor text.
   void SetMinorText(const base::string16& minor_text);
+
+  // Sets the minor icon.
+  void SetMinorIcon(const gfx::VectorIcon* minor_icon);
 
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
@@ -395,8 +401,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // are not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
-  // Paints the right-side text.
-  void PaintMinorText(gfx::Canvas* canvas, SkColor color);
+  // Paints the right-side icon and text.
+  void PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
@@ -405,6 +411,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the text that should be displayed on the end (right) of the menu
   // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
   base::string16 GetMinorText() const;
+
+  // Returns the icon that should be displayed to the left of the minor text.
+  const gfx::VectorIcon* GetMinorIcon() const;
 
   // Returns the text color for the current state.  |minor| specifies if the
   // minor text or the normal text is desired.
@@ -483,6 +492,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Minor text.
   base::string16 minor_text_;
+
+  // Minor icon.
+  const gfx::VectorIcon* minor_icon_ = nullptr;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;

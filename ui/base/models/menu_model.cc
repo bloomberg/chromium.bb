@@ -40,6 +40,10 @@ base::string16 MenuModel::GetMinorTextAt(int index) const {
   return base::string16();
 }
 
+const gfx::VectorIcon* MenuModel::GetMinorIconAt(int index) const {
+  return nullptr;
+}
+
 const gfx::FontList* MenuModel::GetLabelFontListAt(int index) const {
   return NULL;
 }

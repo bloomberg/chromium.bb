@@ -64,6 +64,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   gfx::Image icon;
   model->GetIconAt(model_index, &icon);
   base::string16 label, sublabel, minor_text;
+  const gfx::VectorIcon* minor_icon = nullptr;
   ui::MenuSeparatorType separator_style = ui::NORMAL_SEPARATOR;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
@@ -75,18 +76,21 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       label = model->GetLabelAt(model_index);
       sublabel = model->GetSublabelAt(model_index);
       minor_text = model->GetMinorTextAt(model_index);
+      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_CHECK:
       type = MenuItemView::CHECKBOX;
       label = model->GetLabelAt(model_index);
       sublabel = model->GetSublabelAt(model_index);
       minor_text = model->GetMinorTextAt(model_index);
+      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_RADIO:
       type = MenuItemView::RADIO;
       label = model->GetLabelAt(model_index);
       sublabel = model->GetSublabelAt(model_index);
       minor_text = model->GetMinorTextAt(model_index);
+      minor_icon = model->GetMinorIconAt(model_index);
       break;
     case ui::MenuModel::TYPE_SEPARATOR:
       icon = gfx::Image();
@@ -98,6 +102,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       label = model->GetLabelAt(model_index);
       sublabel = model->GetSublabelAt(model_index);
       minor_text = model->GetMinorTextAt(model_index);
+      minor_icon = model->GetMinorIconAt(model_index);
       break;
     default:
       NOTREACHED();
@@ -106,13 +111,8 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   }
 
   return menu->AddMenuItemAt(
-      menu_index,
-      item_id,
-      label,
-      sublabel,
-      minor_text,
-      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(),
-      type,
+      menu_index, item_id, label, sublabel, minor_text, minor_icon,
+      icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia(), type,
       separator_style);
 }
 
