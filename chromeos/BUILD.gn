@@ -48,6 +48,7 @@ component("chromeos") {
     "//skia",  # For components/user_manager
     "//third_party/icu",
     "//third_party/protobuf:protobuf_lite",
+    "//ui/gfx/geometry",  # For accelerometer.
     "//url",
   ]
   data_deps = [

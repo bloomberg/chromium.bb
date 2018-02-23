@@ -9,6 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 
+namespace gfx {
+class Vector3dF;
+}
+
 namespace chromeos {
 
 enum AccelerometerSource {
@@ -58,12 +62,20 @@ class CHROMEOS_EXPORT AccelerometerUpdate
     return data_[source];
   }
 
+  // Returns the last known value for |source| as a vector.
+  gfx::Vector3dF GetVector(AccelerometerSource source) const;
+
   void Set(AccelerometerSource source, float x, float y, float z) {
     data_[source].present = true;
     data_[source].x = x;
     data_[source].y = y;
     data_[source].z = z;
   }
+
+  // A reading is considered stable if its deviation from gravity is small. This
+  // returns false if the deviation is too high, or if |source| is not present
+  // in the update.
+  bool IsReadingStable(AccelerometerSource source) const;
 
  protected:
   AccelerometerReading data_[ACCELEROMETER_SOURCE_COUNT];

@@ -9,8 +9,6 @@ assert(is_chromeos)
 component("chromeos") {
   output_name = "ui_chromeos"
   sources = [
-    "accelerometer/accelerometer_util.cc",
-    "accelerometer/accelerometer_util.h",
     "devicetype_utils.cc",
     "devicetype_utils.h",
     "ime/candidate_view.cc",
