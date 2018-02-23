@@ -3810,21 +3810,41 @@ TEST_F(SchedulerTest, WaitForAllPipelineStagesAlwaysObservesBeginFrames) {
   client_ = std::make_unique<FakeSchedulerClient>();
   CreateScheduler(EXTERNAL_BFS);
 
-  // Initialize frame sink, but don't request a main frame, so that state
-  // machine doesn't need BeginFrames, but Scheduler still observes.
+  // Initialize frame sink, request a main frame but defer commits, so that
+  // state machine is idle.
   scheduler_->SetVisible(true);
   scheduler_->SetCanDraw(true);
   EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
   client_->Reset();
   scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
+  scheduler_->SetDeferCommits(true);
+  scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
-  // In full-pipe mode, the Scheduler always observes BeginFrames, even if the
-  // state machine doesn't need any.
+  // In full-pipe mode, the SchedulerStateMachine always wants BeginFrames, even
+  // if it is otherwise idle.
   EXPECT_TRUE(scheduler_->begin_frames_expected());
-  EXPECT_FALSE(scheduler_->BeginFrameNeeded());
+  EXPECT_TRUE(scheduler_->BeginFrameNeeded());
+
+  // Scheduler begins a frame even if otherwise idle.
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+  now_src_->Advance(interval);
+  base::TimeTicks timestamp = now_src_->NowTicks();
+  viz::BeginFrameArgs args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 1u, timestamp, timestamp + interval, interval,
+      viz::BeginFrameArgs::NORMAL);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_ACTIONS("WillBeginImplFrame");
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+  client_->Reset();
+
+  // BeginFrame deadline is blocked because commits are deferred.
+  task_runner().RunPendingTasks();
+  EXPECT_ACTIONS();
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+  client_->Reset();
 }
 
 TEST_F(SchedulerTest, CriticalBeginMainFrameIsFast_CommitEstimateSlow) {

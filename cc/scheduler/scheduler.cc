@@ -243,16 +243,6 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
 
   bool needs_begin_frames = state_machine_.BeginFrameNeeded();
 
-  // The propagation of the needsBeginFrame signal to viz is inherently racy
-  // with issuing the next BeginFrame. In full-pipe mode, it is important we
-  // don't miss a BeginFrame because our needsBeginFrames signal propagated to
-  // viz too slowly. To avoid the race, we simply always request BeginFrames
-  // from viz.
-  if (settings_.wait_for_all_pipeline_stages_before_draw &&
-      state_machine_.HasInitializedLayerTreeFrameSink()) {
-    needs_begin_frames = true;
-  }
-
   if (needs_begin_frames && !observing_begin_frame_source_) {
     observing_begin_frame_source_ = true;
     if (begin_frame_source_)

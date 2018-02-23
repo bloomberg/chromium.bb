@@ -931,6 +931,14 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   if (!HasInitializedLayerTreeFrameSink())
     return false;
 
+  // The propagation of the needsBeginFrame signal to viz is inherently racy
+  // with issuing the next BeginFrame. In full-pipe mode, it is important we
+  // don't miss a BeginFrame because our needsBeginFrames signal propagated to
+  // viz too slowly. To avoid the race, we simply always request BeginFrames
+  // from viz.
+  if (settings_.wait_for_all_pipeline_stages_before_draw)
+    return true;
+
   // If we are not visible, we don't need BeginFrame messages.
   if (!visible_)
     return false;
