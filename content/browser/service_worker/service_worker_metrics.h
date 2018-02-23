@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_database.h"
-#include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
+#include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/service_worker_context.h"
@@ -271,7 +271,7 @@ class ServiceWorkerMetrics {
 
   // Records the result of sending installed scripts to the renderer.
   static void RecordInstalledScriptsSenderStatus(
-      ServiceWorkerInstalledScriptsSender::FinishedReason reason);
+      ServiceWorkerInstalledScriptReader::FinishedReason reason);
 
   // Records the time taken to successfully start a worker. |is_installed|
   // indicates whether the version has been installed.

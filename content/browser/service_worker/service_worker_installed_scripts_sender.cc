@@ -10,276 +10,8 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_storage.h"
-#include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/net_adapters.h"
 
 namespace content {
-
-namespace {
-
-class MetaDataSender {
- public:
-  enum class Status { kSuccess, kFailed };
-
-  MetaDataSender(scoped_refptr<net::IOBufferWithSize> meta_data,
-                 mojo::ScopedDataPipeProducerHandle handle)
-      : meta_data_(std::move(meta_data)),
-        bytes_sent_(0),
-        handle_(std::move(handle)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
-        weak_factory_(this) {}
-
-  void Start(base::OnceCallback<void(Status)> callback) {
-    callback_ = std::move(callback);
-    watcher_.Watch(
-        handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::Bind(&MetaDataSender::OnWritable, weak_factory_.GetWeakPtr()));
-  }
-
-  void OnWritable(MojoResult) {
-    // It isn't necessary to handle MojoResult here since WriteDataRaw()
-    // returns an equivalent error.
-    uint32_t size = meta_data_->size() - bytes_sent_;
-    MojoResult rv = handle_->WriteData(meta_data_->data() + bytes_sent_, &size,
-                                       MOJO_WRITE_DATA_FLAG_NONE);
-    switch (rv) {
-      case MOJO_RESULT_INVALID_ARGUMENT:
-      case MOJO_RESULT_OUT_OF_RANGE:
-      case MOJO_RESULT_BUSY:
-        NOTREACHED();
-        return;
-      case MOJO_RESULT_FAILED_PRECONDITION:
-        OnCompleted(Status::kFailed);
-        return;
-      case MOJO_RESULT_SHOULD_WAIT:
-        return;
-      case MOJO_RESULT_OK:
-        break;
-      default:
-        // mojo::WriteDataRaw() should not return any other values.
-        OnCompleted(Status::kFailed);
-        return;
-    }
-    bytes_sent_ += size;
-    if (meta_data_->size() == bytes_sent_)
-      OnCompleted(Status::kSuccess);
-  }
-
-  void OnCompleted(Status status) {
-    watcher_.Cancel();
-    handle_.reset();
-    std::move(callback_).Run(status);
-  }
-
- private:
-  base::OnceCallback<void(Status)> callback_;
-
-  scoped_refptr<net::IOBufferWithSize> meta_data_;
-  int64_t bytes_sent_;
-  mojo::ScopedDataPipeProducerHandle handle_;
-  mojo::SimpleWatcher watcher_;
-
-  base::WeakPtrFactory<MetaDataSender> weak_factory_;
-};
-
-}  // namespace
-
-// Sender sends a single script to the renderer and calls
-// ServiceWorkerIsntalledScriptsSender::OnFinishSendingScript() when done.
-class ServiceWorkerInstalledScriptsSender::Sender {
- public:
-  Sender(std::unique_ptr<ServiceWorkerResponseReader> reader,
-         ServiceWorkerInstalledScriptsSender* owner)
-      : reader_(std::move(reader)),
-        owner_(owner),
-        body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-        weak_factory_(this) {}
-
-  void Start() {
-    auto info_buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
-    reader_->ReadInfo(
-        info_buf.get(),
-        base::BindOnce(&Sender::OnReadInfoComplete, AsWeakPtr(), info_buf));
-  }
-
- private:
-  void OnReadInfoComplete(scoped_refptr<HttpResponseInfoIOBuffer> http_info,
-                          int result) {
-    DCHECK(owner_);
-    DCHECK(http_info);
-    if (!http_info->http_info) {
-      DCHECK_LT(result, 0);
-      ServiceWorkerMetrics::CountReadResponseResult(
-          ServiceWorkerMetrics::READ_HEADERS_ERROR);
-      CompleteSendIfNeeded(FinishedReason::kNoHttpInfoError);
-      return;
-    }
-
-    DCHECK_GE(result, 0);
-    mojo::ScopedDataPipeConsumerHandle meta_data_consumer;
-    mojo::ScopedDataPipeConsumerHandle body_consumer;
-    DCHECK_GE(http_info->response_data_size, 0);
-    uint64_t body_size = http_info->response_data_size;
-    uint64_t meta_data_size = 0;
-    if (mojo::CreateDataPipe(nullptr, &body_handle_, &body_consumer) !=
-        MOJO_RESULT_OK) {
-      CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
-      return;
-    }
-    // Start sending meta data (V8 code cache data).
-    if (http_info->http_info->metadata) {
-      mojo::ScopedDataPipeProducerHandle meta_data_producer;
-      if (mojo::CreateDataPipe(nullptr, &meta_data_producer,
-                               &meta_data_consumer) != MOJO_RESULT_OK) {
-        CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
-        return;
-      }
-      meta_data_sender_ = std::make_unique<MetaDataSender>(
-          http_info->http_info->metadata, std::move(meta_data_producer));
-      meta_data_sender_->Start(
-          base::BindOnce(&Sender::OnMetaDataSent, AsWeakPtr()));
-      DCHECK_GE(http_info->http_info->metadata->size(), 0);
-      meta_data_size = http_info->http_info->metadata->size();
-    }
-
-    // Start sending body.
-    body_watcher_.Watch(body_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                        base::Bind(&Sender::OnWritableBody, AsWeakPtr()));
-    body_watcher_.ArmOrNotify();
-
-    scoped_refptr<net::HttpResponseHeaders> headers =
-        http_info->http_info->headers;
-    DCHECK(headers);
-
-    std::string charset;
-    headers->GetCharset(&charset);
-
-    // Create a map of response headers.
-    std::unordered_map<std::string, std::string> header_strings;
-    size_t iter = 0;
-    std::string key;
-    std::string value;
-    // This logic is copied from blink::ResourceResponse::AddHTTPHeaderField.
-    while (headers->EnumerateHeaderLines(&iter, &key, &value)) {
-      if (header_strings.find(key) == header_strings.end()) {
-        header_strings[key] = value;
-      } else {
-        header_strings[key] += ", " + value;
-      }
-    }
-
-    owner_->SendScriptInfoToRenderer(
-        charset, std::move(header_strings), std::move(body_consumer), body_size,
-        std::move(meta_data_consumer), meta_data_size);
-    owner_->OnHttpInfoRead(http_info);
-  }
-
-  void OnWritableBody(MojoResult) {
-    // It isn't necessary to handle MojoResult here since BeginWrite() returns
-    // an equivalent error.
-    DCHECK(!body_pending_write_);
-    DCHECK(body_handle_.is_valid());
-    uint32_t num_bytes = 0;
-    MojoResult rv = network::NetToMojoPendingBuffer::BeginWrite(
-        &body_handle_, &body_pending_write_, &num_bytes);
-    switch (rv) {
-      case MOJO_RESULT_INVALID_ARGUMENT:
-      case MOJO_RESULT_BUSY:
-        NOTREACHED();
-        return;
-      case MOJO_RESULT_FAILED_PRECONDITION:
-        CompleteSendIfNeeded(FinishedReason::kConnectionError);
-        return;
-      case MOJO_RESULT_SHOULD_WAIT:
-        body_watcher_.ArmOrNotify();
-        return;
-      case MOJO_RESULT_OK:
-        // |body_handle_| must have been taken by |body_pending_write_|.
-        DCHECK(body_pending_write_);
-        DCHECK(!body_handle_.is_valid());
-        break;
-    }
-
-    scoped_refptr<network::NetToMojoIOBuffer> buffer =
-        base::MakeRefCounted<network::NetToMojoIOBuffer>(
-            body_pending_write_.get());
-    reader_->ReadData(buffer.get(), num_bytes,
-                      base::BindOnce(&Sender::OnResponseDataRead, AsWeakPtr()));
-  }
-
-  void OnResponseDataRead(int read_bytes) {
-    if (read_bytes < 0) {
-      ServiceWorkerMetrics::CountReadResponseResult(
-          ServiceWorkerMetrics::READ_DATA_ERROR);
-      body_watcher_.Cancel();
-      body_handle_.reset();
-      CompleteSendIfNeeded(FinishedReason::kResponseReaderError);
-      return;
-    }
-    body_handle_ = body_pending_write_->Complete(read_bytes);
-    DCHECK(body_handle_.is_valid());
-    body_pending_write_ = nullptr;
-    ServiceWorkerMetrics::CountReadResponseResult(
-        ServiceWorkerMetrics::READ_OK);
-    if (read_bytes == 0) {
-      // All data has been read.
-      body_watcher_.Cancel();
-      body_handle_.reset();
-      CompleteSendIfNeeded(FinishedReason::kSuccess);
-      return;
-    }
-    body_watcher_.ArmOrNotify();
-  }
-
-  void OnMetaDataSent(MetaDataSender::Status status) {
-    meta_data_sender_.reset();
-    if (status != MetaDataSender::Status::kSuccess) {
-      body_watcher_.Cancel();
-      body_handle_.reset();
-      CompleteSendIfNeeded(FinishedReason::kMetaDataSenderError);
-      return;
-    }
-
-    CompleteSendIfNeeded(FinishedReason::kSuccess);
-  }
-
-  // CompleteSendIfNeeded notifies the end of data transfer to |owner_|, and
-  // |this| will be removed by |owner_| as a result. Errors are notified
-  // immediately, but when the transfer has been succeeded, it's notified when
-  // sending both of body and meta data is finished.
-  void CompleteSendIfNeeded(FinishedReason reason) {
-    if (reason != FinishedReason::kSuccess) {
-      owner_->OnFinishSendingScript(reason);
-      return;
-    }
-
-    if (WasMetadataWritten() && WasBodyWritten())
-      owner_->OnFinishSendingScript(reason);
-  }
-
-  bool WasMetadataWritten() const { return !meta_data_sender_; }
-
-  bool WasBodyWritten() const {
-    return !body_handle_.is_valid() && !body_pending_write_;
-  }
-
-  base::WeakPtr<Sender> AsWeakPtr() { return weak_factory_.GetWeakPtr(); }
-
-  std::unique_ptr<ServiceWorkerResponseReader> reader_;
-  ServiceWorkerInstalledScriptsSender* owner_;
-
-  // For meta data.
-  std::unique_ptr<MetaDataSender> meta_data_sender_;
-
-  // For body.
-  // Either |body_handle_| or |body_pending_write_| is valid during body is
-  // streamed.
-  mojo::ScopedDataPipeProducerHandle body_handle_;
-  scoped_refptr<network::NetToMojoPendingBuffer> body_pending_write_;
-  mojo::SimpleWatcher body_watcher_;
-
-  base::WeakPtrFactory<Sender> weak_factory_;
-};
 
 ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
     ServiceWorkerVersion* owner)
@@ -290,7 +22,8 @@ ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
       sent_main_script_(false),
       binding_(this),
       state_(State::kNotStarted),
-      last_finished_reason_(FinishedReason::kNotFinished) {
+      last_finished_reason_(
+          ServiceWorkerInstalledScriptReader::FinishedReason::kNotFinished) {
   DCHECK(ServiceWorkerVersion::IsInstalled(owner_->status()));
   DCHECK_NE(kInvalidServiceWorkerResourceId, main_script_id_);
 }
@@ -332,30 +65,32 @@ void ServiceWorkerInstalledScriptsSender::Start() {
 void ServiceWorkerInstalledScriptsSender::StartSendingScript(
     int64_t resource_id,
     const GURL& script_url) {
-  DCHECK(!running_sender_);
+  DCHECK(!reader_);
   DCHECK(current_sending_url_.is_empty());
   state_ = State::kSendingScripts;
   current_sending_url_ = script_url;
 
-  auto reader = owner_->context()->storage()->CreateResponseReader(resource_id);
+  std::unique_ptr<ServiceWorkerResponseReader> response_reader =
+      owner_->context()->storage()->CreateResponseReader(resource_id);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "SendingScript", this,
                                     "script_url", current_sending_url_.spec());
-  running_sender_ = std::make_unique<Sender>(std::move(reader), this);
-  running_sender_->Start();
+  reader_ = std::make_unique<ServiceWorkerInstalledScriptReader>(
+      std::move(response_reader), this);
+  reader_->Start();
 }
 
-void ServiceWorkerInstalledScriptsSender::SendScriptInfoToRenderer(
+void ServiceWorkerInstalledScriptsSender::OnStarted(
     std::string encoding,
     std::unordered_map<std::string, std::string> headers,
     mojo::ScopedDataPipeConsumerHandle body_handle,
     uint64_t body_size,
     mojo::ScopedDataPipeConsumerHandle meta_data_handle,
     uint64_t meta_data_size) {
-  DCHECK(running_sender_);
+  DCHECK(reader_);
   DCHECK_EQ(State::kSendingScripts, state_);
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
-      "ServiceWorker", "SendScriptInfoToRenderer", this, "body_size", body_size,
-      "meta_data_size", meta_data_size);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("ServiceWorker", "OnStarted", this,
+                                      "body_size", body_size, "meta_data_size",
+                                      meta_data_size);
   auto script_info = blink::mojom::ServiceWorkerScriptInfo::New();
   script_info->script_url = current_sending_url_;
   script_info->headers = std::move(headers);
@@ -369,30 +104,31 @@ void ServiceWorkerInstalledScriptsSender::SendScriptInfoToRenderer(
 
 void ServiceWorkerInstalledScriptsSender::OnHttpInfoRead(
     scoped_refptr<HttpResponseInfoIOBuffer> http_info) {
-  DCHECK(running_sender_);
+  DCHECK(reader_);
   DCHECK_EQ(State::kSendingScripts, state_);
   if (IsSendingMainScript())
     owner_->SetMainScriptHttpResponseInfo(*http_info->http_info);
 }
 
-void ServiceWorkerInstalledScriptsSender::OnFinishSendingScript(
-    FinishedReason reason) {
-  DCHECK(running_sender_);
+void ServiceWorkerInstalledScriptsSender::OnFinished(
+    ServiceWorkerInstalledScriptReader::FinishedReason reason) {
+  DCHECK(reader_);
   DCHECK_EQ(State::kSendingScripts, state_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SendingScript", this);
-  running_sender_.reset();
+  reader_.reset();
   current_sending_url_ = GURL();
 
   if (IsSendingMainScript())
     sent_main_script_ = true;
 
-  if (reason != FinishedReason::kSuccess) {
+  if (reason != ServiceWorkerInstalledScriptReader::FinishedReason::kSuccess) {
     Abort(reason);
     return;
   }
 
   if (pending_scripts_.empty()) {
-    UpdateFinishedReasonAndBecomeIdle(FinishedReason::kSuccess);
+    UpdateFinishedReasonAndBecomeIdle(
+        ServiceWorkerInstalledScriptReader::FinishedReason::kSuccess);
     TRACE_EVENT_NESTABLE_ASYNC_END0(
         "ServiceWorker", "ServiceWorkerInstalledScriptsSender", this);
     return;
@@ -405,9 +141,11 @@ void ServiceWorkerInstalledScriptsSender::OnFinishSendingScript(
   StartSendingScript(next_id, next_url);
 }
 
-void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
+void ServiceWorkerInstalledScriptsSender::Abort(
+    ServiceWorkerInstalledScriptReader::FinishedReason reason) {
   DCHECK_EQ(State::kSendingScripts, state_);
-  DCHECK_NE(FinishedReason::kSuccess, reason);
+  DCHECK_NE(ServiceWorkerInstalledScriptReader::FinishedReason::kSuccess,
+            reason);
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
                                   "ServiceWorkerInstalledScriptsSender", this,
                                   "FinishedReason", static_cast<int>(reason));
@@ -421,12 +159,13 @@ void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
   UpdateFinishedReasonAndBecomeIdle(reason);
 
   switch (reason) {
-    case FinishedReason::kNotFinished:
-    case FinishedReason::kSuccess:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kNotFinished:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kSuccess:
       NOTREACHED();
       return;
-    case FinishedReason::kNoHttpInfoError:
-    case FinishedReason::kResponseReaderError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kNoHttpInfoError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::
+        kResponseReaderError:
       owner_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_DISK_CACHE);
       // Abort the worker by deleting from the registration since the data was
       // corrupted.
@@ -437,9 +176,11 @@ void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
         registration->DeleteVersion(owner_);
       }
       return;
-    case FinishedReason::kCreateDataPipeError:
-    case FinishedReason::kConnectionError:
-    case FinishedReason::kMetaDataSenderError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::
+        kCreateDataPipeError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kConnectionError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::
+        kMetaDataSenderError:
       // Notify the renderer that a connection failure happened. Usually the
       // failure means the renderer gets killed, and the error handler of
       // EmbeddedWorkerInstance is invoked soon.
@@ -450,9 +191,10 @@ void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
 }
 
 void ServiceWorkerInstalledScriptsSender::UpdateFinishedReasonAndBecomeIdle(
-    FinishedReason reason) {
+    ServiceWorkerInstalledScriptReader::FinishedReason reason) {
   DCHECK_EQ(State::kSendingScripts, state_);
-  DCHECK_NE(FinishedReason::kNotFinished, reason);
+  DCHECK_NE(ServiceWorkerInstalledScriptReader::FinishedReason::kNotFinished,
+            reason);
   DCHECK(current_sending_url_.is_empty());
   state_ = State::kIdle;
   last_finished_reason_ = reason;
