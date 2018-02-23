@@ -118,7 +118,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const LayoutPoint& accumulated_offset_for_legacy,
                        HitTestAction);
   bool HitTestTextFragment(HitTestResult&,
-                           const NGPhysicalFragment&,
+                           const NGPaintFragment&,
                            const HitTestLocation& location_in_container,
                            const LayoutPoint& accumulated_offset);
   bool HitTestClippedOutByBorder(const HitTestLocation&,

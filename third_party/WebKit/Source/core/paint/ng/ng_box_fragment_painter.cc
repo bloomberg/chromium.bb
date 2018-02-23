@@ -826,9 +826,11 @@ bool NGBoxFragmentPainter::VisibleToHitTestRequest(
 
 bool NGBoxFragmentPainter::HitTestTextFragment(
     HitTestResult& result,
-    const NGPhysicalFragment& text_fragment,
+    const NGPaintFragment& text_paint_fragment,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset) {
+  const NGPhysicalFragment& text_fragment =
+      text_paint_fragment.PhysicalFragment();
   LayoutSize offset(text_fragment.Offset().left, text_fragment.Offset().top);
   LayoutPoint adjusted_location = accumulated_offset + offset;
   LayoutSize size(text_fragment.Size().width, text_fragment.Size().height);
@@ -851,7 +853,9 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
     Node* node = text_fragment.GetNode();
     if (!result.InnerNode() && node) {
       LayoutPoint point =
-          location_in_container.Point() - ToLayoutSize(accumulated_offset);
+          location_in_container.Point() - ToLayoutSize(accumulated_offset) -
+          offset +
+          text_paint_fragment.InlineOffsetToContainerBox().ToLayoutPoint();
       result.SetNodeAndPosition(node, point);
     }
 
@@ -903,7 +907,7 @@ bool NGBoxFragmentPainter::HitTestChildren(
       // TODO(eae): Should this hit test on the text itself or the containing
       // node?
       stop_hit_testing = HitTestTextFragment(
-          result, fragment, location_in_container, accumulated_offset);
+          result, *child, location_in_container, accumulated_offset);
     }
     if (stop_hit_testing)
       return true;
