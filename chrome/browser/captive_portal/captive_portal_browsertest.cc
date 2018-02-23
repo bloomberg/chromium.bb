@@ -22,6 +22,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/values.h"
@@ -59,6 +60,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -96,6 +98,15 @@ const char* const kTestServerLoginPath = "/captive_portal/login.html";
 // TestServer.
 const char* const kTestServerIframeTimeoutPath =
     "/captive_portal/iframe_timeout.html";
+
+// Path of a page that redirects to kMockHttpsUrl.
+const char* const kRedirectToMockHttpsPath =
+    "/captive_portal/redirect_to_mock_https.html";
+
+// Path of a page that serves a bad SSL certificate.
+// The path doesn't matter because all we need is that it's served from a
+// server that's configured to serve a bad cert.
+const char* const kMockHttpsBadCertPath = "/bad_cert.html";
 
 // The following URLs each have two different behaviors, depending on whether
 // URLRequestMockCaptivePortalJobFactory is currently simulating the presence
@@ -832,23 +843,6 @@ void SSLInterstitialTimerObserver::OnTimerStarted(
     message_loop_runner_->Quit();
 }
 
-// Adds an HSTS rule for |host|, so that all HTTP requests sent to it will
-// be switched to HTTPS requests.
-void AddHstsHost(net::URLRequestContextGetter* context_getter,
-                 const std::string& host) {
-  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::TransportSecurityState* transport_security_state =
-      context_getter->GetURLRequestContext()->transport_security_state();
-  if (!transport_security_state) {
-    FAIL();
-    return;
-  }
-
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-  bool include_subdomains = false;
-  transport_security_state->AddHSTS(host, expiry, include_subdomains);
-}
-
 // Helper for waiting for a change of the active tab.
 // Users can wait for the change via WaitForActiveTabChange method.
 // DCHECKs ensure that only one change happens during the lifetime of a
@@ -1117,7 +1111,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
       network::URLLoaderCompletionStatus status;
       status.error_code = net::ERR_CONNECTION_TIMED_OUT;
       for (auto& job : ongoing_mock_requests_)
-        job->OnComplete(status);
+        job.client->OnComplete(status);
       ongoing_mock_requests_.clear();
       return;
     }
@@ -1140,15 +1134,41 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     }
 
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      DCHECK(intercept_bad_cert_);
+      // With the network service enabled, these will be requests to
+      // kMockHttpsBadCertPath that is served by a misconfigured
+      // EmbeddedTestServer. Once the request reaches the network service, it'll
+      // notice the bad SSL cert.
+      // Set |intercept_bad_cert_| so that when we use the network service'
+      // URLLoaderFactory again it doesn't get intercepted and goes to the
+      // nework process. This has to be done on the UI thread as that's where we
+      // currently have a public URLLoaderFactory for the profile.
+      intercept_bad_cert_ = false;
       EXPECT_EQ(expected_num_jobs,
                 static_cast<int>(ongoing_mock_requests_.size()));
-      NOTIMPLEMENTED();
+      for (auto& job : ongoing_mock_requests_) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&CaptivePortalBrowserTest::CreateLoader,
+                           base::Unretained(this), std::move(job)));
+      }
+      ongoing_mock_requests_.clear();
       return;
     }
 
     URLRequestTimeoutOnDemandJob::FailOrAbandonJobs(
         expected_num_jobs,
         URLRequestTimeoutOnDemandJob::FAIL_JOBS_WITH_CERT_ERROR, ssl_info);
+  }
+
+  void CreateLoader(content::URLLoaderInterceptor::RequestParams job) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+        ->GetURLLoaderFactoryForBrowserProcess()
+        ->CreateLoaderAndStart(std::move(job.request), job.routing_id,
+                               job.request_id, job.options,
+                               std::move(job.url_request),
+                               std::move(job.client), job.traffic_annotation);
   }
 
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
@@ -1163,7 +1183,11 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     }
 
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      NOTIMPLEMENTED();
+      EXPECT_EQ(expected_num_jobs,
+                static_cast<int>(ongoing_mock_requests_.size()));
+      for (auto& job : ongoing_mock_requests_)
+        ignore_result(job.client.PassInterface().PassHandle().release());
+      ongoing_mock_requests_.clear();
       return;
     }
 
@@ -1191,7 +1215,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   // Only accessed on the IO thread.
   int num_jobs_to_wait_for_ = 0;
-  std::vector<network::mojom::URLLoaderClientPtr> ongoing_mock_requests_;
+  std::vector<content::URLLoaderInterceptor::RequestParams>
+      ongoing_mock_requests_;
+  bool intercept_bad_cert_ = true;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBrowserTest);
@@ -1237,17 +1263,46 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
 
 bool CaptivePortalBrowserTest::OnIntercept(
     content::URLLoaderInterceptor::RequestParams* params) {
+  if (params->url_request.url.path() == kMockHttpsBadCertPath &&
+      intercept_bad_cert_) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    ongoing_mock_requests_.emplace_back(std::move(*params));
+    return true;
+  }
+
   auto url_string = params->url_request.url.spec();
   if (url_string == kMockHttpsUrl || url_string == kMockHttpsUrl2 ||
-      url_string == kMockHttpsQuickTimeoutUrl) {
+      url_string == kMockHttpsQuickTimeoutUrl ||
+      params->url_request.url.path() == kRedirectToMockHttpsPath) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    if (params->url_request.url.path() == kRedirectToMockHttpsPath) {
+      net::RedirectInfo redirect_info;
+      redirect_info.new_url = GURL(kMockHttpsUrl);
+      redirect_info.new_method = "GET";
+
+      std::string headers;
+      headers = base::StringPrintf(
+          "HTTP/1.0 301 Moved permanently\n"
+          "Location: %s\n"
+          "Content-Type: text/html\n\n",
+          kMockHttpsUrl);
+      net::HttpResponseInfo info;
+      info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+          net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+      network::ResourceResponseHead response;
+      response.headers = info.headers;
+      response.headers->GetMimeType(&response.mime_type);
+      response.encoded_data_length = 0;
+      params->client->OnReceiveRedirect(redirect_info, response);
+    }
+
     if (factory_.behind_captive_portal()) {
       if (url_string == kMockHttpsQuickTimeoutUrl) {
         network::URLLoaderCompletionStatus status;
         status.error_code = net::ERR_CONNECTION_TIMED_OUT;
         params->client->OnComplete(status);
       } else {
-        ongoing_mock_requests_.push_back(std::move(params->client));
+        ongoing_mock_requests_.emplace_back(std::move(*params));
         if (num_jobs_to_wait_for_ ==
             static_cast<int>(ongoing_mock_requests_.size())) {
           num_jobs_to_wait_for_ = 0;
@@ -2877,9 +2932,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
   ASSERT_TRUE(embedded_test_server()->Start());
   SlowLoadBehindCaptivePortal(
-      browser(), true,
-      embedded_test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)), 1,
-      1);
+      browser(), true, embedded_test_server()->GetURL(kRedirectToMockHttpsPath),
+      1, 1);
   Login(browser(), 1, 0);
   FailLoadsAfterLogin(browser(), 1);
 }
@@ -2912,27 +2966,6 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Status511) {
   FailLoadsAfterLogin(browser(), 1);
 }
 
-// HSTS redirects an HTTP request to HTTPS, and the request then times out.
-// A captive portal is then detected, and a login tab opened, before logging
-// in.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
-  GURL::Replacements replacements;
-  replacements.SetSchemeStr("http");
-  GURL http_timeout_url = GURL(kMockHttpsUrl).ReplaceComponents(replacements);
-
-  URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &AddHstsHost,
-          base::RetainedRef(browser()->profile()->GetRequestContext()),
-          http_timeout_url.host()));
-
-  SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url, 1, 1);
-  Login(browser(), 1, 0);
-  FailLoadsAfterLogin(browser(), 1);
-}
-
 // A slow SSL load starts. The reloader triggers a captive portal check, finds a
 // captive portal. The SSL commits with a cert error, triggering another captive
 // portal check.
@@ -2941,8 +2974,21 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
 // in an SSL interstitial.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
                        InterstitialTimerCertErrorAfterSlowLoad) {
-  // Use a url that triggers a slow load, instead of creating an https server.
-  GURL cert_error_url = GURL(kMockHttpsUrl);
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+
+  GURL cert_error_url;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // With the network service, the request must be handled in the network
+    // process as that's what triggers the NetworkServiceClient methods that
+    // call out to SSLManager.
+    https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+    https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(https_server.Start());
+    cert_error_url = https_server.GetURL(kMockHttpsBadCertPath);
+  } else {
+    // Use a url that triggers a slow load, instead of creating an https server.
+    cert_error_url = GURL(kMockHttpsUrl);
+  }
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   int broken_tab_index = tab_strip_model->active_index();
