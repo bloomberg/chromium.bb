@@ -93,5 +93,8 @@ SOM_BUILDS = {
          SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
         (WATERFALL_CHROMIUM, 'amd64-generic-telemetry',
          SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
+        (WATERFALL_CHROMIUM,
+         'amd64-generic-goma-canary-chromium-pfq-informational',
+         SOM_SEVERITY_CHROMIUM_INFORMATIONAL_FAILURE),
     ],
 }

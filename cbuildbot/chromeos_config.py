@@ -3110,6 +3110,18 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       trybot_list=True,
   )
 
+  site_config.Add(
+      'amd64-generic-goma-canary-chromium-pfq-informational',
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      important=False,
+      description='Test canary versions of goma.',
+      boards=[
+          'amd64-generic',
+      ],
+  )
+
   _chrome_perf_boards = frozenset([
       'daisy',
       'lumpy',

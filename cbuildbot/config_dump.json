@@ -1735,6 +1735,15 @@
         "disk_layout": "4gb-rootfs",
         "hw_tests_override": null
     },
+    "amd64-generic-goma-canary-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "amd64-generic"
+        ],
+        "description": "Test canary versions of goma.",
+        "hw_tests_override": null,
+        "vm_tests": []
+    },
     "amd64-generic-goofy-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
