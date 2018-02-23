@@ -210,7 +210,6 @@ dist_yaml_TESTS =				\
 	yaml/no_harness.yaml			\
 	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
-	yaml/pass1Only.yaml			\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sk-g1_harness.yaml			\
 	yaml/sr-g1_harness.yaml			\

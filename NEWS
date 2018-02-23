@@ -41,6 +41,8 @@ issues]].
 ** Backwards incompatible changes
 - The translation mode ~comp8Dots~ has been removed as it was never
   really implemented anyway
+- Support for the ~pass1Only~ flag has now been removed. Thanks to Bue
+  Vester-Andersen.
 
 ** New, renamed or removed tables
 *** New

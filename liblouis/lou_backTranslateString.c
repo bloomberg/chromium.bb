@@ -91,9 +91,7 @@ doPasses(widechar *outbuf, const TranslationTableHeader *table, int *src, int *s
 	if (table->corrections) lastPass -= 1;
 
 	if (mode & pass1Only) {
-		_lou_logMessage(LOG_WARN, "warning: pass1Only mode has been deprecated.");
-		firstPass = 1;
-		lastPass = 1;
+		_lou_logMessage(LOG_WARN, "warning: pass1Only mode is no longer supported.");
 	}
 
 	currentPass = firstPass;
@@ -193,7 +191,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 	if (!(srcMapping = _lou_allocMem(alloc_posMapping1, srcmax, destmax))) return 0;
 	for (k = 0; k <= srcmax; k++) srcMapping[k] = k;
 	srcMapping[srcmax] = srcmax;
-	if ((!(mode & pass1Only)) && (table->numPasses > 1 || table->corrections)) {
+	if (table->numPasses > 1 || table->corrections) {
 		if (!(passbuf2 = _lou_allocMem(alloc_passbuf2, srcmax, destmax))) return 0;
 	}
 	appliedRulesCount = 0;
