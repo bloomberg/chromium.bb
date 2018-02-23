@@ -3221,9 +3221,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->error_resilient_mode);
 
 #if CONFIG_INTRA_EDGE2
-  if (frame_is_intra_only(cm)) {
-    aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
-  }
+  aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
 #endif  // CONFIG_INTRA_EDGE2
 
   if (cm->seq_params.force_screen_content_tools == 2) {
