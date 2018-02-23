@@ -100,7 +100,6 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/browser_state_data_remover.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -270,7 +269,22 @@ MainControllerAuthenticationServiceDelegate::
 
 void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     ProceduralBlock completion) {
-  BrowserStateDataRemover::ClearData(browser_state_, completion);
+  // TODO(crbug.com/738881): pass a dispatcher here and remove the use
+  // of -chromeExecuteCommands:.
+  const browsing_data::TimePeriod timePeriod =
+      browsing_data::TimePeriod::ALL_TIME;
+  const BrowsingDataRemoveMask removeDataMask =
+      BrowsingDataRemoveMask::REMOVE_ALL;
+
+  ClearBrowsingDataCommand* command =
+      [[ClearBrowsingDataCommand alloc] initWithBrowserState:browser_state_
+                                                        mask:removeDataMask
+                                                  timePeriod:timePeriod
+                                             completionBlock:completion];
+
+  DCHECK([[UIApplication sharedApplication] keyWindow]);
+  UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
+  [mainWindow chromeExecuteCommand:command];
 }
 
 }  // namespace
@@ -1662,13 +1676,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       // browser state.
       ClearBrowsingDataCommand* command =
           base::mac::ObjCCastStrict<ClearBrowsingDataCommand>(sender);
-      ios::ChromeBrowserState* browserState =
-          [command browserState]->GetOriginalChromeBrowserState();
-      BrowsingDataRemoveMask mask = [command mask];
-      browsing_data::TimePeriod timePeriod = [command timePeriod];
-      [self removeBrowsingDataFromBrowserState:browserState
-                                          mask:mask
-                                    timePeriod:timePeriod
+      DCHECK(![command browserState]->IsOffTheRecord());
+      [self removeBrowsingDataFromBrowserState:[command browserState]
+                                          mask:[command mask]
+                                    timePeriod:[command timePeriod]
                              completionHandler:[command completionBlock]];
       break;
     }
@@ -2610,19 +2621,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // via lazy initialization.
   DCHECK(!_mainCoordinator);
   [self.mainCoordinator start];
-}
-
-- (void)setUpForTestingWithCompletionHandler:
-    (ProceduralBlock)completionHandler {
-  self.currentBVC = self.mainBVC;
-  [self removeBrowsingDataFromBrowserState:_mainBrowserState
-                                      mask:BrowsingDataRemoveMask::REMOVE_ALL
-                                timePeriod:browsing_data::TimePeriod::ALL_TIME
-                         completionHandler:^{
-                           [self setUpCurrentBVCForTesting];
-                           if (completionHandler)
-                             completionHandler();
-                         }];
 }
 
 @end

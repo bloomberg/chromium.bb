@@ -20,8 +20,6 @@ source_set("signin") {
     "authentication_service_delegate.h",
     "authentication_service_factory.h",
     "authentication_service_factory.mm",
-    "browser_state_data_remover.h",
-    "browser_state_data_remover.mm",
     "chrome_identity_service_observer_bridge.h",
     "chrome_identity_service_observer_bridge.mm",
     "constants.h",

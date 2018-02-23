@@ -25,6 +25,9 @@ enum class BrowsingDataRemoveMask {
   REMOVE_CHANNEL_IDS = 1 << 10,
   REMOVE_CACHE_STORAGE = 1 << 11,
   REMOVE_VISITED_LINKS = 1 << 12,
+  REMOVE_BOOKMARKS = 1 << 13,
+  REMOVE_READING_LIST = 1 << 14,
+  REMOVE_LAST_USER_ACCOUNT = 1 << 15,
 
   // "Site data" includes cookies, appcache, indexed DBs, local storage, webSQL,
   // cache storage, channel ids and visited links.
@@ -36,7 +39,9 @@ enum class BrowsingDataRemoveMask {
   // wish to wipe as much data as possible from a ChromeBrowserState, to make it
   // look like a new ChromeBrowserState.
   REMOVE_ALL = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS |
-               REMOVE_FORM_DATA | REMOVE_HISTORY | REMOVE_PASSWORDS,
+               REMOVE_FORM_DATA | REMOVE_HISTORY | REMOVE_PASSWORDS |
+               REMOVE_BOOKMARKS | REMOVE_READING_LIST |
+               REMOVE_LAST_USER_ACCOUNT,
 };
 
 // Implementation of bitwise "or", "and" operators and the corresponding
