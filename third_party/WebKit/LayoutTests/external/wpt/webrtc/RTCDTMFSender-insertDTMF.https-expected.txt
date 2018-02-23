@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-FAIL insertDTMF() should succeed if tones contains valid DTMF characters assert_true: Expect audio sender.dtmf to be set to a RTCDTMFSender expected true got false
-FAIL insertDTMF() should throw InvalidCharacterError if tones contains invalid DTMF characters assert_true: Expect audio sender.dtmf to be set to a RTCDTMFSender expected true got false
+PASS insertDTMF() should succeed if tones contains valid DTMF characters
+PASS insertDTMF() should throw InvalidCharacterError if tones contains invalid DTMF characters
 FAIL insertDTMF() should throw InvalidStateError if transceiver is stopped pc.addTransceiver is not a function
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is recvonly pc.addTransceiver is not a function
 FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is inactive pc.addTransceiver is not a function
-FAIL insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden assert_true: Expect audio sender.dtmf to be set to a RTCDTMFSender expected true got false
+FAIL insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden assert_equals: expected "123" but got "23"
 Harness: the test ran to completion.
 

@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "modules/mediastream/MediaStreamTrack.h"
+#include "modules/peerconnection/RTCDTMFSender.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
 
@@ -96,9 +97,27 @@ MediaStreamVector RTCRtpSender::streams() const {
   return streams_;
 }
 
+RTCDTMFSender* RTCRtpSender::dtmf() {
+  // Lazy initialization of dtmf_ to avoid overhead when not used.
+  // TODO(hta): Redefine layers below to use sender as argument, and
+  // stop depending on track being present.
+  // https://crbug.com/814214
+  if (!dtmf_ && track_ && track_->kind() == "audio") {
+    ExceptionState exception_state(nullptr, ExceptionState::kUnknownContext,
+                                   nullptr, nullptr);
+    dtmf_ = pc_->createDTMFSender(track_, exception_state);
+    if (exception_state.HadException()) {
+      LOG(ERROR) << "Unable to create DTMF sender attribute on an audio sender:"
+                 << exception_state.Message();
+    }
+  }
+  return dtmf_;
+}
+
 void RTCRtpSender::Trace(blink::Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);
+  visitor->Trace(dtmf_);
   visitor->Trace(streams_);
   ScriptWrappable::Trace(visitor);
 }

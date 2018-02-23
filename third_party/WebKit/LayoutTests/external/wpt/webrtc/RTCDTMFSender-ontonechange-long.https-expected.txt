@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL insertDTMF with duration greater than 6000 should be clamped to 6000 assert_unreached: Unexpected promise rejection: Error: assert_true: Expect audio sender.dtmf to be set to a RTCDTMFSender expected true got false Reached unreachable code
-Harness: the test ran to completion.
-

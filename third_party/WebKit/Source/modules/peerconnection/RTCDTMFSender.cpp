@@ -41,11 +41,14 @@
 
 namespace blink {
 
-static const int kMinToneDurationMs = 70;
+static const int kMinToneDurationMs = 40;
 static const int kDefaultToneDurationMs = 100;
 static const int kMaxToneDurationMs = 6000;
+// TODO(hta): Adjust kMinInterToneGapMs to 30 once WebRTC code has changed
+// CL in progress: https://webrtc-review.googlesource.com/c/src/+/55260
 static const int kMinInterToneGapMs = 50;
-static const int kDefaultInterToneGapMs = 50;
+static const int kMaxInterToneGapMs = 6000;
+static const int kDefaultInterToneGapMs = 70;
 
 RTCDTMFSender* RTCDTMFSender::Create(
     ExecutionContext* context,
@@ -117,34 +120,34 @@ void RTCDTMFSender::insertDTMF(const String& tones,
                                int duration,
                                int inter_tone_gap,
                                ExceptionState& exception_state) {
+  // https://w3c.github.io/webrtc-pc/#dom-rtcdtmfsender-insertdtmf
+  // TODO(hta): Add check on transceiver's "stopped" and "currentDirection"
+  // attributes
   if (!canInsertDTMF()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(kInvalidStateError,
                                       "The 'canInsertDTMF' attribute is false: "
                                       "this sender cannot send DTMF.");
     return;
   }
-
-  if (duration > kMaxToneDurationMs || duration < kMinToneDurationMs) {
+  // Spec: Throw on illegal characters
+  if (strspn(tones.Ascii().data(), "0123456789abcdABCD#*,") != tones.length()) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
-        ExceptionMessages::IndexOutsideRange(
-            "duration", duration, kMinToneDurationMs,
-            ExceptionMessages::kExclusiveBound, kMaxToneDurationMs,
-            ExceptionMessages::kExclusiveBound));
+        kInvalidCharacterError,
+        "Illegal characers in InsertDTMF tone argument");
     return;
   }
 
-  if (inter_tone_gap < kMinInterToneGapMs) {
-    exception_state.ThrowDOMException(
-        kSyntaxError, ExceptionMessages::IndexExceedsMinimumBound(
-                          "intertone gap", inter_tone_gap, kMinInterToneGapMs));
-    return;
-  }
+  // Spec: Clamp the duration to between 40 and 6000 ms
+  duration = std::max(duration, kMinToneDurationMs);
+  duration = std::min(duration, kMaxToneDurationMs);
+  // Spec: Clamp the inter-tone gap to between 30 and 6000 ms
+  inter_tone_gap = std::max(inter_tone_gap, kMinInterToneGapMs);
+  inter_tone_gap = std::min(inter_tone_gap, kMaxInterToneGapMs);
 
   duration_ = duration;
   inter_tone_gap_ = inter_tone_gap;
-
-  if (!handler_->InsertDTMF(tones, duration_, inter_tone_gap_))
+  // Spec: a-d should be represented in the tone buffer as A-D
+  if (!handler_->InsertDTMF(tones.UpperASCII(), duration_, inter_tone_gap_))
     exception_state.ThrowDOMException(
         kSyntaxError, "Could not send provided tones, '" + tones + "'.");
 }
