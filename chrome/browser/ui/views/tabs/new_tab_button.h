@@ -52,6 +52,8 @@ class NewTabButton : public views::ImageButton,
   // when it exists.
   void CloseBubble();
 
+  void AnimateInkDropToStateForTesting(views::InkDropState state);
+
   NewTabPromoBubbleView* new_tab_promo() { return new_tab_promo_; }
 
  private:
@@ -69,6 +71,7 @@ class NewTabButton : public views::ImageButton,
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void Layout() override;
   void OnThemeChanged() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(gfx::Path* mask) const override;
