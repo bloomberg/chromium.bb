@@ -1258,7 +1258,7 @@ public class VrShellDelegate
     }
 
     @CalledByNative
-    private void exitWebVRPresent() {
+    /* package */ void exitWebVRPresent() {
         if (!mInVr) return;
         if (mAutopresentWebVr) {
             // For autopresent from Daydream home, we do NOT want to show ChromeVR. So if we
