@@ -4,23 +4,52 @@
 
 #include "chrome/browser/vr/model/text_input_info.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/vr/keyboard_edit.h"
 
 namespace vr {
 
+namespace {
+
+size_t CommonPrefixLength(const base::string16 a, const base::string16 b) {
+  size_t a_len = a.length();
+  size_t b_len = b.length();
+  size_t i = 0;
+  while (i < a_len && i < b_len && a[i] == b[i]) {
+    i++;
+  }
+  return i;
+}
+
+}  // namespace
+
 TextInputInfo::TextInputInfo()
-    : selection_start(0),
-      selection_end(0),
-      composition_start(kDefaultCompositionIndex),
-      composition_end(kDefaultCompositionIndex) {}
+    : TextInputInfo(base::UTF8ToUTF16(""),
+                    0,
+                    0,
+                    kDefaultCompositionIndex,
+                    kDefaultCompositionIndex) {}
 
 TextInputInfo::TextInputInfo(base::string16 t)
+    : TextInputInfo(t,
+                    t.length(),
+                    t.length(),
+                    kDefaultCompositionIndex,
+                    kDefaultCompositionIndex) {}
+
+TextInputInfo::TextInputInfo(base::string16 t,
+                             int sel_start,
+                             int sel_end,
+                             int comp_start,
+                             int comp_end)
     : text(t),
-      selection_start(t.length()),
-      selection_end(t.length()),
-      composition_start(kDefaultCompositionIndex),
-      composition_end(kDefaultCompositionIndex) {}
+      selection_start(sel_start),
+      selection_end(sel_end),
+      composition_start(comp_start),
+      composition_end(comp_end) {
+  ClampIndices();
+}
 
 TextInputInfo::TextInputInfo(const TextInputInfo& other)
     : text(other.text),
@@ -42,6 +71,42 @@ bool TextInputInfo::operator!=(const TextInputInfo& other) const {
 
 size_t TextInputInfo::SelectionSize() const {
   return std::abs(selection_end - selection_start);
+}
+
+size_t TextInputInfo::CompositionSize() const {
+  return composition_end - composition_start;
+}
+
+base::string16 TextInputInfo::CommittedTextBeforeCursor() const {
+  if (composition_start == composition_end)
+    return text.substr(0, selection_start);
+  return text.substr(0, composition_start);
+}
+
+base::string16 TextInputInfo::ComposingText() const {
+  if (composition_start == composition_end)
+    return base::UTF8ToUTF16("");
+  return text.substr(composition_start, CompositionSize());
+}
+
+std::string TextInputInfo::ToString() const {
+  return base::StringPrintf("t(%s) s(%d, %d) c(%d, %d)",
+                            base::UTF16ToUTF8(text).c_str(), selection_start,
+                            selection_end, composition_start, composition_end);
+}
+
+void TextInputInfo::ClampIndices() {
+  const int len = text.length();
+  selection_start = std::min(selection_start, len);
+  selection_end = std::min(selection_end, len);
+  if (selection_end < selection_start)
+    selection_end = selection_start;
+  composition_start = std::min(composition_start, len);
+  composition_end = std::min(composition_end, len);
+  if (composition_end < composition_start) {
+    composition_start = kDefaultCompositionIndex;
+    composition_end = kDefaultCompositionIndex;
+  }
 }
 
 EditedText::EditedText() {}
@@ -68,27 +133,50 @@ std::string EditedText::ToString() const {
   return current.ToString() + ", previously " + previous.ToString();
 }
 
-std::vector<KeyboardEdit> EditedText::GetKeyboardEditList() const {
-  std::vector<KeyboardEdit> edits;
-
+TextEdits EditedText::GetDiff() const {
+  TextEdits edits;
   if (current == previous)
     return edits;
 
-  // TODO(ymalik): Support composition.
-  if (current.composition_start != current.composition_end)
-    return edits;
+  int common_prefix_length =
+      CommonPrefixLength(current.CommittedTextBeforeCursor(),
+                         previous.CommittedTextBeforeCursor());
+  bool had_composition =
+      previous.CompositionSize() > 0 && current.CompositionSize() == 0;
+  if (had_composition) {
+    edits.push_back(TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  }
 
-  int commit_start = previous.selection_start;
-  int commit_len = current.selection_start - commit_start;
-  if (commit_len < 0) {
-    KeyboardEdit edit(KeyboardEditType::DELETE_TEXT, base::ASCIIToUTF16(""),
-                      commit_len);
-    edits.push_back(edit);
-  } else {
-    KeyboardEdit edit(KeyboardEditType::COMMIT_TEXT,
-                      current.text.substr(commit_start, commit_len),
-                      commit_len);
-    edits.push_back(edit);
+  int to_delete = 0;
+  // We only want to delete text if the was no selection previously. In the case
+  // where there was a selection, its the editor's responsibility to ensure that
+  // the selected text gets modified when a new edit occurs.
+  if (previous.SelectionSize() == 0) {
+    to_delete =
+        previous.CommittedTextBeforeCursor().size() - common_prefix_length;
+    if (to_delete > 0) {
+      DCHECK(!had_composition);
+      edits.push_back(TextEditAction(TextEditActionType::DELETE_TEXT,
+                                     base::UTF8ToUTF16(""), -to_delete));
+    }
+  }
+
+  int to_commit =
+      current.CommittedTextBeforeCursor().size() - common_prefix_length;
+  if (to_commit > 0) {
+    DCHECK(to_delete == 0);
+    edits.push_back(TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                   current.CommittedTextBeforeCursor().substr(
+                                       common_prefix_length, to_commit),
+                                   to_commit));
+  }
+  if (current.CompositionSize() > 0) {
+    DCHECK(to_commit <= 0);
+    int cursor = previous.CompositionSize() > 0
+                     ? current.CompositionSize() - previous.CompositionSize()
+                     : current.CompositionSize();
+    edits.push_back(TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
+                                   current.ComposingText(), cursor));
   }
 
   return edits;

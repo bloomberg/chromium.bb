@@ -96,7 +96,7 @@ generate_jni("vr_shell_jni_headers") {
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/keyboard/GvrKeyboardLoaderClient.java",
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/keyboard/KeyboardEdit.java",
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/keyboard/TextEditAction.java",
   ]
   jni_package = "vr_shell"
 }

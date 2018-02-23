@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/text_edit_action.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
 
 namespace vr {
-
-class KeyboardEdit;
 
 class VrInputConnection {
  public:
@@ -28,8 +27,9 @@ class VrInputConnection {
 
   base::WeakPtr<VrInputConnection> GetWeakPtr();
 
-  void OnKeyboardEdit(const std::vector<vr::KeyboardEdit>& edits);
-  void RequestTextState(vr::TextStateUpdateCallback callback);
+  void OnKeyboardEdit(const TextEdits& edits);
+  void SubmitInput();
+  void RequestTextState(TextStateUpdateCallback callback);
   void UpdateTextState(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        jstring jtext);
