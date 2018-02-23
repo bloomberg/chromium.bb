@@ -257,14 +257,23 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     if (host_end_pos == base::StringPiece::npos)
       return PARSE_ERROR_EMPTY_PATH;
 
-    // TODO(devlin): This whole series is expensive. Luckily we don't do it
-    // *too* often, but it could be optimized.
-    pattern.substr(host_start_pos, host_end_pos - host_start_pos)
-        .CopyToString(&host_);
+    base::StringPiece host_and_port =
+        pattern.substr(host_start_pos, host_end_pos - host_start_pos);
+
+    // Ports are only valid with standard (and non-file) schemes.
+    base::StringPiece host_piece;
+    size_t port_pos = host_and_port.find(':');
+    if (port_pos != base::StringPiece::npos &&
+        !SetPort(host_and_port.substr(port_pos + 1))) {
+      return PARSE_ERROR_INVALID_PORT;
+    }
+    // Note: this substr() will be the entire string if the port position wasn't
+    // found.
+    host_piece = host_and_port.substr(0, port_pos);
 
     // The first component can optionally be '*' to match all subdomains.
     std::vector<base::StringPiece> host_components = base::SplitStringPiece(
-        host_, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        host_piece, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     // Could be empty if the host only consists of whitespace characters.
     if (host_components.empty() ||
@@ -273,8 +282,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
 
     if (host_components[0] == "*") {
       match_subdomains_ = true;
-      host_components.erase(host_components.begin(),
-                            host_components.begin() + 1);
+      host_components.erase(host_components.begin());
     }
 
     // If explicitly allowed, the last component can optionally be '*' to
@@ -290,13 +298,6 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
   }
 
   SetPath(pattern.substr(path_start_pos));
-
-  size_t port_pos = host_.find(':');
-  if (port_pos != std::string::npos) {
-    if (!SetPort(host_.substr(port_pos + 1)))
-      return PARSE_ERROR_INVALID_PORT;
-    host_ = host_.substr(0, port_pos);
-  }
 
   // No other '*' can occur in the host, though. This isn't necessary, but is
   // done as a convenience to developers who might otherwise be confused and
