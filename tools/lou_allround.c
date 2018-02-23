@@ -254,7 +254,6 @@ main(int argc, char **argv) {
 	int outlen;
 	int cursorPos = -1;
 	int realInlen = 0;
-	int k;
 	int optc;
 
 	set_program_name(argv[0]);
@@ -327,17 +326,21 @@ main(int argc, char **argv) {
 				if (showSizes)
 					printf("input length = %d; output length = %d.\n", translen, outlen);
 				if (outlen == realInlen) {
-					for (k = 0; k < realInlen; k++)
-						if (inbuf[k] != outbuf[k]) break;
-					if (k == realInlen) printf("Perfect roundtrip!\n");
+				  int k;
+				  for (k = 0; k < realInlen; k++)
+				    if (inbuf[k] != outbuf[k]) break;
+				  if (k == realInlen) printf("Perfect roundtrip!\n");
 				}
 			}
 		else
 			while (1) {
 				memset(emphasis, 0, sizeof(formtype) * BUFSIZE);
-				for (k = 0; k < strlen(enteredEmphasis); k++)
-					emphasis[k] = (formtype)enteredEmphasis[k] - '0';
-				emphasis[k] = 0;
+				{
+				  size_t k = 0;
+				  for (k = 0; k < strlen(enteredEmphasis); k++)
+				    emphasis[k] = (formtype)enteredEmphasis[k] - '0';
+				  emphasis[k] = 0;
+				}
 				strcpy(spacing, enteredSpacing);
 				cursorPos = enteredCursorPos;
 				inlen = getInput();
@@ -376,10 +379,10 @@ main(int argc, char **argv) {
 				if (enteredSpacing[0]) printf("Returned spacing: %s\n", spacing);
 				if (showPositions) {
 					printf("Output positions:\n");
-					for (k = 0; k < inlen; k++) printf("%d ", outputPos[k]);
+					for (int k = 0; k < inlen; k++) printf("%d ", outputPos[k]);
 					printf("\n");
 					printf("Input positions:\n");
-					for (k = 0; k < translen; k++) printf("%d ", inputPos[k]);
+					for (int k = 0; k < translen; k++) printf("%d ", inputPos[k]);
 					printf("\n");
 				}
 				if (!forwardOnly) {
@@ -402,15 +405,16 @@ main(int argc, char **argv) {
 					if (enteredSpacing[0]) printf("Returned spacing: %s\n", spacing);
 					if (showPositions) {
 						printf("Output positions:\n");
-						for (k = 0; k < translen; k++) printf("%d ", outputPos[k]);
+						for (int k = 0; k < translen; k++) printf("%d ", outputPos[k]);
 						printf("\n");
 						printf("Input positions:\n");
-						for (k = 0; k < outlen; k++) printf("%d ", inputPos[k]);
+						for (int k = 0; k < outlen; k++) printf("%d ", inputPos[k]);
 						printf("\n");
 					}
 				}
 				if (!(forwardOnly || backOnly)) {
 					if (outlen == realInlen) {
+					  int k;
 						for (k = 0; k < realInlen; k++)
 							if (inbuf[k] != outbuf[k]) break;
 						if (k == realInlen) printf("Perfect roundtrip!\n");

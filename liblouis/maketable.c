@@ -80,7 +80,6 @@ toDotPattern(widechar *braille, char *pattern) {
 
 extern int
 printRule(TranslationTableRule *rule, widechar *rule_string) {
-	int k, l;
 	switch (rule->opcode) {
 	case CTO_Context:
 	case CTO_Correct:
@@ -90,17 +89,18 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 	case CTO_Pass3:
 	case CTO_Pass4:
 		return 0;
-	default:
-		l = 0;
+	default: {
+		int l = 0;
 		const char *opcode = _lou_findOpcodeName(rule->opcode);
-		for (k = 0; k < strlen(opcode); k++) rule_string[l++] = opcode[k];
+		for (size_t k = 0; k < strlen(opcode); k++) rule_string[l++] = opcode[k];
 		rule_string[l++] = ' ';
-		for (k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
+		for (int k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
 		rule_string[l++] = ' ';
-		for (k = 0; k < rule->dotslen; k++)
+		for (int k = 0; k < rule->dotslen; k++)
 			rule_string[l++] = _lou_getCharFromDots(rule->charsdots[rule->charslen + k]);
 		rule_string[l++] = '\0';
 		return 1;
+	}
 	}
 }
 
