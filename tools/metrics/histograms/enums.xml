@@ -25803,6 +25803,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
+  <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269084216" label="ash-md"/>
@@ -26817,6 +26818,7 @@ from previous Chrome versions.
   <int value="1272699563" label="enable-hosted-mode"/>
   <int value="1275507565" label="OfflinePagesRenovations:enabled"/>
   <int value="1276209777" label="ntp-switch-to-existing-tab"/>
+  <int value="1277386636" label="QueryInOmnibox:disabled"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1280614081" label="show-overdraw-feedback"/>
   <int value="1283908088" label="ImprovedLanguageSettings:disabled"/>

@@ -26,6 +26,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -179,6 +180,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private boolean mShouldUpdateToolbarPrimaryColor = true;
     private int mCurrentThemeColor;
 
+    private boolean mQueryInOmniboxEnabled;
+
     /**
      * Creates a ToolbarManager object.
      *
@@ -318,6 +321,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
                 assert tab == mToolbarModel.getTab();
                 mLocationBar.updateSecurityIcon();
+
+                // If the SSL state was updated while the location bar is display a DSE URL and
+                // the query in omnibox feature is enabled, update the URL to be on the safe side,
+                // as we may be showing query terms when we should now be showing the full URL for
+                // security.
+                if (mQueryInOmniboxEnabled
+                        && TemplateUrlService.getInstance()
+                                   .isSearchResultsPageFromDefaultSearchProvider(tab.getUrl())) {
+                    mLocationBar.setUrlToPageUrl();
+                }
             }
 
             @Override
@@ -880,6 +893,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         refreshSelectedTab();
         if (mTabModelSelector.isTabStateInitialized()) mTabRestoreCompleted = true;
         handleTabRestoreCompleted();
+
+        mQueryInOmniboxEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_IN_OMNIBOX);
     }
 
     private void handleTabRestoreCompleted() {

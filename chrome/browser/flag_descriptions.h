@@ -758,6 +758,9 @@ extern const char kPullToRefreshDescription[];
 extern const char kPushApiBackgroundModeName[];
 extern const char kPushApiBackgroundModeDescription[];
 
+extern const char kQueryInOmniboxName[];
+extern const char kQueryInOmniboxDescription[];
+
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 

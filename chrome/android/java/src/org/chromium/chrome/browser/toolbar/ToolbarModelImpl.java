@@ -35,13 +35,16 @@ import org.chromium.ui.base.DeviceFormFactor;
 /**
  * Contains the data and state for the toolbar.
  */
-class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, ToolbarModelDelegate {
+@VisibleForTesting
+public class ToolbarModelImpl
+        extends ToolbarModel implements ToolbarDataProvider, ToolbarModelDelegate {
     private final BottomSheet mBottomSheet;
     private final boolean mUseModernDesign;
     private Tab mTab;
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
+    private boolean mQueryInOmniboxEnabled;
 
     /**
      * Default constructor for this class.
@@ -62,6 +65,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
      */
     public void initializeWithNative() {
         initialize(this);
+        mQueryInOmniboxEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_IN_OMNIBOX);
     }
 
     @Override
@@ -144,6 +148,10 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
             String originalUrl = mTab.getOriginalUrl();
             displayText = OfflinePageUtils.stripSchemeFromOnlineUrl(
                   DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
+        } else {
+            String searchTerms = extractSearchTermsFromUrl(url);
+            // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
+            if (searchTerms != null) displayText = searchTerms;
         }
 
         return displayText;
@@ -265,6 +273,11 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     @Override
     public int getSecurityIconResource() {
+        // If we're showing a query in the omnibox, and the security level is high enough to show
+        // the search icon, return that instead of the security icon.
+        if (isDisplayingQueryTerms()) {
+            return R.drawable.ic_search;
+        }
         return getSecurityIconResource(
                 getSecurityLevel(), !DeviceFormFactor.isTablet(), isOfflinePage());
     }
@@ -309,5 +322,35 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
                 && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN);
+    }
+
+    @Override
+    public boolean isDisplayingQueryTerms() {
+        return extractSearchTermsFromUrl(getCurrentUrl()) != null;
+    }
+
+    private boolean securityLevelSafeForQueryInOmnibox() {
+        int securityLevel = getSecurityLevel();
+        return securityLevel == ConnectionSecurityLevel.SECURE
+                || securityLevel == ConnectionSecurityLevel.EV_SECURE;
+    }
+
+    /**
+     * Extracts query terms from a URL if it's a SRP URL from the default search engine.
+     *
+     * @param url The URL to extract search terms from.
+     * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
+     *         extract, if query in omnibox is disabled, or if the security level is insufficient to
+     *         display search terms in place of SRP URL.
+     */
+    private String extractSearchTermsFromUrl(String url) {
+        boolean shouldShowSearchTerms =
+                mQueryInOmniboxEnabled && securityLevelSafeForQueryInOmnibox();
+        if (!shouldShowSearchTerms) return null;
+        String searchTerms = TemplateUrlService.getInstance().extractSearchTermsFromUrl(url);
+        if (!TextUtils.isEmpty(searchTerms)) {
+            return searchTerms;
+        }
+        return null;
     }
 }

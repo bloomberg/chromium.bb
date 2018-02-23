@@ -629,18 +629,16 @@ public class UrlBar extends AutocompleteEditText {
     /**
      * Sets the text content of the URL bar.
      *
-     * @param url The original URL (or generic text) that can be used for copy/cut/paste.
-     * @param formattedUrl Formatted URL for user display. Null if there isn't one.
+     * @param pageUrl The original URL (or generic text) that can be used for copy/cut/paste.
+     * @param displayText Formatted URL or alternate text for user display. Null if there isn't one.
      * @return Whether the visible text has changed.
      */
-    public boolean setUrl(String url, String formattedUrl) {
-        if (!TextUtils.isEmpty(formattedUrl)) {
+    public boolean setUrl(String pageUrl, String displayText) {
+        if (!TextUtils.isEmpty(displayText)) {
             try {
-                URL javaUrl = new URL(url);
-                mFormattedUrlLocation =
-                        getUrlContentsPrePath(formattedUrl, javaUrl.getHost());
-                mOriginalUrlLocation =
-                        getUrlContentsPrePath(url, javaUrl.getHost());
+                URL javaUrl = new URL(pageUrl);
+                mFormattedUrlLocation = getUrlContentsPrePath(displayText, javaUrl.getHost());
+                mOriginalUrlLocation = getUrlContentsPrePath(pageUrl, javaUrl.getHost());
             } catch (MalformedURLException mue) {
                 mOriginalUrlLocation = null;
                 mFormattedUrlLocation = null;
@@ -648,11 +646,11 @@ public class UrlBar extends AutocompleteEditText {
         } else {
             mOriginalUrlLocation = null;
             mFormattedUrlLocation = null;
-            formattedUrl = url;
+            displayText = pageUrl;
         }
 
         Editable previousText = getEditableText();
-        setText(formattedUrl);
+        setText(displayText);
 
         boolean textChanged = !TextUtils.equals(previousText, getEditableText());
         if (textChanged && !isFocused()) scrollToTLD();

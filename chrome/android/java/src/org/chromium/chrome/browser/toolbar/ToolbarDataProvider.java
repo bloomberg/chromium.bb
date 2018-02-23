@@ -107,4 +107,9 @@ public interface ToolbarDataProvider {
      */
     @DrawableRes
     int getSecurityIconResource();
+
+    /**
+     * @return Whether or not we're currently showing a search query instead of a URL.
+     */
+    boolean isDisplayingQueryTerms();
 }

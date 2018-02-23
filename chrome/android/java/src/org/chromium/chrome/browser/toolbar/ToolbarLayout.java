@@ -232,6 +232,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             public int getSecurityIconResource() {
                 return 0;
             }
+
+            @Override
+            public boolean isDisplayingQueryTerms() {
+                return false;
+            }
         };
 
         // Set menu button background in case it was previously called before inflation

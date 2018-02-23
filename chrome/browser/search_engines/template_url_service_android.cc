@@ -407,6 +407,21 @@ TemplateUrlServiceAndroid::UpdateLastVisitedForTesting(
   return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::ExtractSearchTermsFromUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jurl) {
+  base::string16 search_terms;
+  const TemplateURL* default_search_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  bool has_search_terms = default_search_provider->ExtractSearchTermsFromURL(
+      GURL(base::android::ConvertJavaStringToUTF8(jurl)),
+      template_url_service_->search_terms_data(), &search_terms);
+  return base::android::ConvertUTF16ToJavaString(
+      env, (has_search_terms ? search_terms : base::string16()));
+}
+
 static jlong JNI_TemplateUrlService_Init(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   TemplateUrlServiceAndroid* template_url_service_android =

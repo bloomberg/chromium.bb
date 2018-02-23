@@ -3770,6 +3770,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kNewWallpaperPicker)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
+     flag_descriptions::kQueryInOmniboxDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kQueryInOmnibox)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
