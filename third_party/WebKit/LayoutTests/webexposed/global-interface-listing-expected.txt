@@ -621,11 +621,8 @@ interface CSSGroupingRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
-interface CSSImageValue : CSSResourceValue
+interface CSSImageValue : CSSStyleValue
     attribute @@toStringTag
-    getter intrinsicHeight
-    getter intrinsicRatio
-    getter intrinsicWidth
     method constructor
 interface CSSImportRule : CSSRule
     attribute @@toStringTag
@@ -738,10 +735,6 @@ interface CSSPositionValue : CSSStyleValue
     method constructor
     setter x
     setter y
-interface CSSResourceValue : CSSStyleValue
-    attribute @@toStringTag
-    getter state
-    method constructor
 interface CSSRotate : CSSTransformComponent
     attribute @@toStringTag
     getter angle
@@ -873,10 +866,6 @@ interface CSSTranslate : CSSTransformComponent
     setter x
     setter y
     setter z
-interface CSSURLImageValue : CSSImageValue
-    attribute @@toStringTag
-    getter url
-    method constructor
 interface CSSUnitValue : CSSNumericValue
     attribute @@toStringTag
     getter unit

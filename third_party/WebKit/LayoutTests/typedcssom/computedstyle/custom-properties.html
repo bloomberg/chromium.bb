@@ -71,19 +71,13 @@ test(function() {
   assert_equals(result.toString(), '100px');
 }, 'Getting a length type registered property returns a CSSUnitValue');
 
-var t1 = async_test('Getting a URL image type registered property returns a CSSURLImageValue');
+var t1 = async_test('Getting a URL image type registered property returns a CSSImageValue');
 function t1Callback() {
   t1.step(function() {
     assert_true(computedStyleMap.has('--my-image'));
     var result = computedStyleMap.get('--my-image');
-    assert_equals(result.constructor.name, CSSURLImageValue.name);
+    assert_equals(result.constructor.name, CSSImageValue.name);
     assert_equals(result.toString(), 'url(\"' + imagePath + '\")');
-    // FIXME: This section of this test fails. It seems to be a bug in custom properties. See
-    // crbug.com/719838
-    assert_equals(result.state, 'loaded');
-    assert_equals(result.intrinsicWidth, 1);
-    assert_equals(result.intrinsicHeight, 1);
-    assert_equals(result.intrinsicRatio, 1);
   });
   t1.done();
 }
@@ -94,16 +88,12 @@ test(function() {
   assert_equals(result.toString(), '100px');
 }, 'Getting a width with a length type var value returns a CSSUnitValue');
 
-var t2 = async_test('Getting a background-image with a URL image type var value returns a CSSURLImageValue');
+var t2 = async_test('Getting a background-image with a URL image type var value returns a CSSImageValue');
 function t2Callback() {
   t2.step(function() {
     var result = computedStyleMap.get('background-image');
-    assert_equals(result.constructor.name, CSSURLImageValue.name);
+    assert_equals(result.constructor.name, CSSImageValue.name);
     assert_equals(result.toString(), 'url(\"' + imagePath + '\")');
-    assert_equals(result.state, 'loaded');
-    assert_equals(result.intrinsicWidth, 1);
-    assert_equals(result.intrinsicHeight, 1);
-    assert_equals(result.intrinsicRatio, 1);
   });
   t2.done();
 }

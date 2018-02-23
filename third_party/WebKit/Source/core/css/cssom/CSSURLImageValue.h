@@ -14,8 +14,6 @@ class ScriptState;
 class CSSImageValue;
 
 class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
-  DEFINE_WRAPPERTYPEINFO();
-
  public:
   static CSSURLImageValue* Create(ScriptState*,
                                   const AtomicString& url,
