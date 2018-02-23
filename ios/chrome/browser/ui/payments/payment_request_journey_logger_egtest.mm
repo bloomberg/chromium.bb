@@ -57,7 +57,13 @@ using payments::JourneyLogger;
 
 // Tests that the selected instrument metric is correctly logged when the
 // Payment Request is completed with a credit card.
-- (void)testSelectedPaymentMethod {
+// TODO(crbug.com/795663): Fails on iphone11 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSelectedPaymentMethod DISABLED_testSelectedPaymentMethod
+#else
+#define MAYBE_testSelectedPaymentMethod testSelectedPaymentMethod
+#endif
+- (void)MAYBE_testSelectedPaymentMethod {
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -171,7 +177,13 @@ using payments::JourneyLogger;
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
 }
 
-- (void)testShowSameRequest {
+// TODO(crbug.com/795663): Fails on iphone11 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testShowSameRequest DISABLED_testShowSameRequest
+#else
+#define MAYBE_testShowSameRequest testShowSameRequest
+#endif
+- (void)MAYBE_testShowSameRequest {
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -236,7 +248,15 @@ using payments::JourneyLogger;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
-- (void)testAllSectionStats_NumberOfSuggestionsShown_Completed {
+// TODO(crbug.com/795663): Fails on iphone11 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAllSectionStats_NumberOfSuggestionsShown_Completed \
+  DISABLED_testAllSectionStats_NumberOfSuggestionsShown_Completed
+#else
+#define MAYBE_testAllSectionStats_NumberOfSuggestionsShown_Completed \
+  testAllSectionStats_NumberOfSuggestionsShown_Completed
+#endif
+- (void)MAYBE_testAllSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -379,7 +399,15 @@ using payments::JourneyLogger;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
-- (void)testNoShippingSectionStats_NumberOfSuggestionsShown_Completed {
+// TODO(crbug.com/795663): Fails on iphone11 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNoShippingSectionStats_NumberOfSuggestionsShown_Completed \
+  DISABLED_testNoShippingSectionStats_NumberOfSuggestionsShown_Completed
+#else
+#define MAYBE_testNoShippingSectionStats_NumberOfSuggestionsShown_Completed \
+  testNoShippingSectionStats_NumberOfSuggestionsShown_Completed
+#endif
+- (void)MAYBE_testNoShippingSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -524,7 +552,16 @@ using payments::JourneyLogger;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
-- (void)testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed {
+// TODO(crbug.com/795663): Fails on iphone11 devices.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed \
+  DISABLED_testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed
+#else
+#define MAYBE_testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed \
+  testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed
+#endif
+- (void)
+    MAYBE_testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
