@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,6 +111,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     if (lock_screen_apps::StateController::IsEnabled())
       lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
 
+    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
+    // self-destructs on logout.
+    policy::AppInstallEventLogManagerWrapper::CreateForProfile(user_profile);
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(user_profile);
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()
