@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/keyboard_edit.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -67,15 +66,12 @@ void ContentInputDelegate::OnWebInputEdited(const EditedText& info,
 
   last_keyboard_edit_ = info;
 
-  std::vector<vr::KeyboardEdit> edits;
   if (commit) {
-    KeyboardEdit edit(KeyboardEditType::SUBMIT, base::ASCIIToUTF16(""), 0);
-    edits.push_back(edit);
-  } else {
-    edits = info.GetKeyboardEditList();
+    content_->SubmitWebInput();
+    return;
   }
 
-  content_->OnWebInputEdited(edits);
+  content_->OnWebInputEdited(info.GetDiff());
 }
 
 

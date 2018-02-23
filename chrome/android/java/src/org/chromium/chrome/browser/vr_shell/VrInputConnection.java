@@ -11,7 +11,7 @@ import android.view.inputmethod.InputConnection;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.vr_shell.keyboard.KeyboardEdit;
+import org.chromium.chrome.browser.vr_shell.keyboard.TextEditAction;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 
@@ -73,28 +73,49 @@ public class VrInputConnection {
 
     @SuppressWarnings("NewApi")
     @CalledByNative
-    public void onKeyboardEdit(KeyboardEdit[] edits) {
+    public void onKeyboardEdit(TextEditAction[] edits) {
         if (edits.length == 0) return;
+        if (DEBUG_LOGS) Log.i(TAG, "onKeyboardEdit [%d]", edits.length);
         InputConnection ic = mImeAdapter.getActiveInputConnection();
         assert ic != null;
         ic.getHandler().post(new Runnable() {
             @Override
             public void run() {
-                for (KeyboardEdit edit : edits) {
+                ic.beginBatchEdit();
+                for (TextEditAction edit : edits) {
+                    if (DEBUG_LOGS) Log.i(TAG, "processing edit: %s", edit.toString());
                     switch (edit.mType) {
-                        case KeyboardEditType.SUBMIT:
-                            ic.performEditorAction(EditorInfo.IME_ACTION_GO);
-                            break;
-                        case KeyboardEditType.COMMIT_TEXT:
+                        case TextEditActionType.COMMIT_TEXT:
                             ic.commitText(edit.mText, edit.mNewCursorPosition);
                             break;
-                        case KeyboardEditType.DELETE_TEXT:
+                        case TextEditActionType.DELETE_TEXT:
                             ic.deleteSurroundingText(-edit.mNewCursorPosition, 0);
+                            break;
+                        case TextEditActionType.SET_COMPOSING_TEXT:
+                            ic.setComposingText(edit.mText, edit.mNewCursorPosition);
+                            break;
+                        case TextEditActionType.CLEAR_COMPOSING_TEXT:
+                            ic.setComposingText("", 1);
                             break;
                         default:
                             assert false;
                     }
                 }
+                ic.endBatchEdit();
+            }
+        });
+    }
+
+    @SuppressWarnings("NewApi")
+    @CalledByNative
+    public void submitInput() {
+        if (DEBUG_LOGS) Log.i(TAG, "submitInput");
+        InputConnection ic = mImeAdapter.getActiveInputConnection();
+        assert ic != null;
+        ic.getHandler().post(new Runnable() {
+            @Override
+            public void run() {
+                ic.performEditorAction(EditorInfo.IME_ACTION_GO);
             }
         });
     }

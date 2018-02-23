@@ -10,17 +10,21 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/text_edit_action.h"
 
 namespace vr {
-
-class KeyboardEdit;
 
 // Represents the state of an editable text field.
 struct TextInputInfo {
  public:
   TextInputInfo();
-  TextInputInfo(const TextInputInfo& other);
   explicit TextInputInfo(base::string16 t);
+  TextInputInfo(base::string16 t,
+                int selection_start,
+                int selection_end,
+                int composition_start,
+                int compositon_end);
+  TextInputInfo(const TextInputInfo& other);
 
   static const int kDefaultCompositionIndex = -1;
 
@@ -28,6 +32,10 @@ struct TextInputInfo {
   bool operator!=(const TextInputInfo& other) const;
 
   size_t SelectionSize() const;
+  size_t CompositionSize() const;
+
+  base::string16 CommittedTextBeforeCursor() const;
+  base::string16 ComposingText() const;
 
   // The value of the input field.
   base::string16 text;
@@ -46,11 +54,10 @@ struct TextInputInfo {
   // The end position of the current composition, or -1 if there is none.
   int composition_end;
 
-  std::string ToString() const {
-    return base::StringPrintf(
-        "t(%s) s(%d, %d) c(%d, %d)", base::UTF16ToUTF8(text).c_str(),
-        selection_start, selection_end, composition_start, composition_end);
-  }
+  std::string ToString() const;
+
+ private:
+  void ClampIndices();
 };
 
 // A superset of TextInputInfo, consisting of a current and previous text field
@@ -68,7 +75,7 @@ struct EditedText {
 
   void Update(const TextInputInfo& info);
 
-  std::vector<KeyboardEdit> GetKeyboardEditList() const;
+  TextEdits GetDiff() const;
 
   std::string ToString() const;
 

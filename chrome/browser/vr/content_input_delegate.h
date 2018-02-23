@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_VR_CONTENT_INPUT_DELEGATE_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/macros.h"
 #include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/text_edit_action.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace blink {
@@ -26,8 +26,6 @@ class PointF;
 
 namespace vr {
 
-class KeyboardEdit;
-
 typedef typename base::OnceCallback<void(const base::string16&)>
     TextStateUpdateCallback;
 
@@ -40,7 +38,8 @@ class ContentInputForwarder {
       std::unique_ptr<blink::WebInputEvent> event) = 0;
 
   // Text input specific.
-  virtual void OnWebInputEdited(const std::vector<KeyboardEdit>& edits) = 0;
+  virtual void OnWebInputEdited(const TextEdits& edits) = 0;
+  virtual void SubmitWebInput() = 0;
   virtual void RequestWebInputText(TextStateUpdateCallback callback) = 0;
 };
 

@@ -9,10 +9,9 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/vr/keyboard_edit.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/KeyboardEdit_jni.h"
+#include "jni/TextEditAction_jni.h"
 #include "jni/VrInputConnection_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -34,22 +33,26 @@ base::WeakPtr<VrInputConnection> VrInputConnection::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void VrInputConnection::OnKeyboardEdit(
-    const std::vector<vr::KeyboardEdit>& edits) {
+void VrInputConnection::OnKeyboardEdit(const TextEdits& edits) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  auto java_edit_array = Java_KeyboardEdit_createArray(env, edits.size());
+  auto java_edit_array = Java_TextEditAction_createArray(env, edits.size());
   int index = 0;
   for (const auto& edit : edits) {
     auto text = base::android::ConvertUTF16ToJavaString(env, edit.text());
-    auto java_edit = Java_KeyboardEdit_Constructor(env, edit.type(), text,
-                                                   edit.cursor_position());
+    auto java_edit = Java_TextEditAction_Constructor(env, edit.type(), text,
+                                                     edit.cursor_position());
     env->SetObjectArrayElement(java_edit_array.obj(), index, java_edit.obj());
     index++;
   }
-  return Java_VrInputConnection_onKeyboardEdit(env, j_object_, java_edit_array);
+  Java_VrInputConnection_onKeyboardEdit(env, j_object_, java_edit_array);
 }
 
-void VrInputConnection::RequestTextState(vr::TextStateUpdateCallback callback) {
+void VrInputConnection::SubmitInput() {
+  Java_VrInputConnection_submitInput(base::android::AttachCurrentThread(),
+                                     j_object_);
+}
+
+void VrInputConnection::RequestTextState(TextStateUpdateCallback callback) {
   text_state_update_callback_ = std::move(callback);
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_VrInputConnection_requestTextState(env, j_object_);

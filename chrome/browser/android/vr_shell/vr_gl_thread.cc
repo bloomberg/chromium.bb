@@ -142,13 +142,19 @@ void VrGLThread::ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
                             base::Passed(std::move(event)), content_id));
 }
 
-void VrGLThread::OnWebInputEdited(const std::vector<vr::KeyboardEdit>& edits) {
+void VrGLThread::OnWebInputEdited(const TextEdits& edits) {
   DCHECK(OnGlThread());
   DCHECK(weak_input_connection_);
   weak_input_connection_->OnKeyboardEdit(edits);
 }
 
-void VrGLThread::RequestWebInputText(vr::TextStateUpdateCallback callback) {
+void VrGLThread::SubmitWebInput() {
+  DCHECK(OnGlThread());
+  DCHECK(weak_input_connection_);
+  weak_input_connection_->SubmitInput();
+}
+
+void VrGLThread::RequestWebInputText(TextStateUpdateCallback callback) {
   DCHECK(OnGlThread());
   DCHECK(weak_input_connection_);
   weak_input_connection_->RequestTextState(std::move(callback));

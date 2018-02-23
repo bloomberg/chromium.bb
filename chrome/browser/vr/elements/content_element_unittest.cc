@@ -10,11 +10,11 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/keyboard.h"
-#include "chrome/browser/vr/keyboard_edit.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/mock_keyboard_delegate.h"
 #include "chrome/browser/vr/test/mock_text_input_delegate.h"
 #include "chrome/browser/vr/test/ui_test.h"
+#include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -130,14 +130,13 @@ class TestContentInputForwarder : public ContentInputForwarder {
   void ForwardEvent(std::unique_ptr<blink::WebInputEvent>, int) override {}
   void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent>) override {}
 
-  void OnWebInputEdited(const std::vector<vr::KeyboardEdit>& edits) override {
-    edits_ = edits;
-  }
+  void OnWebInputEdited(const TextEdits& edits) override { edits_ = edits; }
+  void SubmitWebInput() override {}
   void RequestWebInputText(TextStateUpdateCallback) override {
     text_state_requested_ = true;
   }
 
-  std::vector<KeyboardEdit> edits() { return edits_; }
+  TextEdits edits() { return edits_; }
   bool text_state_requested() { return text_state_requested_; }
 
   void Reset() {
@@ -146,7 +145,7 @@ class TestContentInputForwarder : public ContentInputForwarder {
   }
 
  private:
-  std::vector<vr::KeyboardEdit> edits_;
+  TextEdits edits_;
   bool text_state_requested_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentInputForwarder);
@@ -172,19 +171,25 @@ class ContentElementInputEditingTest : public UiTest {
   }
 
  protected:
-  void SetInput(const std::string& text,
-                int selection_start,
-                int selection_end,
-                const std::string& previous_text,
-                int previous_selection_start,
-                int previous_selection_end) {
+  TextInputInfo GetInputInfo(const std::string& text,
+                             int selection_start,
+                             int selection_end,
+                             int composition_start,
+                             int composition_end) {
+    return TextInputInfo(base::UTF8ToUTF16(text), selection_start,
+                         selection_end, composition_start, composition_end);
+  }
+
+  TextInputInfo GetInputInfo(const std::string& text,
+                             int selection_start,
+                             int selection_end) {
+    return GetInputInfo(text, selection_start, selection_end, -1, -1);
+  }
+
+  void SetInput(const TextInputInfo& current, const TextInputInfo& previous) {
     EditedText info;
-    info.current.text = base::UTF8ToUTF16(text);
-    info.current.selection_start = selection_start;
-    info.current.selection_end = selection_end;
-    info.previous.text = base::UTF8ToUTF16(previous_text);
-    info.previous.selection_start = previous_selection_start;
-    info.previous.selection_end = previous_selection_end;
+    info.current = current;
+    info.previous = previous;
     content_->OnInputEdited(info);
   }
 
@@ -196,40 +201,67 @@ class ContentElementInputEditingTest : public UiTest {
 
 // Test that the diff between the current and previous edited text is calculated
 // correctly.
-TEST_F(ContentElementInputEditingTest, KeyboardEdits) {
+TEST_F(ContentElementInputEditingTest, CommitDiff) {
   // Add a character.
-  SetInput("a", 1, 1, "", 0, 0);
+  SetInput(GetInputInfo("a", 1, 1), GetInputInfo("", 0, 0));
   auto edits = input_forwarder_->edits();
   EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], KeyboardEdit(KeyboardEditType::COMMIT_TEXT,
-                                   base::UTF8ToUTF16("a"), 1));
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("a"), 1));
 
   // Add more characters.
-  SetInput("asdf", 4, 4, "a", 1, 1);
+  SetInput(GetInputInfo("asdf", 4, 4), GetInputInfo("a", 1, 1));
   edits = input_forwarder_->edits();
   EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], KeyboardEdit(KeyboardEditType::COMMIT_TEXT,
-                                   base::UTF8ToUTF16("sdf"), 3));
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("sdf"), 3));
 
   // Delete a character.
-  SetInput("asd", 3, 3, "asdf", 4, 4);
+  SetInput(GetInputInfo("asd", 3, 3), GetInputInfo("asdf", 4, 4));
   edits = input_forwarder_->edits();
   EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], KeyboardEdit(KeyboardEditType::DELETE_TEXT,
-                                   base::UTF8ToUTF16(""), -1));
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::DELETE_TEXT,
+                                     base::UTF8ToUTF16(""), -1));
 
   // Add characters while the cursor is not at the end.
-  SetInput("asqwed", 5, 5, "asd", 2, 2);
+  SetInput(GetInputInfo("asqwed", 5, 5), GetInputInfo("asd", 2, 2));
   edits = input_forwarder_->edits();
   EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], KeyboardEdit(KeyboardEditType::COMMIT_TEXT,
-                                   base::UTF8ToUTF16("qwe"), 3));
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("qwe"), 3));
+}
+
+TEST_F(ContentElementInputEditingTest, CommitDiffWithSelection) {
+  // There was a selection and the new text is shorter than the selection text.
+  SetInput(GetInputInfo("This a text", 6, 6),
+           GetInputInfo("This is text", 5, 7));
+  auto edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("a"), 1));
+
+  // There was a selection and the new text is longer than the selection text.
+  // This could happen when the user clicks on a keyboard suggestion.
+  SetInput(GetInputInfo("This was the text", 12, 12),
+           GetInputInfo("This is text", 5, 7));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("was the"), 7));
+  // There was a selection and the new text is of the same length as the
+  // selection.
+  SetInput(GetInputInfo("This ha text", 7, 7),
+           GetInputInfo("This is text", 5, 7));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("ha"), 2));
 }
 
 TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
   // If the changed indices match with that from the last keyboard edit, the
   // given callback is triggered right away.
-  SetInput("asdf", 4, 4, "", 0, 0);
+  SetInput(GetInputInfo("asdf", 4, 4), GetInputInfo("", 0, 0));
   TextInputInfo model_actual;
   TextInputInfo model_exp(base::UTF8ToUTF16("asdf"));
   content_delegate_->OnWebInputIndicesChanged(
@@ -273,11 +305,63 @@ TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
   EXPECT_EQ(model, TextInputInfo());
   // The user presses 'q', and the keyboard gives us an incorrect state, but
   // because we're calculating deltas, we still update web contents with a 'q'.
-  SetInput("asqdf", 3, 3, "asdf", 2, 2);
+  SetInput(GetInputInfo("asqdf", 3, 3), GetInputInfo("asdf", 2, 2));
   auto edits = input_forwarder_->edits();
   EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], KeyboardEdit(KeyboardEditType::COMMIT_TEXT,
-                                   base::UTF8ToUTF16("q"), 1));
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("q"), 1));
+}
+
+TEST_F(ContentElementInputEditingTest, CompositionDiff) {
+  // Start composition
+  SetInput(GetInputInfo("a", 1, 1, 0, 1), GetInputInfo("", 0, 0));
+  auto edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
+                                     base::UTF8ToUTF16("a"), 1));
+
+  // Add more characters.
+  SetInput(GetInputInfo("asdf", 4, 4, 0, 4), GetInputInfo("a", 1, 1, 0, 1));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
+                                     base::UTF8ToUTF16("asdf"), 3));
+
+  // Delete a few characters.
+  SetInput(GetInputInfo("as", 2, 2, 0, 2), GetInputInfo("asdf", 4, 4, 0, 4));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 1u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
+                                     base::UTF8ToUTF16("as"), -2));
+
+  // Finish composition.
+  SetInput(GetInputInfo("as ", 3, 3, -1, -1), GetInputInfo("as", 2, 2, 0, 2));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 2u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("as "), 3));
+
+  // Finish composition, but the text is different. This could happen when the
+  // user hits a suggestion that's different from the current composition, but
+  // has the same length.
+  SetInput(GetInputInfo("lk", 2, 2, -1, -1), GetInputInfo("as", 2, 2, 0, 2));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 2u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("lk"), 2));
+
+  // Finish composition, but the new text is shorter than the previous
+  // composition. This could happen when the user hits a suggestion that's
+  // shorter than the text they were composing.
+  SetInput(GetInputInfo("hi hello", 2, 2, -1, -1),
+           GetInputInfo("hii hello", 3, 3, 0, 3));
+  edits = input_forwarder_->edits();
+  EXPECT_EQ(edits.size(), 2u);
+  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
+  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
+                                     base::UTF8ToUTF16("hi"), 2));
 }
 
 }  // namespace vr

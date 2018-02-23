@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.vr_shell.keyboard;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.vr_shell.KeyboardEditType;
+import org.chromium.chrome.browser.vr_shell.TextEditActionType;
 
 import java.util.Locale;
 
@@ -14,19 +14,19 @@ import java.util.Locale;
  * An immutable class that represents an edit made by the keyboard.
  */
 @JNINamespace("vr")
-public class KeyboardEdit {
-    @KeyboardEditType
+public class TextEditAction {
+    @TextEditActionType
     public final int mType;
     public final String mText;
     public final int mNewCursorPosition;
 
     @CalledByNative
-    private static KeyboardEdit[] createArray(int size) {
-        return new KeyboardEdit[size];
+    private static TextEditAction[] createArray(int size) {
+        return new TextEditAction[size];
     }
 
     @CalledByNative
-    private KeyboardEdit(@KeyboardEditType int type, String text, int newCursorPosition) {
+    private TextEditAction(@TextEditActionType int type, String text, int newCursorPosition) {
         mType = type;
         mText = text;
         mNewCursorPosition = newCursorPosition;
@@ -34,7 +34,7 @@ public class KeyboardEdit {
 
     @Override
     public String toString() {
-        return String.format(Locale.US, "KeyboardEdit {[%d] Text[%s] Cursor[%d]}", mType, mText,
+        return String.format(Locale.US, "TextEditAction {[%d] Text[%s] Cursor[%d]}", mType, mText,
                 mNewCursorPosition);
     }
 }
