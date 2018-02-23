@@ -7,6 +7,7 @@ Initial
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -77,6 +78,7 @@ After step 1
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -86,7 +88,7 @@ After step 1
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1681],
+      "bounds": [785, 1696],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
@@ -163,6 +165,7 @@ After step 2
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -172,7 +175,7 @@ After step 2
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 2975],
+      "bounds": [785, 3005],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },

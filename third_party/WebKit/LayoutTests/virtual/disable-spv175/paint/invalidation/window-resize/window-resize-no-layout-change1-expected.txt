@@ -3,14 +3,8 @@
     {
       "name": "LayoutView #document",
       "bounds": [600, 250],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
-        }
-      ]
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -36,14 +30,8 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 250],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
-        }
-      ]
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -69,14 +57,8 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 600],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 400, 350],
-          "reason": "incremental"
-        }
-      ]
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
@@ -102,14 +84,8 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 400, 600],
-          "reason": "incremental"
-        }
-      ]
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",

@@ -3,6 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [913, 235],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -145,6 +146,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [913, 235],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -292,6 +294,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [400, 600],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
@@ -390,6 +393,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [

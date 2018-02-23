@@ -28,6 +28,11 @@ crbug.com/591099 external/wpt/css/css-color/color-resolving-hsl.html [ Timeout ]
 # Assert in ng_box_fragment_painter.cc(327)
 crbug.com/626703 fast/multicol/multicol-becomes-paged-auto-height.html [ Crash ]
 
+# TODO(skobes): rebaseline
+crbug.com/811429 compositing/scrollbars/nested-overlay-scrollbars.html [ Pass Failure ]
+crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Pass Failure ]
+crbug.com/811429 inspector-protocol/layout-fonts/cross-platform-cbdt-sbix-cff2.js [ Pass Failure ]
+
 # Different on bots and local, needs rebaselines.
 
 # New passes

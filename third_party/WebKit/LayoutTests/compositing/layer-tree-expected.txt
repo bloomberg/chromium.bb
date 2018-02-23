@@ -24,6 +24,7 @@ Layer tree:
                     {
                       "name": "LayoutView #document",
                       "bounds": [800, 600],
+                      "drawsContent": false,
                       "backgroundColor": "#FFFFFF",
                       "shouldFlattenTransform": false,
                       "children": [
@@ -106,6 +107,7 @@ Layer list
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

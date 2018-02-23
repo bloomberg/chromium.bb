@@ -5,6 +5,7 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

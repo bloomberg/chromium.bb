@@ -8,6 +8,7 @@ CASE 1, original layer tree:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -67,6 +68,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -151,6 +153,7 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

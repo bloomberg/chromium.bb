@@ -3,14 +3,8 @@
     {
       "name": "LayoutView #document",
       "bounds": [500, 400],
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 200, 500, 200],
-          "reason": "incremental"
-        }
-      ]
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",

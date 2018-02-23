@@ -4,6 +4,7 @@ CONSOLE MESSAGE: line 30: debug
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

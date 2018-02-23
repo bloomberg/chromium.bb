@@ -4,6 +4,7 @@ In all iframes, the green fixed-position element should not be composited.
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

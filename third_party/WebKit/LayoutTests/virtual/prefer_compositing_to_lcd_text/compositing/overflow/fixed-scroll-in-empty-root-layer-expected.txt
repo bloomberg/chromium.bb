@@ -5,6 +5,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [785, 2016],
+      "drawsContent": false,
       "contentsOpaque": true,
       "children": [
         {

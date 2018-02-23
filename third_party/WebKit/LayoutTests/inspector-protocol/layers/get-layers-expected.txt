@@ -10,7 +10,7 @@ Tests LayerTree domain reporting layers.
         "width": "number",
         "height": "number",
         "paintCount": "number",
-        "drawsContent": true
+        "drawsContent": false
     },
     {
         "layerId": "string",
@@ -141,7 +141,7 @@ Tests LayerTree domain reporting layers.
         "width": "number",
         "height": "number",
         "paintCount": "number",
-        "drawsContent": true
+        "drawsContent": false
     },
     {
         "layerId": "string",

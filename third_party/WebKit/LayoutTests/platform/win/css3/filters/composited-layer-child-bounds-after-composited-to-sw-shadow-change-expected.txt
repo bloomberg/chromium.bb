@@ -3,6 +3,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -48,6 +49,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -57,7 +59,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [856, 741],
+      "bounds": [856, 757],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },

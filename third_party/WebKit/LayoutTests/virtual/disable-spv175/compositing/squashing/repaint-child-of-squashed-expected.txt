@@ -4,6 +4,7 @@ CASE 1, original layer tree
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -53,6 +54,7 @@ CASE 2, change color of "inner" to red
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

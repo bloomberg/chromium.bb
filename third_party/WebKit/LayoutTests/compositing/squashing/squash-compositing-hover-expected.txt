@@ -6,6 +6,7 @@ Case 1, original layer tree:
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -70,6 +71,7 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -150,6 +152,7 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -240,6 +243,7 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -320,6 +324,7 @@ Case 5: back to situation in case 1
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

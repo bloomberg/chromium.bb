@@ -101,7 +101,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
 
   // Update whether background paints onto scrolling contents layer.
-  void UpdateBackgroundPaintsOntoScrollingContentsLayer();
+  // Returns (through the reference params) what invalidations are needed.
+  void UpdateBackgroundPaintsOntoScrollingContentsLayer(
+      bool& invalidate_graphics_layer,
+      bool& invalidate_scrolling_contents_layer);
 
   // Update whether layer needs blending.
   void UpdateContentsOpaque();

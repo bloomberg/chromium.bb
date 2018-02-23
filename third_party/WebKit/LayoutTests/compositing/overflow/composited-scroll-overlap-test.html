@@ -38,11 +38,10 @@ onload = function() {
           var layers_dump = internals.layerTreeAsText(document);
           var layers = JSON.parse(layers_dump).layers;
           var desiredLayers = layers.filter(drawsContentAndLayoutObject);
-          assert_equals(desiredLayers.length, 4, "Actual layers: " + layers_dump);
-          assert_true(desiredLayers[0].name.includes("document"), "document");
-          assert_true(desiredLayers[1].name.includes("scroller"), "scroller");
-          assert_true(desiredLayers[2].name.includes("overlap"), "overlap");
-          assert_true(desiredLayers[3].name.includes("target"), "target");
+          assert_equals(desiredLayers.length, 3, "Actual layers: " + layers_dump);
+          assert_true(desiredLayers[0].name.includes("scroller"), "scroller");
+          assert_true(desiredLayers[1].name.includes("overlap"), "overlap");
+          assert_true(desiredLayers[2].name.includes("target"), "target");
         });
       }
       t.done();

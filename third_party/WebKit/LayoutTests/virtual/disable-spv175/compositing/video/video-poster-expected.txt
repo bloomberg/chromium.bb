@@ -7,6 +7,7 @@ Case: No src, no poster
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -30,6 +31,7 @@ Case: Displaying poster
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -39,7 +41,7 @@ Case: Displaying poster
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 765],
+      "bounds": [785, 781],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -53,6 +55,7 @@ Case: Displaying movie
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -62,7 +65,7 @@ Case: Displaying movie
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1133],
+      "bounds": [785, 1165],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },

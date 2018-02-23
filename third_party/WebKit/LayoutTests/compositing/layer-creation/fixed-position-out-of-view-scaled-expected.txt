@@ -4,6 +4,7 @@ Not scaled:
     {
       "name": "LayoutView #document",
       "bounds": [1600, 1200],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -59,6 +60,7 @@ Scale=0.5:
     {
       "name": "LayoutView #document",
       "bounds": [1600, 1200],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
@@ -114,6 +116,7 @@ Scale=1.5:
     {
       "name": "LayoutView #document",
       "bounds": [1600, 1200],
+      "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {

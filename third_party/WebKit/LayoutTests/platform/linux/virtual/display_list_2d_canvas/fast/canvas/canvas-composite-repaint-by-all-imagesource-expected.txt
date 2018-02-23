@@ -5,6 +5,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [785, 933],
+      "drawsContent": false,
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#FFFFFF",
