@@ -144,12 +144,6 @@ enum MappedModuleFlags {
 // operator delete(name, NT_ALLOC);
 UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32_t* flags);
 
-// Returns the name and characteristics for a given PE module. The return
-// value is the name as defined by the export table.
-//
-// The returned buffer is within the PE module and must not be freed.
-const char* GetAnsiImageInfoFromModule(HMODULE module);
-
 // Returns the full path and filename for a given dll.
 // May return nullptr if the provided address is not backed by a named section,
 // or if the current OS version doesn't support the call. The returned buffer

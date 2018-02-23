@@ -13,14 +13,6 @@ namespace sandbox {
 
 SANDBOX_INTERCEPT NtExports g_nt;
 
-const char VERIFIER_DLL_NAME[] = "verifier.dll";
-const char KERNEL32_DLL_NAME[] = "kernel32.dll";
-
-enum SectionLoadState {
-  kBeforeKernel32,
-  kAfterKernel32,
-};
-
 // Hooks NtMapViewOfSection to detect the load of DLLs. If hot patching is
 // required for this dll, this functions patches it.
 NTSTATUS WINAPI
@@ -38,43 +30,21 @@ TargetNtMapViewOfSection(NtMapViewOfSectionFunction orig_MapViewOfSection,
   NTSTATUS ret = orig_MapViewOfSection(section, process, base, zero_bits,
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
-  static SectionLoadState s_state = kBeforeKernel32;
+
+  static int s_load_count = 0;
+  if (1 == s_load_count) {
+    SandboxFactory::GetTargetServices()->GetState()->SetKernel32Loaded();
+    s_load_count = 2;
+  }
 
   do {
     if (!NT_SUCCESS(ret))
       break;
 
-    if (!IsSameProcess(process))
+    if (!InitHeap())
       break;
 
-    // Only check for verifier.dll or kernel32.dll loading if we haven't moved
-    // past that state yet.
-    if (s_state == kBeforeKernel32) {
-      const char* ansi_module_name =
-          GetAnsiImageInfoFromModule(reinterpret_cast<HMODULE>(*base));
-      CHECK(ansi_module_name);
-
-      // _strnicmp below may hit read access violations for some sections. We
-      // find what looks like a valid export directory for a PE module but the
-      // pointer to the module name will be pointing to invalid memory.
-      __try {
-        // Don't initialize the heap if verifier.dll is being loaded. This
-        // indicates Application Verifier is enabled and we should wait until
-        // the next module is loaded.
-        if (g_nt._strnicmp(ansi_module_name, VERIFIER_DLL_NAME,
-                           sizeof(VERIFIER_DLL_NAME)) == 0)
-          break;
-
-        if (g_nt._strnicmp(ansi_module_name, KERNEL32_DLL_NAME,
-                           sizeof(KERNEL32_DLL_NAME)) == 0) {
-          SandboxFactory::GetTargetServices()->GetState()->SetKernel32Loaded();
-          s_state = kAfterKernel32;
-        }
-      } __except (EXCEPTION_EXECUTE_HANDLER) {
-      }
-    }
-
-    if (!InitHeap())
+    if (!IsSameProcess(process))
       break;
 
     if (!IsValidImageSection(section, base, offset, view_size))
@@ -108,6 +78,9 @@ TargetNtMapViewOfSection(NtMapViewOfSectionFunction orig_MapViewOfSection,
       operator delete(file_name, NT_ALLOC);
 
   } while (false);
+
+  if (!s_load_count)
+    s_load_count = 1;
 
   return ret;
 }
