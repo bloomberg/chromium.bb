@@ -2311,9 +2311,6 @@
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
-      # chromium.memory
-      'Linux ASan LSan Tests (1)',
-      'Linux Chromium OS ASan LSan Tests (1)',
     ],
     'modifications': {
       # chromium.android
@@ -2365,8 +2362,6 @@
       'Cast Audio Linux',
       'Cast Linux',
       # chromium.memory
-      'Linux ASan LSan Tests (1)',
-      'Linux Chromium OS ASan LSan Tests (1)',
       'Linux TSan Tests',
     ],
     'modifications': {
