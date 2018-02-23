@@ -369,11 +369,16 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
       sandbox_failure_fatal = switch_value != "no";
     }
 
-    if (sandbox_failure_fatal)
-      LOG(FATAL) << error_message;
-
-    LOG(ERROR) << error_message;
-    return false;
+    if (sandbox_failure_fatal) {
+      error_message += " Try waiting for /proc to be updated.";
+      LOG(ERROR) << error_message;
+      // This will return if /proc/self eventually reports this process is
+      // single-threaded, or crash if it does not after a number of retries.
+      sandbox::ThreadHelpers::AssertSingleThreaded();
+    } else {
+      LOG(ERROR) << error_message;
+      return false;
+    }
   }
 
   // Only one thread is running, pre-initialize if not already done.
