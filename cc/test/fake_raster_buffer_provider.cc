@@ -32,8 +32,6 @@ FakeRasterBufferProviderImpl::AcquireBufferForRaster(
   return nullptr;
 }
 
-void FakeRasterBufferProviderImpl::OrderingBarrier() {}
-
 void FakeRasterBufferProviderImpl::Flush() {}
 
 viz::ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(

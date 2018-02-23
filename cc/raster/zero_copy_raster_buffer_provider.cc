@@ -232,10 +232,6 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
       backing);
 }
 
-void ZeroCopyRasterBufferProvider::OrderingBarrier() {
-  // No need to sync resources as this provider does not use GL context.
-}
-
 void ZeroCopyRasterBufferProvider::Flush() {}
 
 viz::ResourceFormat ZeroCopyRasterBufferProvider::GetResourceFormat(
