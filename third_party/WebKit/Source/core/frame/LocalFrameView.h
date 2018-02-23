@@ -43,8 +43,6 @@
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/PlatformFrameView.h"
 #include "platform/UkmTimeAggregator.h"
-#include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
@@ -92,6 +90,7 @@ class PaintController;
 class Page;
 class PrintContext;
 class ScrollingCoordinator;
+class ScrollingCoordinatorContext;
 class TracedValue;
 class TransformState;
 class WebPluginContainerImpl;
@@ -905,14 +904,6 @@ class CORE_EXPORT LocalFrameView final
 
   void ApplyTransformForTopFrameSpace(TransformState&);
 
-  // TODO(kenrb): These are temporary methods pending resolution of
-  // https://crbug.com/680606. Animation timelines and hosts for scrolling
-  // are normally owned by ScrollingCoordinator, but there is only one
-  // of those objects per page. To get around this, we temporarily stash a
-  // unique timeline and host on each OOPIF LocalFrameView.
-  void SetAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
-  void SetAnimationHost(std::unique_ptr<CompositorAnimationHost>);
-
   void CrossOriginStatusChanged();
 
   // The visual viewport can supply scrollbars which affect the existence of
@@ -951,28 +942,6 @@ class CORE_EXPORT LocalFrameView final
       ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
       NotifyChildrenBehavior = kNotifyChildren);
 
-  // The following eight functions may change when https://crbug.com/680606 is
-  // resolved.
-
-  // The following functions all relate to state on the local root's subtree.
-  // These should only ever be called on the local root's view.
-
-  // Non-fast scrollable regions need updating by ScrollingCoordinator.
-  bool ScrollGestureRegionIsDirty() const;
-  // Touch event target rects need updating by ScrollingCoordinator.
-  bool TouchEventTargetRectsAreDirty() const;
-  // ScrollingCoordinator should update whether or not scrolling for this
-  // subtree has to happen on the main thread.
-  bool ShouldScrollOnMainThreadIsDirty() const;
-
-  // The following functions update flags on the local root's LocalFrameView to
-  // mark the local subtree as needing to update its state with
-  // ScrollingCoordinator. Only ScrollingCoordinator should ever call these
-  // functions with |dirty| set to |false|.
-  void SetScrollGestureRegionIsDirty(bool dirty);
-  void SetTouchEventTargetRectsAreDirty(bool dirty);
-  void SetShouldScrollOnMainThreadIsDirty(bool dirty);
-
   // Keeps track of whether the scrollable state for the LocalRoot has changed
   // since ScrollingCoordinator last checked. Only ScrollingCoordinator should
   // ever call the clearing function.
@@ -982,6 +951,8 @@ class CORE_EXPORT LocalFrameView final
   // Should be called whenever this LocalFrameView adds or removes a
   // scrollable area, or gains/loses a composited layer.
   void ScrollableAreasDidChange();
+
+  ScrollingCoordinatorContext* GetScrollingContext() const;
 
  protected:
   // Scroll the content via the compositor.
@@ -1337,14 +1308,13 @@ class CORE_EXPORT LocalFrameView final
   bool forcing_layout_parent_view_;
   bool needs_intersection_observation_;
   bool needs_forced_compositing_update_;
-  bool scroll_gesture_region_is_dirty_;
-  bool touch_event_target_rects_are_dirty_;
-  bool should_scroll_on_main_thread_is_dirty_;
-  bool was_scrollable_;
 
   Member<ElementVisibilityObserver> visibility_observer_;
 
   IntRect remote_viewport_intersection_;
+
+  // Lazily created, but should only be created on a local frame root's view.
+  mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
 
   // For testing.
   struct ObjectPaintInvalidation {
@@ -1359,10 +1329,6 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
-
-  // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
-  std::unique_ptr<CompositorAnimationTimeline> animation_timeline_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
 
   std::unique_ptr<UkmTimeAggregator> ukm_time_aggregator_;
 

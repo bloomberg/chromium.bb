@@ -49,6 +49,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/FilterOperations.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/animation/CompositorKeyframeModel.h"

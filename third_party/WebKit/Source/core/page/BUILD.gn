@@ -88,6 +88,8 @@ blink_core_sources("page") {
     "scrolling/ScrollStateCallback.h",
     "scrolling/ScrollingCoordinator.cpp",
     "scrolling/ScrollingCoordinator.h",
+    "scrolling/ScrollingCoordinatorContext.cpp",
+    "scrolling/ScrollingCoordinatorContext.h",
     "scrolling/SnapCoordinator.cpp",
     "scrolling/SnapCoordinator.h",
     "scrolling/StickyPositionScrollingConstraints.cpp",
