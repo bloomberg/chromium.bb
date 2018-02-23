@@ -377,6 +377,11 @@ base::Optional<sync_pb::PrinterSpecifics> PrintersSyncBridge::GetPrinter(
   return {*iter->second};
 }
 
+bool PrintersSyncBridge::HasPrinter(const std::string& id) const {
+  base::AutoLock lock(data_lock_);
+  return all_data_.find(id) != all_data_.end();
+}
+
 void PrintersSyncBridge::CommitPrinterPut(
     const sync_pb::PrinterSpecifics& printer) {
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
