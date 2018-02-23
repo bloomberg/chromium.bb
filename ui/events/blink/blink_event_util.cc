@@ -1176,6 +1176,15 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
     case GESTURE_EVENT_TYPE_PINCH_END:
       event_type = WebInputEvent::kGesturePinchEnd;
       break;
+    case GESTURE_EVENT_TYPE_SCROLL_START:
+      event_type = WebInputEvent::kGestureScrollBegin;
+      break;
+    case GESTURE_EVENT_TYPE_FLING_START:
+      event_type = WebInputEvent::kGestureFlingStart;
+      break;
+    case GESTURE_EVENT_TYPE_FLING_CANCEL:
+      event_type = WebInputEvent::kGestureFlingCancel;
+      break;
     default:
       NOTREACHED() << "Unknown gesture event type";
       return std::make_unique<WebGestureEvent>();
@@ -1190,8 +1199,24 @@ std::unique_ptr<WebGestureEvent> CreateWebGestureEventFromGestureEventAndroid(
   web_event->global_x = event.screen_location().x();
   web_event->global_x = event.screen_location().y();
   web_event->source_device = blink::kWebGestureDeviceTouchscreen;
-  if (event_type == WebInputEvent::kGesturePinchUpdate)
-    web_event->data.pinch_update.scale = event.delta();
+  if (event.synthetic_scroll())
+    web_event->source_device = blink::kWebGestureDeviceSyntheticAutoscroll;
+  if (event_type == WebInputEvent::kGesturePinchUpdate) {
+    web_event->data.pinch_update.scale = event.scale();
+  } else if (event_type == WebInputEvent::kGestureScrollBegin) {
+    web_event->data.scroll_begin.delta_x_hint = event.delta_x();
+    web_event->data.scroll_begin.delta_y_hint = event.delta_y();
+    web_event->data.scroll_begin.target_viewport = event.target_viewport();
+  } else if (event_type == WebInputEvent::kGestureFlingStart) {
+    web_event->data.fling_start.velocity_x = event.velocity_x();
+    web_event->data.fling_start.velocity_y = event.velocity_y();
+    web_event->data.fling_start.target_viewport = event.target_viewport();
+  } else if (event_type == WebInputEvent::kGestureFlingCancel) {
+    web_event->data.fling_cancel.prevent_boosting = true;
+    if (event.synthetic_scroll())
+      web_event->data.fling_cancel.target_viewport = true;
+  }
+
   return web_event;
 }
 #endif

@@ -88,7 +88,18 @@ class EventForwarder {
                       const base::android::JavaParamRef<jobject>& jobj,
                       jint type,
                       jlong time_ms,
-                      jfloat delta);
+                      jfloat scale);
+
+  void OnStartFling(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& jobj,
+                    jlong time_ms,
+                    jfloat velocity_x,
+                    jfloat velocity_y,
+                    jboolean synthetic_scroll);
+
+  void OnCancelFling(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& jobj,
+                     jlong time_ms);
 
  private:
   friend class ViewAndroid;

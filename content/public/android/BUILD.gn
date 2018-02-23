@@ -130,6 +130,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java",
     "java/src/org/chromium/content/browser/JavascriptInjectorImpl.java",
     "java/src/org/chromium/content/browser/JavascriptInterface.java",
+    "java/src/org/chromium/content/browser/JoystickHandler.java",
     "java/src/org/chromium/content/browser/LauncherThread.java",
     "java/src/org/chromium/content/browser/MediaResourceGetter.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",

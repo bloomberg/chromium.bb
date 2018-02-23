@@ -113,19 +113,6 @@ class ContentViewCore : public WebContentsObserver {
                 jfloat y,
                 jfloat dx,
                 jfloat dy);
-  void FlingStart(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
-                  jlong time_ms,
-                  jfloat x,
-                  jfloat y,
-                  jfloat vx,
-                  jfloat vy,
-                  jboolean target_viewport,
-                  jboolean from_gamepad);
-  void FlingCancel(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   jlong time_ms,
-                   jboolean from_gamepad);
   void DoubleTap(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,
                  jlong time_ms,

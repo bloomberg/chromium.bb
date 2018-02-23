@@ -84,12 +84,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void sendDoubleTapForTest(long timeMs, int x, int y) {}
 
     @Override
-    public void flingViewport(long timeMs, float velocityX, float velocityY, boolean fromGamepad) {}
-
-    @Override
-    public void cancelFling(long timeMs) {}
-
-    @Override
     public void onShow() {}
 
     @Override

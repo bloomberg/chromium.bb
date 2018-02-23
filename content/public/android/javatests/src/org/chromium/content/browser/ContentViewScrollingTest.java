@@ -125,7 +125,7 @@ public class ContentViewScrollingTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().flingViewport(
+                mActivityTestRule.getWebContents().getEventForwarder().onStartFling(
                         SystemClock.uptimeMillis(), vx, vy, false);
             }
         });

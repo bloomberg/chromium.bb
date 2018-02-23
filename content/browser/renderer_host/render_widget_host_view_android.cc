@@ -629,12 +629,13 @@ RenderWidgetHostViewAndroid::GetWeakPtrAndroid() {
 bool RenderWidgetHostViewAndroid::OnGestureEvent(
     const ui::GestureEventAndroid& event) {
   std::unique_ptr<blink::WebGestureEvent> web_event;
-  if (event.delta() < 0.f) {
-    // Negative delta indicates zoom reset.
+  if (event.scale() < 0.f) {
+    // Negative scale indicates zoom reset.
     float delta = min_page_scale_ / page_scale_;
     web_event = ui::CreateWebGestureEventFromGestureEventAndroid(
         ui::GestureEventAndroid(event.type(), event.location(),
-                                event.screen_location(), event.time(), delta));
+                                event.screen_location(), event.time(), delta, 0,
+                                0, 0, 0, false, false));
   } else {
     web_event = ui::CreateWebGestureEventFromGestureEventAndroid(event);
   }

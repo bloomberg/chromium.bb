@@ -21,7 +21,13 @@ class EVENTS_EXPORT GestureEventAndroid {
                       const gfx::PointF& location,
                       const gfx::PointF& screen_location,
                       long time_ms,
-                      float delta);
+                      float scale,
+                      float delta_x,
+                      float delta_y,
+                      float velocity_x,
+                      float velocity_y,
+                      bool target_viewport,
+                      bool synthetic_scroll);
 
   ~GestureEventAndroid();
 
@@ -29,7 +35,13 @@ class EVENTS_EXPORT GestureEventAndroid {
   const gfx::PointF& location() const { return location_; }
   const gfx::PointF& screen_location() const { return screen_location_; }
   long time() const { return time_ms_; }
-  float delta() const { return delta_; }
+  float scale() const { return scale_; }
+  float delta_x() const { return delta_x_; }
+  float delta_y() const { return delta_y_; }
+  float velocity_x() const { return velocity_x_; }
+  float velocity_y() const { return velocity_y_; }
+  bool target_viewport() const { return target_viewport_; }
+  bool synthetic_scroll() const { return synthetic_scroll_; }
 
   // Creates a new GestureEventAndroid instance different from |this| only by
   // its location.
@@ -42,7 +54,13 @@ class EVENTS_EXPORT GestureEventAndroid {
   gfx::PointF screen_location_;
   long time_ms_;
 
-  float delta_;
+  float scale_;
+  float delta_x_;
+  float delta_y_;
+  float velocity_x_;
+  float velocity_y_;
+  bool target_viewport_;
+  bool synthetic_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventAndroid);
 };

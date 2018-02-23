@@ -161,9 +161,6 @@ public class ContentViewCoreImpl
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
 
-    // Whether joystick scroll is enabled.  It's disabled when an editable field is focused.
-    private boolean mJoystickScrollEnabled = true;
-
     private boolean mIsMobileOptimizedHint;
 
     private boolean mPreserveSelectionOnNextLossOfFocus;
@@ -508,23 +505,6 @@ public class ContentViewCoreImpl
     }
 
     @Override
-    public void flingViewport(long timeMs, float velocityX, float velocityY, boolean fromGamepad) {
-        if (mNativeContentViewCore == 0) return;
-        nativeFlingCancel(mNativeContentViewCore, timeMs, fromGamepad);
-        if (velocityX == 0 && velocityY == 0) return;
-        nativeScrollBegin(
-                mNativeContentViewCore, timeMs, 0f, 0f, velocityX, velocityY, true, fromGamepad);
-        nativeFlingStart(
-                mNativeContentViewCore, timeMs, 0, 0, velocityX, velocityY, true, fromGamepad);
-    }
-
-    @Override
-    public void cancelFling(long timeMs) {
-        if (mNativeContentViewCore == 0) return;
-        nativeFlingCancel(mNativeContentViewCore, timeMs, false);
-    }
-
-    @Override
     public void onShow() {
         assert mWebContents != null;
         mWebContents.onShow();
@@ -673,9 +653,8 @@ public class ContentViewCoreImpl
         }
 
         getImeAdapter().onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
-
-        mJoystickScrollEnabled =
-                gainFocus && !getSelectionPopupController().isFocusedNodeEditable();
+        getJoystick().setScrollEnabled(
+                gainFocus && !getSelectionPopupController().isFocusedNodeEditable());
 
         if (gainFocus) {
             getSelectionPopupController().restoreSelectionPopupsIfNecessary();
@@ -741,19 +720,10 @@ public class ContentViewCoreImpl
         return true;
     }
 
-    /**
-     * Removes noise from joystick motion events.
-     */
-    private static float getFilteredAxisValue(MotionEvent event, int axis) {
-        final float kJoystickScrollDeadzone = 0.2f;
-        float axisValWithNoise = event.getAxisValue(axis);
-        if (Math.abs(axisValWithNoise) > kJoystickScrollDeadzone) return axisValWithNoise;
-        return 0f;
-    }
-
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         if (GamepadList.onGenericMotionEvent(event)) return true;
+        if (getJoystick().onGenericMotionEvent(event)) return true;
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_SCROLL:
@@ -770,17 +740,12 @@ public class ContentViewCoreImpl
                         return getEventForwarder().onMouseEvent(event);
                     }
             }
-        } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-            if (mJoystickScrollEnabled) {
-                float velocityX = getFilteredAxisValue(event, MotionEvent.AXIS_X);
-                float velocityY = getFilteredAxisValue(event, MotionEvent.AXIS_Y);
-                if (velocityX != 0.f || velocityY != 0.f) {
-                    flingViewport(event.getEventTime(), -velocityX, -velocityY, true);
-                    return true;
-                }
-            }
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
+    }
+
+    private JoystickHandler getJoystick() {
+        return JoystickHandler.fromWebContents(mWebContents);
     }
 
     @Override
@@ -792,7 +757,7 @@ public class ContentViewCoreImpl
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
         if (mPotentiallyActiveFlingCount > 0) {
-            nativeFlingCancel(mNativeContentViewCore, time, false);
+            getEventForwarder().onCancelFling(time);
         }
         // x/y represents starting location of scroll.
         nativeScrollBegin(mNativeContentViewCore, time, 0f, 0f, -dxPix, -dyPix, true, false);
@@ -951,7 +916,7 @@ public class ContentViewCoreImpl
 
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        mJoystickScrollEnabled = !editable;
+        getJoystick().setScrollEnabled(!editable);
         getSelectionPopupController().updateSelectionState(editable, password);
     }
 
@@ -1172,10 +1137,6 @@ public class ContentViewCoreImpl
     private native void nativeScrollEnd(long nativeContentViewCore, long timeMs);
     private native void nativeScrollBy(
             long nativeContentViewCore, long timeMs, float x, float y, float deltaX, float deltaY);
-    private native void nativeFlingStart(long nativeContentViewCore, long timeMs, float x, float y,
-            float vx, float vy, boolean targetViewport, boolean fromGamepad);
-    private native void nativeFlingCancel(
-            long nativeContentViewCore, long timeMs, boolean fromGamepad);
     private native void nativeDoubleTap(long nativeContentViewCore, long timeMs, float x, float y);
     private native void nativeSetTextHandlesTemporarilyHidden(
             long nativeContentViewCore, boolean hidden);
