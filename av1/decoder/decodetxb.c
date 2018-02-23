@@ -119,7 +119,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = av1_get_max_eob(tx_size);
-  int num_updates = 0;
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant_QTX[mbmi->segment_id];
   tran_low_t *const tcoeffs = pd->dqcoeff;
@@ -130,8 +129,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int cul_level = 0;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  uint16_t update_pos[MAX_TX_SQUARE];
-  uint8_t update_sign[MAX_TX_SQUARE];
 
   const int all_zero = aom_read_symbol(
       r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
@@ -276,8 +273,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
   }
 
-  // Loop to decode all signs in the transform block,
-  // starting with the sign of the DC (if applicable)
   for (int c = 0; c < *eob; ++c) {
     const int pos = scan[c];
     uint8_t sign;
@@ -292,36 +287,17 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         sign = aom_read_bit(r, ACCT_STR);
       }
       if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-        // the quantized coeff with golomb residue is stored in tcoeffs because
-        // levels doesn't have enough bits got store the residue
-        update_pos[num_updates] = pos;
-        update_sign[num_updates] = sign;
-        ++num_updates;
-      } else {
-        cul_level += level;
-        tran_low_t dq_coeff;
-        dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
-        dq_coeff = dq_coeff >> shift;
-        if (sign) {
-          dq_coeff = -dq_coeff;
-        }
-        tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
+        level += read_golomb(xd, r);
       }
+      cul_level += level;
+      tran_low_t dq_coeff;
+      dq_coeff = level * get_dqv(dequant, scan[c], iqmatrix);
+      dq_coeff = dq_coeff >> shift;
+      if (sign) {
+        dq_coeff = -dq_coeff;
+      }
+      tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
     }
-  }
-
-  for (int i = 0; i < num_updates; ++i) {
-    const int pos = update_pos[i];
-    const int sign = update_sign[i];
-    const int level = levels[get_padded_idx(pos, bwl)] + read_golomb(xd, r);
-    cul_level += level;
-    tran_low_t dq_coeff;
-    dq_coeff = level * get_dqv(dequant, pos, iqmatrix);
-    dq_coeff = dq_coeff >> shift;
-    if (sign) {
-      dq_coeff = -dq_coeff;
-    }
-    tcoeffs[pos] = clamp(dq_coeff, min_value, max_value);
   }
 
   cul_level = AOMMIN(63, cul_level);

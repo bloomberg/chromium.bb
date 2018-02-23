@@ -411,8 +411,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, int8_t, coeff_contexts[MAX_TX_SQUARE]);
-  uint16_t update_pos[MAX_TX_SQUARE];
-  int num_updates = 0;
 
   aom_write_symbol(w, eob == 0,
                    ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
@@ -526,15 +524,10 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       }
       if (level > COEFF_BASE_RANGE + NUM_BASE_LEVELS) {
         const int pos = scan[c];
-        update_pos[num_updates] = pos;
-        ++num_updates;
+        write_golomb(w,
+                     abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
       }
     }
-  }
-
-  for (int i = 0; i < num_updates; ++i) {
-    const int pos = update_pos[i];
-    write_golomb(w, abs(tcoeff[pos]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
   }
 }
 
