@@ -36,6 +36,7 @@ TEST(ExtensionURLPatternTest, ParseInvalid) {
       {"http://", URLPattern::PARSE_ERROR_EMPTY_HOST},
       {"http:///", URLPattern::PARSE_ERROR_EMPTY_HOST},
       {"http:// /", URLPattern::PARSE_ERROR_EMPTY_HOST},
+      {"http://:1234/", URLPattern::PARSE_ERROR_EMPTY_HOST},
       {"http://*foo/bar", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD},
       {"http://foo.*.bar/baz", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD},
       {"http://fo.*.ba:123/baz", URLPattern::PARSE_ERROR_INVALID_HOST_WILDCARD},
@@ -70,8 +71,9 @@ TEST(ExtensionURLPatternTest, Ports) {
       {"http://foo:1234/bar", URLPattern::PARSE_SUCCESS, "1234"},
       {"http://*.foo:1234/", URLPattern::PARSE_SUCCESS, "1234"},
       {"http://*.foo:1234/bar", URLPattern::PARSE_SUCCESS, "1234"},
-      {"http://:1234/", URLPattern::PARSE_SUCCESS, "1234"},
       {"http://foo:/", URLPattern::PARSE_ERROR_INVALID_PORT, "*"},
+      {"http://*:1234/", URLPattern::PARSE_SUCCESS, "1234"},
+      {"http://*:*/", URLPattern::PARSE_SUCCESS, "*"},
       {"http://foo:*/", URLPattern::PARSE_SUCCESS, "*"},
       {"http://*.foo:/", URLPattern::PARSE_ERROR_INVALID_PORT, "*"},
       {"http://foo:com/", URLPattern::PARSE_ERROR_INVALID_PORT, "*"},
@@ -940,6 +942,7 @@ TEST(ExtensionURLPatternTest, MatchesEffectiveTLD) {
   } tests[] = {
       // <all_urls> obviously implies all hosts.
       {"*://*/*", true, true},
+      {"*://*:*/*", true, true},
       {"<all_urls>", true, true},
 
       // Matching a single scheme effectively all hosts.
