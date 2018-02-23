@@ -63,6 +63,7 @@ ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
                             SamplerType sampler,
                             AAMode aa_mode,
                             SwizzleMode swizzle_mode,
+                            PremultipliedAlphaMode premultiplied_alpha,
                             bool is_opaque,
                             bool has_tex_clamp_rect,
                             bool tint_color) {
@@ -75,6 +76,7 @@ ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
   result.is_opaque_ = is_opaque;
   result.has_tex_clamp_rect_ = has_tex_clamp_rect;
   result.has_tint_color_matrix_ = tint_color;
+  result.premultiplied_alpha_ = premultiplied_alpha;
   return result;
 }
 

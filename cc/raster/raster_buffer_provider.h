@@ -69,6 +69,9 @@ class CC_EXPORT RasterBufferProvider {
   // Determine if the resource requires swizzling.
   virtual bool IsResourceSwizzleRequired(bool must_support_alpha) const = 0;
 
+  // Determines if the resource is premultiplied.
+  virtual bool IsResourcePremultiplied(bool must_support_alpha) const = 0;
+
   // Determine if the RasterBufferProvider can handle partial raster into
   // the Resource provided in AcquireBufferForRaster.
   virtual bool CanPartialRasterIntoProvidedResource() const = 0;
