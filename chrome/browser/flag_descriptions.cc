@@ -3046,6 +3046,10 @@ const char kAshShelfColorSchemeLightMuted[] = "Light & Muted";
 const char kAshShelfColorSchemeNormalMuted[] = "Normal & Muted";
 const char kAshShelfColorSchemeDarkMuted[] = "Dark & Muted";
 
+const char kEnableNewWallpaperPickerName[] = "Enable new wallpaper picker";
+const char kEnableNewWallpaperPickerDescription[] =
+    "Enable the redesigned wallpaper picker with new wallpaper collections.";
+
 const char kMaterialDesignInkDropAnimationSpeedName[] =
     "Material design ink drop animation speed";
 const char kMaterialDesignInkDropAnimationSpeedDescription[] =
