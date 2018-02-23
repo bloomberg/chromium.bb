@@ -11,9 +11,6 @@
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
-      <!-- Filesystem notification icons. -->
-      <structure type="chrome_scaled_image" name="IDR_DISK_SPACE_NOTIFICATION_CRITICAL" file="filesystem/notification_disk_space_critical.png" />
-
       <!-- Badge for Chrome Apps if Arc is enabled. -->
       <structure type="chrome_scaled_image" name="IDR_ARC_DUAL_ICON_BADGE" file="arc/dual-icon-badge.png" />
 

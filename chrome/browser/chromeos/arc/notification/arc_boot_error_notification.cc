@@ -66,8 +66,7 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
               IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(
               IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE),
-          gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
+          gfx::Image(),
           l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
           GURL(), notifier_id, optional_fields,
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
