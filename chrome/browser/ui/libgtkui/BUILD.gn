@@ -38,8 +38,6 @@ template("libgtkui") {
                 "gtk_key_bindings_handler.cc",
                 "gtk_key_bindings_handler.h",
                 "gtk_signal.h",
-                "gtk_status_icon.cc",
-                "gtk_status_icon.h",
                 "gtk_ui.cc",
                 "gtk_ui.h",
                 "gtk_util.cc",
@@ -66,6 +64,7 @@ template("libgtkui") {
               ]
 
     configs += [
+      "//build/config/linux/appindicator",
       "//build/config/linux/pangocairo",
       "//build/config/linux:x11",
     ]
