@@ -26,6 +26,7 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -150,6 +151,29 @@ class MockInputRouter : public InputRouter {
   DISALLOW_COPY_AND_ASSIGN(MockInputRouter);
 };
 
+// TestFrameTokenMessageQueue ----------------------------------------------
+
+class TestFrameTokenMessageQueue : public FrameTokenMessageQueue {
+ public:
+  TestFrameTokenMessageQueue(FrameTokenMessageQueue::Client* client)
+      : FrameTokenMessageQueue(client) {}
+  ~TestFrameTokenMessageQueue() override {}
+
+  uint32_t processed_frame_messages_count() {
+    return processed_frame_messages_count_;
+  }
+
+ protected:
+  void ProcessSwapMessages(std::vector<IPC::Message> messages) override {
+    processed_frame_messages_count_++;
+  }
+
+ private:
+  uint32_t processed_frame_messages_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFrameTokenMessageQueue);
+};
+
 // MockRenderWidgetHost ----------------------------------------------------
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
@@ -164,7 +188,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::input_router_;
-  using RenderWidgetHostImpl::queued_messages_;
+  using RenderWidgetHostImpl::frame_token_message_queue_;
 
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                        InputEventAckSource ack_source,
@@ -219,7 +243,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   uint32_t processed_frame_messages_count() {
-    return processed_frame_messages_count_;
+    CHECK(frame_token_message_queue_);
+    return static_cast<TestFrameTokenMessageQueue*>(
+               frame_token_message_queue_.get())
+        ->processed_frame_messages_count();
   }
 
   static MockRenderWidgetHost* Create(RenderWidgetHostDelegate* delegate,
@@ -264,12 +291,9 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
         new_content_rendering_timeout_fired_(false),
         widget_impl_(std::move(widget_impl)) {
     acked_touch_event_type_ = blink::WebInputEvent::kUndefined;
+    frame_token_message_queue_.reset(new TestFrameTokenMessageQueue(this));
   }
 
-  void ProcessSwapMessages(std::vector<IPC::Message> messages) override {
-    processed_frame_messages_count_++;
-  }
-  uint32_t processed_frame_messages_count_ = 0;
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
@@ -2792,12 +2816,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   std::vector<IPC::Message> messages;
   messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   auto frame = viz::CompositorFrameBuilder()
@@ -2805,7 +2829,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
                    .SetFrameToken(frame_token)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
@@ -2818,7 +2842,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   std::vector<IPC::Message> messages;
   messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   auto frame = viz::CompositorFrameBuilder()
@@ -2826,12 +2850,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
                    .SetFrameToken(frame_token)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
@@ -2847,17 +2871,17 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
   messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
-  EXPECT_EQ(2u, host_->queued_messages_.size());
+  EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   auto frame = viz::CompositorFrameBuilder()
@@ -2865,7 +2889,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
                    .SetFrameToken(frame_token1)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
   frame = viz::CompositorFrameBuilder()
@@ -2873,7 +2897,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
               .SetFrameToken(frame_token2)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
 
@@ -2889,7 +2913,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
   messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   auto frame = viz::CompositorFrameBuilder()
@@ -2897,7 +2921,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
                    .SetFrameToken(frame_token1)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   frame = viz::CompositorFrameBuilder()
@@ -2905,17 +2929,17 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
               .SetFrameToken(frame_token2)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
 
@@ -2931,17 +2955,17 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
   messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
-  EXPECT_EQ(2u, host_->queued_messages_.size());
+  EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   auto frame = viz::CompositorFrameBuilder()
@@ -2949,7 +2973,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
                    .SetFrameToken(frame_token2)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
 
@@ -2980,11 +3004,11 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->Init();
 
@@ -2993,18 +3017,18 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
                    .SetFrameToken(frame_token2)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->SetView(view_.get());
   host_->Init();
 
   host_->OnMessageReceived(
       ViewHostMsg_FrameSwapMessages(0, frame_token3, messages3));
-  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   frame = viz::CompositorFrameBuilder()
@@ -3012,7 +3036,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
               .SetFrameToken(frame_token3)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
-  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
