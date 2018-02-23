@@ -63,7 +63,6 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool CanResize() const override;
-  // TODO(wutao): need to customize the frame view header based on UX specs.
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
   // Owned by views hierarchy.

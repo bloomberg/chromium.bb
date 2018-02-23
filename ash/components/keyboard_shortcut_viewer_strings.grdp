@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <!-- Title -->
+  <message name="IDS_KSV_TITLE" desc="The tooltip text of the keyboard shortcut viewer shelf icon.">
+    Keyboard Shortcut Viewer
+  </message>
 
   <!-- Accessibility -->
   <message name="IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME" desc="Accessibility name for the search box.">
@@ -30,13 +34,13 @@
     Popular Shortcuts
   </message>
   <message name="IDS_KSV_CATEGORY_TAB_WINDOW" desc="Category of the keyboard shortcut.">
-    Tabs And Windows
+    Tabs &amp; Windows
   </message>
   <message name="IDS_KSV_CATEGORY_PAGE_BROWSER" desc="Category of the keyboard shortcut.">
-    Page and Web Browser
+    Page &amp; Web Browser
   </message>
   <message name="IDS_KSV_CATEGORY_SYSTEM_DISPLAY" desc="Category of the keyboard shortcut.">
-    System and Display Settings
+    System &amp; Display Settings
   </message>
   <message name="IDS_KSV_CATEGORY_TEXT_EDITING" desc="Category of the keyboard shortcut.">
     Text Editing

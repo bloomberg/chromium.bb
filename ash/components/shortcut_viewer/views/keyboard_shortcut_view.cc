@@ -6,14 +6,17 @@
 
 #include <algorithm>
 
+#include "ash/components/resources/grit/ash_components_resources.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/i18n/string_search.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,10 +104,32 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
         new KeyboardShortcutView(), context, gfx::Rect(offset, kKSVWindowSize));
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
-    g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
-        ash::kFrameActiveColorKey, SK_ColorWHITE);
-    g_ksv_view->GetWidget()->GetNativeWindow()->SetProperty(
-        ash::kFrameInactiveColorKey, SK_ColorWHITE);
+    aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();
+    window->SetProperty(ash::kFrameActiveColorKey, SK_ColorWHITE);
+    window->SetProperty(ash::kFrameInactiveColorKey, SK_ColorWHITE);
+
+    // Set shelf icon.
+    // An app id for keyboard shortcut viewer window, also used to identify the
+    // shelf item. Generated as
+    // crx_file::id_util::GenerateId("org.chromium.keyboardshortcutviewer")
+    static constexpr char kKeyboardShortcutViewerId[] =
+        "dieikdblbimmfmfinbibdlalidbnbchd";
+    const ash::ShelfID shelf_id(kKeyboardShortcutViewerId);
+    window->SetProperty(ash::kShelfIDKey,
+                        new std::string(shelf_id.Serialize()));
+    window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
+
+    // We don't want the KSV window to have a title (per design), however the
+    // shelf uses the window title to set the shelf item's tooltip text. The
+    // shelf observes changes to the |kWindowIconKey| property and handles that
+    // by initializing the shelf item including its tooltip text.
+    window->SetTitle(l10n_util::GetStringUTF16(IDS_KSV_TITLE));
+    gfx::ImageSkia* icon =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_KEYBOARD_SHORTCUT_VIEWER_APP_ICON);
+    // The new gfx::ImageSkia instance is owned by the window itself.
+    window->SetProperty(aura::client::kWindowIconKey,
+                        new gfx::ImageSkia(*icon));
 
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->RequestFocusForActiveTab();
