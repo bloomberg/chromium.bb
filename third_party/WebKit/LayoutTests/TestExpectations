@@ -3314,10 +3314,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # End of Root Layer Scrolling expectations
 ################################################################################
 
-crbug.com/813775 external/wpt/service-workers/service-worker/multipart-image.https.html [ Pass Failure ]
-crbug.com/813775 virtual/outofblink-cors/external/wpt/service-workers/service-worker/multipart-image.https.html [ Pass Failure ]
-crbug.com/813775 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/multipart-image.https.html [ Pass Failure ]
-
 crbug.com/813468 [ Mac ] virtual/navigation-mojo-response/http/tests/serviceworker/chromium/memory-cache.html [ Failure Pass ]
 
 # TODO(ricea): Remove these once fetch abort implementation is complete
