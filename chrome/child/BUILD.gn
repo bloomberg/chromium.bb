@@ -16,7 +16,7 @@ static_library("child") {
 
   deps = [
     "//base",
-    "//chrome/common:features",
+    "//chrome/common:buildflags",
     "//content/public/child",
     "//gin",
     "//tools/v8_context_snapshot",

@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/gaia_constants.h"
 

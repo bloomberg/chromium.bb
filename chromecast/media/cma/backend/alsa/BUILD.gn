@@ -43,7 +43,7 @@ cast_source_set("alsa_cma_backend") {
     "//chromecast/base",
     "//chromecast/media/base",
     "//chromecast/media/cma/backend:audio",
-    "//chromecast/media/cma/backend:audio_features",
+    "//chromecast/media/cma/backend:audio_buildflags",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",

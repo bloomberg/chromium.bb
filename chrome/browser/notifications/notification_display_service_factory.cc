@@ -12,8 +12,8 @@
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static

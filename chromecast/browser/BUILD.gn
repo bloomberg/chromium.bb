@@ -88,7 +88,7 @@ cast_source_set("browser") {
     "//base",
     "//base:i18n",
     "//cc",
-    "//chromecast:chromecast_features",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/app:cast_crash_client",
     "//chromecast/app:chromecast_settings",
     "//chromecast/app:resources",
@@ -345,7 +345,7 @@ cast_source_set("browsertests") {
 
   deps = [
     ":test_support",
-    "//chromecast:chromecast_features",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",

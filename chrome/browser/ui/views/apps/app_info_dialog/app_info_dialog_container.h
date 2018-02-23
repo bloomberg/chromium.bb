@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_DIALOG_CONTAINER_H_
 
 #include "base/callback_forward.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace views {

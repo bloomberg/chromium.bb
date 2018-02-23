@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/speech/tts_controller.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "jni/TtsPlatformImpl_jni.h"
 
 using base::android::AttachCurrentThread;

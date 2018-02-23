@@ -11,7 +11,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "device/vr/features/features.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"

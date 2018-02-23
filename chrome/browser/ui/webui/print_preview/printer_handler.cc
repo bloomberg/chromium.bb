@@ -7,7 +7,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/print_preview/privet_printer_handler.h"
