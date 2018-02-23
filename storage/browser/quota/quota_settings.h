@@ -51,8 +51,8 @@ struct QuotaSettings {
   // very aggressive about disallowing new data.
   int64_t must_remain_available = 0;
 
-  // The quota system querries the embedder for the QuataSettings,
-  // but will rate limit the frequency of the querries to no more than once
+  // The quota system queries the embedder for the QuotaSettings,
+  // but will rate limit the frequency of the queries to no more than once
   // per refresh interval.
   base::TimeDelta refresh_interval = base::TimeDelta::Max();
 };
