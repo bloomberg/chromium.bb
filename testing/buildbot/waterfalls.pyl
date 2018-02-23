@@ -1640,6 +1640,19 @@
   {
     'name': 'chromium.memory',
     'machines': {
+      'Android CFI': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'chromium_android_clang_and_gl_gtests',
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_memory_linux_asan_gtests',

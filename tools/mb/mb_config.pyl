@@ -378,6 +378,7 @@
     },
 
     'chromium.memory': {
+      'Android CFI': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'Linux ASan LSan Builder': 'asan_lsan_release_trybot',
       'Linux CFI': 'cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'Linux Chromium OS ASan LSan Builder': 'asan_lsan_chromeos_release_trybot',
@@ -539,6 +540,7 @@
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android_blink_rel': 'android_release_trybot',
+      'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
       'android_compile_dbg': 'android_debug_trybot_compile_only',
       'android_compile_mips_dbg': 'android_debug_trybot_compile_only_mipsel',
@@ -772,6 +774,10 @@
 
     'android_cast_debug_static_bot_compile_only': [
       'android', 'cast', 'clang', 'debug_static_bot', 'compile_only',
+    ],
+
+    'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma': [
+      'android', 'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
     'android_clang_asan_debug_bot_minimal_symbols': [

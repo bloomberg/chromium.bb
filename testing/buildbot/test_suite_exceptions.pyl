@@ -524,6 +524,7 @@
       # chromium.fyi
       'ThinLTO Linux ToT',
       # chromium.memory
+      'Android CFI',
       'Mac ASan 64 Tests (1)',
     ],
   },
@@ -597,6 +598,8 @@
       'Marshmallow Phone Tester (rel)',
       # chromium.clang
       'ToTAndroidCFI',
+      # chromium.memory
+      'Android CFI',
       # TODO(dpranke): on chromium.swarm, this is probably also an accident.
       'Android N5X Swarm',
     ],
@@ -821,6 +824,12 @@
       },
       # chromium.fyi
       'Out of Process Profiling Android': {
+        'swarming': {
+          'hard_timeout': 0,
+        },
+      },
+      # chromium.memory
+      'Android CFI': {
         'swarming': {
           'hard_timeout': 0,
         },
@@ -1293,6 +1302,13 @@
           'shards': 1,
         },
       },
+      # chromium.memory
+      'Android CFI': {
+        'swarming': {
+          'hard_timeout': 0,
+          'shards': 1,
+        },
+      },
     },
   },
   'content_unittests': {
@@ -1754,16 +1770,6 @@
         },
         'use_xvfb': False,
       },
-      'ToTAndroidCFI': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-            },
-          ],
-        },
-      },
       # chromium.memory
       'Linux CFI': {
         'args': [
@@ -2066,6 +2072,8 @@
       'x86 Cloud Tester',
       # chromium.clang
       'ToTAndroidCFI',
+      # chromium.memory
+      'Android CFI',
     ],
   },
   'keyboard_unittests': {
@@ -2289,6 +2297,8 @@
       'x86 Cloud Tester',
       # chromium.clang
       'ToTAndroidCFI',
+      # chromium.memory
+      'Android CFI',
     ],
   },
   'mojo_common_unittests': {
@@ -2414,6 +2424,12 @@
     'modifications': {
       # chromium.clang
       'ToTAndroidCFI': {
+        'swarming': {
+          'hard_timeout': 0,
+        },
+      },
+      # chromium.clang
+      'Android CFI': {
         'swarming': {
           'hard_timeout': 0,
         },
@@ -2624,6 +2640,8 @@
       'Linux Tests (dbg)(1)(32)',
       # chromium.clang
       'ToTAndroidCFI',
+      # chromium.memory
+      'Android CFI',
     ],
   },
   'renderer_side_navigation_content_browsertests': {
