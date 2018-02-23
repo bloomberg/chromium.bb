@@ -25,6 +25,10 @@ class ReadbackYUVInterface;
 
 namespace content {
 
+// AuraWindowCaptureMachine uses the compositor to capture Aura windows.
+//
+// It is used for browser window capture on platforms that use Aura (Windows,
+// Linux, and Chrome OS) and additionally for desktop capture on Chrome OS.
 class AuraWindowCaptureMachine : public media::VideoCaptureMachine,
                                  public aura::WindowObserver,
                                  public ui::ContextFactoryObserver,

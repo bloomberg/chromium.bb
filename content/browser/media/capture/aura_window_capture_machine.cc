@@ -102,7 +102,7 @@ bool AuraWindowCaptureMachine::InternalStart(
                              mojo::MakeRequest(&wake_lock_provider));
     wake_lock_provider->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::kPreventDisplaySleep,
-        device::mojom::WakeLockReason::kOther, "Desktop capturer is running",
+        device::mojom::WakeLockReason::kOther, "Aura window or desktop capture",
         mojo::MakeRequest(&wake_lock_));
 
     wake_lock_->RequestWakeLock();
