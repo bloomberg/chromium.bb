@@ -206,8 +206,8 @@ void SystemTrayBubble::InitView(views::View* anchor,
   init_params->parent_window = tray_->GetBubbleWindowContainer();
   init_params->anchor_view = anchor;
   bubble_view_ = new TrayBubbleView(*init_params);
-  if (features::IsNewSystemMenuEnabled())
-    bubble_view_->set_color(kNewMenuBackgroundColor);
+  if (features::IsSystemTrayUnifiedEnabled())
+    bubble_view_->set_color(kUnifiedMenuBackgroundColor);
   bubble_view_->AddChildView(system_tray_view_);
   UpdateBottomPadding();
   bubble_view_->set_adjust_if_offscreen(false);

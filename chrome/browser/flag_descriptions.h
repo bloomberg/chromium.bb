@@ -55,8 +55,8 @@ extern const char kAppBannersDescription[];
 extern const char kAshSidebarName[];
 extern const char kAshSidebarDescription[];
 
-extern const char kAshNewSystemMenuName[];
-extern const char kAshNewSystemMenuDescription[];
+extern const char kSystemTrayUnifiedName[];
+extern const char kSystemTrayUnifiedDescription[];
 
 extern const char kArrayPrototypeValuesName[];
 extern const char kArrayPrototypeValuesDescription[];

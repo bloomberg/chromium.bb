@@ -213,8 +213,8 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
   // rendering won't work unless we explicitly set a background. See
   // crbug.com/686363
   label->SetBackground(
-      features::IsNewSystemMenuEnabled()
-          ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+      features::IsSystemTrayUnifiedEnabled()
+          ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
           : views::CreateThemedSolidBackground(
                 label, ui::NativeTheme::kColorId_BubbleBackground));
   return label;
@@ -275,8 +275,8 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->set_id(VIEW_ID_STICKY_HEADER);
   view->SetBackground(
-      features::IsNewSystemMenuEnabled()
-          ? views::CreateSolidBackground(kNewMenuBackgroundColor)
+      features::IsSystemTrayUnifiedEnabled()
+          ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
           : views::CreateThemedSolidBackground(
                 view, ui::NativeTheme::kColorId_BubbleBackground));
   view->SetBorder(

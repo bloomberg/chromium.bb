@@ -1977,9 +1977,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshSidebarDescription, kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(ash::switches::kAshSidebarEnabled,
                                ash::switches::kAshSidebarDisabled)},
-    {"enable-ash-new-system-menu", flag_descriptions::kAshNewSystemMenuName,
-     flag_descriptions::kAshNewSystemMenuDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAshNewSystemMenu)},
+    {"enable-system-tray-unified", flag_descriptions::kSystemTrayUnifiedName,
+     flag_descriptions::kSystemTrayUnifiedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSystemTrayUnified)},
 #endif  // OS_CHROMEOS
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,

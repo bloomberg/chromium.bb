@@ -123,12 +123,12 @@ extern const int kTrayPopupInkDropCornerRadius;
 // The height of the system info row.
 extern const int kTrayPopupSystemInfoRowHeight;
 
-// The colors used when --enable-features=AshNewSystemMenu flag is enabled.
-constexpr SkColor kNewMenuBackgroundColor = SkColorSetRGB(0x20, 0x21, 0x24);
-constexpr SkColor kNewMenuTextColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
-constexpr SkColor kNewMenuIconColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
-constexpr SkColor kNewMenuIconColorDisabled =
-    SkColorSetA(kNewMenuIconColor, 0xa3);
+// The colors used when --enable-features=SystemTrayUnified flag is enabled.
+constexpr SkColor kUnifiedMenuBackgroundColor = SkColorSetRGB(0x20, 0x21, 0x24);
+constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
+constexpr SkColor kUnifiedMenuIconColor = SkColorSetRGB(0xf1, 0xf2, 0xf3);
+constexpr SkColor kUnifiedMenuIconColorDisabled =
+    SkColorSetA(kUnifiedMenuIconColor, 0xa3);
 
 }  // namespace ash
 

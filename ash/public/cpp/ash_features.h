@@ -12,9 +12,9 @@ namespace ash {
 namespace features {
 
 // Enables new system menu.
-ASH_PUBLIC_EXPORT extern const base::Feature kAshNewSystemMenu;
+ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
-ASH_PUBLIC_EXPORT bool IsNewSystemMenuEnabled();
+ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
 
 }  // namespace features
 }  // namespace ash
