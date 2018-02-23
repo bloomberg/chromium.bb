@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
+# TODO(sky): move everything but switches to services/ui/public/cpp
 source_set("mus_common") {
   sources = [
     "accelerator_util.cc",
@@ -19,19 +19,11 @@ source_set("mus_common") {
   ]
 
   deps = [
-    "//gpu/command_buffer/client",
-    "//gpu/config",
-    "//gpu/ipc/client",
-    "//gpu/ipc/common:command_buffer_traits",
-    "//ipc:ipc",
-    "//services/service_manager/public/cpp",
-    "//ui/events:events",
+    "//ui/events",
     "//ui/gfx/ipc/geometry",
   ]
 
   public_deps = [
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
     "//services/ui/public/interfaces",
     "//ui/base",
   ]

@@ -72,7 +72,8 @@ struct WindowId {
 };
 
 inline WindowId WindowIdFromTransportId(Id id) {
-  return WindowId(HiWord(id), LoWord(id));
+  return WindowId(ClientIdFromTransportId(id),
+                  ClientWindowIdFromTransportId(id));
 }
 
 // Returns a WindowId that is reserved to indicate no window. That is, no window
@@ -90,7 +91,7 @@ using ClientWindowIdHash = viz::FrameSinkIdHash;
 
 struct WindowIdHash {
   size_t operator()(const WindowId& id) const {
-    return (id.client_id << 16) | id.window_id;
+    return base::HashInts(id.client_id, id.window_id);
   }
 };
 

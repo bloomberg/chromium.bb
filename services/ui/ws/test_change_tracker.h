@@ -179,8 +179,7 @@ class TestChangeTracker {
       int64_t display_id,
       const gfx::PointF& event_location_in_screen_pixel_layout,
       bool matches_pointer_watcher);
-  void OnPointerEventObserved(const ui::Event& event,
-                              uint32_t window_id);
+  void OnPointerEventObserved(const ui::Event& event, Id window_id);
   void OnWindowSharedPropertyChanged(
       Id window_id,
       const std::string& name,

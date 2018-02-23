@@ -1139,9 +1139,8 @@ Id WindowTree::ClientWindowIdToTransportId(
     const ClientWindowId& client_window_id) const {
   if (client_window_id.client_id() == id_)
     return client_window_id.sink_id();
-  return (base::checked_cast<ClientSpecificId>(client_window_id.client_id())
-          << 16) |
-         base::checked_cast<ClientSpecificId>(client_window_id.sink_id());
+  const Id client_id = client_window_id.client_id();
+  return (client_id << 32) | client_window_id.sink_id();
 }
 
 bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
@@ -1198,8 +1197,9 @@ bool WindowTree::IsValidIdForNewWindow(const ClientWindowId& id) const {
 }
 
 WindowId WindowTree::GenerateNewWindowId() {
-  // TODO(sky): deal with wrapping and uniqueness.
-  return WindowId(id_, next_window_id_++);
+  const ClientSpecificId client_window_id = next_window_id_++;
+  CHECK_NE(0u, next_window_id_);
+  return WindowId(id_, client_window_id);
 }
 
 bool WindowTree::CanReorderWindow(const ServerWindow* window,
@@ -1546,10 +1546,12 @@ bool WindowTree::EventMatchesPointerWatcher(const ui::Event& event) const {
 }
 
 ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
-  if (!HiWord(transport_window_id))
+  // If the client didn't specify the id portion of the window_id use the id of
+  // the client.
+  if (!ClientIdFromTransportId(transport_window_id))
     return ClientWindowId(id_, transport_window_id);
-  return ClientWindowId(HiWord(transport_window_id),
-                        LoWord(transport_window_id));
+  return ClientWindowId(ClientIdFromTransportId(transport_window_id),
+                        ClientWindowIdFromTransportId(transport_window_id));
 }
 
 mojom::WindowTreeClientPtr
@@ -2607,8 +2609,7 @@ void WindowTree::WmSetFrameDecorationValues(
   window_manager_state_->SetFrameDecorationValues(std::move(values));
 }
 
-void WindowTree::WmSetNonClientCursor(uint32_t window_id,
-                                      ui::CursorData cursor) {
+void WindowTree::WmSetNonClientCursor(Id window_id, ui::CursorData cursor) {
   DCHECK(window_manager_state_);
   ServerWindow* window = GetWindowByClientId(MakeClientWindowId(window_id));
   if (!window) {

@@ -84,10 +84,10 @@ struct BlockingContainers {
   // system modal window in this container, then only events targetted at the
   // system modal window or one if its descendants (including transient windows)
   // are delivered. All others are eaten.
-  uint32 system_modal_container_id;
+  uint64 system_modal_container_id;
 
   // If there is no system modal window in |system_modal_container_id|, and
   // this identifies a valid window, then events that fall behind
   // |min_container_id| are ignored.
-  uint32 min_container_id;
+  uint64 min_container_id;
 };

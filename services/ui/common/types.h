@@ -13,12 +13,12 @@
 namespace ui {
 
 // Used to identify windows and change ids.
-typedef uint32_t Id;
+using Id = uint64_t;
 
 // Used to identify a client as well as a client-specific window id. For
 // example, the Id for a window consists of the ClientSpecificId of the client
 // and the ClientSpecificId of the window.
-typedef uint16_t ClientSpecificId;
+using ClientSpecificId = uint32_t;
 
 }  // namespace ui
 

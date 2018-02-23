@@ -155,6 +155,7 @@ jumbo_component("aura") {
     "//mojo/public/cpp/system",
     "//net",
     "//services/service_manager/public/cpp",
+    "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
@@ -264,6 +265,7 @@ jumbo_static_library("test_support") {
 
   public_deps = [
     ":aura",
+    "//services/ui/common:mus_common",
 
     # Must be public as headers include ui_features.h.
     "//ui/base:ui_features",

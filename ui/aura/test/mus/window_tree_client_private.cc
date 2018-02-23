@@ -29,7 +29,7 @@ void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
   root_data->window_id = next_window_id_++;
   root_data->visible = true;
   const int64_t display_id = 1;
-  const Id focused_window_id = 0;
+  const ui::Id focused_window_id = 0;
   tree_client_impl_->OnEmbedImpl(window_tree, std::move(root_data), display_id,
                                  focused_window_id, true, base::nullopt);
 }
@@ -94,7 +94,7 @@ bool WindowTreeClientPrivate::HasPointerWatcher() {
   return tree_client_impl_->has_pointer_watcher_;
 }
 
-Window* WindowTreeClientPrivate::GetWindowByServerId(Id id) {
+Window* WindowTreeClientPrivate::GetWindowByServerId(ui::Id id) {
   WindowMus* window = tree_client_impl_->GetWindowByServerId(id);
   return window ? window->GetWindow() : nullptr;
 }

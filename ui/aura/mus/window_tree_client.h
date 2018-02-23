@@ -165,7 +165,7 @@ class AURA_EXPORT WindowTreeClient
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
   void AttachCompositorFrameSink(
-      Id window_id,
+      ui::Id window_id,
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
       viz::mojom::CompositorFrameSinkClientPtr client);
 
@@ -207,14 +207,14 @@ class AURA_EXPORT WindowTreeClient
     SERVER,
   };
 
-  using IdToWindowMap = std::map<Id, WindowMus*>;
+  using IdToWindowMap = std::map<ui::Id, WindowMus*>;
 
   // TODO(sky): this assumes change_ids never wrap, which is a bad assumption.
   using InFlightMap = std::map<uint32_t, std::unique_ptr<InFlightChange>>;
 
   void RegisterWindowMus(WindowMus* window);
 
-  WindowMus* GetWindowByServerId(Id id);
+  WindowMus* GetWindowByServerId(ui::Id id);
 
   bool IsWindowKnown(aura::Window* window);
 
@@ -296,7 +296,7 @@ class AURA_EXPORT WindowTreeClient
   void OnEmbedImpl(ui::mojom::WindowTree* window_tree,
                    ui::mojom::WindowDataPtr root_data,
                    int64_t display_id,
-                   Id focused_window_id,
+                   ui::Id focused_window_id,
                    bool drawn,
                    const base::Optional<viz::LocalSurfaceId>& local_surface_id);
 
@@ -361,14 +361,14 @@ class AURA_EXPORT WindowTreeClient
       ui::mojom::WindowDataPtr root,
       ui::mojom::WindowTreePtr tree,
       int64_t display_id,
-      Id focused_window_id,
+      ui::Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
-  void OnEmbeddedAppDisconnected(Id window_id) override;
-  void OnUnembed(Id window_id) override;
-  void OnCaptureChanged(Id new_capture_window_id,
-                        Id old_capture_window_id) override;
-  void OnFrameSinkIdAllocated(Id window_id,
+  void OnEmbeddedAppDisconnected(ui::Id window_id) override;
+  void OnUnembed(ui::Id window_id) override;
+  void OnCaptureChanged(ui::Id new_capture_window_id,
+                        ui::Id old_capture_window_id) override;
+  void OnFrameSinkIdAllocated(ui::Id window_id,
                               const viz::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(
       uint32_t change_id,
@@ -377,79 +377,79 @@ class AURA_EXPORT WindowTreeClient
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
-      Id window_id,
+      ui::Id window_id,
       const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
-  void OnWindowTransformChanged(Id window_id,
+  void OnWindowTransformChanged(ui::Id window_id,
                                 const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
   void OnClientAreaChanged(
-      uint32_t window_id,
+      ui::Id window_id,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas) override;
-  void OnTransientWindowAdded(uint32_t window_id,
-                              uint32_t transient_window_id) override;
-  void OnTransientWindowRemoved(uint32_t window_id,
-                                uint32_t transient_window_id) override;
+  void OnTransientWindowAdded(ui::Id window_id,
+                              ui::Id transient_window_id) override;
+  void OnTransientWindowRemoved(ui::Id window_id,
+                                ui::Id transient_window_id) override;
   void OnWindowHierarchyChanged(
-      Id window_id,
-      Id old_parent_id,
-      Id new_parent_id,
+      ui::Id window_id,
+      ui::Id old_parent_id,
+      ui::Id new_parent_id,
       std::vector<ui::mojom::WindowDataPtr> windows) override;
-  void OnWindowReordered(Id window_id,
-                         Id relative_window_id,
+  void OnWindowReordered(ui::Id window_id,
+                         ui::Id relative_window_id,
                          ui::mojom::OrderDirection direction) override;
-  void OnWindowDeleted(Id window_id) override;
-  void OnWindowVisibilityChanged(Id window_id, bool visible) override;
-  void OnWindowOpacityChanged(Id window_id,
+  void OnWindowDeleted(ui::Id window_id) override;
+  void OnWindowVisibilityChanged(ui::Id window_id, bool visible) override;
+  void OnWindowOpacityChanged(ui::Id window_id,
                               float old_opacity,
                               float new_opacity) override;
-  void OnWindowParentDrawnStateChanged(Id window_id, bool drawn) override;
+  void OnWindowParentDrawnStateChanged(ui::Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(
-      Id window_id,
+      ui::Id window_id,
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& transport_data) override;
   void OnWindowInputEvent(
       uint32_t event_id,
-      Id window_id,
+      ui::Id window_id,
       int64_t display_id,
-      Id display_root_window_id,
+      ui::Id display_root_window_id,
       const gfx::PointF& event_location_in_screen_pixel_layout,
       std::unique_ptr<ui::Event> event,
       bool matches_pointer_watcher) override;
   void OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                              uint32_t window_id,
+                              ui::Id window_id,
                               int64_t display_id) override;
-  void OnWindowFocused(Id focused_window_id) override;
-  void OnWindowCursorChanged(Id window_id, ui::CursorData cursor) override;
-  void OnWindowSurfaceChanged(Id window_id,
+  void OnWindowFocused(ui::Id focused_window_id) override;
+  void OnWindowCursorChanged(ui::Id window_id, ui::CursorData cursor) override;
+  void OnWindowSurfaceChanged(ui::Id window_id,
                               const viz::SurfaceInfo& surface_info) override;
   void OnDragDropStart(
       const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
       override;
-  void OnDragEnter(Id window_id,
+  void OnDragEnter(ui::Id window_id,
                    uint32_t event_flags,
                    const gfx::Point& position,
                    uint32_t effect_bitmask,
                    const OnDragEnterCallback& callback) override;
-  void OnDragOver(Id window_id,
+  void OnDragOver(ui::Id window_id,
                   uint32_t event_flags,
                   const gfx::Point& position,
                   uint32_t effect_bitmask,
                   const OnDragOverCallback& callback) override;
-  void OnDragLeave(Id window_id) override;
-  void OnCompleteDrop(Id window_id,
+  void OnDragLeave(ui::Id window_id) override;
+  void OnCompleteDrop(ui::Id window_id,
                       uint32_t event_flags,
                       const gfx::Point& position,
                       uint32_t effect_bitmask,
                       const OnCompleteDropCallback& callback) override;
-  void OnPerformDragDropCompleted(uint32_t window,
+  void OnPerformDragDropCompleted(uint32_t change_id,
                                   bool success,
                                   uint32_t action_taken) override;
   void OnDragDropDone() override;
   void OnChangeCompleted(uint32_t change_id, bool success) override;
-  void RequestClose(uint32_t window_id) override;
+  void RequestClose(ui::Id window_id) override;
   void SetBlockingContainers(
       const std::vector<BlockingContainers>& all_blocking_containers) override;
   void GetWindowManager(
@@ -468,21 +468,21 @@ class AURA_EXPORT WindowTreeClient
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override;
   void WmSetBounds(uint32_t change_id,
-                   Id window_id,
+                   ui::Id window_id,
                    const gfx::Rect& transit_bounds_in_pixels) override;
   void WmSetProperty(
       uint32_t change_id,
-      Id window_id,
+      ui::Id window_id,
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& transit_data) override;
-  void WmSetModalType(Id window_id, ui::ModalType type) override;
-  void WmSetCanFocus(Id window_id, bool can_focus) override;
+  void WmSetModalType(ui::Id window_id, ui::ModalType type) override;
+  void WmSetCanFocus(ui::Id window_id, bool can_focus) override;
   void WmCreateTopLevelWindow(
       uint32_t change_id,
       const viz::FrameSinkId& frame_sink_id,
       const std::unordered_map<std::string, std::vector<uint8_t>>&
           transport_properties) override;
-  void WmClientJankinessChanged(ClientSpecificId client_id,
+  void WmClientJankinessChanged(ui::ClientSpecificId client_id,
                                 bool janky) override;
   void WmBuildDragImage(const gfx::Point& screen_location,
                         const SkBitmap& drag_image,
@@ -492,19 +492,21 @@ class AURA_EXPORT WindowTreeClient
                        const WmMoveDragImageCallback& callback) override;
   void WmDestroyDragImage() override;
   void WmPerformMoveLoop(uint32_t change_id,
-                         Id window_id,
+                         ui::Id window_id,
                          ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
-  void WmCancelMoveLoop(uint32_t window_id) override;
-  void WmDeactivateWindow(Id window_id) override;
-  void WmStackAbove(uint32_t change_id, Id above_id, Id below_id) override;
-  void WmStackAtTop(uint32_t change_id, uint32_t window_id) override;
-  void WmPerformWmAction(Id window_id, const std::string& action) override;
+  void WmCancelMoveLoop(uint32_t change_id) override;
+  void WmDeactivateWindow(ui::Id window_id) override;
+  void WmStackAbove(uint32_t change_id,
+                    ui::Id above_id,
+                    ui::Id below_id) override;
+  void WmStackAtTop(uint32_t change_id, ui::Id window_id) override;
+  void WmPerformWmAction(ui::Id window_id, const std::string& action) override;
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
-  void OnEventBlockedByModalWindow(Id window_id) override;
+  void OnEventBlockedByModalWindow(ui::Id window_id) override;
 
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(
@@ -602,7 +604,7 @@ class AURA_EXPORT WindowTreeClient
   service_manager::Connector* connector_;
 
   // Id assigned to the next window created.
-  ClientSpecificId next_window_id_;
+  ui::ClientSpecificId next_window_id_;
 
   // Id used for the next change id supplied to the server.
   uint32_t next_change_id_;
@@ -615,7 +617,7 @@ class AURA_EXPORT WindowTreeClient
   std::set<WindowMus*> roots_;
 
   IdToWindowMap windows_;
-  std::map<ClientSpecificId, std::set<Window*>> embedded_windows_;
+  std::map<ui::ClientSpecificId, std::set<Window*>> embedded_windows_;
 
   std::unique_ptr<CaptureSynchronizer> capture_synchronizer_;
 
@@ -660,7 +662,7 @@ class AURA_EXPORT WindowTreeClient
 
   // The current change id for the window manager.
   uint32_t current_wm_move_loop_change_ = 0u;
-  Id current_wm_move_loop_window_id_ = 0u;
+  ui::Id current_wm_move_loop_window_id_ = 0u;
 
   std::unique_ptr<DragDropControllerMus> drag_drop_controller_;
 

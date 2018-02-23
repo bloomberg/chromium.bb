@@ -198,7 +198,7 @@ ServerWindow* WindowServer::CreateServerWindow(
 
 ClientSpecificId WindowServer::GetAndAdvanceNextClientId() {
   const ClientSpecificId id = next_client_id_++;
-  DCHECK_LT(id, next_client_id_);
+  CHECK_NE(0u, next_client_id_);
   return id;
 }
 

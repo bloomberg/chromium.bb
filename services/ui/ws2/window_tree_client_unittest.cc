@@ -451,7 +451,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     NOTIMPLEMENTED();
   }
 
-  void OnPerformDragDropCompleted(uint32_t window,
+  void OnPerformDragDropCompleted(uint32_t change_id,
                                   bool success,
                                   uint32_t action_taken) override {
     NOTIMPLEMENTED();
@@ -530,7 +530,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                          const gfx::Point& cursor_location) override {
     NOTIMPLEMENTED();
   }
-  void WmCancelMoveLoop(uint32_t window_id) override { NOTIMPLEMENTED(); }
+  void WmCancelMoveLoop(uint32_t change_id) override { NOTIMPLEMENTED(); }
   void WmDeactivateWindow(uint32_t window_id) override { NOTIMPLEMENTED(); }
   void WmStackAbove(uint32_t change_id, uint32_t above_id,
                     uint32_t below_id) override {

@@ -9,22 +9,14 @@
 
 #include "services/ui/common/types.h"
 
-// TODO(beng): #$*&@#(@ MacOSX SDK!
-#if defined(HiWord)
-#undef HiWord
-#endif
-#if defined(LoWord)
-#undef LoWord
-#endif
-
 namespace ui {
 
-inline uint16_t HiWord(uint32_t id) {
-  return static_cast<uint16_t>((id >> 16) & 0xFFFF);
+inline ClientSpecificId ClientIdFromTransportId(Id id) {
+  return static_cast<ClientSpecificId>((id >> 32) & 0xFFFFFFFF);
 }
 
-inline uint16_t LoWord(uint32_t id) {
-  return static_cast<uint16_t>(id & 0xFFFF);
+inline ClientSpecificId ClientWindowIdFromTransportId(Id id) {
+  return static_cast<ClientSpecificId>(id & 0xFFFFFFFF);
 }
 
 }  // namespace ui

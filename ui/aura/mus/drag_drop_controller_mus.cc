@@ -40,7 +40,7 @@ namespace aura {
 
 // State related to a drag initiated by this client.
 struct DragDropControllerMus::CurrentDragState {
-  Id window_id;
+  ui::Id window_id;
 
   // The change id of the drag. Used to identify the drag on the server.
   uint32_t change_id;
