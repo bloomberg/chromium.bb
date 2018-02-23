@@ -107,6 +107,7 @@ HttpNetworkSession::Params::Params()
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
+      enable_websocket_over_http2(false),
       enable_quic(false),
       quic_max_packet_length(kDefaultMaxPacketSize),
       quic_max_server_configs_stored_in_properties(0u),
