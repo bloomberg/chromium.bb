@@ -703,6 +703,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           profile_match->second, ui::DispositionFromEventFlags(event.flags()) ==
                                      WindowOpenDisposition::NEW_WINDOW,
           ProfileMetrics::SWITCH_PROFILE_ICON);
+      Hide();
     } else {
       // This was a profile accounts button.
       AccountButtonIndexes::const_iterator account_match =
@@ -1149,10 +1150,19 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   const bool is_guest = browser_->profile()->IsGuestSession();
   const int kIconSize = 20;
   // Add the user switching buttons.
+  // Order them such that the active user profile comes first (for Dice).
   layout->StartRowWithPadding(1, 0, 0, content_list_vert_spacing);
+  std::vector<size_t> ordered_item_indices;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
+    if (avatar_menu->GetItemAt(i).active)
+      ordered_item_indices.insert(ordered_item_indices.begin(), i);
+    else
+      ordered_item_indices.push_back(i);
+  }
+  for (size_t i : ordered_item_indices) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
-    if (!item.active) {
+    if (!item.active ||
+        (dice_enabled_ && avatar_menu->GetNumberOfItems() >= 2)) {
       gfx::Image image = profiles::GetSizedAvatarIcon(
           item.icon, true, kIconSize, kIconSize, profiles::SHAPE_CIRCLE);
       views::LabelButton* button =
