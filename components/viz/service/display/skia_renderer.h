@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/vulkan/features.h"
 #include "ui/latency/latency_info.h"
@@ -128,6 +129,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
 
+  bool use_sync_query_ = false;
+  SyncQueryCollection sync_queries_;
   bool use_swap_with_bounds_ = false;
 
   gfx::Rect swap_buffer_rect_;

@@ -78,6 +78,8 @@ viz_component("service") {
     "display/static_geometry_binding.h",
     "display/surface_aggregator.cc",
     "display/surface_aggregator.h",
+    "display/sync_query_collection.cc",
+    "display/sync_query_collection.h",
     "display/texture_deleter.cc",
     "display/texture_deleter.h",
     "display_embedder/buffer_queue.cc",
