@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/template_util.h"
 
 namespace base {
 
@@ -128,7 +129,7 @@ struct OptionalStorageBase<T, true /* trivially destructible */> {
 // compiler generated constexpr {copy,move} constructors). Note that
 // placement-new is prohibited in constexpr.
 template <typename T,
-          bool = std::is_trivially_copy_constructible<T>::value,
+          bool = is_trivially_copy_constructible<T>::value,
           bool = std::is_trivially_move_constructible<T>::value>
 struct OptionalStorage : OptionalStorageBase<T> {
   // This is no trivially {copy,move} constructible case. Other cases are
