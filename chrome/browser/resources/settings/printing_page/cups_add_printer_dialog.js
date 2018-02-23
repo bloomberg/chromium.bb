@@ -184,13 +184,6 @@ Polymer({
     this.fire('open-configuring-printer-dialog');
   },
 
-  /** @private */
-  onAddressChanged_: function() {
-    // TODO(xdai): Check if the printer address exists and then show the
-    // corresponding message after the API is ready.
-    // The format of address is: ip-address-or-hostname:port-number.
-  },
-
   /**
    * @param {!Event} event
    * @private

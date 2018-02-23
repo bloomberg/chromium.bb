@@ -122,8 +122,7 @@
             <div class="label">$i18n{printerAddress}</div>
             <div class="secondary">
               <paper-input no-label-float id="printerAddressInput"
-                  value="{{newPrinter.printerAddress}}"
-                  on-input="onAddressChanged_">
+                  value="{{newPrinter.printerAddress}}">
               </paper-input>
             </div>
           </div>
@@ -158,17 +157,6 @@
               </paper-input>
             </div>
           </div>
-        </div>
-        <div class="search-printer-box" id="searchInProgress" hidden>
-          <paper-spinner-lite active></paper-spinner-lite>
-          <span class="spinner-comment">$i18n{searchingPrinter}</span>
-        </div>
-        <div class="search-printer-box printer-not-found"
-            id="searchNotFound" hidden>
-          <span>$i18n{printerNotFound}</span>
-        </div>
-        <div class="search-printer-box printer-found" id="searchFound" hidden>
-          <span>$i18n{printerFound}</span>
         </div>
       </div>
       <div slot="dialog-buttons">
