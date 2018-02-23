@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
 
 #include "base/callback_forward.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 
 class Profile;
 

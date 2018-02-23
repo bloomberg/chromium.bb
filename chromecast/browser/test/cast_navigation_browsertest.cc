@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/browser/test/cast_browser_test.h"
 #include "chromecast/browser/test/fake_web_contents_observer.h"
-#include "chromecast/chromecast_buildflags.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
 #include "url/gurl.h"

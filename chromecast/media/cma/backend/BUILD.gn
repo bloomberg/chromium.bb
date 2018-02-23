@@ -36,7 +36,7 @@ cast_source_set("backend") {
 
   deps = [
     "//base",
-    "//chromecast:chromecast_buildflags",
+    "//chromecast:chromecast_features",
     "//chromecast/base/metrics:metrics",
     "//chromecast/media:libcast_media",
     "//chromecast/media/cma/base",
@@ -49,7 +49,7 @@ cast_source_set("cast_media_android_dummy") {
   ]
   deps = [
     "//base",
-    "//chromecast:chromecast_buildflags",
+    "//chromecast:chromecast_features",
     "//chromecast/public",
     "//chromecast/public/media",
   ]
@@ -82,8 +82,8 @@ cast_source_set("dummy") {
   ]
 }
 
-buildflag_header("audio_buildflags") {
-  header = "audio_buildflags.h"
+buildflag_header("audio_features") {
+  header = "audio_features.h"
 
   flags = [
     "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps",
@@ -136,7 +136,7 @@ cast_source_set("audio") {
   ]
 
   deps = [
-    ":audio_buildflags",
+    ":audio_features",
     ":null",
     "//base",
     "//chromecast/base",

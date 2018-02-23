@@ -29,7 +29,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"

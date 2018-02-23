@@ -9,7 +9,7 @@
 #define CHROME_COMMON_CHROME_SWITCHES_H_
 
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "ui/base/ui_features.h"

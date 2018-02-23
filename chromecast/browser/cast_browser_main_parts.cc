@@ -42,7 +42,7 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
-#include "chromecast/chromecast_buildflags.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/media/base/key_systems_common.h"

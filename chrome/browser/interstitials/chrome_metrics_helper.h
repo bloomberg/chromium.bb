@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "extensions/features/features.h"
 #include "url/gurl.h"

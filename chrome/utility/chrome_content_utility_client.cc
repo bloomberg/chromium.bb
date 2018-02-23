@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/profiling/profiling_service.h"
 #include "components/patch_service/patch_service.h"

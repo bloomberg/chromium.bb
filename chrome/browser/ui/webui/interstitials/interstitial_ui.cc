@@ -20,7 +20,7 @@
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
-#include "chrome/common/buildflags.h"
+#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/safe_browsing/db/database_manager.h"

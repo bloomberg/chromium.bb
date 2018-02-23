@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_view_default.h"
 #include "chromecast/browser/cast_web_view_factory.h"
-#include "chromecast/chromecast_buildflags.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 

@@ -264,7 +264,7 @@ if (!is_android && !is_mac) {
 
         public_deps = [
           ":xdg_mime",  # Needs to be public for installer to consume files.
-          "//chrome/common:buildflags",
+          "//chrome/common:features",
         ]
 
         ldflags = [ "-pie" ]
@@ -383,7 +383,7 @@ if (is_win) {
       "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//chrome/app/theme:chrome_unscaled_resources",
-      "//chrome/common:buildflags",
+      "//chrome/common:features",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static:secondary_module",
       "//chrome_elf",
@@ -488,7 +488,7 @@ if (is_win) {
         ":chrome_dll_version",
         "//build/config:exe_and_shlib_deps",
         "//chrome/browser/policy:path_parser",
-        "//chrome/common:buildflags",
+        "//chrome/common:features",
         "//chrome/install_static:install_static_util",
         "//chrome/install_static:secondary_module",
         "//chrome_elf",
@@ -1215,7 +1215,7 @@ if (is_win) {
       ":browser_dependencies",
       ":child_dependencies",
       "//chrome/app:command_ids",
-      "//chrome/common:buildflags",
+      "//chrome/common:features",
       "//components/crash/content/app",
       "//components/policy:generated",
       "//content/public/app:both",

@@ -1726,7 +1726,7 @@ split_static_library("ui") {
       "//chrome/browser/media/router",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
-      "//chrome/common:buildflags",
+      "//chrome/common:features",
       "//chrome/common:search_mojom",
       "//components/feedback/proto",
       "//components/keep_alive_registry",
