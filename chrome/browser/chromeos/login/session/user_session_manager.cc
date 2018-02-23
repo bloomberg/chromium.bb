@@ -143,10 +143,6 @@ namespace {
 // account service.
 static const int kFlagsFetchingLoginTimeoutMs = 1000;
 
-// The maximum ammount of time that we are willing to delay a browser restart
-// for, waiting for a session restore to finish.
-static const int kMaxRestartDelaySeconds = 10;
-
 void InitLocaleAndInputMethodsForNewUser(
     UserSessionManager* session_manager,
     Profile* profile,
@@ -344,12 +340,6 @@ void CallChromeAttemptRestart() {
   chrome::AttemptRestart();
 }
 
-void RestartOnTimeout(const base::RepeatingClosure& attempt_restart_closure) {
-  LOG(WARNING) << "Restarting Chrome because the time out was reached."
-                  "The session restore has not finished.";
-  attempt_restart_closure.Run();
-}
-
 bool IsRunningTest() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kTestName) ||
@@ -450,7 +440,6 @@ UserSessionManager::UserSessionManager()
       has_auth_cookies_(false),
       user_sessions_restored_(false),
       user_sessions_restore_in_progress_(false),
-      exit_after_session_restore_(false),
       session_restore_strategy_(
           OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN),
       running_easy_unlock_key_ops_(false),
@@ -936,22 +925,10 @@ void UserSessionManager::OnSessionRestoreStateChanged(
     return;
   }
 
-  if (exit_after_session_restore_ &&
-      (state == OAuth2LoginManager::SESSION_RESTORE_DONE ||
-       state == OAuth2LoginManager::SESSION_RESTORE_FAILED ||
-       state == OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED)) {
-    LOG(WARNING) << "Restarting Chrome after session restore finishes, "
-                 << "most likely due to custom flags.";
-
-    // We need to restart cleanly in this case to make sure OAuth2 RT is
-    // actually saved.
-    attempt_restart_closure_.Run();
-  } else {
-    // Schedule another flush after session restore for non-ephemeral profile
-    // if not restarting.
-    if (!ProfileHelper::IsEphemeralUserProfile(user_profile))
-      ProfileHelper::Get()->FlushProfile(user_profile);
-  }
+  // Schedule another flush after session restore for non-ephemeral profile
+  // if not restarting.
+  if (!ProfileHelper::IsEphemeralUserProfile(user_profile))
+    ProfileHelper::Get()->FlushProfile(user_profile);
 }
 
 void UserSessionManager::OnNetworkChanged(
@@ -1553,8 +1530,6 @@ void UserSessionManager::RestoreAuthSessionImpl(
     return;
   }
 
-  exit_after_session_restore_ = false;
-
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already
   // have OAuth2 refresh token in OAuth2TokenService that could be used to
   // retrieve all other tokens and user_context.
@@ -1786,40 +1761,6 @@ net::URLRequestContextGetter* UserSessionManager::GetAuthRequestContext()
     return nullptr;
 
   return signin_partition->GetURLRequestContext();
-}
-
-void UserSessionManager::AttemptRestart(Profile* profile) {
-  // Restart unconditionally in case if we are stuck somewhere in a session
-  // restore process. http://crbug.com/520346.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(RestartOnTimeout, attempt_restart_closure_),
-      base::TimeDelta::FromSeconds(kMaxRestartDelaySeconds));
-
-  if (running_easy_unlock_key_ops_) {
-    WaitForEasyUnlockKeyOpsFinished(
-        base::Bind(&UserSessionManager::AttemptRestart, AsWeakPtr(), profile));
-    return;
-  }
-
-  if (session_restore_strategy_ !=
-      OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR) {
-    attempt_restart_closure_.Run();
-    return;
-  }
-
-  // We can't really quit if the session restore process that mints new
-  // refresh token is still in progress.
-  OAuth2LoginManager* login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
-  if (login_manager->state() != OAuth2LoginManager::SESSION_RESTORE_PREPARING &&
-      login_manager->state() !=
-          OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
-    attempt_restart_closure_.Run();
-    return;
-  }
-
-  LOG(WARNING) << "Attempting browser restart during session restore.";
-  exit_after_session_restore_ = true;
 }
 
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,

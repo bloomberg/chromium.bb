@@ -387,10 +387,6 @@ class UserSessionManager
   // Notifies observers that user pending sessions restore has finished.
   void NotifyPendingUserSessionsRestoreFinished();
 
-  // Attempts restarting the browser process and esures that this does
-  // not happen while we are still fetching new OAuth refresh tokens.
-  void AttemptRestart(Profile* profile);
-
   // Callback invoked when Easy unlock key operations are finished.
   void OnEasyUnlockKeyOpsFinished(const std::string& user_id, bool success);
 
@@ -486,9 +482,6 @@ class UserSessionManager
       session_state_observer_list_;
 
   // OAuth2 session related members.
-
-  // True if we should restart chrome right after session restore.
-  bool exit_after_session_restore_;
 
   // Sesion restore strategy.
   OAuth2LoginManager::SessionRestoreStrategy session_restore_strategy_;
