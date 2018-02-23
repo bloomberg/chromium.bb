@@ -1363,7 +1363,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1386,7 +1386,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1409,7 +1409,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1432,7 +1432,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1455,7 +1455,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1478,7 +1478,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1501,7 +1501,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1525,7 +1525,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1548,7 +1548,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1571,7 +1571,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1594,7 +1594,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1617,7 +1617,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1640,7 +1640,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1663,7 +1663,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1686,7 +1686,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1709,7 +1709,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1732,7 +1732,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1755,7 +1755,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1778,7 +1778,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1801,7 +1801,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1824,7 +1824,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1847,7 +1847,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1870,7 +1870,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1893,7 +1893,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1916,7 +1916,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1939,7 +1939,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1962,7 +1962,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -1985,7 +1985,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2008,7 +2008,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2031,7 +2031,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2054,7 +2054,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2078,7 +2078,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2101,7 +2101,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2124,7 +2124,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2147,7 +2147,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2170,7 +2170,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2193,7 +2193,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2216,7 +2216,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2239,7 +2239,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2262,7 +2262,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2285,7 +2285,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2308,7 +2308,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2331,7 +2331,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2354,7 +2354,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2377,7 +2377,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2400,7 +2400,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2423,7 +2423,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2446,7 +2446,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2469,7 +2469,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2492,7 +2492,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2515,7 +2515,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2538,7 +2538,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2561,7 +2561,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2584,7 +2584,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2607,7 +2607,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2630,7 +2630,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2653,7 +2653,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2676,7 +2676,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2699,7 +2699,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2722,7 +2722,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2745,7 +2745,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2768,7 +2768,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2797,7 +2797,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2805,6 +2805,7 @@
         }
       },
       {
+        "experiment_percentage": 100,
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
         "swarming": {
@@ -2821,7 +2822,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2845,7 +2846,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2869,7 +2870,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2897,7 +2898,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2921,7 +2922,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -2945,7 +2946,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],

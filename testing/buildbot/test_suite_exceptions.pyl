@@ -1192,6 +1192,13 @@
       # client.v8.chromium
       'Linux - Future (dbg)',
     ],
+    'modifications': {
+      'Mac10.9 Tests': {
+        # Remove this once the tests is not flaky on Mac os 10.13
+        # See crbug.com/813163
+        'experiment_percentage': 100,
+      },
+    }
   },
   'content_shell_test_apk': {
     'remove_gtest_from': [
