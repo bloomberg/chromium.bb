@@ -6934,7 +6934,8 @@ const AtomicString& Document::bgColor() const {
 }
 
 void Document::setBgColor(const AtomicString& value) {
-  SetBodyAttribute(bgcolorAttr, value);
+  if (!IsFrameSet())
+    SetBodyAttribute(bgcolorAttr, value);
 }
 
 const AtomicString& Document::fgColor() const {
@@ -6942,7 +6943,8 @@ const AtomicString& Document::fgColor() const {
 }
 
 void Document::setFgColor(const AtomicString& value) {
-  SetBodyAttribute(textAttr, value);
+  if (!IsFrameSet())
+    SetBodyAttribute(textAttr, value);
 }
 
 const AtomicString& Document::alinkColor() const {
@@ -6950,7 +6952,8 @@ const AtomicString& Document::alinkColor() const {
 }
 
 void Document::setAlinkColor(const AtomicString& value) {
-  SetBodyAttribute(alinkAttr, value);
+  if (!IsFrameSet())
+    SetBodyAttribute(alinkAttr, value);
 }
 
 const AtomicString& Document::linkColor() const {
@@ -6958,7 +6961,8 @@ const AtomicString& Document::linkColor() const {
 }
 
 void Document::setLinkColor(const AtomicString& value) {
-  SetBodyAttribute(linkAttr, value);
+  if (!IsFrameSet())
+    SetBodyAttribute(linkAttr, value);
 }
 
 const AtomicString& Document::vlinkColor() const {
@@ -6966,7 +6970,8 @@ const AtomicString& Document::vlinkColor() const {
 }
 
 void Document::setVlinkColor(const AtomicString& value) {
-  SetBodyAttribute(vlinkAttr, value);
+  if (!IsFrameSet())
+    SetBodyAttribute(vlinkAttr, value);
 }
 
 template <unsigned type>
