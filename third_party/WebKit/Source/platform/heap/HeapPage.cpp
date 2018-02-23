@@ -168,11 +168,6 @@ BasePage* BaseArena::FindPageFromAddress(Address address) {
 #endif
 
 void BaseArena::MakeConsistentForGC() {
-  ClearFreeLists();
-
-  // Verification depends on the allocation point being cleared.
-  Verify();
-
 #if DCHECK_IS_ON()
   DCHECK(IsConsistentForGC());
 #endif
@@ -233,9 +228,19 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
   return object_payload_size;
 }
 
+size_t NormalPageArena::ObjectPayloadSizeForTesting() {
+  SetAllocationPoint(nullptr, 0);
+  return BaseArena::ObjectPayloadSizeForTesting();
+}
+
 void BaseArena::PrepareForSweep() {
   DCHECK(GetThreadState()->IsInGC());
   DCHECK(SweepingCompleted());
+
+  ClearFreeLists();
+
+  // Verification depends on the allocation point being cleared.
+  Verify();
 
   // Move all pages to a list of unswept pages.
   first_unswept_page_ = first_page_;
@@ -1592,16 +1597,14 @@ Address ObjectStartBitmap::FindHeader(
 HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   if (!ContainedInObjectPayload(address))
     return nullptr;
+  if (ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address))
+    return nullptr;
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader(address));
   if (header->IsFree())
     return nullptr;
   DCHECK_LT(0u, header->GcInfoIndex());
-  if (header->PayloadEnd() <= address) {
-    // Address should be in the allocation point region.
-    DCHECK(ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
-    return nullptr;
-  }
+  DCHECK_GT(header->PayloadEnd(), address);
   return header;
 }
 
