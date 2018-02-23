@@ -4,12 +4,26 @@
 
 #include "platform/heap/ProcessHeap.h"
 
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/GCInfo.h"
+#include "platform/heap/Heap.h"
 #include "platform/heap/PersistentNode.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {
+
+namespace {
+
+void BlinkGCAllocHook(uint8_t* address, size_t size, const char*) {
+  base::SamplingHeapProfiler::RecordAlloc(address, size);
+}
+
+void BlinkGCFreeHook(uint8_t* address) {
+  base::SamplingHeapProfiler::RecordFree(address);
+}
+
+}  // namespace
 
 void ProcessHeap::Init() {
   total_allocated_space_ = 0;
@@ -18,6 +32,11 @@ void ProcessHeap::Init() {
 
   GCInfoTable::Init();
   CallbackStackMemoryPool::Instance().Initialize();
+
+  base::SamplingHeapProfiler::SetHooksInstallCallback([]() {
+    HeapAllocHooks::SetAllocationHook(&BlinkGCAllocHook);
+    HeapAllocHooks::SetFreeHook(&BlinkGCFreeHook);
+  });
 }
 
 void ProcessHeap::ResetHeapCounters() {
