@@ -2,10 +2,6 @@
 # http://crbug.com/784941
 -CaptureScreenshotTest.*
 
-# FrameWatcher::WaitFrames times out http://crbug.com/785013
--NonBlockingEventBrowserTest.*
--TouchActionBrowserTest.*
-
 # Fails to receive histogram updates http://crbug.com/786151
 -ScrollLatencyBrowserTest.*
 
