@@ -922,10 +922,8 @@ static void setup_ref_mv_list(
 
     case 2:
     default:
-      if (newmv_count[ref_frame] >= 2)
+      if (newmv_count[ref_frame] >= 1)
         mode_context[ref_frame] |= 4;
-      else if (newmv_count[ref_frame] == 1)
-        mode_context[ref_frame] |= 5;
       else
         mode_context[ref_frame] |= 6;
 
