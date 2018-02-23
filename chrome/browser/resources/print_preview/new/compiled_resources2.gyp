@@ -230,6 +230,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:print_preview_utils',
         '../data/compiled_resources2.gyp:destination',
+        'settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

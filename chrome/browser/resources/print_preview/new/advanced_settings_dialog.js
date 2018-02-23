@@ -29,6 +29,17 @@ Polymer({
     this.$.dialog.cancel();
   },
 
+  /** @private */
+  onApplyButtonClick_: function() {
+    const settingsValues = {};
+    this.shadowRoot.querySelectorAll('print-preview-advanced-settings-item')
+        .forEach(item => {
+          settingsValues[item.capability.id] = item.getCurrentValue();
+        });
+    this.setSetting('vendorItems', settingsValues);
+    this.$.dialog.close();
+  },
+
   show: function() {
     this.$.dialog.showModal();
   },
