@@ -250,8 +250,8 @@ int amdgpu_bo_export(amdgpu_bo_handle bo,
 
 	case amdgpu_bo_handle_type_dma_buf_fd:
 		amdgpu_add_handle_to_table(bo);
-		return drmPrimeHandleToFD(bo->dev->fd, bo->handle, DRM_CLOEXEC,
-				       (int*)shared_handle);
+		return drmPrimeHandleToFD(bo->dev->fd, bo->handle,
+			DRM_CLOEXEC | DRM_RDWR, (int*)shared_handle);
 	}
 	return -EINVAL;
 }
