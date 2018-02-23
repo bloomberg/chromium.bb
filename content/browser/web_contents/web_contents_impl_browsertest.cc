@@ -1219,11 +1219,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        CreateWebContentsWithRendererProcess) {
-  GURL url("http://c.com/title3.html");
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* base_web_contents = shell()->web_contents();
   ASSERT_TRUE(base_web_contents);
 
+  GURL url(embedded_test_server()->GetURL("c.com", "/title3.html"));
   WebContents::CreateParams create_params(
       base_web_contents->GetBrowserContext());
   create_params.initialize_renderer = true;
@@ -1240,12 +1240,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
   int renderer_id = web_contents->GetMainFrame()->GetProcess()->GetID();
 
-  TestNavigationObserver same_tab_observer(web_contents.get(), 1);
+  TestNavigationObserver same_tab_observer(web_contents.get());
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   web_contents->GetController().LoadURLWithParams(params);
   same_tab_observer.Wait();
+  EXPECT_TRUE(same_tab_observer.last_navigation_succeeded());
 
   // Check that pre-warmed process is used.
   EXPECT_EQ(renderer_id, web_contents->GetMainFrame()->GetProcess()->GetID());
