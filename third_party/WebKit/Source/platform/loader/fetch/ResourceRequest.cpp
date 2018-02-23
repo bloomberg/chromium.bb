@@ -311,14 +311,17 @@ void ResourceRequest::ClearHTTPOrigin() {
   http_header_fields_.Remove(HTTPNames::Origin);
 }
 
-void ResourceRequest::AddHTTPOriginIfNeeded(const SecurityOrigin* origin) {
+void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
   if (NeedsHTTPOrigin())
     SetHTTPOrigin(origin);
 }
 
-void ResourceRequest::AddHTTPOriginIfNeeded(const String& origin_string) {
-  if (NeedsHTTPOrigin())
-    SetHTTPOrigin(SecurityOrigin::CreateFromString(origin_string).get());
+void ResourceRequest::SetHTTPOriginToMatchReferrerIfNeeded() {
+  if (NeedsHTTPOrigin()) {
+    SetHTTPOrigin(
+        SecurityOrigin::CreateFromString(HttpHeaderField(HTTPNames::Referer))
+            .get());
+  }
 }
 
 void ResourceRequest::ClearHTTPUserAgent() {

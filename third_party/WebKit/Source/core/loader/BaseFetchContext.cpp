@@ -30,14 +30,14 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
     if (!request.DidSetHTTPReferrer()) {
       request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
           GetReferrerPolicy(), request.Url(), GetOutgoingReferrer()));
-      request.AddHTTPOriginIfNeeded(GetSecurityOrigin());
+      request.SetHTTPOriginIfNeeded(GetSecurityOrigin());
     } else {
       DCHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
                                                  request.Url(),
                                                  request.HttpReferrer())
                     .referrer,
                 request.HttpReferrer());
-      request.AddHTTPOriginIfNeeded(request.HttpReferrer());
+      request.SetHTTPOriginToMatchReferrerIfNeeded();
     }
   }
 
