@@ -400,6 +400,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST" desc="The message shown when the user has no bookmarks added. 'Star' refers to the icon in the omnibox for adding to bookmarks.">
     To bookmark pages, click the star in the address bar
   </message>
+   <message name="IDS_MD_BOOKMARK_MANAGER_EMPTY_UNMODIFIABLE_LIST" desc="The message shown when an unmodifiable bookmark folder is empty.">
+    This folder is empty
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_FOLDER_LABEL" desc="Label for a folder of bookmarks which is used to label folders for screen reader users.">
     Folder
   </message>
