@@ -13,10 +13,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
-
-namespace gfx {
-class Image;
-}
+#include "ui/gfx/image/image.h"
 
 namespace ui {
 
@@ -179,7 +176,23 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   virtual void MenuItemsChanged();
 
  private:
-  struct Item;
+  struct Item {
+    Item(Item&&);
+    Item(int command_id, ItemType type, base::string16 label);
+    Item& operator=(Item&&);
+    ~Item();
+
+    int command_id = 0;
+    ItemType type = TYPE_COMMAND;
+    base::string16 label;
+    base::string16 sublabel;
+    base::string16 minor_text;
+    gfx::Image icon;
+    int group_id = -1;
+    MenuModel* submenu = nullptr;
+    ButtonMenuItemModel* button_model = nullptr;
+    MenuSeparatorType separator_type = NORMAL_SEPARATOR;
+  };
 
   typedef std::vector<Item> ItemVector;
 
@@ -190,8 +203,8 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   int ValidateItemIndex(int index) const;
 
   // Functions for inserting items into |items_|.
-  void AppendItem(const Item& item);
-  void InsertItemAtIndex(const Item& item, int index);
+  void AppendItem(Item item);
+  void InsertItemAtIndex(Item item, int index);
   void ValidateItem(const Item& item);
 
   // Notify the delegate that the menu is closed.
