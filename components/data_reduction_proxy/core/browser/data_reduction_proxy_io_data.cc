@@ -247,6 +247,12 @@ void DataReductionProxyIOData::DeleteBrowsingHistory(const base::Time start,
   network_properties_manager_->DeleteHistory();
 }
 
+void DataReductionProxyIOData::OnCacheCleared(const base::Time start,
+                                              const base::Time end) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  network_properties_manager_->DeleteHistory();
+}
+
 std::unique_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());

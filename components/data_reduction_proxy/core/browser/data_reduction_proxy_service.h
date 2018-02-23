@@ -127,6 +127,11 @@ class DataReductionProxyService
   // Sets the reporting fraction in the pingback client.
   void SetPingbackReportingFraction(float pingback_reporting_fraction);
 
+  // Notifies |this| that the user has requested to clear the browser
+  // cache. This method is not called if only a subset of site entries are
+  // cleared.
+  void OnCacheCleared(const base::Time start, const base::Time end);
+
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
     return compression_stats_.get();
