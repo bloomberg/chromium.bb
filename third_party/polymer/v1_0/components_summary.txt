@@ -162,9 +162,9 @@ Tree link: https://github.com/PolymerElements/iron-scroll-threshold/tree/v2.0.0
 
 Name: iron-selector
 Repository: https://github.com/PolymerElements/iron-selector.git
-Tree: v1.5.2
-Revision: 18e8e12dcd9a4560de480562f65935feed334b86
-Tree link: https://github.com/PolymerElements/iron-selector/tree/v1.5.2
+Tree: v2.0.1
+Revision: 01dd7ae23d0330c470058ccd95b8cf77a6525ddd
+Tree link: https://github.com/PolymerElements/iron-selector/tree/v2.0.1
 
 Name: iron-test-helpers
 Repository: https://github.com/PolymerElements/iron-test-helpers.git

@@ -1,4 +1,6 @@
-/** @polymerBehavior */
+/**
+   * @polymerBehavior Polymer.IronSelectableBehavior
+   */
   Polymer.IronSelectableBehavior = {
 
       /**
@@ -130,7 +132,10 @@
         type: Object,
         value: function() {
           return {
-            'template': 1
+            'template': 1,
+            'dom-bind': 1,
+            'dom-if': 1,
+            'dom-repeat': 1,
           };
         }
       }
@@ -149,10 +154,6 @@
 
     attached: function() {
       this._observer = this._observeItems(this);
-      this._updateItems();
-      if (!this._shouldUpdateSelection) {
-        this._updateSelected();
-      }
       this._addListener(this.activateEvent);
     },
 
@@ -171,7 +172,7 @@
      * @returns Returns the index of the item
      */
     indexOf: function(item) {
-      return this.items.indexOf(item);
+      return this.items ? this.items.indexOf(item) : -1;
     },
 
     /**
@@ -227,17 +228,26 @@
      * on its own to reflect selectable items in the DOM.
      */
     forceSynchronousItemUpdate: function() {
-      this._updateItems();
+      if (this._observer && typeof this._observer.flush === "function") {
+        // NOTE(bicknellr): `Polymer.dom.flush` above is no longer sufficient to
+        // trigger `observeNodes` callbacks. Polymer 2.x returns an object from
+        // `observeNodes` with a `flush` that synchronously gives the callback
+        // any pending MutationRecords (retrieved with `takeRecords`). Any case
+        // where ShadyDOM flushes were expected to synchronously trigger item
+        // updates will now require calling `forceSynchronousItemUpdate`.
+        this._observer.flush();
+      } else {
+        this._updateItems();
+      }
     },
 
+    // UNUSED, FOR API COMPATIBILITY
     get _shouldUpdateSelection() {
       return this.selected != null;
     },
 
     _checkFallback: function() {
-      if (this._shouldUpdateSelection) {
-        this._updateSelected();
-      }
+      this._updateSelected();
     },
 
     _addListener: function(eventName) {
@@ -260,8 +270,8 @@
     },
 
     _updateAttrForSelected: function() {
-      if (this._shouldUpdateSelection) {
-        this.selected = this._indexToValue(this.indexOf(this.selectedItem));
+      if (this.selectedItem) {
+        this.selected = this._valueForItem(this.selectedItem);
       }
     },
 
@@ -270,7 +280,16 @@
     },
 
     _selectSelected: function(selected) {
-      this._selection.select(this._valueToItem(this.selected));
+      if (!this.items) {
+        return;
+      }
+
+      var item = this._valueToItem(this.selected);
+      if (item) {
+        this._selection.select(item);
+      } else {
+        this._selection.clear();
+      }
       // Check for items, since this array is populated only when attached
       // Since Number(0) is falsy, explicitly check for undefined
       if (this.fallbackSelection && this.items.length && (this._selection.get() === undefined)) {
@@ -310,6 +329,13 @@
     },
 
     _valueForItem: function(item) {
+      if (!item) {
+        return null;
+      }
+      if (!this.attrForSelected) {
+        var i = this.indexOf(item);
+        return i === -1 ? null : i;
+      }
       var propValue = item[Polymer.CaseMap.dashToCamelCase(this.attrForSelected)];
       return propValue != undefined ? propValue : item.getAttribute(this.attrForSelected);
     },
@@ -333,10 +359,7 @@
     _observeItems: function(node) {
       return Polymer.dom(node).observeNodes(function(mutation) {
         this._updateItems();
-
-        if (this._shouldUpdateSelection) {
-          this._updateSelected();
-        }
+        this._updateSelected();
 
         // Let other interested parties know about the change so that
         // we don't have to recreate mutation observers everywhere.

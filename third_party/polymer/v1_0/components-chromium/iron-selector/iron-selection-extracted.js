@@ -1,6 +1,7 @@
 /**
    * @param {!Function} selectCallback
    * @constructor
+   * @suppress {missingProvide}
    */
   Polymer.IronSelection = function(selectCallback) {
     this.selection = [];
