@@ -48,7 +48,7 @@
 # Contracted Unified French Table
 # --------------------------------
 
-sign  56
+sign „ 56
 
 include fr-bfu-comp6.utb
 
@@ -1001,8 +1001,6 @@ contraction ca	14-1
 word celle		14-123
 contraction cl 14-123
 word celles		14-123-234
-word celui-ci		36-36-14-24
-word celui-là		36-36-123-12356
 word cependant		14-1234
 contraction cp	14-1234
 word ccn 56-14-14-1345
@@ -4279,8 +4277,8 @@ noback correct [`"-"]$l "`-"
 noback correct $s["-"]$l "`-"
 
 #Parenthèse dans un mot
-noback correct $l["("] "\x0084("
-nofor correct $l[""]"(" ?
+noback correct $l["("] "\x201E("
+nofor correct $l["„"]"(" ?
 
 #opérations mathématiques
 

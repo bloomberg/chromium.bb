@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-30
+#-updated: 2018-02-22
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -159,7 +159,7 @@ punctuation \x2018 2356     # left single quotation mark
 punctuation \x2019 2356     # right single quotation mark
 punctuation \x201C 2356     # left double quotation mark
 punctuation \x201D 2356     # right double quotation mark
-punctuation \x201E 2356     # double low-9 quotation mark
+sign \x201E 56     # double low-9 quotation mark
 punctuation \x201F 2356     # double high-reversed-9 quotation mark
 punctuation \x275B 2356     # heavy single turned comma quotation mark ornament
 punctuation \x275C 2356     # heavy single comma quotation mark ornament
@@ -242,6 +242,7 @@ sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
 uplow \x00c6\x00E6 345     #*ae
 sign \x00F0 12      # latin small letter eth
+#sign \x00F8 56      # latin small letter o with stroke
 sign \x00FE 245     # latin small letter thorn
 sign © 5-14				  # copyright
 sign ° 5-135			  # degré
