@@ -9,6 +9,7 @@ source_set("ui") {
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
     ":crw_wk_script_message_router",
+    ":favicon_util",
     ":web_view_js_utils",
     "//base",
     "//ios/net",
@@ -129,6 +130,22 @@ source_set("web_view_js_utils") {
   sources = [
     "web_view_js_utils.h",
     "web_view_js_utils.mm",
+  ]
+
+  libs = [ "WebKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("favicon_util") {
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+
+  sources = [
+    "favicon_util.h",
+    "favicon_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]
