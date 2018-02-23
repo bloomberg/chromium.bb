@@ -57,7 +57,7 @@ decode_to_md5() {
 
 decode_to_md5_av1() {
   # expected MD5 sum for the last frame.
-  local expected_md5="287f864f910ee2b5a9e1836de96bbb77"
+  local expected_md5="3de5aa39c751e7ba7122c5df16063cee"
   local file="${AV1_IVF_FILE}"
 
   # TODO(urvang): Check in the encoded file (like libvpx does) to avoid
