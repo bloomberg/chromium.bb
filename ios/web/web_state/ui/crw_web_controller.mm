@@ -3869,18 +3869,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         self.navigationManagerImpl->GetVisibleItem();
     const GURL& visibleURL =
         visibleItem ? visibleItem->GetURL() : GURL::EmptyGURL();
-    BOOL shouldDisplayWebView = ![self shouldLoadURLInNativeView:visibleURL];
-    if (@available(iOS 11.3, *)) {
-      // On iOS 11.3 WKWebView may load the page slower if web view is not a
-      // part of the view hierarchy.
-      // TODO(crbug.com/739390): Remove this workaround.
-      shouldDisplayWebView = !base::FeatureList::IsEnabled(
-          web::features::
-              kPreloadWebViewWhenNavigatingFromNativeContentOnIOS11_3);
-    }
-    if (shouldDisplayWebView) {
+    if (![self shouldLoadURLInNativeView:visibleURL])
       [self displayWebView];
-    }
   }
 }
 

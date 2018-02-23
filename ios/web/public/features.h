@@ -25,14 +25,6 @@ extern const base::Feature kNewFileDownload;
 // Used to enable using WKHTTPSystemCookieStore in main context URL requests.
 extern const base::Feature kWKHTTPSystemCookieStore;
 
-// Used to enable web view preloads when navigating from NativeContent to
-// web content on iOS 11.3. Preload will make NativeContent -> web content UI
-// transitioning smoother by inserting web view only after the navigation is
-// started. On iOS 11.3 web view may load the page slower if it is not a part of
-// the view hierarchy.
-extern const base::Feature
-    kPreloadWebViewWhenNavigatingFromNativeContentOnIOS11_3;
-
 }  // namespace features
 }  // namespace web
 
