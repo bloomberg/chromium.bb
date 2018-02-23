@@ -60,7 +60,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private final int mDefaultLevel;
     private final int mIncognitoLevel;
     private final ColorStateList mDarkIconColor;
-    private final ColorStateList mLightIconColor;
+    private final ColorStateList mDarkCloseIconColor;
+    private final ColorStateList mLightCloseIconColor;
 
     // Keeps track of how a tab was closed
     //  < 0 : swiped to the left.
@@ -215,8 +216,10 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
         mDarkIconColor =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        mDarkCloseIconColor =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.black_alpha_38);
-        mLightIconColor =
+        mLightCloseIconColor =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_alpha_70);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mIncognitoLevel = getResources().getInteger(R.integer.list_item_level_incognito);
@@ -324,13 +327,13 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                 mFaviconView.getBackground().setLevel(mIncognitoLevel);
                 ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.WhiteTitle1);
                 ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.WhiteBody);
-                mCloseButton.setTint(mLightIconColor);
+                mCloseButton.setTint(mLightCloseIconColor);
             } else {
                 setBackgroundResource(R.color.modern_primary_color);
                 mFaviconView.getBackground().setLevel(mDefaultLevel);
                 ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.BlackTitle1);
                 ApiCompatibilityUtils.setTextAppearance(mDescriptionView, R.style.BlackBody);
-                mCloseButton.setTint(mDarkIconColor);
+                mCloseButton.setTint(mDarkCloseIconColor);
             }
 
             if (TextUtils.isEmpty(url)) {
@@ -348,7 +351,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             if (bitmap != null) {
                 mFaviconView.setImageBitmap(bitmap);
             } else {
-                mFaviconView.setImageResource(R.drawable.globe_incognito_favicon);
+                mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
             }
 
             if (FeatureUtilities.isChromeModernDesignEnabled()) {
