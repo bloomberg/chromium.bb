@@ -15,6 +15,8 @@
 
 #include "av1/common/cfl.h"
 
+#include "av1/common/x86/cfl_simd.h"
+
 /**
  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more
  * precise version of a box filter 4:2:0 pixel subsampling in Q3.
@@ -136,11 +138,9 @@ static INLINE __m128i highbd_clamp_epi16(__m128i u, __m128i zero, __m128i max) {
 
 static INLINE void cfl_predict_hbd(__m128i *dst, __m128i *src,
                                    __m128i alpha_q12, __m128i alpha_sign,
-                                   __m128i dc_q0, int bd) {
-  const __m128i max = highbd_max_epi16(bd);
-  const __m128i zero = _mm_setzero_si128();
+                                   __m128i dc_q0, __m128i max) {
   __m128i res = predict_unclipped(src, alpha_q12, alpha_sign, dc_q0);
-  _mm_storeu_si128(dst, highbd_clamp_epi16(res, zero, max));
+  _mm_storeu_si128(dst, highbd_clamp_epi16(res, _mm_setzero_si128(), max));
 }
 
 static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
@@ -149,68 +149,54 @@ static INLINE void cfl_predict_hbd_x(const int16_t *pred_buf_q3, uint16_t *dst,
   uint16_t *row_end = dst + tx_size_high[tx_size] * dst_stride;
   const __m128i alpha_sign = _mm_set1_epi16(alpha_q3);
   const __m128i alpha_q12 = _mm_slli_epi16(_mm_abs_epi16(alpha_sign), 9);
-  const __m128i dc_q0 = width == 4 ? _mm_loadl_epi64((__m128i *)dst)
-                                   : _mm_load_si128((__m128i *)dst);
+  const __m128i dc_q0 = _mm_set1_epi16(*dst);
+  const __m128i max = highbd_max_epi16(bd);
   do {
     if (width == 4) {
-      const __m128i max = highbd_max_epi16(bd);
-      const __m128i zero = _mm_setzero_si128();
       __m128i res = predict_unclipped((__m128i *)(pred_buf_q3), alpha_q12,
                                       alpha_sign, dc_q0);
-      _mm_storel_epi64((__m128i *)dst, highbd_clamp_epi16(res, zero, max));
+      _mm_storel_epi64((__m128i *)dst,
+                       highbd_clamp_epi16(res, _mm_setzero_si128(), max));
     } else {
       cfl_predict_hbd((__m128i *)dst, (__m128i *)pred_buf_q3, alpha_q12,
-                      alpha_sign, dc_q0, bd);
+                      alpha_sign, dc_q0, max);
     }
     if (width >= 16)
       cfl_predict_hbd((__m128i *)(dst + 8), (__m128i *)(pred_buf_q3 + 8),
-                      alpha_q12, alpha_sign, dc_q0, bd);
+                      alpha_q12, alpha_sign, dc_q0, max);
     if (width == 32) {
       cfl_predict_hbd((__m128i *)(dst + 16), (__m128i *)(pred_buf_q3 + 16),
-                      alpha_q12, alpha_sign, dc_q0, bd);
+                      alpha_q12, alpha_sign, dc_q0, max);
       cfl_predict_hbd((__m128i *)(dst + 24), (__m128i *)(pred_buf_q3 + 24),
-                      alpha_q12, alpha_sign, dc_q0, bd);
+                      alpha_q12, alpha_sign, dc_q0, max);
     }
     dst += dst_stride;
     pred_buf_q3 += CFL_BUF_LINE;
   } while (dst < row_end);
 }
 
-#define CFL_PREDICT_LBD_X(width)                                               \
-  static void cfl_predict_lbd_##width(const int16_t *pred_buf_q3,              \
-                                      uint8_t *dst, int dst_stride,            \
-                                      TX_SIZE tx_size, int alpha_q3) {         \
-    cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, width); \
-  }
+CFL_PREDICT_LBD_X(4, ssse3)
+CFL_PREDICT_LBD_X(8, ssse3)
+CFL_PREDICT_LBD_X(16, ssse3)
+CFL_PREDICT_LBD_X(32, ssse3)
 
-CFL_PREDICT_LBD_X(4)
-CFL_PREDICT_LBD_X(8)
-CFL_PREDICT_LBD_X(16)
-CFL_PREDICT_LBD_X(32)
-
-#define CFL_PREDICT_HBD_X(width)                                               \
-  static void cfl_predict_hbd_##width(const int16_t *pred_buf_q3,              \
-                                      uint16_t *dst, int dst_stride,           \
-                                      TX_SIZE tx_size, int alpha_q3, int bd) { \
-    cfl_predict_hbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, bd,     \
-                      width);                                                  \
-  }
-
-CFL_PREDICT_HBD_X(4)
-CFL_PREDICT_HBD_X(8)
-CFL_PREDICT_HBD_X(16)
-CFL_PREDICT_HBD_X(32)
+CFL_PREDICT_HBD_X(4, ssse3)
+CFL_PREDICT_HBD_X(8, ssse3)
+CFL_PREDICT_HBD_X(16, ssse3)
+CFL_PREDICT_HBD_X(32, ssse3)
 
 cfl_predict_lbd_fn get_predict_lbd_fn_ssse3(TX_SIZE tx_size) {
-  static const cfl_predict_lbd_fn predict_lbd[4] = {
-    cfl_predict_lbd_4, cfl_predict_lbd_8, cfl_predict_lbd_16, cfl_predict_lbd_32
-  };
+  static const cfl_predict_lbd_fn predict_lbd[4] = { cfl_predict_lbd_4_ssse3,
+                                                     cfl_predict_lbd_8_ssse3,
+                                                     cfl_predict_lbd_16_ssse3,
+                                                     cfl_predict_lbd_32_ssse3 };
   return predict_lbd[(tx_size_wide_log2[tx_size] - tx_size_wide_log2[0]) & 3];
 }
 
 cfl_predict_hbd_fn get_predict_hbd_fn_ssse3(TX_SIZE tx_size) {
-  static const cfl_predict_hbd_fn predict_hbd[4] = {
-    cfl_predict_hbd_4, cfl_predict_hbd_8, cfl_predict_hbd_16, cfl_predict_hbd_32
-  };
+  static const cfl_predict_hbd_fn predict_hbd[4] = { cfl_predict_hbd_4_ssse3,
+                                                     cfl_predict_hbd_8_ssse3,
+                                                     cfl_predict_hbd_16_ssse3,
+                                                     cfl_predict_hbd_32_ssse3 };
   return predict_hbd[(tx_size_wide_log2[tx_size] - tx_size_wide_log2[0]) & 3];
 }

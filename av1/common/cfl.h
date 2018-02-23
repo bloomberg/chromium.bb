@@ -136,4 +136,18 @@ static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {
     return sub_avg[tx_size % TX_SIZES_ALL];                                 \
   }
 
+#define CFL_PREDICT_LBD_X(width, arch)                                         \
+  void cfl_predict_lbd_##width##_##arch(const int16_t *pred_buf_q3,            \
+                                        uint8_t *dst, int dst_stride,          \
+                                        TX_SIZE tx_size, int alpha_q3) {       \
+    cfl_predict_lbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, width); \
+  }
+
+#define CFL_PREDICT_HBD_X(width, arch)                                     \
+  void cfl_predict_hbd_##width##_##arch(                                   \
+      const int16_t *pred_buf_q3, uint16_t *dst, int dst_stride,           \
+      TX_SIZE tx_size, int alpha_q3, int bd) {                             \
+    cfl_predict_hbd_x(pred_buf_q3, dst, dst_stride, tx_size, alpha_q3, bd, \
+                      width);                                              \
+  }
 #endif  // AV1_COMMON_CFL_H_
