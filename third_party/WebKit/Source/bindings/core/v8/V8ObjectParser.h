@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef V8ObjectParser_h
+#define V8ObjectParser_h
+
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
@@ -52,3 +55,5 @@ class CORE_EXPORT V8ObjectParser final {
 };
 
 }  // namespace blink
+
+#endif  // V8ObjectParser_h
