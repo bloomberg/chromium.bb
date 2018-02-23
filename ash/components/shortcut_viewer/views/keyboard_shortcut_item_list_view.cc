@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_list_view.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_list_view.h"
 
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"

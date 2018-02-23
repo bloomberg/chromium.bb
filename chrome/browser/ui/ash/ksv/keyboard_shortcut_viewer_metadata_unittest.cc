@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_item.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
 
 namespace {
 

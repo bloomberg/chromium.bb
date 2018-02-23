@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_KSV_KSV_EXPORT_H_
-#define UI_CHROMEOS_KSV_KSV_EXPORT_H_
+#ifndef ASH_COMPONENTS_SHORTCUT_VIEWER_KSV_EXPORT_H_
+#define ASH_COMPONENTS_SHORTCUT_VIEWER_KSV_EXPORT_H_
 
 // Defines KSV_EXPORT so that functionality implemented by
 // the keyboard shortcut viewer module can be exported to consumers.
@@ -29,4 +29,4 @@
 #define KSV_EXPORT
 #endif
 
-#endif  // UI_CHROMEOS_KSV_KSV_EXPORT_H_
+#endif  // ASH_COMPONENTS_SHORTCUT_VIEWER_KSV_EXPORT_H_

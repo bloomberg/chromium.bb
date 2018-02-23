@@ -75,7 +75,6 @@ test("ui_chromeos_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/aura:test_support",
-    "//ui/chromeos/ksv:ksv_unittests",
     "//ui/compositor",
     "//ui/events:test_support",
     "//ui/gl:test_support",

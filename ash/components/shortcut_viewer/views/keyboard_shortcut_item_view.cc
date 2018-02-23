@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
+#include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 
 #include <memory>
 #include <vector>
 
+#include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
+#include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
+#include "ash/components/shortcut_viewer/views/bubble_view.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_item.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
-#include "ui/chromeos/ksv/vector_icons/vector_icons.h"
-#include "ui/chromeos/ksv/views/bubble_view.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"

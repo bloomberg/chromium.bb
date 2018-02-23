@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_KSV_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_
-#define UI_CHROMEOS_KSV_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_
+#ifndef ASH_COMPONENTS_SHORTCUT_VIEWER_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_
+#define ASH_COMPONENTS_SHORTCUT_VIEWER_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_
 
 #include <vector>
 
+#include "ash/components/shortcut_viewer/ksv_export.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "ui/chromeos/ksv/ksv_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -37,4 +37,4 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code);
 
 }  // namespace keyboard_shortcut_viewer
 
-#endif  // UI_CHROMEOS_KSV_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_
+#endif  // ASH_COMPONENTS_SHORTCUT_VIEWER_KEYBOARD_SHORTCUT_VIEWER_METADATA_H_

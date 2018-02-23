@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_KSV_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_
-#define UI_CHROMEOS_KSV_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_
+#ifndef ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_
+#define ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_
 
-#include "ui/chromeos/ksv/keyboard_shortcut_item.h"
+#include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -55,4 +55,4 @@ class KeyboardShortcutItemView : public views::View {
 
 }  // namespace keyboard_shortcut_viewer
 
-#endif  // UI_CHROMEOS_KSV_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_
+#endif  // ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KEYBOARD_SHORTCUT_ITEM_VIEW_H_

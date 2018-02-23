@@ -1594,6 +1594,7 @@ test("ash_unittests") {
     ":ash",
     ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
+    "//ash/components/shortcut_viewer:ksv_unittests",
     "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",
@@ -1988,6 +1989,7 @@ service_manifest("manifest") {
 repack("ash_service_resources") {
   output = "$root_out_dir/ash_service_resources.pak"
   sources = [
+    "$root_gen_dir/ash/components/resources/ash_components_resources_100_percent.pak",
     "$root_gen_dir/ash/resources/ash_resources_100_percent.pak",
     "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
@@ -1998,6 +2000,7 @@ repack("ash_service_resources") {
     "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
   ]
   deps = [
+    "//ash/components/resources",
     "//ash/resources",
     "//ash/strings",
     "//ui/chromeos/resources",
@@ -2012,12 +2015,14 @@ repack("ash_service_resources") {
 repack("ash_service_resources_200") {
   output = "$root_out_dir/ash_service_resources_200.pak"
   sources = [
+    "$root_gen_dir/ash/components/resources/ash_components_resources_200_percent.pak",
     "$root_gen_dir/ash/resources/ash_resources_200_percent.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
     "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
   ]
   deps = [
+    "//ash/components/resources",
     "//ash/resources",
     "//ui/chromeos/resources",
     "//ui/resources",
