@@ -10,12 +10,17 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+
+namespace base {
+class Value;
+}
 
 namespace content {
 class BrowserContext;
@@ -43,6 +48,22 @@ class ArcPolicyBridge : public KeyedService,
                         public mojom::PolicyHost,
                         public policy::PolicyService::Observer {
  public:
+  class Observer {
+   public:
+    // Called when policy is sent to CloudDPC.
+    virtual void OnPolicySent(const std::string& policy) = 0;
+
+    // Called when a compliance report is received from CloudDPC.
+    virtual void OnComplianceReportReceived(
+        const base::Value* compliance_report) = 0;
+
+   protected:
+    Observer() = default;
+    virtual ~Observer() = default;
+
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcPolicyBridge* GetForBrowserContext(
@@ -54,6 +75,11 @@ class ArcPolicyBridge : public KeyedService,
                   ArcBridgeService* bridge_service,
                   policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
+
+  const std::string& GetInstanceGuidForTesting();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   void OverrideIsManagedForTesting(bool is_managed);
 
@@ -90,6 +116,10 @@ class ArcPolicyBridge : public KeyedService,
   policy::PolicyService* policy_service_ = nullptr;
   bool is_managed_ = false;
 
+  // HACK(b/73762796): A GUID that is regenerated whenever |this| is created,
+  // ensuring that the first policy sent to CloudDPC is considered different
+  // from previous policy and a compliance report is sent.
+  const std::string instance_guid_;
   // Hash of the policies that were up to date when ARC started.
   std::string initial_policies_hash_;
   // Whether the UMA metric for the first successfully obtained compliance
@@ -104,6 +134,8 @@ class ArcPolicyBridge : public KeyedService,
   // Whether the UMA metric for the successfully obtained compliance report
   // since the most recent policy update notificaton was already reported.
   bool compliance_since_update_timing_reported_ = false;
+
+  base::ObserverList<Observer, true /* check_empty */> observers_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_;
