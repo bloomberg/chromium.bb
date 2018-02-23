@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FUNCS=$(nm -D --defined-only ${WAYLAND_EGL_LIB} | grep -o "T .*" | cut -c 3- | while read func; do
+FUNCS=$($NM -D --defined-only ${WAYLAND_EGL_LIB} | grep -o "T .*" | cut -c 3- | while read func; do
 ( grep -q "^$func$" || echo $func )  <<EOF
 wl_egl_window_resize
 wl_egl_window_create

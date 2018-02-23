@@ -29,6 +29,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_GREP
 AM_PROG_AS
+AC_PROG_NM
 
 # check if we have C++ compiler. This is hacky workaround,
 # for a reason why it is this way see
