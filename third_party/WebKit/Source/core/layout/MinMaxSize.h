@@ -28,6 +28,8 @@ struct CORE_EXPORT MinMaxSize {
   bool operator==(const MinMaxSize& other) const {
     return min_size == other.min_size && max_size == other.max_size;
   }
+
+  MinMaxSize& operator+=(const LayoutUnit);
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const MinMaxSize&);
