@@ -161,9 +161,10 @@ PositionWithAffinity HitTestResult::GetPosition() const {
   if (!layout_object)
     return PositionWithAffinity();
   if (inner_possibly_pseudo_node_->IsPseudoElement() &&
-      inner_possibly_pseudo_node_->GetPseudoId() == kPseudoIdBefore)
-    return MostForwardCaretPosition(
-        Position(inner_node_, PositionAnchorType::kBeforeChildren));
+      inner_possibly_pseudo_node_->GetPseudoId() == kPseudoIdBefore) {
+    return PositionWithAffinity(MostForwardCaretPosition(
+        Position(inner_node_, PositionAnchorType::kBeforeChildren)));
+  }
   return layout_object->PositionForPoint(LocalPoint());
 }
 

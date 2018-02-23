@@ -428,12 +428,12 @@ CompositedSelection RenderedPosition::ComputeCompositedSelection(
 
   CompositedSelection selection;
   selection.start = StartPositionInGraphicsLayerBacking(
-      visible_selection.ComputeStartPosition());
+      PositionWithAffinity(visible_selection.ComputeStartPosition()));
   if (!selection.start.layer)
     return {};
 
-  selection.end =
-      EndPositionInGraphicsLayerBacking(visible_selection.ComputeEndPosition());
+  selection.end = EndPositionInGraphicsLayerBacking(
+      PositionWithAffinity(visible_selection.ComputeEndPosition()));
   if (!selection.end.layer)
     return {};
 

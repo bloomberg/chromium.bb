@@ -205,9 +205,10 @@ static PositionInFlatTree ComputeStartFromEndForExtendForward(
   // end of word/paragraph position. To get start of word/paragraph at |end|,
   // we pass previous position of |end|.
   return ComputeStartRespectingGranularity(
-      PreviousPositionOf(CreateVisiblePosition(end),
-                         kCannotCrossEditingBoundary)
-          .DeepEquivalent(),
+      PositionInFlatTreeWithAffinity(
+          PreviousPositionOf(CreateVisiblePosition(end),
+                             kCannotCrossEditingBoundary)
+              .DeepEquivalent()),
       granularity);
 }
 
