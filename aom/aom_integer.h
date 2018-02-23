@@ -81,9 +81,11 @@ extern "C" {
 // Returns size of uint32_t when encoded using LEB128.
 size_t aom_uleb_size_in_bytes(uint64_t value);
 
-// Returns -1 upon decode failure, or 0 and decoded LEB128 value via last
-// argument when decode is successful.
-int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value);
+// Returns 0 on success, -1 on decode failure.
+// On success, 'value' stores the decoded LEB128 value and 'length' stores
+// the number of bytes decoded
+int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value,
+                    size_t *length);
 
 // Encodes LEB128 integer. Returns 0 when successful, and -1 upon failure.
 int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
@@ -91,6 +93,8 @@ int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
 
 // Encodes LEB128 integer to size specified. Returns 0 when successful, and -1
 // upon failure.
+// Note: This will write exactly pad_to_size bytes; if the value cannot be
+// encoded in this many bytes, then this will fail.
 int aom_uleb_encode_fixed_size(uint64_t value, size_t available,
                                size_t pad_to_size, uint8_t *coded_value,
                                size_t *coded_size);

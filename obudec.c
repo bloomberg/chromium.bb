@@ -94,7 +94,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
 // otherwise, read the OBU payload into memory
 #if CONFIG_OBU_SIZING
-    aom_uleb_decode(data, PRE_OBU_SIZE_BYTES, &obu_size);
+    aom_uleb_decode(data, PRE_OBU_SIZE_BYTES, &obu_size, NULL);
 #else
     obu_size = mem_get_le32(data);
 #endif  // CONFIG_OBU_SIZING
@@ -131,7 +131,7 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
   }
 
 #if CONFIG_OBU_SIZING
-  aom_uleb_decode(obutd, PRE_OBU_SIZE_BYTES, &size);
+  aom_uleb_decode(obutd, PRE_OBU_SIZE_BYTES, &size, NULL);
 #else
   size = mem_get_le32(obutd);
 #endif  // CONFIG_OBU_SIZING

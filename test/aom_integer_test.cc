@@ -30,18 +30,23 @@ TEST(AomLeb128, DecodeTest) {
   const size_t num_leb128_bytes = 3;
   const uint8_t leb128_bytes[num_leb128_bytes] = { 0xE5, 0x8E, 0x26 };
   const uint64_t expected_value = 0x98765;  // 624485
+  const size_t expected_length = 3;
   uint64_t value = 0;
-  ASSERT_EQ(aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value), 0);
+  size_t length = 0;
+  ASSERT_EQ(
+      aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value, &length), 0);
   ASSERT_EQ(expected_value, value);
+  ASSERT_EQ(expected_length, length);
 
   // Make sure the decoder stops on the last marked LEB128 byte.
-  aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes + 1, &value);
+  aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes + 1, &value, &length);
   ASSERT_EQ(expected_value, value);
+  ASSERT_EQ(expected_length, length);
 }
 
 TEST(AomLeb128, EncodeTest) {
   const uint32_t test_value = 0x98765;  // 624485
-  const uint32_t expected_value = 0x00E58E26;
+  const uint8_t expected_bytes[3] = { 0xE5, 0x8E, 0x26 };
   const size_t kWriteBufferSize = 4;
   uint8_t write_buffer[kWriteBufferSize] = { 0 };
   size_t bytes_written = 0;
@@ -49,12 +54,9 @@ TEST(AomLeb128, EncodeTest) {
                             &bytes_written),
             0);
   ASSERT_EQ(bytes_written, 3u);
-  uint32_t encoded_value = 0;
   for (size_t i = 0; i < bytes_written; ++i) {
-    const int shift = (int)(bytes_written - 1 - i) * 8;
-    encoded_value |= write_buffer[i] << shift;
+    ASSERT_EQ(write_buffer[i], expected_bytes[i]);
   }
-  ASSERT_EQ(expected_value, encoded_value);
 }
 
 TEST(AomLeb128, EncodeDecodeTest) {
@@ -67,13 +69,16 @@ TEST(AomLeb128, EncodeDecodeTest) {
             0);
   ASSERT_EQ(bytes_written, 3u);
   uint64_t decoded_value = 0;
-  aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value);
+  size_t decoded_length = 0;
+  aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value,
+                  &decoded_length);
   ASSERT_EQ(value, decoded_value);
+  ASSERT_EQ(bytes_written, decoded_length);
 }
 
 TEST(AomLeb128, FixedSizeEncodeTest) {
-  const uint32_t test_value = 0x0;
-  const uint32_t expected_value = 0x00808080;
+  const uint32_t test_value = 0x123;
+  const uint8_t expected_bytes[4] = { 0xa3, 0x82, 0x80, 0x00 };
   const size_t kWriteBufferSize = 4;
   uint8_t write_buffer[kWriteBufferSize] = { 0 };
   size_t bytes_written = 0;
@@ -81,12 +86,9 @@ TEST(AomLeb128, FixedSizeEncodeTest) {
                                           kWriteBufferSize, &write_buffer[0],
                                           &bytes_written));
   ASSERT_EQ(kWriteBufferSize, bytes_written);
-  uint32_t encoded_value = 0;
   for (size_t i = 0; i < bytes_written; ++i) {
-    const int shift = (int)(bytes_written - 1 - i) * 8;
-    encoded_value |= write_buffer[i] << shift;
+    ASSERT_EQ(write_buffer[i], expected_bytes[i]);
   }
-  ASSERT_EQ(expected_value, encoded_value);
 }
 
 TEST(AomLeb128, FixedSizeEncodeDecodeTest) {
@@ -100,8 +102,11 @@ TEST(AomLeb128, FixedSizeEncodeDecodeTest) {
       0);
   ASSERT_EQ(bytes_written, 4u);
   uint64_t decoded_value = 0;
-  aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value);
+  size_t decoded_length = 0;
+  aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value,
+                  &decoded_length);
   ASSERT_EQ(value, decoded_value);
+  ASSERT_EQ(bytes_written, decoded_length);
 }
 
 TEST(AomLeb128, SizeTest) {
@@ -123,13 +128,13 @@ TEST(AomLeb128, DecodeFailTest) {
 
   // Test that decode fails when result would be valid 9 byte integer.
   ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize + 1,
-                            &decoded_value),
+                            &decoded_value, NULL),
             -1);
 
   // Test that encoded value missing terminator byte within available buffer
   // range causes decode error.
   ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize,
-                            &decoded_value),
+                            &decoded_value, NULL),
             -1);
 }
 

@@ -283,13 +283,14 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_OBU_SIZING
     // OBUs are preceded by an unsigned leb128 coded unsigned integer.
     uint64_t u_obu_size = 0;
-    if (aom_uleb_decode(data, bytes_available, &u_obu_size) != 0) {
+    size_t length_field_size;
+    if (aom_uleb_decode(data, bytes_available, &u_obu_size,
+                        &length_field_size) != 0) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
     }
 
     const size_t obu_size = (size_t)u_obu_size;
-    const size_t length_field_size = aom_uleb_size_in_bytes(u_obu_size);
 #else
     // every obu is preceded by PRE_OBU_SIZE_BYTES-byte size of obu (obu header
     // + payload size)
