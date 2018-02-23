@@ -19,7 +19,7 @@ Polymer({
   },
 
   accept: function() {
-    window.onPassphraseSuccess(this.$.input.value, this.$.remember.checked);
+    window.onPassphraseSuccess(this.$.input.value);
     window.close();
   },
 

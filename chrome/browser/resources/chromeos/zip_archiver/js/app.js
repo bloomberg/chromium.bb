@@ -271,17 +271,16 @@ unpacker.app = {
    * @param {!Object<!unpacker.types.RequestId,
    *                 !unpacker.types.OpenFileRequestedOptions>}
    *     openedFiles Previously opened files before a suspend.
-   * @param {?string} passphrase Previously used passphrase before a suspend.
    * @return {!Promise} Promise fulfilled on success and rejected on failure.
    * @private
    */
-  loadVolume_: function(fileSystemId, entry, openedFiles, passphrase) {
+  loadVolume_: function(fileSystemId, entry, openedFiles) {
     return new Promise(function(fulfill, reject) {
       entry.file(
           function(file) {
             // File is a Blob object, so it's ok to construct the Decompressor
             // directly with it.
-            var passphraseManager = new unpacker.PassphraseManager(passphrase);
+            var passphraseManager = new unpacker.PassphraseManager();
             console.assert(
                 unpacker.app.naclModule,
                 'The NaCL module should have already been defined.');
@@ -365,8 +364,7 @@ unpacker.app = {
             };
           });
           return unpacker.app.loadVolume_(
-              fileSystemId, stateWithFileSystem.state.entry, openedFilesOptions,
-              stateWithFileSystem.state.passphrase);
+              fileSystemId, stateWithFileSystem.state.entry, openedFilesOptions);
         })
         .catch(function(error) {
           console.error(error.stack || error);
@@ -939,7 +937,7 @@ unpacker.app = {
                     return;
                   }
                   var loadPromise = unpacker.app.loadVolume_(
-                      fileSystemId, entry, {}, null /* passphrase */);
+                      fileSystemId, entry, {});
                   loadPromise
                       .then(function() {
                         unpacker.app.volumeLoadFinished[fileSystemId] = true;
