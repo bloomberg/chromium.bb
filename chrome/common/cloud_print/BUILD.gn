@@ -4,8 +4,6 @@
 
 source_set("cloud_print") {
   sources = [
-    "cloud_print_cdd_conversion.cc",
-    "cloud_print_cdd_conversion.h",
     "cloud_print_class_mac.h",
     "cloud_print_class_mac.mm",
     "cloud_print_constants.cc",
@@ -18,7 +16,6 @@ source_set("cloud_print") {
   deps = [
     "//base",
     "//chrome/common:channel_info",
-    "//components/cloud_devices/common",
     "//net",
     "//printing",
   ]
