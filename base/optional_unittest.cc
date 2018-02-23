@@ -1037,6 +1037,18 @@ TEST(OptionalTest, ValueOr) {
     EXPECT_EQ(0.0f, a.value_or(0.0f));
   }
 
+  // value_or() can be constexpr.
+  {
+    constexpr Optional<int> a(in_place, 1);
+    constexpr int value = a.value_or(10);
+    EXPECT_EQ(1, value);
+  }
+  {
+    constexpr Optional<int> a;
+    constexpr int value = a.value_or(10);
+    EXPECT_EQ(10, value);
+  }
+
   {
     Optional<std::string> a;
     EXPECT_EQ("bar", a.value_or("bar"));
@@ -1109,7 +1121,7 @@ TEST(OptionalTest, Swap_bothValue) {
 TEST(OptionalTest, Emplace) {
   {
     Optional<float> a(0.1f);
-    a.emplace(0.3f);
+    EXPECT_EQ(0.3f, a.emplace(0.3f));
 
     EXPECT_TRUE(a);
     EXPECT_EQ(0.3f, a.value());
@@ -1117,7 +1129,7 @@ TEST(OptionalTest, Emplace) {
 
   {
     Optional<std::string> a("foo");
-    a.emplace("bar");
+    EXPECT_EQ("bar", a.emplace("bar"));
 
     EXPECT_TRUE(a);
     EXPECT_EQ("bar", a.value());
@@ -1125,7 +1137,7 @@ TEST(OptionalTest, Emplace) {
 
   {
     Optional<TestObject> a(TestObject(0, 0.1));
-    a.emplace(TestObject(1, 0.2));
+    EXPECT_EQ(TestObject(1, 0.2), a.emplace(TestObject(1, 0.2)));
 
     EXPECT_TRUE(!!a);
     EXPECT_TRUE(TestObject(1, 0.2) == a.value());
@@ -1883,34 +1895,34 @@ TEST(OptionalTest, NotEqualsNull) {
 
 TEST(OptionalTest, MakeOptional) {
   {
-    Optional<float> o = base::make_optional(32.f);
+    Optional<float> o = make_optional(32.f);
     EXPECT_TRUE(o);
     EXPECT_EQ(32.f, *o);
 
     float value = 3.f;
-    o = base::make_optional(std::move(value));
+    o = make_optional(std::move(value));
     EXPECT_TRUE(o);
     EXPECT_EQ(3.f, *o);
   }
 
   {
-    Optional<std::string> o = base::make_optional(std::string("foo"));
+    Optional<std::string> o = make_optional(std::string("foo"));
     EXPECT_TRUE(o);
     EXPECT_EQ("foo", *o);
 
     std::string value = "bar";
-    o = base::make_optional(std::move(value));
+    o = make_optional(std::move(value));
     EXPECT_TRUE(o);
     EXPECT_EQ(std::string("bar"), *o);
   }
 
   {
-    Optional<TestObject> o = base::make_optional(TestObject(3, 0.1));
+    Optional<TestObject> o = make_optional(TestObject(3, 0.1));
     EXPECT_TRUE(!!o);
     EXPECT_TRUE(TestObject(3, 0.1) == *o);
 
     TestObject value = TestObject(0, 0.42);
-    o = base::make_optional(std::move(value));
+    o = make_optional(std::move(value));
     EXPECT_TRUE(!!o);
     EXPECT_TRUE(TestObject(0, 0.42) == *o);
     EXPECT_EQ(TestObject::State::MOVED_FROM, value.state());
@@ -1918,6 +1930,22 @@ TEST(OptionalTest, MakeOptional) {
 
     EXPECT_EQ(TestObject::State::MOVE_CONSTRUCTED,
               base::make_optional(std::move(value))->state());
+  }
+
+  {
+    struct Test {
+      Test(int a, double b, bool c) : a(a), b(b), c(c) {}
+
+      int a;
+      double b;
+      bool c;
+    };
+
+    Optional<Test> o = make_optional<Test>(1, 2.0, true);
+    EXPECT_TRUE(!!o);
+    EXPECT_EQ(1, o->a);
+    EXPECT_EQ(2.0, o->b);
+    EXPECT_TRUE(o->c);
   }
 
   {
