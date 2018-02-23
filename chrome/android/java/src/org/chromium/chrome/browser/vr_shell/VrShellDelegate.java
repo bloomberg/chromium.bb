@@ -512,6 +512,14 @@ public class VrShellDelegate
         return false;
     }
 
+    /**
+     * @param topContentOffset The top content offset (usually applied by the omnibox).
+     */
+    public static void rawTopContentOffsetChanged(float topContentOffset) {
+        assert isInVr();
+        sInstance.mVrShell.rawTopContentOffsetChanged(topContentOffset);
+    }
+
     @CalledByNative
     private static VrShellDelegate getInstance() {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();

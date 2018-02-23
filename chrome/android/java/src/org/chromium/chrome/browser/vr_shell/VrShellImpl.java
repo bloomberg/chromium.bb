@@ -316,6 +316,10 @@ public class VrShellImpl
             mActivity.getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
         }
 
+        // Start with content rendering paused if the renderer-drawn controls are visible, as this
+        // would cause the in-content omnibox to be shown to users.
+        boolean pauseContent = mActivity.getFullscreenManager().getContentOffset() > 0;
+
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
@@ -330,7 +334,7 @@ public class VrShellImpl
         mNativeVrShell = nativeInit(mDelegate, forWebVr, webVrAutopresentationExpected, inCct,
                 !mVrBrowsingEnabled, hasOrCanRequestAudioPermission,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
-                displayHeightMeters, dm.widthPixels, dm.heightPixels);
+                displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent);
 
         swapToTab(currentTab);
         createTabList();
@@ -759,6 +763,15 @@ public class VrShellImpl
     }
 
     @Override
+    public void rawTopContentOffsetChanged(float topContentOffset) {
+        if (topContentOffset != 0) return;
+        // Wait until a new frame is definitely available.
+        mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
+            if (mNativeVrShell != 0) nativeResumeContentRendering(mNativeVrShell);
+        });
+    }
+
+    @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if (mNativeVrShell == 0) return;
         nativeSetSurface(mNativeVrShell, holder.getSurface());
@@ -976,7 +989,7 @@ public class VrShellImpl
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
             float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
-            int displayHeightPixels);
+            int displayHeightPixels, boolean pauseContent);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(long nativeVrShell, Tab tab);
     private native void nativeSetAndroidGestureTarget(
@@ -1010,4 +1023,5 @@ public class VrShellImpl
     private native void nativeUpdateWebInputIndices(long nativeVrShell, int selectionStart,
             int selectionEnd, int compositionStart, int compositionEnd);
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
+    private native void nativeResumeContentRendering(long nativeVrShell);
 }

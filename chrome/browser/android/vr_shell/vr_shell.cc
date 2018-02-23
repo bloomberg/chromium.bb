@@ -134,7 +134,8 @@ VrShell::VrShell(JNIEnv* env,
                  float display_width_meters,
                  float display_height_meters,
                  int display_width_pixels,
-                 int display_height_pixels)
+                 int display_height_pixels,
+                 bool pause_content)
     : vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrBrowsing)),
       web_vr_autopresentation_expected_(
           ui_initial_state.web_vr_autopresentation_expected),
@@ -151,7 +152,8 @@ VrShell::VrShell(JNIEnv* env,
 
   gl_thread_ = std::make_unique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env));
+      ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env),
+      pause_content);
   ui_ = gl_thread_.get();
   toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
   autocomplete_controller_ =
@@ -620,6 +622,12 @@ void VrShell::BufferBoundsChanged(JNIEnv* env,
                                 gfx::Size(overlay_width, overlay_height)));
 }
 
+void VrShell::ResumeContentRendering(JNIEnv* env,
+                                     const JavaParamRef<jobject>& object) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::ResumeContentRendering,
+                                           gl_thread_->GetVrShellGl()));
+}
+
 // Note that the following code is obsolete and is here as reference for the
 // actions that need to be implemented natively.
 void VrShell::DoUiAction(const UiAction action,
@@ -1039,7 +1047,8 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
                            jfloat display_width_meters,
                            jfloat display_height_meters,
                            jint display_width_pixels,
-                           jint display_pixel_height) {
+                           jint display_pixel_height,
+                           jboolean pause_content) {
   UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_cct = in_cct;
@@ -1058,7 +1067,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering,
       display_width_meters, display_height_meters, display_width_pixels,
-      display_pixel_height));
+      display_pixel_height, pause_content));
 }
 
 }  // namespace vr

@@ -85,4 +85,9 @@ public interface VrShell extends VrDialogManager {
      * Simulates a user accepting the currently visible DOFF prompt.
      */
     void acceptDoffPromptForTesting();
+
+    /**
+     * @param topContentOffset The content offset (usually applied by the omnibox).
+     */
+    void rawTopContentOffsetChanged(float topContentOffset);
 }
