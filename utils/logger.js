@@ -250,6 +250,12 @@ mr.Logger.Loggable;
 
 
 /**
+ * @const
+ */
+mr.Logger.DEFAULT_LEVEL = mr.Logger.Level.INFO;
+
+
+/**
  * @type {mr.Logger.Level}
  */
-mr.Logger.level = mr.Logger.Level.INFO;
+mr.Logger.level = mr.Logger.DEFAULT_LEVEL;

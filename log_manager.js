@@ -63,13 +63,26 @@ mr.LogManager = class {
     mr.Logger.addHandler(this.onNewLog_.bind(this));
 
     // Override log level via localStorage setting
-    const debugLevel = window.localStorage['debug.logs'];
+    const debugKey = 'debug.logs';
+    const debugLevel = window.localStorage[debugKey];
     if (debugLevel) {
       mr.Logger.level = mr.Logger.stringToLevel(
           debugLevel.toUpperCase(), mr.Logger.Level.FINE);
+    } else if (!mr.Config.isPublicChannel) {
+      // Record the default local level in local settings so developers can
+      // easily change it without having to look up the name of the setting.
+      window.localStorage[debugKey] =
+          mr.Logger.levelToString(mr.Logger.DEFAULT_LEVEL);
     }
 
-    if (window.localStorage['debug.console']) {
+    const consoleKey = 'debug.console';
+    if (!mr.Config.isPublicChannel && window.localStorage[consoleKey] == null) {
+      // Enable console logging by default in internal builds.  Any value other
+      // than 'false' or '' is treated as true.
+      window.localStorage[consoleKey] = 'true';
+    }
+    const consoleValue = window.localStorage[consoleKey];
+    if (consoleValue && consoleValue.toLowerCase() != 'false') {
       mr.Logger.addHandler(this.logToConsole_.bind(this));
     }
   }
