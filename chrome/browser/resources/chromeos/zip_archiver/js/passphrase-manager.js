@@ -4,38 +4,15 @@
 
 /**
  * @constructor
- * @param {?string} initPassphrase Initial passphrase for the first passphrase
- *     request or NULL if not available. In such case, call to getPassphrase()
- *     will invoke a dialog.
  */
-unpacker.PassphraseManager = function(initPassphrase) {
-  /**
-   * @private {?string}
-   */
-  this.initPassphrase_ = initPassphrase;
-
-  /**
-   * @public {?string}
-   */
-  this.rememberedPassphrase = initPassphrase;
-};
+unpacker.PassphraseManager = function() {};
 
 /**
- * Requests a passphrase from the user. If a passphrase was previously
- * remembered, then tries it first. Otherwise shows a passphrase dialog.
+ * Requests a passphrase from the user.
  * @return {!Promise<string>}
  */
 unpacker.PassphraseManager.prototype.getPassphrase = function() {
   return new Promise(function(fulfill, reject) {
-    // For the first passphrase request try the init passphrase (which may be
-    // incorrect though, so do it only once).
-    if (this.initPassphrase_ != null) {
-      fulfill(this.initPassphrase_);
-      this.initPassphrase_ = null;
-      return;
-    }
-
-    // Ask user for a passphrase.
     chrome.app.window.create(
         '../html/passphrase.html',
         /** @type {!chrome.app.window.CreateWindowOptions} */ ({
@@ -55,10 +32,8 @@ unpacker.PassphraseManager.prototype.getPassphrase = function() {
           }.bind(this));
 
           passphraseWindow.contentWindow.onPassphraseSuccess = function(
-                                                                   passphrase,
-                                                                   remember) {
+                                                                   passphrase) {
             passphraseSucceeded = true;
-            this.rememberedPassphrase = remember ? passphrase : null;
             fulfill(passphrase);
           }.bind(this);
         }.bind(this));

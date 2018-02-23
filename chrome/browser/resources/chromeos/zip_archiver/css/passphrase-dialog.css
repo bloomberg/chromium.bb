@@ -16,13 +16,8 @@ paper-checkbox {
   justify-content: space-between;
 }
 
-#bar {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-
 #buttons {
+  align-items: center;
   display: flex;
   justify-content: flex-end;
 }
