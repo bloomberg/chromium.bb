@@ -423,7 +423,7 @@ WebURLRequest CreateURLRequestForNavigation(
         WebString::FromUTF8(common_params.referrer.url.spec()));
     request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
     if (!web_referrer.IsEmpty()) {
-      request.AddHTTPOriginIfNeeded(
+      request.SetHTTPOriginIfNeeded(
           WebSecurityOrigin(url::Origin::Create(common_params.referrer.url)));
     }
   }
@@ -4752,9 +4752,9 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
     stream_override = old_extra_data->TakeStreamOverrideOwnership();
   }
 
-  // Add an empty HTTP origin header for non GET methods if none is currently
+  // Set an empty HTTP origin header for non GET methods if none is currently
   // present.
-  request.AddHTTPOriginIfNeeded(WebSecurityOrigin::CreateUnique());
+  request.SetHTTPOriginIfNeeded(WebSecurityOrigin::CreateUnique());
 
   // Attach |should_replace_current_entry| state to requests so that, should
   // this navigation later require a request transfer, all state is preserved

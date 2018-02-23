@@ -203,8 +203,8 @@ WebReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(resource_request_->GetReferrerPolicy());
 }
 
-void WebURLRequest::AddHTTPOriginIfNeeded(const WebSecurityOrigin& origin) {
-  resource_request_->AddHTTPOriginIfNeeded(origin.Get());
+void WebURLRequest::SetHTTPOriginIfNeeded(const WebSecurityOrigin& origin) {
+  resource_request_->SetHTTPOriginIfNeeded(origin.Get());
 }
 
 bool WebURLRequest::HasUserGesture() const {

@@ -169,7 +169,7 @@ ResourceRequest HistoryItem::GenerateResourceRequest(
     request.SetHTTPMethod(HTTPNames::POST);
     request.SetHTTPBody(form_data_);
     request.SetHTTPContentType(form_content_type_);
-    request.AddHTTPOriginIfNeeded(referrer_.referrer);
+    request.SetHTTPOriginToMatchReferrerIfNeeded();
   }
   return request;
 }

@@ -671,7 +671,7 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
       origin_document->OutgoingReferrer());
 
   request.SetHTTPReferrer(referrer);
-  request.AddHTTPOriginIfNeeded(referrer.referrer);
+  request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
 FrameLoadType FrameLoader::DetermineFrameLoadType(

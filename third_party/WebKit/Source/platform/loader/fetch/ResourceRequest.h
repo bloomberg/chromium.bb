@@ -154,9 +154,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   void SetHTTPOrigin(const SecurityOrigin*);
   void ClearHTTPOrigin();
-
-  void AddHTTPOriginIfNeeded(const SecurityOrigin*);
-  void AddHTTPOriginIfNeeded(const String&);
+  void SetHTTPOriginIfNeeded(const SecurityOrigin*);
+  void SetHTTPOriginToMatchReferrerIfNeeded();
 
   void SetHTTPUserAgent(const AtomicString& http_user_agent) {
     SetHTTPHeaderField(HTTPNames::User_Agent, http_user_agent);
