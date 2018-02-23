@@ -353,40 +353,40 @@
     "messages": [26020],
   },
   "ui/file_manager/file_manager_resources.grd": {
-    "includes": [26750],
+    "includes": [26450],
   },
   "ui/keyboard/keyboard_resources.grd": {
-    "includes": [27000],
+    "includes": [26700],
   },
   "ui/login/login_resources.grd": {
-    "includes": [27100],
+    "includes": [26800],
   },
   "ui/resources/ui_resources.grd": {
-    "structures": [27200],
+    "structures": [26900],
   },
   "ui/resources/ui_unscaled_resources.grd": {
-    "includes": [27450],
+    "includes": [27150],
   },
   "ui/strings/app_locale_settings.grd": {
-    "messages": [27500],
+    "messages": [27200],
   },
   "ui/strings/ui_strings.grd": {
-    "messages": [27550],
+    "messages": [27250],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27750],
+    "structures": [27450],
   },
   "ui/webui/resources/webui_resources.grd": {
-    "includes": [28050],
-    "structures": [28250],
+    "includes": [27750],
+    "structures": [27950],
   },
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
-    "includes": [29050],
+    "includes": [28750],
   },
   "devtools_resources.grd": {
-    "includes": [29050],
+    "includes": [28750],
   },
 
   # END "everything else" section.
