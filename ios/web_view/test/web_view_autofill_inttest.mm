@@ -183,37 +183,33 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   test::EvaluateJavaScript(web_view_, focus_script, &focus_error);
   ASSERT_NSEQ(nil, focus_error);
 
-  __block bool suggestion_filled = false;
   [autofill_controller_ fillSuggestion:fetched_suggestion
-                     completionHandler:^{
-                       suggestion_filled = true;
-                     }];
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
-    return suggestion_filled;
-  }));
+                     completionHandler:nil];
   NSString* filled_script = [NSString
       stringWithFormat:@"document.getElementById('%@').value", kTestFieldID];
-  NSError* filled_error = nil;
-  NSString* filled_value =
-      test::EvaluateJavaScript(web_view_, filled_script, &filled_error);
-  ASSERT_NSEQ(nil, filled_error);
-  EXPECT_NSEQ(fetched_suggestion.value, filled_value);
-
-  __block bool form_cleared = false;
-  [autofill_controller_ clearFormWithName:kTestFormName
-                        completionHandler:^{
-                          form_cleared = true;
-                        }];
+  __block NSError* filled_error = nil;
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
-    return form_cleared;
+    NSString* filled_value =
+        test::EvaluateJavaScript(web_view_, filled_script, &filled_error);
+    // If there is an error, early return so the ASSERT catch the error.
+    if (filled_error)
+      return true;
+    return [fetched_suggestion.value isEqualToString:filled_value];
   }));
+  ASSERT_NSEQ(nil, filled_error);
+  [autofill_controller_ clearFormWithName:kTestFormName completionHandler:nil];
   NSString* cleared_script = [NSString
       stringWithFormat:@"document.getElementById('%@').value", kTestFieldID];
-  NSError* cleared_error = nil;
-  NSString* current_value =
-      test::EvaluateJavaScript(web_view_, cleared_script, &cleared_error);
+  __block NSError* cleared_error = nil;
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    NSString* current_value =
+        test::EvaluateJavaScript(web_view_, cleared_script, &cleared_error);
+    // If there is an error, early return so the ASSERT catch the error.
+    if (cleared_error)
+      return true;
+    return [current_value isEqualToString:@""];
+  }));
   ASSERT_NSEQ(nil, cleared_error);
-  EXPECT_NSEQ(@"", current_value);
 }
 
 // Tests that CWVAutofillController can remove a suggestion.
