@@ -17,6 +17,12 @@ LayoutUnit MinMaxSize::ClampSizeToMinAndMax(LayoutUnit size) const {
   return std::max(min_size, std::min(size, max_size));
 }
 
+MinMaxSize& MinMaxSize::operator+=(const LayoutUnit length) {
+  min_size += length;
+  max_size += length;
+  return *this;
+}
+
 std::ostream& operator<<(std::ostream& stream, const MinMaxSize& value) {
   return stream << "(" << value.min_size << ", " << value.max_size << ")";
 }
