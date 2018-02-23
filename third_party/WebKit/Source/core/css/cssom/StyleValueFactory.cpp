@@ -5,6 +5,7 @@
 #include "core/css/cssom/StyleValueFactory.h"
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSVariableReferenceValue.h"
@@ -32,14 +33,6 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
     return CSSKeywordValue::FromCSSValue(value);
   if (value.IsPrimitiveValue())
     return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
-  if (value.IsVariableReferenceValue())
-    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
-  if (value.IsCustomPropertyDeclaration()) {
-    const CSSVariableData* variable_data =
-        ToCSSCustomPropertyDeclaration(value).Value();
-    DCHECK(variable_data);
-    return CSSUnparsedValue::FromCSSValue(*variable_data);
-  }
   if (value.IsImageValue()) {
     return CSSURLImageValue::FromCSSValue(*ToCSSImageValue(value).Clone());
   }
@@ -51,6 +44,29 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
   // FIXME: We should enforce/document what the possible CSSValue structures
   // are for each property.
   switch (property_id) {
+    case CSSPropertyCaretColor:
+      // caret-color also supports 'auto'
+      if (value.IsIdentifierValue() &&
+          ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto) {
+        return CSSKeywordValue::Create("auto");
+      }
+      FALLTHROUGH;
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+    case CSSPropertyColor:
+    case CSSPropertyColumnRuleColor:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyTextDecorationColor:
+    case CSSPropertyWebkitTextEmphasisColor:
+      // Only 'currentcolor' is supported.
+      if (value.IsIdentifierValue() &&
+          ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
+        return CSSKeywordValue::Create("currentcolor");
+      }
+      return CSSUnsupportedStyleValue::Create(property_id, value);
     case CSSPropertyTransform:
       return CSSTransformValue::FromCSSValue(value);
     case CSSPropertyObjectPosition:
@@ -76,8 +92,17 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
 
 CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
                                             const CSSValue& value) {
+  // These cannot be overridden by individual properties.
   if (value.IsCSSWideKeyword())
     return CSSKeywordValue::FromCSSValue(value);
+  if (value.IsVariableReferenceValue())
+    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
+  if (value.IsCustomPropertyDeclaration()) {
+    const CSSVariableData* variable_data =
+        ToCSSCustomPropertyDeclaration(value).Value();
+    DCHECK(variable_data);
+    return CSSUnparsedValue::FromCSSValue(*variable_data);
+  }
 
   CSSStyleValue* style_value =
       CreateStyleValueWithPropertyInternal(property_id, value);

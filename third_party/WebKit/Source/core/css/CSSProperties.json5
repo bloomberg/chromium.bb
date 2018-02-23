@@ -438,6 +438,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
       priority: "High",
+      keywords: ["currentcolor"]
     },
     {
       name: "direction",
@@ -742,6 +743,7 @@
       type_name: "StyleColor",
       computed_style_custom_functions: ["getter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "background-image",
@@ -802,6 +804,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "border-bottom-left-radius",
@@ -902,6 +905,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "border-left-style",
@@ -940,6 +944,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "border-right-style",
@@ -978,6 +983,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "border-top-left-radius",
@@ -1119,6 +1125,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["auto", "currentcolor"]
     },
     {
       name: "clear",
@@ -1926,6 +1933,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "outline-offset",
@@ -2597,6 +2605,7 @@
       default_value: "StyleColor::CurrentColor()",
       type_name: "StyleColor",
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "text-decoration-line",
@@ -3040,6 +3049,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter","setter"],
       custom_apply_functions_all: true,
+      keywords: ["currentcolor"]
     },
     {
       name: "column-rule-style",
