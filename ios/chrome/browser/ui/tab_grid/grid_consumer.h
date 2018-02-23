@@ -11,10 +11,25 @@
 @protocol GridConsumer
 
 // Tells the consumer to replace its current set of items with |items| and
-// update the selected index to be |selectedIndex|. It's an error to call this
-// method with a |selectedIndex| value higher than the maximum index of |items|.
+// update the selected index to be |selectedIndex|. |selectedIndex| is
+// disregarded if |items| is empty. It's an error to call this method with a
+// |selectedIndex| value higher than the maximum index of |items|.
 - (void)populateItems:(NSArray<GridItem*>*)items
-        selectedIndex:(NSInteger)selectedIndex;
+        selectedIndex:(NSUInteger)selectedIndex;
+
+// Tells the consumer to insert |item| at |index| and update the selected index
+// to be |selectedIndex|. It's an error to call this method with a
+// |selectedIndex| value higher than the maximum index of |items|.
+- (void)insertItem:(GridItem*)item
+           atIndex:(NSUInteger)index
+     selectedIndex:(NSUInteger)selectedIndex;
+
+// Tells the consumer to remove |item| at |index| and update the selected index
+// to be |selectedIndex|. |selectedIndex| is disregarded if the last item is
+// removed. It's an error to call this method with a |selectedIndex| value
+// higher than the maximum index of |items|.
+- (void)removeItemAtIndex:(NSUInteger)index
+            selectedIndex:(NSUInteger)selectedIndex;
 
 @end
 

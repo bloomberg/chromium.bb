@@ -37,6 +37,7 @@ const CGFloat kBorderWidth = 6.0f;
 // Public properties.
 @synthesize delegate = _delegate;
 @synthesize theme = _theme;
+@synthesize itemIdentifier = _itemIdentifier;
 @synthesize icon = _icon;
 @synthesize snapshot = _snapshot;
 @synthesize title = _title;

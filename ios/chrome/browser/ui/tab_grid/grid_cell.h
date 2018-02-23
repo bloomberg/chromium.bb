@@ -23,6 +23,9 @@
 @property(nonatomic, weak) id<GridCellDelegate> delegate;
 // The look of the cell.
 @property(nonatomic, assign) GridTheme theme;
+// Unique identifier for the cell's contents. This is used to ensure that
+// updates in an asynchronous callback are only made if the item is the same.
+@property(nonatomic, copy) NSString* itemIdentifier;
 // Settable UI elements of the cell.
 @property(nonatomic, weak) UIImage* icon;
 @property(nonatomic, weak) UIImage* snapshot;

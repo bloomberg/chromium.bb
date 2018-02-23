@@ -9,5 +9,6 @@
 #endif
 
 @implementation GridItem
+@synthesize identifier = _identifier;
 @synthesize title = _title;
 @end
