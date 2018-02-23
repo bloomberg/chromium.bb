@@ -68,23 +68,6 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       const NotificationTemplateBuilder& notification_template_builder,
       ABI::Windows::UI::Notifications::IToastNotification** toast_notification);
 
-  // Takes |launch_id| as input and decodes it, returning the values in the out
-  // parameters. |launch_id| and |notifiation_id| must be provided. Other
-  // pointers can be nullptr. Returns true if successful, but false otherwise.
-  static bool DecodeLaunchId(const std::string& launch_id,
-                             NotificationHandler::Type* notification_type,
-                             std::string* notification_id,
-                             std::string* profile_id,
-                             bool* incognito,
-                             GURL* origin_url) WARN_UNUSED_RESULT;
-
-  // Encodes a launch ID string given the input parameters.
-  static std::string EncodeLaunchId(NotificationHandler::Type notification_type,
-                                    const std::string& notification_id,
-                                    const std::string& profile_id,
-                                    bool incognito,
-                                    const GURL& origin_url);
-
   scoped_refptr<NotificationPlatformBridgeWinImpl> impl_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

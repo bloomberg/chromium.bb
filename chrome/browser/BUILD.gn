@@ -2956,6 +2956,8 @@ jumbo_split_static_library("browser") {
 
     if (enable_native_notifications) {
       sources += [
+        "notifications/notification_launch_id.cc",
+        "notifications/notification_launch_id.h",
         "notifications/notification_platform_bridge_win.cc",
         "notifications/notification_platform_bridge_win.h",
       ]
