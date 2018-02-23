@@ -21,28 +21,30 @@
   self = [super initWithType:0];
   if (self) {
     _action = action;
-    // TODO(crbug.com/805636) Theme below properly.
-    UIImage* defaultImage = [UIImage imageNamed:@"default_favicon"];
     switch (_action) {
       case ContentSuggestionsMostVisitedActionBookmark:
         self.title =
             l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS);
-        self.attributes = [FaviconAttributes attributesWithImage:defaultImage];
+        self.attributes = [FaviconAttributes
+            attributesWithImage:[UIImage imageNamed:@"ntp_bookmarks_icon"]];
         break;
       case ContentSuggestionsMostVisitedActionReadingList:
         self.title =
             l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST);
-        self.attributes = [FaviconAttributes attributesWithImage:defaultImage];
+        self.attributes = [FaviconAttributes
+            attributesWithImage:[UIImage imageNamed:@"ntp_readinglist_icon"]];
         break;
       case ContentSuggestionsMostVisitedActionRecentTabs:
         self.title =
             l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
-        self.attributes = [FaviconAttributes attributesWithImage:defaultImage];
+        self.attributes = [FaviconAttributes
+            attributesWithImage:[UIImage imageNamed:@"ntp_recent_icon"]];
         break;
       case ContentSuggestionsMostVisitedActionHistory:
         self.title =
             l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_HISTORY);
-        self.attributes = [FaviconAttributes attributesWithImage:defaultImage];
+        self.attributes = [FaviconAttributes
+            attributesWithImage:[UIImage imageNamed:@"ntp_history_icon"]];
         break;
     }
   }
