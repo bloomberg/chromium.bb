@@ -19,21 +19,17 @@ var computedStyleMap = testElement.computedStyleMap();
 
 function checks() {
   var result = computedStyleMap.get('background-image');
-  assert_true(result instanceof CSSURLImageValue);
+  assert_true(result instanceof CSSImageValue);
   assert_equals(result.toString(), 'url(\"' + imagePath + '\")');
-  assert_equals(result.state, 'loaded');
-  assert_equals(result.intrinsicWidth, 1);
-  assert_equals(result.intrinsicHeight, 1);
-  assert_equals(result.intrinsicRatio, 1);
 }
 
-var t1 = async_test('Getting a background-image with a relative URL image value returns a CSSURLImageValue');
+var t1 = async_test('Getting a background-image with a relative URL image value returns a CSSImageValue');
 function t1Callback() {
   t1.step(checks);
   t1.done();
 }
 
-var t2 = async_test('Getting a background-image with a URL image value returns a CSSURLImageValue');
+var t2 = async_test('Getting a background-image with a URL image value returns a CSSImageValue');
 function t2Callback() {
   testElement.style.backgroundImage = 'url(\"' + imagePath + '\")';
   t2.step(checks);

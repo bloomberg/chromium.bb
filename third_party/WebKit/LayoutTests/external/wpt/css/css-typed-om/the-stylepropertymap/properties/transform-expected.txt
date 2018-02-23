@@ -7,6 +7,5 @@ PASS Setting 'transform' to a percent throws TypeError
 PASS Setting 'transform' to a time throws TypeError
 PASS Setting 'transform' to a number throws TypeError
 PASS Setting 'transform' to a position throws TypeError
-PASS Setting 'transform' to an image throws TypeError
 Harness: the test ran to completion.
 

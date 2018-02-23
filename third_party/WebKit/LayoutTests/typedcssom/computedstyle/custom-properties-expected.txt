@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 PASS Getting a length type registered property returns a CSSUnitValue
-FAIL Getting a URL image type registered property returns a CSSURLImageValue assert_equals: expected "loaded" but got "unloaded"
+PASS Getting a URL image type registered property returns a CSSImageValue
 PASS Getting a width with a length type var value returns a CSSUnitValue
-PASS Getting a background-image with a URL image type var value returns a CSSURLImageValue
+PASS Getting a background-image with a URL image type var value returns a CSSImageValue
 PASS Getting an inherited length type registered property returns a CSSUnitValue
 PASS Getting a non-inherited length type registered property returns a CSSUnitValue
 FAIL Getting a height with a calc type containing var values returns a CSSCalcValue CSSCalcValue is not defined

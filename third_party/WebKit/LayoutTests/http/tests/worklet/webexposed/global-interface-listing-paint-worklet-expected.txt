@@ -2,10 +2,7 @@ CONSOLE MESSAGE: line 10: This test logs exposed APIs once from each PaintWorkle
 CONSOLE MESSAGE: line 147: interface ByteLengthQueuingStrategy
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method size
-CONSOLE MESSAGE: line 147: interface CSSImageValue : CSSResourceValue
-CONSOLE MESSAGE: line 147:     getter intrinsicHeight
-CONSOLE MESSAGE: line 147:     getter intrinsicRatio
-CONSOLE MESSAGE: line 147:     getter intrinsicWidth
+CONSOLE MESSAGE: line 147: interface CSSImageValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter value
@@ -65,9 +62,6 @@ CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter x
 CONSOLE MESSAGE: line 147:     setter y
-CONSOLE MESSAGE: line 147: interface CSSResourceValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     getter state
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSRotate : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter angle
 CONSOLE MESSAGE: line 147:     getter x
@@ -118,9 +112,6 @@ CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter x
 CONSOLE MESSAGE: line 147:     setter y
 CONSOLE MESSAGE: line 147:     setter z
-CONSOLE MESSAGE: line 147: interface CSSURLImageValue : CSSImageValue
-CONSOLE MESSAGE: line 147:     getter url
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSUnitValue : CSSNumericValue
 CONSOLE MESSAGE: line 147:     getter unit
 CONSOLE MESSAGE: line 147:     getter value
@@ -285,10 +276,7 @@ CONSOLE MESSAGE: line 147:     method registerPaint
 CONSOLE MESSAGE: line 147: interface ByteLengthQueuingStrategy
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method size
-CONSOLE MESSAGE: line 147: interface CSSImageValue : CSSResourceValue
-CONSOLE MESSAGE: line 147:     getter intrinsicHeight
-CONSOLE MESSAGE: line 147:     getter intrinsicRatio
-CONSOLE MESSAGE: line 147:     getter intrinsicWidth
+CONSOLE MESSAGE: line 147: interface CSSImageValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSKeywordValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter value
@@ -348,9 +336,6 @@ CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter x
 CONSOLE MESSAGE: line 147:     setter y
-CONSOLE MESSAGE: line 147: interface CSSResourceValue : CSSStyleValue
-CONSOLE MESSAGE: line 147:     getter state
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSRotate : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter angle
 CONSOLE MESSAGE: line 147:     getter x
@@ -401,9 +386,6 @@ CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter x
 CONSOLE MESSAGE: line 147:     setter y
 CONSOLE MESSAGE: line 147:     setter z
-CONSOLE MESSAGE: line 147: interface CSSURLImageValue : CSSImageValue
-CONSOLE MESSAGE: line 147:     getter url
-CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSUnitValue : CSSNumericValue
 CONSOLE MESSAGE: line 147:     getter unit
 CONSOLE MESSAGE: line 147:     getter value

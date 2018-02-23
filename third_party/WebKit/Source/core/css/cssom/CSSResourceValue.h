@@ -12,8 +12,6 @@
 namespace blink {
 
 class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
-  DEFINE_WRAPPERTYPEINFO();
-
  public:
   virtual ~CSSResourceValue() = default;
 
