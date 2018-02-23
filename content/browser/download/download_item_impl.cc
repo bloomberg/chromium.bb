@@ -42,6 +42,7 @@
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
@@ -50,7 +51,6 @@
 #include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/download_ukm_helper.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
@@ -72,7 +72,7 @@ namespace content {
 namespace {
 
 bool DeleteDownloadedFile(const base::FilePath& path) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   // Make sure we only delete files.
   if (base::DirectoryExists(path))
@@ -94,14 +94,14 @@ void DeleteDownloadedFileDone(
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
 base::FilePath DownloadFileDetach(std::unique_ptr<DownloadFile> download_file) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
   return full_path;
 }
 
 base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath temp_file_path;
   if (!base::CreateTemporaryFile(&temp_file_path))
     return base::FilePath();
@@ -115,7 +115,7 @@ base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
 }
 
 void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   download_file->Cancel();
 }
 
@@ -501,7 +501,7 @@ void DownloadItemImpl::StealDangerousDownload(
   if (delete_file_afterward) {
     if (download_file_) {
       base::PostTaskAndReplyWithResult(
-          GetDownloadTaskRunner().get(), FROM_HERE,
+          download::GetDownloadTaskRunner().get(), FROM_HERE,
           base::Bind(&DownloadFileDetach, base::Passed(&download_file_)),
           callback);
     } else {
@@ -512,7 +512,7 @@ void DownloadItemImpl::StealDangerousDownload(
     // Download item has now been deleted.
   } else if (download_file_) {
     base::PostTaskAndReplyWithResult(
-        GetDownloadTaskRunner().get(), FROM_HERE,
+        download::GetDownloadTaskRunner().get(), FROM_HERE,
         base::Bind(&MakeCopyOfDownloadFile, download_file_.get()), callback);
   } else {
     callback.Run(GetFullPath());
@@ -851,7 +851,7 @@ void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
     return;
   }
   base::PostTaskAndReplyWithResult(
-      GetDownloadTaskRunner().get(), FROM_HERE,
+      download::GetDownloadTaskRunner().get(), FROM_HERE,
       base::Bind(&DeleteDownloadedFile, GetFullPath()),
       base::Bind(&DeleteDownloadedFileDone, weak_ptr_factory_.GetWeakPtr(),
                  callback));
@@ -1616,7 +1616,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndUniquify,
                      // Safe because we control download file lifetime.
@@ -1729,7 +1729,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndAnnotate,
                      base::Unretained(download_file_.get()),
@@ -1946,7 +1946,7 @@ void DownloadItemImpl::InterruptWithPartialState(
         // There is no download file and this is transitioning from INTERRUPTED
         // to CANCELLED. The intermediate file is no longer usable, and should
         // be deleted.
-        GetDownloadTaskRunner()->PostTask(
+        download::GetDownloadTaskRunner()->PostTask(
             FROM_HERE, base::BindOnce(base::IgnoreResult(&DeleteDownloadedFile),
                                       GetFullPath()));
         destination_info_.current_path.clear();
@@ -2062,7 +2062,7 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
   DVLOG(20) << __func__ << "() destroy_file:" << destroy_file;
 
   if (destroy_file) {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         // Will be deleted at end of task execution.
         base::BindOnce(&DownloadFileCancel, std::move(download_file_)));
@@ -2071,7 +2071,7 @@ void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
     destination_info_.current_path.clear();
     received_slices_.clear();
   } else {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(base::IgnoreResult(&DownloadFileDetach),
                                   // Will be deleted at end of task execution.
                                   std::move(download_file_)));

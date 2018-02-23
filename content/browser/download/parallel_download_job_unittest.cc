@@ -11,10 +11,10 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_destination_observer.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -510,7 +510,8 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
 
   // The download file lives on the download sequence, and must
   // be deleted there.
-  GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, std::move(download_file));
+  download::GetDownloadTaskRunner()->DeleteSoon(FROM_HERE,
+                                                std::move(download_file));
   task_environment_.RunUntilIdle();
 }
 

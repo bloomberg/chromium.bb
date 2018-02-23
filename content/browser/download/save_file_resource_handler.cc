@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/download/download_task_runner.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/loader/resource_controller.h"
 #include "net/base/io_buffer.h"
@@ -54,7 +54,7 @@ void SaveFileResourceHandler::OnResponseStarted(
       url_, final_url_, save_item_id_, save_package_id_, render_process_id_,
       render_frame_routing_id_, GetRequestID(), content_disposition_,
       content_length_);
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveFileManager::StartSave, save_manager_, info));
   controller->Resume();
@@ -92,7 +92,7 @@ void SaveFileResourceHandler::OnReadCompleted(
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;
   read_buffer_.swap(buffer);
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveFileManager::UpdateSaveProgress, save_manager_,
                      save_item_id_, base::RetainedRef(buffer), bytes_read));
@@ -105,7 +105,7 @@ void SaveFileResourceHandler::OnResponseCompleted(
   if (authorization_state_ != AuthorizationState::AUTHORIZED)
     DCHECK(!status.is_success());
 
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SaveFileManager::SaveFinished, save_manager_,
                      save_item_id_, save_package_id_,

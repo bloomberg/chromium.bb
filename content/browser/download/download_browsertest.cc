@@ -32,12 +32,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_request_utils.h"
@@ -251,7 +251,7 @@ DownloadFileWithDelay::~DownloadFileWithDelay() {}
 void DownloadFileWithDelay::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   DownloadFileImpl::RenameAndUniquify(
       full_path, base::Bind(DownloadFileWithDelay::RenameCallbackWrapper,
                             owner_, callback));
@@ -263,7 +263,7 @@ void DownloadFileWithDelay::RenameAndAnnotate(
     const GURL& source_url,
     const GURL& referrer_url,
     const RenameCompletionCallback& callback) {
-  DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   DownloadFileImpl::RenameAndAnnotate(
       full_path,
       client_guid,
@@ -339,7 +339,7 @@ class CountingDownloadFile : public DownloadFileImpl {
                          observer) {}
 
   ~CountingDownloadFile() override {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_--;
   }
 
@@ -347,14 +347,14 @@ class CountingDownloadFile : public DownloadFileImpl {
                   const CancelRequestCallback& cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
     DownloadFileImpl::Initialize(callback, cancel_request_callback,
                                  received_slices, is_parallelizable);
   }
 
   static void GetNumberActiveFiles(int* result) {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     *result = active_files_;
   }
 
@@ -362,7 +362,7 @@ class CountingDownloadFile : public DownloadFileImpl {
   // until data is returned.
   static int GetNumberActiveFilesFromFileThread() {
     int result = -1;
-    GetDownloadTaskRunner()->PostTaskAndReply(
+    download::GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
         base::MessageLoop::current()->QuitWhenIdleClosure());
@@ -476,7 +476,7 @@ class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
 
  private:
   void InjectErrorIntoDownloadFile() {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ErrorInjectionDownloadFile::InjectStreamError,
                        base::Unretained(download_file_), injected_error_offset_,

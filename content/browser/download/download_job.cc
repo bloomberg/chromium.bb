@@ -5,8 +5,8 @@
 #include "content/browser/download/download_job.h"
 
 #include "base/bind_helpers.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -32,7 +32,7 @@ void DownloadJob::Pause() {
 
   DownloadFile* download_file = download_item_->download_file_.get();
   if (download_file) {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&DownloadFile::Pause,
                        // Safe because we control download file lifetime.
@@ -49,7 +49,7 @@ void DownloadJob::Resume(bool resume_request) {
 
   DownloadFile* download_file = download_item_->download_file_.get();
   if (download_file) {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&DownloadFile::Resume,
                        // Safe because we control download file lifetime.
@@ -64,7 +64,7 @@ void DownloadJob::Start(
     DownloadFile* download_file_,
     const DownloadFile::InitializeCallback& callback,
     const download::DownloadItem::ReceivedSlices& received_slices) {
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::Initialize,
                      // Safe because we control download file lifetime.
@@ -96,7 +96,7 @@ bool DownloadJob::AddInputStream(
   // download_file_ is owned by download_item_ on the UI thread and is always
   // deleted on the download task runner after download_file_ is nulled out.
   // So it's safe to use base::Unretained here.
-  GetDownloadTaskRunner()->PostTask(
+  download::GetDownloadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&DownloadFile::AddInputStream,
                                 base::Unretained(download_file),
                                 std::move(stream), offset, length));

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_task_runner.h"
+#include "components/download/public/common/download_task_runner.h"
 
 #include "base/task_scheduler/lazy_task_runner.h"
 #include "build/build_config.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -30,4 +30,4 @@ scoped_refptr<base::SequencedTaskRunner> GetDownloadTaskRunner() {
   return g_download_task_runner.Get();
 }
 
-}  // namespace content
+}  // namespace download

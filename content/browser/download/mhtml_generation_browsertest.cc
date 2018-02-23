@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/download/download_task_runner.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/mhtml_extra_parts.h"
@@ -338,7 +338,7 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
   };
 
   void TaskX() {
-    GetDownloadTaskRunner()->PostTask(
+    download::GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskY,
                        base::Unretained(this)));

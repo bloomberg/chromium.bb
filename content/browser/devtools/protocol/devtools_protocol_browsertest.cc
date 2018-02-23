@@ -21,11 +21,11 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -2406,7 +2406,7 @@ class CountingDownloadFile : public DownloadFileImpl {
                          observer) {}
 
   ~CountingDownloadFile() override {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_--;
   }
 
@@ -2414,14 +2414,14 @@ class CountingDownloadFile : public DownloadFileImpl {
                   const CancelRequestCallback& cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
     DownloadFileImpl::Initialize(callback, cancel_request_callback,
                                  received_slices, is_parallelizable);
   }
 
   static void GetNumberActiveFiles(int* result) {
-    DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+    DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     *result = active_files_;
   }
 
@@ -2429,7 +2429,7 @@ class CountingDownloadFile : public DownloadFileImpl {
   // until data is returned.
   static int GetNumberActiveFilesFromFileThread() {
     int result = -1;
-    GetDownloadTaskRunner()->PostTaskAndReply(
+    download::GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
         base::MessageLoop::current()->QuitWhenIdleClosure());

@@ -28,6 +28,7 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -37,7 +38,6 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/resource_downloader.h"
 #include "content/browser/download/url_downloader.h"
@@ -520,7 +520,7 @@ void DownloadManagerImpl::StartDownload(
   if (new_download &&
       info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE &&
       InterceptDownload(*info)) {
-    GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+    download::GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
     return;
   }
 
@@ -570,7 +570,8 @@ void DownloadManagerImpl::StartDownloadWithId(
                        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       // The ByteStreamReader lives and dies on the download sequence.
       if (info->result == download::DOWNLOAD_INTERRUPT_REASON_NONE)
-        GetDownloadTaskRunner()->DeleteSoon(FROM_HERE, stream.release());
+        download::GetDownloadTaskRunner()->DeleteSoon(FROM_HERE,
+                                                      stream.release());
       return;
     }
     download = item_iterator->second.get();
