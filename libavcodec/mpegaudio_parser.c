@@ -113,7 +113,7 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
         return buf_size;
     }
 
-    if (flush && !s->frame_size) {
+    if (flush && buf_size && !s->frame_size) {
         av_log(avctx, AV_LOG_WARNING, "Discarding invalid trailing data from mpeg audio stream.\n");
         *poutbuf = NULL;
         *poutbuf_size = 0;
