@@ -2583,11 +2583,11 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 #if CONFIG_FWD_KF
 static void show_existing_frame_reset(AV1Decoder *const pbi) {
-  assert(cm->show_existing_frame);
-
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  assert(cm->show_existing_frame);
 
   cm->frame_type = KEY_FRAME;
   cm->frame_offset = cm->current_video_frame;
