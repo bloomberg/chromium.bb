@@ -347,6 +347,9 @@ group("chromedriver_py_tests") {
   data_deps = [
     "//chrome/test/chromedriver",
   ]
+  if (is_component_build && is_mac) {
+    data_deps += [ "//chrome:chrome_framework" ]
+  }
 
   if (is_win) {
     # On Windows, the following target produces the final chrome.exe
