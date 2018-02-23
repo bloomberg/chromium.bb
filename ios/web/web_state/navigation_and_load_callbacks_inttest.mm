@@ -1164,8 +1164,14 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
   }));
 }
 
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FailedLoad FailedLoad
+#else
+#define MAYBE_FailedLoad DISABLED_FailedLoad
+#endif
 // Tests failed load after the navigation is sucessfully finished.
-TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
+// TODO(crbug.com/812669): Re-enable this test on devices.
+TEST_F(NavigationAndLoadCallbacksTest, MAYBE_FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
@@ -1256,7 +1262,7 @@ TEST_F(NavigationAndLoadCallbacksTest, StopNavigation) {
 #endif
 // Tests stopping a finished navigation. PageLoaded is never called.
 // TODO(crbug.com/812669): Re-enable this test on devices.
-TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
+TEST_F(NavigationAndLoadCallbacksTest, MAYBE_StopFinishedNavigation) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
