@@ -87,6 +87,7 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
       if (header.unacked_length < header_length) {
         QUIC_BUG << "Unsent stream data is acked. unacked_length: "
                  << header.unacked_length << " acked_length: " << header_length;
+        RecordInternalErrorLocation(QUIC_HEADERS_STREAM);
         CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                    "Unsent stream data is acked");
         return false;

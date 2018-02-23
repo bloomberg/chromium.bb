@@ -326,6 +326,7 @@ size_t QuicFramer::GetSerializedFrameLength(
              << "type:" << frame.type << "free_bytes:" << free_bytes
              << " first_frame:" << first_frame << " last_frame:" << last_frame
              << " seq num length:" << packet_number_length;
+    RecordInternalErrorLocation(QUIC_FRAMER);
     set_error(QUIC_INTERNAL_ERROR);
     visitor_->OnError(this);
     return 0;
