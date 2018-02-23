@@ -16,6 +16,12 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   import("//media/cdm/library_cdm/cdm_paths.gni")
 }
 
+declare_args() {
+  # Enables checks that ensure the packages are installable on all supported
+  # distributions.
+  enable_distro_version_check = true
+}
+
 assert(is_linux)
 
 packaging_files_executables = [
@@ -85,7 +91,7 @@ action_foreach("calculate_deb_dependencies") {
     target_cpu,
     "deb_{{source_name_part}}.deps",
   ]
-  if (is_desktop_linux && target_cpu == "x64") {
+  if (is_desktop_linux && target_cpu == "x64" && enable_distro_version_check) {
     args += [ "--distro-check" ]
   }
 }
@@ -129,7 +135,7 @@ action_foreach("calculate_rpm_dependencies") {
     "rpm_{{source_name_part}}.deps",
   ]
   args += rebase_path(packaging_files_shlibs, root_build_dir)
-  if (is_desktop_linux && target_cpu == "x64") {
+  if (is_desktop_linux && target_cpu == "x64" && enable_distro_version_check) {
     args += [ "--distro-check" ]
   }
 }
