@@ -36,7 +36,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       const ResourcePool::InUsePoolResource& resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) override;
-  void OrderingBarrier() override;
   void Flush() override;
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
@@ -75,6 +74,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     RasterBufferImpl(GpuRasterBufferProvider* client,
                      const ResourcePool::InUsePoolResource& in_use_resource,
                      GpuRasterBacking* backing,
+                     const gpu::SyncToken& before_raster_sync_token,
                      bool resource_has_previous_content);
     ~RasterBufferImpl() override;
 
@@ -87,10 +87,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
         const gfx::AxisTransform2d& transform,
         const RasterSource::PlaybackSettings& playback_settings) override;
 
-    void set_sync_token(const gpu::SyncToken& sync_token) {
-      before_raster_sync_token_ = sync_token;
-    }
-
    private:
     // These fields may only be used on the compositor thread.
     GpuRasterBufferProvider* const client_;
@@ -101,15 +97,12 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     const viz::ResourceFormat resource_format_;
     const gfx::ColorSpace color_space_;
     const bool resource_has_previous_content_;
-    const gpu::SyncToken returned_sync_token_;
+    const gpu::SyncToken before_raster_sync_token_;
     const gpu::Mailbox mailbox_;
     const GLenum texture_target_;
     const bool texture_is_overlay_candidate_;
     // Set to true once allocation is done in the worker thread.
     bool texture_storage_allocated_;
-    // A SyncToken for the worker thread to consume before using the mailbox
-    // texture it is given.
-    gpu::SyncToken before_raster_sync_token_;
     // A SyncToken to be returned from the worker thread, and waited on before
     // using the rastered resource.
     gpu::SyncToken after_raster_sync_token_;
@@ -125,8 +118,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const int msaa_sample_count_;
   const viz::ResourceFormat preferred_tile_format_;
   const bool enable_oop_rasterization_;
-
-  std::set<RasterBufferImpl*> pending_raster_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);
 };

@@ -440,14 +440,12 @@ class RasterBufferProviderPerfTest
       graph.Reset();
       ResetRasterTasks(raster_tasks);
       BuildTileTaskGraph(&graph, raster_tasks);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
@@ -478,7 +476,6 @@ class RasterBufferProviderPerfTest
       // Reset the tasks as for scheduling new state tasks are needed.
       ResetRasterTasks(raster_tasks[count % kNumVersions]);
       BuildTileTaskGraph(&graph, raster_tasks[count % kNumVersions]);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
       ++count;
@@ -486,7 +483,6 @@ class RasterBufferProviderPerfTest
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
     tile_task_manager_->CheckForCompletedTasks();
@@ -511,14 +507,12 @@ class RasterBufferProviderPerfTest
     do {
       graph.Reset();
       BuildTileTaskGraph(&graph, raster_tasks);
-      raster_buffer_provider_->OrderingBarrier();
       tile_task_manager_->ScheduleTasks(&graph);
       RunMessageLoopUntilAllTasksHaveCompleted();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     TaskGraph empty;
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
 

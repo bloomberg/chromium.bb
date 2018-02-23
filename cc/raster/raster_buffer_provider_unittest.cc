@@ -234,7 +234,6 @@ class RasterBufferProviderTest
                                 0 /* dependencies */);
     }
 
-    raster_buffer_provider_->OrderingBarrier();
     tile_task_manager_->ScheduleTasks(&graph_);
   }
 

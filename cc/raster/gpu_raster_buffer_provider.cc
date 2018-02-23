@@ -281,6 +281,7 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     const ResourcePool::InUsePoolResource& in_use_resource,
     GpuRasterBacking* backing,
+    const gpu::SyncToken& before_raster_sync_token,
     bool resource_has_previous_content)
     : client_(client),
       backing_(backing),
@@ -288,17 +289,13 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
       resource_format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       resource_has_previous_content_(resource_has_previous_content),
-      returned_sync_token_(backing->returned_sync_token),
+      before_raster_sync_token_(before_raster_sync_token),
       mailbox_(backing->mailbox),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
-      texture_storage_allocated_(backing->storage_allocated) {
-  client_->pending_raster_buffers_.insert(this);
-}
+      texture_storage_allocated_(backing->storage_allocated) {}
 
 GpuRasterBufferProvider::RasterBufferImpl::~RasterBufferImpl() {
-  client_->pending_raster_buffers_.erase(this);
-
   // This SyncToken was created on the worker context after rastering the
   // texture content.
   backing_->mailbox_sync_token = after_raster_sync_token_;
@@ -318,16 +315,10 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
-  // Either a SyncToken had to be made in OrderingBarrier, because a texture
-  // was made in AcquireBufferForRaster, or a texture already existed and we're
-  // reusing it. In that case a SyncToken was on the GpuBacking that we must
-  // wait on befor using the texture.
-  if (returned_sync_token_.HasData())
-    before_raster_sync_token_ = returned_sync_token_;
-  // The |sync_token_| passed in here was created on the compositor thread, or
-  // given back with the texture for reuse. This call returns another SyncToken
-  // generated on the worker thread to synchronize with after the raster is
-  // complete.
+  // The |before_raster_sync_token_| passed in here was created on the
+  // compositor thread, or given back with the texture for reuse. This call
+  // returns another SyncToken generated on the worker thread to synchronize
+  // with after the raster is complete.
   after_raster_sync_token_ = client_->PlaybackOnWorkerThread(
       mailbox_, texture_target_, texture_is_overlay_candidate_,
       texture_storage_allocated_, before_raster_sync_token_, resource_size_,
@@ -359,13 +350,14 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
 }
 
 GpuRasterBufferProvider::~GpuRasterBufferProvider() {
-  DCHECK(pending_raster_buffers_.empty());
 }
 
 std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
     uint64_t previous_content_id) {
+  gpu::SyncToken before_raster_sync_token;
+  bool new_resource = false;
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->compositor_context_provider = compositor_context_provider_;
@@ -380,32 +372,24 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     backing->texture_target = alloc.texture_target;
     backing->overlay_candidate = alloc.overlay_candidate;
     backing->mailbox = gpu::Mailbox::Generate();
-    // The SyncToken in order to use this mailbox on another context will be
-    // generated later by OrderingBarrier(), once for all mailboxes made at a
-    // given time.
     gl->ProduceTextureDirectCHROMIUM(backing->texture_id,
                                      backing->mailbox.name);
+    before_raster_sync_token =
+        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
 
     resource.set_gpu_backing(std::move(backing));
+    new_resource = true;
   }
   GpuRasterBacking* backing =
       static_cast<GpuRasterBacking*>(resource.gpu_backing());
+  if (!new_resource)
+    before_raster_sync_token = backing->returned_sync_token;
 
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
   return std::make_unique<RasterBufferImpl>(this, resource, backing,
+                                            before_raster_sync_token,
                                             resource_has_previous_content);
-}
-
-void GpuRasterBufferProvider::OrderingBarrier() {
-  TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
-
-  gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
-  gpu::SyncToken sync_token =
-      LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
-  for (RasterBufferImpl* buffer : pending_raster_buffers_)
-    buffer->set_sync_token(sync_token);
-  pending_raster_buffers_.clear();
 }
 
 void GpuRasterBufferProvider::Flush() {
@@ -483,7 +467,6 @@ uint64_t GpuRasterBufferProvider::SetReadyToDrawCallback(
 }
 
 void GpuRasterBufferProvider::Shutdown() {
-  pending_raster_buffers_.clear();
 }
 
 gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(

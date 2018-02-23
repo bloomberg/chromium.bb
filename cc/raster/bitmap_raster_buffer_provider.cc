@@ -101,10 +101,6 @@ BitmapRasterBufferProvider::AcquireBufferForRaster(
       resource_content_id, previous_content_id);
 }
 
-void BitmapRasterBufferProvider::OrderingBarrier() {
-  // No need to sync resources as this provider does not use GL context.
-}
-
 void BitmapRasterBufferProvider::Flush() {}
 
 viz::ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
