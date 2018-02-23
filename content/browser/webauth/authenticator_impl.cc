@@ -8,7 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64url.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "base/timer/timer.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/content_browser_client.h"
@@ -28,6 +31,11 @@
 #include "url/url_util.h"
 
 namespace content {
+
+namespace client_data {
+const char kCreateType[] = "webauthn.create";
+const char kGetType[] = "webauthn.get";
+}  // namespace client_data
 
 namespace {
 constexpr int32_t kCoseEs256 = -7;
@@ -113,11 +121,10 @@ std::vector<uint8_t> CreateAppId(const std::string& relying_party_id) {
 }
 
 webauth::mojom::MakeCredentialAuthenticatorResponsePtr
-CreateMakeCredentialResponse(CollectedClientData client_data,
+CreateMakeCredentialResponse(const std::string& client_data_json,
                              device::RegisterResponseData response_data) {
   auto response = webauth::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = webauth::mojom::CommonCredentialInfo::New();
-  std::string client_data_json = client_data.SerializeToJson();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
   common_info->raw_id = response_data.raw_id();
@@ -129,11 +136,10 @@ CreateMakeCredentialResponse(CollectedClientData client_data,
 }
 
 webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
-    CollectedClientData client_data,
+    const std::string& client_data_json,
     device::SignResponseData response_data) {
   auto response = webauth::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = webauth::mojom::CommonCredentialInfo::New();
-  std::string client_data_json = client_data.SerializeToJson();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
   common_info->raw_id = response_data.raw_id();
@@ -143,6 +149,15 @@ webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   response->signature = response_data.signature();
   response->user_handle.emplace();
   return response;
+}
+
+std::string Base64UrlEncode(const base::span<const uint8_t> input) {
+  std::string ret;
+  base::Base64UrlEncode(
+      base::StringPiece(reinterpret_cast<const char*>(input.data()),
+                        input.size()),
+      base::Base64UrlEncodePolicy::OMIT_PADDING, &ret);
+  return ret;
 }
 
 }  // namespace
@@ -171,6 +186,61 @@ AuthenticatorImpl::~AuthenticatorImpl() {}
 
 void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+// static
+std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
+    const std::string& type,
+    const url::Origin& origin,
+    base::span<const uint8_t> challenge,
+    base::Optional<base::span<const uint8_t>> token_binding) {
+  static constexpr char kTypeKey[] = "type";
+  static constexpr char kChallengeKey[] = "challenge";
+  static constexpr char kOriginKey[] = "origin";
+  static constexpr char kTokenBindingKey[] = "tokenBinding";
+
+  base::DictionaryValue client_data;
+  client_data.SetKey(kTypeKey, base::Value(type));
+  client_data.SetKey(kChallengeKey, base::Value(Base64UrlEncode(challenge)));
+  client_data.SetKey(kOriginKey, base::Value(origin.Serialize()));
+
+  base::DictionaryValue token_binding_dict;
+  static constexpr char kTokenBindingStatusKey[] = "status";
+  static constexpr char kTokenBindingIdKey[] = "id";
+  static constexpr char kTokenBindingSupportedStatus[] = "supported";
+  static constexpr char kTokenBindingNotSupportedStatus[] = "not-supported";
+  static constexpr char kTokenBindingPresentStatus[] = "present";
+
+  if (token_binding) {
+    if (token_binding->empty()) {
+      token_binding_dict.SetKey(kTokenBindingStatusKey,
+                                base::Value(kTokenBindingSupportedStatus));
+    } else {
+      token_binding_dict.SetKey(kTokenBindingStatusKey,
+                                base::Value(kTokenBindingPresentStatus));
+      token_binding_dict.SetKey(kTokenBindingIdKey,
+                                base::Value(Base64UrlEncode(*token_binding)));
+    }
+  } else {
+    token_binding_dict.SetKey(kTokenBindingStatusKey,
+                              base::Value(kTokenBindingNotSupportedStatus));
+  }
+
+  client_data.SetKey(kTokenBindingKey, std::move(token_binding_dict));
+
+  if (base::RandDouble() < 0.2) {
+    // An extra key is sometimes added to ensure that RPs do not make
+    // unreasonably specific assumptions about the clientData JSON. This is
+    // done in the fashion of
+    // https://tools.ietf.org/html/draft-davidben-tls-grease-01
+    client_data.SetKey("new_keys_may_be_added_here",
+                       base::Value("do not compare clientDataJSON against a "
+                                   "template. See https://goo.gl/yabPex"));
+  }
+
+  std::string json;
+  base::JSONWriter::Write(client_data, &json);
+  return json;
 }
 
 // mojom::Authenticator
@@ -217,15 +287,6 @@ void AuthenticatorImpl::MakeCredential(
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
-  client_data_ = CollectedClientData::Create(client_data::kCreateType,
-                                             caller_origin.Serialize(),
-                                             std::move(options->challenge));
-
-  // SHA-256 hash of the JSON data structure.
-  std::vector<uint8_t> client_data_hash(crypto::kSHA256Length);
-  crypto::SHA256HashString(client_data_.SerializeToJson(),
-                           client_data_hash.data(), client_data_hash.size());
-
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
       base::Bind(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
@@ -237,10 +298,13 @@ void AuthenticatorImpl::MakeCredential(
   for (const auto& credential : options->exclude_credentials) {
     registered_keys.push_back(credential->id);
   }
+
   // Save client data to return with the authenticator response.
-  client_data_ = CollectedClientData::Create(client_data::kCreateType,
-                                             caller_origin.Serialize(),
-                                             std::move(options->challenge));
+  // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
+  // communicate with the origin.
+  client_data_json_ = SerializeCollectedClientDataToJson(
+      client_data::kCreateType, caller_origin, std::move(options->challenge),
+      base::nullopt);
 
   const bool individual_attestation =
       GetContentClient()
@@ -259,7 +323,7 @@ void AuthenticatorImpl::MakeCredential(
   // relying party (hence the name of the parameter).
   u2f_request_ = device::U2fRegister::TryRegistration(
       relying_party_id_, connector_, protocols_, registered_keys,
-      ConstructClientDataHash(client_data_.SerializeToJson()),
+      ConstructClientDataHash(client_data_json_),
       CreateAppId(relying_party_id_), individual_attestation,
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -311,13 +375,15 @@ void AuthenticatorImpl::GetAssertion(
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
   // Save client data to return with the authenticator response.
-  client_data_ = CollectedClientData::Create(client_data::kGetType,
-                                             caller_origin.Serialize(),
-                                             std::move(options->challenge));
+  // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
+  // communicate with the origin.
+  client_data_json_ = SerializeCollectedClientDataToJson(
+      client_data::kGetType, caller_origin, std::move(options->challenge),
+      base::nullopt);
 
   u2f_request_ = device::U2fSign::TrySign(
       options->relying_party_id, connector_, protocols_, handles,
-      ConstructClientDataHash(client_data_.SerializeToJson()),
+      ConstructClientDataHash(client_data_json_),
       CreateAppId(options->relying_party_id),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
@@ -365,7 +431,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::SUCCESS,
-          CreateMakeCredentialResponse(std::move(client_data_),
+          CreateMakeCredentialResponse(std::move(client_data_json_),
                                        std::move(*response_data)));
       return;
   }
@@ -387,7 +453,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
         webauth::mojom::AuthenticatorStatus::SUCCESS,
-        CreateMakeCredentialResponse(std::move(client_data_),
+        CreateMakeCredentialResponse(std::move(client_data_json_),
                                      std::move(response_data)));
   }
 }
@@ -416,7 +482,7 @@ void AuthenticatorImpl::OnSignResponse(
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           webauth::mojom::AuthenticatorStatus::SUCCESS,
-          CreateGetAssertionResponse(std::move(client_data_),
+          CreateGetAssertionResponse(std::move(client_data_json_),
                                      std::move(*response_data)));
       return;
   }
@@ -460,7 +526,7 @@ void AuthenticatorImpl::Cleanup() {
   u2f_request_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
-  client_data_ = CollectedClientData();
+  client_data_json_.clear();
 }
 
 }  // namespace content

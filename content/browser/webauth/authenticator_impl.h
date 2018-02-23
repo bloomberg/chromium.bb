@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/browser/webauth/collected_client_data.h"
 #include "content/common/content_export.h"
 #include "device/fido/register_response_data.h"
 #include "device/fido/sign_response_data.h"
@@ -35,9 +35,21 @@ namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class RenderFrameHost;
+
+namespace client_data {
+// These enumerate the possible values for the `type` member of
+// CollectedClientData. See
+// https://w3c.github.io/webauthn/#dom-collectedclientdata-type
+CONTENT_EXPORT extern const char kCreateType[];
+CONTENT_EXPORT extern const char kGetType[];
+}  // namespace client_data
 
 // Implementation of the public Authenticator interface.
 class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
@@ -58,6 +70,17 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void Bind(webauth::mojom::AuthenticatorRequest request);
 
  private:
+  friend class AuthenticatorImplTest;
+
+  // Builds the CollectedClientData[1] dictionary with the given values,
+  // serializes it to JSON, and returns the resulting string.
+  // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
+  static std::string SerializeCollectedClientDataToJson(
+      const std::string& type,
+      const url::Origin& origin,
+      base::span<const uint8_t> challenge,
+      base::Optional<base::span<const uint8_t>> token_binding);
+
   // mojom:Authenticator
   void MakeCredential(
       webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
@@ -107,8 +130,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
 
-  // Holds the client data to be returned to the caller.
-  CollectedClientData client_data_;
+  // Holds the client data to be returned to the caller in JSON format.
+  std::string client_data_json_;
   webauth::mojom::AttestationConveyancePreference attestation_preference_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;

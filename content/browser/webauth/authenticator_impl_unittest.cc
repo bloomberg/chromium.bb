@@ -17,7 +17,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "content/browser/webauth/collected_client_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
@@ -66,11 +65,13 @@ constexpr uint8_t kTestChallengeBytes[] = {
 
 constexpr char kTestRegisterClientDataJsonString[] =
     R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
-    R"("google.com","tokenBinding":"unused","type":"webauthn.create"})";
+    R"("https://a.google.com","tokenBinding":{"status":"not-supported"},)"
+    R"("type":"webauthn.create"})";
 
 constexpr char kTestSignClientDataJsonString[] =
     R"({"challenge":"aHE0loIi7BcgLkJQX47SsWriLxa7BbiMJdueYCZF8UE","origin":)"
-    R"("google.com","tokenBinding":"unused","type":"webauthn.get"})";
+    R"("https://a.google.com","tokenBinding":{"status":"not-supported"},)"
+    R"("type":"webauthn.get"})";
 
 constexpr OriginRelyingPartyIdPair kValidRelyingPartyTestCases[] = {
     {"http://localhost", "localhost"},
@@ -212,45 +213,6 @@ GetTestPublicKeyCredentialRequestOptions() {
   return options;
 }
 
-CollectedClientData GetTestClientData(std::string type) {
-  return CollectedClientData::Create(std::move(type), kTestRelyingPartyId,
-                                     GetTestChallengeBytes());
-}
-
-class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
- public:
-  AuthenticatorImplTest() {}
-  ~AuthenticatorImplTest() override {}
-
- protected:
-  // Simulates navigating to a page and getting the page contents and language
-  // for that navigation.
-  void SimulateNavigation(const GURL& url) {
-    if (main_rfh()->GetLastCommittedURL() != url)
-      NavigateAndCommit(url);
-  }
-
-  AuthenticatorPtr ConnectToAuthenticator() {
-    authenticator_impl_ = std::make_unique<AuthenticatorImpl>(main_rfh());
-    AuthenticatorPtr authenticator;
-    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
-    return authenticator;
-  }
-
-  AuthenticatorPtr ConnectToAuthenticator(
-      service_manager::Connector* connector,
-      std::unique_ptr<base::OneShotTimer> timer) {
-    authenticator_impl_.reset(
-        new AuthenticatorImpl(main_rfh(), connector, std::move(timer)));
-    AuthenticatorPtr authenticator;
-    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
-    return authenticator;
-  }
-
- private:
-  std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
-};
-
 class TestMakeCredentialCallback {
  public:
   TestMakeCredentialCallback()
@@ -318,6 +280,59 @@ class TestGetAssertionCallback {
 };
 
 }  // namespace
+
+class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
+ public:
+  AuthenticatorImplTest() {}
+  ~AuthenticatorImplTest() override {}
+
+ protected:
+  // Simulates navigating to a page and getting the page contents and language
+  // for that navigation.
+  void SimulateNavigation(const GURL& url) {
+    if (main_rfh()->GetLastCommittedURL() != url)
+      NavigateAndCommit(url);
+  }
+
+  AuthenticatorPtr ConnectToAuthenticator() {
+    authenticator_impl_ = std::make_unique<AuthenticatorImpl>(main_rfh());
+    AuthenticatorPtr authenticator;
+    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
+  AuthenticatorPtr ConnectToAuthenticator(
+      service_manager::Connector* connector,
+      std::unique_ptr<base::OneShotTimer> timer) {
+    authenticator_impl_.reset(
+        new AuthenticatorImpl(main_rfh(), connector, std::move(timer)));
+    AuthenticatorPtr authenticator;
+    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
+  url::Origin GetTestOrigin() {
+    const GURL test_relying_party_url(kTestOrigin1);
+    CHECK(test_relying_party_url.is_valid());
+    return url::Origin::Create(test_relying_party_url);
+  }
+
+  std::string GetTestClientDataJSON(std::string type) {
+    return AuthenticatorImpl::SerializeCollectedClientDataToJson(
+        std::move(type), GetTestOrigin(), GetTestChallengeBytes(),
+        base::nullopt);
+  }
+
+  std::string GetTokenBindingTestClientDataJSON(
+      base::Optional<base::span<const uint8_t>> token_binding) {
+    return AuthenticatorImpl::SerializeCollectedClientDataToJson(
+        client_data::kGetType, GetTestOrigin(), GetTestChallengeBytes(),
+        token_binding);
+  }
+
+ private:
+  std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
+};
 
 // Verify behavior for various combinations of origins and rp id's.
 TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
@@ -406,15 +421,36 @@ void CheckJSONIsSubsetOfJSON(base::StringPiece subset_str,
 
 // Test that client data serializes to JSON properly.
 TEST_F(AuthenticatorImplTest, TestSerializedRegisterClientData) {
-  CheckJSONIsSubsetOfJSON(
-      kTestRegisterClientDataJsonString,
-      GetTestClientData(client_data::kCreateType).SerializeToJson());
+  CheckJSONIsSubsetOfJSON(kTestRegisterClientDataJsonString,
+                          GetTestClientDataJSON(client_data::kCreateType));
 }
 
 TEST_F(AuthenticatorImplTest, TestSerializedSignClientData) {
-  CheckJSONIsSubsetOfJSON(
-      kTestSignClientDataJsonString,
-      GetTestClientData(client_data::kGetType).SerializeToJson());
+  CheckJSONIsSubsetOfJSON(kTestSignClientDataJsonString,
+                          GetTestClientDataJSON(client_data::kGetType));
+}
+
+TEST_F(AuthenticatorImplTest, TestTokenBindingClientData) {
+  const std::vector<
+      std::pair<base::Optional<std::vector<uint8_t>>, const char*>>
+      kTestCases = {
+          std::make_pair(base::nullopt,
+                         R"({"tokenBinding":{"status":"not-supported"}})"),
+          std::make_pair(std::vector<uint8_t>{},
+                         R"({"tokenBinding":{"status":"supported"}})"),
+          std::make_pair(
+              std::vector<uint8_t>{1, 2, 3, 4},
+              R"({"tokenBinding":{"status":"present","id":"AQIDBA"}})"),
+      };
+
+  for (const auto& test : kTestCases) {
+    const auto& token_binding = test.first;
+    const std::string expected_json_subset = test.second;
+    SCOPED_TRACE(expected_json_subset);
+
+    CheckJSONIsSubsetOfJSON(expected_json_subset,
+                            GetTokenBindingTestClientDataJSON(token_binding));
+  }
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {

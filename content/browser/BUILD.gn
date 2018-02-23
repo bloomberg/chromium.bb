@@ -2213,8 +2213,6 @@ jumbo_source_set("browser") {
       # Most webauth code is non-Android
       "webauth/authenticator_impl.cc",
       "webauth/authenticator_impl.h",
-      "webauth/collected_client_data.cc",
-      "webauth/collected_client_data.h",
     ]
     deps += [ "//third_party/flac" ]
   }
