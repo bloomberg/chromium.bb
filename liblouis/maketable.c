@@ -244,11 +244,12 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 			int inhibit_all = 0;
 			if (rule->opcode == CTO_NoCross)
 				for (k = 0; k < rule->charslen - 1; k++)
-					if (data[k + 1] == '>')
+					if (data[k + 1] == '>') {
 						if (data[-1] == 'x')
 							inhibit_all = 1;
 						else
 							goto next_rule;
+					}
 
 			/* fill data */
 			switch (rule->opcode) {
