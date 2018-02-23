@@ -173,7 +173,8 @@ ${argHint}
       this[testFixture].prototype.testGenCppIncludes();
     if (this[testFixture].prototype.commandLineSwitches)
       output('#include "base/command_line.h"');
-    if (this[testFixture].prototype.featureList)
+    if (this[testFixture].prototype.featureList ||
+        this[testFixture].prototype.featureWithParameters)
       output('#include "base/test/scoped_feature_list.h"');
   }
   output();
@@ -395,7 +396,10 @@ function TEST_F(testFixture, testFunction, testBody) {
     var switches = this[testFixture].prototype.commandLineSwitches;
     var hasSwitches = switches && switches.length;
     var featureList = this[testFixture].prototype.featureList;
-    if ((!hasSwitches && !featureList) || typedefCppFixture == 'V8UnitTest') {
+    var featureWithParameters =
+        this[testFixture].prototype.featureWithParameters;
+    if ((!hasSwitches && !featureList && !featureWithParameters) ||
+        typedefCppFixture == 'V8UnitTest') {
       output(`
 typedef ${typedefCppFixture} ${testFixture};
 `);
@@ -404,11 +408,30 @@ typedef ${typedefCppFixture} ${testFixture};
       output(`
 class ${testFixture} : public ${typedefCppFixture} {
  protected:`);
-      if (featureList) {
+      if (featureList || featureWithParameters) {
         output(`
-  ${testFixture}() {
+  ${testFixture}() {`);
+        if (featureList) {
+          output(`
     scoped_feature_list_.InitWithFeatures({${featureList[0]}},
-                                          {${featureList[1]}});
+                                          {${featureList[1]}});`);
+        }
+        if (featureWithParameters) {
+          var feature = featureWithParameters[0];
+          var parameters = featureWithParameters[1];
+          output(`
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        ${feature}, {`);
+          for (var parameter of parameters) {
+            var parameterName = parameter[0];
+            var parameterValue = parameter[1];
+            output(`
+            {"${parameterName}", "${parameterValue}"},`);
+          }
+          output(`
+    });`);
+        }
+        output(`
   }`);
       } else {
         output(`
@@ -430,7 +453,7 @@ class ${testFixture} : public ${typedefCppFixture} {
       output(`
   }`);
       }
-      if (featureList) {
+      if (featureList || featureWithParameters) {
         output(`
   base::test::ScopedFeatureList scoped_feature_list_;`);
       }
