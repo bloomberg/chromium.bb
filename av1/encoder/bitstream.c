@@ -3948,8 +3948,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     tg_hdr_size += PRE_OBU_SIZE_BYTES;
     data += tg_hdr_size;
 
-    int tile_size_bytes;
-    int tile_col_size_bytes;
+    int tile_size_bytes = 0;
+    int tile_col_size_bytes = 0;
 
     for (tile_col = 0; tile_col < tile_cols; tile_col++) {
       TileInfo tile_info;
@@ -4024,8 +4024,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         uint32_t col_size = total_size - col_offset - 4;
         mem_put_le32(dst + col_offset + tg_hdr_size, col_size);
 
-        // If it is not final packing, record the maximum tile column size we
-        // see, otherwise, check if the tile size is out of the range.
+        // Record the maximum tile column size we see.
         *max_tile_col_size = AOMMAX(*max_tile_col_size, col_size);
       }
     }
@@ -4036,6 +4035,20 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                       &tile_size_bytes, &tile_col_size_bytes);
     }
 
+    // In EXT_TILE case, only use 1 tile group. Follow the obu syntax, write
+    // current tile group size before tile data(include tile column header).
+    // Tile group size doesn't include the bytes storing tg size.
+    total_size += tg_hdr_size - PRE_OBU_SIZE_BYTES;
+#if CONFIG_OBU_SIZING
+    const size_t length_field_size = aom_uleb_size_in_bytes(total_size);
+    memmove(dst + length_field_size, dst, total_size);
+    if (write_uleb_obu_size(total_size, dst) != AOM_CODEC_OK) assert(0);
+    total_size += length_field_size;
+#else
+    mem_put_le32(dst, total_size);
+    total_size += PRE_OBU_SIZE_BYTES;
+#endif  // CONFIG_OBU_SIZING
+
     // Now fill in the gaps in the uncompressed header.
     if (have_tiles) {
       assert(tile_col_size_bytes >= 1 && tile_col_size_bytes <= 4);
@@ -4044,7 +4057,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
       aom_wb_write_literal(saved_wb, tile_size_bytes - 1, 2);
     }
-    total_size += tg_hdr_size;
   } else {
 #endif  // CONFIG_EXT_TILE
 
