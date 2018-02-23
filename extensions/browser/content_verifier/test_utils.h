@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/common/extension_id.h"
 
@@ -50,6 +51,29 @@ class TestContentVerifyJobObserver : ContentVerifyJob::TestObserver {
   bool seen_on_hashes_ready_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentVerifyJobObserver);
+};
+
+// An extensions/ implementation of ContentVerifierDelegate for using in tests.
+// Provides mock versions of content verification mode, keys and fetch url.
+class MockContentVerifierDelegate : public ContentVerifierDelegate {
+ public:
+  MockContentVerifierDelegate();
+  ~MockContentVerifierDelegate() override;
+
+  // ContentVerifierDelegate:
+  ContentVerifierDelegate::Mode ShouldBeVerified(
+      const Extension& extension) override;
+  ContentVerifierKey GetPublicKey() override;
+  GURL GetSignatureFetchUrl(const ExtensionId& extension_id,
+                            const base::Version& version) override;
+  std::set<base::FilePath> GetBrowserImagePaths(
+      const extensions::Extension* extension) override;
+  void VerifyFailed(const ExtensionId& extension_id,
+                    ContentVerifyJob::FailureReason reason) override;
+  void Shutdown() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockContentVerifierDelegate);
 };
 
 namespace content_verifier_test_utils {

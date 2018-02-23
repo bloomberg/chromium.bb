@@ -13,13 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/content_hash_fetcher.h"
-#include "extensions/browser/content_verifier_delegate.h"
+#include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
@@ -80,47 +79,6 @@ class ContentHashFetcherWaiter {
   base::WeakPtrFactory<ContentHashFetcherWaiter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherWaiter);
-};
-
-// Used in setting up the behavior of our ContentHashFetcher.
-class MockDelegate : public ContentVerifierDelegate {
- public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
-
-  ContentVerifierDelegate::Mode ShouldBeVerified(
-      const Extension& extension) override {
-    return ContentVerifierDelegate::ENFORCE_STRICT;
-  }
-
-  ContentVerifierKey GetPublicKey() override {
-    return ContentVerifierKey(kWebstoreSignaturesPublicKey,
-                              kWebstoreSignaturesPublicKeySize);
-  }
-
-  GURL GetSignatureFetchUrl(const std::string& extension_id,
-                            const base::Version& version) override {
-    std::string url =
-        base::StringPrintf("http://localhost/getsignature?id=%s&version=%s",
-                           extension_id.c_str(), version.GetString().c_str());
-    return GURL(url);
-  }
-
-  std::set<base::FilePath> GetBrowserImagePaths(
-      const extensions::Extension* extension) override {
-    ADD_FAILURE() << "Unexpected call for this test";
-    return std::set<base::FilePath>();
-  }
-
-  void VerifyFailed(const std::string& extension_id,
-                    ContentVerifyJob::FailureReason reason) override {
-    ADD_FAILURE() << "Unexpected call for this test";
-  }
-
-  void Shutdown() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 class ContentHashFetcherTest : public ExtensionsTest {
@@ -199,7 +157,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
   EXPECT_FALSE(
       base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
 
-  MockDelegate delegate;
+  MockContentVerifierDelegate delegate;
   ContentHashFetcherWaiter waiter;
   GURL fetch_url =
       delegate.GetSignatureFetchUrl(extension->id(), extension->version());
@@ -237,7 +195,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
   std::string addition = "//hello world";
   ASSERT_TRUE(
       base::AppendToFile(script_path, addition.c_str(), addition.size()));
-  MockDelegate delegate;
+  MockContentVerifierDelegate delegate;
   ContentHashFetcherWaiter waiter;
   GURL fetch_url =
       delegate.GetSignatureFetchUrl(extension->id(), extension->version());
