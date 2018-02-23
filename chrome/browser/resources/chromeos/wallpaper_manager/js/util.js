@@ -438,6 +438,38 @@ WallpaperUtil.displayImage = function(imageElement, data, opt_callback) {
 };
 
 /**
+ * Sets the value of the surprise me checkbox (or the daily refresh toggle on
+ * the new picker).
+ * @param {boolean} checked The value used to set the checkbox.
+ */
+WallpaperUtil.setSurpriseMeCheckboxValue = function(checked) {
+  if (loadTimeData.getBoolean('useNewWallpaperPicker')) {
+    document.querySelectorAll('.daily-refresh-slider').forEach(element => {
+      element.classList.toggle('checked', checked);
+    });
+  } else {
+    $('surprise-me')
+        .querySelector('#checkbox')
+        .classList.toggle('checked', checked);
+  }
+};
+
+/**
+ * Gets the value of the surprise me checkbox (or the value of the daily refresh
+ * toggle on the new picker).
+ * @return {boolean} The value of the checkbox.
+ */
+WallpaperUtil.getSurpriseMeCheckboxValue = function() {
+  if (loadTimeData.getBoolean('useNewWallpaperPicker')) {
+    return document.querySelector('.daily-refresh-slider')
+        .classList.contains('checked');
+  }
+  return $('surprise-me')
+      .querySelector('#checkbox')
+      .classList.contains('checked');
+};
+
+/**
  * Runs chrome.test.sendMessage in test environment. Does nothing if running
  * in production environment.
  *
