@@ -29,7 +29,7 @@
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#1.0.5",
     "iron-scroll-target-behavior": "PolymerElements/iron-scroll-target-behavior#1.1.0",
     "iron-scroll-threshold": "PolymerElements/iron-scroll-threshold#2.0.0",
-    "iron-selector": "PolymerElements/iron-selector#1.5.2",
+    "iron-selector": "PolymerElements/iron-selector#2.0.1",
     "iron-test-helpers": "PolymerElements/iron-test-helpers#2.0.0",
     "iron-validatable-behavior": "PolymerElements/iron-validatable-behavior#1.1.1",
     "neon-animation": "PolymerElements/neon-animation#2.1.0",

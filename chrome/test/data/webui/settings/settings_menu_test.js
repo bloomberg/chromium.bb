@@ -62,6 +62,11 @@ cr.define('settings_menu', function() {
     // Test that navigating via the paper menu always clears the current
     // search URL parameter.
     test('clearsUrlSearchParam', function() {
+      // As of iron-selector 2.x, need to force iron-selector to update before
+      // clicking items on it, or wait for 'iron-items-changed'
+      const ironSelector = settingsMenu.$$('iron-selector');
+      ironSelector.forceSynchronousItemUpdate();
+
       const urlParams = new URLSearchParams('search=foo');
       settings.navigateTo(settings.routes.BASIC, urlParams);
       assertEquals(
