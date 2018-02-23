@@ -242,6 +242,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_SETTINGS_DIALOG_JS"
                  file="new/advanced_settings_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_SETTINGS_ITEM_HTML"
+                 file="new/advanced_settings_item.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_SETTINGS_ITEM_JS"
+                 file="new/advanced_settings_item.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_NUMBER_SETTINGS_SECTION_HTML"
                  file="new/number_settings_section.html"
                  type="chrome_html" />
