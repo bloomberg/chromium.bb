@@ -32,13 +32,16 @@ void InstallableAmbientBadgeInfoBar::AddToHomescreen(
 base::android::ScopedJavaLocalRef<jobject>
 InstallableAmbientBadgeInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   InstallableAmbientBadgeInfoBarDelegate* delegate = GetDelegate();
+  base::android::ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, delegate->GetUrl().spec());
 
   DCHECK(!delegate->GetPrimaryIcon().drawsNothing());
   base::android::ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(&delegate->GetPrimaryIcon());
 
   return Java_InstallableAmbientBadgeInfoBar_show(env, delegate->GetIconId(),
-                                                  java_bitmap);
+                                                  java_bitmap, java_url,
+                                                  delegate->is_installed());
 }
 
 void InstallableAmbientBadgeInfoBar::ProcessButton(int action) {}

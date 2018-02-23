@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -32,20 +33,30 @@ class InstallableAmbientBadgeInfoBarDelegate
   // Create and show the infobar.
   static void Create(content::WebContents* web_contents,
                      base::WeakPtr<Client> weak_client,
-                     const SkBitmap& primary_icon);
+                     const SkBitmap& primary_icon,
+                     const GURL& start_url,
+                     bool is_installed);
 
   void AddToHomescreen();
   const SkBitmap& GetPrimaryIcon() const;
+  const GURL& GetUrl() const { return start_url_; }
+  bool is_installed() const { return is_installed_; }
 
  private:
   InstallableAmbientBadgeInfoBarDelegate(base::WeakPtr<Client> weak_client,
-                                         const SkBitmap& primary_icon);
+                                         const SkBitmap& primary_icon,
+                                         const GURL& start_url,
+                                         bool is_installed);
 
   // InfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
 
   base::WeakPtr<Client> weak_client_;
   const SkBitmap primary_icon_;
+  const GURL& start_url_;
+
+  // Whether the current site is already installed.
+  bool is_installed_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallableAmbientBadgeInfoBarDelegate);
 };
