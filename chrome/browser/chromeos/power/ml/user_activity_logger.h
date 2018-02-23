@@ -25,13 +25,11 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
-namespace base {
-class Clock;
-}
-
 namespace chromeos {
 namespace power {
 namespace ml {
+
+class BootClock;
 
 // Logs user activity after an idle event is observed.
 // TODO(renjieliu): Add power-related activity as well.
@@ -107,12 +105,11 @@ class UserActivityLogger : public ui::UserActivityObserver,
   // Set the task runner for testing purpose.
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      std::unique_ptr<base::Clock> test_clock);
+      std::unique_ptr<BootClock> test_boot_clock);
 
   // Time when an idle event is received and we start logging. Null if an idle
   // event hasn't been observed.
-  // TODO(jiameng): replace it by base::TimeTicks (http://crbug.com/802942).
-  base::Time idle_event_start_;
+  base::Optional<base::TimeDelta> idle_event_start_since_boot_;
 
   chromeos::PowerManagerClient::LidState lid_state_ =
       chromeos::PowerManagerClient::LidState::NOT_PRESENT;
@@ -139,8 +136,8 @@ class UserActivityLogger : public ui::UserActivityObserver,
   // SuspendImminent and used by SuspendDone.
   base::Optional<power_manager::SuspendImminent::Reason> suspend_reason_;
 
-  // It is base::DefaultClock, but will be set to a mock clock for tests.
-  std::unique_ptr<base::Clock> clock_;
+  // It is RealBootClock, but will be set to FakeBootClock for tests.
+  std::unique_ptr<BootClock> boot_clock_;
 
   UserActivityLoggerDelegate* const logger_delegate_;
 

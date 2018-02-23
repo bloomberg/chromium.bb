@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/system/devicetype.h"
 
@@ -23,7 +23,7 @@ UserActivityLogger::UserActivityLogger(
     session_manager::SessionManager* session_manager,
     viz::mojom::VideoDetectorObserverRequest request,
     const chromeos::ChromeUserManager* user_manager)
-    : clock_(std::make_unique<base::DefaultClock>()),
+    : boot_clock_(std::make_unique<RealBootClock>()),
       logger_delegate_(delegate),
       idle_event_observer_(this),
       user_activity_observer_(this),
@@ -164,7 +164,7 @@ void UserActivityLogger::OnVideoActivityStarted() {
 
 void UserActivityLogger::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
-  idle_event_start_ = clock_->Now();
+  idle_event_start_since_boot_ = boot_clock_->GetTimeSinceBoot();
   ExtractFeatures(activity_data);
 }
 
@@ -216,35 +216,28 @@ void UserActivityLogger::ExtractFeatures(
   }
 
   // Set time related features.
+  features_.set_last_activity_day(activity_data.last_activity_day);
+
   features_.set_last_activity_time_sec(
-      (activity_data.last_activity_time -
-       activity_data.last_activity_time.LocalMidnight())
-          .InSeconds());
-  if (!activity_data.last_user_activity_time.is_null()) {
+      activity_data.last_activity_time_of_day.InSeconds());
+
+  if (activity_data.last_user_activity_time_of_day) {
     features_.set_last_user_activity_time_sec(
-        (activity_data.last_user_activity_time -
-         activity_data.last_user_activity_time.LocalMidnight())
-            .InSeconds());
-  }
-
-  base::Time::Exploded exploded;
-  activity_data.last_activity_time.LocalExplode(&exploded);
-  features_.set_last_activity_day(
-      static_cast<chromeos::power::ml::UserActivityEvent_Features_DayOfWeek>(
-          exploded.day_of_week));
-
-  if (!activity_data.last_mouse_time.is_null()) {
-    features_.set_time_since_last_mouse_sec(
-        (clock_->Now() - activity_data.last_mouse_time).InSeconds());
-  }
-  if (!activity_data.last_key_time.is_null()) {
-    features_.set_time_since_last_key_sec(
-        (clock_->Now() - activity_data.last_key_time).InSeconds());
+        activity_data.last_user_activity_time_of_day.value().InSeconds());
   }
 
   features_.set_recent_time_active_sec(
-      (activity_data.last_activity_time - activity_data.earliest_activity_time)
-          .InSeconds());
+      activity_data.recent_time_active.InSeconds());
+
+  if (activity_data.time_since_last_mouse) {
+    features_.set_time_since_last_mouse_sec(
+        activity_data.time_since_last_mouse.value().InSeconds());
+  }
+  if (activity_data.time_since_last_key) {
+    features_.set_time_since_last_key_sec(
+        activity_data.time_since_last_key.value().InSeconds());
+  }
+
 
   // Set device mode.
   if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {
@@ -286,7 +279,7 @@ void UserActivityLogger::ExtractFeatures(
 void UserActivityLogger::MaybeLogEvent(
     UserActivityEvent::Event::Type type,
     UserActivityEvent::Event::Reason reason) {
-  if (idle_event_start_.is_null())
+  if (!idle_event_start_since_boot_)
     return;
   screen_idle_timer_.Stop();
   UserActivityEvent activity_event;
@@ -294,20 +287,22 @@ void UserActivityLogger::MaybeLogEvent(
   UserActivityEvent::Event* event = activity_event.mutable_event();
   event->set_type(type);
   event->set_reason(reason);
-  event->set_log_duration_sec((clock_->Now() - idle_event_start_).InSeconds());
+  event->set_log_duration_sec(
+      (boot_clock_->GetTimeSinceBoot() - idle_event_start_since_boot_.value())
+          .InSeconds());
 
   *activity_event.mutable_features() = features_;
 
   // Log to metrics.
   logger_delegate_->LogActivity(activity_event);
-  idle_event_start_ = base::Time();
+  idle_event_start_since_boot_ = base::nullopt;
 }
 
 void UserActivityLogger::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    std::unique_ptr<base::Clock> test_clock) {
+    std::unique_ptr<BootClock> test_boot_clock) {
   screen_idle_timer_.SetTaskRunner(task_runner);
-  clock_ = std::move(test_clock);
+  boot_clock_ = std::move(test_boot_clock);
 }
 
 }  // namespace ml

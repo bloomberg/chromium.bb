@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -28,6 +29,12 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
+class BootClock;
+
+// This is time since midnight in the local time zone and may move back or
+// forward when DST starts or stops.
+using TimeOfDay = base::TimeDelta;
+
 // IdleEventNotifier listens to signals and notifies its observers when an idle
 // event is generated. An idle event is generated when the idle period reaches
 // |idle_delay_|. No further idle events will be generated until user becomes
@@ -38,31 +45,28 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
  public:
   struct ActivityData {
     ActivityData();
-    ActivityData(base::Time last_activity_time,
-                 base::Time earliest_activity_time);
 
     ActivityData(const ActivityData& input_data);
 
-    // Last activity time. This is the activity that triggers idle event.
-    base::Time last_activity_time;
+    UserActivityEvent_Features_DayOfWeek last_activity_day;
 
-    // Earliest activity time of a *sequence* of activities: whose idle period
-    // gap is smaller than |idle_delay_|. This value will be the same as
-    // |last_activity_time| if the earlier activity happened more than
-    // |idle_delay_| ago.
-    base::Time earliest_activity_time;
+    // Last activity time. This is the activity that triggers idle event.
+    TimeOfDay last_activity_time_of_day;
 
     // Last user activity time of the sequence of activities ending in the last
-    // activity. It could be different from |last_activity_time| if the last
-    // activity is not a user activity (e.g. video). It is unset (i.e. 0) if
+    // activity. It could be different from |last_activity_time_of_day|
+    // if the last activity is not a user activity (e.g. video). It is unset if
     // there is no user activity before the idle event is fired.
-    base::Time last_user_activity_time;
+    base::Optional<TimeOfDay> last_user_activity_time_of_day;
 
-    // Last mouse/key event time of the sequence of activities ending in the
-    // last activity. It is unset (i.e. 0) if there is no mouse/key activity
-    // before the idle event.
-    base::Time last_mouse_time;
-    base::Time last_key_time;
+    // Duration of activity up to the last activity.
+    base::TimeDelta recent_time_active;
+
+    // Duration from the Last mouse/key to the time when idle event is
+    // generated.  It is unset if there is no mouse/key activity before the idle
+    // event.
+    base::Optional<base::TimeDelta> time_since_last_mouse;
+    base::Optional<base::TimeDelta> time_since_last_key;
   };
 
   class Observer {
@@ -80,7 +84,9 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   ~IdleEventNotifier() override;
 
   // Set test clock so that we can check activity time.
-  void SetClockForTesting(std::unique_ptr<base::Clock> test_clock);
+  void SetClockForTesting(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                          std::unique_ptr<base::Clock> test_clock,
+                          std::unique_ptr<BootClock> test_boot_clock);
 
   // Adds or removes an observer.
   void AddObserver(Observer* observer);
@@ -114,6 +120,11 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     VIDEO,
   };
 
+  struct ActivityDataInternal;
+
+  ActivityData ConvertActivityData(
+      const ActivityDataInternal& internal_data) const;
+
   // Resets |idle_delay_timer_|, it's called when a new activity is observed.
   void ResetIdleDelayTimer();
 
@@ -128,6 +139,10 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
 
   // It is base::DefaultClock, but will be set to a mock clock for tests.
   std::unique_ptr<base::Clock> clock_;
+
+  // It is RealBootClock, but will be set to FakeBootClock for tests.
+  std::unique_ptr<BootClock> boot_clock_;
+
   base::OneShotTimer idle_delay_timer_;
 
   ScopedObserver<chromeos::PowerManagerClient,
@@ -142,7 +157,9 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
 
   base::ObserverList<Observer> observers_;
 
-  ActivityData data_;
+  // Holds activity timestamps while we monitor for idle events. It will be
+  // converted to an ActivityData when an idle event is sent out.
+  std::unique_ptr<ActivityDataInternal> internal_data_;
 
   // Whether video is playing.
   bool video_playing_ = false;
