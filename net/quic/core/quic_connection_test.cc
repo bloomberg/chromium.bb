@@ -2814,7 +2814,7 @@ TEST_P(QuicConnectionTest, MultipleAcks) {
   EXPECT_EQ(1u, last_packet);
   SendStreamDataToPeer(3, "foo", 0, NO_FIN, &last_packet);  // Packet 2
   EXPECT_EQ(2u, last_packet);
-  SendAckPacketToPeer();                                   // Packet 3
+  SendAckPacketToPeer();                                    // Packet 3
   SendStreamDataToPeer(5, "foo", 0, NO_FIN, &last_packet);  // Packet 4
   EXPECT_EQ(4u, last_packet);
   SendStreamDataToPeer(1, "foo", 3, NO_FIN, &last_packet);  // Packet 5

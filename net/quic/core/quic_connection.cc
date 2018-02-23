@@ -1021,28 +1021,27 @@ void QuicConnection::OnPacketComplete() {
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
                 << " for " << last_header_.connection_id;
 
+  QUIC_DLOG_IF(INFO, current_packet_content_ == SECOND_FRAME_IS_PADDING)
+      << ENDPOINT << "Received a padded PING packet";
+
   if (perspective_ == Perspective::IS_CLIENT) {
     QUIC_DVLOG(1) << ENDPOINT
                   << "Received a speculative connectivity probing packet for "
-                  << last_header_.connection_id << " frome ip:port: "
-                  << last_packet_source_address_.ToString() << " to ip:port "
+                  << last_header_.connection_id
+                  << " from ip:port: " << last_packet_source_address_.ToString()
+                  << " to ip:port: "
                   << last_packet_destination_address_.ToString();
     // TODO(zhongyi): change the method name.
     visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
                                           last_packet_source_address_);
-  } else if (current_packet_content_ == SECOND_FRAME_IS_PADDING) {
-    QUIC_DVLOG(1) << ENDPOINT << "Received a padded PING packet";
-    if (last_packet_source_address_ != peer_address_ ||
-        last_packet_destination_address_ != self_address_) {
-      // Padded PING packet associated with self/peer address change is a
-      // connectivity probing packet.
-      QUIC_DVLOG(1) << ENDPOINT << "Received a connectivity probing packet for "
-                    << last_header_.connection_id << " frome ip:port: "
-                    << last_packet_source_address_.ToString() << " to ip:port "
-                    << last_packet_destination_address_.ToString();
-      visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
-                                            last_packet_source_address_);
-    }
+  } else if (IsCurrentPacketConnectivityProbing()) {
+    QUIC_DVLOG(1) << ENDPOINT << "Received a connectivity probing packet for "
+                  << last_header_.connection_id
+                  << " from ip:port: " << last_packet_source_address_.ToString()
+                  << " to ip:port: "
+                  << last_packet_destination_address_.ToString();
+    visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
+                                          last_packet_source_address_);
   } else if (current_peer_migration_type_ != NO_CHANGE) {
     StartPeerMigration(current_peer_migration_type_);
   }
@@ -2681,6 +2680,15 @@ void QuicConnection::StartPeerMigration(AddressChangeType peer_migration_type) {
 void QuicConnection::OnConnectionMigration(AddressChangeType addr_change_type) {
   visitor_->OnConnectionMigration(addr_change_type);
   sent_packet_manager_.OnConnectionMigration(addr_change_type);
+}
+
+bool QuicConnection::IsCurrentPacketConnectivityProbing() const {
+  if (current_packet_content_ != SECOND_FRAME_IS_PADDING) {
+    return false;
+  }
+
+  return last_packet_source_address_ != peer_address_ ||
+         last_packet_destination_address_ != self_address_;
 }
 
 bool QuicConnection::ack_frame_updated() const {

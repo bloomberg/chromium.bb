@@ -799,6 +799,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // connection has been migrated.
   void OnConnectionMigration(AddressChangeType addr_change_type);
 
+  // Return whether the packet being processed is a connectivity probing.
+  // A packet is a connectivity probing if it is a padded ping packet with self
+  // and/or peer address changes.
+  bool IsCurrentPacketConnectivityProbing() const;
+
  private:
   friend class test::QuicConnectionPeer;
 
