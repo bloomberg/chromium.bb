@@ -194,8 +194,9 @@ HonorEditingBoundaryAtOrBeforeTemplate(
 
   // Return the last position before |pos| that is in the same editable region
   // as this position
-  return LastEditablePositionBeforePositionInRoot(pos.GetPosition(),
-                                                  *highest_root);
+  return PositionWithAffinityTemplate<Strategy>(
+      LastEditablePositionBeforePositionInRoot(pos.GetPosition(),
+                                               *highest_root));
 }
 
 PositionWithAffinity HonorEditingBoundaryAtOrBefore(
@@ -262,8 +263,9 @@ HonorEditingBoundaryAtOrAfterTemplate(
 
   // Return the next position after |pos| that is in the same editable region
   // as this position
-  return FirstEditablePositionAfterPositionInRoot(pos.GetPosition(),
-                                                  *highest_root);
+  return PositionWithAffinityTemplate<Strategy>(
+      FirstEditablePositionAfterPositionInRoot(pos.GetPosition(),
+                                               *highest_root));
 }
 
 PositionWithAffinity HonorEditingBoundaryAtOrAfter(
@@ -275,7 +277,8 @@ PositionWithAffinity HonorEditingBoundaryAtOrAfter(
 PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrAfter(
     const PositionInFlatTreeWithAffinity& pos,
     const PositionInFlatTree& anchor) {
-  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
+  return HonorEditingBoundaryAtOrAfterTemplate(
+      PositionInFlatTreeWithAffinity(pos), anchor);
 }
 
 VisiblePosition HonorEditingBoundaryAtOrAfter(const VisiblePosition& pos,
