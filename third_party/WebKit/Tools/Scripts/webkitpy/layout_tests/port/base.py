@@ -144,6 +144,8 @@ class Port(object):
         ('win10', 'x86'),
         ('trusty', 'x86_64'),
 
+        ('fuchsia', 'x86_64'),
+
         # FIXME: Technically this should be 'arm', but adding a third
         # architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to

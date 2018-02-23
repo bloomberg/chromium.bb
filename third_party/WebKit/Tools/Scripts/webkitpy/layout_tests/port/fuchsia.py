@@ -149,8 +149,11 @@ class _TargetHost(object):
 
         # Currently dynamic library loading is not implemented for packaged
         # apps. Copy libosmesa.so to /system/lib as a workaround.
-        self._target.PutFile(
-            os.path.join(build_path, 'libosmesa.so'), '/system/lib')
+        osmesa_path = os.path.join(build_path, 'libosmesa.so')
+        if not os.path.exists(osmesa_path):
+            # Only unstripped version of libosmesa.so is copied on Swarming bots.
+            osmesa_path = os.path.join(build_path, 'lib.unstripped/libosmesa.so')
+        self._target.PutFile(osmesa_path, '/system/lib')
 
         # Copy fonts.
         self._target.RunCommand(['mkdir', '/system/fonts'])
@@ -183,16 +186,16 @@ class _TargetHost(object):
 class FuchsiaPort(base.Port):
     port_name = 'fuchsia'
 
-    SUPPORTED_VERSIONS = ('sdk',)
+    SUPPORTED_VERSIONS = ('fuchsia',)
 
-    FALLBACK_PATHS = {'sdk': ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()}
+    FALLBACK_PATHS = {'fuchsia': ['fuchsia'] + linux.LinuxPort.latest_platform_fallback_path()}
 
     def __init__(self, host, port_name, **kwargs):
         _import_fuchsia_runner()
         super(FuchsiaPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'fuchsia'
-        self._version = 'sdk'
+        self._version = 'fuchsia'
 
         # TODO(sergeyu): Add support for arm64.
         self._architecture = 'x86_64'
@@ -234,7 +237,7 @@ class FuchsiaPort(base.Port):
             _log.error('Failed to start qemu: %s.', str(e))
             return exit_codes.NO_DEVICES_EXIT_STATUS
 
-    def cleanup_test_run(self):
+    def clean_up_test_run(self):
         if self._target_host:
             self._target_host.cleanup()
             self._target_host = None
@@ -316,7 +319,7 @@ class FuchsiaServerProcess(server_process.ServerProcess):
 
         command = ['%s=%s' % (k, v) for k, v in self._env.items()] + \
             self._cmd + \
-            ['--stdin-redirect=%s:%s' %
+            ['--no-sandbox', '--stdin-redirect=%s:%s' %
              (qemu_target.HOST_IP_ADDRESS, stdin_port)]
         proc = self._port.get_target_host().run_command(command)
         # Wait for incoming connection from content_shell.

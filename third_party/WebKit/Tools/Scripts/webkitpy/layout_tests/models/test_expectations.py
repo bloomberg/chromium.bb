@@ -275,10 +275,12 @@ class TestExpectationLine(object):
 
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
     _configuration_tokens_list = [
+        'Android',
+        'Fuchsia',
+        'Linux',
         'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
         'Win', 'Win7', 'Win10',
-        'Linux',
-        'Android',
+
         'Release',
         'Debug',
     ]
