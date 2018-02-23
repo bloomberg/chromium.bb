@@ -644,24 +644,7 @@ class MediaControlsImplInProductHelpTest : public MediaControlsImplTest {
   bool EnableDownloadInProductHelp() override { return true; }
 };
 
-// Disabled on Mac. Elusive Segfault on 10.12. See http://crbug.com/758076.
-#if defined(OS_MACOSX)
-#define MAYBE_DownloadButtonInProductHelp_Button \
-  DISABLED_DownloadButtonInProductHelp_Button
-#define MAYBE_DownloadButtonInProductHelp_ControlsVisibility \
-  DISABLED_DownloadButtonInProductHelp_ControlsVisibility
-#define MAYBE_DownloadButtonInProductHelp_ButtonVisibility \
-  DISABLED_DownloadButtonInProductHelp_ButtonVisibility
-#else
-#define MAYBE_DownloadButtonInProductHelp_Button \
-  DownloadButtonInProductHelp_Button
-#define MAYBE_DownloadButtonInProductHelp_ControlsVisibility \
-  DownloadButtonInProductHelp_ControlsVisibility
-#define MAYBE_DownloadButtonInProductHelp_ButtonVisibility \
-  DownloadButtonInProductHelp_ButtonVisibility
-#endif
-TEST_F(MediaControlsImplInProductHelpTest,
-       MAYBE_DownloadButtonInProductHelp_Button) {
+TEST_F(MediaControlsImplInProductHelpTest, DownloadButtonInProductHelp_Button) {
   EnsureSizing();
 
   // Inject the LayoutObject for the button to override the rect returned in
@@ -693,7 +676,7 @@ TEST_F(MediaControlsImplInProductHelpTest,
 }
 
 TEST_F(MediaControlsImplInProductHelpTest,
-       MAYBE_DownloadButtonInProductHelp_ControlsVisibility) {
+       DownloadButtonInProductHelp_ControlsVisibility) {
   EnsureSizing();
 
   // Inject the LayoutObject for the button to override the rect returned in
@@ -729,7 +712,7 @@ TEST_F(MediaControlsImplInProductHelpTest,
 }
 
 TEST_F(MediaControlsImplInProductHelpTest,
-       MAYBE_DownloadButtonInProductHelp_ButtonVisibility) {
+       DownloadButtonInProductHelp_ButtonVisibility) {
   EnsureSizing();
 
   // Inject the LayoutObject for the button to override the rect returned in
