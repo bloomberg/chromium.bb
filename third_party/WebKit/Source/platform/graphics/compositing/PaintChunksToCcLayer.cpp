@@ -130,7 +130,8 @@ class ConversionContext {
   struct StateEntry {
     // Remembers the type of paired begin that caused a state to be saved.
     // This is useful for emitting corresponding paired end.
-    enum class PairedType : char { kClip, kEffect } type;
+    enum class PairedType { kClip, kEffect } type;
+    int saved_count;
 
     const TransformPaintPropertyNode* transform;
     const ClipPaintPropertyNode* clip;
@@ -142,14 +143,8 @@ class ConversionContext {
 };
 
 ConversionContext::~ConversionContext() {
-  for (size_t i = state_stack_.size(); i--;) {
-    if (state_stack_[i].type == StateEntry::PairedType::kClip) {
-      AppendRestore(cc_list_, 1);
-    } else {
-      DCHECK_EQ(StateEntry::PairedType::kEffect, state_stack_[i].type);
-      AppendRestore(cc_list_, 2);
-    }
-  }
+  for (auto& entry : state_stack_)
+    AppendRestore(cc_list_, entry.saved_count);
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
@@ -172,11 +167,11 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
         state_stack_.back().type != StateEntry::PairedType::kClip)
       break;
     StateEntry& previous_state = state_stack_.back();
+    AppendRestore(cc_list_, previous_state.saved_count);
     current_transform_ = previous_state.transform;
     current_clip_ = previous_state.clip;
     DCHECK_EQ(previous_state.effect, current_effect_);
     state_stack_.pop_back();
-    AppendRestore(cc_list_, 1);
   }
 
   // Step 2: Collect all clips between the target clip and the current clip.
@@ -220,7 +215,7 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
     cc_list_.EndPaintOfPairedBegin();
 
     // Step 3b: Adjust state and push previous state onto clip stack.
-    state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kClip,
+    state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kClip, 1,
                                          current_transform_, current_clip_,
                                          current_effect_});
     current_transform_ = target_transform;
@@ -248,12 +243,7 @@ void ConversionContext::SwitchToEffect(
       break;
 
     StateEntry& previous_state = state_stack_.back();
-    if (previous_state.type == StateEntry::PairedType::kClip) {
-      AppendRestore(cc_list_, 1);
-    } else {
-      DCHECK_EQ(StateEntry::PairedType::kEffect, previous_state.type);
-      AppendRestore(cc_list_, 2);
-    }
+    AppendRestore(cc_list_, previous_state.saved_count);
     current_transform_ = previous_state.transform;
     current_clip_ = previous_state.clip;
     current_effect_ = previous_state.effect;
@@ -295,49 +285,70 @@ void ConversionContext::SwitchToEffect(
     // Step 3b: Apply non-spatial effects first, adjust CTM, then apply spatial
     // effects. Strictly speaking the CTM shall be appled first, it is done
     // in this particular order only to save one SaveOp.
-    // TODO(trchen): Omit one of the SaveLayerOp if no-op.
     cc_list_.StartPaint();
-
     cc::PaintFlags flags;
-    flags.setBlendMode(sub_effect->BlendMode());
-    // TODO(ajuma): This should really be rounding instead of flooring the
-    // alpha value, but that breaks slimming paint reftests.
-    flags.setAlpha(
-        static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity())));
-    flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
-        sub_effect->GetColorFilter()));
-    cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
+    int saved_count = 0;
+
+    auto save_layer_once = [this, &flags, &saved_count]() {
+      if (!saved_count) {
+        saved_count = 1;
+        cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
+      }
+    };
+
+    if (sub_effect->BlendMode() != SkBlendMode::kSrcOver ||
+        sub_effect->Opacity() != 1.f ||
+        sub_effect->GetColorFilter() != kColorFilterNone) {
+      flags.setBlendMode(sub_effect->BlendMode());
+      // TODO(ajuma): This should really be rounding instead of flooring the
+      // alpha value, but that breaks slimming paint reftests.
+      flags.setAlpha(
+          static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity())));
+      flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
+          sub_effect->GetColorFilter()));
+      save_layer_once();
+    }
 
     const TransformPaintPropertyNode* target_transform =
         sub_effect->LocalTransformSpace();
     if (current_transform_ != target_transform) {
+      save_layer_once();
       cc_list_.push<cc::ConcatOp>(
           static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
               GeometryMapper::SourceToDestinationProjection(
                   target_transform, current_transform_))));
     }
 
-    FloatPoint filter_origin = sub_effect->PaintOffset();
-    if (filter_origin != FloatPoint())
-      cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
-    // The size parameter is only used to computed the origin of zoom
-    // operation, which we never generate.
-    gfx::SizeF empty;
-    cc::PaintFlags filter_flags;
-    filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
-        sub_effect->Filter().AsCcFilterOperations(), empty));
-    cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
-    if (filter_origin != FloatPoint())
-      cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
+    if (sub_effect->Filter().IsEmpty()) {
+      save_layer_once();
+    } else {
+      FloatPoint filter_origin = sub_effect->PaintOffset();
+      if (filter_origin != FloatPoint()) {
+        save_layer_once();
+        cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
+      }
+      // The size parameter is only used to computed the origin of zoom
+      // operation, which we never generate.
+      gfx::SizeF empty;
+      cc::PaintFlags filter_flags;
+      filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
+          sub_effect->Filter().AsCcFilterOperations(), empty));
+      cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
+      if (filter_origin != FloatPoint())
+        cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
 
+      saved_count++;
+    }
+
+    DCHECK(saved_count);
     cc_list_.EndPaintOfPairedBegin();
 
     // Step 3c: Adjust state and push previous state onto effect stack.
     // TODO(trchen): Change input clip to expansion hint once implemented.
     const ClipPaintPropertyNode* input_clip = current_clip_;
     state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kEffect,
-                                         current_transform_, current_clip_,
-                                         current_effect_});
+                                         saved_count, current_transform_,
+                                         current_clip_, current_effect_});
     current_transform_ = target_transform;
     current_clip_ = input_clip;
     current_effect_ = sub_effect;
