@@ -524,6 +524,8 @@ static_library("non_code_constants") {
     "chrome_constants.cc",
     "chrome_constants.h",
     "chrome_icon_resources_win.h",
+    "chrome_switches.cc",
+    "chrome_switches.h",
     "env_vars.cc",
     "env_vars.h",
   ]
@@ -531,6 +533,13 @@ static_library("non_code_constants") {
   deps = [
     ":version_header",
     "//base",
+    "//ppapi/features",
+  ]
+
+  public_deps = [
+    ":features",
+    "//printing/features",
+    "//ui/base:ui_features",
   ]
 }
 
@@ -546,8 +555,6 @@ static_library("constants") {
     "chrome_paths_mac.mm",
     "chrome_paths_win.cc",
     "chrome_result_codes.h",
-    "chrome_switches.cc",
-    "chrome_switches.h",
     "pref_font_script_names-inl.h",
     "pref_font_webkit_names.h",
     "pref_names.cc",
