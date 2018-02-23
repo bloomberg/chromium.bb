@@ -499,7 +499,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode(), 0);
   int rv = connection->Init(
-      key.host_port_pair().ToString(), ssl_params, MEDIUM, SocketTag(),
+      key.host_port_pair().ToString(), ssl_params, MEDIUM, key.socket_tag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);

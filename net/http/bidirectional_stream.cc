@@ -119,6 +119,7 @@ BidirectionalStream::BidirectionalStream(
   http_request_info.url = request_info_->url;
   http_request_info.method = request_info_->method;
   http_request_info.extra_headers = request_info_->extra_headers;
+  http_request_info.socket_tag = request_info_->socket_tag;
   stream_request_ =
       session->http_stream_factory()->RequestBidirectionalStreamImpl(
           http_request_info, request_info_->priority, server_ssl_config,

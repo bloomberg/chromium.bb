@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
+#include "net/socket/socket_tag.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -27,6 +28,9 @@ struct NET_EXPORT BidirectionalStreamRequestInfo {
 
   // Request priority.
   RequestPriority priority;
+
+  // Socket tag to apply to sockets used to process this request.
+  SocketTag socket_tag;
 
   // Any extra request headers (including User-Agent).
   HttpRequestHeaders extra_headers;
