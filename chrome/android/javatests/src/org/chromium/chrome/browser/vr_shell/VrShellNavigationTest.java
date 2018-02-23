@@ -163,7 +163,7 @@ public class VrShellNavigationTest {
                 itemViews.get(0).getItem().getUrl());
 
         // Test that clicking on history items in VR works
-        itemViews.get(0).onClick();
+        ThreadUtils.runOnUiThreadBlocking(() -> itemViews.get(0).onClick());
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
         assertState(mVrTestFramework.getFirstTabWebContents(), Page.PAGE_2D_2,
