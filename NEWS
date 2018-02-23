@@ -18,6 +18,8 @@ issues]].
 - Add a fix for "phad" according to UEB Rule 10.7.3 thanks to Anthony
   Tibbs
 - Updates to the Urdu tables thanks to Jake Kyle from Compass Braille
+- Updates to the Chinese braille table (~zh-tw.ctb~) thanks to
+  Bo-Cheng Jhan
 
 ** Other changes
 *** Improved documentation
@@ -33,6 +35,7 @@ issues]].
   in combination with input, output position and modes. In essence all
   of the liblouis API is now supported and can be tested via the YAML
   tests. Thanks to Christian Egli.
+
 ** Deprecation notice
 
 ** Backwards incompatible changes
