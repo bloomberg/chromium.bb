@@ -60,10 +60,17 @@ class PLATFORM_EXPORT HeapAllocHooks {
   typedef void AllocationHook(Address, size_t, const char*);
   typedef void FreeHook(Address);
 
+  // Sets allocation hook. Only one hook is supported.
   static void SetAllocationHook(AllocationHook* hook) {
+    CHECK(!allocation_hook_ || !hook);
     allocation_hook_ = hook;
   }
-  static void SetFreeHook(FreeHook* hook) { free_hook_ = hook; }
+
+  // Sets free hook. Only one hook is supported.
+  static void SetFreeHook(FreeHook* hook) {
+    CHECK(!free_hook_ || !hook);
+    free_hook_ = hook;
+  }
 
   static void AllocationHookIfEnabled(Address address,
                                       size_t size,
