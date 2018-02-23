@@ -466,7 +466,7 @@ void DesktopCaptureDevice::Core::RequestWakeLock(
                            mojo::MakeRequest(&wake_lock_provider));
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventDisplaySleep,
-      device::mojom::WakeLockReason::kOther, "Desktop capture is running",
+      device::mojom::WakeLockReason::kOther, "Native desktop capture",
       mojo::MakeRequest(&wake_lock_));
 
   wake_lock_->RequestWakeLock();
