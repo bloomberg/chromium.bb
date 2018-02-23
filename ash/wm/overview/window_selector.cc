@@ -218,7 +218,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 }  // namespace
 
 // static
-bool WindowSelector::IsSelectable(aura::Window* window) {
+bool WindowSelector::IsSelectable(const aura::Window* window) {
   return wm::GetWindowState(window)->IsUserPositionable();
 }
 
