@@ -39,6 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "platform/animation/CompositorAnimationHost.h"
 
 namespace blink {
 

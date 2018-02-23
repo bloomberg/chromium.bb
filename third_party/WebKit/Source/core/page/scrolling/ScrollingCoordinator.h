@@ -191,7 +191,6 @@ class CORE_EXPORT ScrollingCoordinator final
       HeapHashMap<Member<ScrollableArea>, std::unique_ptr<WebScrollbarLayer>>;
   ScrollbarMap horizontal_scrollbars_;
   ScrollbarMap vertical_scrollbars_;
-  HashSet<const PaintLayer*> layers_with_touch_rects_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollingCoordinator);
 };

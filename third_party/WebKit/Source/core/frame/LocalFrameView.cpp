@@ -81,6 +81,7 @@
 #include "core/page/PrintContext.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/ScrollingCoordinatorContext.h"
 #include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/BlockPaintInvalidator.h"
@@ -223,10 +224,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       forcing_layout_parent_view_(false),
       needs_intersection_observation_(false),
       needs_forced_compositing_update_(false),
-      scroll_gesture_region_is_dirty_(false),
-      touch_event_target_rects_are_dirty_(false),
-      should_scroll_on_main_thread_is_dirty_(false),
-      was_scrollable_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()) {
@@ -637,33 +634,39 @@ ScrollingCoordinator* LocalFrameView::GetScrollingCoordinator() const {
   return p ? p->GetScrollingCoordinator() : nullptr;
 }
 
+ScrollingCoordinatorContext* LocalFrameView::GetScrollingContext() const {
+  LocalFrame* root = &GetFrame().LocalFrameRoot();
+  if (GetFrame() != root)
+    return root->View()->GetScrollingContext();
+
+  if (!scrolling_context_)
+    scrolling_context_.reset(new ScrollingCoordinatorContext());
+  return scrolling_context_.get();
+}
+
 CompositorAnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
-  // When m_animationHost is not nullptr, this is the LocalFrameView for an
-  // OOPIF.
-  if (animation_host_)
-    return animation_host_.get();
+  if (GetScrollingContext()->GetCompositorAnimationHost())
+    return GetScrollingContext()->GetCompositorAnimationHost();
 
-  if (&frame_->LocalFrameRoot() != frame_)
-    return frame_->LocalFrameRoot().View()->GetCompositorAnimationHost();
-
-  if (!frame_->IsMainFrame())
+  if (!GetFrame().LocalFrameRoot().IsMainFrame())
     return nullptr;
 
+  // TODO(kenrb): Compositor animation host and timeline for the main frame
+  // still live on ScrollingCoordinator. https://crbug.com/680606.
   ScrollingCoordinator* c = GetScrollingCoordinator();
   return c ? c->GetCompositorAnimationHost() : nullptr;
 }
 
 CompositorAnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline()
     const {
-  if (animation_timeline_)
-    return animation_timeline_.get();
+  if (GetScrollingContext()->GetCompositorAnimationTimeline())
+    return GetScrollingContext()->GetCompositorAnimationTimeline();
 
-  if (&frame_->LocalFrameRoot() != frame_)
-    return frame_->LocalFrameRoot().View()->GetCompositorAnimationTimeline();
-
-  if (!frame_->IsMainFrame())
+  if (!GetFrame().LocalFrameRoot().IsMainFrame())
     return nullptr;
 
+  // TODO(kenrb): Compositor animation host and timeline for the main frame
+  // still live on ScrollingCoordinator. https://crbug.com/680606.
   ScrollingCoordinator* c = GetScrollingCoordinator();
   return c ? c->GetCompositorAnimationTimeline() : nullptr;
 }
@@ -806,7 +809,7 @@ void LocalFrameView::RecalcOverflowAfterStyleChange() {
   // updates non-fast scroll rects even if there is no layout.
   if (ScrollingCoordinator* scrolling_coordinator =
           this->GetScrollingCoordinator()) {
-    SetScrollGestureRegionIsDirty(true);
+    GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
   }
 
   IntRect document_rect = layout_view->DocumentRect();
@@ -4012,64 +4015,18 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
     resizer_areas_->erase(it);
 }
 
-bool LocalFrameView::ScrollGestureRegionIsDirty() const {
-  DCHECK(GetFrame().IsLocalRoot());
-  return scroll_gesture_region_is_dirty_;
-}
-
-bool LocalFrameView::TouchEventTargetRectsAreDirty() const {
-  DCHECK(GetFrame().IsLocalRoot());
-  return touch_event_target_rects_are_dirty_;
-}
-
-bool LocalFrameView::ShouldScrollOnMainThreadIsDirty() const {
-  DCHECK(GetFrame().IsLocalRoot());
-  return should_scroll_on_main_thread_is_dirty_;
-}
-
 bool LocalFrameView::FrameIsScrollableDidChange() {
   DCHECK(GetFrame().IsLocalRoot());
-  return was_scrollable_ == LayoutViewportScrollableArea()->IsScrollable();
+  return GetScrollingContext()->WasScrollable() ==
+         LayoutViewportScrollableArea()->IsScrollable();
 }
 
 void LocalFrameView::ClearFrameIsScrollableDidChange() {
-  if (GetFrame().IsLocalRoot()) {
-    was_scrollable_ = LayoutViewportScrollableArea()->IsScrollable();
-    return;
-  }
-  GetFrame().LocalFrameRoot().View()->ClearFrameIsScrollableDidChange();
-}
-
-void LocalFrameView::SetScrollGestureRegionIsDirty(bool dirty) {
-  if (GetFrame().IsLocalRoot()) {
-    // TODO(wjmaclean): It would be nice to move the !NeedsLayout() check from
-    // ScrollableAreasDidChange() to here, but at present doing so breaks
-    // layout tests. This suggests that there is something that wants to set the
-    // dirty bit when layout is needed, and won't re-try setting the bit after
-    // layout has completed - it would be nice to find that and fix it.
-    scroll_gesture_region_is_dirty_ = dirty;
-    return;
-  }
-
-  GetFrame().LocalFrameRoot().View()->SetScrollGestureRegionIsDirty(dirty);
-}
-
-void LocalFrameView::SetTouchEventTargetRectsAreDirty(bool dirty) {
-  if (GetFrame().IsLocalRoot()) {
-    touch_event_target_rects_are_dirty_ = dirty;
-    return;
-  }
-
-  GetFrame().LocalFrameRoot().View()->SetTouchEventTargetRectsAreDirty(dirty);
-}
-
-void LocalFrameView::SetShouldScrollOnMainThreadIsDirty(bool dirty) {
-  if (GetFrame().IsLocalRoot()) {
-    should_scroll_on_main_thread_is_dirty_ = dirty;
-    return;
-  }
-
-  GetFrame().LocalFrameRoot().View()->SetShouldScrollOnMainThreadIsDirty(dirty);
+  GetScrollingContext()->SetWasScrollable(GetFrame()
+                                              .LocalFrameRoot()
+                                              .View()
+                                              ->LayoutViewportScrollableArea()
+                                              ->IsScrollable());
 }
 
 void LocalFrameView::ScrollableAreasDidChange() {
@@ -4078,8 +4035,13 @@ void LocalFrameView::ScrollableAreasDidChange() {
   // |ScrollingCoordinator::notifyGeometryChanged|).
   // So if layout is expected, ignore this call allowing scrolling coordinator
   // to be notified post-layout to recompute gesture regions.
+  // TODO(wjmaclean): It would be nice to move the !NeedsLayout() check from
+  // here to SetScrollGestureRegionIsDirty(), but at present doing so breaks
+  // layout tests. This suggests that there is something that wants to set the
+  // dirty bit when layout is needed, and won't re-try setting the bit after
+  // layout has completed - it would be nice to find that and fix it.
   if (!NeedsLayout())
-    SetScrollGestureRegionIsDirty(true);
+    GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
 }
 
 void LocalFrameView::AddScrollableArea(ScrollableArea* scrollable_area) {
@@ -5283,7 +5245,7 @@ void LocalFrameView::Show() {
     SetSelfVisible(true);
     if (ScrollingCoordinator* scrolling_coordinator =
             this->GetScrollingCoordinator()) {
-      SetScrollGestureRegionIsDirty(true);
+      GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
@@ -5312,7 +5274,7 @@ void LocalFrameView::Hide() {
     SetSelfVisible(false);
     if (ScrollingCoordinator* scrolling_coordinator =
             this->GetScrollingCoordinator()) {
-      SetScrollGestureRegionIsDirty(true);
+      GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     UpdateParentScrollableAreaSet();
@@ -5859,16 +5821,6 @@ void LocalFrameView::ApplyTransformForTopFrameSpace(
   LayoutRect viewport_intersection_rect(RemoteViewportIntersection());
   transform_state.Move(LayoutSize(-viewport_intersection_rect.X(),
                                   -viewport_intersection_rect.Y()));
-}
-
-void LocalFrameView::SetAnimationTimeline(
-    std::unique_ptr<CompositorAnimationTimeline> timeline) {
-  animation_timeline_ = std::move(timeline);
-}
-
-void LocalFrameView::SetAnimationHost(
-    std::unique_ptr<CompositorAnimationHost> host) {
-  animation_host_ = std::move(host);
 }
 
 LayoutUnit LocalFrameView::CaretWidth() const {
