@@ -7,12 +7,11 @@
 
 #include <stdint.h>
 
-#include <set>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 
 namespace device {
 class UsbDevice;
@@ -20,15 +19,20 @@ class UsbDevice;
 
 class UsbBlocklist final {
  public:
-  // An entry in the blocklist. Represents a specific version of a device that
-  // should not be accessible. These fields correspond to the idVendor,
-  // idProduct and bcdDevice fields of the device's USB device descriptor.
+  // An entry in the blocklist. Represents a device that should not be
+  // accessible using WebUSB.
   struct Entry {
     Entry(uint16_t vendor_id, uint16_t product_id, uint16_t version);
 
+    // Matched against the idVendor field of the USB Device Descriptor.
     uint16_t vendor_id;
+
+    // Matched against the idProduct field of the USB Device Descriptor.
     uint16_t product_id;
-    uint16_t version;
+
+    // Compared against the bcdDevice field of the USB Device Descriptor. Any
+    // value less than or equal to this will be considered a match.
+    uint16_t max_version;
   };
 
   ~UsbBlocklist();
@@ -36,30 +40,12 @@ class UsbBlocklist final {
   // Returns a singleton instance of the blocklist.
   static UsbBlocklist& Get();
 
-  // Adds a device to the blocklist to be excluded from access.
-  void Exclude(const Entry&);
-
-  // Adds a device to the blocklist by parsing a blocklist string and calling
-  // Exclude(entry).
-  //
-  // The blocklist string must be a comma-separated list of
-  // idVendor:idProduct:bcdDevice triples, where each member of the triple is a
-  // 16-bit integer written as exactly 4 hexadecimal digits. The triples may
-  // be separated by whitespace. Triple components are colon-separated and must
-  // not have whitespace around the colon.
-  //
-  // Invalid entries in the comma-separated list will be ignored.
-  //
-  // Example:
-  //   "1000:001C:0100, 1000:001D:0101, 123:ignored:0"
-  void Exclude(base::StringPiece blocklist_string);
-
   // Returns if a device is excluded from access.
-  bool IsExcluded(const Entry&);
-  bool IsExcluded(scoped_refptr<const device::UsbDevice>);
+  bool IsExcluded(const Entry& entry) const;
+  bool IsExcluded(const scoped_refptr<const device::UsbDevice>& device) const;
 
   // Size of the blocklist.
-  size_t size() { return blocklisted_devices_.size(); }
+  size_t GetDynamicEntryCountForTest() const { return dynamic_entries_.size(); }
 
   // Reload the blocklist for testing purposes.
   void ResetToDefaultValuesForTest();
@@ -70,14 +56,24 @@ class UsbBlocklist final {
 
   UsbBlocklist();
 
-  void PopulateWithDefaultValues();
-
-  // Populates the blocklist with values obtained dynamically from a server,
-  // able to be updated without shipping new executable versions.
+  // Populates the blocklist with values set via a Finch experiment which allows
+  // the set of blocked devices to be updated without shipping new executable
+  // versions.
+  //
+  // The variation string must be a comma-separated list of
+  // vendor_id:product_id:max_version triples, where each member of the triple
+  // is a 16-bit integer written as exactly 4 hexadecimal digits. The triples
+  // may be separated by whitespace. Triple components are colon-separated and
+  // must not have whitespace around the colon.
+  //
+  // Invalid entries in the comma-separated list will be ignored.
+  //
+  // Example:
+  //   "1000:001C:0100, 1000:001D:0101, 123:ignored:0"
   void PopulateWithServerProvidedValues();
 
   // Set of blocklist entries.
-  std::set<Entry> blocklisted_devices_;
+  std::vector<Entry> dynamic_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbBlocklist);
 };
