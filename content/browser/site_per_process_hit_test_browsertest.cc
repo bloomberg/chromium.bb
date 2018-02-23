@@ -11,7 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "components/viz/common/switches.h"
+#include "components/viz/common/features.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -113,13 +113,13 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
   DISALLOW_COPY_AND_ASSIGN(TestInputEventObserver);
 };
 
+// |position_in_widget| is in the coord space of |rwhv|.
 void SetWebEventPositions(blink::WebPointerProperties* event,
                           const gfx::PointF& position_in_widget,
                           RenderWidgetHostViewBase* rwhv) {
   event->SetPositionInWidget(position_in_widget.x(), position_in_widget.y());
   const gfx::PointF point_in_screen =
-      event->PositionInWidget() +
-      rwhv->GetBoundsInRootWindow().OffsetFromOrigin();
+      event->PositionInWidget() + rwhv->GetViewBounds().OffsetFromOrigin();
   event->SetPositionInScreen(point_in_screen.x(), point_in_screen.y());
 }
 
@@ -130,10 +130,11 @@ void SetWebEventPositions(blink::WebPointerProperties* event,
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// |event->location()| is in the coord space of |rwhv|.
 void UpdateEventRootLocation(ui::LocatedEvent* event,
                              RenderWidgetHostViewBase* rwhv) {
   event->set_root_location(event->location() +
-                           rwhv->GetBoundsInRootWindow().OffsetFromOrigin());
+                           rwhv->GetViewBounds().OffsetFromOrigin());
 }
 #endif
 
@@ -164,11 +165,11 @@ void DispatchMouseEventAndWaitUntilDispatch(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   down_event.button = blink::WebPointerProperties::Button::kLeft;
-  SetWebEventPositions(&down_event, root_location, expected_target);
   down_event.click_count = 1;
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
   auto* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  SetWebEventPositions(&down_event, root_location, root_view);
   RouteMouseEventAndWaitUntilDispatch(router, root_view, expected_target,
                                       &down_event);
   EXPECT_TRUE(monitor.EventWasReceived());
@@ -410,14 +411,29 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
 
 }  // namespace
 
-using SitePerProcessHitTestBrowserTest = SitePerProcessBrowserTest;
+class SitePerProcessHitTestBrowserTest
+    : public testing::WithParamInterface<bool>,
+      public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessHitTestBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+    }
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
 
 //
 // SitePerProcessHighDPIHitTestBrowserTest
 //
 
 class SitePerProcessHighDPIHitTestBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessHitTestBrowserTest {
  public:
   const double kDeviceScaleFactor = 2.0;
 
@@ -425,7 +441,7 @@ class SitePerProcessHighDPIHitTestBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessHitTestBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kForceDeviceScaleFactor,
         base::StringPrintf("%f", kDeviceScaleFactor));
@@ -437,7 +453,7 @@ class SitePerProcessHighDPIHitTestBrowserTest
 //
 
 class SitePerProcessNonIntegerScaleFactorHitTestBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessHitTestBrowserTest {
  public:
   const double kDeviceScaleFactor = 1.5;
 
@@ -445,7 +461,7 @@ class SitePerProcessNonIntegerScaleFactorHitTestBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessHitTestBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kForceDeviceScaleFactor,
         base::StringPrintf("%f", kDeviceScaleFactor));
@@ -456,13 +472,13 @@ class SitePerProcessNonIntegerScaleFactorHitTestBrowserTest
 // RenderWidgetHostViewAura::OnScrollEvent().
 #if defined(USE_AURA)
 class SitePerProcessInternalsHitTestBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessHitTestBrowserTest {
  public:
   SitePerProcessInternalsHitTestBrowserTest() {}
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessHitTestBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
     // Needed to guarantee the scrollable div we're testing with is not given
     // its own compositing layer.
@@ -470,7 +486,7 @@ class SitePerProcessInternalsHitTestBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessInternalsHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
                        ScrollNestedLocalNonFastScrollableDiv) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -610,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInternalsHitTestBrowserTest,
 // Tests that wheel scroll bubbling gets cancelled when the wheel target view
 // gets destroyed in the middle of a wheel scroll seqeunce. This happens in
 // cases like overscroll navigation from inside an oopif.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CancelWheelScrollBubblingOnWheelTargetDeletion) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
@@ -686,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // overscroll gesture, the subsequent gesture scroll update events should be
 // consumed by the root. The child should not be able to scroll during the
 // overscroll gesture.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        RootConsumesScrollDuringOverscrollGesture) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -894,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // results in a scroll. This is only handled by RenderWidgetHostViewAura
 // and is needed for trackpad scrolling on Chromebooks.
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -939,7 +955,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
   EXPECT_EQ(child_frame_monitor.EventType(), blink::WebInputEvent::kMouseWheel);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterWheelCoalesceTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
@@ -1032,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 #else
 #define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        MAYBE_SurfaceHitTestTest) {
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
@@ -1046,56 +1062,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 #else
 #define MAYBE_HighDPISurfaceHitTestTest SurfaceHitTestTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        MAYBE_HighDPISurfaceHitTestTest) {
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // when there are nested out-of-process iframes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        OverlapSurfaceHitTestTest) {
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        OverlapSurfaceHitTestTest) {
   OverlapSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        HitTestLayerSquashing) {
   HitTestLayerSquashing(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
 }
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        SurfaceHitTestPointerEventsNone) {
+  // TODO(riajiang): Fix Viz hit-test for pointer-events:none. crbug.com/812012.
+  if (GetParam())
+    return;
+
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1143,7 +1163,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 // Verify that an event is properly retargeted to the main frame when an
 // asynchronous hit test to the child frame times out.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        AsynchronousHitTestChildTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_busy_frame.html"));
@@ -1195,7 +1215,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 // This test verifies that MouseEnter and MouseLeave events fire correctly
 // when the mouse cursor moves between processes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CrossProcessMouseEnterAndLeaveTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c(d))"));
@@ -1311,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // Verify that mouse capture works on a RenderWidgetHostView level, so that
 // dragging scroll bars and selecting text continues even when the mouse
 // cursor crosses over cross-process frame boundaries.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
@@ -1486,7 +1506,7 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CursorUpdateReceivedFromCrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
@@ -1566,7 +1586,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // https://crbug.com/698195
 
 class SitePerProcessMouseWheelHitTestBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessHitTestBrowserTest {
  public:
   SitePerProcessMouseWheelHitTestBrowserTest() : rwhv_root_(nullptr) {}
 
@@ -1677,7 +1697,7 @@ class SitePerProcessMouseWheelHitTestBrowserTest
   RenderWidgetHostViewAura* rwhv_root_;
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
                        SubframeWheelEventsOnMainThread) {
   feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
@@ -1711,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
 // the same page loaded in the mainframe.
-IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
                        MainframeWheelEventsOnMainThread) {
   feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
@@ -1731,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
   RunTest(pos, rfhi->GetRenderWidgetHost()->GetView());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
                        InputEventRouterWheelTargetTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
@@ -1795,7 +1815,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelHitTestBrowserTest,
 
 // Ensure that a cross-process subframe with a touch-handler can receive touch
 // events.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        SubframeTouchEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
@@ -1874,7 +1894,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // introduced, use of MainThreadFrameObserver in SubframeTouchEventRouting was
 // not necessary since the touch events were handled on the main thread. Now
 // they are handled on the compositor thread, hence the need to synchronize.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        MainframeTouchEventRouting) {
   GURL main_url(
       embedded_test_server()->GetURL("/page_with_touch_handler.html"));
@@ -1952,7 +1972,7 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
 }  // anonymous namespace
 
 // https://crbug.com/592320
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        DISABLED_SubframeGestureEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
@@ -2243,7 +2263,7 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterGestureTargetMapTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
@@ -2335,7 +2355,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   InputEventRouterGesturePreventDefaultTargetMapTest
 #endif
 #if defined(USE_AURA) || defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessHitTestBrowserTest,
     MAYBE_InputEventRouterGesturePreventDefaultTargetMapTest) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -2415,7 +2435,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterTouchpadGestureTargetTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
@@ -2589,7 +2609,7 @@ void CreateContextMenuTestHelper(
 
 // Test that a mouse right-click to an out-of-process iframe causes a context
 // menu to be generated with the correct screen position.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
@@ -2604,7 +2624,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 #else
 #define MAYBE_HighDPICreateContextMenuTest HighDPICreateContextMenuTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        MAYBE_HighDPICreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
@@ -2681,18 +2701,15 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 
 // Test that clicking a select element in an out-of-process iframe creates
 // a popup menu in the correct position.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
   GURL main_url(
       embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  // Unused variable on Mac and Android.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-#endif
 
   FrameTreeNode* child_node = root->child_at(0);
   GURL site_url(embedded_test_server()->GetURL(
@@ -2717,12 +2734,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   click_event.button = blink::WebPointerProperties::Button::kLeft;
-  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_child);
+  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_root);
   click_event.click_count = 1;
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Dismiss the popup.
-  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_child);
+  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_root);
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -2808,7 +2825,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
 // Times out frequently. https://crbug.com/599730.
 #define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        MAYBE_NestedPopupMenuTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/cross_site_iframe_factory.html?a(b(c))"));
@@ -2816,11 +2833,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
-#if !defined(OS_MACOSX)
-  // Undefined variable on Mac.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-#endif
+
   web_contents()->SendScreenRects();
 
   // For clarity, we are labeling the frame tree nodes as:
@@ -2850,12 +2865,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   click_event.button = blink::WebPointerProperties::Button::kLeft;
-  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_c_node);
+  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_root);
   click_event.click_count = 1;
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   // Prompt the WebContents to dismiss the popup by clicking elsewhere.
-  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_c_node);
+  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_root);
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -2898,11 +2913,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   }
 
   click_event.button = blink::WebPointerProperties::Button::kLeft;
-  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_c_node);
+  SetWebEventPositions(&click_event, gfx::Point(15, 15), rwhv_root);
   click_event.click_count = 1;
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
-  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_c_node);
+  SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_root);
   rwhv_c_node->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -2920,7 +2935,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 #if defined(USE_AURA)
 class SitePerProcessGestureHitTestBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessHitTestBrowserTest {
  public:
   SitePerProcessGestureHitTestBrowserTest() {}
 
@@ -3042,7 +3057,7 @@ class SitePerProcessGestureHitTestBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessGestureHitTestBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessGestureHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
                        SubframeGesturePinchGoesToMainFrame) {
   SetupRootAndChild();
 
@@ -3079,7 +3094,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureHitTestBrowserTest,
             child_frame_monitor.events_received()[4]);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessGestureHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessGestureHitTestBrowserTest,
                        MainframeGesturePinchGoesToMainFrame) {
   SetupRootAndChild();
 
@@ -3126,8 +3141,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessGestureHitTestBrowserTest,
 #define MAYBE_MouseClickWithNonIntegerScaleFactor \
   MouseClickWithNonIntegerScaleFactor
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
                        MAYBE_MouseClickWithNonIntegerScaleFactor) {
+  // TODO(riajiang): Update HitTestQuery to take in floating point.
+  if (GetParam())
+    return;
+
   GURL initial_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), initial_url));
 
@@ -3172,7 +3191,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
 }
 
 // Verify InputTargetClient works within an OOPIF process.
-IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3247,5 +3266,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
   }
 }
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessHitTestBrowserTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessHighDPIHitTestBrowserTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
+                        testing::Bool());
+#if defined(USE_AURA)
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessInternalsHitTestBrowserTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessMouseWheelHitTestBrowserTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessGestureHitTestBrowserTest,
+                        testing::Bool());
+#endif
 
 }  // namespace content
