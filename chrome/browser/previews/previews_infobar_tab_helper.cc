@@ -149,10 +149,17 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         previews_user_data_->committed_previews_type();
     if (main_frame_preview != previews::PreviewsType::NONE &&
         main_frame_preview != previews::PreviewsType::LOFI) {
+      base::Time previews_freshness;
+      if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
+        const net::HttpResponseHeaders* headers =
+            navigation_handle->GetResponseHeaders();
+        if (headers)
+          headers->GetDateValue(&previews_freshness);
+      }
+
       PreviewsInfoBarDelegate::Create(
-          web_contents(), main_frame_preview,
-          base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-          is_reload,
+          web_contents(), main_frame_preview, previews_freshness,
+          true /* is_data_saver_user */, is_reload,
           base::BindOnce(&AddPreviewNavigationCallback,
                          web_contents()->GetBrowserContext(),
                          navigation_handle->GetRedirectChain()[0],
