@@ -35,25 +35,26 @@ namespace {
 // - Linux/Android: https://crbug.com/707019 .
 // - Mac OS: https://crbug.com/707021 .
 // - Win: https://crbug.com/707022 .
-uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump) {
+uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump,
+                                     uint32_t shared_resident_kb) {
   DCHECK(os_dump.platform_private_footprint);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   uint64_t rss_anon_bytes = os_dump.platform_private_footprint->rss_anon_bytes;
   uint64_t vm_swap_bytes = os_dump.platform_private_footprint->vm_swap_bytes;
   return (rss_anon_bytes + vm_swap_bytes) / 1024;
 #elif defined(OS_MACOSX)
-  // TODO(erikchen): This calculation is close, but not fully accurate. It
-  // overcounts by anonymous shared memory.
   if (base::mac::IsAtLeastOS10_12()) {
     uint64_t phys_footprint_bytes =
         os_dump.platform_private_footprint->phys_footprint_bytes;
-    return phys_footprint_bytes / 1024;
+    return base::saturated_cast<uint32_t>(phys_footprint_bytes / 1024 -
+                                          shared_resident_kb);
   } else {
     uint64_t internal_bytes =
         os_dump.platform_private_footprint->internal_bytes;
     uint64_t compressed_bytes =
         os_dump.platform_private_footprint->compressed_bytes;
-    return (internal_bytes + compressed_bytes) / 1024;
+    return base::saturated_cast<uint32_t>(
+        (internal_bytes + compressed_bytes) / 1024 - shared_resident_kb);
   }
 #elif defined(OS_WIN)
   return os_dump.platform_private_footprint->private_bytes / 1024;
@@ -63,11 +64,13 @@ uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump) {
 }
 
 memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
-    const mojom::RawOSMemDump& internal_os_dump) {
+    const mojom::RawOSMemDump& internal_os_dump,
+    uint32_t shared_resident_kb) {
   mojom::OSMemDumpPtr os_dump = mojom::OSMemDump::New();
 
   os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
-  os_dump->private_footprint_kb = CalculatePrivateFootprintKb(internal_os_dump);
+  os_dump->private_footprint_kb =
+      CalculatePrivateFootprintKb(internal_os_dump, shared_resident_kb);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   os_dump->private_footprint_swap_kb =
       internal_os_dump.platform_private_footprint->vm_swap_bytes / 1024;
@@ -454,6 +457,24 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   std::map<base::ProcessId, uint64_t> shared_footprints =
       GraphProcessor::ComputeSharedFootprintFromGraph(*global_graph);
 
+  // On non-macOS platforms, the entries in pid_to_shared_resident_kb will be
+  // default constructed when they are first accessed in the call to
+  // CreatePublicOSDump(). This has a small amount of overhead, but seems
+  // cleaner than plumbing through platform-specific if-defs.
+  std::map<base::ProcessId, uint32_t>* pid_to_shared_resident_kb = nullptr;
+#if defined(OS_MACOSX)
+  // The resident, anonymous shared memory for each process is only relevant on
+  // macOS.
+  std::map<base::ProcessId, uint32_t> pid_to_shared_resident_kb_actual;
+  for (const auto& pair : pid_to_pmd) {
+    if (pair.second) {
+      pid_to_shared_resident_kb_actual[pair.first] =
+          GetDumpsSumKb("shared_memory/*", *pair.second);
+    }
+  }
+  pid_to_shared_resident_kb = &pid_to_shared_resident_kb_actual;
+#endif
+
   // Perform the rest of the computation on the graph.
   GraphProcessor::AddOverheadsAndPropogateEntries(global_graph.get());
   GraphProcessor::CalculateSizesForGraph(global_graph.get());
@@ -479,7 +500,9 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
     // If the raw dump exists, create a summarised version of it.
     mojom::OSMemDumpPtr os_dump = nullptr;
     if (raw_os_dump) {
-      os_dump = CreatePublicOSDump(*raw_os_dump);
+      os_dump = CreatePublicOSDump(
+          *raw_os_dump,
+          pid_to_shared_resident_kb ? (*pid_to_shared_resident_kb)[pid] : 0);
       os_dump->shared_footprint_kb = shared_footprints[pid] / 1024;
     }
 
