@@ -29,6 +29,9 @@ constexpr int kDividerHorizontalPadding = 4;
 constexpr int kDividerWidth = 1;
 constexpr int kDividerVerticalPadding = 10;
 
+// Minimum height for the personalized Dice sign-in button.
+constexpr int kMinAccountButtonHeight = 64;
+
 int GetDividerAndArrowReservedWidth() {
   return 2 * kDividerHorizontalPadding + kDividerWidth +
          kDropDownArrowButtonWidth;
@@ -133,7 +136,8 @@ int DiceSigninButton::GetHeightForWidth(int width) const {
   int title_subtitle_height = label()->GetHeightForWidth(width) +
                               subtitle_->GetHeightForWidth(width) +
                               GetInsets().height();
-  return std::max(height_without_subtitle, title_subtitle_height);
+  return std::max({height_without_subtitle, title_subtitle_height,
+                   kMinAccountButtonHeight});
 }
 
 gfx::Size DiceSigninButton::CalculatePreferredSize() const {
@@ -153,7 +157,7 @@ gfx::Size DiceSigninButton::CalculatePreferredSize() const {
                                   GetInsets().height();
   int pref_height =
       std::max(parent_pref_size.height(), pref_height_with_subtitle);
-  return gfx::Size(pref_width, pref_height);
+  return gfx::Size(pref_width, std::max(pref_height, kMinAccountButtonHeight));
 }
 
 void DiceSigninButton::Layout() {
