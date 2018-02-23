@@ -833,17 +833,47 @@ TEST_F(GCMClientImplTest, SerializeAndDeserialize) {
   gcm_info->sender_ids = senders;
   gcm_info->last_validated = clock()->Now();
 
-  std::string serialized_key = gcm_info->GetSerializedKey();
-  std::string serialized_value = gcm_info->GetSerializedValue(kRegistrationId);
   auto gcm_info_deserialized = std::make_unique<GCMRegistrationInfo>();
-  std::string registration_id_deserialized;
-  ASSERT_TRUE(gcm_info_deserialized->Deserialize(
-      serialized_key, serialized_value, &registration_id_deserialized));
+  std::string gcm_registration_id_deserialized;
+  {
+    std::string serialized_key = gcm_info->GetSerializedKey();
+    std::string serialized_value =
+        gcm_info->GetSerializedValue(kRegistrationId);
+
+    ASSERT_TRUE(gcm_info_deserialized->Deserialize(
+        serialized_key, serialized_value, &gcm_registration_id_deserialized));
+  }
 
   EXPECT_EQ(gcm_info->app_id, gcm_info_deserialized->app_id);
   EXPECT_EQ(gcm_info->sender_ids, gcm_info_deserialized->sender_ids);
   EXPECT_EQ(gcm_info->last_validated, gcm_info_deserialized->last_validated);
-  EXPECT_EQ(kRegistrationId, registration_id_deserialized);
+  EXPECT_EQ(kRegistrationId, gcm_registration_id_deserialized);
+
+  auto instance_id_info = std::make_unique<InstanceIDTokenInfo>();
+  instance_id_info->app_id = kExtensionAppId;
+  instance_id_info->last_validated = clock()->Now();
+  instance_id_info->authorized_entity = "different_sender";
+  instance_id_info->scope = "scope";
+
+  auto instance_id_info_deserialized = std::make_unique<InstanceIDTokenInfo>();
+  std::string instance_id_registration_id_deserialized;
+  {
+    std::string serialized_key = instance_id_info->GetSerializedKey();
+    std::string serialized_value =
+        instance_id_info->GetSerializedValue(kRegistrationId);
+
+    ASSERT_TRUE(instance_id_info_deserialized->Deserialize(
+        serialized_key, serialized_value,
+        &instance_id_registration_id_deserialized));
+  }
+
+  EXPECT_EQ(instance_id_info->app_id, instance_id_info_deserialized->app_id);
+  EXPECT_EQ(instance_id_info->last_validated,
+            instance_id_info_deserialized->last_validated);
+  EXPECT_EQ(instance_id_info->authorized_entity,
+            instance_id_info_deserialized->authorized_entity);
+  EXPECT_EQ(instance_id_info->scope, instance_id_info_deserialized->scope);
+  EXPECT_EQ(kRegistrationId, instance_id_registration_id_deserialized);
 }
 
 TEST_F(GCMClientImplTest, RegisterApp) {

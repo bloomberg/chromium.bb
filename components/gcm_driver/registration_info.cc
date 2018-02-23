@@ -222,9 +222,9 @@ bool InstanceIDTokenInfo::Deserialize(const std::string& serialized_key,
   scope = fields[2];
 
   // Get Registration ID and last_validated from serialized value
-  size_t pos_hash = serialized_value.find(serialized_value,
-                                          kSerializedValidationTimeSeparator);
+  size_t pos_hash = serialized_value.find(kSerializedValidationTimeSeparator);
   bool has_timestamp = (pos_hash != std::string::npos);
+
   std::string registration_id_str, last_validated_str;
   if (has_timestamp) {
     registration_id_str = serialized_value.substr(0, pos_hash);
