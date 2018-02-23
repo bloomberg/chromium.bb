@@ -53,7 +53,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool AllowFullscreen() const override { return allow_fullscreen_; }
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   bool IsDisplayNone() const override { return is_display_none_; }
-  AtomicString Csp() const override { return csp_; }
+  AtomicString RequiredCsp() const override { return required_csp_; }
   const ParsedFeaturePolicy& ContainerPolicy() const override {
     return container_policy_;
   }
@@ -73,7 +73,9 @@ class CORE_EXPORT RemoteFrameOwner final
   void SetIsDisplayNone(bool is_display_none) {
     is_display_none_ = is_display_none;
   }
-  void SetCsp(const WebString& csp) { csp_ = csp; }
+  void SetRequiredCsp(const WebString& required_csp) {
+    required_csp_ = required_csp;
+  }
   void SetContainerPolicy(const ParsedFeaturePolicy& container_policy) {
     container_policy_ = container_policy;
   }
@@ -99,7 +101,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool allow_fullscreen_;
   bool allow_payment_request_;
   bool is_display_none_;
-  WebString csp_;
+  WebString required_csp_;
   ParsedFeaturePolicy container_policy_;
 };
 

@@ -1731,7 +1731,8 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                       Document* origin_document) const {
   if (RuntimeEnabledFeatures::EmbedderCSPEnforcementEnabled() &&
       !RequiredCSP().IsEmpty()) {
-    DCHECK(ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString()));
+    DCHECK(
+        ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
     resource_request.SetHTTPHeaderField(HTTPNames::Sec_Required_CSP,
                                         RequiredCSP());
   }
@@ -1801,7 +1802,8 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
 }
 
 void FrameLoader::RecordLatestRequiredCSP() {
-  required_csp_ = frame_->Owner() ? frame_->Owner()->Csp() : g_null_atom;
+  required_csp_ =
+      frame_->Owner() ? frame_->Owner()->RequiredCsp() : g_null_atom;
 }
 
 std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {

@@ -59,7 +59,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool AllowFullscreen() const = 0;
   virtual bool AllowPaymentRequest() const = 0;
   virtual bool IsDisplayNone() const = 0;
-  virtual AtomicString Csp() const = 0;
+  virtual AtomicString RequiredCsp() const = 0;
   virtual const ParsedFeaturePolicy& ContainerPolicy() const = 0;
 };
 
@@ -95,7 +95,7 @@ class CORE_EXPORT DummyFrameOwner final
   bool AllowFullscreen() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return false; }
-  AtomicString Csp() const override { return g_null_atom; }
+  AtomicString RequiredCsp() const override { return g_null_atom; }
   const ParsedFeaturePolicy& ContainerPolicy() const override {
     DEFINE_STATIC_LOCAL(ParsedFeaturePolicy, container_policy, ());
     return container_policy;

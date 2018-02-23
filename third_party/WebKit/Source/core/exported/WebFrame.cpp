@@ -199,7 +199,7 @@ void WebFrame::SetFrameOwnerProperties(
   owner->SetAllowFullscreen(properties.allow_fullscreen);
   owner->SetAllowPaymentRequest(properties.allow_payment_request);
   owner->SetIsDisplayNone(properties.is_display_none);
-  owner->SetCsp(properties.required_csp);
+  owner->SetRequiredCsp(properties.required_csp);
 }
 
 void WebFrame::Collapse(bool collapsed) {

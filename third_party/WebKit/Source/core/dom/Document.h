@@ -1418,6 +1418,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool CurrentFrameHadRAF() const;
   bool NextFrameHasPendingRAF() const;
 
+  const AtomicString& RequiredCSP();
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 

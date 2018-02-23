@@ -108,7 +108,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowFullscreen() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
-  AtomicString Csp() const override { return g_null_atom; }
+  AtomicString RequiredCsp() const override { return g_null_atom; }
   const ParsedFeaturePolicy& ContainerPolicy() const override;
 
   // For unit tests, manually trigger the UpdateContainerPolicy method.
