@@ -374,7 +374,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
   // Reset any NavigationRequest in the RenderFrameHost. A swapped out
   // RenderFrameHost should not be trying to commit a navigation.
-  old_render_frame_host->SetNavigationRequest(nullptr);
+  old_render_frame_host->ResetNavigationRequests();
 
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);

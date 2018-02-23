@@ -646,15 +646,13 @@ WebContentsImpl::~WebContentsImpl() {
   RenderFrameHostManager* root = GetRenderManager();
 
   root->current_frame_host()->SetRenderFrameCreated(false);
-  root->current_frame_host()->SetNavigationRequest(
-      std::unique_ptr<NavigationRequest>());
+  root->current_frame_host()->ResetNavigationRequests();
 
   // Do not update state as the WebContents is being destroyed.
   frame_tree_.root()->ResetNavigationRequest(true, true);
   if (root->speculative_frame_host()) {
     root->speculative_frame_host()->SetRenderFrameCreated(false);
-    root->speculative_frame_host()->SetNavigationRequest(
-        std::unique_ptr<NavigationRequest>());
+    root->speculative_frame_host()->ResetNavigationRequests();
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -805,9 +805,15 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
       return false;
     } else if (web_contents_->GetMainFrame()->GetNavigationHandle() ==
                handle_) {
-      DCHECK(handle_->IsSameDocument() ||
-             !IsURLHandledByNetworkStack(handle_->GetURL()));
-      same_document_ = handle_->IsSameDocument();
+      DCHECK(!IsURLHandledByNetworkStack(handle_->GetURL()));
+      return true;
+    } else if (web_contents_->GetMainFrame()
+                   ->same_document_navigation_request() &&
+               web_contents_->GetMainFrame()
+                       ->same_document_navigation_request()
+                       ->navigation_handle() == handle_) {
+      DCHECK(handle_->IsSameDocument());
+      same_document_ = true;
       return true;
     }
     return false;

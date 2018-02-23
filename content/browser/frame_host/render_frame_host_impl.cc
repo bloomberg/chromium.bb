@@ -601,7 +601,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
 RenderFrameHostImpl::~RenderFrameHostImpl() {
   // Destroying |navigation_request_| may call into delegates/observers,
   // so we do it early while |this| object is still in a sane state.
-  navigation_request_.reset();
+  ResetNavigationRequests();
 
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
@@ -1719,8 +1719,19 @@ NavigationHandleImpl* RenderFrameHostImpl::GetNavigationHandle() {
                               : nullptr;
 }
 
+void RenderFrameHostImpl::ResetNavigationRequests() {
+  navigation_request_.reset();
+  same_document_navigation_request_.reset();
+}
+
 void RenderFrameHostImpl::SetNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
+  DCHECK(navigation_request);
+  if (FrameMsg_Navigate_Type::IsSameDocument(
+          navigation_request->common_params().navigation_type)) {
+    same_document_navigation_request_ = std::move(navigation_request);
+    return;
+  }
   navigation_request_ = std::move(navigation_request);
 }
 
@@ -3604,11 +3615,13 @@ void RenderFrameHostImpl::CommitNavigation(
          subresource_loader_factories);
 
   if (is_same_document) {
+    DCHECK(same_document_navigation_request_);
     GetNavigationControl()->CommitSameDocumentNavigation(
         common_params, request_params,
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
                        base::Unretained(this),
-                       GetNavigationHandle()->GetNavigationId(),
+                       same_document_navigation_request_->navigation_handle()
+                           ->GetNavigationId(),
                        common_params.should_replace_current_entry));
   } else {
     GetNavigationControl()->CommitNavigation(
@@ -4438,7 +4451,10 @@ RenderFrameHostImpl::TakeNavigationHandleForSameDocumentCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   bool is_browser_initiated = (params.nav_entry_id != 0);
 
-  NavigationHandleImpl* navigation_handle = GetNavigationHandle();
+  NavigationHandleImpl* navigation_handle =
+      same_document_navigation_request_
+          ? same_document_navigation_request_->navigation_handle()
+          : nullptr;
 
   // A NavigationHandle is created for browser-initiated same-document
   // navigation. Try to take it if it's still available and matches the
@@ -4446,8 +4462,8 @@ RenderFrameHostImpl::TakeNavigationHandleForSameDocumentCommit(
   if (is_browser_initiated && navigation_handle &&
       navigation_handle->GetURL() == params.url) {
     std::unique_ptr<NavigationHandleImpl> result_navigation_handle =
-        navigation_request()->TakeNavigationHandle();
-    navigation_request_.reset();
+        same_document_navigation_request_->TakeNavigationHandle();
+    same_document_navigation_request_.reset();
     return result_navigation_handle;
   }
 
@@ -4482,7 +4498,8 @@ RenderFrameHostImpl::TakeNavigationHandleForSameDocumentCommit(
 std::unique_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::TakeNavigationHandleForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
-  NavigationHandleImpl* navigation_handle = GetNavigationHandle();
+  NavigationHandleImpl* navigation_handle =
+      navigation_request_ ? navigation_request_->navigation_handle() : nullptr;
 
   // Determine if the current NavigationHandle can be used.
   if (navigation_handle && navigation_handle->GetURL() == params.url) {
@@ -4812,8 +4829,9 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
     blink::mojom::CommitResult result) {
   // If the NavigationRequest was deleted, another navigation commit started to
   // be processed. Let the latest commit go through and stop doing anything.
-  if (!GetNavigationHandle() ||
-      GetNavigationHandle()->GetNavigationId() != navigation_id) {
+  if (!same_document_navigation_request_ ||
+      same_document_navigation_request_->navigation_handle()
+              ->GetNavigationId() != navigation_id) {
     return;
   }
 
@@ -4821,13 +4839,13 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
     // The navigation could not be committed as a same-document navigation.
     // Restart the navigation cross-document.
     frame_tree_node_->navigator()->RestartNavigationAsCrossDocument(
-        std::move(navigation_request_));
+        std::move(same_document_navigation_request_));
   }
 
   if (result == blink::mojom::CommitResult::Aborted) {
     // Note: if the commit was successful, navigation_handle_ is reset in
     // DidCommitProvisionalLoad.
-    navigation_request_.reset();
+    same_document_navigation_request_.reset();
   }
 }
 
