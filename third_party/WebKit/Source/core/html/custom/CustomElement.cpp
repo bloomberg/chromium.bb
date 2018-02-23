@@ -120,7 +120,7 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElementTemplate(
     const CreateElementFlags flags,
     const AtomicString& is_value) {
   if (level == kQNameIsValid) {
-    DCHECK(is_value.IsEmpty());
+    DCHECK(is_value.IsNull());
     DCHECK(ShouldCreateCustomElement(tag_name)) << tag_name;
   }
 
@@ -133,7 +133,7 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElementTemplate(
     // 7.1. Let interface be the element interface for localName and namespace.
     // 7.2. Set result to a new element that implements interface, with ...
     element = document.CreateRawElement(tag_name, flags);
-    if (level == kCheckAll && !is_value.IsEmpty()) {
+    if (level == kCheckAll && !is_value.IsNull()) {
       element->SetIsValue(is_value);
       if (flags.IsCustomElementsV0())
         V0CustomElementRegistrationContext::SetTypeExtension(element, is_value);
@@ -147,7 +147,7 @@ Element* CustomElement::CreateUncustomizedOrUndefinedElementTemplate(
     element->SetCustomElementState(CustomElementState::kUndefined);
   else if (tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
            (CustomElement::IsValidName(tag_name.LocalName()) ||
-            !is_value.IsEmpty()))
+            !is_value.IsNull()))
     element->SetCustomElementState(CustomElementState::kUndefined);
 
   return element;

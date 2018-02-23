@@ -927,7 +927,7 @@ String GetTypeExtension(Document* document,
                         const StringOrDictionary& string_or_options,
                         ExceptionState& exception_state) {
   if (string_or_options.IsNull())
-    return g_empty_string;
+    return String();
 
   if (string_or_options.IsString()) {
     UseCounter::Count(document,
@@ -941,13 +941,13 @@ String GetTypeExtension(Document* document,
     V8ElementCreationOptions::ToImpl(dict.GetIsolate(), dict.V8Value(), impl,
                                      exception_state);
     if (exception_state.HadException())
-      return g_empty_string;
+      return String();
 
     if (impl.hasIs())
       return impl.is();
   }
 
-  return g_empty_string;
+  return String();
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
@@ -1084,7 +1084,7 @@ Element* Document::CreateElement(const QualifiedName& q_name,
   CustomElementDefinition* definition = nullptr;
   if (flags.IsCustomElementsV1() &&
       q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
-    const CustomElementDescriptor desc(is.IsEmpty() ? q_name.LocalName() : is,
+    const CustomElementDescriptor desc(is.IsNull() ? q_name.LocalName() : is,
                                        q_name.LocalName());
     if (CustomElementRegistry* registry = CustomElement::Registry(*this))
       definition = registry->DefinitionFor(desc);
