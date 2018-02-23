@@ -58,9 +58,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   void Bind(webauth::mojom::AuthenticatorRequest request);
 
  private:
-  webauth::mojom::AuthenticatorStatus InitializeAndValidateRequest(
-      const std::string& relying_party_id);
-
   // mojom:Authenticator
   void MakeCredential(
       webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
