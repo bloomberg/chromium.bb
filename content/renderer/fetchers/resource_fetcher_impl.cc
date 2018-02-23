@@ -48,11 +48,13 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
  public:
   ClientImpl(ResourceFetcherImpl* parent,
              Callback callback,
-             size_t maximum_download_size)
+             size_t maximum_download_size,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : parent_(parent),
         client_binding_(this),
         data_pipe_watcher_(FROM_HERE,
-                           mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+                           mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                           std::move(task_runner)),
         status_(Status::kNotStarted),
         completed_(false),
         maximum_download_size_(maximum_download_size),
@@ -312,8 +314,9 @@ void ResourceFetcherImpl::Start(
   }
   request_.resource_type = WebURLRequestContextToResourceType(request_context);
 
-  client_ = std::make_unique<ClientImpl>(this, std::move(callback),
-                                         maximum_download_size);
+  client_ = std::make_unique<ClientImpl>(
+      this, std::move(callback), maximum_download_size,
+      frame->GetTaskRunner(blink::TaskType::kNetworking));
   // TODO(kinuko, toyoshim): This task runner should be given by the consumer
   // of this class.
   client_->Start(request_, std::move(url_loader_factory), annotation_tag,
