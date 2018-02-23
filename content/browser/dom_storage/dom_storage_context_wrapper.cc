@@ -366,9 +366,9 @@ void DOMStorageContextWrapper::OpenLocalStorage(
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
+    int process_id,
     const std::string& namespace_id,
-    const url::Origin& origin,
-    mojom::LevelDBWrapperRequest request) {
+    mojom::SessionStorageNamespaceRequest request) {
   if (!mojo_session_state_)
     return;
   // base::Unretained is safe here, because the mojo_state_ won't be deleted
@@ -378,7 +378,7 @@ void DOMStorageContextWrapper::OpenSessionStorage(
   mojo_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                                 base::Unretained(mojo_session_state_),
-                                namespace_id, origin, std::move(request)));
+                                process_id, namespace_id, std::move(request)));
 }
 
 void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(

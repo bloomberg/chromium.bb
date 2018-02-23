@@ -40,10 +40,11 @@ class CONTENT_EXPORT DOMStorageSession {
       scoped_refptr<DOMStorageContextWrapper> context,
       const std::string& namespace_id);
 
-  // Constructs a |DOMStorageSession| by cloning  |namespace_id_to_clone|.
-  // Allocates a new ID for it.
+  // Constructs a |DOMStorageSession| with id |namespace_id| by cloning
+  // |namespace_id_to_clone|.
   static std::unique_ptr<DOMStorageSession> CloneFrom(
       scoped_refptr<DOMStorageContextWrapper> context,
+      std::string namepace_id,
       const std::string& namepace_id_to_clone);
 
   ~DOMStorageSession();

@@ -2900,8 +2900,18 @@ void RenderFrameHostImpl::CreateNewWindow(
   DOMStorageContextWrapper* dom_storage_context =
       static_cast<DOMStorageContextWrapper*>(
           storage_partition->GetDOMStorageContext());
-  auto cloned_namespace = SessionStorageNamespaceImpl::CloneFrom(
-      dom_storage_context, params->session_storage_namespace_id);
+
+  scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace;
+  if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
+    // Any cloning should have already happened using the mojo
+    // SessionStorageNamespace::Clone in storage_partition_service.mojom.
+    cloned_namespace = SessionStorageNamespaceImpl::Create(
+        dom_storage_context, params->session_storage_namespace_id);
+  } else {
+    cloned_namespace = SessionStorageNamespaceImpl::CloneFrom(
+        dom_storage_context, params->session_storage_namespace_id,
+        params->clone_from_session_storage_namespace_id);
+  }
 
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That

@@ -77,9 +77,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
-  void OpenSessionStorage(const std::string& namespace_id,
-                          const url::Origin& origin,
-                          mojom::LevelDBWrapperRequest request);
+  void OpenSessionStorage(int process_id,
+                          const std::string& namespace_id,
+                          mojom::SessionStorageNamespaceRequest request);
 
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);

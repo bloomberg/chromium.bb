@@ -8,6 +8,7 @@
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -25,9 +26,9 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
   // StoragePartitionService implementation:
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest database) override;
-  void OpenSessionStorage(const std::string& namespace_id,
-                          const url::Origin& origin,
-                          mojom::LevelDBWrapperRequest database) override;
+  void OpenSessionStorage(
+      const std::string& namespace_id,
+      mojom::SessionStorageNamespaceRequest request) override;
 
   // LevelDBWrapper implementation:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
@@ -98,18 +99,24 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
   }
 
  private:
+  class MockSessionStorageNamespace;
+
   std::list<ResultCallback> pending_callbacks_;
   bool observed_get_all_ = false;
   bool observed_put_ = false;
   bool observed_delete_ = false;
   bool observed_delete_all_ = false;
+  bool observed_clone_ = false;
   std::vector<uint8_t> observed_key_;
   std::vector<uint8_t> observed_value_;
   std::string observed_source_;
+  std::string observed_clone_from_namespace_;
+  std::string observed_clone_to_namespace_;
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> get_all_return_values_;
 
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
+  mojo::StrongBindingSet<mojom::SessionStorageNamespace> namespace_bindings_;
 };
 
 }  // namespace content

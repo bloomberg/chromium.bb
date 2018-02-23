@@ -147,13 +147,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
 
   // mojom::StoragePartitionService interface.
-  void OpenLocalStorage(
-      const url::Origin& origin,
-      mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
+  void OpenLocalStorage(const url::Origin& origin,
+                        mojom::LevelDBWrapperRequest request) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
-      const url::Origin& origin,
-      mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
+      mojom::SessionStorageNamespaceRequest request) override;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;

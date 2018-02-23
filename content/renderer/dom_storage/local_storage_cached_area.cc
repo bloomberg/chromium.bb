@@ -70,7 +70,7 @@ void UnpackSource(const std::string& source,
 LocalStorageCachedArea::LocalStorageCachedArea(
     const std::string& namespace_id,
     const url::Origin& origin,
-    mojom::StoragePartitionService* storage_partition_service,
+    mojom::SessionStorageNamespace* session_namespace,
     LocalStorageCachedAreas* cached_areas,
     blink::scheduler::RendererScheduler* renderer_scheduler)
     : namespace_id_(namespace_id),
@@ -80,8 +80,10 @@ LocalStorageCachedArea::LocalStorageCachedArea(
       renderer_scheduler_(renderer_scheduler),
       weak_factory_(this) {
   DCHECK(!namespace_id_.empty());
-  storage_partition_service->OpenSessionStorage(namespace_id, origin_,
-                                                mojo::MakeRequest(&leveldb_));
+
+  mojom::LevelDBWrapperAssociatedPtrInfo wrapper_ptr_info;
+  session_namespace->OpenArea(origin_, mojo::MakeRequest(&wrapper_ptr_info));
+  leveldb_.Bind(std::move(wrapper_ptr_info));
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   leveldb_->AddObserver(std::move(ptr_info));
@@ -98,8 +100,10 @@ LocalStorageCachedArea::LocalStorageCachedArea(
       renderer_scheduler_(renderer_scheduler),
       weak_factory_(this) {
   DCHECK(namespace_id_.empty());
-  storage_partition_service->OpenLocalStorage(origin_,
-                                              mojo::MakeRequest(&leveldb_));
+  mojom::LevelDBWrapperPtrInfo wrapper_ptr_info;
+  storage_partition_service->OpenLocalStorage(
+      origin_, mojo::MakeRequest(&wrapper_ptr_info));
+  leveldb_.Bind(std::move(wrapper_ptr_info));
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   leveldb_->AddObserver(std::move(ptr_info));

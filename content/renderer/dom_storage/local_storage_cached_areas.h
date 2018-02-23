@@ -6,10 +6,13 @@
 #define CONTENT_RENDERER_DOM_STORAGE_LOCAL_STORAGE_CACHED_AREAS_H_
 
 #include <map>
+#include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/storage_partition_service.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -45,6 +48,9 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
       const std::string& namespace_id,
       const url::Origin& origin);
 
+  void CloneNamespace(const std::string& source_namespace,
+                      const std::string& destination_namespace);
+
   size_t TotalCacheSize() const;
 
   void set_cache_limit_for_testing(size_t limit) { total_cache_limit_ = limit; }
@@ -59,11 +65,25 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
 
   mojom::StoragePartitionService* const storage_partition_service_;
 
-  // Maps from a namespace + origin to its LocalStorageCachedArea object. When
-  // this map is the only reference to the object, it can be deleted by the
-  // cache.
-  using AreaKey = std::pair<std::string, url::Origin>;
-  std::map<AreaKey, scoped_refptr<LocalStorageCachedArea>> cached_areas_;
+  struct DOMStorageNamespace {
+   public:
+    DOMStorageNamespace();
+    ~DOMStorageNamespace();
+    DOMStorageNamespace(DOMStorageNamespace&& other);
+    DOMStorageNamespace& operator=(DOMStorageNamespace&&) = default;
+
+    size_t TotalCacheSize() const;
+    // Returns true if this namespace is totally unused and can be deleted.
+    bool CleanUpUnusedAreas();
+
+    mojom::SessionStorageNamespacePtr session_storage_namespace;
+    base::flat_map<url::Origin, scoped_refptr<LocalStorageCachedArea>>
+        cached_areas;
+
+    DISALLOW_COPY_AND_ASSIGN(DOMStorageNamespace);
+  };
+
+  base::flat_map<std::string, DOMStorageNamespace> cached_namespaces_;
   size_t total_cache_limit_;
 
   blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED

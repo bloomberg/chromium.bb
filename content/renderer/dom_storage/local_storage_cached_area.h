@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/leveldb_wrapper.mojom.h"
+#include "content/common/possibly_associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/WebScopedVirtualTimePauser.h"
 #include "url/gurl.h"
@@ -30,6 +31,7 @@ class LocalStorageCachedAreas;
 
 namespace mojom {
 class StoragePartitionService;
+class SessionStorageNamespace;
 }
 
 // An in-process implementation of LocalStorage using a LevelDB Mojo service.
@@ -48,7 +50,7 @@ class CONTENT_EXPORT LocalStorageCachedArea
   LocalStorageCachedArea(
       const std::string& namespace_id,
       const url::Origin& origin,
-      mojom::StoragePartitionService* storage_partition_service,
+      mojom::SessionStorageNamespace* session_namespace,
       LocalStorageCachedAreas* cached_areas,
       blink::scheduler::RendererScheduler* renderer_schedule);
   LocalStorageCachedArea(
@@ -138,7 +140,7 @@ class CONTENT_EXPORT LocalStorageCachedArea
   bool ignore_all_mutations_ = false;
   // See ShouldSendOldValueOnMutations().
   bool should_send_old_value_on_mutations_ = true;
-  mojom::LevelDBWrapperPtr leveldb_;
+  content::PossiblyAssociatedInterfacePtr<mojom::LevelDBWrapper> leveldb_;
   mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;

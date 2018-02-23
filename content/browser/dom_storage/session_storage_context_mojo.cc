@@ -25,9 +25,15 @@ SessionStorageContextMojo::SessionStorageContextMojo(
 SessionStorageContextMojo::~SessionStorageContextMojo() {}
 
 void SessionStorageContextMojo::OpenSessionStorage(
+    int process_id,
     const std::string& namespace_id,
-    const url::Origin& origin,
-    mojom::LevelDBWrapperRequest request) {
+    mojom::SessionStorageNamespaceRequest request) {
+  // TODO(dmurph): Check the process ID against the origin like so:
+  // if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
+  //         process_id, origin.GetURL())) {
+  //   bindings_.ReportBadMessage("Access denied for sessionStorage request");
+  //   return;
+  // }
   NOTREACHED();
 }
 
