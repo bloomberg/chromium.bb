@@ -30,10 +30,6 @@ const char kRunAllCompositorStagesBeforeDraw[] =
     "run-all-compositor-stages-before-draw";
 
 // Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
-// hit-test data coming from draw quad.
-const char kUseVizHitTestDrawQuad[] = "use-viz-hit-test-draw-quad";
-
-// Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
 
