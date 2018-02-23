@@ -30,6 +30,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
@@ -44,6 +45,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/session_util.h"
+#include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
 #include "ios/chrome/browser/ui/external_file_remover.h"
 #include "ios/chrome/browser/ui/external_file_remover_factory.h"
@@ -653,6 +655,12 @@ void IOSChromeBrowsingDataRemover::NotifyRemovalComplete() {
 
   scoped_refptr<base::SequencedTaskRunner> current_task_runner =
       base::SequencedTaskRunnerHandle::Get();
+
+  if (AccountConsistencyService* account_consistency_service =
+          ios::AccountConsistencyServiceFactory::GetForBrowserState(
+              browser_state_)) {
+    account_consistency_service->OnBrowsingDataRemoved();
+  }
 
   // Call the task callback. As this may cause |this| instance to be deleted,
   // post the task to be executed asynchronously to ensure the object survive
