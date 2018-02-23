@@ -605,7 +605,10 @@ void SignalAndWaitEvent(WaitableEvent* signal_event,
 
 }  // namespace
 
-TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithCleanup) {
+// Verifies that NumTasksBetweenWaits histogram is logged as expected across
+// idle and cleanup periods.
+TEST_F(TaskSchedulerWorkerPoolHistogramTest,
+       NumTasksBetweenWaitsWithIdlePeriodAndCleanup) {
   WaitableEvent tasks_can_exit_event(WaitableEvent::ResetPolicy::MANUAL,
                                      WaitableEvent::InitialState::NOT_SIGNALED);
   CreateAndStartWorkerPool(kReclaimTimeForCleanupTests,
@@ -628,7 +631,8 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithCleanup) {
     task_started_event->Wait();
 
   // Allow tasks to complete their execution and wait to allow workers to
-  // cleanup.
+  // cleanup (at least one of them will not cleanup to keep the idle thread
+  // count above zero).
   tasks_can_exit_event.Signal();
   worker_pool_->WaitForAllWorkersIdleForTesting();
   PlatformThread::Sleep(kReclaimTimeForCleanupTests +
@@ -653,15 +657,14 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithCleanup) {
   const auto* histogram = worker_pool_->num_tasks_between_waits_histogram();
 
   // Verify that counts were recorded to the histogram as expected.
-  // - The "0" bucket has a count of at least 1 because the SchedulerWorker on
-  //   top of the idle stack isn't allowed to cleanup when its sleep timeout
-  //   expires. Instead, it waits on its WaitableEvent again without running a
-  //   task. The count may be higher than 1 because of spurious wake ups before
-  //   the sleep timeout expires.
-  EXPECT_GE(histogram->SnapshotSamples()->GetCount(0), 1);
+  // - The "0" bucket does not have a report because we do not report this
+  //   histogram when threads get no work twice in a row and cleanup (or go idle
+  //   if last on idle stack).
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
   // - The "1" bucket has a count of |kNumWorkersInWorkerPool| because each
   //   SchedulerWorker ran a task before waiting on its WaitableEvent at the
-  //   beginning of the test.
+  //   beginning of the test (counted the same whether resurrecting post-cleanup
+  //   or waking from idle).
   EXPECT_EQ(static_cast<int>(kNumWorkersInWorkerPool),
             histogram->SnapshotSamples()->GetCount(1));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
