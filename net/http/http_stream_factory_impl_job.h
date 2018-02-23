@@ -400,6 +400,7 @@ class HttpStreamFactoryImpl::Job {
   static int OnHostResolution(SpdySessionPool* spdy_session_pool,
                               const SpdySessionKey& spdy_session_key,
                               bool enable_ip_based_pooling,
+                              bool is_websocket,
                               const AddressList& addresses,
                               const NetLogWithSource& net_log);
 
