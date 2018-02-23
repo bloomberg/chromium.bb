@@ -8,10 +8,13 @@
 #include <map>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/atomic_flag.h"
 #include "content/browser/payments/payment_app_database.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
 namespace content {
@@ -41,7 +44,9 @@ class ServiceWorkerContextWrapper;
 //   4) Shutdown()
 //   5) Destructor
 class CONTENT_EXPORT PaymentAppContextImpl
-    : public base::RefCountedThreadSafe<PaymentAppContextImpl> {
+    : public base::RefCountedThreadSafe<
+          PaymentAppContextImpl,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   PaymentAppContextImpl();
 
@@ -65,7 +70,9 @@ class CONTENT_EXPORT PaymentAppContextImpl
 
  private:
   friend class PaymentAppContentUnitTestBase;
-  friend class base::RefCountedThreadSafe<PaymentAppContextImpl>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<PaymentAppContextImpl>;
   ~PaymentAppContextImpl();
 
   void CreatePaymentAppDatabaseOnIO(
@@ -75,7 +82,6 @@ class CONTENT_EXPORT PaymentAppContextImpl
       mojo::InterfaceRequest<payments::mojom::PaymentManager> request);
 
   void ShutdownOnIO();
-  void DidShutdown();
 
   // Only accessed on the IO thread.
   std::unique_ptr<PaymentAppDatabase> payment_app_database_;
@@ -85,8 +91,11 @@ class CONTENT_EXPORT PaymentAppContextImpl
   // PaymentManagerHadConnectionError. Only accessed on the IO thread.
   std::map<PaymentManager*, std::unique_ptr<PaymentManager>> payment_managers_;
 
-  // Only accessed on the UI thread.
-  bool is_shutdown_;
+#if DCHECK_IS_ON()
+  // Set after ShutdownOnIO() has run on the IO thread. |this| shouldn't be
+  // deleted before this is set.
+  base::AtomicFlag did_shutdown_on_io_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppContextImpl);
 };
