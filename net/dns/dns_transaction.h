@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "net/base/request_priority.h"
 #include "net/dns/record_rdata.h"
 #include "url/gurl.h"
@@ -54,9 +55,10 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   // Called with the response or NULL if no matching response was received.
   // Note that the |GetDottedName()| of the response may be different than the
   // original |hostname| as a result of suffix search.
-  typedef base::Callback<void(DnsTransaction* transaction,
-                              int neterror,
-                              const DnsResponse* response)> CallbackType;
+  typedef base::OnceCallback<void(DnsTransaction* transaction,
+                                  int neterror,
+                                  const DnsResponse* response)>
+      CallbackType;
 
   virtual ~DnsTransactionFactory() {}
 
@@ -70,7 +72,7 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   virtual std::unique_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
       uint16_t qtype,
-      const CallbackType& callback,
+      CallbackType callback,
       const NetLogWithSource& net_log) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
