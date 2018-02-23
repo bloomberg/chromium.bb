@@ -16,7 +16,6 @@
     },
     {
       "app": "ios_chrome_bookmarks_egtests",
-      "shards": 2,
       "xctest": true
     },
     {
