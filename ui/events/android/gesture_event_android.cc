@@ -12,12 +12,24 @@ GestureEventAndroid::GestureEventAndroid(int type,
                                          const gfx::PointF& location,
                                          const gfx::PointF& screen_location,
                                          long time_ms,
-                                         float delta)
+                                         float scale,
+                                         float delta_x,
+                                         float delta_y,
+                                         float velocity_x,
+                                         float velocity_y,
+                                         bool target_viewport,
+                                         bool synthetic_scroll)
     : type_(type),
       location_(location),
       screen_location_(screen_location),
       time_ms_(time_ms),
-      delta_(delta) {}
+      scale_(scale),
+      delta_x_(delta_x),
+      delta_y_(delta_y),
+      velocity_x_(velocity_x),
+      velocity_y_(velocity_y),
+      target_viewport_(target_viewport),
+      synthetic_scroll_(synthetic_scroll) {}
 
 GestureEventAndroid::~GestureEventAndroid() {}
 
@@ -26,7 +38,8 @@ std::unique_ptr<GestureEventAndroid> GestureEventAndroid::CreateFor(
   auto offset = new_location - location_;
   gfx::PointF new_screen_location = screen_location_ + offset;
   return std::unique_ptr<GestureEventAndroid>(new GestureEventAndroid(
-      type_, new_location, new_screen_location, time_ms_, delta_));
+      type_, new_location, new_screen_location, time_ms_, scale_, delta_x_,
+      delta_y_, velocity_x_, velocity_y_, target_viewport_, synthetic_scroll_));
 }
 
 }  // namespace ui

@@ -12,6 +12,7 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/drag_event_android.h"
 #include "ui/events/android/gesture_event_android.h"
+#include "ui/events/android/gesture_event_type.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/base_event_utils.h"
 
@@ -175,16 +176,42 @@ bool EventForwarder::OnGestureEvent(JNIEnv* env,
                                     const JavaParamRef<jobject>& jobj,
                                     jint type,
                                     jlong time_ms,
-                                    jfloat delta) {
+                                    jfloat scale) {
   float dip_scale = view_->GetDipScale();
   auto size = view_->GetSize();
   float x = size.width() / 2;
   float y = size.height() / 2;
   gfx::PointF root_location =
       ScalePoint(view_->GetLocationOnScreen(x, y), 1.f / dip_scale);
-  return view_->OnGestureEvent(
-      GestureEventAndroid(type, gfx::PointF(x / dip_scale, y / dip_scale),
-                          root_location, time_ms, delta));
+  return view_->OnGestureEvent(GestureEventAndroid(
+      type, gfx::PointF(x / dip_scale, y / dip_scale), root_location, time_ms,
+      scale, 0, 0, 0, 0, false, false));
+}
+
+void EventForwarder::OnStartFling(JNIEnv* env,
+                                  const JavaParamRef<jobject>& jobj,
+                                  jlong time_ms,
+                                  jfloat velocity_x,
+                                  jfloat velocity_y,
+                                  jboolean synthetic_scroll) {
+  OnCancelFling(env, jobj, time_ms);
+  if (velocity_x == 0 && velocity_y == 0)
+    return;
+  // Use velocity as delta in scroll event.
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_SCROLL_START, gfx::PointF(), gfx::PointF(), time_ms, 0,
+      velocity_x, velocity_y, 0, 0, true, synthetic_scroll));
+  view_->OnGestureEvent(GestureEventAndroid(
+      GESTURE_EVENT_TYPE_FLING_START, gfx::PointF(), gfx::PointF(), time_ms, 0,
+      0, 0, velocity_x, velocity_y, true, synthetic_scroll));
+}
+
+void EventForwarder::OnCancelFling(JNIEnv* env,
+                                   const JavaParamRef<jobject>& jobj,
+                                   jlong time_ms) {
+  view_->OnGestureEvent(
+      GestureEventAndroid(GESTURE_EVENT_TYPE_FLING_CANCEL, gfx::PointF(),
+                          gfx::PointF(), time_ms, 0, 0, 0, 0, 0, false, false));
 }
 
 }  // namespace ui

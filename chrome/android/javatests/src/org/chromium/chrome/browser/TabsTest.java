@@ -75,7 +75,6 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -1382,9 +1381,10 @@ public class TabsTest {
         mActivityTestRule.loadUrlInNewTab(
                 mTestServer.getURL("/chrome/test/data/android/tabstest/text_page.html"));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            ContentViewCore view =
-                    mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
-            view.flingViewport(SystemClock.uptimeMillis(), 0, -2000, false);
+            WebContents webContents =
+                    mActivityTestRule.getActivity().getActivityTab().getWebContents();
+            webContents.getEventForwarder().onStartFling(
+                    SystemClock.uptimeMillis(), 0, -2000, false);
         });
         ChromeTabUtils.closeCurrentTab(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
