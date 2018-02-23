@@ -21,12 +21,12 @@ from chromite.scripts import chrome_chromeos_lkgm
 
 # pylint: disable=protected-access
 
-class BaseChromeLGTMCommitterTest(cros_test_lib.MockTempDirTestCase):
-  """Base class for tests using cros_chromeos_lkgm.ChromeLGTMCommitter."""
+class BaseChromeLKGMCommitterTest(cros_test_lib.MockTempDirTestCase):
+  """Base class for tests using cros_chromeos_lkgm.ChromeLKGMCommitter."""
 
   def setUp(self):
     """Common set up method for all tests."""
-    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+    self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1001.0.0', False, 'user@test.org')
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.old_lkgm = None
@@ -38,8 +38,8 @@ class BaseChromeLGTMCommitterTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(time, 'sleep')
 
 
-class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
-                                BaseChromeLGTMCommitterTest):
+class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
+                                BaseChromeLKGMCommitterTest):
   """Test cros_chromeos_lkgm.Committer."""
 
   def _createOldLkgm(self, items):  # pylint: disable=unused-argument
@@ -58,7 +58,7 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
-    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+    self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1002.0.0', False, 'user@test.org')
 
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
@@ -94,7 +94,7 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.rc.AddCmdResult(partial_mock.In('clone'), returncode=0,
                          side_effect=self._createOldLkgm)
 
-    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+    self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1001.0.0', False, 'user@test.org')
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
@@ -111,7 +111,7 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
-    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+    self.committer = chrome_chromeos_lkgm.ChromeLKGMCommitter(
         self.tempdir, '1003.0.0-rc2', False, 'user@test.org')
 
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)

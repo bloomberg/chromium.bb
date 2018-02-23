@@ -35,7 +35,7 @@ class LKGMNotCommitted(Exception):
   """Raised if we could not submit a new LKGM."""
 
 
-class ChromeLGTMCommitter(object):
+class ChromeLKGMCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
   _COMMIT_MSG_TEMPLATE = ('Automated Commit: Committing new LKGM version '
@@ -80,7 +80,9 @@ class ChromeLGTMCommitter(object):
 
     lv = distutils.version.LooseVersion
     if self._old_lkgm is not None and not lv(self._lkgm) > lv(self._old_lkgm):
-      raise LKGMNotValid('LKGM version is not newer than current version.')
+      raise LKGMNotValid(
+          'LKGM version (%s) is not newer than current version (%s).' %
+          (self._lkgm, self._old_lkgm))
 
     logging.info('Committing LKGM version: %s (was %s),',
                  self._lkgm, self._old_lkgm)
@@ -158,6 +160,14 @@ class ChromeLGTMCommitter(object):
 
     logging.info('git cl land succeeded.')
 
+  def Cleanup(self, checkout_dir):
+    """Remove chrome checkout.
+
+    Args:
+      checkout_dir: chrome checkout directory.
+    """
+    cros_build_lib.RunCommand(['rm', '-rf', checkout_dir])
+
 def _GetParser():
   """Returns the parser to use for this module."""
   parser = commandline.ArgumentParser(usage=__doc__, caching=True)
@@ -182,7 +192,7 @@ def main(argv):
   logging.info('user_email=%s', args.user_email)
   logging.info('workdir=%s', args.workdir)
 
-  committer = ChromeLGTMCommitter(args.workdir, lkgm=args.lkgm,
+  committer = ChromeLKGMCommitter(args.workdir, lkgm=args.lkgm,
                                   dryrun=args.dryrun,
                                   user_email=args.user_email)
   try:
@@ -193,5 +203,7 @@ def main(argv):
   except LKGMNotCommitted as e:
     # TODO(stevenjb): Do not catch exceptions (i.e. fail) once this works.
     logging.warning('LKGM Commit failed: %r' % e)
+  finally:
+    committer.Cleanup(args.workdir)
 
   return 0
