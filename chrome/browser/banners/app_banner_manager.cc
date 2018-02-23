@@ -230,6 +230,34 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
 
 AppBannerManager::~AppBannerManager() { }
 
+bool AppBannerManager::CheckIfShouldShowBanner() {
+  if (IsDebugMode())
+    return true;
+
+  InstallableStatusCode code = ShouldShowBannerCode();
+  switch (code) {
+    case NO_ERROR_DETECTED:
+      return true;
+    case PREVIOUSLY_BLOCKED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
+      break;
+    case PREVIOUSLY_IGNORED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
+      break;
+    case PACKAGE_NAME_OR_START_URL_EMPTY:
+      break;
+    default:
+      NOTREACHED();
+  }
+  Stop(code);
+  return false;
+}
+
+bool AppBannerManager::CheckIfInstalled() {
+  return IsWebAppConsideredInstalled(web_contents(), validated_url_,
+                                     manifest_.start_url, manifest_url_);
+}
+
 std::string AppBannerManager::GetAppIdentifier() {
   DCHECK(!manifest_.IsEmpty());
   return manifest_.start_url.spec();
@@ -338,6 +366,12 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   primary_icon_url_ = data.primary_icon_url;
   primary_icon_ = *data.primary_icon;
 
+  if (CheckIfInstalled()) {
+    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+    Stop(ALREADY_INSTALLED);
+    return;
+  }
+
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but
   // don't call Terminate(). We wait for OnEngagementEvent to tell us that we
@@ -366,6 +400,11 @@ void AppBannerManager::RecordDidShowBanner(const std::string& event_name) {
 void AppBannerManager::ReportStatus(InstallableStatusCode code) {
   DCHECK(status_reporter_);
   status_reporter_->ReportStatus(code);
+}
+
+void AppBannerManager::ResetBindings() {
+  binding_.Close();
+  event_.reset();
 }
 
 void AppBannerManager::ResetCurrentPageData() {
@@ -564,11 +603,6 @@ bool AppBannerManager::IsExperimentalAppBannersEnabled() {
          base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
 }
 
-void AppBannerManager::ResetBindings() {
-  binding_.Close();
-  event_.reset();
-}
-
 void AppBannerManager::RecordCouldShowBanner() {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
@@ -583,10 +617,6 @@ InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
     return PACKAGE_NAME_OR_START_URL_EMPTY;
 
   content::WebContents* contents = web_contents();
-  if (IsWebAppConsideredInstalled(contents, validated_url_, manifest_.start_url,
-                                  manifest_url_)) {
-    return ALREADY_INSTALLED;
-  }
 
   // Showing of experimental app banners is under developer control, and
   // requires a user gesture. In contrast, showing of traditional app banners
@@ -605,32 +635,6 @@ InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
   }
 
   return NO_ERROR_DETECTED;
-}
-
-bool AppBannerManager::CheckIfShouldShowBanner() {
-  if (IsDebugMode())
-    return true;
-
-  InstallableStatusCode code = ShouldShowBannerCode();
-  switch (code) {
-    case NO_ERROR_DETECTED:
-      return true;
-    case ALREADY_INSTALLED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
-      break;
-    case PREVIOUSLY_BLOCKED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
-      break;
-    case PREVIOUSLY_IGNORED:
-      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
-      break;
-    case PACKAGE_NAME_OR_START_URL_EMPTY:
-      break;
-    default:
-      NOTREACHED();
-  }
-  Stop(code);
-  return false;
 }
 
 void AppBannerManager::OnBannerPromptReply(

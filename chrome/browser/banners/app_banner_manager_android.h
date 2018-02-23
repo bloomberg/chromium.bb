@@ -71,6 +71,7 @@ class AppBannerManagerAndroid
 
   // AppBannerManager overrides.
   void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
+  void SendBannerDismissed() override;
 
   // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
   void AddToHomescreenFromBadge() override;
@@ -79,6 +80,7 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
+  bool CheckIfInstalled() override;
   bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
                                    const GURL& validated_url,
                                    const GURL& start_url,
@@ -88,7 +90,6 @@ class AppBannerManagerAndroid
   void OnDidPerformInstallableCheck(const InstallableData& result) override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;
   void ResetCurrentPageData() override;
-  void SendBannerPromptRequest() override;
   void ShowBannerUi(WebappInstallSource install_source) override;
 
  private:
@@ -113,7 +114,7 @@ class AppBannerManagerAndroid
 
   // Shows the ambient badge if the current page advertises a native app or is
   // a PWA.
-  void ShowAmbientBadge();
+  void ShowAmbientBadge(bool is_installed);
 
   // Hides the ambient badge if it is showing.
   void HideAmbientBadge();

@@ -129,7 +129,7 @@ class AppBannerManager : public content::WebContentsObserver,
   void SendBannerAccepted();
 
   // Sends a message to the renderer that the user dismissed the banner.
-  void SendBannerDismissed();
+  virtual void SendBannerDismissed();
 
   // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
   // may bind callbacks without needing their own WeakPtrFactory.
@@ -163,6 +163,14 @@ class AppBannerManager : public content::WebContentsObserver,
   // been shown too recently, or if the app has already been installed.
   // GetAppIdentifier() must return a valid value for this method to work.
   bool CheckIfShouldShowBanner();
+
+  // Called when the current site is eligible to show a banner. Returns true if
+  // the banner should not be shown because the site is already installed, and
+  // false if the banner should be shown because the site is not yet installed.
+  // Overridden in platform-specific code to perform actions when it is
+  // guaranteed that a site is banner-eligible, depending on whether the site is
+  // installed (i.e. the ambient badge).
+  virtual bool CheckIfInstalled();
 
   // Return a string identifying this app for metrics.
   virtual std::string GetAppIdentifier();
@@ -213,6 +221,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // Reports |code| via a UMA histogram or logs it to the console.
   void ReportStatus(InstallableStatusCode code);
 
+  // Voids all outstanding service pointers.
+  void ResetBindings();
+
   // Resets all fetched data for the current page.
   virtual void ResetCurrentPageData();
 
@@ -226,10 +237,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Sends a message to the renderer that the page has met the requirements to
   // show a banner. The page can respond to cancel the banner (and possibly
-  // display it later), or otherwise allow it to be shown. Virtual to allow
-  // platform-specific code to perform actions when it is guaranteed that the
-  // page can show a banner.
-  virtual void SendBannerPromptRequest();
+  // display it later), or otherwise allow it to be shown.
+  void SendBannerPromptRequest();
 
   // Updates the current state to |state|. Virtual to allow overriding in tests.
   virtual void UpdateState(State state);
@@ -283,9 +292,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
  private:
   friend class AppBannerManagerTest;
-
-  // Voids all outstanding service pointers.
-  void ResetBindings();
 
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.
