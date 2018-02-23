@@ -15,7 +15,7 @@ cast_source_set("app") {
   deps = [
     ":cast_crash_client",
     "//base",
-    "//chromecast:chromecast_features",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/browser",
     "//chromecast/common",

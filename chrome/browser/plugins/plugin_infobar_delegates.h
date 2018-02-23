@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "url/gurl.h"
 

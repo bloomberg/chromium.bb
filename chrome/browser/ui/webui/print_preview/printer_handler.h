@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 
 namespace base {
 class DictionaryValue;

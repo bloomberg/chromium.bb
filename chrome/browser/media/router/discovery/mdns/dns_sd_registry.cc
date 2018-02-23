@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 #include "components/cast_channel/cast_channel_util.h"
 
 using local_discovery::ServiceDiscoveryClient;

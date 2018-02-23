@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/common/features.h"
+#include "chrome/common/buildflags.h"
 
 namespace aura {
 class UserActivityForwarder;
