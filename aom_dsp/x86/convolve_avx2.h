@@ -33,9 +33,9 @@ DECLARE_ALIGNED(32, static const uint8_t, filt4_global_avx2[32]) = {
   6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14
 };
 
-static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
-                                  const int subpel_q4,
-                                  __m256i *const coeffs /* [4] */) {
+static INLINE void prepare_coeffs_lowbd(
+    const InterpFilterParams *const filter_params, const int subpel_q4,
+    __m256i *const coeffs /* [4] */) {
   const int16_t *const filter = av1_get_interp_filter_subpel_kernel(
       *filter_params, subpel_q4 & SUBPEL_MASK);
   const __m128i coeffs_8 = _mm_loadu_si128((__m128i *)filter);
@@ -61,27 +61,27 @@ static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
   coeffs[3] = _mm256_shuffle_epi8(coeffs_1, _mm256_set1_epi16(0x0e0cu));
 }
 
-static INLINE void prepare_coeffs_y_2d(
-    const InterpFilterParams *const filter_params_y, const int subpel_y_q4,
-    __m256i *const coeffs /* [4] */) {
-  const int16_t *y_filter = av1_get_interp_filter_subpel_kernel(
-      *filter_params_y, subpel_y_q4 & SUBPEL_MASK);
+static INLINE void prepare_coeffs(const InterpFilterParams *const filter_params,
+                                  const int subpel_q4,
+                                  __m256i *const coeffs /* [4] */) {
+  const int16_t *filter = av1_get_interp_filter_subpel_kernel(
+      *filter_params, subpel_q4 & SUBPEL_MASK);
 
-  const __m128i coeffs_y8 = _mm_loadu_si128((__m128i *)y_filter);
-  const __m256i coeffs_y = _mm256_broadcastsi128_si256(coeffs_y8);
+  const __m128i coeff_8 = _mm_loadu_si128((__m128i *)filter);
+  const __m256i coeff = _mm256_broadcastsi128_si256(coeff_8);
 
   // coeffs 0 1 0 1 0 1 0 1
-  coeffs[0] = _mm256_shuffle_epi32(coeffs_y, 0x00);
+  coeffs[0] = _mm256_shuffle_epi32(coeff, 0x00);
   // coeffs 2 3 2 3 2 3 2 3
-  coeffs[1] = _mm256_shuffle_epi32(coeffs_y, 0x55);
+  coeffs[1] = _mm256_shuffle_epi32(coeff, 0x55);
   // coeffs 4 5 4 5 4 5 4 5
-  coeffs[2] = _mm256_shuffle_epi32(coeffs_y, 0xaa);
+  coeffs[2] = _mm256_shuffle_epi32(coeff, 0xaa);
   // coeffs 6 7 6 7 6 7 6 7
-  coeffs[3] = _mm256_shuffle_epi32(coeffs_y, 0xff);
+  coeffs[3] = _mm256_shuffle_epi32(coeff, 0xff);
 }
 
-static INLINE __m256i convolve(const __m256i *const s,
-                               const __m256i *const coeffs) {
+static INLINE __m256i convolve_lowbd(const __m256i *const s,
+                                     const __m256i *const coeffs) {
   const __m256i res_01 = _mm256_maddubs_epi16(s[0], coeffs[0]);
   const __m256i res_23 = _mm256_maddubs_epi16(s[1], coeffs[1]);
   const __m256i res_45 = _mm256_maddubs_epi16(s[2], coeffs[2]);
@@ -94,8 +94,8 @@ static INLINE __m256i convolve(const __m256i *const s,
   return res;
 }
 
-static INLINE __m256i convolve_y_2d(const __m256i *const s,
-                                    const __m256i *const coeffs) {
+static INLINE __m256i convolve(const __m256i *const s,
+                               const __m256i *const coeffs) {
   const __m256i res_0 = _mm256_madd_epi16(s[0], coeffs[0]);
   const __m256i res_1 = _mm256_madd_epi16(s[1], coeffs[1]);
   const __m256i res_2 = _mm256_madd_epi16(s[2], coeffs[2]);
@@ -107,9 +107,9 @@ static INLINE __m256i convolve_y_2d(const __m256i *const s,
   return res;
 }
 
-static INLINE __m256i convolve_x(const __m256i data,
-                                 const __m256i *const coeffs,
-                                 const __m256i *const filt) {
+static INLINE __m256i convolve_lowbd_x(const __m256i data,
+                                       const __m256i *const coeffs,
+                                       const __m256i *const filt) {
   __m256i s[4];
 
   s[0] = _mm256_shuffle_epi8(data, filt[0]);
@@ -117,7 +117,7 @@ static INLINE __m256i convolve_x(const __m256i data,
   s[2] = _mm256_shuffle_epi8(data, filt[2]);
   s[3] = _mm256_shuffle_epi8(data, filt[3]);
 
-  return convolve(s, coeffs);
+  return convolve_lowbd(s, coeffs);
 }
 
 static INLINE void add_store_aligned(CONV_BUF_TYPE *const dst,

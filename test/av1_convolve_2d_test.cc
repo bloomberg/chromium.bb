@@ -169,7 +169,11 @@ INSTANTIATE_TEST_CASE_P(C_Y, AV1HighbdConvolve2DSrTest,
 INSTANTIATE_TEST_CASE_P(C_COPY, AV1HighbdConvolve2DSrTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_copy_sr_c, 0, 0, 0));
-
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdConvolve2DSrTest,
+                        libaom_test::AV1HighbdConvolve2D::BuildParams(
+                            av1_highbd_convolve_2d_sr_avx2, 1, 1, 0));
+#endif
 #if CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1HighbdJntConvolve2DTest, CheckOutput) {
   RunCheckOutput(GET_PARAM(1));

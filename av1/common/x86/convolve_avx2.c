@@ -361,7 +361,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
 
   assert((FILTER_BITS - conv_params->round_0) >= 0);
 
-  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
+  prepare_coeffs_lowbd(filter_params_y, subpel_y_q4, coeffs);
 
   (void)conv_params;
   (void)filter_params_x;
@@ -442,7 +442,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
       s[3] = _mm256_unpacklo_epi8(src_67a, src_78a);
       s[7] = _mm256_unpackhi_epi8(src_67a, src_78a);
 
-      const __m256i res_lo = convolve(s, coeffs);
+      const __m256i res_lo = convolve_lowbd(s, coeffs);
 
       const __m256i res_lo_0_32b =
           _mm256_cvtepi16_epi32(_mm256_castsi256_si128(res_lo));
@@ -465,7 +465,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
                         &avg_mask);
 
       if (w - j > 8) {
-        const __m256i res_hi = convolve(s + 4, coeffs);
+        const __m256i res_hi = convolve_lowbd(s + 4, coeffs);
 
         const __m256i res_hi_0_32b =
             _mm256_cvtepi16_epi32(_mm256_castsi256_si128(res_hi));
@@ -520,7 +520,7 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
          ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
 
-  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs);
+  prepare_coeffs_lowbd(filter_params_y, subpel_y_q4, coeffs);
 
   (void)filter_params_x;
   (void)subpel_x_q4;
@@ -599,7 +599,7 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       s[3] = _mm256_unpacklo_epi8(src_67a, src_78a);
       s[7] = _mm256_unpackhi_epi8(src_67a, src_78a);
 
-      const __m256i res_lo = convolve(s, coeffs);
+      const __m256i res_lo = convolve_lowbd(s, coeffs);
 
       /* rounding code */
       // shift by F - 1
@@ -609,7 +609,7 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       __m256i res_8b_lo = _mm256_packus_epi16(res_16b_lo, res_16b_lo);
 
       if (w - j > 8) {
-        const __m256i res_hi = convolve(s + 4, coeffs);
+        const __m256i res_hi = convolve_lowbd(s + 4, coeffs);
 
         /* rounding code */
         // shift by F - 1
@@ -679,7 +679,7 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
   filt[3] = _mm256_load_si256((__m256i const *)filt4_global_avx2);
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
+  prepare_coeffs_lowbd(filter_params_x, subpel_x_q4, coeffs);
 
   const __m256i round_const =
       _mm256_set1_epi16((1 << (conv_params->round_0 - 1)) >> 1);
@@ -698,7 +698,7 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           _mm256_loadu_si256((__m256i *)&src_ptr[i * src_stride + j]),
           _MM_SHUFFLE(2, 1, 1, 0));
 
-      __m256i res = convolve_x(data, coeffs, filt);
+      __m256i res = convolve_lowbd_x(data, coeffs, filt);
 
       res = _mm256_sra_epi16(_mm256_add_epi16(res, round_const), round_shift);
 
@@ -738,7 +738,7 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
   filt[3] = _mm256_load_si256((__m256i const *)filt4_global_avx2);
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs);
+  prepare_coeffs_lowbd(filter_params_x, subpel_x_q4, coeffs);
 
   const __m256i round_0_const =
       _mm256_set1_epi16((1 << (conv_params->round_0 - 1)) >> 1);
@@ -762,7 +762,7 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
           _mm256_loadu_si256((__m256i *)&src_ptr[(i * src_stride) + j]),
           _mm_loadu_si128((__m128i *)&src_ptr[(i * src_stride) + (j + 8)]), 1);
 
-      __m256i res_16b = convolve_x(data, coeffs, filt);
+      __m256i res_16b = convolve_lowbd_x(data, coeffs, filt);
 
       res_16b = _mm256_sra_epi16(_mm256_add_epi16(res_16b, round_0_const),
                                  round_0_shift);

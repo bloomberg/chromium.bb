@@ -50,8 +50,8 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
   filt[3] = _mm256_load_si256((__m256i const *)filt4_global_avx2);
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs_x);
-  prepare_coeffs_y_2d(filter_params_y, subpel_y_q4, coeffs_y);
+  prepare_coeffs_lowbd(filter_params_x, subpel_x_q4, coeffs_x);
+  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs_y);
 
   for (j = 0; j < w; j += 8) {
     /* Horizontal filter */
@@ -70,7 +70,7 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
               _mm_loadu_si128(
                   (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
               1);
-        __m256i res = convolve_x(data, coeffs_x, filt);
+        __m256i res = convolve_lowbd_x(data, coeffs_x, filt);
 
         res = _mm256_sra_epi16(_mm256_add_epi16(res, round_const), round_shift);
 
@@ -112,8 +112,8 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
         s[3] = _mm256_unpacklo_epi16(s6, s7);
         s[7] = _mm256_unpackhi_epi16(s6, s7);
 
-        const __m256i res_a = convolve_y_2d(s, coeffs_y);
-        const __m256i res_b = convolve_y_2d(s + 4, coeffs_y);
+        const __m256i res_a = convolve(s, coeffs_y);
+        const __m256i res_b = convolve(s + 4, coeffs_y);
 
         const __m256i res_a_round =
             _mm256_sra_epi32(_mm256_add_epi32(res_a, round_const), round_shift);
@@ -185,8 +185,8 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   filt[2] = _mm256_load_si256((__m256i const *)filt3_global_avx2);
   filt[3] = _mm256_load_si256((__m256i const *)filt4_global_avx2);
 
-  prepare_coeffs(filter_params_x, subpel_x_q4, coeffs_h);
-  prepare_coeffs_y_2d(filter_params_y, subpel_y_q4, coeffs_v);
+  prepare_coeffs_lowbd(filter_params_x, subpel_x_q4, coeffs_h);
+  prepare_coeffs(filter_params_y, subpel_y_q4, coeffs_v);
 
   const __m256i round_const_h = _mm256_set1_epi16(
       ((1 << (conv_params->round_0 - 1)) >> 1) + (1 << (bd + FILTER_BITS - 2)));
@@ -214,7 +214,7 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                 (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
             1);
 
-      __m256i res = convolve_x(data, coeffs_h, filt);
+      __m256i res = convolve_lowbd_x(data, coeffs_h, filt);
 
       res =
           _mm256_sra_epi16(_mm256_add_epi16(res, round_const_h), round_shift_h);
@@ -251,8 +251,8 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
         s[3] = _mm256_unpacklo_epi16(s6, s7);
         s[7] = _mm256_unpackhi_epi16(s6, s7);
 
-        __m256i res_a = convolve_y_2d(s, coeffs_v);
-        __m256i res_b = convolve_y_2d(s + 4, coeffs_v);
+        __m256i res_a = convolve(s, coeffs_v);
+        __m256i res_b = convolve(s + 4, coeffs_v);
 
         // Combine V round and 2F-H-V round into a single rounding
         res_a =
