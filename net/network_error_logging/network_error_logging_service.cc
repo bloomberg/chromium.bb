@@ -118,6 +118,277 @@ bool RequestWasSuccessful(
   return request.type == OK && !IsHttpError(request);
 }
 
+class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
+ public:
+  NetworkErrorLoggingServiceImpl() = default;
+
+  // NetworkErrorLoggingService implementation:
+
+  ~NetworkErrorLoggingServiceImpl() override = default;
+
+  void OnHeader(const url::Origin& origin, const std::string& value) override {
+    // NEL is only available to secure origins, so don't permit insecure origins
+    // to set policies.
+    if (!origin.GetURL().SchemeIsCryptographic())
+      return;
+
+    OriginPolicy policy;
+    if (!ParseHeader(value, tick_clock_->NowTicks(), &policy))
+      return;
+
+    PolicyMap::iterator it = policies_.find(origin);
+    if (it != policies_.end()) {
+      MaybeRemoveWildcardPolicy(origin, &it->second);
+      policies_.erase(it);
+    }
+
+    if (policy.expires.is_null())
+      return;
+
+    auto inserted = policies_.insert(std::make_pair(origin, policy));
+    DCHECK(inserted.second);
+    MaybeAddWildcardPolicy(origin, &inserted.first->second);
+  }
+
+  void OnRequest(const RequestDetails& details) override {
+    if (!reporting_service_)
+      return;
+
+    // It is expected for Reporting uploads to terminate with ERR_ABORTED, since
+    // the ReportingUploader cancels them after receiving the response code and
+    // headers.
+    if (details.is_reporting_upload && details.type == ERR_ABORTED)
+      return;
+
+    // NEL is only available to secure origins, so ignore network errors from
+    // insecure origins. (The check in OnHeader prevents insecure origins from
+    // setting policies, but this check is needed to ensure that insecure
+    // origins can't match wildcard policies from secure origins.)
+    if (!details.uri.SchemeIsCryptographic())
+      return;
+
+    const OriginPolicy* policy =
+        FindPolicyForOrigin(url::Origin::Create(details.uri));
+    if (!policy)
+      return;
+
+    std::string type_string;
+    if (!GetTypeFromNetError(details.type, &type_string))
+      return;
+
+    if (IsHttpError(details))
+      type_string = kHttpErrorType;
+
+    double sampling_fraction = RequestWasSuccessful(details)
+                                   ? policy->success_fraction
+                                   : policy->failure_fraction;
+    if (base::RandDouble() >= sampling_fraction)
+      return;
+
+    reporting_service_->QueueReport(
+        details.uri, policy->report_to, kReportType,
+        CreateReportBody(type_string, sampling_fraction, details));
+  }
+
+  void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
+                              origin_filter) override {
+    if (origin_filter.is_null()) {
+      wildcard_policies_.clear();
+      policies_.clear();
+      return;
+    }
+
+    std::vector<url::Origin> origins_to_remove;
+
+    for (auto it = policies_.begin(); it != policies_.end(); ++it) {
+      if (origin_filter.Run(it->first.GetURL()))
+        origins_to_remove.push_back(it->first);
+    }
+
+    for (auto it = origins_to_remove.begin(); it != origins_to_remove.end();
+         ++it) {
+      MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
+      policies_.erase(*it);
+    }
+  }
+
+ private:
+  // NEL Policy set by an origin.
+  struct OriginPolicy {
+    // Reporting API endpoint group to which reports should be sent.
+    std::string report_to;
+
+    base::TimeTicks expires;
+
+    double success_fraction;
+    double failure_fraction;
+    bool include_subdomains;
+  };
+
+  // Map from origin to origin's (owned) policy.
+  // Would be unordered_map, but url::Origin has no hash.
+  using PolicyMap = std::map<url::Origin, OriginPolicy>;
+
+  // Wildcard policies are policies for which the includeSubdomains flag is set.
+  //
+  // Wildcard policies are accessed by domain name, not full origin, so there
+  // can be multiple wildcard policies per domain name.
+  //
+  // This is a map from domain name to the set of pointers to wildcard policies
+  // in that domain.
+  //
+  // Policies in the map are unowned; they are pointers to the original in the
+  // PolicyMap.
+  using WildcardPolicyMap =
+      std::map<std::string, std::set<const OriginPolicy*>>;
+
+  PolicyMap policies_;
+  WildcardPolicyMap wildcard_policies_;
+
+  bool ParseHeader(const std::string& json_value,
+                   base::TimeTicks now_ticks,
+                   OriginPolicy* policy_out) const {
+    DCHECK(policy_out);
+
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(json_value);
+    if (!value)
+      return false;
+
+    const base::DictionaryValue* dict = nullptr;
+    if (!value->GetAsDictionary(&dict))
+      return false;
+
+    int max_age_sec;
+    if (!dict->GetInteger(kMaxAgeKey, &max_age_sec) || max_age_sec < 0)
+      return false;
+
+    std::string report_to;
+    if (!dict->GetString(kReportToKey, &report_to) && max_age_sec > 0)
+      return false;
+
+    bool include_subdomains = false;
+    // includeSubdomains is optional and defaults to false, so it's okay if
+    // GetBoolean fails.
+    dict->GetBoolean(kIncludeSubdomainsKey, &include_subdomains);
+
+    double success_fraction = 0.0;
+    // success-fraction is optional and defaults to 0.0, so it's okay if
+    // GetDouble fails.
+    dict->GetDouble(kSuccessFractionKey, &success_fraction);
+
+    double failure_fraction = 1.0;
+    // failure-fraction is optional and defaults to 1.0, so it's okay if
+    // GetDouble fails.
+    dict->GetDouble(kFailureFractionKey, &failure_fraction);
+
+    policy_out->report_to = report_to;
+    if (max_age_sec > 0) {
+      policy_out->expires =
+          now_ticks + base::TimeDelta::FromSeconds(max_age_sec);
+    } else {
+      policy_out->expires = base::TimeTicks();
+    }
+    policy_out->include_subdomains = include_subdomains;
+    policy_out->success_fraction = success_fraction;
+    policy_out->failure_fraction = failure_fraction;
+
+    return true;
+  }
+
+  const OriginPolicy* FindPolicyForOrigin(const url::Origin& origin) const {
+    // TODO(juliatuttle): Clean out expired policies sometime/somewhere.
+    PolicyMap::const_iterator it = policies_.find(origin);
+    if (it != policies_.end() && tick_clock_->NowTicks() < it->second.expires)
+      return &it->second;
+
+    std::string domain = origin.host();
+    const OriginPolicy* wildcard_policy = nullptr;
+    while (!wildcard_policy && !domain.empty()) {
+      wildcard_policy = FindWildcardPolicyForDomain(domain);
+      domain = GetSuperdomain(domain);
+    }
+
+    return wildcard_policy;
+  }
+
+  const OriginPolicy* FindWildcardPolicyForDomain(
+      const std::string& domain) const {
+    DCHECK(!domain.empty());
+
+    WildcardPolicyMap::const_iterator it = wildcard_policies_.find(domain);
+    if (it == wildcard_policies_.end())
+      return nullptr;
+
+    DCHECK(!it->second.empty());
+
+    // TODO(juliatuttle): Come up with a deterministic way to resolve these.
+    if (it->second.size() > 1) {
+      LOG(WARNING) << "Domain " << domain
+                   << " matches multiple origins with includeSubdomains; "
+                   << "choosing one arbitrarily.";
+    }
+
+    for (std::set<const OriginPolicy*>::const_iterator jt = it->second.begin();
+         jt != it->second.end(); ++jt) {
+      if (tick_clock_->NowTicks() < (*jt)->expires)
+        return *jt;
+    }
+
+    return nullptr;
+  }
+
+  void MaybeAddWildcardPolicy(const url::Origin& origin,
+                              const OriginPolicy* policy) {
+    DCHECK(policy);
+    DCHECK_EQ(policy, &policies_[origin]);
+
+    if (!policy->include_subdomains)
+      return;
+
+    auto inserted = wildcard_policies_[origin.host()].insert(policy);
+    DCHECK(inserted.second);
+  }
+
+  void MaybeRemoveWildcardPolicy(const url::Origin& origin,
+                                 const OriginPolicy* policy) {
+    DCHECK(policy);
+    DCHECK_EQ(policy, &policies_[origin]);
+
+    if (!policy->include_subdomains)
+      return;
+
+    WildcardPolicyMap::iterator wildcard_it =
+        wildcard_policies_.find(origin.host());
+    DCHECK(wildcard_it != wildcard_policies_.end());
+
+    size_t erased = wildcard_it->second.erase(policy);
+    DCHECK_EQ(1u, erased);
+    if (wildcard_it->second.empty())
+      wildcard_policies_.erase(wildcard_it);
+  }
+
+  std::unique_ptr<const base::Value> CreateReportBody(
+      const std::string& type,
+      double sampling_fraction,
+      const RequestDetails& details) const {
+    auto body = std::make_unique<base::DictionaryValue>();
+
+    body->SetString(kUriKey, details.uri.spec());
+    body->SetString(kReferrerKey, details.referrer.spec());
+    body->SetDouble(kSamplingFractionKey, sampling_fraction);
+    body->SetString(kServerIpKey, details.server_ip.ToString());
+    std::string protocol = NextProtoToString(details.protocol);
+    if (protocol == "unknown")
+      protocol = "";
+    body->SetString(kProtocolKey, protocol);
+    body->SetInteger(kStatusCodeKey, details.status_code);
+    body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
+    body->SetString(kTypeKey, type);
+
+    return std::move(body);
+  }
+};
+
 }  // namespace
 
 // static:
@@ -128,7 +399,6 @@ NetworkErrorLoggingService::RequestDetails::RequestDetails(
     const RequestDetails& other) = default;
 
 NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
-
 const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
@@ -145,99 +415,10 @@ const char NetworkErrorLoggingService::kTypeKey[] = "type";
 // static
 std::unique_ptr<NetworkErrorLoggingService>
 NetworkErrorLoggingService::Create() {
-  // Would be MakeUnique, but the constructor is private so MakeUnique can't see
-  // it.
-  return base::WrapUnique(new NetworkErrorLoggingService());
+  return std::make_unique<NetworkErrorLoggingServiceImpl>();
 }
 
 NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;
-
-void NetworkErrorLoggingService::OnHeader(const url::Origin& origin,
-                                          const std::string& value) {
-  // NEL is only available to secure origins, so don't permit insecure origins
-  // to set policies.
-  if (!origin.GetURL().SchemeIsCryptographic())
-    return;
-
-  OriginPolicy policy;
-  if (!ParseHeader(value, &policy))
-    return;
-
-  PolicyMap::iterator it = policies_.find(origin);
-  if (it != policies_.end()) {
-    MaybeRemoveWildcardPolicy(origin, &it->second);
-    policies_.erase(it);
-  }
-
-  if (policy.expires.is_null())
-    return;
-
-  auto inserted = policies_.insert(std::make_pair(origin, policy));
-  DCHECK(inserted.second);
-  MaybeAddWildcardPolicy(origin, &inserted.first->second);
-}
-
-void NetworkErrorLoggingService::OnRequest(const RequestDetails& details) {
-  if (!reporting_service_)
-    return;
-
-  // It is expected for Reporting uploads to terminate with ERR_ABORTED, since
-  // the ReportingUploader cancels them after receiving the response code and
-  // headers.
-  if (details.is_reporting_upload && details.type == ERR_ABORTED)
-    return;
-
-  // NEL is only available to secure origins, so ignore network errors from
-  // insecure origins. (The check in OnHeader prevents insecure origins from
-  // setting policies, but this check is needed to ensure that insecure origins
-  // can't match wildcard policies from secure origins.)
-  if (!details.uri.SchemeIsCryptographic())
-    return;
-
-  const OriginPolicy* policy =
-      FindPolicyForOrigin(url::Origin::Create(details.uri));
-  if (!policy)
-    return;
-
-  std::string type_string;
-  if (!GetTypeFromNetError(details.type, &type_string))
-    return;
-
-  if (IsHttpError(details))
-    type_string = kHttpErrorType;
-
-  double sampling_fraction = RequestWasSuccessful(details)
-                                 ? policy->success_fraction
-                                 : policy->failure_fraction;
-  if (base::RandDouble() >= sampling_fraction)
-    return;
-
-  reporting_service_->QueueReport(
-      details.uri, policy->report_to, kReportType,
-      CreateReportBody(type_string, sampling_fraction, details));
-}
-
-void NetworkErrorLoggingService::RemoveBrowsingData(
-    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
-  if (origin_filter.is_null()) {
-    wildcard_policies_.clear();
-    policies_.clear();
-    return;
-  }
-
-  std::vector<url::Origin> origins_to_remove;
-
-  for (auto it = policies_.begin(); it != policies_.end(); ++it) {
-    if (origin_filter.Run(it->first.GetURL()))
-      origins_to_remove.push_back(it->first);
-  }
-
-  for (auto it = origins_to_remove.begin(); it != origins_to_remove.end();
-       ++it) {
-    MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
-    policies_.erase(*it);
-  }
-}
 
 void NetworkErrorLoggingService::SetReportingService(
     ReportingService* reporting_service) {
@@ -246,159 +427,11 @@ void NetworkErrorLoggingService::SetReportingService(
 
 void NetworkErrorLoggingService::SetTickClockForTesting(
     base::TickClock* tick_clock) {
-  DCHECK(tick_clock);
   tick_clock_ = tick_clock;
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()
     : tick_clock_(base::DefaultTickClock::GetInstance()),
       reporting_service_(nullptr) {}
-
-bool NetworkErrorLoggingService::ParseHeader(const std::string& json_value,
-                                             OriginPolicy* policy_out) {
-  DCHECK(policy_out);
-
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_value);
-  if (!value)
-    return false;
-
-  const base::DictionaryValue* dict = nullptr;
-  if (!value->GetAsDictionary(&dict))
-    return false;
-
-  int max_age_sec;
-  if (!dict->GetInteger(kMaxAgeKey, &max_age_sec) || max_age_sec < 0)
-    return false;
-
-  std::string report_to;
-  if (!dict->GetString(kReportToKey, &report_to) && max_age_sec > 0)
-    return false;
-
-  bool include_subdomains = false;
-  // includeSubdomains is optional and defaults to false, so it's okay if
-  // GetBoolean fails.
-  dict->GetBoolean(kIncludeSubdomainsKey, &include_subdomains);
-
-  double success_fraction = 0.0;
-  // success-fraction is optional and defaults to 0.0, so it's okay if
-  // GetDouble fails.
-  dict->GetDouble(kSuccessFractionKey, &success_fraction);
-
-  double failure_fraction = 1.0;
-  // failure-fraction is optional and defaults to 1.0, so it's okay if
-  // GetDouble fails.
-  dict->GetDouble(kFailureFractionKey, &failure_fraction);
-
-  policy_out->report_to = report_to;
-  if (max_age_sec > 0) {
-    policy_out->expires =
-        tick_clock_->NowTicks() + base::TimeDelta::FromSeconds(max_age_sec);
-  } else {
-    policy_out->expires = base::TimeTicks();
-  }
-  policy_out->include_subdomains = include_subdomains;
-  policy_out->success_fraction = success_fraction;
-  policy_out->failure_fraction = failure_fraction;
-
-  return true;
-}
-
-const NetworkErrorLoggingService::OriginPolicy*
-NetworkErrorLoggingService::FindPolicyForOrigin(
-    const url::Origin& origin) const {
-  // TODO(juliatuttle): Clean out expired policies sometime/somewhere.
-  PolicyMap::const_iterator it = policies_.find(origin);
-  if (it != policies_.end() && tick_clock_->NowTicks() < it->second.expires)
-    return &it->second;
-
-  std::string domain = origin.host();
-  const OriginPolicy* wildcard_policy = nullptr;
-  while (!wildcard_policy && !domain.empty()) {
-    wildcard_policy = FindWildcardPolicyForDomain(domain);
-    domain = GetSuperdomain(domain);
-  }
-
-  return wildcard_policy;
-}
-
-const NetworkErrorLoggingService::OriginPolicy*
-NetworkErrorLoggingService::FindWildcardPolicyForDomain(
-    const std::string& domain) const {
-  DCHECK(!domain.empty());
-
-  WildcardPolicyMap::const_iterator it = wildcard_policies_.find(domain);
-  if (it == wildcard_policies_.end())
-    return nullptr;
-
-  DCHECK(!it->second.empty());
-
-  // TODO(juliatuttle): Come up with a deterministic way to resolve these.
-  if (it->second.size() > 1) {
-    LOG(WARNING) << "Domain " << domain
-                 << " matches multiple origins with includeSubdomains; "
-                 << "choosing one arbitrarily.";
-  }
-
-  for (std::set<const OriginPolicy*>::const_iterator jt = it->second.begin();
-       jt != it->second.end(); ++jt) {
-    if (tick_clock_->NowTicks() < (*jt)->expires)
-      return *jt;
-  }
-
-  return nullptr;
-}
-
-void NetworkErrorLoggingService::MaybeAddWildcardPolicy(
-    const url::Origin& origin,
-    const OriginPolicy* policy) {
-  DCHECK(policy);
-  DCHECK_EQ(policy, &policies_[origin]);
-
-  if (!policy->include_subdomains)
-    return;
-
-  auto inserted = wildcard_policies_[origin.host()].insert(policy);
-  DCHECK(inserted.second);
-}
-
-void NetworkErrorLoggingService::MaybeRemoveWildcardPolicy(
-    const url::Origin& origin,
-    const OriginPolicy* policy) {
-  DCHECK(policy);
-  DCHECK_EQ(policy, &policies_[origin]);
-
-  if (!policy->include_subdomains)
-    return;
-
-  WildcardPolicyMap::iterator wildcard_it =
-      wildcard_policies_.find(origin.host());
-  DCHECK(wildcard_it != wildcard_policies_.end());
-
-  size_t erased = wildcard_it->second.erase(policy);
-  DCHECK_EQ(1u, erased);
-  if (wildcard_it->second.empty())
-    wildcard_policies_.erase(wildcard_it);
-}
-
-std::unique_ptr<const base::Value> NetworkErrorLoggingService::CreateReportBody(
-    const std::string& type,
-    double sampling_fraction,
-    const NetworkErrorLoggingService::RequestDetails& details) const {
-  auto body = std::make_unique<base::DictionaryValue>();
-
-  body->SetString(kUriKey, details.uri.spec());
-  body->SetString(kReferrerKey, details.referrer.spec());
-  body->SetDouble(kSamplingFractionKey, sampling_fraction);
-  body->SetString(kServerIpKey, details.server_ip.ToString());
-  std::string protocol = NextProtoToString(details.protocol);
-  if (protocol == "unknown")
-    protocol = "";
-  body->SetString(kProtocolKey, protocol);
-  body->SetInteger(kStatusCodeKey, details.status_code);
-  body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
-  body->SetString(kTypeKey, type);
-
-  return std::move(body);
-}
 
 }  // namespace net

@@ -21,10 +21,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace base {
-class Value;
-}  // namespace base
-
 namespace net {
 class ReportingService;
 }  // namespace net
@@ -82,19 +78,20 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   // Ingests a "NEL:" header received from |orogin| with normalized value
   // |value|. May or may not actually set a policy for that origin.
-  virtual void OnHeader(const url::Origin& origin, const std::string& value);
+  virtual void OnHeader(const url::Origin& origin,
+                        const std::string& value) = 0;
 
   // Considers queueing a network error report for the request described in
   // |details|. Note that Network Error Logging can report a fraction of
   // successful requests as well (to calculate error rates), so this should be
   // called on *all* requests.
-  virtual void OnRequest(const RequestDetails& details);
+  virtual void OnRequest(const RequestDetails& details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true, or for all origins if
   // |origin_filter.is_null()|.
   virtual void RemoveBrowsingData(
-      const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
   // Sets the ReportingService that will be used to queue network error reports.
   // If |nullptr| is passed, reports will be queued locally or discarded.
@@ -109,59 +106,11 @@ class NET_EXPORT NetworkErrorLoggingService {
  protected:
   NetworkErrorLoggingService();
 
- private:
-  // NEL Policy set by an origin.
-  struct OriginPolicy {
-    // Reporting API endpoint group to which reports should be sent.
-    std::string report_to;
-
-    base::TimeTicks expires;
-
-    double success_fraction;
-    double failure_fraction;
-    bool include_subdomains;
-  };
-
-  // Map from origin to origin's (owned) policy.
-  // Would be unordered_map, but url::Origin has no hash.
-  using PolicyMap = std::map<url::Origin, OriginPolicy>;
-
-  // Wildcard policies are policies for which the includeSubdomains flag is set.
-  //
-  // Wildcard policies are accessed by domain name, not full origin, so there
-  // can be multiple wildcard policies per domain name.
-  //
-  // This is a map from domain name to the set of pointers to wildcard policies
-  // in that domain.
-  //
-  // Policies in the map are unowned; they are pointers to the original in the
-  // PolicyMap.
-  using WildcardPolicyMap =
-      std::map<std::string, std::set<const OriginPolicy*>>;
-
-  // Would be const, but base::TickClock::NowTicks isn't.
-  bool ParseHeader(const std::string& json_value, OriginPolicy* policy_out);
-
-  const OriginPolicy* FindPolicyForOrigin(const url::Origin& origin) const;
-  const OriginPolicy* FindWildcardPolicyForDomain(
-      const std::string& domain) const;
-  void MaybeAddWildcardPolicy(const url::Origin& origin,
-                              const OriginPolicy* policy);
-  void MaybeRemoveWildcardPolicy(const url::Origin& origin,
-                                 const OriginPolicy* policy);
-  std::unique_ptr<const base::Value> CreateReportBody(
-      const std::string& type,
-      double sampling_fraction,
-      const RequestDetails& details) const;
-
+  // Unowned:
   base::TickClock* tick_clock_;
-
-  // Unowned.
   ReportingService* reporting_service_;
 
-  PolicyMap policies_;
-  WildcardPolicyMap wildcard_policies_;
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingService);
 };
 
