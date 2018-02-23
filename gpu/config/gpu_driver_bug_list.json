@@ -159,20 +159,6 @@
       ]
     },
     {
-      "id": 27,
-      "cr_bugs": [265115],
-      "description": "Async Readpixels with GL_BGRA format is broken on Haswell chipset on Macs",
-      "os": {
-        "type": "macosx"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0402", "0x0406", "0x040a", "0x0412", "0x0416", "0x041a",
-                    "0x0a04", "0x0a16", "0x0a22", "0x0a26", "0x0a2a"],
-      "features": [
-        "swizzle_rgba_for_async_readpixels"
-      ]
-    },
-    {
       "id": 31,
       "cr_bugs": [154715, 10068, 269829, 294779, 285292],
       "description": "The Mali-Txxx driver does not guarantee flush ordering",
@@ -1430,21 +1416,6 @@
       ]
     },
     {
-      "id": 148,
-      "description": "Mali-4xx GPU on JB doesn't support DetachGLContext",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<=",
-          "value": "4.4.4"
-        }
-      },
-      "gl_renderer": ".*Mali-4.*",
-      "features": [
-        "surface_texture_cant_detach"
-      ]
-    },
-    {
       "id": 149,
       "description": "Direct composition flashes black initially on Win <10",
       "cr_bugs": [588588],
@@ -1505,24 +1476,6 @@
       "gl_renderer": "Vivante GC1000",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
-      ]
-    },
-    {
-      "id": 156,
-      "cr_bugs": [598474],
-      "description": "glEGLImageTargetTexture2DOES crashes",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "between",
-          "value": "4.4",
-          "value2": "4.4.4"
-        }
-      },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX 544MP",
-      "features": [
-        "avda_dont_copy_pictures"
       ]
     },
     {
@@ -1660,19 +1613,6 @@
       "gl_vendor": "NVIDIA.*",
       "features": [
         "unpack_overlapping_rows_separately_unpack_buffer"
-      ]
-    },
-    {
-      "id": 167,
-      "cr_bugs": [610516],
-      "description": "glEGLImageTargetTexture2DOES crashes on Mali-400",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-4.*",
-      "features": [
-        "avda_dont_copy_pictures"
       ]
     },
     {
@@ -2539,18 +2479,6 @@
       "vendor_id": "0x10de",
       "features": [
         "disable_delayed_copy_nv12"
-      ]
-    },
-    {
-      "id": 234,
-      "description": "Avoid using EGL_IMAGE_EXTERNAL_FLUSH_EXT with eglCreateImageKHR on NVIDIA",
-      "cr_bugs": [727462],
-      "os": {
-        "type": "chromeos"
-      },
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "avoid_using_image_flush_external_with_egl_create_image"
       ]
     },
     {
