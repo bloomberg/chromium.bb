@@ -514,8 +514,6 @@ cc_static_library("test_support") {
     "test/test_layer_tree_host_base.cc",
     "test/test_layer_tree_host_base.h",
     "test/test_occlusion_tracker.h",
-    "test/test_shared_bitmap_manager.cc",
-    "test/test_shared_bitmap_manager.h",
     "test/test_skcanvas.cc",
     "test/test_skcanvas.h",
     "test/test_task_graph_runner.cc",

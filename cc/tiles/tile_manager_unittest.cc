@@ -2124,7 +2124,7 @@ class MockReadyToDrawRasterBufferProviderImpl
         const RasterSource::PlaybackSettings& playback_settings) override {}
   };
 
-  TestSharedBitmapManager shared_bitmap_manager_;
+  viz::TestSharedBitmapManager shared_bitmap_manager_;
 };
 
 class TileManagerReadyToDrawTest : public TileManagerTest {

@@ -25,7 +25,7 @@ class RendererScheduler;
 }
 }
 
-namespace cc {
+namespace viz {
 class TestSharedBitmapManager;
 }
 
@@ -87,7 +87,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   cc_blink::WebCompositorSupportImpl compositor_support_;
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
-  std::unique_ptr<cc::TestSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 
   base::WeakPtrFactory<TestBlinkWebUnitTestSupport> weak_factory_;
 

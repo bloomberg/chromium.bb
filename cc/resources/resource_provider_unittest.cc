@@ -21,7 +21,6 @@
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -29,6 +28,7 @@
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -425,7 +425,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       child_gpu_memory_buffer_manager_ =
           gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
     } else {
-      shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
+      shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
     }
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
@@ -539,7 +539,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
   std::unique_ptr<viz::TestGpuMemoryBufferManager>
       child_gpu_memory_buffer_manager_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
-  std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
 TEST_P(ResourceProviderTest, Basic) {
@@ -1879,7 +1879,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     auto child_context_provider =
         TestContextProvider::Create(std::move(child_context_owned));
     child_context_provider->BindToCurrentThread();
-    auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
+    auto shared_bitmap_manager =
+        std::make_unique<viz::TestSharedBitmapManager>();
 
     viz::ResourceSettings resource_settings = CreateResourceSettings();
     auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2629,7 +2630,7 @@ class ResourceProviderTestImportedResourceGLFilters
     : public ResourceProviderTest {
  public:
   static void RunTest(
-      TestSharedBitmapManager* shared_bitmap_manager,
+      viz::TestSharedBitmapManager* shared_bitmap_manager,
       viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
       bool mailbox_nearest_neighbor,
       GLenum sampler_filter) {

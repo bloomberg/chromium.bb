@@ -42,6 +42,8 @@ viz_static_library("test_support") {
     "test_gpu_memory_buffer_manager.h",
     "test_layer_tree_frame_sink.cc",
     "test_layer_tree_frame_sink.h",
+    "test_shared_bitmap_manager.cc",
+    "test_shared_bitmap_manager.h",
   ]
   deps = [
     "//base",

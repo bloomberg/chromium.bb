@@ -17,8 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -161,7 +161,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   }
   renderer_scheduler_ = blink::scheduler::CreateRendererSchedulerForTests();
   web_thread_ = renderer_scheduler_->CreateMainThread();
-  shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager);
+  shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
 
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
