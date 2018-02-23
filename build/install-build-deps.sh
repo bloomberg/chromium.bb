@@ -200,6 +200,7 @@ dev_list="\
   libxtst-dev
   locales
   openbox
+  p7zip
   patch
   perl
   pkg-config

@@ -144,7 +144,7 @@ def GetLZMAExec(build_dir):
     lzma_exec = os.path.join(build_dir, "..", "..", "third_party",
                              "lzma_sdk", "Executable", "7za.exe")
   else:
-    lzma_exec = '7za'  # Use system 7za.
+    lzma_exec = '7zr'  # Use system 7zr.
   return lzma_exec
 
 def GetPrevVersion(build_dir, temp_dir, last_chrome_installer, output_name):
