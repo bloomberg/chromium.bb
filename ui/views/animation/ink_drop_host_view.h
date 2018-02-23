@@ -130,6 +130,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
 
   void ResetInkDropMask();
 
+  // Updates the ink drop mask layer size to |new_size|. It does nothing if
+  // |ink_drop_mask_| is null.
+  void UpdateInkDropMaskLayerSize(const gfx::Size& new_size);
+
   // Returns an InkDropImpl configured to work well with a
   // flood-fill ink drop ripple.
   std::unique_ptr<InkDropImpl> CreateDefaultFloodFillInkDropImpl();

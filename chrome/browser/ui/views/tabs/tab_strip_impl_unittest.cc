@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -17,6 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
@@ -36,6 +39,12 @@ views::View* FindTabView(views::View* view) {
     current = current->parent();
   }
   return current;
+}
+
+// Generates the test names suffixes based on the value of the test param.
+std::string TouchOptimizedUiStatusToString(
+    const ::testing::TestParamInfo<bool>& info) {
+  return info.param ? "TouchOptimizedUiEnabled" : "TouchOptimizedUiDisabled";
 }
 
 }  // namespace
@@ -89,13 +98,19 @@ class TestTabStripObserver : public TabStripObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
-class TabStripTest : public views::ViewsTestBase {
+class TabStripTest : public views::ViewsTestBase,
+                     public testing::WithParamInterface<bool> {
  public:
   TabStripTest() {}
 
   ~TabStripTest() override {}
 
   void SetUp() override {
+    if (GetParam()) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
+    }
+
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
@@ -146,19 +161,19 @@ class TabStripTest : public views::ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(TabStripTest);
 };
 
-TEST_F(TabStripTest, GetModelCount) {
+TEST_P(TabStripTest, GetModelCount) {
   EXPECT_EQ(0, tab_strip_->GetModelCount());
 }
 
-TEST_F(TabStripTest, IsValidModelIndex) {
+TEST_P(TabStripTest, IsValidModelIndex) {
   EXPECT_FALSE(tab_strip_->IsValidModelIndex(0));
 }
 
-TEST_F(TabStripTest, tab_count) {
+TEST_P(TabStripTest, tab_count) {
   EXPECT_EQ(0, tab_strip_->tab_count());
 }
 
-TEST_F(TabStripTest, AddTabAt) {
+TEST_P(TabStripTest, AddTabAt) {
   TestTabStripObserver observer(tab_strip_);
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   ASSERT_EQ(1, tab_strip_->tab_count());
@@ -168,7 +183,7 @@ TEST_F(TabStripTest, AddTabAt) {
 }
 
 // Confirms that TabStripObserver::TabStripDeleted() is sent.
-TEST_F(TabStripTest, TabStripDeleted) {
+TEST_P(TabStripTest, TabStripDeleted) {
   FakeBaseTabStripController* controller = new FakeBaseTabStripController;
   std::unique_ptr<TabStrip> tab_strip(
       new TabStrip(std::unique_ptr<TabStripController>(controller)));
@@ -178,7 +193,7 @@ TEST_F(TabStripTest, TabStripDeleted) {
   EXPECT_TRUE(observer.tabstrip_deleted());
 }
 
-TEST_F(TabStripTest, MoveTab) {
+TEST_P(TabStripTest, MoveTab) {
   TestTabStripObserver observer(tab_strip_);
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
@@ -193,7 +208,7 @@ TEST_F(TabStripTest, MoveTab) {
 }
 
 // Verifies child views are deleted after an animation completes.
-TEST_F(TabStripTest, RemoveTab) {
+TEST_P(TabStripTest, RemoveTab) {
   TestTabStripObserver observer(tab_strip_);
   controller_->AddTab(0, false);
   controller_->AddTab(1, false);
@@ -217,7 +232,7 @@ TEST_F(TabStripTest, RemoveTab) {
   EXPECT_EQ(0, observer.last_tab_removed());
 }
 
-TEST_F(TabStripTest, VisibilityInOverflow) {
+TEST_P(TabStripTest, VisibilityInOverflow) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // The first tab added to a reasonable-width strip should be visible.  If we
@@ -276,7 +291,13 @@ TEST_F(TabStripTest, VisibilityInOverflow) {
 // Creates a tab strip in stacked layout mode and verifies that as we move
 // across the strip at the top, middle, and bottom, events will target each tab
 // in order.
-TEST_F(TabStripTest, TabForEventWhenStacked) {
+TEST_P(TabStripTest, TabForEventWhenStacked) {
+  if (GetParam()) {
+    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
+    // https://crbug.com/814847.
+    return;
+  }
+
   tab_strip_->SetBounds(0, 0, 200, GetLayoutConstant(TAB_HEIGHT));
 
   controller_->AddTab(0, false);
@@ -307,7 +328,13 @@ TEST_F(TabStripTest, TabForEventWhenStacked) {
 
 // Tests that the tab close buttons of non-active tabs are hidden when
 // the tabstrip is in stacked tab mode.
-TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
+TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
+  if (GetParam()) {
+    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
+    // https://crbug.com/814847.
+    return;
+  }
+
   tab_strip_->SetBounds(0, 0, 300, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -372,7 +399,7 @@ TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   EXPECT_TRUE(tab3->showing_close_button_);
 }
 
-TEST_F(TabStripTest, GetEventHandlerForOverlappingArea) {
+TEST_P(TabStripTest, GetEventHandlerForOverlappingArea) {
   tab_strip_->SetBounds(0, 0, 1000, 20);
 
   controller_->AddTab(0, false);
@@ -435,7 +462,7 @@ TEST_F(TabStripTest, GetEventHandlerForOverlappingArea) {
             FindTabView(tab_strip_->GetEventHandlerForPoint(unactive_overlap)));
 }
 
-TEST_F(TabStripTest, GetTooltipHandler) {
+TEST_P(TabStripTest, GetTooltipHandler) {
   tab_strip_->SetBounds(0, 0, 1000, 20);
 
   controller_->AddTab(0, false);
@@ -503,7 +530,7 @@ TEST_F(TabStripTest, GetTooltipHandler) {
   EXPECT_FALSE(tab_strip_->GetTooltipHandlerForPoint(gfx::Point(-1, 2)));
 }
 
-TEST_F(TabStripTest, NewTabButtonStaysVisible) {
+TEST_P(TabStripTest, NewTabButtonStaysVisible) {
   const int kTabStripWidth = 500;
   tab_strip_->SetBounds(0, 0, kTabStripWidth, 20);
 
@@ -515,7 +542,7 @@ TEST_F(TabStripTest, NewTabButtonStaysVisible) {
   EXPECT_LE(tab_strip_->GetNewTabButtonBounds().right(), kTabStripWidth);
 }
 
-TEST_F(TabStripTest, AttentionIndicatorHidesOnSelect) {
+TEST_P(TabStripTest, AttentionIndicatorHidesOnSelect) {
   for (int i = 0; i < 2; ++i)
     controller_->AddTab(i, (i == 0));
 
@@ -537,3 +564,35 @@ TEST_F(TabStripTest, AttentionIndicatorHidesOnSelect) {
   // Indicator should hide.
   EXPECT_FALSE(IsShowingAttentionIndicator(1));
 }
+
+// Defines an alias to be used for tests that are only relevant to the touch-
+// optimized UI mode.
+using TabStripTouchOptimizedUiOnlyTest = TabStripTest;
+
+TEST_P(TabStripTouchOptimizedUiOnlyTest, NewTabButtonInkDrop) {
+  constexpr int kTabStripWidth = 500;
+  tab_strip_->SetBounds(0, 0, kTabStripWidth, GetLayoutConstant(TAB_HEIGHT));
+
+  // Add a few tabs and simulate the new tab button's ink drop animation. This
+  // should not cause any crashes since the ink drop layer size as well as the
+  // ink drop container size should remain equal to the new tab button visible
+  // bounds size. https://crbug.com/814105.
+  for (int i = 0; i < 10; ++i) {
+    tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
+        views::InkDropState::ACTION_TRIGGERED);
+    controller_->AddTab(i, true /* is_active */);
+    DoLayout();
+    tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
+        views::InkDropState::HIDDEN);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        TabStripTest,
+                        ::testing::Values(true, false),
+                        &TouchOptimizedUiStatusToString);
+
+INSTANTIATE_TEST_CASE_P(,
+                        TabStripTouchOptimizedUiOnlyTest,
+                        ::testing::Values(true),
+                        &TouchOptimizedUiStatusToString);

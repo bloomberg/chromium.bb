@@ -83,8 +83,6 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     // Initialize the ink drop mode for a ripple highlight on button press.
     ink_drop_container_ = new views::InkDropContainerView();
     AddChildView(ink_drop_container_);
-    ink_drop_container_->SetPaintToLayer();
-    ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
     ink_drop_container_->SetVisible(false);
 
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
@@ -144,6 +142,10 @@ void NewTabButton::CloseBubble() {
     new_tab_promo_->CloseBubble();
 }
 
+void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
+  GetInkDrop()->AnimateToState(state);
+}
+
 #if defined(OS_WIN)
 void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
@@ -172,6 +174,8 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void NewTabButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  DCHECK(ink_drop_layer->bounds().size() == GetVisibleBounds().size());
+  DCHECK(ink_drop_container_->bounds().size() == GetVisibleBounds().size());
   ink_drop_container_->AddInkDropLayer(ink_drop_layer);
   InstallInkDropMask(ink_drop_layer);
 }
@@ -319,8 +323,8 @@ void NewTabButton::Layout() {
     if (plus_icon_.isNull())
       InitButtonIcons();
 
-    gfx::Rect ink_drop_bounds = GetLocalBounds();
-    ink_drop_bounds.Offset(0, GetTopOffset());
+    const gfx::Rect ink_drop_bounds(gfx::Point(0, GetTopOffset()),
+                                    GetVisibleBounds().size());
     ink_drop_container_->SetBoundsRect(ink_drop_bounds);
   }
 }
@@ -333,6 +337,12 @@ void NewTabButton::OnThemeChanged() {
 
   InitButtonIcons();
   UpdateInkDropBaseColor();
+}
+
+void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  const gfx::Size ink_drop_size = GetVisibleBounds().size();
+  GetInkDrop()->HostSizeChanged(ink_drop_size);
+  UpdateInkDropMaskLayerSize(ink_drop_size);
 }
 
 bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
