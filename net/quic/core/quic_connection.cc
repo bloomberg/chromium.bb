@@ -468,6 +468,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
     QUIC_BUG << ENDPOINT << error_details;
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
+    RecordInternalErrorLocation(QUIC_CONNECTION_1);
     return false;
   }
   DCHECK_NE(version(), received_version);
@@ -543,6 +544,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     QUIC_BUG << error_details;
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
+    RecordInternalErrorLocation(QUIC_CONNECTION_2);
     return;
   }
   if (debug_visitor_ != nullptr) {
@@ -623,6 +625,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     QUIC_BUG << error_details;
     CloseConnection(QUIC_INTERNAL_ERROR, error_details,
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    RecordInternalErrorLocation(QUIC_CONNECTION_3);
     return false;
   }
 
@@ -1705,6 +1708,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
              << " after:" << sent_packet_manager_.GetLargestSentPacket();
     CloseConnection(QUIC_INTERNAL_ERROR, "Packet written out of order.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    RecordInternalErrorLocation(QUIC_CONNECTION_4);
     return true;
   }
   if (ShouldDiscardPacket(*packet)) {

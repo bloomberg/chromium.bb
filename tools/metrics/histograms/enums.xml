@@ -37027,6 +37027,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="FAILED"/>
 </enum>
 
+<enum name="QuicInternalErrorLocation">
+  <int value="0" label="QUIC_CHROMIUM_CLIENT_SESSION"/>
+  <int value="1" label="QUIC_CONNECTION_1"/>
+  <int value="2" label="QUIC_CONNECTION_2"/>
+  <int value="3" label="QUIC_CONNECTION_3"/>
+  <int value="4" label="QUIC_CONNECTION_4"/>
+  <int value="5" label="QUIC_CONTROL_FRAME_MANAGER_1"/>
+  <int value="6" label="QUIC_CONTROL_FRAME_MANAGER_2"/>
+  <int value="7" label="QUIC_CONTROL_FRAME_MANAGER_3"/>
+  <int value="8" label="QUIC_CONTROL_FRAME_MANAGER_4"/>
+  <int value="9" label="QUIC_CRYPTO_CLIENT_HANDSHAKER_1"/>
+  <int value="10" label="QUIC_CRYPTO_CLIENT_HANDSHAKER_2"/>
+  <int value="11" label="QUIC_ERROR_CODES"/>
+  <int value="12" label="QUIC_FRAMER"/>
+  <int value="13" label="QUIC_HEADERS_STREAM"/>
+  <int value="14" label="QUIC_SESSION_1"/>
+  <int value="15" label="QUIC_SESSION_2"/>
+  <int value="16" label="QUIC_SESSION_3"/>
+  <int value="17" label="QUIC_SPDY_SESSION"/>
+  <int value="18" label="QUIC_STREAM_1"/>
+  <int value="19" label="QUIC_STREAM_2"/>
+  <int value="20" label="QUIC_STREAM_SEQUENCER_BUFFER"/>
+</enum>
+
 <enum name="QuickofficeErrorTypes">
   <int value="0" label="doc uncaught js exception"/>
   <int value="1" label="docx uncaught js exception"/>

@@ -523,6 +523,7 @@ void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,
                                           const QuicHeaderList& header_list) {
   QuicString error = "OnPromiseHeaderList should be overridden in client code.";
   QUIC_BUG << error;
+  RecordInternalErrorLocation(QUIC_SPDY_SESSION);
   connection()->CloseConnection(QUIC_INTERNAL_ERROR, error,
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }
