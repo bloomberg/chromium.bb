@@ -702,6 +702,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
         assert(av1_extract_interp_filter(mbmi->interp_filters, dir) ==
                EIGHTTAP_REGULAR);
       }
+      if (cm->seq_params.enable_dual_filter == 0) return;
     }
   }
 }
@@ -3097,6 +3098,8 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   }
 
   write_sb_size(seq_params, wb);
+
+  aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
   if (seq_params->force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, 1);

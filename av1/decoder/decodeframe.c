@@ -2425,6 +2425,8 @@ void read_sequence_header(SequenceHeader *seq_params,
 
   setup_sb_size(seq_params, rb);
 
+  seq_params->enable_dual_filter = aom_rb_read_bit(rb);
+
   if (aom_rb_read_bit(rb)) {
     seq_params->force_screen_content_tools = 2;
   } else {

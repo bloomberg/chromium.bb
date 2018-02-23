@@ -1340,6 +1340,11 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
             (InterpFilter)aom_read_symbol(r, ec_ctx->switchable_interp_cdf[ctx],
                                           SWITCHABLE_FILTERS, ACCT_STR);
       }
+
+      if (cm->seq_params.enable_dual_filter == 0) {
+        ref0_filter[1] = ref0_filter[0];
+        break;
+      }
     }
     // The index system works as: (0, 1) -> (vertical, horizontal) filter types
     mbmi->interp_filters =

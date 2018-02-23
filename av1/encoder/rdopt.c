@@ -7368,7 +7368,8 @@ static int64_t interpolation_filter_search(
       InterpFilters best_filters = mbmi->interp_filters;
       restore_dst_buf(xd, *tmp_dst, num_planes);
 
-      if (cpi->sf.use_fast_interpolation_filter_search) {
+      if (cpi->sf.use_fast_interpolation_filter_search &&
+          cm->seq_params.enable_dual_filter) {
         int tmp_skip_sb = 0;
         int64_t tmp_skip_sse = INT64_MAX;
         int tmp_rs;
@@ -7415,8 +7416,8 @@ static int64_t interpolation_filter_search(
           tmp_skip_sb = 0;
           tmp_skip_sse = INT64_MAX;
 
-          mbmi->interp_filters =
-              av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
+          if (cm->seq_params.enable_dual_filter == 0)
+            if (filter_sets[i][0] != filter_sets[i][1]) continue;
 
           tmp_rs = av1_get_switchable_rate(cm, x, xd);
           av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst,
@@ -7446,6 +7447,10 @@ static int64_t interpolation_filter_search(
           int64_t tmp_skip_sse = INT64_MAX;
           int tmp_rs;
           int64_t tmp_rd;
+
+          if (cm->seq_params.enable_dual_filter == 0)
+            if (filter_sets[i][0] != filter_sets[i][1]) continue;
+
           mbmi->interp_filters =
               av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
           tmp_rs = av1_get_switchable_rate(cm, x, xd);
@@ -7482,7 +7487,6 @@ static int64_t interpolation_filter_search(
              av1_broadcast_interp_filter(EIGHTTAP_REGULAR));
     }
   }
-
   return 0;
 }
 
