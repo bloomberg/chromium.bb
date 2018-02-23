@@ -105,14 +105,6 @@ class PowerMonitorTest : public ContentBrowserTest {
   void BindPowerMonitor(const std::string& interface_name,
                         mojo::ScopedMessagePipeHandle handle,
                         const service_manager::BindSourceInfo& source_info) {
-    if (!renderer_bound_closure_ && !utility_bound_closure_ &&
-        !gpu_bound_closure_) {
-      // It can happen during early initialization of the test that the utility
-      // service is started first and requires to bind the PowerMonitor. Don't
-      // bind it if the test doesn't expect it to be bound yet.
-      return;
-    }
-
     if (source_info.identity.name() == mojom::kRendererServiceName) {
       ++request_count_from_renderer_;
 
