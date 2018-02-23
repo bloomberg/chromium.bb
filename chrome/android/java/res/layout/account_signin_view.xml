@@ -150,7 +150,7 @@
                     android:paddingEnd="16dp"
                     android:text="@string/sync_confirmation_personalize_services_title"
                     android:textAppearance="@style/BlackTitle2"
-                    android:drawableStart="@drawable/googleg"
+                    android:drawableStart="@drawable/ic_logo_googleg_24dp"
                     android:drawablePadding="16dp"/>
 
                 <TextView

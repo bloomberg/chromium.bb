@@ -429,7 +429,7 @@ public class NewTabPageView
             searchBoxTextView.setCompoundDrawablePadding(
                     getResources().getDimensionPixelOffset(R.dimen.ntp_search_box_logo_padding));
             ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    searchBoxTextView, R.drawable.googleg, 0, 0, 0);
+                    searchBoxTextView, R.drawable.ic_logo_googleg_24dp, 0, 0, 0);
         } else {
             searchBoxTextView.setCompoundDrawablePadding(0);
 
