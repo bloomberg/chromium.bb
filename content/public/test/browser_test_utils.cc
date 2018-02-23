@@ -1593,6 +1593,13 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
   return false;
 }
 
+RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
+    WebContents* web_contents) {
+  return RenderWidgetHostImpl::From(
+             web_contents->GetRenderViewHost()->GetWidget())
+      ->render_frame_metadata_provider();
+}
+
 }  // namespace
 
 #if defined(USE_AURA)
@@ -1853,35 +1860,6 @@ bool RequestFrame(WebContents* web_contents) {
       ->ScheduleComposite();
 }
 
-FrameWatcher::FrameWatcher() = default;
-
-FrameWatcher::FrameWatcher(WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
-
-FrameWatcher::~FrameWatcher() = default;
-
-void FrameWatcher::WaitFrames(int frames_to_wait) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (frames_to_wait <= 0)
-    return;
-  base::RunLoop run_loop;
-  base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
-  base::AutoReset<int> reset_frames_to_wait(&frames_to_wait_, frames_to_wait);
-  run_loop.Run();
-}
-
-const viz::CompositorFrameMetadata& FrameWatcher::LastMetadata() {
-  return RenderWidgetHostImpl::From(
-             web_contents()->GetRenderViewHost()->GetWidget())
-      ->last_frame_metadata();
-}
-
-void FrameWatcher::DidReceiveCompositorFrame() {
-  --frames_to_wait_;
-  if (frames_to_wait_ == 0)
-    quit_.Run();
-}
-
 RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
     RenderFrameMetadataProvider* render_frame_metadata_provider)
     : render_frame_metadata_provider_(render_frame_metadata_provider) {
@@ -1889,17 +1867,29 @@ RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
   render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(true);
 }
 
+RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
+    WebContents* web_contents)
+    : RenderFrameSubmissionObserver(
+          RenderFrameMetadataProviderFromWebContents(web_contents)) {}
+
 RenderFrameSubmissionObserver::~RenderFrameSubmissionObserver() {
   render_frame_metadata_provider_->RemoveObserver(this);
   render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(false);
 }
 
-void RenderFrameSubmissionObserver::Wait() {
-  // TODO(jonross): split Wait into separate APIs for those just interested in
-  // metadata changes, vs tests only caring about frame submission.
-  run_loop_ = std::make_unique<base::RunLoop>();
-  run_loop_->Run();
-  run_loop_.reset();
+void RenderFrameSubmissionObserver::WaitForAnyFrameSubmission() {
+  break_on_any_frame_ = true;
+  Wait();
+  break_on_any_frame_ = false;
+}
+
+void RenderFrameSubmissionObserver::WaitForMetadataChange() {
+  Wait();
+}
+
+const cc::RenderFrameMetadata&
+RenderFrameSubmissionObserver::LastRenderFrameMetadata() const {
+  return render_frame_metadata_provider_->LastRenderFrameMetadata();
 }
 
 void RenderFrameSubmissionObserver::Quit() {
@@ -1907,10 +1897,19 @@ void RenderFrameSubmissionObserver::Quit() {
     run_loop_->Quit();
 }
 
-void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {}
+void RenderFrameSubmissionObserver::Wait() {
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
+void RenderFrameSubmissionObserver::OnRenderFrameMetadataChanged() {
+  Quit();
+}
 
 void RenderFrameSubmissionObserver::OnRenderFrameSubmission() {
-  Quit();
+  if (break_on_any_frame_)
+    Quit();
 }
 
 MainThreadFrameObserver::MainThreadFrameObserver(

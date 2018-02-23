@@ -201,7 +201,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     screenshot_manager_ = new ScreenshotTracker(controller);
     controller->SetScreenshotManager(base::WrapUnique(screenshot_manager_));
 
-    frame_watcher_.Observe(shell()->web_contents());
+    frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
+        shell()->web_contents());
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -343,8 +344,10 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   void WaitAFrame() {
     while (!GetRenderWidgetHost()->ScheduleComposite())
       GiveItSomeTime();
-    frame_watcher_.WaitFrames(1);
+    frame_observer_->WaitForAnyFrameSubmission();
   }
+
+  void StopObserveringFrames() { frame_observer_.reset(); }
 
  protected:
   ScreenshotTracker* screenshot_manager() { return screenshot_manager_; }
@@ -357,10 +360,17 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     GetRenderWidgetHost()->GetProcess()->AddFilter(filter_.get());
   }
 
+  // ContentBrowserTest:
+  void PostRunTestOnMainThread() override {
+    // Delete this before the WebContents is destroyed.
+    StopObserveringFrames();
+    ContentBrowserTest::PostRunTestOnMainThread();
+  }
+
  private:
   ScreenshotTracker* screenshot_manager_;
   scoped_refptr<InputEventMessageFilterWaitsForAcks> filter_;
-  FrameWatcher frame_watcher_;
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
@@ -718,6 +728,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       {GURL(), 0}};
 
   screenshot_manager()->Reset();
+
+  // We are about to destroy the WebContents we are observing, so stop
+  // observation.
+  StopObserveringFrames();
+
   for (int i = 0; !navigations[i].url.is_empty(); ++i) {
     // Navigate via the user initiating a navigation from the UI.
     NavigationController::LoadURLParams params(navigations[i].url);

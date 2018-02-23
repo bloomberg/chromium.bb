@@ -147,8 +147,11 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 class CommitBeforeSwapAckSentHelper
     : public DidCommitProvisionalLoadInterceptor {
  public:
-  explicit CommitBeforeSwapAckSentHelper(WebContents* web_contents)
-      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+  explicit CommitBeforeSwapAckSentHelper(
+      WebContents* web_contents,
+      RenderFrameSubmissionObserver* frame_observer)
+      : DidCommitProvisionalLoadInterceptor(web_contents),
+        frame_observer_(frame_observer) {}
 
  private:
   // DidCommitProvisionalLoadInterceptor:
@@ -159,8 +162,11 @@ class CommitBeforeSwapAckSentHelper
           interface_provider_request) override {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    FrameWatcher(web_contents()).WaitFrames(1);
+    frame_observer_->WaitForAnyFrameSubmission();
   }
+
+  // Not owned.
+  RenderFrameSubmissionObserver* const frame_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CommitBeforeSwapAckSentHelper);
 };
@@ -182,6 +188,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
   // Load a page that draws new frames infinitely.
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/page_with_animation.html"));
+  std::unique_ptr<RenderFrameSubmissionObserver> frame_observer(
+      std::make_unique<RenderFrameSubmissionObserver>(web_contents));
 
   // Open a new page in the same renderer to keep it alive.
   WebContents::CreateParams new_contents_params(
@@ -199,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
   // When the navigation is about to commit, wait for the next frame to be
   // submitted by the renderer before proceeding with page load.
   {
-    CommitBeforeSwapAckSentHelper commit_helper(web_contents);
+    CommitBeforeSwapAckSentHelper commit_helper(web_contents,
+                                                frame_observer.get());
     EXPECT_TRUE(WaitForLoadStop(web_contents));
     EXPECT_NE(web_contents->GetMainFrame()->GetProcess(),
               new_web_contents->GetMainFrame()->GetProcess());
@@ -207,6 +216,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
 
   // Go back and verify that the renderer continues to draw new frames.
   shell()->GoBackOrForward(-1);
+  // Stop observing before we destroy |web_contents| in WaitForLoadStop.
+  frame_observer.reset();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(web_contents->GetMainFrame()->GetProcess(),
             new_web_contents->GetMainFrame()->GetProcess());

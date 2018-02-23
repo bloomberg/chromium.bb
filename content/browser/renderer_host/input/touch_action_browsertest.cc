@@ -91,7 +91,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
-    FrameWatcher frame_watcher(shell()->web_contents());
+    RenderFrameSubmissionObserver frame_observer(
+        host->render_frame_metadata_provider());
     host->GetView()->SetSize(gfx::Size(400, 400));
 
     base::string16 ready_title(base::ASCIIToUTF16("ready"));
@@ -102,7 +103,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // otherwise the injection of the synthetic gestures may get
     // dropped because of MainThread/Impl thread sync of touch event
     // regions.
-    frame_watcher.WaitFrames(1);
+    frame_observer.WaitForAnyFrameSubmission();
   }
 
   // ContentBrowserTest:
@@ -144,7 +145,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
     EXPECT_EQ(10200, scroll_height);
 
-    FrameWatcher frame_watcher(shell()->web_contents());
+    RenderFrameSubmissionObserver frame_metadata_observer(
+        GetWidgetHost()->render_frame_metadata_provider());
 
     SyntheticSmoothScrollGestureParams params;
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -167,9 +169,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
     while (wait_until_scrolled &&
-           frame_watcher.LastMetadata().root_scroll_offset.y() <
-               (distance.y() / 2)) {
-      frame_watcher.WaitFrames(1);
+           frame_metadata_observer.LastRenderFrameMetadata()
+                   .root_scroll_offset.y() < (distance.y() / 2)) {
+      frame_metadata_observer.WaitForMetadataChange();
     }
 
     // Check the scroll offset
