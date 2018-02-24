@@ -386,8 +386,7 @@ void NetworkConnectImpl::DisconnectFromNetworkId(
   if (!network)
     return;
   NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      network->path(), base::Bind(&base::DoNothing),
-      base::Bind(&IgnoreDisconnectError));
+      network->path(), base::DoNothing(), base::Bind(&IgnoreDisconnectError));
 }
 
 void NetworkConnectImpl::SetTechnologyEnabled(

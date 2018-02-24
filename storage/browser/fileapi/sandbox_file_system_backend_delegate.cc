@@ -271,7 +271,7 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
                            storage::QuotaClient::kFileSystem,
                            url::Origin::Create(origin_url),
                            FileSystemTypeToQuotaStorageType(type))
-          : base::BindOnce(&base::DoNothing);
+          : base::DoNothing();
 
   base::File::Error* error_ptr = new base::File::Error;
   file_task_runner_->PostTaskAndReply(

@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
@@ -3253,8 +3254,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
     return error::kNoError;
   }
 
-  gfx::SwapResult result = surface_->SwapBuffers(
-      base::Bind([](const gfx::PresentationFeedback&) {}));
+  gfx::SwapResult result = surface_->SwapBuffers(base::DoNothing());
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because SwapBuffers failed.";
     if (!CheckResetStatus()) {
@@ -3842,8 +3842,8 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
                           rects[i * 4 + 3]);
   }
-  gfx::SwapResult result = surface_->SwapBuffersWithBounds(
-      bounds, base::Bind([](const gfx::PresentationFeedback&) {}));
+  gfx::SwapResult result =
+      surface_->SwapBuffersWithBounds(bounds, base::DoNothing());
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because SwapBuffersWithBounds failed.";
   }
@@ -3862,8 +3862,8 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     return error::kNoError;
   }
 
-  gfx::SwapResult result = surface_->PostSubBuffer(
-      x, y, width, height, base::Bind([](const gfx::PresentationFeedback&) {}));
+  gfx::SwapResult result =
+      surface_->PostSubBuffer(x, y, width, height, base::DoNothing());
   if (result == gfx::SwapResult::SWAP_FAILED) {
     LOG(ERROR) << "Context lost because PostSubBuffer failed.";
     if (!CheckResetStatus()) {

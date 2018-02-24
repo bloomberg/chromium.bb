@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -73,10 +74,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
     writer.AppendInt32(volume);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void SetOutputUserMute(bool mute_on) override {
@@ -84,10 +84,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kSetOutputUserMute);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(mute_on);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void SetInputNodeGain(uint64_t node_id, int32_t input_gain) override {
@@ -96,10 +95,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
     writer.AppendInt32(input_gain);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void SetInputMute(bool mute_on) override {
@@ -107,10 +105,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kSetInputMute);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(mute_on);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void SetActiveOutputNode(uint64_t node_id) override {
@@ -118,10 +115,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kSetActiveOutputNode);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void SetActiveInputNode(uint64_t node_id) override {
@@ -129,10 +125,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kSetActiveInputNode);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void AddActiveInputNode(uint64_t node_id) override {
@@ -140,10 +135,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kAddActiveInputNode);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void RemoveActiveInputNode(uint64_t node_id) override {
@@ -151,10 +145,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kRemoveActiveInputNode);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint64(node_id);
-    cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
   void AddActiveOutputNode(uint64_t node_id) override {
@@ -164,7 +157,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     writer.AppendUint64(node_id);
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            dbus::ObjectProxy::EmptyResponseCallback());
+                            base::DoNothing());
   }
 
   void RemoveActiveOutputNode(uint64_t node_id) override {
@@ -174,7 +167,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     writer.AppendUint64(node_id);
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            dbus::ObjectProxy::EmptyResponseCallback());
+                            base::DoNothing());
   }
 
   void SwapLeftRight(uint64_t node_id, bool swap) override {
@@ -185,7 +178,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     writer.AppendBool(swap);
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            dbus::ObjectProxy::EmptyResponseCallback());
+                            base::DoNothing());
   }
 
   void SetGlobalOutputChannelRemix(int32_t channels,
@@ -197,7 +190,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     writer.AppendArrayOfDoubles(mixer.data(), mixer.size());
     cras_proxy_->CallMethod(&method_call,
                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            dbus::ObjectProxy::EmptyResponseCallback());
+                            base::DoNothing());
   }
 
   void WaitForServiceToBeAvailable(

@@ -77,8 +77,8 @@ void TopSitesBackend::ResetDatabase() {
 
 void TopSitesBackend::DoEmptyRequest(const base::Closure& reply,
                                      base::CancelableTaskTracker* tracker) {
-  tracker->PostTaskAndReply(db_task_runner_.get(), FROM_HERE,
-                            base::Bind(&base::DoNothing), reply);
+  tracker->PostTaskAndReply(db_task_runner_.get(), FROM_HERE, base::DoNothing(),
+                            reply);
 }
 
 TopSitesBackend::~TopSitesBackend() {

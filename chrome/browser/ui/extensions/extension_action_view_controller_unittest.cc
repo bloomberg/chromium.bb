@@ -93,7 +93,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   ASSERT_TRUE(action_runner);
   action_runner->RequestScriptInjectionForTesting(
       browser_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
-      base::Bind(&base::DoNothing));
+      base::DoNothing());
   image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_FALSE(image_source->grayscale());
@@ -123,7 +123,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
 
   action_runner->RequestScriptInjectionForTesting(
       page_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
-      base::Bind(&base::DoNothing));
+      base::DoNothing());
   image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
   EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());

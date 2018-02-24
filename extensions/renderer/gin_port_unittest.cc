@@ -5,6 +5,7 @@
 #include "extensions/renderer/gin_port.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
@@ -23,12 +24,6 @@ namespace {
 
 const int kDefaultRoutingId = 42;
 const char kDefaultPortName[] = "port name";
-
-void DoNothingOnEventListenersChanged(const std::string& event_name,
-                                      binding::EventListenersChanged change,
-                                      const base::DictionaryValue* value,
-                                      bool was_manual,
-                                      v8::Local<v8::Context> context) {}
 
 // Stub delegate for testing.
 class TestPortDelegate : public GinPort::Delegate {
@@ -70,8 +65,8 @@ class GinPortTest : public APIBindingTest {
 
   void SetUp() override {
     APIBindingTest::SetUp();
-    event_handler_ = std::make_unique<APIEventHandler>(
-        base::Bind(&DoNothingOnEventListenersChanged), nullptr);
+    event_handler_ =
+        std::make_unique<APIEventHandler>(base::DoNothing(), nullptr);
     delegate_ = std::make_unique<testing::StrictMock<TestPortDelegate>>();
   }
 

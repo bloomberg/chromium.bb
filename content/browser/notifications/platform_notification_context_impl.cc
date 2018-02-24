@@ -18,8 +18,6 @@
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
 
-using base::DoNothing;
-
 namespace content {
 namespace {
 
@@ -440,7 +438,7 @@ void PlatformNotificationContextImpl::OnRegistrationDeleted(
       base::Bind(&PlatformNotificationContextImpl::
                      DoDeleteNotificationsForServiceWorkerRegistration,
                  this, pattern.GetOrigin(), registration_id),
-      base::Bind(&DoNothing));
+      base::DoNothing());
 }
 
 void PlatformNotificationContextImpl::
@@ -472,7 +470,7 @@ void PlatformNotificationContextImpl::OnStorageWiped() {
       base::Bind(
           base::IgnoreResult(&PlatformNotificationContextImpl::DestroyDatabase),
           this),
-      base::Bind(&DoNothing));
+      base::DoNothing());
 }
 
 void PlatformNotificationContextImpl::LazyInitialize(

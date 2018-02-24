@@ -92,7 +92,7 @@ void BluetoothTestBlueZ::TearDown() {
 
   for (const auto& session : discovery_sessions_) {
     if (session->IsActive())
-      session->Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+      session->Stop(base::DoNothing(), base::DoNothing());
   }
   discovery_sessions_.clear();
 
@@ -110,8 +110,7 @@ void BluetoothTestBlueZ::InitWithFakeAdapter() {
   adapter_ = new bluez::BluetoothAdapterBlueZ(
       base::Bind(&AdapterCallback, run_loop.QuitClosure()));
   run_loop.Run();
-  adapter_->SetPowered(true, base::Bind(&base::DoNothing),
-                       base::Bind(&base::DoNothing));
+  adapter_->SetPowered(true, base::DoNothing(), base::DoNothing());
 }
 
 BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(

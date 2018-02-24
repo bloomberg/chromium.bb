@@ -276,7 +276,7 @@ void BluetoothDeviceBlueZ::DisconnectGatt() {
     return;
   }
 
-  Disconnect(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+  Disconnect(base::DoNothing(), base::DoNothing());
 }
 
 std::string BluetoothDeviceBlueZ::GetAddress() const {
@@ -577,7 +577,7 @@ void BluetoothDeviceBlueZ::CancelPairing() {
                          << ": No pairing context or callback. "
                          << "Sending explicit cancel";
     bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->CancelPairing(
-        object_path_, base::Bind(&base::DoNothing),
+        object_path_, base::DoNothing(),
         base::Bind(&BluetoothDeviceBlueZ::OnCancelPairingError,
                    weak_ptr_factory_.GetWeakPtr()));
   }

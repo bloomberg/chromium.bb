@@ -54,8 +54,7 @@ namespace {
 
 class TestMemoryDetails : public MetricsMemoryDetails {
  public:
-  TestMemoryDetails()
-      : MetricsMemoryDetails(base::Bind(&base::DoNothing), nullptr) {}
+  TestMemoryDetails() : MetricsMemoryDetails(base::DoNothing(), nullptr) {}
 
   void StartFetchAndWait() {
     uma_.reset(new base::HistogramTester());

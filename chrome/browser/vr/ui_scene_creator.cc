@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/numerics/math_constants.h"
@@ -590,7 +591,7 @@ void UiSceneCreator::CreateHostedUi() {
   VR_BIND_VISIBILITY(backplane, model->native_ui.hosted_ui_enabled);
 
   std::unique_ptr<ContentElement> hosted_ui = std::make_unique<ContentElement>(
-      content_input_delegate_, base::Bind([](const gfx::SizeF&) {}));
+      content_input_delegate_, base::DoNothing());
   hosted_ui->SetName(kHostedUi);
   hosted_ui->SetDrawPhase(kPhaseForeground);
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,

@@ -58,8 +58,7 @@ TEST(EmbeddedInstanceManager, ShutdownWaitsForThreadToQuit) {
   instance_manager->ShutDown();
   EXPECT_FALSE(test_api.GetThread());
   // Further verification the thread was shutdown.
-  EXPECT_FALSE(
-      thread_task_runner->PostTask(FROM_HERE, base::Bind(&base::DoNothing)));
+  EXPECT_FALSE(thread_task_runner->PostTask(FROM_HERE, base::DoNothing()));
   // Because Shutdown() was explicitly called with the thread running the
   // quit closure should not have run.
   EXPECT_FALSE(quit_called);

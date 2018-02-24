@@ -44,10 +44,6 @@ namespace extensions {
 
 namespace {
 
-void NoopHidCallback(std::vector<device::mojom::HidDeviceInfoPtr>) {}
-
-void NoopUsbCallback(const std::vector<scoped_refptr<device::UsbDevice>>&) {}
-
 class UsbDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
   explicit UsbDeviceInfo(scoped_refptr<UsbDevice> device) : device_(device) {
@@ -393,7 +389,7 @@ DevicePermissionsPrompt::CreateHidPromptForTest(const Extension* extension,
                                                 bool multiple) {
   return base::MakeRefCounted<HidDevicePermissionsPrompt>(
       extension, nullptr, multiple, std::vector<HidDeviceFilter>(),
-      base::Bind(&NoopHidCallback));
+      base::DoNothing());
 }
 
 // static
@@ -402,7 +398,7 @@ DevicePermissionsPrompt::CreateUsbPromptForTest(const Extension* extension,
                                                 bool multiple) {
   return base::MakeRefCounted<UsbDevicePermissionsPrompt>(
       extension, nullptr, multiple, std::vector<UsbDeviceFilterPtr>(),
-      base::Bind(&NoopUsbCallback));
+      base::DoNothing());
 }
 
 }  // namespace extensions

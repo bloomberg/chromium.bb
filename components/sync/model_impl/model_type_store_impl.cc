@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -33,10 +34,6 @@ const char kMetadataPrefix[] = "-md-";
 
 // Key for global metadata record.
 const char kGlobalMetadataKey[] = "-GlobalMetadata";
-
-void NoOpForBackendDtor(scoped_refptr<ModelTypeStoreBackend> backend) {
-  // This function was intentionally left blank.
-}
 
 // Formats key prefix for data records of |type|.
 std::string FormatDataPrefix(ModelType type) {
@@ -119,8 +116,14 @@ ModelTypeStoreImpl::ModelTypeStoreImpl(
 
 ModelTypeStoreImpl::~ModelTypeStoreImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(pkasting): For some reason, using ReleaseSoon() here (which would be
+  // more idiomatic) breaks tests... perhaps the non-nestable task that posts
+  // runs later than this nestable one, and violates some assumption?
   backend_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&NoOpForBackendDtor, std::move(backend_)));
+      FROM_HERE,
+      base::BindOnce(
+          base::DoNothing::Once<scoped_refptr<ModelTypeStoreBackend>>(),
+          std::move(backend_)));
 }
 
 // static

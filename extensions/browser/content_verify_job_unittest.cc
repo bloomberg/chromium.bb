@@ -47,8 +47,6 @@ scoped_refptr<ContentHashReader> CreateContentHashReader(
                          kWebstoreSignaturesPublicKeySize));
 }
 
-void DoNothingWithReasonParam(ContentVerifyJob::FailureReason reason) {}
-
 }  // namespace
 
 class ContentVerifyJobUnittest : public ExtensionsTest {
@@ -77,8 +75,8 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     TestContentVerifyJobObserver observer(extension.id(), resource_path);
     scoped_refptr<ContentHashReader> content_hash_reader =
         CreateContentHashReader(extension, resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
-        content_hash_reader.get(), base::BindOnce(&DoNothingWithReasonParam));
+    scoped_refptr<ContentVerifyJob> verify_job =
+        new ContentVerifyJob(content_hash_reader.get(), base::DoNothing());
 
     auto run_content_read_step = [](ContentVerifyJob* verify_job,
                                     std::string* resource_contents) {

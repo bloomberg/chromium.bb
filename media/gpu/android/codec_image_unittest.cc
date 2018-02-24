@@ -4,14 +4,15 @@
 
 #include <memory>
 
-#include "media/gpu/android/codec_image.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
+#include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/mock_surface_texture_gl_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +33,6 @@ using testing::_;
 
 namespace media {
 
-const auto kNoop = base::Bind([](CodecImage*) {});
-
 class CodecImageTest : public testing::Test {
  public:
   CodecImageTest() = default;
@@ -43,7 +42,7 @@ class CodecImageTest : public testing::Test {
     codec_ = codec.get();
     wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
-        base::Bind(&base::DoNothing));
+        base::DoNothing());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
@@ -75,7 +74,7 @@ class CodecImageTest : public testing::Test {
   enum ImageKind { kOverlay, kSurfaceTexture };
   scoped_refptr<CodecImage> NewImage(
       ImageKind kind,
-      CodecImage::DestructionCb destruction_cb = kNoop) {
+      CodecImage::DestructionCb destruction_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     scoped_refptr<CodecImage> image = new CodecImage(

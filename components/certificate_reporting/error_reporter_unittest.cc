@@ -91,7 +91,7 @@ class MockCertificateReportSender : public net::ReportSender {
 class TestCertificateReporterNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   TestCertificateReporterNetworkDelegate()
-      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)) {}
+      : url_request_destroyed_callback_(base::DoNothing()) {}
 
   void set_url_request_destroyed_callback(const base::Closure& callback) {
     url_request_destroyed_callback_ = callback;

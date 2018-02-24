@@ -1435,7 +1435,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   const base::string16 title1 = base::ASCIIToUTF16("save-data=on");
@@ -1479,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("PASS");
@@ -1524,7 +1524,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   NavigateToURLBlockUntilNavigationsComplete(
@@ -1552,7 +1552,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   const base::string16 title1 = base::ASCIIToUTF16("reload=false");
@@ -1622,8 +1622,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
         scope, blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         worker_url, options,
-        base::BindOnce(&ExpectResultAndRun, true,
-                       base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
     observer->Wait();
   }
 
@@ -2332,7 +2331,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       https_server.GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("Title");
@@ -2370,7 +2369,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
-      base::BindOnce(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
   observer->Wait();
 
   const base::string16 title = base::ASCIIToUTF16("Title");
@@ -2892,8 +2891,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
-        base::BindOnce(&ExpectResultAndRun, true,
-                       base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
     observer->Wait();
   }
 
@@ -3015,8 +3013,7 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         cross_origin_server_.GetURL(script), options,
-        base::BindOnce(&ExpectResultAndRun, true,
-                       base::Bind(&base::DoNothing)));
+        base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
     observer->Wait();
   }
 

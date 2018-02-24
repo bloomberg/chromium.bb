@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
@@ -25,11 +26,6 @@
 namespace extensions {
 
 namespace {
-
-void DoNothingOnListenersChanged(binding::EventListenersChanged change,
-                                 const base::DictionaryValue* filter,
-                                 bool update_lazy_listeners,
-                                 v8::Local<v8::Context> context) {}
 
 struct APIEventPerContextData : public base::SupportsUserData::Data {
   static constexpr char kPerContextDataKey[] = "extension_api_events";
@@ -124,7 +120,7 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
 
   APIEventListeners::ListenersUpdated updated =
       notify_on_change ? base::Bind(listeners_changed_, event_name)
-                       : base::Bind(&DoNothingOnListenersChanged);
+                       : base::DoNothing();
   std::unique_ptr<APIEventListeners> listeners;
   if (supports_filters) {
     listeners = std::make_unique<FilteredEventListeners>(
@@ -158,8 +154,7 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
   bool supports_filters = false;
   std::unique_ptr<APIEventListeners> listeners =
       std::make_unique<UnfilteredEventListeners>(
-          base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax,
-          false);
+          base::DoNothing(), binding::kNoListenerMax, false);
   gin::Handle<EventEmitter> emitter_handle =
       gin::CreateHandle(context->GetIsolate(),
                         new EventEmitter(supports_filters, std::move(listeners),

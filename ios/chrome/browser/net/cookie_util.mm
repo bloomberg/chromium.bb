@@ -34,9 +34,6 @@ namespace {
 // Date of the last cookie deletion.
 NSString* const kLastCookieDeletionDate = @"LastCookieDeletionDate";
 
-// Empty callback.
-void DoNothing(uint32_t n) {}
-
 // Creates a SQLitePersistentCookieStore running on a background thread.
 scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
     const base::FilePath& path,
@@ -126,12 +123,11 @@ bool ShouldClearSessionCookies() {
 void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
-        getter->GetURLRequestContext()
-            ->cookie_store()
-            ->DeleteSessionCookiesAsync(base::Bind(&DoNothing));
-      }));
+  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
+                             getter->GetURLRequestContext()
+                                 ->cookie_store()
+                                 ->DeleteSessionCookiesAsync(base::DoNothing());
+                           }));
 }
 
 }  // namespace cookie_util

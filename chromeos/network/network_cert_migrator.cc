@@ -145,8 +145,8 @@ class NetworkCertMigrator::MigrationTask
   void SendPropertiesToShill(const std::string& service_path,
                              const base::DictionaryValue& properties) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
-        dbus::ObjectPath(service_path), properties,
-        base::Bind(&base::DoNothing), base::Bind(&LogError, service_path));
+        dbus::ObjectPath(service_path), properties, base::DoNothing(),
+        base::Bind(&LogError, service_path));
   }
 
   static void LogError(const std::string& service_path,

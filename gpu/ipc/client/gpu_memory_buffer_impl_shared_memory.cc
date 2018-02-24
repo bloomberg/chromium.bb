@@ -178,7 +178,7 @@ base::Closure GpuMemoryBufferImplSharedMemory::AllocateForTesting(
     gfx::BufferUsage usage,
     gfx::GpuMemoryBufferHandle* handle) {
   *handle = CreateGpuMemoryBuffer(handle->id, size, format, usage);
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 bool GpuMemoryBufferImplSharedMemory::Map() {

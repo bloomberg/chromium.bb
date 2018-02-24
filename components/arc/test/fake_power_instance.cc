@@ -20,7 +20,7 @@ FakePowerInstance::SuspendCallback FakePowerInstance::GetSuspendCallback() {
 }
 
 void FakePowerInstance::InitDeprecated(mojom::PowerHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakePowerInstance::Init(mojom::PowerHostPtr host_ptr,

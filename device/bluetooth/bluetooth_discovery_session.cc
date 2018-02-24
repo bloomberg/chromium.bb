@@ -26,7 +26,7 @@ BluetoothDiscoverySession::BluetoothDiscoverySession(
 
 BluetoothDiscoverySession::~BluetoothDiscoverySession() {
   if (active_) {
-    Stop(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+    Stop(base::DoNothing(), base::DoNothing());
     MarkAsInactive();
   }
 }

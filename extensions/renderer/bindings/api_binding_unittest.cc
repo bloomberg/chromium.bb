@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_binding.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -83,11 +84,6 @@ void OnEventListenersChanged(const std::string& event_name,
                              const base::DictionaryValue* filter,
                              bool was_manual,
                              v8::Local<v8::Context> context) {}
-
-void DoNothingWithSilentRequest(
-    v8::Local<v8::Context> context,
-    const std::string& call_name,
-    const std::vector<v8::Local<v8::Value>>& arguments) {}
 
 }  // namespace
 
@@ -173,7 +169,7 @@ class APIBindingUnittest : public APIBindingTest {
     if (binding_hooks_delegate_)
       binding_hooks_->SetDelegate(std::move(binding_hooks_delegate_));
     if (!on_silent_request_)
-      on_silent_request_ = base::Bind(&DoNothingWithSilentRequest);
+      on_silent_request_ = base::DoNothing();
     if (!availability_callback_)
       availability_callback_ = base::Bind(&AllowAllFeatures);
     event_handler_ = std::make_unique<APIEventHandler>(

@@ -707,7 +707,7 @@ class PolicyTest : public InProcessBrowserTest {
         ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
       BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                      base::Bind(base::DoNothing),
+                                      base::DoNothing(),
                                       base::MessageLoop::QuitWhenIdleClosure());
     }
 

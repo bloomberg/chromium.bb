@@ -59,7 +59,7 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
   // to mus. Disable that by installing an empty callback. Chrome installs
   // its own callback to detect when the connection to mus is lost and that is
   // what shuts everything down.
-  window_manager->SetLostConnectionCallback(base::BindOnce(&base::DoNothing));
+  window_manager->SetLostConnectionCallback(base::DoNothing());
   // When Ash runs in the same services as chrome content creates the
   // DiscardableSharedMemoryManager.
   const bool create_discardable_memory = false;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -639,8 +640,7 @@ void OfflinePageModelTaskified::RemovePagesMatchingUrlAndNamespace(
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
       store_.get(),
       base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Bind([](DeletePageResult result) {})),
+                     weak_ptr_factory_.GetWeakPtr(), base::DoNothing()),
       policy_controller_.get(), page);
   task_queue_.AddTask(std::move(task));
 }
@@ -649,7 +649,7 @@ void OfflinePageModelTaskified::CreateArchivesDirectoryIfNeeded() {
   // No callback is required here.
   // TODO(romax): Remove the callback from the interface once the other
   // consumers of this API can also drop the callback.
-  archive_manager_->EnsureArchivesDirCreated(base::Bind([]() {}));
+  archive_manager_->EnsureArchivesDirCreated(base::DoNothing());
 }
 
 base::Time OfflinePageModelTaskified::GetCurrentTime() {

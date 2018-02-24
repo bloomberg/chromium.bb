@@ -252,10 +252,9 @@ TEST_F(GenericSensorServiceTest, ValidAddConfigurationTest) {
   PlatformSensorConfiguration configuration(50.0);
   client->sensor()->AddConfiguration(
       configuration,
-      base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                     base::Unretained(client.get()),
-                     base::BindOnce(&CheckSuccess,
-                                    base::BindOnce(&base::DoNothing), true)));
+      base::BindOnce(
+          &TestSensorClient::OnAddConfiguration, base::Unretained(client.get()),
+          base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
 
   {
     // Expect the SensorReadingChanged() will be called after AddConfiguration.
@@ -397,10 +396,9 @@ TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
   PlatformSensorConfiguration configuration_30(30.0);
   client->sensor()->AddConfiguration(
       configuration_30,
-      base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                     base::Unretained(client.get()),
-                     base::BindOnce(&CheckSuccess,
-                                    base::BindOnce(&base::DoNothing), true)));
+      base::BindOnce(
+          &TestSensorClient::OnAddConfiguration, base::Unretained(client.get()),
+          base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
   {
     base::RunLoop run_loop;
     client->SetCheckValueCallback(base::BindOnce(&CheckValue, 30.0));
@@ -415,10 +413,10 @@ TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
     PlatformSensorConfiguration configuration_20(20.0);
     client->sensor()->AddConfiguration(
         configuration_20,
-        base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                       base::Unretained(client.get()),
-                       base::BindOnce(&CheckSuccess,
-                                      base::BindOnce(&base::DoNothing), true)));
+        base::BindOnce(
+            &TestSensorClient::OnAddConfiguration,
+            base::Unretained(client.get()),
+            base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
     client->SetCheckValueCallback(base::BindOnce(&CheckValue, 30.0));
     client->SetQuitClosure(run_loop.QuitClosure());
     run_loop.Run();
@@ -464,10 +462,9 @@ TEST_F(GenericSensorServiceTest, SuspendTest) {
   PlatformSensorConfiguration configuration_1(30.0);
   client->sensor()->AddConfiguration(
       configuration_1,
-      base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                     base::Unretained(client.get()),
-                     base::BindOnce(&CheckSuccess,
-                                    base::BindOnce(&base::DoNothing), true)));
+      base::BindOnce(
+          &TestSensorClient::OnAddConfiguration, base::Unretained(client.get()),
+          base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
   PlatformSensorConfiguration configuration_2(31.0);
   client->sensor()->AddConfiguration(
       configuration_2,
@@ -497,10 +494,10 @@ TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
     PlatformSensorConfiguration configuration_1(30.0);
     client->sensor()->AddConfiguration(
         configuration_1,
-        base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                       base::Unretained(client.get()),
-                       base::BindOnce(&CheckSuccess,
-                                      base::BindOnce(&base::DoNothing), true)));
+        base::BindOnce(
+            &TestSensorClient::OnAddConfiguration,
+            base::Unretained(client.get()),
+            base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
     client->SetCheckValueCallback(base::BindOnce(&CheckValue, 30.0));
     client->SetQuitClosure(run_loop.QuitClosure());
     run_loop.Run();
@@ -516,10 +513,10 @@ TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
     PlatformSensorConfiguration configuration_2(50.0);
     client->sensor()->AddConfiguration(
         configuration_2,
-        base::BindOnce(&TestSensorClient::OnAddConfiguration,
-                       base::Unretained(client.get()),
-                       base::BindOnce(&CheckSuccess,
-                                      base::BindOnce(&base::DoNothing), true)));
+        base::BindOnce(
+            &TestSensorClient::OnAddConfiguration,
+            base::Unretained(client.get()),
+            base::BindOnce(&CheckSuccess, base::DoNothing::Once<>(), true)));
     client->SetCheckValueCallback(base::BindOnce(&CheckValue, 50.0));
     client->SetQuitClosure(run_loop.QuitClosure());
     run_loop.Run();

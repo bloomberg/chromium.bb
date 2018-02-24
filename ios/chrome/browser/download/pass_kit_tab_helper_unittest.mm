@@ -8,6 +8,7 @@
 
 #import <PassKit/PassKit.h>
 
+#include "base/bind_helpers.h"
 #include "base/test/histogram_tester.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #include "ios/chrome/browser/download/pass_kit_test_util.h"
@@ -26,10 +27,9 @@
 #endif
 
 namespace {
+
 char kUrl[] = "https://test.test/";
 
-// Used as no-op callback.
-void DoNothing(int) {}
 }  // namespace
 
 // Test fixture for testing PassKitTabHelper class.
@@ -105,7 +105,7 @@ TEST_F(PassKitTabHelperTest, ValidPassKitFile) {
   // Writing to URLFetcherStringWriter, which is used by PassKitTabHelper is
   // synchronous, so it's ok to ignore Write's completion callback.
   task_ptr->GetResponseWriter()->Write(buffer.get(), pass_data.size(),
-                                       base::BindRepeating(&DoNothing));
+                                       base::DoNothing());
   task_ptr->SetDone(true);
 
   EXPECT_EQ(1U, delegate_.passes.count);

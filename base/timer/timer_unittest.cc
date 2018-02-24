@@ -854,7 +854,7 @@ TEST_F(TimerSequenceTest, OneShotTimerTwoSequencesAbandonTask) {
   // Task will be scheduled from sequence #1.
   task_runner1->PostTask(
       FROM_HERE, BindOnce(&TimerSequenceTest::StartTimer, Unretained(this),
-                          TimeDelta::FromHours(1), Bind(&DoNothing)));
+                          TimeDelta::FromHours(1), DoNothing()));
 
   // Abandon task - must be called from scheduling sequence (#1).
   task_runner1->PostTask(

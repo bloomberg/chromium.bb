@@ -457,7 +457,7 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkersForOrigin(
   for (const ServiceWorkerVersionInfo& info : live_versions) {
     ServiceWorkerVersion* version = GetLiveVersion(info.version_id);
     if (version && version->scope().GetOrigin() == origin)
-      version->StopWorker(base::BindOnce(&base::DoNothing));
+      version->StopWorker(base::DoNothing());
   }
 }
 

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -57,10 +58,6 @@ namespace {
 
 static const base::FilePath::CharType kTestSyncDir[] =
     FILE_PATH_LITERAL("sync-test");
-
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&) {}
 
 class TestSyncEngineHost : public SyncEngineHostStub {
  public:
@@ -214,7 +211,7 @@ class SyncEngineTest : public testing::Test {
         http_post_provider_factory_getter =
             base::Bind(&NetworkResources::GetHttpPostProviderFactory,
                        base::Unretained(network_resources_.get()), nullptr,
-                       base::Bind(&EmptyNetworkTimeUpdate));
+                       base::DoNothing());
 
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();

@@ -447,8 +447,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
 
     // Continues to load from server in background.
     // Put dummy callbacks to indicate that fetching is still continuing.
-    pending_load_callback_.push_back(
-        base::Bind(&util::EmptyFileOperationCallback));
+    pending_load_callback_.push_back(base::DoNothing());
   }
 
   about_resource_loader_->GetAboutResource(

@@ -310,7 +310,7 @@ TEST(CallbackList, RemovalCallback) {
       Bind(&Counter::Increment, Unretained(&remove_count)));
 
   std::unique_ptr<CallbackList<void(void)>::Subscription> subscription =
-      cb_reg.Add(Bind(&DoNothing));
+      cb_reg.Add(DoNothing());
 
   // Removing a subscription outside of iteration signals the callback.
   EXPECT_EQ(0, remove_count.value());

@@ -27,10 +27,6 @@ static void OnError(bool* called) {
   *called = false;
 }
 
-static bool DoNothingWithFrame(AVFrame* frame) {
-  return true;
-}
-
 struct Decoder {
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> context;
   std::unique_ptr<FFmpegDecodingLoop> loop;
@@ -79,7 +75,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
   AVPacket packet;
   int result = 0;
 
-  auto do_nothing_cb = base::BindRepeating(&DoNothingWithFrame);
+  auto do_nothing_cb = base::BindRepeating([](AVFrame*) { return true; });
   const base::TimeTicks deadline =
       base::TimeTicks::Now() +
       std::min(check_time,

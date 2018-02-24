@@ -392,8 +392,8 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
   // Shutdown database.
   db.reset();
   base::RunLoop run_destruction;
-  db_thread.task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(base::DoNothing), run_destruction.QuitClosure());
+  db_thread.task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                            run_destruction.QuitClosure());
   run_destruction.Run();
 }
 
@@ -597,8 +597,8 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   db.reset();
 
   base::RunLoop run_loop;
-  db_thread.task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
+  db_thread.task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                            run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -629,8 +629,8 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
   db.reset();
 
   base::RunLoop run_loop;
-  db_thread.task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
+  db_thread.task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                            run_loop.QuitClosure());
   run_loop.Run();
 
   // Verify the db is actually destroyed.

@@ -751,7 +751,7 @@ void ChromeCleanerControllerImpl::OnCleanerProcessDone(
       RecordCleanupResultHistogram(CLEANUP_RESULT_SUCCEEDED);
       delegate_->ResetTaggedProfiles(
           g_browser_process->profile_manager()->GetLoadedProfiles(),
-          base::BindOnce(&base::DoNothing));
+          base::DoNothing());
       idle_reason_ = IdleReason::kCleaningSucceeded;
       SetStateAndNotifyObservers(State::kIdle);
       return;

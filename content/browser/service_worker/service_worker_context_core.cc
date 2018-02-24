@@ -144,7 +144,7 @@ class ClearAllServiceWorkersHelper
       ServiceWorkerVersion* version(version_itr.second);
       if (version->running_status() == EmbeddedWorkerStatus::STARTING ||
           version->running_status() == EmbeddedWorkerStatus::RUNNING) {
-        version->StopWorker(base::BindOnce(&base::DoNothing));
+        version->StopWorker(base::DoNothing());
       }
     }
     for (const auto& registration_info : registrations) {

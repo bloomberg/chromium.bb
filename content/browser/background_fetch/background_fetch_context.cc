@@ -249,8 +249,8 @@ void BackgroundFetchContext::DidMarkForDeletion(
 
     CleanupRegistration(registration_id, {});
 
-    event_dispatcher_.DispatchBackgroundFetchAbortEvent(
-        registration_id, base::BindOnce(&base::DoNothing));
+    event_dispatcher_.DispatchBackgroundFetchAbortEvent(registration_id,
+                                                        base::DoNothing());
   } else {
     data_manager_.GetSettledFetchesForRegistration(
         registration_id,

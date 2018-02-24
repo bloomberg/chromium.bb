@@ -216,14 +216,13 @@ class LocalFileSyncContextTest : public testing::Test {
                           SyncStatusCode status,
                           LocalFileSyncContext::SyncMode sync_mode) {
     if (sync_mode == LocalFileSyncContext::SYNC_SNAPSHOT) {
-      sync_context_->FinalizeSnapshotSync(
-          file_system_context, url, status,
-          base::Bind(&base::DoNothing));
+      sync_context_->FinalizeSnapshotSync(file_system_context, url, status,
+                                          base::DoNothing());
     } else {
       sync_context_->FinalizeExclusiveSync(
           file_system_context, url,
           status == SYNC_STATUS_OK /* clear_local_changes */,
-          base::Bind(&base::DoNothing));
+          base::DoNothing());
     }
   }
 

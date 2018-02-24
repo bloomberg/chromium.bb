@@ -50,10 +50,6 @@ constexpr char kDBusSystemObjectAddress[] = "org.freedesktop.DBus";
 // The NameOwnerChanged member in |kDBusSystemObjectInterface|.
 constexpr char kNameOwnerChangedMember[] = "NameOwnerChanged";
 
-// An empty function used for ObjectProxy::EmptyResponseCallback().
-void EmptyResponseCallbackBody(Response* /*response*/) {
-}
-
 }  // namespace
 
 ObjectProxy::ReplyCallbackHolder::ReplyCallbackHolder(
@@ -311,11 +307,6 @@ void ObjectProxy::Detach() {
     dbus_pending_call_unref(pending_call);
   }
   pending_calls_.clear();
-}
-
-// static
-ObjectProxy::ResponseCallback ObjectProxy::EmptyResponseCallback() {
-  return base::Bind(&EmptyResponseCallbackBody);
 }
 
 void ObjectProxy::StartAsyncMethodCall(int timeout_ms,

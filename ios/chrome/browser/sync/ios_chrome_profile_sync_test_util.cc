@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -32,8 +33,7 @@ CreateProfileSyncServiceParamsForTest(
   init_params.sync_client =
       sync_client ? std::move(sync_client)
                   : std::make_unique<IOSChromeSyncClient>(browser_state);
-  init_params.network_time_update_callback =
-      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
+  init_params.network_time_update_callback = base::DoNothing();
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.debug_identifier = browser_state->GetDebugName();

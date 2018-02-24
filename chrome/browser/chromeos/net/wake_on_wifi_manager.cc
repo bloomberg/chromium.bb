@@ -181,7 +181,7 @@ void WakeOnWifiManager::HandleWakeOnWifiFeatureUpdated() {
 
   NetworkHandler::Get()->network_device_handler()->SetDeviceProperty(
       device->path(), shill::kWakeOnWiFiFeaturesEnabledProperty,
-      base::Value(feature_string), base::Bind(&base::DoNothing),
+      base::Value(feature_string), base::DoNothing(),
       network_handler::ErrorCallback());
 
   bool wake_on_packet_enabled = IsWakeOnPacketEnabled(current_feature_);
@@ -240,7 +240,7 @@ void WakeOnWifiManager::GetDevicePropertiesCallback(
 
   NetworkHandler::Get()
       ->network_device_handler()
-      ->RemoveAllWifiWakeOnPacketConnections(base::Bind(&base::DoNothing),
+      ->RemoveAllWifiWakeOnPacketConnections(base::DoNothing(),
                                              network_handler::ErrorCallback());
 
   for (const auto& kv_pair : connection_observers_) {

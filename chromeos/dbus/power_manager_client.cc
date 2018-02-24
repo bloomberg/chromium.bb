@@ -137,10 +137,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kDecreaseScreenBrightnessMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(allow_off);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void IncreaseScreenBrightness() override {
@@ -168,10 +167,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         gradual ?
         power_manager::kBrightnessTransitionGradual :
         power_manager::kBrightnessTransitionInstant);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void GetScreenBrightnessPercent(
@@ -211,9 +209,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(reason);
     writer.AppendString(description);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void RequestShutdown(power_manager::RequestShutdownReason reason,
@@ -225,9 +223,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(reason);
     writer.AppendString(description);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void NotifyUserActivity(power_manager::UserActivityType type) override {
@@ -237,10 +235,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(type);
 
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void NotifyVideoActivity(bool is_fullscreen) override {
@@ -250,10 +247,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(is_fullscreen);
 
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override {
@@ -266,10 +262,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
       POWER_LOG(ERROR) << "Error calling " << power_manager::kSetPolicyMethod;
       return;
     }
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void SetIsProjecting(bool is_projecting) override {
@@ -279,10 +274,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kSetIsProjectingMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(is_projecting);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
     last_is_projecting_ = is_projecting;
   }
 
@@ -292,18 +286,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
                                  power_manager::kSetPowerSourceMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(id);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void SetBacklightsForcedOff(bool forced_off) override {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kSetBacklightsForcedOffMethod);
     dbus::MessageWriter(&method_call).AppendBool(forced_off);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void GetBacklightsForcedOff(DBusMethodCallback<bool> callback) override {
@@ -486,10 +480,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
   void SimpleMethodCallToPowerManager(const std::string& method_name) {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  method_name);
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void NameOwnerChangedReceived(const std::string& old_owner,
@@ -886,9 +879,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
           dbus::MessageWriter writer(&method_call);
           writer.AppendInt64(proto.timestamp());
           power_manager_proxy_->CallMethod(
-              &method_call,
-              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-              dbus::ObjectProxy::EmptyResponseCallback());
+              &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+              base::DoNothing());
         }
         break;
       }
@@ -1018,10 +1010,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
       POWER_LOG(ERROR) << "Error constructing message for " << method_name;
       return;
     }
-    power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   // Origin thread (i.e. the UI thread in production).

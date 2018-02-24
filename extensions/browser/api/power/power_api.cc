@@ -37,8 +37,6 @@ device::mojom::WakeLockType LevelToWakeLockType(api::power::Level level) {
 base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>>::DestructorAtExit
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
-void DoNothing(bool b) {}
-
 }  // namespace
 
 ExtensionFunction::ResponseAction PowerRequestKeepAwakeFunction::Run() {
@@ -137,7 +135,7 @@ void PowerAPI::Shutdown() {
 }
 
 void PowerAPI::ActivateWakeLock(device::mojom::WakeLockType type) {
-  GetWakeLock()->ChangeType(type, base::Bind(&DoNothing));
+  GetWakeLock()->ChangeType(type, base::DoNothing());
   if (!is_wake_lock_active_) {
     GetWakeLock()->RequestWakeLock();
     is_wake_lock_active_ = true;

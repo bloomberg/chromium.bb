@@ -533,7 +533,7 @@ TEST_F(MediaCodecVideoDecoderTest,
 TEST_F(MediaCodecVideoDecoderTest, ResetAbortsPendingDecodes) {
   InitializeWithSurfaceTexture_OneDecodePending();
   EXPECT_CALL(decode_cb_, Run(DecodeStatus::ABORTED));
-  mcvd_->Reset(base::Bind(&base::DoNothing));
+  mcvd_->Reset(base::DoNothing());
 }
 
 TEST_F(MediaCodecVideoDecoderTest, ResetAbortsPendingEosDecode) {
@@ -549,7 +549,7 @@ TEST_F(MediaCodecVideoDecoderTest, ResetAbortsPendingEosDecode) {
   PumpCodec();
 
   EXPECT_CALL(eos_decode_cb, Run(DecodeStatus::ABORTED));
-  mcvd_->Reset(base::Bind(&base::DoNothing));
+  mcvd_->Reset(base::DoNothing());
 }
 
 TEST_F(MediaCodecVideoDecoderTest, ResetDoesNotFlushAnAlreadyFlushedCodec) {

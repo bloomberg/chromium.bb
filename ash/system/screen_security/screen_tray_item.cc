@@ -109,7 +109,7 @@ ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
       tray_view_(nullptr),
       default_view_(nullptr),
       is_started_(false),
-      stop_callback_(base::Bind(&base::DoNothing)) {}
+      stop_callback_(base::DoNothing()) {}
 
 ScreenTrayItem::~ScreenTrayItem() = default;
 

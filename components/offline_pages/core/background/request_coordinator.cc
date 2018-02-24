@@ -186,10 +186,6 @@ void RecordNetworkQualityAtRequestStartForFailedRequest(
   histogram->Add(effective_connection);
 }
 
-// In case we start processing from SavePageLater, we need a callback, but there
-// is nothing for it to do.
-void EmptySchedulerCallback(bool started) {}
-
 // Returns whether |result| is a successful result for a single request.
 bool IsSingleSuccessResult(const UpdateRequestsResult* result) {
   return result->store_state == StoreState::LOADED &&
@@ -237,8 +233,8 @@ RequestCoordinator::RequestCoordinator(
       network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       active_request_id_(0),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
-      scheduler_callback_(base::Bind(&EmptySchedulerCallback)),
-      internal_start_processing_callback_(base::Bind(&EmptySchedulerCallback)),
+      scheduler_callback_(base::DoNothing()),
+      internal_start_processing_callback_(base::DoNothing()),
       pending_state_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);

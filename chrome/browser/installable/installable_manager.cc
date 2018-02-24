@@ -115,9 +115,6 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
          params.valid_primary_icon;
 }
 
-// Used for a no-op call to GetData.
-void DoNothingCallback(const InstallableData& data) {}
-
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
@@ -208,7 +205,7 @@ void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
     params.has_worker = true;
     params.valid_primary_icon = true;
     params.wait_for_worker = true;
-    GetData(params, base::Bind(&DoNothingCallback));
+    GetData(params, base::DoNothing());
   }
 }
 

@@ -412,7 +412,7 @@ bool VASupportedProfiles::IsProfileSupported(VaapiWrapper::CodecMode mode,
 VASupportedProfiles::VASupportedProfiles()
     : va_lock_(VADisplayState::Get()->va_lock()),
       va_display_(nullptr),
-      report_error_to_uma_cb_(base::Bind(&base::DoNothing)) {
+      report_error_to_uma_cb_(base::DoNothing()) {
   static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
                 "The array size of supported profile is incorrect.");
   {

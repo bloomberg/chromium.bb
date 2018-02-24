@@ -39,9 +39,6 @@ const char kTestData[] = "Hello World";
 const char kEntryKey[] = "FooEntry";
 const int kCacheEntryIndex = 1;
 
-void DoNothingCompletion(int rv) {
-}
-
 class NullURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   NullURLRequestContextGetter() : null_task_runner_(new base::NullTaskRunner) {}
@@ -141,15 +138,14 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
         net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(),
         (CacheStorageBlobToDiskCache::kBufferSize * 100) /* max bytes */,
         false /* force */, nullptr /* net log */, &cache_backend_,
-        base::Bind(&DoNothingCompletion));
+        base::DoNothing());
     // The memory cache runs synchronously.
     EXPECT_EQ(net::OK, rv);
     EXPECT_TRUE(cache_backend_);
 
     std::unique_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*());
     disk_cache::Entry** entry_ptr = entry.get();
-    rv = cache_backend_->CreateEntry(kEntryKey, entry_ptr,
-                                     base::Bind(&DoNothingCompletion));
+    rv = cache_backend_->CreateEntry(kEntryKey, entry_ptr, base::DoNothing());
     EXPECT_EQ(net::OK, rv);
     disk_cache_entry_.reset(*entry);
   }
@@ -161,7 +157,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
     int rv = disk_cache_entry_->ReadData(kCacheEntryIndex, 0 /* offset */,
                                          buffer.get(), buffer->size(),
-                                         base::Bind(&DoNothingCompletion));
+                                         base::DoNothing());
     EXPECT_EQ(bytes_to_read, rv);
     return std::string(buffer->data(), bytes_to_read);
   }

@@ -549,7 +549,7 @@ void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (shutdown_on_io_)
     return;
-  UpdateChangesForOrigin(url.origin(), NoopClosure());
+  UpdateChangesForOrigin(url.origin(), base::DoNothing());
   if (url_syncable_callback_.is_null() ||
       sync_status()->IsWriting(url_waiting_sync_on_io_)) {
     return;
@@ -719,7 +719,7 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
 
   origins_with_pending_changes_.insert(origins_with_changes->begin(),
                                        origins_with_changes->end());
-  ScheduleNotifyChangesUpdatedOnIOThread(NoopClosure());
+  ScheduleNotifyChangesUpdatedOnIOThread(base::DoNothing());
 
   InitializeFileSystemContextOnIOThread(source_url, file_system_context,
                                         GURL(), std::string(),
@@ -986,7 +986,7 @@ void LocalFileSyncContext::ClearSyncFlagOnIOThread(
   }
 
   // Since a sync has finished the number of changes must have been updated.
-  UpdateChangesForOrigin(url.origin(), NoopClosure());
+  UpdateChangesForOrigin(url.origin(), base::DoNothing());
 }
 
 void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
@@ -997,7 +997,7 @@ void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
   sync_status()->EndWriting(url);
 
   // Since a sync has finished the number of changes must have been updated.
-  UpdateChangesForOrigin(url.origin(), NoopClosure());
+  UpdateChangesForOrigin(url.origin(), base::DoNothing());
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(

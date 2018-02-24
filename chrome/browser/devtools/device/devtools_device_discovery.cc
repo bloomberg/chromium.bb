@@ -42,8 +42,6 @@ const char kPageReloadCommand[] = "Page.reload";
 
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
-static void NoOp(int, const std::string&) {}
-
 static void ScheduleTaskDefault(const base::Closure& task) {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
@@ -340,7 +338,7 @@ std::string AgentHostDelegate::GetFrontendURL() {
 bool AgentHostDelegate::Activate() {
   std::string request = base::StringPrintf(kActivatePageRequest,
                                            remote_id_.c_str());
-  device_->SendJsonRequest(browser_id_, request, base::Bind(&NoOp));
+  device_->SendJsonRequest(browser_id_, request, base::DoNothing());
   return true;
 }
 
@@ -352,7 +350,7 @@ void AgentHostDelegate::Reload() {
 bool AgentHostDelegate::Close() {
   std::string request = base::StringPrintf(kClosePageRequest,
                                            remote_id_.c_str());
-  device_->SendJsonRequest(browser_id_, request, base::Bind(&NoOp));
+  device_->SendJsonRequest(browser_id_, request, base::DoNothing());
   return true;
 }
 

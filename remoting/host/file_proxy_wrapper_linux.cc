@@ -21,8 +21,6 @@
 
 namespace {
 
-void EmptyStatusCallback(base::File::Error error) {}
-
 constexpr char kTempFileExtension[] = ".crdownload";
 
 remoting::protocol::FileTransferResponse_ErrorCode FileErrorToResponseError(
@@ -382,7 +380,7 @@ void FileProxyWrapperLinux::Close() {
     return;
   }
 
-  file_proxy_->Close(base::Bind(&EmptyStatusCallback));
+  file_proxy_->Close(base::DoNothing());
   SetState(kClosed);
 }
 
@@ -431,7 +429,7 @@ void FileProxyWrapperLinux::MoveFileCallback(bool success) {
 
 void FileProxyWrapperLinux::Cancel() {
   if (file_proxy_->IsValid()) {
-    file_proxy_->Close(base::Bind(&EmptyStatusCallback));
+    file_proxy_->Close(base::DoNothing());
   }
 
   if (mode_ == kWriting) {

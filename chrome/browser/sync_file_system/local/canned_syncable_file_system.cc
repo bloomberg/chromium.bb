@@ -206,7 +206,7 @@ void DidGetUsageAndQuota(const storage::StatusCallback& callback,
 
 void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
   base::RunLoop run_loop;
-  runner->PostTaskAndReply(FROM_HERE, base::BindOnce(&base::DoNothing),
+  runner->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                            run_loop.QuitClosure());
   run_loop.Run();
 }

@@ -33,7 +33,7 @@ ScopedIPCSupport::ScopedIPCSupport(
 
 ScopedIPCSupport::~ScopedIPCSupport() {
   if (shutdown_policy_ == ShutdownPolicy::FAST) {
-    ShutdownIPCSupport(base::Bind(&base::DoNothing));
+    ShutdownIPCSupport(base::DoNothing());
     return;
   }
 

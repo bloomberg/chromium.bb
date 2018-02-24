@@ -41,12 +41,6 @@ const char kCrOSTraceLabel[] = "systemTraceEvents";
 // Because the cheets logs are very huge, we set the D-Bus timeout to 2 minutes.
 const int kBigLogsDBusTimeoutMS = 120 * 1000;
 
-// Used in DebugDaemonClient::EmptyStopAgentTracingCallback().
-void EmptyStopAgentTracingCallbackBody(
-    const std::string& agent_name,
-    const std::string& events_label,
-    const scoped_refptr<base::RefCountedString>& unused_result) {}
-
 // A self-deleting object that wraps the pipe reader operations for reading the
 // big feedback logs. It will delete itself once the pipe stream has been
 // terminated. Once the data has been completely read from the pipe, it invokes
@@ -715,12 +709,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 DebugDaemonClient::DebugDaemonClient() = default;
 
 DebugDaemonClient::~DebugDaemonClient() = default;
-
-// static
-DebugDaemonClient::StopAgentTracingCallback
-DebugDaemonClient::EmptyStopAgentTracingCallback() {
-  return base::Bind(&EmptyStopAgentTracingCallbackBody);
-}
 
 // static
 DebugDaemonClient* DebugDaemonClient::Create() {

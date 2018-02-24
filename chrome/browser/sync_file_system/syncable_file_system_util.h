@@ -83,8 +83,6 @@ base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);
 // Posts |callback| to the current thread.
 void RunSoon(const base::Location& from_here, const base::Closure& callback);
 
-base::Closure NoopClosure();
-
 }  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNCABLE_FILE_SYSTEM_UTIL_H_

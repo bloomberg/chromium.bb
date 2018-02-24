@@ -74,8 +74,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     profile_sync_factory_ =
         std::make_unique<syncer::SyncApiComponentFactoryMock>(
             model_associator_, change_processor_);
-    bookmark_dtc_ = std::make_unique<BookmarkDataTypeController>(
-        base::Bind(&base::DoNothing), this);
+    bookmark_dtc_ =
+        std::make_unique<BookmarkDataTypeController>(base::DoNothing(), this);
   }
 
  protected:

@@ -84,10 +84,8 @@ void AsyncPolicyProvider::RefreshPolicies() {
   refresh_callback_.Reset(
       base::Bind(&AsyncPolicyProvider::ReloadAfterRefreshSync,
                  weak_factory_.GetWeakPtr()));
-  loader_->task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(base::DoNothing),
-      refresh_callback_.callback());
+  loader_->task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                           refresh_callback_.callback());
 }
 
 void AsyncPolicyProvider::ReloadAfterRefreshSync() {

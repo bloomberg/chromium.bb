@@ -18,9 +18,6 @@ static const int kBenchmarkIterations = 50000000;
 static const double kSampleRateRatio = 192000.0 / 44100.0;
 static const double kKernelInterpolationFactor = 0.5;
 
-// Helper function to provide no input to SincResampler's Convolve benchmark.
-static void DoNothing(int frames, float* destination) {}
-
 // Define platform independent function name for Convolve* tests.
 #if defined(ARCH_CPU_X86_FAMILY)
 #define CONVOLVE_FUNC Convolve_SSE
@@ -33,7 +30,7 @@ static void RunConvolveBenchmark(
     bool aligned,
     const std::string& trace_name) {
   SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
-                          base::BindRepeating(&DoNothing));
+                          base::DoNothing());
 
   base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 0; i < kBenchmarkIterations; ++i) {

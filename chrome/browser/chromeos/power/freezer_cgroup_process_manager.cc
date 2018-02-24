@@ -70,7 +70,7 @@ class FreezerCgroupProcessManager::FileWorker {
     // start up with renderers in frozen state, for example after the previous
     // Chrome process crashed at a point in time after suspend where it still
     // hadn't thawed renderers yet.
-    ThawRenderers(base::Bind([](bool) {}));
+    ThawRenderers(base::DoNothing());
   }
 
   void SetShouldFreezeRenderer(base::ProcessHandle handle, bool frozen) {

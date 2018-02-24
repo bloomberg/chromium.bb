@@ -89,8 +89,6 @@ void SizeRetrievedFromAllCaches(std::unique_ptr<int64_t> accumulator,
       FROM_HERE, base::BindOnce(std::move(callback), *accumulator));
 }
 
-void DoNothingWithBool(bool success) {}
-
 std::unique_ptr<SymmetricKey> ImportPaddingKey(const std::string& raw_key) {
   return SymmetricKey::Import(kPaddingKeyAlgorithm, raw_key);
 }
@@ -740,9 +738,9 @@ void CacheStorage::NotifyCacheContentChanged(const std::string& cache_name) {
 void CacheStorage::ScheduleWriteIndex() {
   static const int64_t kWriteIndexDelaySecs = 5;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  index_write_task_.Reset(base::Bind(&CacheStorage::WriteIndex,
-                                     weak_factory_.GetWeakPtr(),
-                                     base::Bind(&DoNothingWithBool)));
+  index_write_task_.Reset(base::BindOnce(&CacheStorage::WriteIndex,
+                                         weak_factory_.GetWeakPtr(),
+                                         base::DoNothing::Once<bool>()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, index_write_task_.callback(),
       base::TimeDelta::FromSeconds(kWriteIndexDelaySecs));
@@ -783,7 +781,7 @@ void CacheStorage::CacheSizeUpdated(const CacheStorageCache* cache) {
 }
 
 void CacheStorage::StartAsyncOperationForTesting() {
-  scheduler_->ScheduleOperation(base::BindOnce(&base::DoNothing));
+  scheduler_->ScheduleOperation(base::DoNothing());
 }
 
 void CacheStorage::CompleteAsyncOperationForTesting() {

@@ -49,8 +49,7 @@ void ClientVideoDispatcher::OnIncomingMessage(
   int frame_id = video_packet->frame_id();
 
   if (!video_packet->has_frame_id()) {
-    video_stub_->ProcessVideoPacket(std::move(video_packet),
-                                    base::Bind(&base::DoNothing));
+    video_stub_->ProcessVideoPacket(std::move(video_packet), base::DoNothing());
     return;
   }
 

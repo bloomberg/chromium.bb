@@ -107,9 +107,6 @@ class CHROMEOS_EXPORT DebugDaemonClient
   virtual void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) = 0;
 
-  // Returns an empty StopAgentTracingCallback that does nothing.
-  static StopAgentTracingCallback EmptyStopAgentTracingCallback();
-
   // Called once TestICMP() is complete. Takes two parameters:
   // - succeeded: information was obtained successfully.
   // - status: information about ICMP connectivity to a specified host as json.

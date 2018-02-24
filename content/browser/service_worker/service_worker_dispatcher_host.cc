@@ -216,10 +216,9 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
   // message owns its data.
   message->data.EnsureDataIsOwned();
 
-  DispatchExtendableMessageEvent(
-      base::WrapRefCounted(handle->version()), std::move(message->data),
-      source_origin, handle->provider_id(),
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+  DispatchExtendableMessageEvent(base::WrapRefCounted(handle->version()),
+                                 std::move(message->data), source_origin,
+                                 handle->provider_id(), base::DoNothing());
 }
 
 void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(

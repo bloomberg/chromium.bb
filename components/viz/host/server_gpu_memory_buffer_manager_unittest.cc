@@ -315,10 +315,7 @@ TEST_F(ServerGpuMemoryBufferManagerTest,
   // Destroy the buffer in a different thread.
   base::Thread diff_thread("DestroyThread");
   ASSERT_TRUE(diff_thread.Start());
-  diff_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce([](std::unique_ptr<gfx::GpuMemoryBuffer> buffer) {},
-                     std::move(buffer)));
+  diff_thread.task_runner()->DeleteSoon(FROM_HERE, std::move(buffer));
   diff_thread.Stop();
 }
 

@@ -16,7 +16,7 @@ FakePolicyInstance::FakePolicyInstance() = default;
 FakePolicyInstance::~FakePolicyInstance() = default;
 
 void FakePolicyInstance::InitDeprecated(mojom::PolicyHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakePolicyInstance::Init(mojom::PolicyHostPtr host_ptr,

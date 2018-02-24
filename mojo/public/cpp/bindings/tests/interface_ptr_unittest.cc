@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -742,11 +743,11 @@ TEST_P(InterfacePtrTest, FlushForTesting) {
 
   MathCalculatorUI calculator_ui(std::move(calc));
 
-  calculator_ui.Add(2.0, base::Bind(&base::DoNothing));
+  calculator_ui.Add(2.0, base::DoNothing());
   calculator_ui.GetInterfacePtr().FlushForTesting();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
-  calculator_ui.Multiply(5.0, base::Bind(&base::DoNothing));
+  calculator_ui.Multiply(5.0, base::DoNothing());
   calculator_ui.GetInterfacePtr().FlushForTesting();
 
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
@@ -813,8 +814,8 @@ TEST_P(InterfacePtrTest, CallbackIsPassedInterfacePtr) {
   // Make a call with the proxy's lifetime bound to the response callback.
   sample::PingTest* raw_proxy = ptr.get();
   ptr.set_connection_error_handler(run_loop.QuitClosure());
-  raw_proxy->Ping(
-      base::Bind([](sample::PingTestPtr ptr) {}, base::Passed(&ptr)));
+  raw_proxy->Ping(base::Bind(base::DoNothing::Repeatedly<sample::PingTestPtr>(),
+                             base::Passed(&ptr)));
 
   // Trigger an error on |ptr|. This will ultimately lead to the proxy's
   // response callbacks being destroyed, which will in turn lead to the proxy

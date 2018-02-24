@@ -28,8 +28,6 @@ namespace {
 constexpr char kDictionaryKey[] = "path.to.key";
 constexpr char kUninitializedDictionaryKey[] = "path.to.an.uninitialized.dict";
 
-void DoNothingWithReadError(::PersistentPrefStore::PrefReadError read_error) {}
-
 class PersistentPrefStoreClientTest : public testing::Test,
                                       public mojom::PersistentPrefStore {
  public:
@@ -57,7 +55,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
     pref_service_ = std::make_unique<PrefService>(
         std::move(pref_notifier), std::move(pref_value_store),
         persistent_pref_store_client.get(), pref_registry.get(),
-        base::Bind(&DoNothingWithReadError), false);
+        base::DoNothing(), false);
   }
 
   void TearDown() override {

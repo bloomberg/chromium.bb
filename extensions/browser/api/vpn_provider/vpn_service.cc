@@ -529,7 +529,7 @@ void VpnService::DestroyConfigurationsForExtension(
   for (auto* iter : to_be_destroyed) {
     DestroyConfiguration(extension->id(),             // Extension ID
                          iter->configuration_name(),  // Configuration name
-                         base::Bind(base::DoNothing),
+                         base::DoNothing(),
                          base::Bind(DoNothingFailureCallback));
   }
 }
@@ -560,7 +560,7 @@ void VpnService::OnExtensionUnloaded(
     shill_client_->UpdateConnectionState(
         active_configuration_->object_path(),
         static_cast<uint32_t>(api_vpn::VPN_CONNECTION_STATE_FAILURE),
-        base::Bind(base::DoNothing), base::Bind(DoNothingFailureCallback));
+        base::DoNothing(), base::Bind(DoNothingFailureCallback));
   }
   if (reason == extensions::UnloadedExtensionReason::DISABLE ||
       reason == extensions::UnloadedExtensionReason::BLACKLIST) {

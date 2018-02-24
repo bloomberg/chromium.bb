@@ -131,7 +131,7 @@ void ServiceIPCServerTest::ConnectClientChannel() {
       std::move(service_process_client_.interface_provider_));
 
   remote_interfaces_.GetInterface(&service_process_);
-  service_process_->Hello(base::BindOnce(&base::DoNothing));
+  service_process_->Hello(base::DoNothing());
   PumpLoops();
 }
 

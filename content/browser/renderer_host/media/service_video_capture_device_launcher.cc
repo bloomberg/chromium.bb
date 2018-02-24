@@ -137,7 +137,7 @@ void ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(callbacks_);
   DCHECK(done_cb_);
-  device.set_connection_error_handler(base::BindOnce(&base::DoNothing));
+  device.set_connection_error_handler(base::DoNothing());
   const bool abort_requested = (state_ == State::DEVICE_START_ABORTING);
   state_ = State::READY_TO_LAUNCH;
   Callbacks* callbacks = callbacks_;

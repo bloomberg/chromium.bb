@@ -26,8 +26,6 @@ class FakePdfPrinterHandler;
 bool GetOpenFileNameImpl(OPENFILENAME* ofn);
 bool GetSaveFileNameImpl(FakePdfPrinterHandler* handler, OPENFILENAME* ofn);
 
-void EmptyPrintCallback(const base::Value& error) {}
-
 class FakePdfPrinterHandler : public PdfPrinterHandler {
  public:
   FakePdfPrinterHandler(Profile* profile,
@@ -51,8 +49,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
   }
 
   void StartPrintToPdf(const base::string16& job_title) {
-    StartPrint("", "", job_title, "", gfx::Size(), nullptr,
-               base::Bind(&EmptyPrintCallback));
+    StartPrint("", "", job_title, "", gfx::Size(), nullptr, base::DoNothing());
     run_loop_.Run();
   }
 

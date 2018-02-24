@@ -19,8 +19,6 @@ namespace device {
 
 namespace {
 
-void DoNothing(bool will_not_present) {}
-
 class VRDeviceBaseForTesting : public VRDeviceBase {
  public:
   VRDeviceBaseForTesting() = default;
@@ -31,8 +29,7 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
   }
 
   void FireDisplayActivate() {
-    OnActivate(device::mojom::VRDisplayEventReason::MOUNTED,
-               base::Bind(&DoNothing));
+    OnActivate(device::mojom::VRDisplayEventReason::MOUNTED, base::DoNothing());
   }
 
   bool ListeningForActivate() { return listening_for_activate; }

@@ -29,7 +29,7 @@ FakeBluetoothInstance::LEDeviceFoundData::LEDeviceFoundData(
 FakeBluetoothInstance::LEDeviceFoundData::~LEDeviceFoundData() {}
 
 void FakeBluetoothInstance::InitDeprecated(mojom::BluetoothHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeBluetoothInstance::Init(mojom::BluetoothHostPtr host_ptr,

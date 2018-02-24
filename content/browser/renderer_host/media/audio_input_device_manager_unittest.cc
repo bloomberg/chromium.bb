@@ -100,7 +100,7 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
   void WaitForOpenCompletion() {
     media::WaitableMessageLoopEvent event;
     audio_manager_->GetTaskRunner()->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing), event.GetClosure());
+        FROM_HERE, base::DoNothing(), event.GetClosure());
     // Runs the loop and waits for the audio thread to call event's
     // closure.
     event.RunAndWait();

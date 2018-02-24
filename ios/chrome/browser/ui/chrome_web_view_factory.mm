@@ -53,9 +53,6 @@ namespace {
 ios::ChromeBrowserState* g_external_browser_state = nullptr;
 scoped_refptr<web::RequestTrackerImpl> g_request_tracker;
 
-// Empty callback used by ClearCookiesOnIOThread below.
-void DoNothing(uint32_t n) {}
-
 // Clears the cookies.
 void ClearCookiesOnIOThread(net::URLRequestContextGetter* context_getter,
                             base::Time delete_begin,
@@ -65,7 +62,7 @@ void ClearCookiesOnIOThread(net::URLRequestContextGetter* context_getter,
   net::CookieStore* cookie_store =
       context_getter->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteAllCreatedBetweenAsync(delete_begin, delete_end,
-                                             base::Bind(&DoNothing));
+                                             base::DoNothing());
 }
 
 // Registers |user_agent| as the user agent string to be used by the UIWebView

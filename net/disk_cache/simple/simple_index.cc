@@ -565,8 +565,9 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   if (cleanup_tracker_) {
     // Make anyone synchronizing with our cleanup wait for the index to be
     // written back.
-    after_write = base::Bind([](scoped_refptr<BackendCleanupTracker>) {},
-                             cleanup_tracker_);
+    after_write = base::Bind(
+        base::DoNothing::Repeatedly<scoped_refptr<BackendCleanupTracker>>(),
+        cleanup_tracker_);
   }
 
   index_file_->WriteToDisk(reason, entries_set_, cache_size_, start,

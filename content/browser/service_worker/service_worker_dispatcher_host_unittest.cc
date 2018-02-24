@@ -210,8 +210,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
     // Make the registration findable via storage functions.
-    context()->storage()->LazyInitializeForTest(
-        base::BindOnce(&base::DoNothing));
+    context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
     bool called = false;
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -393,8 +392,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   version_->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::ACTIVATE,
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback),
+      ServiceWorkerMetrics::EventType::ACTIVATE, base::DoNothing(),
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   // Advance clock by a couple seconds.

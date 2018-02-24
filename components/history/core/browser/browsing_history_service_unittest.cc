@@ -53,9 +53,6 @@ struct TestResult {
   HistoryEntry::EntryType type;
 };
 
-// Used to bind a callback.
-void DoNothing(bool ignored) {}
-
 class TestSyncService : public syncer::FakeSyncService {
  public:
   int GetObserverCount() { return observer_count_; }
@@ -128,7 +125,7 @@ class TestWebHistoryService : public FakeWebHistoryService {
 
   void TriggerOnWebHistoryDeleted() {
     TestRequest request;
-    ExpireHistoryCompletionCallback(base::Bind(&DoNothing), &request, true);
+    ExpireHistoryCompletionCallback(base::DoNothing(), &request, true);
   }
 
  protected:

@@ -145,10 +145,9 @@ TEST(BusTest, RemoveObjectProxy) {
   ASSERT_FALSE(bus->shutdown_completed());
 
   // Try to remove a non existant object proxy should return false.
-  ASSERT_FALSE(
-      bus->RemoveObjectProxy("org.chromium.TestService",
-                             ObjectPath("/org/chromium/TestObject"),
-                             base::Bind(&base::DoNothing)));
+  ASSERT_FALSE(bus->RemoveObjectProxy("org.chromium.TestService",
+                                      ObjectPath("/org/chromium/TestObject"),
+                                      base::DoNothing()));
 
   ObjectProxy* object_proxy1 =
       bus->GetObjectProxy("org.chromium.TestService",
@@ -162,10 +161,9 @@ TEST(BusTest, RemoveObjectProxy) {
   // Remove the object from the bus. This will invalidate any other usage of
   // object_proxy1 other than destroy it. We keep this object for a comparison
   // at a later time.
-  ASSERT_TRUE(
-      bus->RemoveObjectProxy("org.chromium.TestService",
-                             ObjectPath("/org/chromium/TestObject"),
-                             base::Bind(&base::DoNothing)));
+  ASSERT_TRUE(bus->RemoveObjectProxy("org.chromium.TestService",
+                                     ObjectPath("/org/chromium/TestObject"),
+                                     base::DoNothing()));
 
   // This should return a different object because the first object was removed
   // from the bus, but not deleted from memory.

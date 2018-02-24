@@ -70,7 +70,7 @@ class NonBlockingInvalidatorTestDelegate {
   void WaitForInvalidator() {
     base::RunLoop run_loop;
     ASSERT_TRUE(io_thread_.task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure()));
+        FROM_HERE, base::DoNothing(), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

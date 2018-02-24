@@ -21,13 +21,6 @@
 #include "ios/web/public/web_thread.h"
 
 namespace ios {
-namespace {
-
-void DoNothingOnErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                              sql::InitStatus status,
-                              const std::string& diagnostics) {}
-
-}  // namespace
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForBrowserState(
@@ -100,7 +93,7 @@ std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
-      base::BindRepeating(&DoNothingOnErrorCallback));
+      base::DoNothing());
 }
 
 web::BrowserState* WebDataServiceFactory::GetBrowserStateToUse(

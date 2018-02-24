@@ -36,8 +36,6 @@ const int kBufferSize = 4096;
 const int kUploadProgressTimerInterval = 100;
 bool g_ignore_certificate_requests = false;
 
-void EmptyCompletionCallback(int result) {}
-
 }  // namespace
 
 namespace net {
@@ -872,7 +870,7 @@ int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {
 void URLFetcherCore::DidWriteBuffer(scoped_refptr<DrainableIOBuffer> data,
                                     int result) {
   if (result < 0) {  // Handle errors.
-    response_writer_->Finish(result, base::Bind(&EmptyCompletionCallback));
+    response_writer_->Finish(result, base::DoNothing());
     CancelRequestAndInformDelegate(result);
     return;
   }

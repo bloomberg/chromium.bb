@@ -118,8 +118,7 @@ void AutoConnectNotifier::OnAutoConnectedInitiated(int auto_connect_reasons) {
   // fires, we assume that auto-connect attempted to search for networks to
   // join but did not succeed in joining one (in that case, no notification
   // should be shown).
-  timer_->Start(FROM_HERE, kNetworkConnectionTimeout,
-                base::Bind(&base::DoNothing));
+  timer_->Start(FROM_HERE, kNetworkConnectionTimeout, base::DoNothing());
 }
 
 void AutoConnectNotifier::DisplayNotification() {

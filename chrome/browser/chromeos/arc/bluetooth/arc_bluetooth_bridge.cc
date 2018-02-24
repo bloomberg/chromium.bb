@@ -1108,7 +1108,7 @@ void ArcBluetoothBridge::CreateBond(mojom::BluetoothAddressPtr addr,
 
   // If pairing finished successfully, DevicePairedChanged will notify Android
   // on paired state change event, so DoNothing is passed as a success callback.
-  device->Pair(delegate, base::Bind(&base::DoNothing),
+  device->Pair(delegate, base::DoNothing(),
                base::Bind(&ArcBluetoothBridge::OnPairedError,
                           weak_factory_.GetWeakPtr(), base::Passed(&addr)));
 }
@@ -1124,7 +1124,7 @@ void ArcBluetoothBridge::RemoveBond(mojom::BluetoothAddressPtr addr) {
 
   // If unpairing finished successfully, DevicePairedChanged will notify Android
   // on paired state change event, so DoNothing is passed as a success callback.
-  device->Forget(base::Bind(&base::DoNothing),
+  device->Forget(base::DoNothing(),
                  base::Bind(&ArcBluetoothBridge::OnForgetError,
                             weak_factory_.GetWeakPtr(), base::Passed(&addr)));
 }

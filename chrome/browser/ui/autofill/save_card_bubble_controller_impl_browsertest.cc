@@ -51,12 +51,12 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     // do).
     if (name == "Local") {
       controller_->ShowBubbleForLocalSave(test::GetCreditCard(),
-                                          base::Bind(&base::DoNothing));
+                                          base::DoNothing());
     } else {
       bool should_cvc_be_requested = name == "Server_WithCvcStep";
       controller_->ShowBubbleForUpload(
           test::GetMaskedServerCard(), GetTestLegalMessage(),
-          should_cvc_be_requested, base::Bind(&base::DoNothing));
+          should_cvc_be_requested, base::DoNothing());
     }
   }
 

@@ -42,13 +42,6 @@ class IOBuffer;
 
 namespace chromeos {
 namespace file_system_provider {
-namespace {
-
-// Discards the result of Abort() when called from the destructor.
-void EmptyStatusCallback(base::File::Error /* result */) {
-}
-
-}  // namespace
 
 AutoUpdater::AutoUpdater(const base::Closure& update_callback)
     : update_callback_(update_callback),
@@ -798,7 +791,7 @@ void ProvidedFileSystem::OnNotifyInQueueCompleted(
     Subscribers subscribers = it->second.subscribers;
     for (const auto& subscriber_it : subscribers) {
       RemoveWatcher(subscriber_it.second.origin, args->entry_path,
-                    args->recursive, base::Bind(&EmptyStatusCallback));
+                    args->recursive, base::DoNothing());
     }
   }
 

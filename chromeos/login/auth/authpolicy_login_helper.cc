@@ -4,6 +4,7 @@
 
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -38,12 +39,6 @@ base::ScopedFD GetDataReadPipe(const std::string& data) {
     return base::ScopedFD();
   }
   return pipe_read_end;
-}
-
-void AuthCallbackDoNothing(
-    authpolicy::ErrorType /* error */,
-    const authpolicy::ActiveDirectoryAccountInfo& /* account_info */) {
-  // Do nothing.
 }
 
 bool ParseDomainAndOU(const std::string& distinguished_name,
@@ -82,8 +77,7 @@ void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
-      request, GetDataReadPipe(password).get(),
-      base::BindOnce(&AuthCallbackDoNothing));
+      request, GetDataReadPipe(password).get(), base::DoNothing());
 }
 
 // static

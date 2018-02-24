@@ -68,7 +68,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     delegate_->Initialize(
         base::Bind(&GCMInvalidationBridgeTest::ConnectionStateChanged,
                    base::Unretained(this)),
-        base::Bind(&base::DoNothing) /* store_reset_callback */);
+        base::DoNothing() /* store_reset_callback */);
     RunLoop();
   }
 

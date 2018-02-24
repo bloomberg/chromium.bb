@@ -499,8 +499,8 @@ bool RundownTaskCounter::TimedWaitUntil(const base::TimeTicks& end_time) {
 void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
   if (local_state_)
     local_state_->CommitPendingWrite();
-  local_state_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing), std::move(reply));
+  local_state_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                             std::move(reply));
 }
 
 void BrowserProcessImpl::EndSession() {

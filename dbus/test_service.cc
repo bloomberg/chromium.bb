@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -22,13 +23,6 @@
 #include "dbus/object_manager.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
-
-namespace {
-
-void EmptyCallback(bool /* success */) {
-}
-
-}  // namespace
 
 namespace dbus {
 
@@ -116,11 +110,9 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   MessageWriter writer(&signal);
   writer.AppendString(message);
 
-  bus_->RequestOwnership(service_name_,
-                         request_ownership_options_,
+  bus_->RequestOwnership(service_name_, request_ownership_options_,
                          base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this),
-                                    base::Bind(&EmptyCallback)));
+                                    base::Unretained(this), base::DoNothing()));
 
   // Use "/" just like dbus-send does.
   ExportedObject* root_object = bus_->GetExportedObject(ObjectPath("/"));
@@ -189,11 +181,10 @@ void TestService::OnExported(const std::string& interface_name,
   if (num_exported_methods_ == kNumMethodsToExport) {
     // As documented in exported_object.h, the service name should be
     // requested after all methods are exposed.
-    bus_->RequestOwnership(service_name_,
-                           request_ownership_options_,
-                           base::Bind(&TestService::OnOwnership,
-                                      base::Unretained(this),
-                                      base::Bind(&EmptyCallback)));
+    bus_->RequestOwnership(
+        service_name_, request_ownership_options_,
+        base::Bind(&TestService::OnOwnership, base::Unretained(this),
+                   base::DoNothing()));
   }
 }
 

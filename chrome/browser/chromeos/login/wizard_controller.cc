@@ -1409,8 +1409,7 @@ void WizardController::AddNetworkRequested(const std::string& onc_spec) {
 
   if (NetworkAllowUpdate(network_state)) {
     network_screen->CreateAndConnectNetworkFromOnc(
-        onc_spec, base::Bind(&base::DoNothing),
-        network_handler::ErrorCallback());
+        onc_spec, base::DoNothing(), network_handler::ErrorCallback());
   } else {
     network_screen->CreateAndConnectNetworkFromOnc(
         onc_spec,

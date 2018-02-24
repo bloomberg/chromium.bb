@@ -114,7 +114,7 @@ class SessionDataTypeControllerTest : public testing::Test,
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
 
     controller_ = std::make_unique<SessionDataTypeController>(
-        base::Bind(&base::DoNothing), this, local_device_.get(),
+        base::DoNothing(), this, local_device_.get(),
         kSavingBrowserHistoryDisabled);
 
     load_finished_ = false;

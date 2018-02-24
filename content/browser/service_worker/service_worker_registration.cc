@@ -376,7 +376,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
     // "1. Wait for exitingWorker to finish handling any in-progress requests."
     // This is already handled by IsReadyToActivate().
     // "2. Terminate exitingWorker."
-    exiting_version->StopWorker(base::BindOnce(&base::DoNothing));
+    exiting_version->StopWorker(base::DoNothing());
     // "3. Run the [[UpdateState]] algorithm passing exitingWorker and
     // "redundant" as the arguments."
     exiting_version->SetStatus(ServiceWorkerVersion::REDUNDANT);
@@ -532,8 +532,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
   // "Run the Update State algorithm passing registration's active worker and
   // 'activated' as the arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  context_->storage()->UpdateToActiveState(
-      this, base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+  context_->storage()->UpdateToActiveState(this, base::DoNothing());
 }
 
 void ServiceWorkerRegistration::OnDeleteFinished(

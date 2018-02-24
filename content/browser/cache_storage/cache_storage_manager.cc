@@ -124,8 +124,6 @@ void GetOriginsForHostDidListOrigins(
       FROM_HERE, base::BindOnce(std::move(callback), out_origins));
 }
 
-void EmptyQuotaStatusCallback(blink::mojom::QuotaStatusCode code) {}
-
 void AllOriginSizesReported(
     std::unique_ptr<std::vector<CacheStorageUsageInfo>> usages,
     CacheStorageContext::GetUsageInfoCallback callback) {
@@ -410,7 +408,7 @@ void CacheStorageManager::DeleteOriginData(
 
 void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DeleteOriginData(origin, base::BindOnce(&EmptyQuotaStatusCallback));
+  DeleteOriginData(origin, base::DoNothing());
 }
 
 void CacheStorageManager::DeleteOriginDidClose(

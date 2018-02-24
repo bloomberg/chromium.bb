@@ -906,7 +906,7 @@ TEST_F(RendererImplTest, FlushDuringAudioReinitWhileWaiting) {
           SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_NOTHING),
           SaveArg<0>(&audio_renderer_flush_cb)));
   EXPECT_CALL(*audio_renderer_, StartPlaying())
-      .WillOnce(RunClosure(base::Bind(&base::DoNothing)));
+      .WillOnce(RunClosure(base::DoNothing::Repeatedly()));
 
   // This should start flushing the audio renderer (due to audio stream status
   // change) and should populate the |audio_renderer_flush_cb|.
@@ -995,7 +995,7 @@ TEST_F(RendererImplTest, FlushDuringVideoReinitWhileWaiting) {
           SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_NOTHING),
           SaveArg<0>(&video_renderer_flush_cb)));
   EXPECT_CALL(*video_renderer_, StartPlayingFrom(_))
-      .WillOnce(RunClosure(base::Bind(&base::DoNothing)));
+      .WillOnce(RunClosure(base::DoNothing::Repeatedly()));
 
   // This should start flushing the video renderer (due to video stream status
   // change) and should populate the |video_renderer_flush_cb|.

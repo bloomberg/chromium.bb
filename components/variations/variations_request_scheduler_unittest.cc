@@ -14,7 +14,7 @@ namespace variations {
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
   base::MessageLoopForUI message_loop_;
 
-  const base::Closure task = base::Bind(&base::DoNothing);
+  const base::Closure task = base::DoNothing();
   VariationsRequestScheduler scheduler(task);
   EXPECT_FALSE(scheduler.one_shot_timer_.IsRunning());
 

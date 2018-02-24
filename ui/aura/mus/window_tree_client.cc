@@ -2159,7 +2159,7 @@ void WindowTreeClient::InjectEvent(const ui::Event& event, int64_t display_id) {
   // refused.
   if (event_injector_) {
     event_injector_->DispatchEvent(display_id, ui::Event::Clone(event),
-                                   base::Bind([](bool result) {}));
+                                   base::DoNothing());
   }
 }
 

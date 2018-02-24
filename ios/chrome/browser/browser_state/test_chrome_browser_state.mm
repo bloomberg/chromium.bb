@@ -74,19 +74,13 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
   return bookmark_model;
 }
 
-void NotReachedErrorCallback(WebDataServiceWrapper::ErrorType,
-                             sql::InitStatus,
-                             const std::string&) {
-  NOTREACHED();
-}
-
 std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   const base::FilePath& browser_state_path = context->GetStatePath();
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
-      base::BindRepeating(&NotReachedErrorCallback));
+      base::DoNothing());
 }
 
 base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {

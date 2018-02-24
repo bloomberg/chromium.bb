@@ -19,7 +19,7 @@ FakeVoiceInteractionFrameworkInstance::
 
 void FakeVoiceInteractionFrameworkInstance::InitDeprecated(
     mojom::VoiceInteractionFrameworkHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeVoiceInteractionFrameworkInstance::Init(

@@ -42,9 +42,6 @@
 
 namespace {
 
-// Callback doing nothing, called by DoomIncognitoCache() below.
-void DoNothing(int rv) {}
-
 // Called by the notification center on memory warnings.
 void OnMemoryWarningReceived(CFNotificationCenterRef center,
                              void* observer,
@@ -70,7 +67,7 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
                                     ->GetCache();
         if (!cache->GetCurrentBackend())
           return;
-        cache->GetCurrentBackend()->DoomAllEntries(base::Bind(&DoNothing));
+        cache->GetCurrentBackend()->DoomAllEntries(base::DoNothing());
       }));
 }
 

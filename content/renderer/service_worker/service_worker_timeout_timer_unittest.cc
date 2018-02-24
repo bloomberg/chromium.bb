@@ -113,7 +113,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
 TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
   EnableServicification();
 
-  ServiceWorkerTimeoutTimer timer(base::BindRepeating(&base::DoNothing),
+  ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   MockEvent event1, event2;
 
@@ -137,7 +137,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
 TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
   EnableServicification();
 
-  ServiceWorkerTimeoutTimer timer(base::BindRepeating(&base::DoNothing),
+  ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   MockEvent event1, event2;
   int event_id1 = timer.StartEventWithCustomTimeout(
@@ -186,7 +186,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
 
   MockEvent event1, event2;
   {
-    ServiceWorkerTimeoutTimer timer(base::BindRepeating(&base::DoNothing),
+    ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                     task_runner()->GetMockTickClock());
 
     int event_id1 = timer.StartEvent(event1.CreateAbortCallback());
@@ -206,7 +206,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
 
 TEST_F(ServiceWorkerTimeoutTimerTest, PushPendingTask) {
   EnableServicification();
-  ServiceWorkerTimeoutTimer timer(base::BindRepeating(&base::DoNothing),
+  ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
                                ServiceWorkerTimeoutTimer::kUpdateInterval +

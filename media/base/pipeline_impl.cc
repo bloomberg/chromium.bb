@@ -1087,7 +1087,7 @@ void PipelineImpl::Stop() {
 
   if (media_task_runner_->BelongsToCurrentThread()) {
     // This path is executed by unittests that share media and main threads.
-    renderer_wrapper_->Stop(base::Bind(&base::DoNothing));
+    renderer_wrapper_->Stop(base::DoNothing());
   } else {
     // This path is executed by production code where the two task runners -
     // main and media - live on different threads.

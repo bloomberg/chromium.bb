@@ -344,7 +344,7 @@ void TetherConnectorImpl::OnWifiConnection(
     // connected to the Wi-Fi hotspot despite there being no active host. See
     // crbug.com/761171.
     wifi_hotspot_disconnector_->DisconnectFromWifiHotspot(
-        wifi_network_guid, base::Bind(&base::DoNothing),
+        wifi_network_guid, base::DoNothing(),
         base::Bind(&OnDisconnectFromWifiFailure, device_id));
     return;
   }

@@ -1143,7 +1143,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::CancelableTaskTracker task_tracker;
     // Expire origin1, origin2, origin2a, and origin4's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
-                                  base::Bind(&base::DoNothing), &task_tracker);
+                                  base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin2 is cleaned up because all its urls are deleted. origin1a and
@@ -1169,8 +1169,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     expire_list.push_back(args);
 
     base::CancelableTaskTracker task_tracker;
-    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
-                           &task_tracker);
+    history->ExpireHistory(expire_list, base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin1's score should be halved again. origin3 and origin4 remain
@@ -1193,8 +1192,7 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     expire_list.push_back(args);
 
     base::CancelableTaskTracker task_tracker;
-    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
-                           &task_tracker);
+    history->ExpireHistory(expire_list, base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin1 should be removed. origin3 and origin4 remain untouched.

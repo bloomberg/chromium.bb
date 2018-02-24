@@ -733,7 +733,7 @@ void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
   debug_info_collector->IterateFileCache(
       base::Bind(&DriveInternalsWebUIHandler::UpdateCacheEntry,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&base::DoNothing));
+      base::DoNothing());
 }
 
 void DriveInternalsWebUIHandler::UpdateEventLogSection() {

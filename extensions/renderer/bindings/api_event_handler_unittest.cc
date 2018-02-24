@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_event_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -33,12 +34,6 @@ const char kRemoveListenerFunction[] =
 using MockEventChangeHandler = ::testing::StrictMock<
     base::MockCallback<APIEventHandler::EventListenersChangedMethod>>;
 
-void DoNothingOnEventListenersChanged(const std::string& event_name,
-                                      binding::EventListenersChanged change,
-                                      const base::DictionaryValue* value,
-                                      bool was_manual,
-                                      v8::Local<v8::Context> context) {}
-
 class APIEventHandlerTest : public APIBindingTest {
  protected:
   APIEventHandlerTest() {}
@@ -46,8 +41,7 @@ class APIEventHandlerTest : public APIBindingTest {
 
   void SetUp() override {
     APIBindingTest::SetUp();
-    handler_ = std::make_unique<APIEventHandler>(
-        base::Bind(&DoNothingOnEventListenersChanged), nullptr);
+    handler_ = std::make_unique<APIEventHandler>(base::DoNothing(), nullptr);
   }
 
   void TearDown() override {
@@ -536,8 +530,8 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 
   std::vector<std::string> logged_errors;
   ExceptionHandler exception_handler(base::Bind(log_error, &logged_errors));
-  SetHandler(std::make_unique<APIEventHandler>(
-      base::Bind(&DoNothingOnEventListenersChanged), &exception_handler));
+  SetHandler(
+      std::make_unique<APIEventHandler>(base::DoNothing(), &exception_handler));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
@@ -1094,9 +1088,8 @@ TEST_F(APIEventHandlerTest,
   std::vector<std::string> logged_errors;
   ExceptionHandler exception_handler(
       base::BindRepeating(log_error, &logged_errors));
-  SetHandler(std::make_unique<APIEventHandler>(
-      base::BindRepeating(&DoNothingOnEventListenersChanged),
-      &exception_handler));
+  SetHandler(
+      std::make_unique<APIEventHandler>(base::DoNothing(), &exception_handler));
 
   const char kEventName[] = "alpha";
   v8::HandleScope handle_scope(isolate());

@@ -822,7 +822,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
 
   policy->Flush();
   GetActivityLogTaskRunner()->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing),
+      FROM_HERE, base::DoNothing(),
       base::MessageLoop::current()->QuitWhenIdleClosure());
   base::RunLoop().Run();
 

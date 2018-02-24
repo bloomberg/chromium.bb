@@ -212,7 +212,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
       base::Bind(&FakeShillServiceClient::SetProperty,
                  weak_ptr_factory_.GetWeakPtr(), service_path,
                  shill::kStateProperty, base::Value(shill::kStateIdle),
-                 base::Bind(&base::DoNothing), error_callback),
+                 base::DoNothing(), error_callback),
       base::TimeDelta::FromSeconds(GetInteractiveDelay()));
   callback.Run();
 }
@@ -551,10 +551,10 @@ void FakeShillServiceClient::SetCellularActivated(
     const dbus::ObjectPath& service_path,
     const ErrorCallback& error_callback) {
   SetProperty(service_path, shill::kActivationStateProperty,
-              base::Value(shill::kActivationStateActivated),
-              base::Bind(&base::DoNothing), error_callback);
+              base::Value(shill::kActivationStateActivated), base::DoNothing(),
+              error_callback);
   SetProperty(service_path, shill::kConnectableProperty, base::Value(true),
-              base::Bind(&base::DoNothing), error_callback);
+              base::DoNothing(), error_callback);
 }
 
 void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {

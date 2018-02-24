@@ -260,7 +260,7 @@ TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
       test_utils_.GetDevicePath(), kDevicePattern, kTestFileSize);
 
   operation_->Start();
-  operation_->VerifyWrite(base::Bind(&base::DoNothing));
+  operation_->VerifyWrite(base::DoNothing());
   content::RunAllTasksUntilIdle();
 }
 #endif  // !defined(OS_CHROMEOS)

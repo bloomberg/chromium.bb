@@ -169,7 +169,7 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
     // goes out of scope, the second invocation of the line below will access a
     // deleted TaskScheduler and crash.
     g_sequenced_task_runner_user_visible.Get()->PostTask(FROM_HERE,
-                                                         BindOnce(&DoNothing));
+                                                         DoNothing());
   }
 }
 
@@ -179,8 +179,8 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
     // deleted TaskScheduler and crash.
-    g_single_thread_task_runner_user_visible.Get()->PostTask(
-        FROM_HERE, BindOnce(&DoNothing));
+    g_single_thread_task_runner_user_visible.Get()->PostTask(FROM_HERE,
+                                                             DoNothing());
   }
 }
 
@@ -191,8 +191,7 @@ TEST(TaskSchdulerLazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
     // deleted TaskScheduler and crash.
-    g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE,
-                                                       BindOnce(&DoNothing));
+    g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE, DoNothing());
   }
 }
 #endif  // defined(OS_WIN)

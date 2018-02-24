@@ -306,7 +306,7 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
 
     NET_LOG_EVENT("Disconnect Forced by Policy", network->path());
     network_connection_handler_->DisconnectNetwork(
-        network->path(), base::Bind(&base::DoNothing),
+        network->path(), base::DoNothing(),
         base::Bind(&DisconnectErrorCallback, network->path()));
   }
 }

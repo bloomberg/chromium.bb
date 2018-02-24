@@ -16,7 +16,7 @@ FakeWallpaperInstance::FakeWallpaperInstance() = default;
 FakeWallpaperInstance::~FakeWallpaperInstance() = default;
 
 void FakeWallpaperInstance::InitDeprecated(mojom::WallpaperHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeWallpaperInstance::Init(mojom::WallpaperHostPtr host_ptr,

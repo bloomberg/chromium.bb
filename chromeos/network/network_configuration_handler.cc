@@ -675,7 +675,7 @@ void NetworkConfigurationHandler::RequestRefreshIPConfigs(
   if (!network_state || network_state->device_path().empty())
     return;
   network_device_handler_->RequestRefreshIPConfigs(
-      network_state->device_path(), base::Bind(&base::DoNothing),
+      network_state->device_path(), base::DoNothing(),
       network_handler::ErrorCallback());
 }
 

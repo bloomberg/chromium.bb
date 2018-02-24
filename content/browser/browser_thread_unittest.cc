@@ -157,7 +157,7 @@ TEST_F(BrowserThreadTest, PostTaskAndReply) {
   // Most of the heavy testing for PostTaskAndReply() is done inside the
   // task runner test.  This just makes sure we get piped through at all.
   ASSERT_TRUE(BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE, base::BindOnce(&base::DoNothing),
+      BrowserThread::IO, FROM_HERE, base::DoNothing(),
       base::BindOnce(&base::RunLoop::QuitCurrentWhenIdleDeprecated)));
   base::RunLoop().Run();
 }

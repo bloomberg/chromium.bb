@@ -210,8 +210,7 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothLocalStatePrefDefault) {
       local_state_prefs_.FindPreference(prefs::kSystemBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power on.
-  GetBluetoothAdapter()->SetPowered(true, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(true, base::DoNothing(), base::DoNothing());
   EXPECT_TRUE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothLocalStatePref();
@@ -233,8 +232,8 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothLocalStatePrefOn) {
       local_state_prefs_.FindPreference(prefs::kSystemBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power off.
-  GetBluetoothAdapter()->SetPowered(false, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(false, base::DoNothing(),
+                                    base::DoNothing());
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothLocalStatePref();
@@ -255,8 +254,8 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothPrimaryUserPrefDefault) {
       active_user_prefs_.FindPreference(prefs::kUserBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power off.
-  GetBluetoothAdapter()->SetPowered(false, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(false, base::DoNothing(),
+                                    base::DoNothing());
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothPrimaryUserPref();
@@ -280,8 +279,8 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothPrimaryUserPrefDefaultNew) {
       active_user_prefs_.FindPreference(prefs::kUserBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power off.
-  GetBluetoothAdapter()->SetPowered(false, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(false, base::DoNothing(),
+                                    base::DoNothing());
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothPrimaryUserPref();
@@ -307,8 +306,8 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothKioskUserPrefDefault) {
       active_user_prefs_.FindPreference(prefs::kUserBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power off.
-  GetBluetoothAdapter()->SetPowered(false, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(false, base::DoNothing(),
+                                    base::DoNothing());
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothPrimaryUserPref();
@@ -334,8 +333,8 @@ TEST_F(BluetoothPowerControllerTest, ApplyBluetoothPrimaryUserPrefOn) {
       active_user_prefs_.FindPreference(prefs::kUserBluetoothAdapterEnabled)
           ->IsDefaultValue());
   // Start with bluetooth power off.
-  GetBluetoothAdapter()->SetPowered(false, base::Bind(&base::DoNothing),
-                                    base::Bind(&base::DoNothing));
+  GetBluetoothAdapter()->SetPowered(false, base::DoNothing(),
+                                    base::DoNothing());
   EXPECT_FALSE(GetBluetoothAdapter()->IsPowered());
 
   ApplyBluetoothPrimaryUserPref();

@@ -267,9 +267,7 @@ void PolicyApplicator::GetEntryError(const std::string& entry,
 
 void PolicyApplicator::DeleteEntry(const std::string& entry) {
   DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
-      dbus::ObjectPath(profile_.path),
-      entry,
-      base::Bind(&base::DoNothing),
+      dbus::ObjectPath(profile_.path), entry, base::DoNothing(),
       base::Bind(&LogErrorMessage, FROM_HERE));
 }
 

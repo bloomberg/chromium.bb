@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_request_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
@@ -34,8 +35,6 @@ const char kMethod[] = "method";
 using ArgumentList = std::vector<v8::Local<v8::Value>>;
 
 // TODO(devlin): Should we move some parts of api_binding_unittest.cc to here?
-void DoNothingWithRequest(std::unique_ptr<APIRequestHandler::Request> request,
-                          v8::Local<v8::Context> context) {}
 
 }  // namespace
 
@@ -43,7 +42,7 @@ class APIRequestHandlerTest : public APIBindingTest {
  public:
   std::unique_ptr<APIRequestHandler> CreateRequestHandler() {
     return std::make_unique<APIRequestHandler>(
-        base::Bind(&DoNothingWithRequest),
+        base::DoNothing(),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
         nullptr);
   }
@@ -376,7 +375,7 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
                       const std::string& error) { *logged_error = error; };
 
   APIRequestHandler request_handler(
-      base::Bind(&DoNothingWithRequest),
+      base::DoNothing(),
       APILastError(base::Bind(get_parent),
                    base::Bind(log_error, &logged_error)),
       nullptr);
@@ -493,7 +492,7 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
       base::Bind(add_console_error, &logged_error));
 
   APIRequestHandler request_handler(
-      base::Bind(&DoNothingWithRequest),
+      base::DoNothing(),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
       &exception_handler);
 

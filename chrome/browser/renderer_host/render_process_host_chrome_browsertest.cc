@@ -131,8 +131,8 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
   void WaitForLauncherThread() {
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&base::DoNothing), run_loop.QuitWhenIdleClosure());
+        content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE, base::DoNothing(),
+        run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 

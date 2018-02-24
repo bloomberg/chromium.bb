@@ -236,7 +236,7 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
   // to complete and then check the states again.
   if (incoming_state_ == STATE_STOPPING || outgoing_state_ == STATE_STOPPING) {
     dump_writer_->background_task_runner()->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing),
+        FROM_HERE, base::DoNothing(),
         base::BindOnce(&WebRtcRtpDumpHandler::StopOngoingDumps,
                        weak_ptr_factory_.GetWeakPtr(), callback));
     return;

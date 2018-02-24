@@ -106,7 +106,7 @@ void ScreenCaptureDeviceCore::StopAndDeAllocate() {
 
   TransitionStateTo(kIdle);
 
-  capture_machine_->Stop(base::Bind(&base::DoNothing));
+  capture_machine_->Stop(base::DoNothing());
 }
 
 void ScreenCaptureDeviceCore::OnConsumerReportingUtilization(

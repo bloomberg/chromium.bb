@@ -100,7 +100,7 @@ void NetworkConnectionHandlerTetherDelegate::ConnectToNetwork(
                  << "Disconnecting from network with GUID "
                  << previous_host_guid << ".";
     DisconnectFromNetwork(
-        previous_host_guid, base::Bind(&base::DoNothing),
+        previous_host_guid, base::DoNothing(),
         base::Bind(&OnFailedDisconnectionFromPreviousHost, previous_host_guid));
   }
 

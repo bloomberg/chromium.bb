@@ -26,14 +26,6 @@
 
 namespace ash {
 
-namespace {
-
-// A callback that does nothing after shelf item selection handling.
-void NoopCallback(ShelfAction,
-                  base::Optional<std::vector<mojom::MenuItemPtr>>) {}
-
-}  // namespace
-
 // Shelf::AutoHideEventHandler -----------------------------------------------
 
 // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
@@ -265,7 +257,7 @@ void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
   std::unique_ptr<ui::Event> event = std::make_unique<ui::KeyEvent>(
       ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   item_delegate->ItemSelected(std::move(event), display_id, LAUNCH_FROM_UNKNOWN,
-                              base::Bind(&NoopCallback));
+                              base::DoNothing());
 }
 
 bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {

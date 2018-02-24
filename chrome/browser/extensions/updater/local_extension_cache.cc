@@ -64,8 +64,8 @@ void LocalExtensionCache::Shutdown(const base::Closure& callback) {
   if (state_ == kReady)
     CleanUp();
   state_ = kShutdown;
-  backend_task_runner_->PostTaskAndReply(FROM_HERE,
-      base::Bind(&base::DoNothing), callback);
+  backend_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                         callback);
 }
 
 // static

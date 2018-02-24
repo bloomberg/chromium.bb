@@ -57,8 +57,6 @@ base::Time PretendNow() {
   return out_time;
 }
 
-void IgnoreBoolAndDoNothing(bool ignored_argument) {}
-
 class TestSyncService : public browser_sync::TestProfileSyncService {
  public:
   explicit TestSyncService(Profile* profile)
@@ -167,7 +165,7 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
 // Tests that BrowsingHistoryHandler is informed about WebHistoryService
 // deletions.
 TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
-  base::Callback<void(bool)> callback = base::Bind(&IgnoreBoolAndDoNothing);
+  base::Callback<void(bool)> callback = base::DoNothing();
 
   // BrowsingHistoryHandler is informed about WebHistoryService history
   // deletions.

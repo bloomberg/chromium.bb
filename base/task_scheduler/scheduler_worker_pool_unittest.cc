@@ -222,7 +222,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostAfterDestroy) {
   StartWorkerPool();
   auto task_runner = test::CreateTaskRunnerWithExecutionMode(
       worker_pool_.get(), GetParam().execution_mode);
-  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
   task_tracker_.Shutdown();
   worker_pool_->JoinForTesting();
   worker_pool_.reset();

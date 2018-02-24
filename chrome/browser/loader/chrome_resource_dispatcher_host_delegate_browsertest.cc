@@ -566,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
     content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
                                              FROM_HERE,
                                              // Flush IO thread...
-                                             base::BindOnce(&base::DoNothing),
+                                             base::DoNothing(),
                                              // ... and UI thread.
                                              run_loop.QuitClosure());
     run_loop.Run();

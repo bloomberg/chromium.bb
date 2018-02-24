@@ -34,7 +34,7 @@ void CloseBaseFile(base::File file) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind([](base::File file) {}, Passed(std::move(file))));
+      base::BindOnce(base::DoNothing::Once<base::File>(), std::move(file)));
 }
 
 }  // namespace

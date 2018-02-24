@@ -321,8 +321,8 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
       service_path_, auto_connect_property,
       // Activation is triggered by the UI.
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing), network_handler::ErrorCallback());
+      NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+      network_handler::ErrorCallback());
   StartActivation();
 }
 
@@ -348,10 +348,8 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
     const NetworkState* network = GetNetworkState(service_path_);
     if (network && IsSimpleActivationFlow(network)) {
       state_ = PLAN_ACTIVATION_DONE;
-      NetworkHandler::Get()->network_activation_handler()->
-          CompleteActivation(network->path(),
-                             base::Bind(&base::DoNothing),
-                             network_handler::ErrorCallback());
+      NetworkHandler::Get()->network_activation_handler()->CompleteActivation(
+          network->path(), base::DoNothing(), network_handler::ErrorCallback());
     } else {
       StartOTASP();
     }
@@ -560,9 +558,8 @@ void MobileActivator::HandleOTASPTimeout() {
 
 void MobileActivator::ConnectNetwork(const NetworkState* network) {
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      network->path(), base::Bind(&base::DoNothing),
-      network_handler::ErrorCallback(), false /* check_error_state */,
-      ConnectCallbackMode::ON_STARTED);
+      network->path(), base::DoNothing(), network_handler::ErrorCallback(),
+      false /* check_error_state */, ConnectCallbackMode::ON_STARTED);
 }
 
 void MobileActivator::ForceReconnect(const NetworkState* network,
@@ -577,9 +574,7 @@ void MobileActivator::ForceReconnect(const NetworkState* network,
   // Connect() is called on the service again.  Hence this dance to explicitly
   // call Connect().
   NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      network->path(),
-      base::Bind(&base::DoNothing),
-      network_handler::ErrorCallback());
+      network->path(), base::DoNothing(), network_handler::ErrorCallback());
   // Keep trying to connect until told otherwise.
   continue_reconnect_timer_.Stop();
   continue_reconnect_timer_.Start(
@@ -616,9 +611,7 @@ void MobileActivator::ContinueConnecting() {
       // then we're not getting traffic through at all.  Just disconnect and
       // try again.
       NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-          network->path(),
-          base::Bind(&base::DoNothing),
-          network_handler::ErrorCallback());
+          network->path(), base::DoNothing(), network_handler::ErrorCallback());
       return;
     }
     // Stop this callback

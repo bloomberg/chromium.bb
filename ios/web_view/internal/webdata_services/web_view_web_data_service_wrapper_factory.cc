@@ -20,13 +20,6 @@
 #include "ios/web_view/internal/web_view_browser_state.h"
 
 namespace ios_web_view {
-namespace {
-
-void DoNothingOnErrorCallback(WebDataServiceWrapper::ErrorType error_type,
-                              sql::InitStatus status,
-                              const std::string& diagnostics) {}
-
-}  // namespace
 
 // static
 WebDataServiceWrapper* WebViewWebDataServiceWrapperFactory::GetForBrowserState(
@@ -79,8 +72,7 @@ WebViewWebDataServiceWrapperFactory::BuildServiceInstanceFor(
       browser_state_path,
       ApplicationContext::GetInstance()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-      base::Callback<void(syncer::ModelType)>(),
-      base::BindRepeating(&DoNothingOnErrorCallback));
+      base::Callback<void(syncer::ModelType)>(), base::DoNothing());
 }
 
 bool WebViewWebDataServiceWrapperFactory::ServiceIsNULLWhileTesting() const {

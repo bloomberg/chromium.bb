@@ -63,7 +63,7 @@ TEST(ScopedProcess, DISABLE_ON_ANDROID(ScopedProcessAbort)) {
 }
 
 TEST(ScopedProcess, ScopedProcessSignaled) {
-  ScopedProcess process(base::Bind(&base::DoNothing));
+  ScopedProcess process{base::DoNothing()};
   bool got_signaled = false;
   ASSERT_EQ(0, kill(process.GetPid(), SIGKILL));
   int exit_code = process.WaitForExit(&got_signaled);
@@ -91,7 +91,7 @@ TEST(ScopedProcess, DiesForReal) {
 }
 
 TEST(ScopedProcess, SynchronizationBasic) {
-  ScopedProcess process1(base::Bind(&base::DoNothing));
+  ScopedProcess process1{base::DoNothing()};
   EXPECT_TRUE(process1.WaitForClosureToRun());
 
   ScopedProcess process2(base::Bind(&DoExit));

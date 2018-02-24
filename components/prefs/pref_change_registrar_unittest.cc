@@ -44,9 +44,7 @@ class PrefChangeRegistrarTest : public testing::Test {
  protected:
   void SetUp() override;
 
-  base::Closure observer() const {
-    return base::Bind(&base::DoNothing);
-  }
+  base::Closure observer() const { return base::DoNothing(); }
 
   MockPrefService* service() const { return service_.get(); }
 
@@ -138,7 +136,7 @@ class ObserveSetOfPreferencesTest : public testing::Test {
 
   PrefChangeRegistrar* CreatePrefChangeRegistrar() {
     PrefChangeRegistrar* pref_set = new PrefChangeRegistrar();
-    base::Closure callback = base::Bind(&base::DoNothing);
+    base::Closure callback = base::DoNothing();
     pref_set->Init(pref_service_.get());
     pref_set->Add(kHomePage, callback);
     pref_set->Add(kHomePageIsNewTabPage, callback);

@@ -54,22 +54,20 @@ class MicroBenchmarkControllerTest : public testing::Test {
   std::unique_ptr<FakeImplTaskRunnerProvider> impl_task_runner_provider_;
 };
 
-void Noop(std::unique_ptr<base::Value> value) {}
-
 void IncrementCallCount(int* count, std::unique_ptr<base::Value> value) {
   ++(*count);
 }
 
 TEST_F(MicroBenchmarkControllerTest, ScheduleFail) {
   int id = layer_tree_host_->ScheduleMicroBenchmark("non_existant_benchmark",
-                                                    nullptr, base::Bind(&Noop));
+                                                    nullptr, base::DoNothing());
   EXPECT_EQ(id, 0);
 }
 
 TEST_F(MicroBenchmarkControllerTest, CommitScheduled) {
   EXPECT_FALSE(layer_tree_host_->needs_commit());
   int id = layer_tree_host_->ScheduleMicroBenchmark("unittest_only_benchmark",
-                                                    nullptr, base::Bind(&Noop));
+                                                    nullptr, base::DoNothing());
   EXPECT_GT(id, 0);
   EXPECT_TRUE(layer_tree_host_->needs_commit());
 }

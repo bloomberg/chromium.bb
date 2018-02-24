@@ -91,8 +91,6 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
 
   void Unregister();
 
-  static void UnregisterFinishedNoOp(gcm::GCMClient::Result result);
-
  private:
   gcm::GCMDriver* const gcm_driver_;
   IdentityProvider* const identity_provider_;

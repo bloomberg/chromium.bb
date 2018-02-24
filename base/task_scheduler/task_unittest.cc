@@ -18,19 +18,19 @@ namespace internal {
 // adjusted to SKIP_ON_SHUTDOWN. The shutown behavior of other delayed tasks
 // should not change.
 TEST(TaskSchedulerTaskTest, ShutdownBehaviorChangeWithDelay) {
-  Task continue_on_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task continue_on_shutdown(FROM_HERE, DoNothing(),
                             {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                             TimeDelta::FromSeconds(1));
   EXPECT_EQ(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
             continue_on_shutdown.traits.shutdown_behavior());
 
-  Task skip_on_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task skip_on_shutdown(FROM_HERE, DoNothing(),
                         {TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                         TimeDelta::FromSeconds(1));
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
             skip_on_shutdown.traits.shutdown_behavior());
 
-  Task block_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task block_shutdown(FROM_HERE, DoNothing(),
                       {TaskShutdownBehavior::BLOCK_SHUTDOWN},
                       TimeDelta::FromSeconds(1));
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
@@ -39,18 +39,18 @@ TEST(TaskSchedulerTaskTest, ShutdownBehaviorChangeWithDelay) {
 
 // Verify that the shutdown behavior of undelayed tasks is not adjusted.
 TEST(TaskSchedulerTaskTest, NoShutdownBehaviorChangeNoDelay) {
-  Task continue_on_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task continue_on_shutdown(FROM_HERE, DoNothing(),
                             {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                             TimeDelta());
   EXPECT_EQ(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
             continue_on_shutdown.traits.shutdown_behavior());
 
-  Task skip_on_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task skip_on_shutdown(FROM_HERE, DoNothing(),
                         {TaskShutdownBehavior::SKIP_ON_SHUTDOWN}, TimeDelta());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
             skip_on_shutdown.traits.shutdown_behavior());
 
-  Task block_shutdown(FROM_HERE, BindOnce(&DoNothing),
+  Task block_shutdown(FROM_HERE, DoNothing(),
                       {TaskShutdownBehavior::BLOCK_SHUTDOWN}, TimeDelta());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN,
             block_shutdown.traits.shutdown_behavior());

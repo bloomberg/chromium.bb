@@ -1735,10 +1735,10 @@ void CacheStorageCache::InitBackend() {
 
   scheduler_->ScheduleOperation(base::BindOnce(
       &CacheStorageCache::CreateBackend, weak_ptr_factory_.GetWeakPtr(),
-      base::BindOnce(&CacheStorageCache::InitDidCreateBackend,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     scheduler_->WrapCallbackToRunNext(
-                         base::BindOnce(&base::DoNothing)))));
+      base::BindOnce(
+          &CacheStorageCache::InitDidCreateBackend,
+          weak_ptr_factory_.GetWeakPtr(),
+          scheduler_->WrapCallbackToRunNext(base::DoNothing::Once()))));
 }
 
 void CacheStorageCache::InitDidCreateBackend(

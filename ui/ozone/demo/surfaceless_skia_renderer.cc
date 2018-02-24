@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -258,7 +259,7 @@ void SurfacelessSkiaRenderer::RenderFrame() {
   gl_surface_->SwapBuffersAsync(
       base::BindRepeating(&SurfacelessSkiaRenderer::PostRenderFrameTask,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating([](const gfx::PresentationFeedback&) {}));
+      base::DoNothing());
 }
 
 void SurfacelessSkiaRenderer::PostRenderFrameTask(gfx::SwapResult result) {

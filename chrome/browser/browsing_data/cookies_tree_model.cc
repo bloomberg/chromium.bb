@@ -399,7 +399,7 @@ void CookieTreeLocalStorageNode::DeleteStoredObjects() {
 
   if (container) {
     container->local_storage_helper_->DeleteOrigin(
-        local_storage_info_->origin_url, base::BindOnce(&base::DoNothing));
+        local_storage_info_->origin_url, base::DoNothing());
     container->local_storage_info_list_.erase(local_storage_info_);
   }
 }

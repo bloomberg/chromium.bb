@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
@@ -71,7 +72,7 @@ class SystemClockClientImpl : public SystemClockClient {
     writer.AppendInt64(time_in_seconds);
     system_clock_proxy_->CallMethod(&method_call,
                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                                    dbus::ObjectProxy::EmptyResponseCallback());
+                                    base::DoNothing());
   }
 
   bool CanSetTime() override { return can_set_time_; }

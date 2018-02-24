@@ -81,8 +81,8 @@ class AppInstallEventLogManagerWrapperTest : public testing::Test {
   void FlushPendingTasks() {
     base::RunLoop run_loop;
     ASSERT_TRUE(log_task_runner_);
-    log_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
+    log_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                       run_loop.QuitClosure());
     run_loop.Run();
   }
 

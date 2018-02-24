@@ -5,6 +5,7 @@
 #include "device/bluetooth/dbus/bluetooth_media_client.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,10 +17,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
-
-// Since there is no property associated with Media objects, an empty callback
-// is used.
-void DoNothing(const std::string& property_name) {}
 
 // TODO(mcchou): Add these service constants into dbus/service_constants.h
 // later.
@@ -67,7 +64,7 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
     return new dbus::PropertySet(object_proxy, interface_name,
-                                 base::Bind(&DoNothing));
+                                 base::DoNothing());
   }
 
   void ObjectAdded(const dbus::ObjectPath& object_path,

@@ -86,7 +86,7 @@ base::Closure GpuMemoryBufferImplDXGI::AllocateForTesting(
                                             base::UnguessableToken::Create());
   handle->type = gfx::DXGI_SHARED_HANDLE;
   handle->id = kBufferId;
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 bool GpuMemoryBufferImplDXGI::Map() {

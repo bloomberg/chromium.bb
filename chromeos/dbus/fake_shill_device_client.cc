@@ -421,7 +421,7 @@ void FakeShillDeviceClient::SetDeviceProperty(const std::string& device_path,
   VLOG(1) << "SetDeviceProperty: " << device_path
           << ": " << name << " = " << value;
   SetPropertyInternal(dbus::ObjectPath(device_path), name, value,
-                      base::Bind(&base::DoNothing),
+                      base::DoNothing(),
                       base::Bind(&ErrorFunction, device_path));
 }
 

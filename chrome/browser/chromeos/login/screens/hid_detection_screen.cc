@@ -89,8 +89,7 @@ HIDDetectionScreen::~HIDDetectionScreen() {
   if (view_)
     view_->Unbind();
   if (discovery_session_.get())
-    discovery_session_->Stop(base::Bind(&base::DoNothing),
-                             base::Bind(&base::DoNothing));
+    discovery_session_->Stop(base::DoNothing(), base::DoNothing());
   if (adapter_.get())
     adapter_->RemoveObserver(this);
 }
@@ -156,8 +155,7 @@ void HIDDetectionScreen::Hide() {
 
   showing_ = false;
   if (discovery_session_.get()) {
-    discovery_session_->Stop(base::Bind(&base::DoNothing),
-                             base::Bind(&base::DoNothing));
+    discovery_session_->Stop(base::DoNothing(), base::DoNothing());
   }
   if (view_)
     view_->Hide();
@@ -587,7 +585,7 @@ void HIDDetectionScreen::PowerOff() {
   }
   if (!use_bluetooth) {
     VLOG(1) << "Switching off BT adapter after HID OOBE screen as unused.";
-    adapter_->SetPowered(false, base::Bind(&base::DoNothing),
+    adapter_->SetPowered(false, base::DoNothing(),
                          base::Bind(&HIDDetectionScreen::SetPoweredOffError,
                                     weak_ptr_factory_.GetWeakPtr()));
   }

@@ -188,7 +188,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
       platform_notification_service->OnPersistentNotificationClose(
           profile_, notification_database_data.notification_id,
           notification_database_data.origin, false /* by_user */,
-          base::BindOnce(&base::DoNothing));
+          base::DoNothing());
 
       break;
     }

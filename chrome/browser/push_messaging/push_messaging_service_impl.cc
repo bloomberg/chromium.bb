@@ -239,7 +239,7 @@ void PushMessagingServiceImpl::OnStoreReset() {
     // occurs before we finish clearing them.
     ClearPushSubscriptionId(profile_, identifier.origin(),
                             identifier.service_worker_registration_id(),
-                            base::Bind(&base::DoNothing));
+                            base::DoNothing());
     // TODO(johnme): Fire pushsubscriptionchange/pushsubscriptionlost SW event.
   }
   PushMessagingAppIdentifier::DeleteAllFromPrefs(profile_);
@@ -272,7 +272,7 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
 #endif
 
   base::Closure message_handled_closure =
-      message_callback_for_testing_.is_null() ? base::Bind(&base::DoNothing)
+      message_callback_for_testing_.is_null() ? base::DoNothing()
                                               : message_callback_for_testing_;
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
@@ -882,7 +882,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
       std::string() /* sender_id */,
       base::Bind(&UnregisterCallbackToClosure,
                  service_worker_unregistered_callback_for_testing_.is_null()
-                     ? base::Bind(&base::DoNothing)
+                     ? base::DoNothing()
                      : service_worker_unregistered_callback_for_testing_));
 }
 
@@ -900,7 +900,7 @@ void PushMessagingServiceImpl::DidDeleteServiceWorkerDatabase() {
   base::RepeatingClosure completed_closure = base::BarrierClosure(
       app_identifiers.size(),
       service_worker_database_wiped_callback_for_testing_.is_null()
-          ? base::Bind(&base::DoNothing)
+          ? base::DoNothing()
           : service_worker_database_wiped_callback_for_testing_);
 
   for (const PushMessagingAppIdentifier& app_identifier : app_identifiers) {
@@ -937,7 +937,7 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
   base::Closure barrier_closure = base::BarrierClosure(
       all_app_identifiers.size(),
       content_setting_changed_callback_for_testing_.is_null()
-          ? base::Bind(&base::DoNothing)
+          ? base::DoNothing()
           : content_setting_changed_callback_for_testing_);
 
   for (const PushMessagingAppIdentifier& app_identifier : all_app_identifiers) {

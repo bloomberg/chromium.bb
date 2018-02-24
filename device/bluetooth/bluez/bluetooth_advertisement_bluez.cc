@@ -103,7 +103,7 @@ void BluetoothAdvertisementBlueZ::Register(
 }
 
 BluetoothAdvertisementBlueZ::~BluetoothAdvertisementBlueZ() {
-  Unregister(base::Bind(&base::DoNothing), base::Bind(&UnregisterFailure));
+  Unregister(base::DoNothing(), base::Bind(&UnregisterFailure));
 }
 
 void BluetoothAdvertisementBlueZ::Unregister(

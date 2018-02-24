@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,8 +50,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
-  init_params.network_time_update_callback =
-      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
+  init_params.network_time_update_callback = base::DoNothing();
   init_params.base_directory = profile->GetPath();
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();

@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/event_emitter.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
@@ -16,14 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
-namespace {
-
-void DoNothingOnListenerChange(binding::EventListenersChanged changed,
-                               const base::DictionaryValue* filter,
-                               bool was_manual,
-                               v8::Local<v8::Context> context) {}
-
-}  // namespace
 
 class EventEmitterUnittest : public APIBindingTest {
  public:
@@ -47,7 +40,7 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
   v8::Local<v8::Context> context = MainContext();
 
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::Bind(&DoNothingOnListenerChange), binding::kNoListenerMax, true);
+      base::DoNothing(), binding::kNoListenerMax, true);
 
   auto log_error = [](std::vector<std::string>* errors,
                       v8::Local<v8::Context> context,
@@ -148,8 +141,7 @@ TEST_F(EventEmitterUnittest, ListenersDestroyingContext) {
   };
 
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::BindRepeating(&DoNothingOnListenerChange), binding::kNoListenerMax,
-      true);
+      base::DoNothing(), binding::kNoListenerMax, true);
   ExceptionHandler exception_handler(base::BindRepeating(
       [](v8::Local<v8::Context> context, const std::string& error) {}));
   gin::Handle<EventEmitter> event = gin::CreateHandle(

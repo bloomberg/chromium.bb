@@ -92,8 +92,8 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
       : base::Thread("DnsConfigService"),
         dns_config_for_testing_(dns_config_for_testing),
         creation_time_(base::Time::Now()),
-        address_tracker_(base::Bind(base::DoNothing),
-                         base::Bind(base::DoNothing),
+        address_tracker_(base::DoNothing(),
+                         base::DoNothing(),
                          // We're only interested in tunnel interface changes.
                          base::Bind(NotifyNetworkChangeNotifierObservers),
                          std::unordered_set<std::string>()) {}

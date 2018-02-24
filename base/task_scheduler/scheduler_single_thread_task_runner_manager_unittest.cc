@@ -339,7 +339,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   auto task_runner =
       single_thread_task_runner_manager_
           ->CreateSingleThreadTaskRunnerWithTraits(TaskTraits(), GetParam());
-  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
   task_tracker_.Shutdown();
   TearDownSingleThreadTaskRunnerManager();
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
@@ -444,7 +444,7 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest,
         BindOnce(&WaitableEvent::Signal, Unretained(&task_running))));
     EXPECT_TRUE(task_runner->PostTask(
         FROM_HERE, BindOnce(&WaitableEvent::Wait, Unretained(&task_blocking))));
-    EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
+    EXPECT_TRUE(task_runner->PostTask(FROM_HERE, DoNothing()));
   }
 
   task_running.Wait();

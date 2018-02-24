@@ -29,7 +29,7 @@ void FakeNotificationsInstance::OpenNotificationSettings(
 
 void FakeNotificationsInstance::InitDeprecated(
     mojom::NotificationsHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeNotificationsInstance::Init(mojom::NotificationsHostPtr host_ptr,

@@ -97,7 +97,7 @@ SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
       base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
       base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
                  base::Unretained(this)),
-      base::Bind(&base::DoNothing),
+      base::DoNothing(),
       base::Bind(&SecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
 }
@@ -451,7 +451,7 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
         base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
         base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
                    base::Unretained(this)),
-        base::Bind(&base::DoNothing),
+        base::DoNothing(),
         base::Bind(&SecurityKeyIpcServerTest::OperationComplete,
                    base::Unretained(this)));
     ASSERT_TRUE(security_key_ipc_server_->CreateChannel(
@@ -503,7 +503,7 @@ TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
       security_key_ipc_server_->CreateChannel(channel_handle, request_timeout));
 
   // Create a fake client and attempt to connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(&base::DoNothing));
+  FakeSecurityKeyIpcClient fake_ipc_client{base::DoNothing()};
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 

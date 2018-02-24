@@ -85,8 +85,8 @@ void DictionaryDataStore::Flush(OnFlushedCallback on_flushed) {
   if (on_flushed.is_null())
     return;
 
-  file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing), std::move(on_flushed));
+  file_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                      std::move(on_flushed));
 }
 
 void DictionaryDataStore::Load(

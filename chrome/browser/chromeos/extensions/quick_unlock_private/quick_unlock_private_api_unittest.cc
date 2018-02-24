@@ -83,8 +83,6 @@ ExtendedAuthenticator* CreateFakeAuthenticator(
   return authenticator;
 }
 
-void DoNothing(const QuickUnlockModeList& modes) {}
-
 void FailIfCalled(const QuickUnlockModeList& modes) {
   FAIL();
 }
@@ -122,7 +120,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     // Ensure that quick unlock is turned off.
     SetModes(QuickUnlockModeList{}, CredentialList{});
 
-    modes_changed_handler_ = base::Bind(&DoNothing);
+    modes_changed_handler_ = base::DoNothing();
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
@@ -295,7 +293,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     auto* func = new QuickUnlockPrivateSetModesFunction();
     func->SetAuthenticatorAllocatorForTesting(
         base::Bind(&CreateFakeAuthenticator));
-    func->SetModesChangedEventHandlerForTesting(base::Bind(&DoNothing));
+    func->SetModesChangedEventHandlerForTesting(base::DoNothing());
 
     return api_test_utils::RunFunctionAndReturnError(func, args, profile());
   }

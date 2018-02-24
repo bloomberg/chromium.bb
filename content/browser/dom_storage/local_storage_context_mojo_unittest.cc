@@ -48,8 +48,6 @@ namespace {
 // An empty namespace is the local storage namespace.
 constexpr const char kLocalStorageNamespaceId[] = "";
 
-void NoOpSuccess(bool success) {}
-
 void SuccessCallback(base::OnceClosure callback,
                      bool* success_out,
                      bool success) {
@@ -74,8 +72,6 @@ void GetCallback(const base::Closure& callback,
   *value_out = value;
   callback.Run();
 }
-
-void NoOpGet(bool success, const std::vector<uint8_t>& value) {}
 
 class TestLevelDBObserver : public mojom::LevelDBObserver {
  public:
@@ -263,8 +259,7 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
@@ -283,13 +278,11 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key1, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key2, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
@@ -306,8 +299,7 @@ TEST_F(LocalStorageContextMojoTest, WrapperOutlivesMojoConnection) {
   const url::Origin kOrigin(url::Origin::Create(GURL("http://foobar.com")));
   context()->OpenLocalStorage(kOrigin, MakeRequest(&wrapper));
   context()->OpenLocalStorage(kOrigin, MakeRequest(&dummy_wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
   dummy_wrapper.reset();
   base::RunLoop().RunUntilIdle();
@@ -335,8 +327,7 @@ TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -394,15 +385,12 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key1, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
-  wrapper->Put(key2, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
+  wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key2, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   // GetStorageUsage only includes committed data, but still returns all origins
@@ -444,15 +432,13 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDelete) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Delete(key, value, "source", base::BindOnce(&NoOpSuccess));
+  wrapper->Delete(key, value, "source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to disk.
@@ -479,16 +465,14 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDeleteAll) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->DeleteAll("source", base::BindOnce(&NoOpSuccess));
+  wrapper->DeleteAll("source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to disk.
@@ -526,20 +510,18 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithoutConnection) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to disk.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(mock_data().empty());
 
-  context()->DeleteStorage(origin1, base::BindOnce(&base::DoNothing));
+  context()->DeleteStorage(origin1, base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Data from origin2 should exist, including meta-data, but nothing should
@@ -563,13 +545,11 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to disk.
@@ -581,7 +561,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
   wrapper->AddObserver(observer.Bind());
   base::RunLoop().RunUntilIdle();
 
-  context()->DeleteStorage(origin1, base::BindOnce(&base::DoNothing));
+  context()->DeleteStorage(origin1, base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, observer.observations().size());
@@ -609,13 +589,11 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to disk.
@@ -626,10 +604,10 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   wrapper->AddObserver(observer.Bind());
   wrapper->Put(StdStringToUint8Vector("key2"), value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+               base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
-  context()->DeleteStorage(origin1, base::BindOnce(&base::DoNothing));
+  context()->DeleteStorage(origin1, base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2u, observer.observations().size());
@@ -676,7 +654,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
   mojom::LevelDBWrapperPtr dummy_wrapper;  // To make sure values are cached.
   context()->OpenLocalStorage(origin2, MakeRequest(&dummy_wrapper));
-  wrapper->Get(std::vector<uint8_t>(), base::BindOnce(&NoOpGet));
+  wrapper->Get(std::vector<uint8_t>(), base::DoNothing());
   wrapper.reset();
   dummy_wrapper.reset();
   base::RunLoop().RunUntilIdle();
@@ -685,7 +663,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   // Opening origin1 and accessing its data should migrate its storage.
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
   context()->OpenLocalStorage(origin1, MakeRequest(&dummy_wrapper));
-  wrapper->Get(std::vector<uint8_t>(), base::BindOnce(&NoOpGet));
+  wrapper->Get(std::vector<uint8_t>(), base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(mock_data().empty());
 
@@ -793,15 +771,12 @@ TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
 
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
-  wrapper->Put(key1, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
-  wrapper->Put(key2, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key1, value, base::nullopt, "source", base::DoNothing());
+  wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key2, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
+  wrapper->Put(key2, value, base::nullopt, "source", base::DoNothing());
   wrapper.reset();
 
   // Make sure all data gets committed to the DB.

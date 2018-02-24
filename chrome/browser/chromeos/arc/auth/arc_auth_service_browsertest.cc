@@ -61,7 +61,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
  public:
   // mojom::AuthInstance:
   void InitDeprecated(mojom::AuthHostPtr host) override {
-    Init(std::move(host), base::BindOnce(&base::DoNothing));
+    Init(std::move(host), base::DoNothing());
   }
 
   void Init(mojom::AuthHostPtr host, InitCallback callback) override {

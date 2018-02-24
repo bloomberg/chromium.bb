@@ -417,7 +417,7 @@ class LockScreenAppManagerImplTest
   void RunExtensionServiceTaskRunner(Profile* profile) {
     base::RunLoop run_loop;
     extensions::GetExtensionFileTaskRunner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+        FROM_HERE, base::DoNothing(), run_loop.QuitClosure());
     run_loop.Run();
   }
 

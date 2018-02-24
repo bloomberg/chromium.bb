@@ -12,10 +12,6 @@
 
 namespace extensions {
 
-namespace {
-void EmptySuccessCallback(bool success) {}
-}
-
 ServiceWorkerManager::ServiceWorkerManager(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context), registry_observer_(this) {
@@ -45,7 +41,7 @@ void ServiceWorkerManager::OnExtensionUninstalled(
   content::BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                       extension->url())
       ->GetServiceWorkerContext()
-      ->DeleteForOrigin(extension->url(), base::Bind(&EmptySuccessCallback));
+      ->DeleteForOrigin(extension->url(), base::DoNothing());
 }
 
 }  // namespace extensions

@@ -227,7 +227,7 @@ void MediaCodecAudioDecoder::SetCdm(CdmContext* cdm_context,
   cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
       media::BindToCurrentLoop(base::Bind(&MediaCodecAudioDecoder::OnKeyAdded,
                                           weak_factory_.GetWeakPtr())),
-      base::Bind(&base::DoNothing));
+      base::DoNothing());
 
   media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::Bind(&MediaCodecAudioDecoder::OnMediaCryptoReady,

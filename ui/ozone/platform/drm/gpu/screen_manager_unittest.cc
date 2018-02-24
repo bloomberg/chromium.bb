@@ -22,8 +22,6 @@
 
 namespace {
 
-void EmptySwapCallback(gfx::SwapResult, const gfx::PresentationFeedback&) {}
-
 // Create a basic mode for a 6x4 screen.
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
@@ -505,7 +503,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(
           1, ui::OverlayPlane(buffer, base::kInvalidPlatformFile)),
-      base::Bind(&EmptySwapCallback));
+      base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
@@ -532,7 +530,7 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(
           1, ui::OverlayPlane(buffer, base::kInvalidPlatformFile)),
-      base::Bind(&EmptySwapCallback));
+      base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);

@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -314,8 +315,7 @@ void DownloadUIAdapter::CancelDownloadContinuation(
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   std::vector<int64_t> request_ids = FilterRequestsByGuid(
       std::move(requests), guid, request_coordinator_->GetPolicyController());
-  request_coordinator_->RemoveRequests(
-      request_ids, base::Bind([](const MultipleItemStatuses&) {}));
+  request_coordinator_->RemoveRequests(request_ids, base::DoNothing());
 }
 
 void DownloadUIAdapter::PauseDownload(const ContentId& id) {
@@ -342,8 +342,7 @@ void DownloadUIAdapter::ResumeDownload(const ContentId& id,
         base::Bind(&DownloadUIAdapter::ResumeDownloadContinuation,
                    weak_ptr_factory_.GetWeakPtr(), id.id));
   } else {
-    request_coordinator_->StartImmediateProcessing(
-        base::Bind([](bool result) {}));
+    request_coordinator_->StartImmediateProcessing(base::DoNothing());
   }
 }
 

@@ -161,7 +161,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, EncodeOneFrame) {
                 BitstreamBufferReady(kBitstreamBufferId, _, _, _));
 
     mojo_vea_service()->Encode(video_frame, true /* is_keyframe */,
-                               base::Bind(&base::DoNothing));
+                               base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -252,7 +252,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, EncodeWithWrongSizeFails) {
               NotifyError(VideoEncodeAccelerator::kInvalidArgumentError));
 
   mojo_vea_service()->Encode(video_frame, true /* is_keyframe */,
-                             base::Bind(&base::DoNothing));
+                             base::DoNothing());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -264,7 +264,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, CallsBeforeInitializeAreIgnored) {
   {
     const auto video_frame = VideoFrame::CreateBlackFrame(kInputVisibleSize);
     mojo_vea_service()->Encode(video_frame, true /* is_keyframe */,
-                               base::Bind(&base::DoNothing));
+                               base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
   {

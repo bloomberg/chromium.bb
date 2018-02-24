@@ -281,8 +281,7 @@ TEST(AlarmTimerTest, NonRepeatIsRunning) {
     base::FileDescriptorWatcher file_descriptor_watcher(&loop);
     timers::OneShotAlarmTimer timer;
     EXPECT_FALSE(timer.IsRunning());
-    timer.Start(FROM_HERE, base::TimeDelta::FromDays(1),
-                base::Bind(&base::DoNothing));
+    timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
     // Allow FileDescriptorWatcher to start watching the timer. Without this, a
     // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
@@ -299,8 +298,7 @@ TEST(AlarmTimerTest, NonRepeatIsRunning) {
     base::FileDescriptorWatcher file_descriptor_watcher(&loop);
     timers::SimpleAlarmTimer timer;
     EXPECT_FALSE(timer.IsRunning());
-    timer.Start(FROM_HERE, base::TimeDelta::FromDays(1),
-                base::Bind(&base::DoNothing));
+    timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
     // Allow FileDescriptorWatcher to start watching the timer. Without this, a
     // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
@@ -321,8 +319,7 @@ TEST(AlarmTimerTest, RetainRepeatIsRunning) {
   base::FileDescriptorWatcher file_descriptor_watcher(&loop);
   timers::RepeatingAlarmTimer timer;
   EXPECT_FALSE(timer.IsRunning());
-  timer.Start(FROM_HERE, base::TimeDelta::FromDays(1),
-              base::Bind(&base::DoNothing));
+  timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
   // Allow FileDescriptorWatcher to start watching the timer. Without this, a
   // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
@@ -344,8 +341,7 @@ TEST(AlarmTimerTest, RetainNonRepeatIsRunning) {
   base::FileDescriptorWatcher file_descriptor_watcher(&loop);
   timers::SimpleAlarmTimer timer;
   EXPECT_FALSE(timer.IsRunning());
-  timer.Start(FROM_HERE, base::TimeDelta::FromDays(1),
-              base::Bind(&base::DoNothing));
+  timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
   // Allow FileDescriptorWatcher to start watching the timer. Without this, a
   // task posted by FileDescriptorWatcher::WatchReadable() is leaked.

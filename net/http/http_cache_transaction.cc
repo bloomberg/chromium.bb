@@ -15,6 +15,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -1128,7 +1129,7 @@ int HttpCache::Transaction::DoOpenEntry() {
   uint8_t in_memory_info =
       cache_->GetCurrentBackend()->GetEntryInMemoryData(cache_key_);
   if (MaybeRejectBasedOnEntryInMemoryData(in_memory_info)) {
-    cache_->GetCurrentBackend()->DoomEntry(cache_key_, base::Bind([](int) {}));
+    cache_->GetCurrentBackend()->DoomEntry(cache_key_, base::DoNothing());
     return net::ERR_CACHE_ENTRY_NOT_SUITABLE;
   }
 

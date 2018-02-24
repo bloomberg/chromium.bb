@@ -16,7 +16,7 @@ FakeAccessibilityHelperInstance::~FakeAccessibilityHelperInstance() = default;
 
 void FakeAccessibilityHelperInstance::InitDeprecated(
     mojom::AccessibilityHelperHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeAccessibilityHelperInstance::Init(

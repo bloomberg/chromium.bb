@@ -396,7 +396,7 @@ TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
   ASSERT_TRUE(read_key);
 
   gcm_key_store()->RemoveKeys(kFakeAppId, kFakeAuthorizedEntity,
-                              base::Bind(&base::DoNothing));
+                              base::DoNothing());
 
   base::RunLoop().RunUntilIdle();
 
@@ -437,7 +437,7 @@ TEST_F(GCMKeyStoreTest, CreateGetAndRemoveKeysSynchronously) {
 
   // Continue synchronously, without running RunUntilIdle first.
   gcm_key_store()->RemoveKeys(kFakeAppId, kFakeAuthorizedEntity,
-                              base::Bind(&base::DoNothing));
+                              base::DoNothing());
 
   // Continue synchronously, without running RunUntilIdle first.
   ECPrivateKeyUniquePtr key_after_remove;
@@ -528,7 +528,7 @@ TEST_F(GCMKeyStoreTest, RemoveKeysWildcardAuthorizedEntity) {
   ASSERT_TRUE(read_key3);
 
   gcm_key_store()->RemoveKeys(kFakeAppId, "*" /* authorized_entity */,
-                              base::Bind(&base::DoNothing));
+                              base::DoNothing());
 
   base::RunLoop().RunUntilIdle();
 

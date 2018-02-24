@@ -113,16 +113,15 @@ TEST_F(BluetoothEventRouterTest, SetDiscoveryFilter) {
   df.CopyFrom(*discovery_filter);
 
   router_->SetDiscoveryFilter(std::move(discovery_filter), mock_adapter_,
-                              kTestExtensionId, base::Bind(&base::DoNothing),
-                              base::Bind(&base::DoNothing));
+                              kTestExtensionId, base::DoNothing(),
+                              base::DoNothing());
 
   EXPECT_CALL(*mock_adapter_, StartDiscoverySessionWithFilterRaw(
                                   testing::Pointee(IsFilterEqual(&df)),
                                   testing::_, testing::_)).Times(1);
 
   router_->StartDiscoverySession(mock_adapter_, kTestExtensionId,
-                                 base::Bind(&base::DoNothing),
-                                 base::Bind(&base::DoNothing));
+                                 base::DoNothing(), base::DoNothing());
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }

@@ -72,8 +72,6 @@ bool BrowserIdFromString(const std::string& browser_id_str,
   return true;
 }
 
-static void NoOp(int, const std::string&) {}
-
 }  // namespace
 
 // static
@@ -146,7 +144,7 @@ void DevToolsAndroidBridge::OpenRemotePage(scoped_refptr<RemoteBrowser> browser,
   std::string query = net::EscapeQueryParamValue(url, false /* use_plus */);
   std::string request =
       base::StringPrintf(kNewPageRequestWithURL, query.c_str());
-  SendJsonRequest(browser->GetId(), request, base::Bind(&NoOp));
+  SendJsonRequest(browser->GetId(), request, base::DoNothing());
 }
 
 DevToolsAndroidBridge::DevToolsAndroidBridge(

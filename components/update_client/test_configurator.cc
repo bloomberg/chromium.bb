@@ -74,7 +74,7 @@ class TestConnector : public service_manager::mojom::Connector {
                               service_manager::Identity("TestConnector"),
                               service_manager::CapabilitySet()),
                           interface_name, std::move(interface_pipe),
-                          base::BindRepeating(&base::DoNothing));
+                          base::DoNothing());
     std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
                             service_manager::Identity());
   }
