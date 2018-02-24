@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -602,7 +603,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   // Secure check failed.
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(&test_prefs,
+  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
+                                   &test_prefs,
                                    base::ThreadTaskRunnerHandle::Get());
   manager.SetIsSecureProxyDisallowedByCarrier(true);
   configurator()->Enable(manager, http_proxies);
@@ -741,7 +743,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   // Secure check failed.
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(&test_prefs,
+  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
+                                   &test_prefs,
                                    base::ThreadTaskRunnerHandle::Get());
   manager.SetIsSecureProxyDisallowedByCarrier(true);
   configurator()->Enable(manager, http_proxies);

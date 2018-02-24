@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/test/scoped_task_environment.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
@@ -28,7 +29,8 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   void SetUp() override {
     test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
     manager_.reset(new NetworkPropertiesManager(
-        &test_prefs, base::ThreadTaskRunnerHandle::Get()));
+        base::DefaultClock::GetInstance(), &test_prefs,
+        base::ThreadTaskRunnerHandle::Get()));
     manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();

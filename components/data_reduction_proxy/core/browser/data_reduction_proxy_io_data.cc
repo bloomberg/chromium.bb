@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
@@ -158,8 +159,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),
       bypass_stats_.get(), net_log_));
-  network_properties_manager_.reset(
-      new NetworkPropertiesManager(prefs, ui_task_runner_));
+  network_properties_manager_.reset(new NetworkPropertiesManager(
+      base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
 
 DataReductionProxyIOData::DataReductionProxyIOData(
@@ -174,8 +175,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       weak_factory_(this) {
   DCHECK(ui_task_runner_);
   DCHECK(io_task_runner_);
-  network_properties_manager_.reset(
-      new NetworkPropertiesManager(prefs, ui_task_runner_));
+  network_properties_manager_.reset(new NetworkPropertiesManager(
+      base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {

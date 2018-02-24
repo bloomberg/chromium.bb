@@ -19,6 +19,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -65,7 +66,8 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
   InitPrefMembers();
   NetworkPropertiesManager network_properties_manager(
-      test_context_->pref_service(), test_context_->task_runner());
+      base::DefaultClock::GetInstance(), test_context_->pref_service(),
+      test_context_->task_runner());
   test_context_->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -89,7 +91,8 @@ TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
 TEST_F(DataReductionProxySettingsTest, TestCanUseDataReductionProxy) {
   InitPrefMembers();
   NetworkPropertiesManager network_properties_manager(
-      test_context_->pref_service(), test_context_->task_runner());
+      base::DefaultClock::GetInstance(), test_context_->pref_service(),
+      test_context_->task_runner());
   test_context_->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -260,7 +263,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .Build();
 
   NetworkPropertiesManager network_properties_manager(
-      drp_test_context->pref_service(), drp_test_context->task_runner());
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
+      drp_test_context->task_runner());
   drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -286,7 +290,8 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // so it won't trigger MaybeActivateDataReductionProxy when the pref value
   // is set.
   NetworkPropertiesManager network_properties_manager(
-      test_context_->pref_service(), test_context_->task_runner());
+      base::DefaultClock::GetInstance(), test_context_->pref_service(),
+      test_context_->task_runner());
   test_context_->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 

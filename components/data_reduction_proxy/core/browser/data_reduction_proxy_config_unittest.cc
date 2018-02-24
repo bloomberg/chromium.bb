@@ -28,6 +28,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -434,7 +435,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
                                         event_creator());
 
     NetworkPropertiesManager network_properties_manager(
-        test_context_->pref_service(), test_context_->task_runner());
+        base::DefaultClock::GetInstance(), test_context_->pref_service(),
+        test_context_->task_runner());
     config.InitializeOnIOThread(test_context_->request_context_getter(),
                                 test_context_->request_context_getter(),
                                 &network_properties_manager);
