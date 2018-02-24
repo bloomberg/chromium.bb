@@ -36,8 +36,6 @@ class BrowserList {
   // Returns the last active browser for this list.
   Browser* GetLastActive() const;
 
-  // Browsers are added to the list before they have constructed windows,
-  // so the |window()| member function may return NULL.
   const_iterator begin() const { return browsers_.begin(); }
   const_iterator end() const { return browsers_.end(); }
 

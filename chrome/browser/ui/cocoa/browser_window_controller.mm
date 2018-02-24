@@ -658,9 +658,10 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 // Called right after our window became the main window.
 - (void)windowDidBecomeMain:(NSNotification*)notification {
-  // Set this window as active even if the previously active windows was the
+  // Set this window as active even if the previously active window was the
   // same one. This is needed for tracking visibility changes of a browser.
-  BrowserList::SetLastActive(browser_.get());
+  if (browser_->window())
+    BrowserList::SetLastActive(browser_.get());
 
   // Always saveWindowPositionIfNeeded when becoming main, not just
   // when |browser_| is not the last active browser. See crbug.com/536280 .
@@ -686,7 +687,8 @@ bool IsTabDetachingInFullscreenEnabled() {
   extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile())
       ->set_registry_for_active_window(nullptr);
 
-  BrowserList::NotifyBrowserNoLongerActive(browser_.get());
+  if (browser_->window())
+    BrowserList::NotifyBrowserNoLongerActive(browser_.get());
 }
 
 // Called when we have been minimized.
