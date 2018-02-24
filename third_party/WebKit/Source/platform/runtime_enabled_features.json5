@@ -300,7 +300,7 @@
     },
     {
       name: "CSSTypedOM",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSVariables2",

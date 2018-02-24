@@ -284,8 +284,37 @@ interface CDATASection : Text
     method constructor
 interface CSS
     static getter paintWorklet
+    static method Hz
+    static method Q
+    static method ch
+    static method cm
+    static method deg
+    static method dpcm
+    static method dpi
+    static method dppx
+    static method em
     static method escape
+    static method ex
+    static method fr
+    static method grad
+    static method in
+    static method kHz
+    static method mm
+    static method ms
+    static method number
+    static method pc
+    static method percent
+    static method pt
+    static method px
+    static method rad
+    static method rem
+    static method s
     static method supports
+    static method turn
+    static method vh
+    static method vmax
+    static method vmin
+    static method vw
     attribute @@toStringTag
     method constructor
 interface CSSConditionRule : CSSGroupingRule
@@ -302,6 +331,9 @@ interface CSSGroupingRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
+interface CSSImageValue : CSSStyleValue
+    attribute @@toStringTag
+    method constructor
 interface CSSImportRule : CSSRule
     attribute @@toStringTag
     getter href
@@ -324,6 +356,44 @@ interface CSSKeyframesRule : CSSRule
     method deleteRule
     method findRule
     setter name
+interface CSSKeywordValue : CSSStyleValue
+    attribute @@toStringTag
+    getter value
+    method constructor
+    setter value
+interface CSSMathInvert : CSSMathValue
+    attribute @@toStringTag
+    getter value
+    method constructor
+interface CSSMathMax : CSSMathValue
+    attribute @@toStringTag
+    getter values
+    method constructor
+interface CSSMathMin : CSSMathValue
+    attribute @@toStringTag
+    getter values
+    method constructor
+interface CSSMathNegate : CSSMathValue
+    attribute @@toStringTag
+    getter value
+    method constructor
+interface CSSMathProduct : CSSMathValue
+    attribute @@toStringTag
+    getter values
+    method constructor
+interface CSSMathSum : CSSMathValue
+    attribute @@toStringTag
+    getter values
+    method constructor
+interface CSSMathValue : CSSNumericValue
+    attribute @@toStringTag
+    getter operator
+    method constructor
+interface CSSMatrixComponent : CSSTransformComponent
+    attribute @@toStringTag
+    getter matrix
+    method constructor
+    setter matrix
 interface CSSMediaRule : CSSConditionRule
     attribute @@toStringTag
     getter media
@@ -334,6 +404,28 @@ interface CSSNamespaceRule : CSSRule
     getter namespaceURI
     getter prefix
     method constructor
+interface CSSNumericArray
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method values
+interface CSSNumericValue : CSSStyleValue
+    attribute @@toStringTag
+    method add
+    method constructor
+    method div
+    method equals
+    method max
+    method min
+    method mul
+    method sub
+    method to
+    method toSum
+    method type
 interface CSSPageRule : CSSRule
     attribute @@toStringTag
     getter selectorText
@@ -341,6 +433,29 @@ interface CSSPageRule : CSSRule
     method constructor
     setter selectorText
     setter style
+interface CSSPerspective : CSSTransformComponent
+    attribute @@toStringTag
+    getter length
+    method constructor
+    setter length
+interface CSSPositionValue : CSSStyleValue
+    attribute @@toStringTag
+    getter x
+    getter y
+    method constructor
+    setter x
+    setter y
+interface CSSRotate : CSSTransformComponent
+    attribute @@toStringTag
+    getter angle
+    getter x
+    getter y
+    getter z
+    method constructor
+    setter angle
+    setter x
+    setter y
+    setter z
 interface CSSRule
     attribute @@toStringTag
     attribute CHARSET_RULE
@@ -365,6 +480,32 @@ interface CSSRuleList
     method @@iterator
     method constructor
     method item
+interface CSSScale : CSSTransformComponent
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
+    setter x
+    setter y
+    setter z
+interface CSSSkew : CSSTransformComponent
+    attribute @@toStringTag
+    getter ax
+    getter ay
+    method constructor
+    setter ax
+    setter ay
+interface CSSSkewX : CSSTransformComponent
+    attribute @@toStringTag
+    getter ax
+    method constructor
+    setter ax
+interface CSSSkewY : CSSTransformComponent
+    attribute @@toStringTag
+    getter ay
+    method constructor
+    setter ay
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
@@ -384,6 +525,7 @@ interface CSSStyleRule : CSSRule
     attribute @@toStringTag
     getter selectorText
     getter style
+    getter styleMap
     method constructor
     setter selectorText
     setter style
@@ -397,9 +539,63 @@ interface CSSStyleSheet : StyleSheet
     method deleteRule
     method insertRule
     method removeRule
+interface CSSStyleValue
+    static method parse
+    static method parseAll
+    attribute @@toStringTag
+    method constructor
+    method toString
 interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
     method constructor
+interface CSSTransformComponent
+    attribute @@toStringTag
+    getter is2D
+    method constructor
+    method toMatrix
+    method toString
+    setter is2D
+interface CSSTransformValue : CSSStyleValue
+    attribute @@toStringTag
+    getter is2D
+    getter length
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method toMatrix
+    method values
+interface CSSTranslate : CSSTransformComponent
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
+    setter x
+    setter y
+    setter z
+interface CSSUnitValue : CSSNumericValue
+    attribute @@toStringTag
+    getter unit
+    getter value
+    method constructor
+    setter value
+interface CSSUnparsedValue : CSSStyleValue
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method values
+interface CSSVariableReferenceValue
+    attribute @@toStringTag
+    getter fallback
+    getter variable
+    method constructor
+    setter variable
 interface Cache
     attribute @@toStringTag
     method add
@@ -1265,6 +1461,7 @@ interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
     getter assignedSlot
+    getter attributeStyleMap
     getter attributes
     getter childElementCount
     getter children
@@ -1307,6 +1504,7 @@ interface Element : Node
     method attachShadow
     method before
     method closest
+    method computedStyleMap
     method constructor
     method createShadowRoot
     method getAttribute
@@ -5901,6 +6099,25 @@ interface StorageManager
     method estimate
     method persist
     method persisted
+interface StylePropertyMap : StylePropertyMapReadOnly
+    attribute @@toStringTag
+    method append
+    method clear
+    method constructor
+    method delete
+    method set
+interface StylePropertyMapReadOnly
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method values
 interface StyleSheet
     attribute @@toStringTag
     getter disabled
