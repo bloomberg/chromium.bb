@@ -2,6 +2,7 @@
 
 There are two kinds of configs: **global** and **ref-specific**.
 
+
 ## Global configs.
 
 Apply to the whole repo regardless of the ref (branch).
@@ -10,6 +11,7 @@ Located in [global](global) directory.
 
 Currently active version can be checked at
 https://luci-config.appspot.com/#/projects/chromium .
+
 
 ## Ref-specific configs.
 
