@@ -73,25 +73,38 @@ void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
                                 .bounds();
   CastSideSwipeOrigin side_swipe_origin =
       GetDragPosition(gesture_location, screen_bounds);
-  if (side_swipe_origin != CastSideSwipeOrigin::NONE ||
-      current_swipe_ != CastSideSwipeOrigin::NONE) {
-    switch (event->type()) {
-      case ui::ET_GESTURE_SCROLL_BEGIN:
+
+  // Detect the beginning of a system gesture swipe.
+  if (side_swipe_origin != CastSideSwipeOrigin::NONE &&
+      event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    for (auto* side_swipe_handler : swipe_gesture_handlers_) {
+      // Let the subscriber know about the swipe. If it is actually consumed by
+      // them, it will be marked as handled.
+      side_swipe_handler->OnSideSwipeBegin(side_swipe_origin, event);
+
+      // If handled, remember the origin and then stop the further propagation
+      // of the event.
+      if (event->handled()) {
         current_swipe_ = side_swipe_origin;
-        for (auto* side_swipe_handler : swipe_gesture_handlers_) {
-          side_swipe_handler->OnSideSwipeBegin(side_swipe_origin, event);
-        }
+        event->StopPropagation();
         break;
-      case ui::ET_GESTURE_SCROLL_END:
-      case ui::ET_SCROLL_FLING_START:
-        for (auto* side_swipe_handler : swipe_gesture_handlers_) {
-          side_swipe_handler->OnSideSwipeEnd(current_swipe_, event);
-        }
-        current_swipe_ = CastSideSwipeOrigin::NONE;
-        break;
-      default:
-        break;
+      }
     }
+    return;
+  }
+
+  // Detect the end of a system gesture swipe.
+  if (current_swipe_ != CastSideSwipeOrigin::NONE &&
+      (event->type() == ui::ET_SCROLL_FLING_START ||
+       event->type() == ui::ET_GESTURE_SCROLL_END)) {
+    for (auto* side_swipe_handler : swipe_gesture_handlers_) {
+      side_swipe_handler->OnSideSwipeEnd(current_swipe_, event);
+    }
+    current_swipe_ = CastSideSwipeOrigin::NONE;
+
+    // Prevent this event from being used for other gesture uses.
+    target->CleanupGestureState();
+    event->StopPropagation();
   }
 }
 

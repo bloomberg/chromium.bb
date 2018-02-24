@@ -79,6 +79,7 @@ if (use_aura && !is_cast_audio_only) {
   test("cast_graphics_unittests") {
     sources = [
       "cast_focus_client_aura_test.cc",
+      "cast_system_gesture_event_handler_test.cc",
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",
       "run_all_unittests.cc",
@@ -95,6 +96,7 @@ if (use_aura && !is_cast_audio_only) {
       "//ui/gfx",
       "//ui/gl:test_support",
       "//ui/views",
+      "//ui/wm",
     ]
   }
 }
