@@ -352,6 +352,7 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       'ToTLinuxUBSanVptr',
       'UBSanVptr Linux',
       # chromium.fyi
@@ -1027,6 +1028,10 @@
     ],
   },
   'content_browsertests': {
+    'remove_from': [
+      # chromium.clang
+      'linux-win_cross-rel',
+    ],
     'modifications': {
       # chromium.android
       'KitKat Tablet Tester': {
@@ -1305,6 +1310,8 @@
   },
   'content_unittests': {
     'remove_from': [
+      # chromium.clang
+      'linux-win_cross-rel',
       # chromium.fyi
       'Fuchsia (dbg)',
       'Fuchsia ARM64',
@@ -1376,6 +1383,7 @@
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       'ToTMacASan',
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
@@ -1577,6 +1585,8 @@
   },
   'extensions_unittests': {
     'remove_from': [
+      # chromium.clang
+      'linux-win_cross-rel',
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)',
       'Mac ASan 64 Tests (1)',
@@ -2469,6 +2479,7 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       # chromium.fyi
       'CrWinAsanCov tester',
       'Fuchsia (dbg)',
@@ -3382,6 +3393,7 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       # chromium.fyi
       'CrWinAsanCov tester',
       # On chromium.linux, unclear why these aren't run on Cast.
@@ -3916,6 +3928,7 @@
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       'ToTLinuxMSan',
       'ToTLinuxThinLTO',
       # chromium.fyi
