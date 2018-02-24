@@ -698,6 +698,10 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
   bufs[new_idx].ref_count++;
 }
 
+static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
+  return cm->frame_type == KEY_FRAME || cm->intra_only;
+}
+
 // Returns 1 if this frame might use mvs from some previous frame. This
 // function doesn't consider whether prev_frame is actually suitable (see
 // frame_can_use_prev_frame_mvs for that)
@@ -706,7 +710,7 @@ static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
 #if CONFIG_EXT_TILE
          !cm->large_scale_tile &&
 #endif  // CONFIG_EXT_TILE
-         !cm->intra_only;
+         !frame_is_intra_only(cm);
 }
 
 // Returns 1 if this frame really can use MVs from some previous frame.
@@ -763,10 +767,6 @@ static INLINE int mi_cols_aligned_to_sb(const AV1_COMMON *cm) {
 
 static INLINE int mi_rows_aligned_to_sb(const AV1_COMMON *cm) {
   return ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
-}
-
-static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
-  return cm->frame_type == KEY_FRAME || cm->intra_only;
 }
 
 #if CONFIG_CFL
