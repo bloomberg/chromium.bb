@@ -78,8 +78,9 @@ class FileProxyTest : public testing::Test {
 
  protected:
   void CreateProxy(uint32_t flags, FileProxy* proxy) {
-    proxy->CreateOrOpen(TestPath(), flags, Bind(&FileProxyTest::DidCreateOrOpen,
-                                                weak_factory_.GetWeakPtr()));
+    proxy->CreateOrOpen(
+        TestPath(), flags,
+        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
     RunLoop().Run();
     EXPECT_TRUE(proxy->IsValid());
   }
@@ -106,7 +107,7 @@ TEST_F(FileProxyTest, CreateOrOpen_Create) {
   FileProxy proxy(file_task_runner());
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_CREATE | File::FLAG_READ,
-      Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
@@ -124,7 +125,7 @@ TEST_F(FileProxyTest, CreateOrOpen_Open) {
   FileProxy proxy(file_task_runner());
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_OPEN | File::FLAG_READ,
-      Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   EXPECT_EQ(File::FILE_OK, error_);
@@ -136,7 +137,7 @@ TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
   FileProxy proxy(file_task_runner());
   proxy.CreateOrOpen(
       TestPath(), File::FLAG_OPEN | File::FLAG_READ,
-      Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_ERROR_NOT_FOUND, error_);
   EXPECT_FALSE(proxy.IsValid());
@@ -150,7 +151,7 @@ TEST_F(FileProxyTest, CreateOrOpen_AbandonedCreate) {
     FileProxy proxy(file_task_runner());
     proxy.CreateOrOpen(
         TestPath(), File::FLAG_CREATE | File::FLAG_READ,
-        Bind(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
+        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr()));
   }
   RunLoop().Run();
   ThreadRestrictions::SetIOAllowed(prev);
@@ -168,7 +169,7 @@ TEST_F(FileProxyTest, Close) {
   EXPECT_FALSE(base::Move(TestPath(), TestDirPath().AppendASCII("new")));
 #endif
 
-  proxy.Close(Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+  proxy.Close(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_FALSE(proxy.IsValid());
@@ -180,9 +181,9 @@ TEST_F(FileProxyTest, Close) {
 TEST_F(FileProxyTest, CreateTemporary) {
   {
     FileProxy proxy(file_task_runner());
-    proxy.CreateTemporary(
-        0 /* additional_file_flags */,
-        Bind(&FileProxyTest::DidCreateTemporary, weak_factory_.GetWeakPtr()));
+    proxy.CreateTemporary(0 /* additional_file_flags */,
+                          BindOnce(&FileProxyTest::DidCreateTemporary,
+                                   weak_factory_.GetWeakPtr()));
     RunLoop().Run();
 
     EXPECT_TRUE(proxy.IsValid());
@@ -191,7 +192,7 @@ TEST_F(FileProxyTest, CreateTemporary) {
 
     // The file should be writable.
     proxy.Write(0, "test", 4,
-                Bind(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
+                BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
     RunLoop().Run();
     EXPECT_EQ(File::FILE_OK, error_);
     EXPECT_EQ(4, bytes_written_);
@@ -247,7 +248,7 @@ TEST_F(FileProxyTest, GetInfo) {
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
   proxy.GetInfo(
-      Bind(&FileProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.
@@ -270,7 +271,8 @@ TEST_F(FileProxyTest, Read) {
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_READ, &proxy);
 
-  proxy.Read(0, 128, Bind(&FileProxyTest::DidRead, weak_factory_.GetWeakPtr()));
+  proxy.Read(0, 128,
+             BindOnce(&FileProxyTest::DidRead, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.
@@ -288,14 +290,14 @@ TEST_F(FileProxyTest, WriteAndFlush) {
   const char data[] = "foo!";
   int data_bytes = arraysize(data);
   proxy.Write(0, data, data_bytes,
-              Bind(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
+              BindOnce(&FileProxyTest::DidWrite, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
   EXPECT_EQ(data_bytes, bytes_written_);
 
   // Flush the written data.  (So that the following read should always
   // succeed.  On some platforms it may work with or without this flush.)
-  proxy.Flush(Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+  proxy.Flush(BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
@@ -322,8 +324,9 @@ TEST_F(FileProxyTest, MAYBE_SetTimes) {
   Time last_accessed_time = Time::Now() - TimeDelta::FromDays(12345);
   Time last_modified_time = Time::Now() - TimeDelta::FromHours(98765);
 
-  proxy.SetTimes(last_accessed_time, last_modified_time,
-                 Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+  proxy.SetTimes(
+      last_accessed_time, last_modified_time,
+      BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 
@@ -349,8 +352,8 @@ TEST_F(FileProxyTest, SetLength_Shrink) {
   // Run.
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
-  proxy.SetLength(7,
-                  Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+  proxy.SetLength(
+      7, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.
@@ -375,8 +378,8 @@ TEST_F(FileProxyTest, SetLength_Expand) {
   // Run.
   FileProxy proxy(file_task_runner());
   CreateProxy(File::FLAG_OPEN | File::FLAG_WRITE, &proxy);
-  proxy.SetLength(53,
-                  Bind(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+  proxy.SetLength(
+      53, BindOnce(&FileProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.

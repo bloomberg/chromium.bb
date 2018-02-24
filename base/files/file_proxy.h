@@ -40,17 +40,14 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   // This callback is used by methods that report only an error code. It is
   // valid to pass a null callback to some functions that takes a
   // StatusCallback, in which case the operation will complete silently.
-  typedef Callback<void(File::Error)> StatusCallback;
-
-  typedef Callback<void(File::Error,
-                        const FilePath&)> CreateTemporaryCallback;
-  typedef Callback<void(File::Error,
-                        const File::Info&)> GetFileInfoCallback;
-  typedef Callback<void(File::Error,
-                        const char* data,
-                        int bytes_read)> ReadCallback;
-  typedef Callback<void(File::Error,
-                        int bytes_written)> WriteCallback;
+  using StatusCallback = OnceCallback<void(File::Error)>;
+  using CreateTemporaryCallback =
+      OnceCallback<void(File::Error, const FilePath&)>;
+  using GetFileInfoCallback =
+      OnceCallback<void(File::Error, const File::Info&)>;
+  using ReadCallback =
+      OnceCallback<void(File::Error, const char* data, int bytes_read)>;
+  using WriteCallback = OnceCallback<void(File::Error, int bytes_written)>;
 
   FileProxy();
   explicit FileProxy(TaskRunner* task_runner);
@@ -64,7 +61,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   // This returns false if task posting to |task_runner| has failed.
   bool CreateOrOpen(const FilePath& file_path,
                     uint32_t file_flags,
-                    const StatusCallback& callback);
+                    StatusCallback callback);
 
   // Creates a temporary file for writing. The path and an open file are
   // returned. It is invalid to pass a null callback. The additional file flags
@@ -75,7 +72,7 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   //
   // This returns false if task posting to |task_runner| has failed.
   bool CreateTemporary(uint32_t additional_file_flags,
-                       const CreateTemporaryCallback& callback);
+                       CreateTemporaryCallback callback);
 
   // Returns true if the underlying |file_| is valid.
   bool IsValid() const;
@@ -98,16 +95,16 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
 
   // Proxies File::Close. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
-  bool Close(const StatusCallback& callback);
+  bool Close(StatusCallback callback);
 
   // Proxies File::GetInfo. The callback can't be null.
   // This returns false if task posting to |task_runner| has failed.
-  bool GetInfo(const GetFileInfoCallback& callback);
+  bool GetInfo(GetFileInfoCallback callback);
 
   // Proxies File::Read. The callback can't be null.
   // This returns false if |bytes_to_read| is less than zero, or
   // if task posting to |task_runner| has failed.
-  bool Read(int64_t offset, int bytes_to_read, const ReadCallback& callback);
+  bool Read(int64_t offset, int bytes_to_read, ReadCallback callback);
 
   // Proxies File::Write. The callback can be null.
   // This returns false if |bytes_to_write| is less than or equal to zero,
@@ -115,21 +112,21 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   bool Write(int64_t offset,
              const char* buffer,
              int bytes_to_write,
-             const WriteCallback& callback);
+             WriteCallback callback);
 
   // Proxies File::SetTimes. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
   bool SetTimes(Time last_access_time,
                 Time last_modified_time,
-                const StatusCallback& callback);
+                StatusCallback callback);
 
   // Proxies File::SetLength. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
-  bool SetLength(int64_t length, const StatusCallback& callback);
+  bool SetLength(int64_t length, StatusCallback callback);
 
   // Proxies File::Flush. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
-  bool Flush(const StatusCallback& callback);
+  bool Flush(StatusCallback callback);
 
  private:
   friend class FileHelper;
