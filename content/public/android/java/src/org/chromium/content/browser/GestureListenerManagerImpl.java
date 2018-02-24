@@ -33,6 +33,10 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
 
+    // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
+    // onFlingEnd() is called asynchronously.
+    private int mPotentiallyActiveFlingCount;
+
     private long mNativeGestureListenerManager;
 
     /**
@@ -74,6 +78,11 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onTouchDown();
     }
 
+    /** Checks if there's outstanding fling start events that hasn't got fling end yet. */
+    public boolean hasPotentiallyActiveFling() {
+        return mPotentiallyActiveFlingCount > 0;
+    }
+
     // WindowEventObserver
 
     @Override
@@ -112,8 +121,17 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         }
     }
 
-    /** Update all the listeners after fling end event occurred. */
-    public void updateOnFlingEnd() {
+    /* Called when ongoing fling gesture needs to be reset. */
+    public void resetFlingGesture() {
+        if (mPotentiallyActiveFlingCount > 0) {
+            onFlingEnd();
+            mPotentiallyActiveFlingCount = 0;
+        }
+    }
+
+    @CalledByNative
+    private void onFlingEnd() {
+        if (mPotentiallyActiveFlingCount > 0) mPotentiallyActiveFlingCount--;
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onFlingEndGesture(verticalScrollOffset(), verticalScrollExtent());
         }
@@ -121,6 +139,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onFlingStartEventConsumed() {
+        mPotentiallyActiveFlingCount++;
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onFlingStartGesture(verticalScrollOffset(), verticalScrollExtent());
         }

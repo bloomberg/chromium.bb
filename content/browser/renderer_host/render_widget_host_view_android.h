@@ -49,6 +49,7 @@ struct DidOverscrollParams;
 
 namespace content {
 class ContentViewCore;
+class GestureListenerManager;
 class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
 class RenderWidgetHostImpl;
@@ -269,6 +270,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       TextSuggestionHostAndroid* text_suggestion_host) {
     text_suggestion_host_ = text_suggestion_host;
   }
+  void set_gesture_listener_manager(GestureListenerManager* manager) {
+    gesture_listener_manager_ = manager;
+  }
 
   base::WeakPtr<RenderWidgetHostViewAndroid> GetWeakPtrAndroid();
 
@@ -415,6 +419,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   TapDisambiguator* tap_disambiguator_;
   SelectionPopupController* selection_popup_controller_;
   TextSuggestionHostAndroid* text_suggestion_host_;
+  GestureListenerManager* gesture_listener_manager_;
 
   // The background color of the widget.
   SkColor background_color_;

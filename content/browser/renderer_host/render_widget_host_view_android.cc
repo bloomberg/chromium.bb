@@ -32,6 +32,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/browser/android/content_view_core.h"
+#include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/selection_popup_controller.h"
@@ -176,6 +177,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       tap_disambiguator_(nullptr),
       selection_popup_controller_(nullptr),
       text_suggestion_host_(nullptr),
+      gesture_listener_manager_(nullptr),
       background_color_(SK_ColorWHITE),
       cached_background_color_(SK_ColorWHITE),
       view_(this, ui::ViewAndroid::LayoutType::MATCH_PARENT),
@@ -1485,9 +1487,9 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   if (overscroll_controller_)
     overscroll_controller_->OnGestureEventAck(event, ack_result);
 
-  auto* view = GetRenderViewHostDelegateView();
-  if (view)
-    view->GestureEventAck(event, ack_result);
+  if (!gesture_listener_manager_)
+    return;
+  gesture_listener_manager_->GestureEventAck(event, ack_result);
 }
 
 RenderViewHostDelegateView*
@@ -1794,8 +1796,9 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
 }
 
 void RenderWidgetHostViewAndroid::DidStopFlinging() {
-  if (content_view_core_)
-    content_view_core_->DidStopFlinging();
+  if (!gesture_listener_manager_)
+    return;
+  gesture_listener_manager_->DidStopFlinging();
 }
 
 RenderWidgetHostImpl* RenderWidgetHostViewAndroid::GetRenderWidgetHostImpl()
