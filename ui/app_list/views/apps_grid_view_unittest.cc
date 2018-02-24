@@ -811,7 +811,7 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   ui::GestureEvent scroll_begin(
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 1));
   ui::GestureEvent scroll_update(
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
@@ -820,7 +820,16 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   // Drag down on the app grid when on page 1, this should move the AppListView
   // and not move the AppsGridView.
   apps_grid_view_->OnGestureEvent(&scroll_begin);
-  apps_grid_view_->OnGestureEvent(&scroll_update);
+  EXPECT_FALSE(scroll_begin.handled());
+
+  // Simulate redirecting the event to app list view through views hierarchy.
+  app_list_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+
+  // The following scroll update events will be sent to the view that handled
+  // the scroll begin event.
+  app_list_view_->OnGestureEvent(&scroll_update);
+  EXPECT_TRUE(scroll_update.handled());
   ASSERT_TRUE(app_list_view_->is_in_drag());
   ASSERT_EQ(0, GetPaginationModel()->transition().progress);
 }
@@ -835,7 +844,7 @@ TEST_F(AppsGridViewTest,
   ui::GestureEvent scroll_begin(
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
-      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, -1));
   ui::GestureEvent scroll_update(
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
@@ -844,7 +853,9 @@ TEST_F(AppsGridViewTest,
   // Drag up on the app grid when on page 1, this should move the AppsGridView
   // but not the AppListView.
   apps_grid_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
   apps_grid_view_->OnGestureEvent(&scroll_update);
+  EXPECT_TRUE(scroll_update.handled());
   ASSERT_FALSE(app_list_view_->is_in_drag());
   ASSERT_NE(0, GetPaginationModel()->transition().progress);
 }

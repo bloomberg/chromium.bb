@@ -1576,7 +1576,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   gfx::Point start = view_->get_fullscreen_widget_for_test()
                          ->GetWindowBoundsInScreen()
                          .top_right();
-  int delta_y = 0;
+  int delta_y = 1;
   ui::GestureEvent start_event = ui::GestureEvent(
       start.x(), start.y(), ui::EF_NONE, timestamp,
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
