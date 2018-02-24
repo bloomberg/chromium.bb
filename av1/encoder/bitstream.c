@@ -954,6 +954,12 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
 static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
                        int mi_row) {
   if (cm->all_lossless) return;
+#if CONFIG_INTRABC
+  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
+    assert(cm->cdef_bits == 0);
+    return;
+  }
+#endif  // CONFIG_INTRABC
 
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
   const MB_MODE_INFO *mbmi =
