@@ -189,6 +189,17 @@ TEST_F(PrefetchDispatcherTest, AddCandidatePrefetchURLsTask) {
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
 }
 
+TEST_F(PrefetchDispatcherTest, RemovePrefetchURLsByClientId) {
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kTestNamespace, test_urls_);
+  RunUntilIdle();
+  prefetch_dispatcher()->RemovePrefetchURLsByClientId(
+      ClientId(kTestNamespace, test_urls_.front().id));
+  EXPECT_TRUE(dispatcher_task_queue()->HasPendingTasks());
+  RunUntilIdle();
+  EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
+  EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
+}
+
 TEST_F(PrefetchDispatcherTest, DispatcherDoesNothingIfFeatureNotEnabled) {
   base::test::ScopedFeatureList disabled_feature_list;
   disabled_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
