@@ -101,7 +101,7 @@
             on-settings-boolean-control-change="onMetricsReportingChange_"
             no-set-pref>
           <template is="dom-if" if="[[showRestart_]]" restamp>
-            <paper-button on-click="onRestartTap_" id="restart"
+            <paper-button on-tap="onRestartTap_" id="restart"
                 slot="more-actions">
               $i18n{restart}
             </paper-button>
