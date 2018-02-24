@@ -1084,6 +1084,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
 
+  // The set of SharedBitmapIds that have been reported as allocated to this
+  // interface. On closing this interface, the display compositor should drop
+  // ownership of the bitmaps with these ids to avoid leaking them.
+  std::set<viz::SharedBitmapId> owned_bitmaps_;
+
   bool next_resize_needs_resize_ack_ = false;
 
   std::unique_ptr<RenderFrameMetadataProvider> render_frame_metadata_provider_;

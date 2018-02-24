@@ -1841,6 +1841,12 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
     view_.reset();
   }
 
+  // The display compositor has ownership of shared memory for each
+  // SharedBitmapId that has been reported from the client. Since the client is
+  // gone that memory can be freed. If we don't then it would leak.
+  for (const auto& id : owned_bitmaps_)
+    viz::ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+
   process_->GetSharedBitmapAllocationNotifier()->RemoveObserver(this);
   process_->RemoveWidget(this);
   process_->RemoveRoute(routing_id_);
@@ -2005,11 +2011,13 @@ void RenderWidgetHostImpl::DidAllocateSharedBitmap(
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);
   }
+  owned_bitmaps_.insert(id);
 }
 
 void RenderWidgetHostImpl::DidDeleteSharedBitmap(
     const viz::SharedBitmapId& id) {
   viz::ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  owned_bitmaps_.erase(id);
 }
 
 void RenderWidgetHostImpl::OnResizeOrRepaintACK(

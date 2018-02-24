@@ -155,6 +155,10 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   gfx::Size enlarge_pass_texture_amount_;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
+  // The set of SharedBitmapIds that have been reported as allocated to this
+  // interface. On closing this interface, the display compositor should drop
+  // ownership of the bitmaps with these ids to avoid leaking them.
+  std::set<SharedBitmapId> owned_bitmaps_;
 
   base::WeakPtrFactory<TestLayerTreeFrameSink> weak_ptr_factory_;
 };
