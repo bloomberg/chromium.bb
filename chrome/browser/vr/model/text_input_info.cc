@@ -103,7 +103,7 @@ void TextInputInfo::ClampIndices() {
     selection_end = selection_start;
   composition_start = std::min(composition_start, len);
   composition_end = std::min(composition_end, len);
-  if (composition_end < composition_start) {
+  if (composition_end <= composition_start) {
     composition_start = kDefaultCompositionIndex;
     composition_end = kDefaultCompositionIndex;
   }
