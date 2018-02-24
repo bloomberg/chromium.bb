@@ -20,6 +20,7 @@
           "chrome::mojom::ChromeRenderFrame",
           "chrome::mojom::ContentSettingsRenderer",
           "chrome::mojom::PrerenderDispatcher",
+          "chrome::mojom::SandboxStatusExtension",
           "dom_distiller::mojom::DistillerPageNotifierService",
           "extensions::mojom::AppWindow",
           "safe_browsing::mojom::ThreatReporter",
