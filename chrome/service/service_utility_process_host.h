@@ -42,6 +42,8 @@ class ServiceManager;
 // Acts as the service-side host to a utility child process. A
 // utility process is a short-lived sandboxed process that is created to run
 // a specific task.
+// This class is expected to delete itself IFF one of its Start methods has been
+// called.
 class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
  public:
   // Consumers of ServiceUtilityProcessHost must implement this interface to
