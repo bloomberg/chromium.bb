@@ -65,6 +65,8 @@ BrowserList* BrowserList::GetInstance() {
 // static
 void BrowserList::AddBrowser(Browser* browser) {
   DCHECK(browser);
+  DCHECK(browser->window()) << "Browser should not be added to BrowserList "
+                               "until it is fully constructed.";
   GetInstance()->browsers_.push_back(browser);
 
   browser->RegisterKeepAlive();
@@ -76,6 +78,9 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserAdded(browser);
+
+  if (browser->window()->IsActive())
+    SetLastActive(browser);
 }
 
 // static
@@ -236,10 +241,18 @@ void BrowserList::MoveBrowsersInWorkspaceToFront(
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
+  BrowserList* instance = GetInstance();
+  DCHECK(std::find(instance->begin(), instance->end(), browser) !=
+         instance->end())
+      << "SetLastActive called for a browser before the browser was added to "
+         "the BrowserList.";
+  DCHECK(browser->window() != nullptr)
+      << "SetLastActive called for a browser with no window set.";
+
   base::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
 
-  RemoveBrowserFrom(browser, &GetInstance()->last_active_browsers_);
-  GetInstance()->last_active_browsers_.push_back(browser);
+  RemoveBrowserFrom(browser, &instance->last_active_browsers_);
+  instance->last_active_browsers_.push_back(browser);
 
   for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserSetLastActive(browser);
@@ -247,6 +260,14 @@ void BrowserList::SetLastActive(Browser* browser) {
 
 // static
 void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
+  BrowserList* instance = GetInstance();
+  DCHECK(std::find(instance->begin(), instance->end(), browser) !=
+         instance->end())
+      << "NotifyBrowserNoLongerActive called for a browser before the browser "
+         "was added to the BrowserList.";
+  DCHECK(browser->window() != nullptr)
+      << "NotifyBrowserNoLongerActive called for a browser with no window set.";
+
   for (BrowserListObserver& observer : observers_.Get())
     observer.OnBrowserNoLongerActive(browser);
 }
