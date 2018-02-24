@@ -16,7 +16,10 @@ OculusVRDeviceProvider::OculusVRDeviceProvider() : initialized_(false) {}
 OculusVRDeviceProvider::~OculusVRDeviceProvider() {
   device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
       device::GAMEPAD_SOURCE_OCULUS);
-  // TODO(billorr): Shut down VR.
+
+  if (session_)
+    ovr_Destroy(session_);
+  ovr_Shutdown();
 }
 
 void OculusVRDeviceProvider::Initialize(

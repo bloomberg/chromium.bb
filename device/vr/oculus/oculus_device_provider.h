@@ -34,7 +34,7 @@ class DEVICE_VR_EXPORT OculusVRDeviceProvider : public VRDeviceProvider {
   void CreateDevice();
 
   bool initialized_;
-  ovrSession session_;
+  ovrSession session_ = nullptr;
   std::unique_ptr<OculusDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(OculusVRDeviceProvider);
