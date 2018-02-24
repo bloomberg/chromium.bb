@@ -4681,6 +4681,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -4821,6 +4827,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -11377,6 +11389,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -11517,6 +11535,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14148,6 +14172,12 @@
             "cyan"
         ],
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14287,6 +14317,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14607,6 +14643,12 @@
         ],
         "critical_for_chrome": true,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -14747,6 +14789,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -16326,6 +16374,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -16466,6 +16520,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -17826,6 +17886,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -17966,6 +18032,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -29124,6 +29196,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -29264,6 +29342,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -29552,6 +29636,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -29692,6 +29782,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -41576,6 +41672,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -41716,6 +41818,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -44462,6 +44570,12 @@
             "parrot"
         ],
         "critical_for_chrome": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -44601,6 +44715,12 @@
         "hw_tests_override": null,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -44886,6 +45006,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -45026,6 +45152,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -46183,12 +46315,6 @@
             "peppy"
         ],
         "important": true,
-        "useflags": [
-            "-cros-debug",
-            "afdo_chrome_exp2",
-            "afdo_use",
-            "chrome_internal"
-        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -46328,12 +46454,6 @@
         "important": true,
         "paygen": false,
         "push_image": false,
-        "useflags": [
-            "-cros-debug",
-            "afdo_chrome_exp2",
-            "afdo_use",
-            "chrome_internal"
-        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -54976,6 +55096,12 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -55116,6 +55242,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -63076,6 +63208,12 @@
             "veyron_minnie"
         ],
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -63215,6 +63353,12 @@
         "important": true,
         "paygen": false,
         "push_image": false,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "afdo_use",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
