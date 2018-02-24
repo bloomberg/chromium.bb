@@ -126,7 +126,7 @@
     Press and hold <ph name="alt">$1</ph><ph name="separator">$2</ph><ph name="shift">$3</ph>, tap <ph name="tab">$4</ph> until you get to the window you want to open, then release.
   </message>
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_OVERVIEW" desc="Description of the command in keyboard shortcut viewer.">
-    Overview Mode
+    Overview mode
   </message>
   <message name="IDS_KSV_DESCRIPTION_KEYBOARD_BRIGHTNESS_DOWN" desc="Description of the command in keyboard shortcut viewer.">
     Dim keyboard (for backlit keyboards only)
@@ -495,13 +495,13 @@
     Turn brightness up
   </message>
   <message name="IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_OUT" desc="Description of the command in keyboard shortcut viewer.">
-    Zoom Out
+    Zoom out
   </message>
   <message name="IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_IN" desc="Description of the command in keyboard shortcut viewer.">
-    Zoom In
+    Zoom in
   </message>
   <message name="IDS_KSV_DESCRIPTION_VOLUME_MUTE" desc="Description of the command in keyboard shortcut viewer.">
-    Mute vlume
+    Mute volume
   </message>
   <message name="IDS_KSV_DESCRIPTION_VOLUME_DOWN" desc="Description of the command in keyboard shortcut viewer.">
     Volume down
