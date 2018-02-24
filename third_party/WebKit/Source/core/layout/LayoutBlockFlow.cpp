@@ -266,6 +266,7 @@ LayoutBlockFlow::LayoutBlockFlow(ContainerNode* node) : LayoutBlock(node) {
 LayoutBlockFlow::~LayoutBlockFlow() = default;
 
 LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(Document* document) {
+  // TODO(layout-ng): Find a way to check style.ForceLegacyLayout() Here
   LayoutBlockFlow* layout_block_flow = RuntimeEnabledFeatures::LayoutNGEnabled()
                                            ? new LayoutNGBlockFlow(nullptr)
                                            : new LayoutBlockFlow(nullptr);
