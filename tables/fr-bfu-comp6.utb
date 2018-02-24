@@ -42,7 +42,6 @@
 # Uncontracted Unified French Table
 # ---------------------------------
 
-#include unicode.dis
 undefined 0
 
 display ¨ 46
@@ -61,11 +60,6 @@ display ^ 4
 display \s 0
 display @ 345
 display ó 346
-#display à 12356
-#display ù 23456
-#display [ 12356
-#display ] 23456
-
 
 space \s 0      	# blank 32
 space \t 9 tab    # 9
@@ -200,7 +194,6 @@ sign _ 5-36          # souligné
 noback sign ´ 5
 sign \x0060 6   # accent aigu (`)
 sign \x007C 456 # barre verticale
-#sign \x0082 6       # [single low-9 quotation mark (break permitted here)
 sign \x0083 124      # [latin small letter f with hook (no break here)
 sign \x0084 56       # [double low-9 quotation mark (<control>)
 sign \x0085 36       # [horizontal ellipsis (next line)
@@ -237,7 +230,6 @@ sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
 uplow \x00c6\x00E6 345     #*ae
 sign \x00F0 12      # latin small letter eth
-#sign \x00F8 56      # latin small letter o with stroke
 sign \x00FE 245     # latin small letter thorn
 sign © 5-14				  # copyright
 sign ° 5-135			  # degré
@@ -262,8 +254,10 @@ sign \x007E 5-26  # 126 ~    tilde
 
 # unicode braille
 include braille-patterns.cti
+
 # other signs: 8 and 6 dots
 include fr-bfu-comp68.cti
+
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=[]
@@ -298,7 +292,6 @@ decpoint , 2
 
 math [ 12356
 math ] 23456
-#begnum [ 12356
 midnum [ 12356
 endnum [ 12356
 midnum ] 23456

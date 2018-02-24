@@ -100,7 +100,6 @@ nofor midendword aïen 1-12456-26
 nofor midendword berden 12-236-145-26
 nofor partword aïeu 1-12456-5
 nofor before voy begmidword aïk 1-12456-13
-#nofor before punctuation begword aïss 1-12456-2346
 nofor before voy midword ïss 12456-2346
 nofor before voyabr3 midword âss 16-2346
 nofor always ak 1-13
@@ -305,7 +304,6 @@ before con always en 26
 noback endword en 26
 nofor begmidword en 26
 nofor midendword en- 26-36
-#nofor midendword en' 26-3
 nofor word en) 26-356
 
 nofor begword œn 246-1345
@@ -437,8 +435,6 @@ midword inkl 35-13-123
 
 midword ien 256
 endword ien 24-26
-#nofor after con before conabr midword ien 256
-#nofor before voyabr3 midword iendr 256-1456
 
 midendword ieu 6
 
@@ -513,7 +509,6 @@ endword on 346
 always oom 135-135-134
 before con midword or 56
 endword or 56
-#nofor before conabr midword or 56
 nofor before voyabr3 midword orbl 56-45
 nofor midword orch 56-12356
 nofor before voyabr3 midword orcl 56-146
@@ -719,7 +714,6 @@ endword drant 145-1235-1456
 endword drants 145-1235-1456-234
 always drô 145-1235-1456
 endword en? 15-1345-26
-#always ien. 24-26-256
 before voy always propr 235-135-235
 before con begword ren 1235-26
 always ssè 234-234-2346
@@ -1957,8 +1951,6 @@ prfword transmission		356-134-3456
 prfword transmissions		356-134-3456-234
 prfword soumission		234-1256-134-3456
 prfword soumissions		324-1256-134-3456-234
-#nofor word trémion 356-123456-134-3456
-
 prfword missionnaire	134-3456-1235
 prfword missionnaires	134-3456-1235-234
 word mobile		134-12
@@ -2888,8 +2880,6 @@ word oudrir 1256-1456-24-1235
 
 begword ouï 1256-12456
 begmidword ouï- 1256-12456-36
-#word ouïe 1256-12456-15
-#word ouïes 1256-12456-156
 begword ouïm 1256-12456-134
 sufword ouïr 1256-12456-1235
 sufword ouïs 1256-12456-234
@@ -2981,7 +2971,6 @@ begword	déwatt	145-123456-2456-1-2456
 word	diwan	145-24-2456-1-1345
 prfword	wall	2456-1-123-123
 prfword	walls	2456-1-123-123-234
-#nofor after voy endword wire 2456-24-1235-15
 begword	gewurz	1245-15-2456-136-1235-1356
 word	grauwacke	12456-13-2456-1-14-13-15
 word	grewia	12456-15-2456-24-1
@@ -4169,7 +4158,6 @@ nofor begword frœ 16-246
 nofor before con begword from 16-2456
 word guèze 1245-136-2346-1356-15
 nofor begword hack 125-1-14-13
-#word haplorhine 125-1-1246-135-1235-125-24-1345-15
 nofor begmidword indemn 35-145-345-1345
 nofor midword kilo 13-24-123-135
 word landsmål 123-2-145-234-134-2-123
@@ -4236,7 +4224,6 @@ nofor postpunc "; 2356-23
 nofor postpunc ". 2356-235
 nofor postpunc "? 2356-26
 nofor postpunc "! 2356-235
-#ici
 nofor postpunc ] 356-12
 midword / 6-34
 
@@ -4248,7 +4235,6 @@ word / 6-34
 word * 6-35
 noback always -\s 56-36-0
 word - 56-36
-#noback always --\s 36-36-0
 word ? 56-26
 word ! 56-235
 word ( 56-236
@@ -4517,7 +4503,6 @@ compbrl .zip
 nofor pass4 @6-6-236[]!@0 @0-8-0
 nofor pass4 !@0[]@356-3-3 @0-8-0
 
-#word sons) 246-234-56-356
 word ce) 14-15-356
 word le) 123-15-356
 word me) 134-15-356
