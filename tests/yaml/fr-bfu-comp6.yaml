@@ -1,22 +1,3 @@
-# test data was provided by Kevin Derome in a mail to the mailing list
-# (https://www.freelists.org/post/liblouis-liblouisxml/error--backtranslate-frbfucomp6utb)
-
-table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
-flags: {testmode: forward}
-tests:
-  -
-    - château
-    - ⠉⠓⠡⠞⠑⠁⠥
-
-table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
-flags: {testmode: backward}
-tests:
-  -
-    - ⠉⠓⠡⠞⠑⠁⠥
-    - château
-# ------------------------------------------------------------------------------
-
-# Added by André-Abush CLAUSE, november 2017
 table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
 flags: {testmode: forward}
 tests:
@@ -58,6 +39,9 @@ tests:
     - ⠡⠛⠑⠆ ⠡⠍⠑⠆ ⠃⠡⠞⠊⠗⠆ ⠏⠡⠇⠑⠆ ⠣⠞⠗⠑⠆ ⠋⠕⠗⠣⠞⠆ ⠍⠣⠍⠑⠆ ⠗⠣⠧⠑⠆ ⠝⠁⠩⠞⠗⠑⠆ ⠏⠁⠗⠁⠩⠞⠗⠑⠆ ⠉⠹⠞⠑⠆ ⠏⠊⠟⠱⠗⠑
   - - aiguë, ambiguë, contiguë, exiguë, canoë; aïe, aïeul, coïncider, archaïque, haïr, ouïe, ouïr, astéroïde, maïs, paranoïa; capharnaüm
     - ⠁⠊⠛⠥⠫⠂ ⠁⠍⠃⠊⠛⠥⠫⠂ ⠉⠕⠝⠞⠊⠛⠥⠫⠂ ⠑⠭⠊⠛⠥⠫⠂ ⠉⠁⠝⠕⠫⠆ ⠁⠻⠑⠂ ⠁⠻⠑⠥⠇⠂ ⠉⠕⠻⠝⠉⠊⠙⠑⠗⠂ ⠁⠗⠉⠓⠁⠻⠟⠥⠑⠂ ⠓⠁⠻⠗⠂ ⠕⠥⠻⠑⠂ ⠕⠥⠻⠗⠂ ⠁⠎⠞⠿⠗⠕⠻⠙⠑⠂ ⠍⠁⠻⠎⠂ ⠏⠁⠗⠁⠝⠕⠻⠁⠆ ⠉⠁⠏⠓⠁⠗⠝⠁⠳⠍
+  - ["HCl", "⠨⠓⠨⠉⠇", xfail: true]
+  - ["McDonald", "⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙"]
+  - ["L’Europe", "⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑"]
 
 table: [tables/unicode.dis, tables/fr-bfu-comp6.utb]
 flags: {testmode: backward}
@@ -70,11 +54,11 @@ tests:
     - 4^2=16 4^(1+2-6)
   - - ⠠⠹⠤⠣⠶⠣ ⠠⠤⠣ ⠠⠡⠤⠦⠤⠹⠤⠣⠴⠶⠻
     - 4-2=2 -2 1-(-4-2)=7
-    - xfail: True
+    - xfail: true
   - - ⠠⠖ ⠠⠶ ⠠⠖⠡ ⠐⠿ ⠨⠁⠓⠖ ⠨⠑⠓⠖ ⠨⠕⠓⠖
     - + = +1 & Ah! Eh! Oh!
-  - ['⠠⠶⠹⠣', '=42']
-  - ['⠠⠶⠹⠲⠣', '=4.2']
+  - ["⠠⠶⠹⠣", "=42"]
+  - ["`⠶⠹⠲⠣", "=4.2"]
   - - ⠠⠶⠹⠂⠣
     - =4,2
   - ['⠖⠠⠡⠹', '!14']
@@ -99,3 +83,6 @@ tests:
   - - ⠁⠊⠛⠥⠫⠂ ⠁⠍⠃⠊⠛⠥⠫⠂ ⠉⠕⠝⠞⠊⠛⠥⠫⠂ ⠑⠭⠊⠛⠥⠫⠂ ⠉⠁⠝⠕⠫⠆ ⠁⠻⠑⠂ ⠁⠻⠑⠥⠇⠂ ⠉⠕⠻⠝⠉⠊⠙⠑⠗⠂ ⠁⠗⠉⠓⠁⠻⠟⠥⠑⠂ ⠓⠁⠻⠗⠂ ⠕⠥⠻⠑⠂ ⠕⠥⠻⠗⠂ ⠁⠎⠞⠿⠗⠕⠻⠙⠑⠂ ⠍⠁⠻⠎⠂ ⠏⠁⠗⠁⠝⠕⠻⠁⠆ ⠉⠁⠏⠓⠁⠗⠝⠁⠳⠍
     - aiguë, ambiguë, contiguë, exiguë, canoë; aïe, aïeul, coïncider, archaïque, haïr, ouïe, ouïr, astéroïde, maïs, paranoïa; capharnaüm
   - ["⠪⠕ ⠁⠝ ⠊⠞⠑⠍⠲", "• an item."]
+  - ["⠨⠓⠨⠉⠇", "HCl"]
+  - ["⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙", "McDonald"]
+  - ["⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑", "L'Europe"]
