@@ -178,13 +178,13 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
       : context_(context), origin_(origin) {
     // Delay for a moment after a value is set in anticipation
     // of other values being set, so changes are batched.
-    constexpr base::TimeDelta kCommitDefaultDelaySecs =
+    static constexpr base::TimeDelta kCommitDefaultDelaySecs =
         base::TimeDelta::FromSeconds(5);
 
     // To avoid excessive IO we apply limits to the amount of data being written
     // and the frequency of writes.
-    const int kMaxBytesPerHour = kPerStorageAreaQuota;
-    const int kMaxCommitsPerHour = 60;
+    static constexpr int kMaxBytesPerHour = kPerStorageAreaQuota;
+    static constexpr int kMaxCommitsPerHour = 60;
 
     LevelDBWrapperImpl::Options options;
     options.max_size = kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance;

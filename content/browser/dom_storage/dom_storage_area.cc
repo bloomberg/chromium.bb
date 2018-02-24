@@ -38,14 +38,10 @@ namespace content {
 
 namespace {
 
-// Delay for a moment after a value is set in anticipation
-// of other values being set, so changes are batched.
-const int kCommitDefaultDelaySecs = 5;
-
 // To avoid excessive IO we apply limits to the amount of data being written
 // and the frequency of writes. The specific values used are somewhat arbitrary.
-const int kMaxBytesPerHour = kPerStorageAreaQuota;
-const int kMaxCommitsPerHour = 60;
+constexpr int kMaxBytesPerHour = kPerStorageAreaQuota;
+constexpr int kMaxCommitsPerHour = 60;
 
 }  // namespace
 
@@ -581,11 +577,16 @@ base::TimeDelta DOMStorageArea::ComputeCommitDelay() const {
   if (s_aggressive_flushing_enabled_)
     return base::TimeDelta::FromSeconds(1);
 
+  // Delay for a moment after a value is set in anticipation
+  // of other values being set, so changes are batched.
+  static constexpr base::TimeDelta kCommitDefaultDelaySecs =
+      base::TimeDelta::FromSeconds(5);
+
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
-  base::TimeDelta delay = std::max(
-      base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs),
-      std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
-               data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
+  base::TimeDelta delay =
+      std::max(kCommitDefaultDelaySecs,
+               std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
+                        data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
   UMA_HISTOGRAM_LONG_TIMES("LocalStorage.CommitDelay", delay);
   return delay;
 }
