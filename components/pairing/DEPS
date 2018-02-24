@@ -3,6 +3,6 @@ include_rules = [
   "+device/bluetooth",
   "+mojo/public/cpp",
   "+net",  # For IOBuffer
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
   "+services/service_manager/public/cpp",
 ]

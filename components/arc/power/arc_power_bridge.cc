@@ -17,9 +17,9 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {

@@ -13,7 +13,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "ui/gfx/geometry/quaternion.h"
 
 namespace device {

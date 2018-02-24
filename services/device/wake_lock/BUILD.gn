@@ -19,7 +19,7 @@ source_set("wake_lock") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//ui/gfx",
   ]
 

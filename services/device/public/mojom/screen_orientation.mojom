@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/screen_orientation_lock_types.mojom";
+import "services/device/public/mojom/screen_orientation_lock_types.mojom";
 
 interface ScreenOrientation {
   LockOrientation(ScreenOrientationLockType orientation) =>

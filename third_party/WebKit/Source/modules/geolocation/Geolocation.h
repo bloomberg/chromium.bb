@@ -41,7 +41,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
-#include "services/device/public/interfaces/geolocation.mojom-blink.h"
+#include "services/device/public/mojom/geolocation.mojom-blink.h"
 
 namespace blink {
 

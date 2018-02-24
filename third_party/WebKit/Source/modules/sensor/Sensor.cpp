@@ -15,7 +15,7 @@
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "public/platform/TaskType.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-#include "services/device/public/interfaces/sensor.mojom-blink.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
 
 namespace blink {
 

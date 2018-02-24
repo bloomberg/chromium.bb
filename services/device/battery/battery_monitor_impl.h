@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/battery/battery_status_service.h"
-#include "services/device/public/interfaces/battery_monitor.mojom.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace device {
 

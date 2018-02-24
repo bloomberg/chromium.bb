@@ -58,7 +58,7 @@
 #include "device/vr/vr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/window_android.h"

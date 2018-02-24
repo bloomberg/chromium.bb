@@ -110,7 +110,7 @@ component("test_runner") {
     "//gpu/command_buffer/client:gles2_interface",
     "//media/midi:mojo",
     "//net",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//ui/display",

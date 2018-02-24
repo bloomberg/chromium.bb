@@ -22,7 +22,7 @@
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 
 using ::testing::_;
 using ::testing::Invoke;

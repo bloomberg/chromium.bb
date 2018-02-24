@@ -382,7 +382,7 @@ jumbo_source_set("browser_sources") {
     "//extensions/strings",
     "//google_apis",
     "//ppapi/features",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//ui/display",
@@ -459,7 +459,7 @@ source_set("browser_tests") {
     "//extensions/shell:browser_tests",
     "//net:test_support",
     "//services/device/public/cpp/hid",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 
@@ -621,7 +621,7 @@ source_set("unit_tests") {
     "//ipc:test_support",
     "//net:test_support",
     "//services/data_decoder/public/cpp:test_support",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//storage/browser:test_support",
     "//third_party/leveldatabase",
     "//third_party/zlib/google:zip",

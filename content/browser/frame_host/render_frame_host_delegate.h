@@ -22,8 +22,8 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
-#include "services/device/public/interfaces/geolocation_context.mojom.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/geolocation_context.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -32,7 +32,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
-#include "services/device/public/interfaces/nfc.mojom.h"
+#include "services/device/public/mojom/nfc.mojom.h"
 #endif
 
 class GURL;

@@ -14,8 +14,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/battery_monitor.mojom.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {

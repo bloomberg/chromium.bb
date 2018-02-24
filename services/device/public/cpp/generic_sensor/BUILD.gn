@@ -15,7 +15,7 @@ source_set("generic_sensor") {
   ]
 
   public_deps = [
-    "//services/device/public/interfaces:generic_sensor",
+    "//services/device/public/mojom:generic_sensor",
   ]
 
   deps = [

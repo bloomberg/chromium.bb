@@ -8,7 +8,7 @@
 #include <SensorsApi.h>
 #include <wrl/client.h>
 
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 

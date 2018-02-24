@@ -4,8 +4,8 @@
 
 #include "device/vr/test/fake_sensor_provider.h"
 
-#include "services/device/public/interfaces/sensor.mojom.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace device {
 

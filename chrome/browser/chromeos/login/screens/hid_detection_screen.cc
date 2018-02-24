@@ -18,7 +18,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 

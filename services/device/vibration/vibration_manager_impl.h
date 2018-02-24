@@ -5,7 +5,7 @@
 #ifndef SERVICES_DEVICE_VIBRATION_VIBRATION_MANAGER_IMPL_H_
 #define SERVICES_DEVICE_VIBRATION_VIBRATION_MANAGER_IMPL_H_
 
-#include "services/device/public/interfaces/vibration_manager.mojom.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
 
 namespace device {
 

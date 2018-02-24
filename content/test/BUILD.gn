@@ -325,7 +325,7 @@ jumbo_static_library("test_support") {
     "//media/capture/mojo:image_capture",
     "//mojo/edk/system",
     "//net:test_support",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
 
     # TODO(jam): remove this by adding a public header for the NetworkContext
     # public testing method.
@@ -898,8 +898,8 @@ test("content_browsertests") {
     "//services/catalog:lib",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/generic_sensor",
-    "//services/device/public/interfaces",
-    "//services/device/public/interfaces:generic_sensor",
+    "//services/device/public/mojom",
+    "//services/device/public/mojom:generic_sensor",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/test/echo/public/mojom",
@@ -1714,7 +1714,7 @@ test("content_unittests") {
     "//printing",
     "//services/catalog:lib",
     "//services/device/public/cpp/generic_sensor",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/file:lib",
     "//services/file/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
@@ -1871,7 +1871,7 @@ test("content_unittests") {
       "../renderer/p2p/ipc_network_manager_unittest.cc",
     ]
     deps += [
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
       "//third_party/libyuv",
       "//third_party/opus",
       "//third_party/webrtc/api:libjingle_peerconnection_api",

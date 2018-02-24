@@ -21,7 +21,7 @@
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "services/device/hid/hid_service.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

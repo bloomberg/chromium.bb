@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -18,8 +18,8 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/serial.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

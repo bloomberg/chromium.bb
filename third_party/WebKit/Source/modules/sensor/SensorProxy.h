@@ -15,8 +15,8 @@
 #include "platform/wtf/Vector.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
-#include "services/device/public/interfaces/sensor.mojom-blink.h"
-#include "services/device/public/interfaces/sensor_provider.mojom-blink.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
+#include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 
 namespace blink {
 

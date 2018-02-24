@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "content/public/browser/web_contents.h"
-#include "services/device/public/interfaces/nfc_provider.mojom.h"
+#include "services/device/public/mojom/nfc_provider.mojom.h"
 
 namespace content {
 

@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace content {
 class BrowserContext;

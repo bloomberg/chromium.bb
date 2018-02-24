@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/device/hid/test_report_descriptors.h"
 #include "services/device/public/cpp/hid/hid_report_descriptor.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

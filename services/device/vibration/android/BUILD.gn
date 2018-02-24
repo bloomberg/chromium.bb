@@ -22,7 +22,7 @@ android_library("vibration_manager_java") {
     "//base:base_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
-    "//services/device/public/interfaces:interfaces_java",
+    "//services/device/public/mojom:mojom_java",
     "//services/service_manager/public/java:service_manager_java",
   ]
 }

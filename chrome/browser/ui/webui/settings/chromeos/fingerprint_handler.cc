@@ -19,7 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 

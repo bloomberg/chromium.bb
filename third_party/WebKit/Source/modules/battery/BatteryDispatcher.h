@@ -9,7 +9,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/battery_status.h"
-#include "services/device/public/interfaces/battery_monitor.mojom-blink.h"
+#include "services/device/public/mojom/battery_monitor.mojom-blink.h"
 
 namespace blink {
 

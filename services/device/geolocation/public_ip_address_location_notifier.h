@@ -17,7 +17,7 @@
 #include "device/geolocation/network_location_request.h"
 #include "net/base/network_change_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

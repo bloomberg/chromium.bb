@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace device {
 

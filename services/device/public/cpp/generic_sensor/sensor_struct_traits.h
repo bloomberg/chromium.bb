@@ -6,7 +6,7 @@
 #define SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_STRUCT_TRAITS_H_
 
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace mojo {
 

@@ -20,7 +20,7 @@
 #include "components/drive/job_queue.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "net/base/network_change_notifier.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
 class PrefService;
 

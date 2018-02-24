@@ -10,7 +10,7 @@
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Noncopyable.h"
-#include "services/device/public/interfaces/wake_lock.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock.mojom-blink.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@ include_rules = [
   "+content/public/child",
   "+services/device/public/cpp/device_features.h",
   "+services/device/public/cpp/power_monitor",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
   "+services/network/public/cpp",
   "+services/resource_coordinator",
   "+services/service_manager",

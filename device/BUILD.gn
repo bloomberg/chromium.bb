@@ -127,7 +127,7 @@ test("device_unittests") {
     deps += [
       "//device/fido:test_support",
       "//services/device/public/cpp/hid",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/mojom",
     ]

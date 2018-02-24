@@ -5,7 +5,7 @@
 #ifndef DEVICE_GEOLOCATION_PUBLIC_CPP_GEOPOSITION_H_
 #define DEVICE_GEOLOCATION_PUBLIC_CPP_GEOPOSITION_H_
 
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

@@ -4,7 +4,7 @@
 
 #include "device/vr/test/fake_orientation_provider.h"
 
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 

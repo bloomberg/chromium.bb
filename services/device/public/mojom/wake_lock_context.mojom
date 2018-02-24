@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/wake_lock.mojom";
+import "services/device/public/mojom/wake_lock.mojom";
 
 // Context in which WakeLock instances operate.
 interface WakeLockContext {

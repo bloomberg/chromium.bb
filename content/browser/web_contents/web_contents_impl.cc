@@ -128,7 +128,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -152,7 +152,7 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
-#include "services/device/public/interfaces/nfc.mojom.h"
+#include "services/device/public/mojom/nfc.mojom.h"
 #else  // !OS_ANDROID
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/host_zoom_map_observer.h"

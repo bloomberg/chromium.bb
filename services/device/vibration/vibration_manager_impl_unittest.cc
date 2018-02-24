@@ -4,8 +4,8 @@
 
 #include "base/run_loop.h"
 #include "services/device/device_service_test_base.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/vibration_manager.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

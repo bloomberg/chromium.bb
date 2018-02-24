@@ -38,7 +38,7 @@ source_set("hid") {
     "//components/device_event_log",
     "//device/base",
     "//services/device/public/cpp/hid",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 
   if (is_linux && use_udev) {
@@ -85,7 +85,7 @@ fuzzer_test("hid_report_descriptor_fuzzer") {
   ]
   deps = [
     "//services/device/public/cpp/hid",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
   seed_corpus = "fuzz_corpus"
   libfuzzer_options = [ "max_len=2048" ]

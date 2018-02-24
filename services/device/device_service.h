@@ -11,20 +11,20 @@
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
-#include "services/device/public/interfaces/battery_monitor.mojom.h"
-#include "services/device/public/interfaces/fingerprint.mojom.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
-#include "services/device/public/interfaces/geolocation_config.mojom.h"
-#include "services/device/public/interfaces/geolocation_context.mojom.h"
-#include "services/device/public/interfaces/geolocation_control.mojom.h"
-#include "services/device/public/interfaces/nfc_provider.mojom.h"
-#include "services/device/public/interfaces/power_monitor.mojom.h"
-#include "services/device/public/interfaces/screen_orientation.mojom.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
-#include "services/device/public/interfaces/serial.mojom.h"
-#include "services/device/public/interfaces/time_zone_monitor.mojom.h"
-#include "services/device/public/interfaces/vibration_manager.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation_config.mojom.h"
+#include "services/device/public/mojom/geolocation_context.mojom.h"
+#include "services/device/public/mojom/geolocation_control.mojom.h"
+#include "services/device/public/mojom/nfc_provider.mojom.h"
+#include "services/device/public/mojom/power_monitor.mojom.h"
+#include "services/device/public/mojom/screen_orientation.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/public/mojom/time_zone_monitor.mojom.h"
+#include "services/device/public/mojom/vibration_manager.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/device/wake_lock/wake_lock_context.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -33,11 +33,11 @@
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #else
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-#include "services/device/public/interfaces/input_service.mojom.h"
+#include "services/device/public/mojom/input_service.mojom.h"
 #endif
 
 namespace base {

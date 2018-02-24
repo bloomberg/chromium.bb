@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 

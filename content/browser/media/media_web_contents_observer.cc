@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

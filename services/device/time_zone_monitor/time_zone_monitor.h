@@ -11,7 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/device/public/interfaces/time_zone_monitor.mojom.h"
+#include "services/device/public/mojom/time_zone_monitor.mojom.h"
 
 template <class T>
 class scoped_refptr;

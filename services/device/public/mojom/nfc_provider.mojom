@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/nfc.mojom";
+import "services/device/public/mojom/nfc.mojom";
 
 interface NFCProvider {
   // Gets an NFC that is associated with |host_id|. |host_id|

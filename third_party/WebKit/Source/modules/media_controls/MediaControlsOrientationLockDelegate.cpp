@@ -28,7 +28,7 @@
 #if defined(OS_ANDROID)
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_ANDROID)
 

@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

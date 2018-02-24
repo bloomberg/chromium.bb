@@ -10,7 +10,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "services/device/public/interfaces/battery_status.mojom.h"
+#include "services/device/public/mojom/battery_status.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

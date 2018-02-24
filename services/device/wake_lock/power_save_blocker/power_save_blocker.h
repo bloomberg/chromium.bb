@@ -12,7 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/view_android.h"

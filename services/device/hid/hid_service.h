@@ -20,7 +20,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "services/device/hid/hid_device_info.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

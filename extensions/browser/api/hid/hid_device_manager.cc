@@ -25,7 +25,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace hid = extensions::api::hid;

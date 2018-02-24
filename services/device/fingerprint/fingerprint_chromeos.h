@@ -11,7 +11,7 @@
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
 #include "services/device/fingerprint/fingerprint_export.h"
-#include "services/device/public/interfaces/fingerprint.mojom.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
 
 namespace device {
 

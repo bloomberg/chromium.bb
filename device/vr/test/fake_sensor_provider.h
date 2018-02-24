@@ -6,8 +6,8 @@
 #define DEVICE_VR_TEST_FAKE_SENSOR_PROVIDER_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace device {
 

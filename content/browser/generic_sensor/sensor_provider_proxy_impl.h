@@ -7,7 +7,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace content {
 

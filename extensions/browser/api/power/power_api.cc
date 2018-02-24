@@ -12,8 +12,8 @@
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {

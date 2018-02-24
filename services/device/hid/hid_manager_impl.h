@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/hid/hid_device_info.h"
 #include "services/device/hid/hid_service.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

@@ -267,7 +267,7 @@ static_library("content_shell_lib") {
     "//net:test_support",
     "//ppapi/features",
     "//sandbox",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",

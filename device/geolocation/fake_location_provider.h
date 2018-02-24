@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "device/geolocation/public/cpp/location_provider.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

@@ -8,8 +8,8 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "services/device/public/interfaces/sensor.mojom-blink.h"
-#include "services/device/public/interfaces/sensor_provider.mojom-blink.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
+#include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 
 namespace blink {
 

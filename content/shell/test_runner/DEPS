@@ -8,7 +8,7 @@ include_rules = [
   "+media/midi/midi_service.mojom.h",
   "+mojo/public",
   "+net/base",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
   "+skia",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/skia",

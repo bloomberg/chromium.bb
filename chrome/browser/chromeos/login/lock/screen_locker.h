@@ -20,7 +20,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/fingerprint.mojom.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 

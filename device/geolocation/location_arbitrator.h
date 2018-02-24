@@ -18,7 +18,7 @@
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 #include "url/gurl.h"
 
 namespace net {

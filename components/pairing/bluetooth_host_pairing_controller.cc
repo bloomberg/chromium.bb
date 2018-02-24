@@ -19,7 +19,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/io_buffer.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace pairing_chromeos {

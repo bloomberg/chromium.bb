@@ -8,8 +8,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
-#include "services/device/public/interfaces/geolocation_context.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation_service.mojom.h"
 
 namespace blink {

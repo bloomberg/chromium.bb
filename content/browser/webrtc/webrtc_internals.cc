@@ -23,8 +23,8 @@
 #include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 

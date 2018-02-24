@@ -18,7 +18,7 @@
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/loader/resource_handler.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace download {
 struct DownloadCreateInfo;

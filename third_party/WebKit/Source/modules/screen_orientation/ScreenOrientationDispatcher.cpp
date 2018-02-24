@@ -5,7 +5,7 @@
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 
 #include "public/platform/Platform.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace blink {

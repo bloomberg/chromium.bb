@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "services/device/public/interfaces/geolocation.mojom";
+import "services/device/public/mojom/geolocation.mojom";
 
 // GeolocationService provides a Geolocation. It exists in order to examine the
 // environment (permissions, etc.) before creating a Geolocation.

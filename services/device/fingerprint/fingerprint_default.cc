@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/device/fingerprint/fingerprint.h"
-#include "services/device/public/interfaces/fingerprint.mojom.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
 
 namespace device {
 

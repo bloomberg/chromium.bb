@@ -45,7 +45,7 @@ static_library("browser") {
     ":language_code_locator",
     "//base",
     "//net",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -61,7 +61,7 @@ source_set("unit_tests") {
     ":language_code_locator",
     "//base",
     "//base/test:test_support",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",

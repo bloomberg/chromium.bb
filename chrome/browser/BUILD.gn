@@ -1802,7 +1802,7 @@ jumbo_split_static_library("browser") {
     "//rlz/features",
     "//services/data_decoder/public/cpp",
     "//services/device/public/cpp:device_features",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/identity:lib",
     "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
@@ -3639,7 +3639,7 @@ jumbo_split_static_library("browser") {
       "//components/guest_view/browser",
       "//extensions/components/javascript_dialog_extensions_client",
       "//media/cast:net",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
     ]
   }
 
@@ -3888,7 +3888,7 @@ jumbo_split_static_library("browser") {
       "//media:media_features",
       "//ppapi/features",
       "//ppapi/proxy:ipc",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
       "//third_party/adobe/flash:flapper_version_h",
     ]
   }

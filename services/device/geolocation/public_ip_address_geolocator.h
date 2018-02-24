@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

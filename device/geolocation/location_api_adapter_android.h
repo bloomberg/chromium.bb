@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

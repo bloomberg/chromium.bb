@@ -21,6 +21,6 @@ source_set("geolocation") {
     "//device/geolocation",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 }

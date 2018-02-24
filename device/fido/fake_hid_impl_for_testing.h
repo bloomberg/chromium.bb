@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {

@@ -29,7 +29,7 @@ source_set("time_zone_monitor") {
   ]
 
   public_deps = [
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 
   if (is_android) {

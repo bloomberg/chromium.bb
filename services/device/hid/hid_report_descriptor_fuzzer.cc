@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "services/device/public/cpp/hid/hid_report_descriptor.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   device::HidReportDescriptor desc(std::vector<uint8_t>(data, data + size));

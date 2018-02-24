@@ -55,7 +55,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
-#include "services/device/public/interfaces/wake_lock_context.mojom.h"
+#include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
@@ -76,7 +76,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
-#include "services/device/public/interfaces/nfc.mojom.h"
+#include "services/device/public/mojom/nfc.mojom.h"
 #endif
 
 class GURL;

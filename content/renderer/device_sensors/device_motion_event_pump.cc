@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
 #include "device/sensors/public/cpp/motion_data.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 

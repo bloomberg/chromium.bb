@@ -6,8 +6,8 @@
 #define CONTENT_BROWSER_WAKE_LOCK_WAKE_LOCK_CONTEXT_HOST_H_
 
 #include "content/public/browser/web_contents.h"
-#include "services/device/public/interfaces/wake_lock_context.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {

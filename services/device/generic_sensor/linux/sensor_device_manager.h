@@ -8,7 +8,7 @@
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "device/base/device_monitor_linux.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 

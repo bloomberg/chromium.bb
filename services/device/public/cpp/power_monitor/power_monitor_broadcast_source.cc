@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {

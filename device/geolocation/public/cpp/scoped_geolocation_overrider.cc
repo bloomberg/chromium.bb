@@ -6,7 +6,7 @@
 
 #include "device/geolocation/public/cpp/geoposition.h"
 #include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace device {

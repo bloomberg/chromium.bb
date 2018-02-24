@@ -17,7 +17,7 @@
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/hid.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace extensions {
 

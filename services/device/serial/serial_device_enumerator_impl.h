@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "device/serial/serial_device_enumerator.h"
-#include "services/device/public/interfaces/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
 
 namespace device {
 

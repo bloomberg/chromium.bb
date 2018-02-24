@@ -49,7 +49,7 @@ if (is_win || is_linux || is_mac) {
     public_deps = [
       "//base",
       "//device/base",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
     ]
 
     deps = [

@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

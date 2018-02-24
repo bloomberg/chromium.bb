@@ -9,8 +9,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 
 // TODO(juncai): Move this file in a new
 // //services/device/public/cpp/generic_sensor:test_support source_set and

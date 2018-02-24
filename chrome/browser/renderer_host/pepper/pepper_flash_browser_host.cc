@@ -22,8 +22,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/time_conversion.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 

@@ -15,7 +15,7 @@
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace extensions {
 
