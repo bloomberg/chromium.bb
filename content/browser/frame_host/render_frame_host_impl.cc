@@ -3670,14 +3670,15 @@ void RenderFrameHostImpl::FailedNavigation(
   // completing an unload handler.
   ResetWaitingState();
 
-  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  CreateNetworkServiceDefaultFactoryAndObserve(
-      mojo::MakeRequest(&default_factory_info));
-
-  auto subresource_loader_factories =
-      std::make_unique<URLLoaderFactoryBundleInfo>(
-          std::move(default_factory_info),
-          std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>());
+  std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+    CreateNetworkServiceDefaultFactoryAndObserve(
+        mojo::MakeRequest(&default_factory_info));
+    subresource_loader_factories = std::make_unique<URLLoaderFactoryBundleInfo>(
+        std::move(default_factory_info),
+        std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo>());
+  }
 
   GetNavigationControl()->CommitFailedNavigation(
       common_params, request_params, has_stale_copy_in_cache, error_code,
