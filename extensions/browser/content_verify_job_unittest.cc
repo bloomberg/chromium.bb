@@ -10,7 +10,6 @@
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/content_hash_reader.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/constants.h"
@@ -36,16 +35,6 @@ enum ContentVerifyJobAsyncRunMode {
   // The contents become available before the hashes are ready.
   kHashesReadyBeforeContentRead,
 };
-
-scoped_refptr<ContentHashReader> CreateContentHashReader(
-    const Extension& extension,
-    const base::FilePath& extension_resource_path) {
-  return base::MakeRefCounted<ContentHashReader>(
-      extension.id(), extension.version(), extension.path(),
-      extension_resource_path,
-      ContentVerifierKey(kWebstoreSignaturesPublicKey,
-                         kWebstoreSignaturesPublicKeySize));
-}
 
 }  // namespace
 
@@ -73,10 +62,11 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
       std::string& resource_contents,
       ContentVerifyJobAsyncRunMode run_mode) {
     TestContentVerifyJobObserver observer(extension.id(), resource_path);
-    scoped_refptr<ContentHashReader> content_hash_reader =
-        CreateContentHashReader(extension, resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job =
-        new ContentVerifyJob(content_hash_reader.get(), base::DoNothing());
+    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
+        extension.id(), extension.version(), extension.path(), resource_path,
+        ContentVerifierKey(kWebstoreSignaturesPublicKey,
+                           kWebstoreSignaturesPublicKeySize),
+        base::DoNothing());
 
     auto run_content_read_step = [](ContentVerifyJob* verify_job,
                                     std::string* resource_contents) {

@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/content_hash_fetcher.h"
-#include "extensions/browser/content_hash_reader.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verifier_io_data.h"
 #include "extensions/browser/extension_registry.h"
@@ -124,8 +123,8 @@ ContentVerifyJob* ContentVerifier::CreateJobFor(
   // TODO(asargent) - we can probably get some good performance wins by having
   // a cache of ContentHashReader's that we hold onto past the end of each job.
   return new ContentVerifyJob(
-      new ContentHashReader(extension_id, data->version, extension_root,
-                            normalized_unix_path, delegate_->GetPublicKey()),
+      extension_id, data->version, extension_root, normalized_unix_path,
+      delegate_->GetPublicKey(),
       base::BindOnce(&ContentVerifier::VerifyFailed, this, extension_id));
 }
 
