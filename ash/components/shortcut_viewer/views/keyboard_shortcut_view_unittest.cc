@@ -74,4 +74,29 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   widget->CloseNow();
 }
 
+// Test that the top line in two views should be center aligned.
+TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
+  // Showing the widget.
+  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+
+  for (auto* item_view : GetShortcutViews()) {
+    DCHECK(item_view->child_count() == 2);
+
+    // The top lines in both |description_label_view_| and
+    // |shortcut_label_view_| should be center aligned. Only need to check one
+    // view in the top line, because StyledLabel always center align all the
+    // views in a line.
+    const views::View* description_view = item_view->child_at(0);
+    const views::View* shortcut_view = item_view->child_at(1);
+    const views::View* description_top_line_view =
+        description_view->child_at(0);
+    const views::View* shortcut_top_line_view = shortcut_view->child_at(0);
+    EXPECT_EQ(description_top_line_view->GetBoundsInScreen().CenterPoint().y(),
+              shortcut_top_line_view->GetBoundsInScreen().CenterPoint().y());
+  }
+
+  // Cleaning up.
+  widget->CloseNow();
+}
+
 }  // namespace keyboard_shortcut_viewer

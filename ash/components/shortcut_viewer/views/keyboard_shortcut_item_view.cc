@@ -23,10 +23,6 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
-// The width of |shortcut_label_view_| as a ratio of its parent view's width.
-// TODO(wutao): to be decided by UX specs.
-constexpr float kShortcutViewWitdhRatio = 0.618f;
-
 // Creates the separator view between bubble views of modifiers and key.
 std::unique_ptr<views::View> CreateSeparatorView() {
   constexpr SkColor kSeparatorColor =
@@ -117,32 +113,70 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
 }
 
 int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
-  const int shortcut_view_height =
-      shortcut_label_view_->GetHeightForWidth(w * kShortcutViewWitdhRatio);
-  const int description_view_height =
-      description_label_view_->GetHeightForWidth(w *
-                                                 (1 - kShortcutViewWitdhRatio));
-  return std::max(shortcut_view_height, description_view_height) +
-         GetInsets().height();
+  MaybeCalculateAndDoLayout(w);
+  return calculated_size_.height();
 }
 
 void KeyboardShortcutItemView::Layout() {
-  gfx::Rect content_bounds(GetContentsBounds());
-  if (content_bounds.IsEmpty())
+  MaybeCalculateAndDoLayout(GetLocalBounds().width());
+}
+
+void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
+  if (width == calculated_size_.width())
     return;
 
-  // TODO(wutao): addjust two views' bounds based on UX specs.
-  const int shortcut_view_width =
-      content_bounds.width() * kShortcutViewWitdhRatio;
-  const int description_view_width =
-      content_bounds.width() - shortcut_view_width;
-  const int height = GetHeightForWidth(content_bounds.width());
-  const int left = content_bounds.x();
-  const int top = content_bounds.y();
+  const gfx::Insets insets = GetInsets();
+  width -= insets.width();
+  if (width <= 0)
+    return;
+
+  constexpr int kDescriptionViewPreferredWidth = 210;
+  constexpr int kShortcutViewPreferredWidth = 268;
+  const int description_view_height =
+      description_label_view_->GetHeightForWidth(
+          kDescriptionViewPreferredWidth);
+  const int shortcut_view_height =
+      shortcut_label_view_->GetHeightForWidth(kShortcutViewPreferredWidth);
+
+  // Sets the bounds and layout in order to get the center points of the views
+  // making up the top lines in both the description and shortcut views.
+  // We want the center of the top lines in both views to align with each other.
+  description_label_view_->SetBounds(0, 0, kDescriptionViewPreferredWidth,
+                                     description_view_height);
+  shortcut_label_view_->SetBounds(0, 0, kShortcutViewPreferredWidth,
+                                  shortcut_view_height);
+
+  DCHECK(shortcut_label_view_->has_children() &&
+         description_label_view_->has_children());
+  const int description_view_top_line_center_offset_y =
+      description_label_view_->child_at(0)->bounds().CenterPoint().y();
+  const int shortcut_view_top_line_center_offset_y =
+      shortcut_label_view_->child_at(0)->bounds().CenterPoint().y();
+  // |shortcut_label_view_| could have bubble view in the top line, whose
+  // height is larger than normal text in |description_label_view_|. Otherwise,
+  // the top line height in the two views should be equal.
+  DCHECK_GE(shortcut_view_top_line_center_offset_y,
+            description_view_top_line_center_offset_y);
+  const int description_delta_y = shortcut_view_top_line_center_offset_y -
+                                  description_view_top_line_center_offset_y;
+
+  // Center align the top line in the two views.
+  const int left = insets.left();
+  const int top = insets.top();
+  // Left align the |description_label_view_|.
   description_label_view_->SetBoundsRect(
-      gfx::Rect(left, top, description_view_width, height));
-  shortcut_label_view_->SetBoundsRect(gfx::Rect(
-      left + description_view_width, top, shortcut_view_width, height));
+      gfx::Rect(left, top + description_delta_y, kDescriptionViewPreferredWidth,
+                description_view_height));
+  // Right align the |shortcut_label_view_|.
+  shortcut_label_view_->SetBoundsRect(
+      gfx::Rect(left + width - kShortcutViewPreferredWidth, top,
+                kShortcutViewPreferredWidth, shortcut_view_height));
+  // Add 2 * |description_delta_y| to balance the top and bottom paddings.
+  const int total_height =
+      std::max(shortcut_view_height,
+               description_view_height + 2 * description_delta_y) +
+      insets.height();
+  calculated_size_ = gfx::Size(width + insets.width(), total_height);
 }
 
 }  // namespace keyboard_shortcut_viewer
