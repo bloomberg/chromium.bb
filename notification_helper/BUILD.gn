@@ -39,6 +39,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//chrome/common:constants",
     "//chrome/install_static:install_static_util",
   ]
 }
