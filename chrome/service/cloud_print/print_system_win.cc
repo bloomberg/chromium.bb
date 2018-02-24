@@ -437,8 +437,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         const gfx::Size& render_dpi,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
       DCHECK(CurrentlyOnServiceIOThread());
-      std::unique_ptr<ServiceUtilityProcessHost> utility_host(
-          new ServiceUtilityProcessHost(this, client_task_runner.get()));
+      auto utility_host = std::make_unique<ServiceUtilityProcessHost>(
+          this, client_task_runner.get());
       // TODO(gene): For now we disabling autorotation for CloudPrinting.
       // Landscape/Portrait setting is passed in the print ticket and
       // server is generating portrait PDF always.
@@ -594,8 +594,8 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
     DCHECK(CurrentlyOnServiceIOThread());
-    std::unique_ptr<ServiceUtilityProcessHost> utility_host(
-        new ServiceUtilityProcessHost(this, client_task_runner.get()));
+    auto utility_host = std::make_unique<ServiceUtilityProcessHost>(
+        this, client_task_runner.get());
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
       ignore_result(utility_host.release());
@@ -608,8 +608,8 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   void GetPrinterSemanticCapsAndDefaultsImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
     DCHECK(CurrentlyOnServiceIOThread());
-    std::unique_ptr<ServiceUtilityProcessHost> utility_host(
-        new ServiceUtilityProcessHost(this, client_task_runner.get()));
+    auto utility_host = std::make_unique<ServiceUtilityProcessHost>(
+        this, client_task_runner.get());
     if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
       ignore_result(utility_host.release());

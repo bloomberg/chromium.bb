@@ -498,6 +498,8 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
         FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
     ReportUmaEvent(SERVICE_UTILITY_DISCONNECTED);
   }
+
+  // The child process has died for some reason. This host is no longer needed.
   delete this;
 }
 
@@ -574,6 +576,9 @@ void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
       FROM_HERE, base::Bind(&Client::OnRenderPDFPagesToMetafileDone,
                             client_.get(), success));
   pdf_to_emf_state_.reset();
+
+  // The child process has finished at this point. This host is done as well.
+  delete this;
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
@@ -585,6 +590,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(),
                             true, printer_name, caps_and_defaults));
+  // The child process disconnects itself and this host deletes itself via
+  // OnChildDisconnected().
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
@@ -597,6 +604,8 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
       FROM_HERE,
       base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults, client_.get(),
                  true, printer_name, caps_and_defaults));
+  // The child process disconnects itself and this host deletes itself via
+  // OnChildDisconnected().
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
@@ -608,6 +617,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
       FROM_HERE,
       base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
                  printer_name, printing::PrinterCapsAndDefaults()));
+  // The child process disconnects itself and this host deletes itself via
+  // OnChildDisconnected().
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
@@ -619,6 +630,8 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
       FROM_HERE, base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
                             client_.get(), false, printer_name,
                             printing::PrinterSemanticCapsAndDefaults()));
+  // The child process disconnects itself and this host deletes itself via
+  // OnChildDisconnected().
 }
 
 bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,
