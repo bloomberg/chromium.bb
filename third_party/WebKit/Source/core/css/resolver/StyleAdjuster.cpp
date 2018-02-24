@@ -665,7 +665,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     // TODO(layout-dev): Once LayoutNG handles inline content editable, we
     // should get rid of following code fragment.
-    else if (style.UserModify() != EUserModify::kReadOnly) {
+    else if (style.UserModify() != EUserModify::kReadOnly ||
+             (element && element->GetDocument().InDesignMode())) {
       style.SetForceLegacyLayout(true);
 
       if (style.Display() == EDisplay::kInline &&

@@ -202,6 +202,9 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
     return kReattach;
   }
 
+  if (old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout())
+    return kReattach;
+
   bool independent_equal = old_style->IndependentInheritedEqual(*new_style);
   bool non_independent_equal =
       old_style->NonIndependentInheritedEqual(*new_style);
