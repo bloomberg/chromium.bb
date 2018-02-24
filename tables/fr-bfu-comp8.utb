@@ -245,8 +245,16 @@ always	\x00A0	7
 include braille-patterns.cti
 
 # unofficial definitions
+## bullets (variants)
+noback sign \x2023 124578	‣ TRIANGULAR BULLET
+noback sign \x25E6 124578	◦ WHITE BULLET
+noback sign \x2043 124578	⁃ HYPHEN BULLET
+noback sign \x204C 124578	⁌ BLACK LEFTWARDS BULLET
+noback sign \x204D 124578	⁍ BLACK RIGHTWARDS BULLET
+noback sign \x2219 124578	∙ BULLET OPERATOR
+
 ## miscellaneous
-noback	sign	\x25E6	124578-126	WHITE BULLET
 noback	sign	\x25cf	35        	BLACK CIRCLE
 
+# mathematical symbols, Greek letters, arrows, etc. (on multiple cells)
 include fr-bfu-comp68.cti
