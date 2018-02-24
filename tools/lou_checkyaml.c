@@ -255,8 +255,6 @@ read_mode(yaml_parser_t *parser) {
 			mode |= compbrlAtCursor;
 		} else if (!strcmp((const char *)event.data.scalar.value, "dotsIO")) {
 			mode |= dotsIO;
-		} else if (!strcmp((const char *)event.data.scalar.value, "pass1Only")) {
-			mode |= pass1Only;
 		} else if (!strcmp((const char *)event.data.scalar.value, "compbrlLeftCursor")) {
 			mode |= compbrlLeftCursor;
 		} else if (!strcmp((const char *)event.data.scalar.value, "ucBrl")) {
@@ -294,7 +292,7 @@ parse_number(const char *number, char *name, int file_line) {
 }
 
 int *
-read_inPos(yaml_parser_t *parser, int wrdlen, int translen) {
+read_inPos(yaml_parser_t *parser, int translen) {
 	int *pos = malloc(sizeof(int) * translen);
 	int i = 0;
 	yaml_event_t event;
@@ -501,7 +499,7 @@ read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 			*typeform = read_typeforms(parser, wordLen);
 		} else if (!strcmp(option_name, "inputPos")) {
 			yaml_event_delete(&event);
-			*inPos = read_inPos(parser, wordLen, translationLen);
+			*inPos = read_inPos(parser, translationLen);
 		} else if (!strcmp(option_name, "outputPos")) {
 			yaml_event_delete(&event);
 			*outPos = read_outPos(parser, wordLen, translationLen);
@@ -733,7 +731,8 @@ main(int argc, char *argv[]) {
 	// FIXME: problem with this is that
 	// LOUIS_TABLEPATH=$(top_srcdir)/tables,... does not work anymore because
 	// $(top_srcdir) == .. (not an absolute path)
-	chdir(dir_name);
+	if (chdir(dir_name))
+		error(EXIT_FAILURE, EIO, "Cannot change directory to %s", dir_name);
 
 	// register custom table resolver
 	lou_registerTableResolver(&customTableResolver);

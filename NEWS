@@ -17,22 +17,32 @@ issues]].
 - Fix braille number input for Greek Braille thanks to Dave Mielke
 - Add a fix for "phad" according to UEB Rule 10.7.3 thanks to Anthony
   Tibbs
+- Updates to the Urdu tables thanks to Jake Kyle from Compass Braille
+- Updates to the Chinese braille table (~zh-tw.ctb~) thanks to
+  Bo-Cheng Jhan
 
 ** Other changes
 *** Improved documentation
 - Extend the documentation on multipass opcodes. Thanks to Dave Mielke
   and Christian Egli.
+- Remove the deprecation note of the '=' dots operand. While there are
+  still problems with back-translation we will not remove support for
+  it. See also the discussion in the [[https://github.com/liblouis/liblouis/issues/500][github issue]].
+
 *** Major overhaul of the YAML test suite
 - Due to problems in the cursor position computation the YAML test
   suite was improved to support proper testing of cursor position also
   in combination with input, output position and modes. In essence all
   of the liblouis API is now supported and can be tested via the YAML
   tests. Thanks to Christian Egli.
+
 ** Deprecation notice
 
 ** Backwards incompatible changes
 - The translation mode ~comp8Dots~ has been removed as it was never
   really implemented anyway
+- Support for the ~pass1Only~ flag has now been removed. Thanks to Bue
+  Vester-Andersen.
 
 ** New, renamed or removed tables
 *** New

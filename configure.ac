@@ -105,7 +105,7 @@ if test x"${MAKEINFO_FOUND}" = xyes
 then
   MAKEINFO_VERSION_REQ=5
   AC_MSG_CHECKING([for makeinfo version >= $MAKEINFO_VERSION_REQ])
-  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*$/\2/p'`
+  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*.*$/\2/p'`
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
     AC_MSG_RESULT([no])

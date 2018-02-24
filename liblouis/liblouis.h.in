@@ -100,7 +100,7 @@ typedef enum {
 	compbrlAtCursor = 2,
 	dotsIO = 4,
 	// for historic reasons 8 is free
-	pass1Only = 16,
+	pass1Only = 16,  // defunct
 	compbrlLeftCursor = 32,
 	ucBrl = 64,
 	noUndefinedDots = 128,

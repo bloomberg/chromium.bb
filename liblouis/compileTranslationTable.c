@@ -1413,8 +1413,7 @@ deallocateRuleNames(RuleName **ruleNames) {
 }
 
 static int
-compileSwapDots(FileInfo *nested, CharsString *source, CharsString *dest,
-		TranslationTableHeader *table) {
+compileSwapDots(FileInfo *nested, CharsString *source, CharsString *dest) {
 	int k = 0;
 	int kk = 0;
 	CharsString dotsSource;
@@ -1451,12 +1450,12 @@ compileSwap(FileInfo *nested, TranslationTableOpcode opcode, int *lastToken,
 	if (opcode == CTO_SwapCc || opcode == CTO_SwapCd) {
 		if (!parseChars(nested, &ruleChars, &matches)) return 0;
 	} else {
-		if (!compileSwapDots(nested, &matches, &ruleChars, *table)) return 0;
+		if (!compileSwapDots(nested, &matches, &ruleChars)) return 0;
 	}
 	if (opcode == CTO_SwapCc) {
 		if (!parseChars(nested, &ruleDots, &replacements)) return 0;
 	} else {
-		if (!compileSwapDots(nested, &replacements, &ruleDots, *table)) return 0;
+		if (!compileSwapDots(nested, &replacements, &ruleDots)) return 0;
 	}
 	if (!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0, newRuleOffset, newRule,
 				noback, nofor, table))
@@ -4242,39 +4241,11 @@ compileString(const char *inString, CharacterClass **characterClasses,
 }
 
 static int
-makeDoubleRule(TranslationTableOpcode opcode, TranslationTableOffset *singleRule,
-		TranslationTableOffset *doubleRule, TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, int noback, int nofor,
-		TranslationTableHeader **table) {
-	CharsString dots;
-	TranslationTableRule *rule;
-	if (!*singleRule || *doubleRule) return 1;
-	rule = (TranslationTableRule *)&(*table)->ruleArea[*singleRule];
-	memcpy(dots.chars, &rule->charsdots[0], rule->dotslen * CHARSIZE);
-	memcpy(&dots.chars[rule->dotslen], &rule->charsdots[0], rule->dotslen * CHARSIZE);
-	dots.length = 2 * rule->dotslen;
-	if (!addRule(NULL, opcode, NULL, &dots, 0, 0, newRuleOffset, newRule, noback, nofor,
-				table))
-		return 0;
-	*doubleRule = *newRuleOffset;
-	return 1;
-}
-
-static int
 setDefaults(TranslationTableHeader *table) {
-	//  makeDoubleRule (CTO_FirstWordItalRule,
-	//  &table->emphRules[emph1Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph1Rule][firstWordOffset]);
 	if (!table->emphRules[emph1Rule][lenPhraseOffset])
 		table->emphRules[emph1Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordUnderRule,
-	//  &table->emphRules[emph2Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph2Rule][firstWordOffset]);
 	if (!table->emphRules[emph2Rule][lenPhraseOffset])
 		table->emphRules[emph2Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordBoldRule,
-	//  &table->emphRules[emph3Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph3Rule][firstWordOffset]);
 	if (!table->emphRules[emph3Rule][lenPhraseOffset])
 		table->emphRules[emph3Rule][lenPhraseOffset] = 4;
 	if (table->numPasses == 0) table->numPasses = 1;

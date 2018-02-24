@@ -1048,9 +1048,10 @@ The dots operand defines the braille representation for the characters
 operand. It may also be specified as an equals sign (@samp{=}). This
 means that the the default representation for each character
 (@pxref{Character-Definition Opcodes}) within the sequence is to be
-used. Note however that the @samp{=} shortcut for dot patterns is
-deprecated. Dot patterns should be written out. Otherwise
-back-translation may not be correct.
+used. Note however that the @samp{=} shortcut for dot patterns has a
+known bug@footnote{See
+@url{https://github.com/liblouis/liblouis/issues/500#issuecomment-365753137}.}
+that might cause problems when back-translating.
 
 In what follows the word @samp{characters} means a sequence of one or
 more consecutive letters between spaces and/or punctuation marks.
@@ -2639,9 +2640,8 @@ positions as in the following example:
 @item mode
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
-@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{pass1Only},
-@samp{compbrlLeftCursor}, @samp{ucBrl}, @samp{noUndefinedDots} or
-@samp{partialTrans}.
+@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{compbrlLeftCursor},
+@samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
 
 For a description of the various translation mode flags, please see
 the function @ref{lou_translateString}.
@@ -3039,13 +3039,6 @@ patterns to be Unicode Braille rather than the liblouis representation.
 Note that you will not notice any change when setting @code{ucBrl}
 unless @code{dotsIO} is also set. @code{lou_dotsToChar} and
 @code{lou_backTranslate} recognize Unicode braille automatically.
-
-@item pass1Only
-When this bit is set, Only pass 1 of the translation will be run. This
-excludes all rules that use the @code{correct} and @code{multi-pass}
-opcodes as well as some rules using the @code{context} opcode. The flag
-was originally introduced for the benefit of screen reading programs,
-but has now been deprecated, and will be removed in the near future.
 
 @item partialTrans
 This flag specifies that back-translation input should be treated as an

@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <getopt.h>
 #include "liblouis.h"
 #include "internal.h"
@@ -53,7 +54,7 @@ const char version_etc_copyright[] =
 static void
 translate_input(int forward_translation, char *table_name) {
 	char charbuf[BUFSIZE];
-	char *outputbuf;
+	uint8_t *outputbuf;
 	size_t outlen;
 	widechar inbuf[BUFSIZE];
 	widechar transbuf[BUFSIZE];
