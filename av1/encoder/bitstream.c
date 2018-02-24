@@ -2192,7 +2192,6 @@ static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
         wb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
         ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0,
         sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0);
-    assert(sgrproj_info->xqd[1] == 0);
   } else {
     aom_write_primitive_refsubexpfin(
         wb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
