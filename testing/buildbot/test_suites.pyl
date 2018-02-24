@@ -740,7 +740,7 @@
         'hard_timeout': 600,
       },
     },
-    'cronet_unittests': {
+    'cronet_unittests_android': {
       'swarming': {
         'hard_timeout': 300,
       },

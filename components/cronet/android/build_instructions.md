@@ -74,7 +74,7 @@ command. For example:
 $ ./components/cronet/tools/cr_cronet.py build-test -f QuicTest#testQuicLoadUrl
 ```
 
-#### Running net_unittests and cronet_unittests
+#### Running net_unittests and cronet_unittests_android
 
 To run C++ and Java unit tests of net/ functionality:
 
@@ -87,8 +87,8 @@ $ ./out/Debug/bin/run_net_unittests --fast-local-dev
 For more information about running net_unittests, read
 [Android Test Instructions](../../../docs/android_test_instructions.md).
 
-There are a small number of C++ Cronet unit tests, called cronet_unittests, that
-can be run by following the above instructions and substituting cronet_unittests
+There are a small number of C++ Cronet unit tests, called cronet_unittests_android, that
+can be run by following the above instructions and substituting cronet_unittests_android
 for net_unittests.
 
 #### Running Cronet performance tests

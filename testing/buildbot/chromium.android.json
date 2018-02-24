@@ -181,7 +181,7 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "args": [
@@ -249,7 +249,7 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "swarming": {
@@ -429,7 +429,7 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "args": [

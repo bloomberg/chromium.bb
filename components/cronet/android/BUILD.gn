@@ -835,7 +835,7 @@ android_apk("cronet_perf_test_apk") {
   ]
 }
 
-test("cronet_unittests") {
+test("cronet_unittests_android") {
   sources = [
     "//components/cronet/android/cert/cert_verifier_cache_serializer_unittest.cc",
   ]

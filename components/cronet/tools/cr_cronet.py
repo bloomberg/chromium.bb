@@ -34,7 +34,7 @@ def test(out_dir, extra_options):
 
 
 def unittest(out_dir, extra_options):
-  return run(out_dir + '/bin/run_cronet_unittests ' + \
+  return run(out_dir + '/bin/run_cronet_unittests_android ' + \
              extra_options)
 
 
@@ -112,7 +112,7 @@ def main():
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
-    unit_target = 'cronet_unittests'
+    unit_target = 'cronet_unittests_android'
     gn_args = 'use_errorprone_java_compiler=true '
     gn_extra = ''
     out_dir_suffix = ''

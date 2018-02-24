@@ -446,6 +446,10 @@
     "label": "//components/cronet/ios/test:cronet_test",
     "type": "raw",
   },
+  "cronet_unittests_android": {
+    "label": "//components/cronet/android:cronet_unittests_android",
+    "type": "console_test_launcher",
+  },
   "cronet_unittests_ios": {
     "label": "//components/cronet/ios:cronet_unittests_ios",
     "type": "raw",
@@ -453,10 +457,6 @@
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
     "type": "additional_compile_target",
-  },
-  "cronet_unittests": {
-    "label": "//components/cronet/android:cronet_unittests",
-    "type": "console_test_launcher",
   },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
