@@ -32,6 +32,7 @@ namespace http://www.w3.org/1999/xhtml
     property appendChild
     property assignedSlot
     property attachShadow
+    property attributeStyleMap
     property attributes
     property autocapitalize
     property baseURI
@@ -50,6 +51,7 @@ namespace http://www.w3.org/1999/xhtml
     property cloneNode
     property closest
     property compareDocumentPosition
+    property computedStyleMap
     property contains
     property contentEditable
     property createShadowRoot
@@ -1126,6 +1128,7 @@ namespace http://www.w3.org/2000/svg
     property appendChild
     property assignedSlot
     property attachShadow
+    property attributeStyleMap
     property attributes
     property baseURI
     property before
@@ -1142,6 +1145,7 @@ namespace http://www.w3.org/2000/svg
     property cloneNode
     property closest
     property compareDocumentPosition
+    property computedStyleMap
     property contains
     property createShadowRoot
     property dataset
