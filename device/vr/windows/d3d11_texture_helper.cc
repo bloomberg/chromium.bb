@@ -241,6 +241,9 @@ D3D11TextureHelper::GetBackbuffer() {
 
 void D3D11TextureHelper::SetBackbuffer(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer) {
+  if (render_state_.target_texture_ != back_buffer) {
+    render_state_.render_target_view_ = nullptr;
+  }
   render_state_.target_texture_ = back_buffer;
 }
 

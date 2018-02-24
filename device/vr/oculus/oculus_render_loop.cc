@@ -24,7 +24,14 @@ OculusRenderLoop::OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid)
   DCHECK(main_thread_task_runner_);
 }
 
-OculusRenderLoop::~OculusRenderLoop() {}
+OculusRenderLoop::~OculusRenderLoop() {
+  Stop();
+}
+
+void OculusRenderLoop::CleanUp() {
+  submit_client_ = nullptr;
+  binding_.Close();
+}
 
 void OculusRenderLoop::SubmitFrame(int16_t frame_index,
                                    const gpu::MailboxHolder& mailbox,
@@ -56,14 +63,13 @@ void OculusRenderLoop::SubmitFrameWithTextureHandle(
     ovrTextureSwapChainDesc desc = {};
     desc.Type = ovrTexture_2D;
     desc.ArraySize = 1;
-    // TODO(billorr): Use SRGB, and do color conversion when we copy.
-    desc.Format = OVR_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
     desc.Width = source_size_.width();
     desc.Height = source_size_.height();
     desc.MipLevels = 1;
     desc.SampleCount = 1;
     desc.StaticImage = ovrFalse;
-    desc.MiscFlags = ovrTextureMisc_None;
+    desc.MiscFlags = ovrTextureMisc_DX_Typeless;
     desc.BindFlags = ovrTextureBind_DX_RenderTarget;
     ovr_CreateTextureSwapChainDX(session_, texture_helper_.GetDevice().Get(),
                                  &desc, &texture_swap_chain_);
@@ -76,11 +82,12 @@ void OculusRenderLoop::SubmitFrameWithTextureHandle(
         session_, texture_swap_chain_, -1,
         IID_PPV_ARGS(texture.ReleaseAndGetAddressOf()));
     texture_helper_.SetBackbuffer(texture);
-    if (texture_helper_.CopyTextureToBackBuffer(false)) {
+
+    if (texture_helper_.CopyTextureToBackBuffer(true)) {
       copy_succeeded = true;
       ovrLayerEyeFov layer = {};
       layer.Header.Type = ovrLayerType_EyeFov;
-      layer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
+      layer.Header.Flags = 0;
       layer.ColorTexture[0] = texture_swap_chain_;
       DCHECK(source_size_.width() % 2 == 0);
       layer.Viewport[0] = {
