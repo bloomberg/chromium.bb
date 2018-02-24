@@ -314,25 +314,6 @@
       }
     ]
   },
-  "Blink Heap Incremental Markup": {
-    "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 6
-        }
-      }
-    ]
-  },
   "CFI Linux (icall)": {
     "gtest_tests": [
       {
@@ -8927,6 +8908,25 @@
   "chromeos-amd64-generic-rel-goma-canary": {
     "additional_compile_targets": [
       "chromiumos_preflight"
+    ]
+  },
+  "linux-blink-heap-incremental-marking": {
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 6
+        }
+      }
     ]
   },
   "linux-gcc-rel": {
