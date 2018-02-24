@@ -15,10 +15,6 @@ namespace base {
 class Clock;
 }  // namespace base
 
-namespace session_manager {
-class SessionManager;
-}  // namespace session_manager
-
 namespace chromeos {
 
 class NetworkStateHandler;
@@ -66,8 +62,7 @@ class SynchronousShutdownObjectContainerImpl
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         NetworkConnect* network_connect,
-        NetworkConnectionHandler* network_connection_handler,
-        session_manager::SessionManager* session_manager);
+        NetworkConnectionHandler* network_connection_handler);
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
@@ -79,8 +74,7 @@ class SynchronousShutdownObjectContainerImpl
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
         NetworkConnect* network_connect,
-        NetworkConnectionHandler* network_connection_handler,
-        session_manager::SessionManager* session_manager);
+        NetworkConnectionHandler* network_connection_handler);
     virtual ~Factory();
 
    private:
@@ -104,8 +98,7 @@ class SynchronousShutdownObjectContainerImpl
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,
-      NetworkConnectionHandler* network_connection_handler,
-      session_manager::SessionManager* session_manager);
+      NetworkConnectionHandler* network_connection_handler);
 
  private:
   NetworkStateHandler* network_state_handler_;

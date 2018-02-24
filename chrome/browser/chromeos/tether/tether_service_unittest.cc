@@ -103,13 +103,11 @@ class TestTetherService : public TetherService {
   TestTetherService(Profile* profile,
                     chromeos::PowerManagerClient* power_manager_client,
                     cryptauth::CryptAuthService* cryptauth_service,
-                    chromeos::NetworkStateHandler* network_state_handler,
-                    session_manager::SessionManager* session_manager)
+                    chromeos::NetworkStateHandler* network_state_handler)
       : TetherService(profile,
                       power_manager_client,
                       cryptauth_service,
-                      network_state_handler,
-                      session_manager) {}
+                      network_state_handler) {}
   ~TestTetherService() override {}
 
   int updated_technology_state_count() {
@@ -166,8 +164,7 @@ class TestTetherComponentFactory final
           managed_network_configuration_handler,
       chromeos::NetworkConnect* network_connect,
       chromeos::NetworkConnectionHandler* network_connection_handler,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      session_manager::SessionManager* session_manager) override {
+      scoped_refptr<device::BluetoothAdapter> adapter) override {
     active_tether_component_ = new FakeTetherComponentWithDestructorCallback(
         base::Bind(&TestTetherComponentFactory::OnActiveTetherComponentDeleted,
                    base::Unretained(this)));
@@ -336,8 +333,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   void CreateTetherService() {
     tether_service_ = base::WrapUnique(new TestTetherService(
         profile_.get(), fake_power_manager_client_.get(),
-        fake_cryptauth_service_.get(), network_state_handler(),
-        nullptr /* session_manager */));
+        fake_cryptauth_service_.get(), network_state_handler()));
 
     fake_notification_presenter_ =
         new chromeos::tether::FakeNotificationPresenter();
