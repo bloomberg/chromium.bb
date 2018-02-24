@@ -99,26 +99,8 @@ Canvas log:
     }
     3 : {
         commandIndex : 3
-        method : "saveLayer"
-        params : {
-            paint : {
-                color : "#7F000000"
-                filterLevel : "None"
-                flags : "none"
-                hinting : "Normal"
-                strokeCap : "Butt"
-                strokeJoin : "Miter"
-                strokeMiter : 4
-                strokeWidth : 0
-                styleName : "Fill"
-                textAlign : "Left"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
-            }
-            saveFlags : ""
-        }
+        method : "save"
+        params : undefined
     }
     4 : {
         commandIndex : 4
@@ -130,11 +112,6 @@ Canvas log:
     }
     5 : {
         commandIndex : 5
-        method : "save"
-        params : undefined
-    }
-    6 : {
-        commandIndex : 6
         method : "clipRect"
         params : {
             SkRegion::Op : "kIntersect_Op"
@@ -147,12 +124,12 @@ Canvas log:
             softClipEdgeStyle : false
         }
     }
-    7 : {
-        commandIndex : 7
+    6 : {
+        commandIndex : 6
         method : "drawRect"
         params : {
             paint : {
-                color : "#FF000000"
+                color : "#7F000000"
                 filterLevel : "Low"
                 flags : "AntiAlias"
                 hinting : "Normal"
@@ -175,13 +152,8 @@ Canvas log:
             }
         }
     }
-    8 : {
-        commandIndex : 8
-        method : "restore"
-        params : undefined
-    }
-    9 : {
-        commandIndex : 9
+    7 : {
+        commandIndex : 7
         method : "restore"
         params : undefined
     }

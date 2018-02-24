@@ -877,48 +877,40 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
       </g>
     </svg>
   )HTML");
-  LayoutObject* group_with_opacity =
-      GetLayoutObjectByElementId("groupWithOpacity");
-  const ObjectPaintProperties* group_with_opacity_properties =
-      group_with_opacity->FirstFragment().PaintProperties();
+
+  const auto* svg_clip = PaintPropertiesForElement("svgRoot")->OverflowClip();
+
+  const auto* group_with_opacity_properties =
+      PaintPropertiesForElement("groupWithOpacity");
   EXPECT_EQ(0.6f, group_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, group_with_opacity_properties->Effect()->OutputClip());
-  EXPECT_NE(nullptr, group_with_opacity_properties->Effect()->Parent());
+  EXPECT_EQ(svg_clip, group_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(EffectPaintPropertyNode::Root(),
+            group_with_opacity_properties->Effect()->Parent());
 
-  LayoutObject& rect_without_opacity =
-      *GetLayoutObjectByElementId("rectWithoutOpacity");
-  const auto* rect_without_opacity_properties =
-      rect_without_opacity.FirstFragment().PaintProperties();
-  EXPECT_EQ(nullptr, rect_without_opacity_properties);
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("rectWithoutOpacity"));
 
-  LayoutObject& rect_with_opacity =
-      *GetLayoutObjectByElementId("rectWithOpacity");
-  const ObjectPaintProperties* rect_with_opacity_properties =
-      rect_with_opacity.FirstFragment().PaintProperties();
+  const auto* rect_with_opacity_properties =
+      PaintPropertiesForElement("rectWithOpacity");
   EXPECT_EQ(0.4f, rect_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, rect_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(svg_clip, rect_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(group_with_opacity_properties->Effect(),
             rect_with_opacity_properties->Effect()->Parent());
 
   // Ensure that opacity nodes are created for LayoutSVGText which inherits from
   // LayoutSVGBlock instead of LayoutSVGModelObject.
-  LayoutObject& text_with_opacity =
-      *GetLayoutObjectByElementId("textWithOpacity");
-  const ObjectPaintProperties* text_with_opacity_properties =
-      text_with_opacity.FirstFragment().PaintProperties();
+  const auto* text_with_opacity_properties =
+      PaintPropertiesForElement("textWithOpacity");
   EXPECT_EQ(0.2f, text_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, text_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(svg_clip, text_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(group_with_opacity_properties->Effect(),
             text_with_opacity_properties->Effect()->Parent());
 
   // Ensure that opacity nodes are created for LayoutSVGTSpan which inherits
   // from LayoutSVGInline instead of LayoutSVGModelObject.
-  LayoutObject& tspan_with_opacity =
-      *GetLayoutObjectByElementId("tspanWithOpacity");
-  const ObjectPaintProperties* tspan_with_opacity_properties =
-      tspan_with_opacity.FirstFragment().PaintProperties();
+  const auto* tspan_with_opacity_properties =
+      PaintPropertiesForElement("tspanWithOpacity");
   EXPECT_EQ(0.1f, tspan_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, tspan_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(svg_clip, tspan_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(text_with_opacity_properties->Effect(),
             tspan_with_opacity_properties->Effect()->Parent());
 }
@@ -936,29 +928,24 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
     </div>
   )HTML");
 
-  LayoutObject& div_with_opacity =
-      *GetLayoutObjectByElementId("divWithOpacity");
-  const ObjectPaintProperties* div_with_opacity_properties =
-      div_with_opacity.FirstFragment().PaintProperties();
+  const auto* div_with_opacity_properties =
+      PaintPropertiesForElement("divWithOpacity");
   EXPECT_EQ(0.2f, div_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(nullptr, div_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, div_with_opacity_properties->Effect()->Parent());
 
-  LayoutObject& svg_root_with_opacity =
-      *GetLayoutObjectByElementId("svgRootWithOpacity");
-  const ObjectPaintProperties* svg_root_with_opacity_properties =
-      svg_root_with_opacity.FirstFragment().PaintProperties();
+  const auto* svg_root_with_opacity_properties =
+      PaintPropertiesForElement("svgRootWithOpacity");
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(div_with_opacity_properties->Effect(),
             svg_root_with_opacity_properties->Effect()->Parent());
 
-  LayoutObject& rect_with_opacity =
-      *GetLayoutObjectByElementId("rectWithOpacity");
-  const ObjectPaintProperties* rect_with_opacity_properties =
-      rect_with_opacity.FirstFragment().PaintProperties();
+  const auto* rect_with_opacity_properties =
+      PaintPropertiesForElement("rectWithOpacity");
   EXPECT_EQ(0.4f, rect_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, rect_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(svg_root_with_opacity_properties->OverflowClip(),
+            rect_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             rect_with_opacity_properties->Effect()->Parent());
 }
@@ -978,30 +965,22 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
     </svg>
   )HTML");
 
-  LayoutObject& svg_root_with_opacity =
-      *GetLayoutObjectByElementId("svgRootWithOpacity");
-  const ObjectPaintProperties* svg_root_with_opacity_properties =
-      svg_root_with_opacity.FirstFragment().PaintProperties();
+  const auto* svg_root_with_opacity_properties =
+      PaintPropertiesForElement("svgRootWithOpacity");
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, svg_root_with_opacity_properties->Effect()->Parent());
 
-  LayoutObject& foreign_object_with_opacity =
-      *GetDocument()
-           .getElementById("foreignObjectWithOpacity")
-           ->GetLayoutObject();
-  const ObjectPaintProperties* foreign_object_with_opacity_properties =
-      foreign_object_with_opacity.FirstFragment().PaintProperties();
+  const auto* foreign_object_with_opacity_properties =
+      PaintPropertiesForElement("foreignObjectWithOpacity");
   EXPECT_EQ(0.4f, foreign_object_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(svg_root_with_opacity_properties->OverflowClip(),
             foreign_object_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             foreign_object_with_opacity_properties->Effect()->Parent());
 
-  LayoutObject& span_with_opacity =
-      *GetLayoutObjectByElementId("spanWithOpacity");
-  const ObjectPaintProperties* span_with_opacity_properties =
-      span_with_opacity.FirstFragment().PaintProperties();
+  const auto* span_with_opacity_properties =
+      PaintPropertiesForElement("spanWithOpacity");
   EXPECT_EQ(0.5f, span_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(nullptr, span_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(foreign_object_with_opacity_properties->Effect(),
