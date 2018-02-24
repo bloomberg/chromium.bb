@@ -81,8 +81,7 @@ class FakeSynchronousShutdownObjectContainerFactory
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,
-      NetworkConnectionHandler* network_connection_handler,
-      session_manager::SessionManager* session_manager) override {
+      NetworkConnectionHandler* network_connection_handler) override {
     return base::WrapUnique(fake_synchronous_container_);
   }
 
@@ -162,7 +161,7 @@ class TetherComponentImplTest : public testing::Test {
         nullptr /* pref_service */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
         nullptr /* network_connect */, nullptr /* network_connection_handler */,
-        nullptr /* adapter */, nullptr /* session_manager */);
+        nullptr /* adapter */);
 
     test_observer_ = std::make_unique<TestTetherComponentObserver>();
     component_->AddObserver(test_observer_.get());

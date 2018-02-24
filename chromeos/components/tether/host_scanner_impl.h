@@ -19,11 +19,6 @@
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/session_manager/core/session_manager_observer.h"
-
-namespace session_manager {
-class SessionManager;
-}  // namespace session_manager
 
 namespace chromeos {
 
@@ -43,8 +38,7 @@ class TetherHostResponseRecorder;
 // received, they are stored in the HostScanCache passed to the constructor,
 // and observers are notified via HostScanner::Observer::ScanFinished().
 class HostScannerImpl : public HostScanner,
-                        public HostScannerOperation::Observer,
-                        public session_manager::SessionManagerObserver {
+                        public HostScannerOperation::Observer {
  public:
   class Observer {
    public:
@@ -53,7 +47,6 @@ class HostScannerImpl : public HostScanner,
 
   HostScannerImpl(
       NetworkStateHandler* network_state_handler,
-      session_manager::SessionManager* session_manager,
       TetherHostFetcher* tether_host_fetcher,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -79,9 +72,6 @@ class HostScannerImpl : public HostScanner,
           gms_core_notifications_disabled_devices,
       bool is_final_scan_result) override;
 
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override;
-
  private:
   friend class HostScannerImplTest;
   FRIEND_TEST_ALL_PREFIXES(HostScannerImplTest, TestScan_ResultsFromNoDevices);
@@ -105,7 +95,6 @@ class HostScannerImpl : public HostScanner,
   bool CanAvailableHostNotificationBeShown();
 
   NetworkStateHandler* network_state_handler_;
-  session_manager::SessionManager* session_manager_;
   TetherHostFetcher* tether_host_fetcher_;
   BleConnectionManager* connection_manager_;
   HostScanDevicePrioritizer* host_scan_device_prioritizer_;

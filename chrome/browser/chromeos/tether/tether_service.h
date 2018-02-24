@@ -37,10 +37,6 @@ class CryptAuthService;
 class RemoteDeviceProvider;
 }  // namespace cryptauth
 
-namespace session_manager {
-class SessionManager;
-}  // namespace session_manager
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
@@ -61,8 +57,7 @@ class TetherService : public KeyedService,
   TetherService(Profile* profile,
                 chromeos::PowerManagerClient* power_manager_client,
                 cryptauth::CryptAuthService* cryptauth_service,
-                chromeos::NetworkStateHandler* network_state_handler,
-                session_manager::SessionManager* session_manager);
+                chromeos::NetworkStateHandler* network_state_handler);
   ~TetherService() override;
 
   // Gets TetherService instance.
@@ -255,7 +250,6 @@ class TetherService : public KeyedService,
   chromeos::PowerManagerClient* power_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::NetworkStateHandler* network_state_handler_;
-  session_manager::SessionManager* session_manager_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>
       notification_presenter_;
   std::unique_ptr<chromeos::tether::GmsCoreNotificationsStateTrackerImpl>

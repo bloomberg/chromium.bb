@@ -126,13 +126,11 @@ TetherService::TetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
     cryptauth::CryptAuthService* cryptauth_service,
-    chromeos::NetworkStateHandler* network_state_handler,
-    session_manager::SessionManager* session_manager)
+    chromeos::NetworkStateHandler* network_state_handler)
     : profile_(profile),
       power_manager_client_(power_manager_client),
       cryptauth_service_(cryptauth_service),
       network_state_handler_(network_state_handler),
-      session_manager_(session_manager),
       notification_presenter_(
           std::make_unique<chromeos::tether::TetherNotificationPresenter>(
               profile_,
@@ -202,7 +200,7 @@ void TetherService::StartTetherIfPossible() {
               ->managed_network_configuration_handler(),
           chromeos::NetworkConnect::Get(),
           chromeos::NetworkHandler::Get()->network_connection_handler(),
-          adapter_, session_manager_);
+          adapter_);
 }
 
 chromeos::tether::GmsCoreNotificationsStateTracker*

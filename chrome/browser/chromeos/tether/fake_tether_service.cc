@@ -12,13 +12,11 @@ FakeTetherService::FakeTetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
     cryptauth::CryptAuthService* cryptauth_service,
-    chromeos::NetworkStateHandler* network_state_handler,
-    session_manager::SessionManager* session_manager)
+    chromeos::NetworkStateHandler* network_state_handler)
     : TetherService(profile,
                     power_manager_client,
                     cryptauth_service,
-                    network_state_handler,
-                    session_manager) {}
+                    network_state_handler) {}
 
 void FakeTetherService::StartTetherIfPossible() {
   if (GetTetherTechnologyState() !=

@@ -17,7 +17,6 @@
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
 
@@ -25,7 +24,6 @@ namespace tether {
 
 HostScannerImpl::HostScannerImpl(
     NetworkStateHandler* network_state_handler,
-    session_manager::SessionManager* session_manager,
     TetherHostFetcher* tether_host_fetcher,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -36,7 +34,6 @@ HostScannerImpl::HostScannerImpl(
     HostScanCache* host_scan_cache,
     base::Clock* clock)
     : network_state_handler_(network_state_handler),
-      session_manager_(session_manager),
       tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
@@ -47,13 +44,9 @@ HostScannerImpl::HostScannerImpl(
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
       clock_(clock),
-      weak_ptr_factory_(this) {
-  session_manager_->AddObserver(this);
-}
+      weak_ptr_factory_(this) {}
 
-HostScannerImpl::~HostScannerImpl() {
-  session_manager_->RemoveObserver(this);
-}
+HostScannerImpl::~HostScannerImpl() = default;
 
 bool HostScannerImpl::IsScanActive() {
   return is_fetching_hosts_ || host_scanner_operation_;
@@ -138,22 +131,6 @@ void HostScannerImpl::OnTetherAvailabilityResponse(
 
   if (is_final_scan_result)
     OnFinalScanResultReceived(scanned_device_list_so_far);
-}
-
-void HostScannerImpl::OnSessionStateChanged() {
-  if (!has_notification_been_shown_in_previous_scan_ ||
-      !session_manager_->IsScreenLocked()) {
-    return;
-  }
-
-  // If the screen has been locked, reset
-  // |has_notification_been_shown_in_previous_scan_|. This allows the
-  // notification to be shown once each time the device is unlocked. Without
-  // this change, the notification would only be shown once per user login.
-  // See https://crbug.com/813838.
-  PA_LOG(INFO) << "Screen was locked; the \"available hosts\" notification can "
-               << "be shown again after the next unlock.";
-  has_notification_been_shown_in_previous_scan_ = false;
 }
 
 void HostScannerImpl::SetCacheEntry(
@@ -279,7 +256,7 @@ bool HostScannerImpl::CanAvailableHostNotificationBeShown() {
       !was_notification_showing_when_current_scan_started_) {
     // If a notification was shown in a previous scan but was not visible when
     // the current scan started, it should not be shown because this could be
-    // considered spammy; see https://crbug.com/759078.
+    // considered spammy; see crbug.com/759078.
     return false;
   }
 

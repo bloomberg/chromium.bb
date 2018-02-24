@@ -28,7 +28,6 @@
 #include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/network/network_state_test.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "components/session_manager/core/session_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -196,7 +195,6 @@ class HostScannerImplTest : public NetworkStateTest {
 
     scanned_device_infos_from_current_scan_.clear();
 
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -220,8 +218,8 @@ class HostScannerImplTest : public NetworkStateTest {
     test_clock_ = std::make_unique<base::SimpleTestClock>();
 
     host_scanner_ = base::WrapUnique(new HostScannerImpl(
-        network_state_handler(), session_manager_.get(),
-        fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
+        network_state_handler(), fake_tether_host_fetcher_.get(),
+        fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
         gms_core_notifications_state_tracker_.get(),
@@ -250,8 +248,7 @@ class HostScannerImplTest : public NetworkStateTest {
       size_t test_device_index,
       bool is_final_scan_result,
       NotificationPresenter::PotentialHotspotNotificationState
-          expected_notification_state,
-      int num_expected_host_scan_histogram_samples = 1) {
+          expected_notification_state) {
     bool already_in_list = false;
     for (auto& scanned_device_info : scanned_device_infos_from_current_scan_) {
       if (scanned_device_info.remote_device.GetDeviceId() ==
@@ -293,9 +290,8 @@ class HostScannerImplTest : public NetworkStateTest {
         expected_event_type = HostScannerImpl::HostScanResultEventType::
             NOTIFICATION_SHOWN_MULTIPLE_HOSTS;
       }
-      histogram_tester_.ExpectUniqueSample(
-          "InstantTethering.HostScanResult", expected_event_type,
-          num_expected_host_scan_histogram_samples);
+      histogram_tester_.ExpectUniqueSample("InstantTethering.HostScanResult",
+                                           expected_event_type, 1);
     }
   }
 
@@ -376,19 +372,12 @@ class HostScannerImplTest : public NetworkStateTest {
     ConfigureService(ss.str());
   }
 
-  void SetScreenLockedState(bool is_locked) {
-    session_manager_->SetSessionState(
-        is_locked ? session_manager::SessionState::LOCKED
-                  : session_manager::SessionState::LOGIN_PRIMARY);
-  }
-
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
 
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<HostScanDevicePrioritizer> fake_host_scan_device_prioritizer_;
@@ -493,46 +482,6 @@ TEST_F(HostScannerImplTest, TestNotificationNotDisplayedMultipleTimes) {
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_FALSE(host_scanner_->IsScanActive());
-}
-
-TEST_F(HostScannerImplTest, TestNotificationDisplaysMultipleTimesWhenUnlocked) {
-  // Start a scan and receive a result.
-  host_scanner_->StartScan();
-  ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, true /* is_final_scan_result */,
-      NotificationPresenter::PotentialHotspotNotificationState::
-          SINGLE_HOTSPOT_NEARBY_SHOWN);
-  EXPECT_FALSE(host_scanner_->IsScanActive());
-
-  // The scan has completed, and the "single hotspot nearby" notification should
-  // be shown. Remove it.
-  EXPECT_EQ(
-      NotificationPresenter::PotentialHotspotNotificationState::
-          SINGLE_HOTSPOT_NEARBY_SHOWN,
-      fake_notification_presenter_->GetPotentialHotspotNotificationState());
-  fake_notification_presenter_->RemovePotentialHotspotNotification();
-
-  // Now, simulate locking then unlocking the device.
-  SetScreenLockedState(true /* is_locked */);
-  SetScreenLockedState(false /* is_locked */);
-
-  // Start another scan and receive a result.
-  host_scanner_->StartScan();
-  ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
-      0u /* test_device_index */, true /* is_final_scan_result */,
-      NotificationPresenter::PotentialHotspotNotificationState::
-          SINGLE_HOTSPOT_NEARBY_SHOWN,
-      2 /* num_expected_host_scan_histogram_samples */);
-  EXPECT_FALSE(host_scanner_->IsScanActive());
-
-  // The notification should be visible since the device was locked and unlocked
-  // since the last time it was shown.
-  EXPECT_EQ(
-      NotificationPresenter::PotentialHotspotNotificationState::
-          SINGLE_HOTSPOT_NEARBY_SHOWN,
-      fake_notification_presenter_->GetPotentialHotspotNotificationState());
 }
 
 TEST_F(HostScannerImplTest, TestScan_ResultsFromAllDevices) {
