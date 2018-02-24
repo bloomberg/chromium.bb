@@ -51,7 +51,6 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
  private:
   friend class NotificationPlatformBridgeWinImpl;
   friend class NotificationPlatformBridgeWinTest;
-  FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinTest, EncodeDecode);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinTest, Suppress);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, GetDisplayed);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
