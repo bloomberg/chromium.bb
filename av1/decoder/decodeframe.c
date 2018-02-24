@@ -2609,7 +2609,9 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
     pbi->need_resync = 0;
   }
 
+#if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
+#endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   cm->cur_frame->intra_only = 1;
 
