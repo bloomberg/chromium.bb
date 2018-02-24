@@ -75,7 +75,16 @@ class WebMediaStreamSource {
   };
 
   struct Capabilities {
+    // WebVector is used to store an optional range for the below numeric
+    // fields. All of them should have 0 or 2 values representing min/max.
+    WebVector<long> width;
+    WebVector<long> height;
+    WebVector<double> aspect_ratio;
+    WebVector<double> frame_rate;
     WebVector<bool> echo_cancellation;
+
+    WebMediaStreamTrack::FacingMode facing_mode =
+        WebMediaStreamTrack::FacingMode::kNone;
     WebString device_id;
   };
 

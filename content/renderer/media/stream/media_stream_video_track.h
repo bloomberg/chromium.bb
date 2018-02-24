@@ -97,7 +97,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   const VideoTrackAdapterSettings& adapter_settings() const {
     return *adapter_settings_;
   }
-  blink::WebMediaStreamTrack::FacingMode FacingMode() const;
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.

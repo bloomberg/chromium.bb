@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 dictionary MediaTrackCapabilities {
+    LongRange width;
+    LongRange height;
+    DoubleRange aspectRatio;
+    DoubleRange frameRate;
+    sequence<DOMString> facingMode;
     sequence<boolean> echoCancellation;
     DOMString deviceId;
     // W3C Image Capture API

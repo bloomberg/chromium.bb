@@ -311,10 +311,58 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
 
   auto platform_capabilities = component_->Source()->GetCapabilities();
   capabilities.setDeviceId(platform_capabilities.device_id);
-  Vector<bool> echo_cancellation;
-  for (bool value : platform_capabilities.echo_cancellation)
-    echo_cancellation.push_back(value);
-  capabilities.setEchoCancellation(echo_cancellation);
+
+  if (component_->Source()->GetType() == MediaStreamSource::kTypeAudio) {
+    Vector<bool> echo_cancellation;
+    for (bool value : platform_capabilities.echo_cancellation)
+      echo_cancellation.push_back(value);
+    capabilities.setEchoCancellation(echo_cancellation);
+  }
+
+  if (component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
+    LongRange width, height;
+    if (platform_capabilities.width.size() == 2) {
+      width.setMin(platform_capabilities.width[0]);
+      width.setMax(platform_capabilities.width[1]);
+    }
+    if (platform_capabilities.height.size() == 2) {
+      height.setMin(platform_capabilities.height[0]);
+      height.setMax(platform_capabilities.height[1]);
+    }
+    capabilities.setWidth(width);
+    capabilities.setHeight(height);
+
+    DoubleRange aspect_ratio, frame_rate;
+    if (platform_capabilities.aspect_ratio.size() == 2) {
+      aspect_ratio.setMin(platform_capabilities.aspect_ratio[0]);
+      aspect_ratio.setMax(platform_capabilities.aspect_ratio[1]);
+    }
+    if (platform_capabilities.frame_rate.size() == 2) {
+      frame_rate.setMin(platform_capabilities.frame_rate[0]);
+      frame_rate.setMax(platform_capabilities.frame_rate[1]);
+    }
+    capabilities.setAspectRatio(aspect_ratio);
+    capabilities.setFrameRate(frame_rate);
+
+    Vector<String> facing_mode;
+    switch (platform_capabilities.facing_mode) {
+      case WebMediaStreamTrack::FacingMode::kUser:
+        facing_mode.push_back("user");
+        break;
+      case WebMediaStreamTrack::FacingMode::kEnvironment:
+        facing_mode.push_back("environment");
+        break;
+      case WebMediaStreamTrack::FacingMode::kLeft:
+        facing_mode.push_back("left");
+        break;
+      case WebMediaStreamTrack::FacingMode::kRight:
+        facing_mode.push_back("right");
+        break;
+      default:
+        break;
+    }
+    capabilities.setFacingMode(facing_mode);
+  }
 }
 
 void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {

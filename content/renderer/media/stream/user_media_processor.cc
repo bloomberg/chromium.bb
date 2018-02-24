@@ -47,6 +47,10 @@
 namespace content {
 namespace {
 
+// TODO(c.padhi): Allow frame rates lower than 1Hz,
+// see https://crbug.com/814131.
+const float kMinDeviceCaptureFrameRate = 1.0f;
+
 void CopyFirstString(const blink::StringConstraint& constraint,
                      std::string* destination) {
   if (!constraint.Exact().IsEmpty())
@@ -106,6 +110,31 @@ void SurfaceHardwareEchoCancellationSetting(
     source->SetEchoCancellation(true);
 }
 
+blink::WebMediaStreamSource::Capabilities ComputeCapabilities(
+    const MediaStreamDevice& device,
+    const media::VideoCaptureFormats& formats,
+    bool is_device_capture) {
+  int max_width = 1;
+  int max_height = 1;
+  float min_frame_rate = is_device_capture ? kMinDeviceCaptureFrameRate : 0.0f;
+  float max_frame_rate = min_frame_rate;
+  for (const auto& format : formats) {
+    max_width = std::max(max_width, format.frame_size.width());
+    max_height = std::max(max_height, format.frame_size.height());
+    max_frame_rate = std::max(max_frame_rate, format.frame_rate);
+  }
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = blink::WebString::FromUTF8(device.id);
+  capabilities.width = {1, max_width};
+  capabilities.height = {1, max_height};
+  capabilities.aspect_ratio = {1.0 / max_height,
+                               static_cast<double>(max_width)};
+  capabilities.frame_rate = {min_frame_rate, max_frame_rate};
+  if (is_device_capture)
+    capabilities.facing_mode = ToWebFacingMode(device.video_facing);
+  return capabilities;
+}
+
 }  // namespace
 
 UserMediaRequest::UserMediaRequest(
@@ -157,12 +186,6 @@ class UserMediaProcessor::RequestInfo
   const AudioCaptureSettings& audio_capture_settings() const {
     return audio_capture_settings_;
   }
-  bool is_audio_content_capture() const {
-    return audio_capture_settings_.HasValue() && is_audio_content_capture_;
-  }
-  bool is_audio_device_capture() const {
-    return audio_capture_settings_.HasValue() && !is_audio_content_capture_;
-  }
   void SetAudioCaptureSettings(const AudioCaptureSettings& settings,
                                bool is_content_capture) {
     DCHECK(settings.HasValue());
@@ -172,11 +195,42 @@ class UserMediaProcessor::RequestInfo
   const VideoCaptureSettings& video_capture_settings() const {
     return video_capture_settings_;
   }
+  bool is_video_content_capture() const {
+    return video_capture_settings_.HasValue() && is_video_content_capture_;
+  }
+  bool is_video_device_capture() const {
+    return video_capture_settings_.HasValue() && !is_video_content_capture_;
+  }
   void SetVideoCaptureSettings(const VideoCaptureSettings& settings,
                                bool is_content_capture) {
     DCHECK(settings.HasValue());
     is_video_content_capture_ = is_content_capture;
     video_capture_settings_ = settings;
+  }
+
+  void SetDevices(MediaStreamDevices audio_devices,
+                  MediaStreamDevices video_devices) {
+    audio_devices_ = std::move(audio_devices);
+    video_devices_ = std::move(video_devices);
+  }
+
+  void AddVideoFormats(const std::string& device_id,
+                       media::VideoCaptureFormats formats) {
+    video_formats_map_[device_id] = std::move(formats);
+  }
+
+  // Do not store or delete the returned pointer.
+  media::VideoCaptureFormats* GetVideoFormats(const std::string& device_id) {
+    auto it = video_formats_map_.find(device_id);
+    CHECK(it != video_formats_map_.end());
+    return &it->second;
+  }
+
+  const MediaStreamDevices& audio_devices() const { return audio_devices_; }
+  const MediaStreamDevices& video_devices() const { return video_devices_; }
+
+  bool CanStartTracks() const {
+    return video_formats_map_.size() == video_devices_.size();
   }
 
   blink::WebMediaStream* web_stream() { return &web_stream_; }
@@ -218,6 +272,9 @@ class UserMediaProcessor::RequestInfo
   // Sources used in this request.
   std::vector<blink::WebMediaStreamSource> sources_;
   std::vector<MediaStreamSource*> sources_waiting_for_callback_;
+  std::map<std::string, media::VideoCaptureFormats> video_formats_map_;
+  MediaStreamDevices audio_devices_;
+  MediaStreamDevices video_devices_;
 };
 
 // TODO(guidou): Initialize request_result_name_ as a null blink::WebString.
@@ -608,24 +665,40 @@ void UserMediaProcessor::OnStreamGenerated(
     }
   }
 
-  DCHECK(!current_request_info_->web_request().IsNull());
-  blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
-      audio_devices.size());
-  CreateAudioTracks(audio_devices,
-                    &audio_track_vector);
+  current_request_info_->SetDevices(audio_devices, video_devices);
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
-      video_devices.size());
-  CreateVideoTracks(video_devices, &video_track_vector);
+  if (video_devices.empty()) {
+    StartTracks(label);
+    return;
+  }
 
-  blink::WebString blink_id = blink::WebString::FromUTF8(label);
-  current_request_info_->web_stream()->Initialize(blink_id, audio_track_vector,
-                                                  video_track_vector);
+  if (current_request_info_->is_video_content_capture()) {
+    for (const auto& video_device : video_devices) {
+      current_request_info_->AddVideoFormats(
+          video_device.id,
+          {current_request_info_->video_capture_settings().Format()});
+    }
+    StartTracks(label);
+    return;
+  }
 
-  // Wait for the tracks to be started successfully or to fail.
-  current_request_info_->CallbackOnTracksStarted(
-      base::Bind(&UserMediaProcessor::OnCreateNativeTracksCompleted,
-                 weak_factory_.GetWeakPtr(), label));
+  for (const auto& video_device : video_devices) {
+    GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
+        video_device.id,
+        base::BindOnce(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
+                       weak_factory_.GetWeakPtr(), label, video_device.id));
+  }
+}
+
+void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
+    const std::string& label,
+    const std::string& device_id,
+    const media::VideoCaptureFormats& formats) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(current_request_info_);
+  current_request_info_->AddVideoFormats(device_id, formats);
+  if (current_request_info_->CanStartTracks())
+    StartTracks(label);
 }
 
 void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
@@ -731,6 +804,9 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
     source.SetExtraData(CreateVideoSource(
         device, base::Bind(&UserMediaProcessor::OnLocalSourceStopped,
                            weak_factory_.GetWeakPtr())));
+    source.SetCapabilities(ComputeCapabilities(
+        device, *current_request_info_->GetVideoFormats(device.id),
+        current_request_info_->is_video_device_capture()));
     local_sources_.push_back(source);
   }
   return source;
@@ -832,6 +908,26 @@ MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(
   return new MediaStreamVideoCapturerSource(
       render_frame_->GetRoutingID(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params());
+}
+
+void UserMediaProcessor::StartTracks(const std::string& label) {
+  DCHECK(!current_request_info_->web_request().IsNull());
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
+      current_request_info_->audio_devices().size());
+  CreateAudioTracks(current_request_info_->audio_devices(), &audio_tracks);
+
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
+      current_request_info_->video_devices().size());
+  CreateVideoTracks(current_request_info_->video_devices(), &video_tracks);
+
+  blink::WebString blink_id = blink::WebString::FromUTF8(label);
+  current_request_info_->web_stream()->Initialize(blink_id, audio_tracks,
+                                                  video_tracks);
+
+  // Wait for the tracks to be started successfully or to fail.
+  current_request_info_->CallbackOnTracksStarted(
+      base::BindRepeating(&UserMediaProcessor::OnCreateNativeTracksCompleted,
+                          weak_factory_.GetWeakPtr(), label));
 }
 
 void UserMediaProcessor::CreateVideoTracks(
