@@ -284,7 +284,7 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   support->SubmitCompositorFrame(parent_id1.local_surface_id(),
                                  std::move(compositor_frame));
 
-  Surface* parent_surface = support->GetCurrentSurfaceForTesting();
+  Surface* parent_surface = support->GetLastCreatedSurfaceForTesting();
   EXPECT_TRUE(parent_surface->has_deadline());
   EXPECT_FALSE(parent_surface->HasActiveFrame());
   EXPECT_TRUE(parent_surface->HasPendingFrame());

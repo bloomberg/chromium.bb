@@ -94,28 +94,28 @@ class SurfaceSynchronizationTest : public testing::Test {
     return *supports_[kDisplayFrameSink];
   }
   Surface* display_surface() {
-    return display_support().GetCurrentSurfaceForTesting();
+    return display_support().GetLastCreatedSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& parent_support() {
     return *supports_[kParentFrameSink];
   }
   Surface* parent_surface() {
-    return parent_support().GetCurrentSurfaceForTesting();
+    return parent_support().GetLastCreatedSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& child_support1() {
     return *supports_[kChildFrameSink1];
   }
   Surface* child_surface1() {
-    return child_support1().GetCurrentSurfaceForTesting();
+    return child_support1().GetLastCreatedSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& child_support2() {
     return *supports_[kChildFrameSink2];
   }
   Surface* child_surface2() {
-    return child_support2().GetCurrentSurfaceForTesting();
+    return child_support2().GetLastCreatedSurfaceForTesting();
   }
 
   void CreateFrameSink(const FrameSinkId& frame_sink_id, bool is_root) {
@@ -1139,7 +1139,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Attempt to destroy the child surface. The surface must still exist since
   // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictCurrentSurface();
+  child_support1().EvictLastActivatedSurface();
   surface = GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
   EXPECT_TRUE(IsMarkedForDestruction(child_id));
@@ -1189,7 +1189,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrectionAfterDestruction) {
 
   // Attempt to destroy the child surface. The surface must still exist since
   // the parent needs it but it will be marked as destroyed.
-  child_support1().EvictCurrentSurface();
+  child_support1().EvictLastActivatedSurface();
   surface = GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
   EXPECT_TRUE(IsMarkedForDestruction(child_id));
@@ -1232,7 +1232,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
                                          MakeDefaultCompositorFrame());
 
   // Destroy the surface.
-  child_support1().EvictCurrentSurface();
+  child_support1().EvictLastActivatedSurface();
   frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
 
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
@@ -1551,7 +1551,7 @@ TEST_F(SurfaceSynchronizationTest, MissingActiveFrameWithLateDependencies) {
   EXPECT_FALSE(display_surface()->HasPendingFrame());
   EXPECT_TRUE(display_surface()->HasActiveFrame());
 
-  display_support().EvictCurrentSurface();
+  display_support().EvictLastActivatedSurface();
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
       MakeCompositorFrame({parent_id2}, empty_surface_ids(),
@@ -1943,7 +1943,6 @@ TEST_F(SurfaceSynchronizationTest, PreviousFrameSurfaceId) {
       frame_sink_manager().surface_manager()->GetSurfaceForId(parent_id2);
   EXPECT_FALSE(parent_surface2->HasActiveFrame());
   EXPECT_TRUE(parent_surface2->HasPendingFrame());
-  EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
 
   // Activate the pending frame in |parent_id2|. previous_frame_surface_id()
   // should still return |parent_id1|.
@@ -2323,6 +2322,58 @@ TEST_F(SurfaceSynchronizationTest, ObserveDependenciesUntilArrival) {
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+}
+
+// This test verifies that we don't mark the previous active surface for
+// destruction until the new surface activates.
+TEST_F(SurfaceSynchronizationTest,
+       MarkPreviousSurfaceForDestructionAfterActivation) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+
+  // Submit a CompositorFrame that has no dependencies.
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the CompositorFrame has been activated.
+  Surface* parent_surface1 = GetSurfaceForId(parent_id1);
+  EXPECT_TRUE(parent_surface1->HasActiveFrame());
+  EXPECT_FALSE(parent_surface1->HasPendingFrame());
+  EXPECT_THAT(parent_surface1->activation_dependencies(), IsEmpty());
+  EXPECT_FALSE(IsMarkedForDestruction(parent_id1));
+
+  parent_support().SubmitCompositorFrame(
+      parent_id2.local_surface_id(),
+      MakeCompositorFrame({arbitrary_id}, empty_surface_ids(),
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+
+  // Verify that the CompositorFrame to the new surface has not been activated.
+  Surface* parent_surface2 = GetSurfaceForId(parent_id2);
+  EXPECT_FALSE(parent_surface2->HasActiveFrame());
+  EXPECT_TRUE(parent_surface2->HasPendingFrame());
+  EXPECT_THAT(parent_surface2->activation_dependencies(),
+              UnorderedElementsAre(arbitrary_id));
+  EXPECT_FALSE(IsMarkedForDestruction(parent_id1));
+  EXPECT_FALSE(IsMarkedForDestruction(parent_id2));
+
+  // Advance BeginFrames to trigger a deadline.
+  for (int i = 0; i < 3; ++i) {
+    SendNextBeginFrame();
+    EXPECT_TRUE(parent_surface2->has_deadline());
+  }
+  SendNextBeginFrame();
+  EXPECT_FALSE(parent_surface2->has_deadline());
+
+  // Verify that the CompositorFrame has been activated.
+  EXPECT_TRUE(parent_surface2->HasActiveFrame());
+  EXPECT_FALSE(parent_surface2->HasPendingFrame());
+  EXPECT_THAT(parent_surface2->activation_dependencies(), IsEmpty());
+
+  // Verify that the old surface is now marked for destruction.
+  EXPECT_TRUE(IsMarkedForDestruction(parent_id1));
+  EXPECT_FALSE(IsMarkedForDestruction(parent_id2));
 }
 
 }  // namespace test

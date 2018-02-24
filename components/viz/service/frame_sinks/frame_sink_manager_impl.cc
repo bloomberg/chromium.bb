@@ -262,8 +262,8 @@ void FrameSinkManagerImpl::EvictSurfaces(
     auto it = support_map_.find(surface_id.frame_sink_id());
     if (it == support_map_.end())
       continue;
-    if (it->second->current_surface_id() == surface_id)
-      it->second->EvictCurrentSurface();
+    if (it->second->last_activated_surface_id() == surface_id)
+      it->second->EvictLastActivatedSurface();
   }
 }
 

@@ -58,10 +58,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  const SurfaceId& current_surface_id() const { return current_surface_id_; }
+  const SurfaceId& last_activated_surface_id() const {
+    return last_activated_surface_id_;
+  }
 
-  const LocalSurfaceId& local_surface_id() const {
-    return current_surface_id_.local_surface_id();
+  const LocalSurfaceId& last_activated_local_surface_id() const {
+    return last_activated_surface_id_.local_surface_id();
   }
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
@@ -103,7 +105,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                const SharedBitmapId& id);
   void DidDeleteSharedBitmap(const SharedBitmapId& id);
 
-  void EvictCurrentSurface();
+  void EvictLastActivatedSurface();
 
   // Attempts to submit a new CompositorFrame to |local_surface_id| and returns
   // whether the frame was accepted or the reason why it was rejected. If
@@ -133,7 +135,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     allow_copy_output_requests_ = true;
   }
 
-  Surface* GetCurrentSurfaceForTesting();
+  Surface* GetLastCreatedSurfaceForTesting();
 
   // Maps the |result| from MaybeSubmitCompositorFrame() to a human-readable
   // string.
@@ -178,7 +180,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SurfaceManager* const surface_manager_;
 
   const FrameSinkId frame_sink_id_;
-  SurfaceId current_surface_id_;
+  SurfaceId last_activated_surface_id_;
+  SurfaceId last_created_surface_id_;
 
   // If this contains a value then a surface reference from the top-level root
   // to SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()) was

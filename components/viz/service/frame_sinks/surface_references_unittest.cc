@@ -59,7 +59,7 @@ class SurfaceReferencesTest : public testing::Test {
   // Destroy Surface with |surface_id|.
   void DestroySurface(const SurfaceId& surface_id) {
     GetCompositorFrameSinkSupport(surface_id.frame_sink_id())
-        .EvictCurrentSurface();
+        .EvictLastActivatedSurface();
   }
 
   CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(
@@ -133,8 +133,6 @@ class SurfaceReferencesTest : public testing::Test {
     manager_->SetLocalClient(frame_sink_manager_client_.get());
   }
   void TearDown() override {
-    for (auto& support : supports_)
-      support.second->EvictCurrentSurface();
     supports_.clear();
     manager_.reset();
   }

@@ -1038,12 +1038,12 @@ TEST_F(HitTestAggregatorTest, DiscardedSurfaces) {
   EXPECT_TRUE(hit_test_manager()->GetActiveHitTestRegionList(c_surface_id));
 
   // Discard Surface and ensure active count goes down.
-  support2->EvictCurrentSurface();
+  support2->EvictLastActivatedSurface();
   surface_manager()->GarbageCollectSurfaces();
   EXPECT_TRUE(hit_test_manager()->GetActiveHitTestRegionList(e_surface_id));
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(c_surface_id));
 
-  support()->EvictCurrentSurface();
+  support()->EvictLastActivatedSurface();
   surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(e_surface_id));
   EXPECT_FALSE(hit_test_manager()->GetActiveHitTestRegionList(c_surface_id));

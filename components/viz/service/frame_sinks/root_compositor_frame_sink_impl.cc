@@ -106,7 +106,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
   // Update display when size or local surface id changes.
-  if (support_->local_surface_id() != local_surface_id) {
+  if (support_->last_activated_local_surface_id() != local_surface_id) {
     display_->Resize(frame.size_in_pixels());
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
   }

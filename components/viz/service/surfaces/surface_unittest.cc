@@ -127,8 +127,6 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   EXPECT_FALSE(copy_called);
   copy_requests.clear();  // Deleted requests will auto-send an empty result.
   EXPECT_TRUE(copy_called);
-
-  support->EvictCurrentSurface();
 }
 
 }  // namespace
