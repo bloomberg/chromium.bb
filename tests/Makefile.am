@@ -176,7 +176,6 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/hu-hu-comp8_harness.yaml		  \
 	braille-specs/hu-hu-g1_backward.yaml		  \
 	braille-specs/hu-hu-g1_harness.yaml		  \
-	braille-specs/hu-hu-g1-hyph_harness.yaml	  \
 	braille-specs/iu-ca-g1_harness.yaml		  \
 	braille-specs/ko-2006-g2_harness.yaml		  \
 	braille-specs/ko-g2_harness.yaml		  \
@@ -196,6 +195,12 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/vi-g1_backward.yaml		  \
 	braille-specs/vi-g1_harness.yaml		  \
 	braille-specs/zh-chn.yaml
+
+# This test hangs when configured without --enable-ucs4
+if HAVE_UCS4
+dist_braille_specs_TESTS +=				  \
+	braille-specs/hu-hu-g1-hyph_harness.yaml
+endif
 
 dist_yaml_TESTS =			  \
 	yaml/back_cont_then_punc.yaml	  \
