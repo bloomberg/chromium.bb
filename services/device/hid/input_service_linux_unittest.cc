@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/device/hid/input_service_linux.h"
-#include "services/device/public/interfaces/input_service.mojom.h"
+#include "services/device/public/mojom/input_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

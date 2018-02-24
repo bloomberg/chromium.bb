@@ -9,7 +9,7 @@
 #include "base/power_monitor/power_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/device/public/interfaces/power_monitor.mojom.h"
+#include "services/device/public/mojom/power_monitor.mojom.h"
 
 namespace device {
 

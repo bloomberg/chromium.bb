@@ -20,7 +20,7 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 
 class Profile;
 

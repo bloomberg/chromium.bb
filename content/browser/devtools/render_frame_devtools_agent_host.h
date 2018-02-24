@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 

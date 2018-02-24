@@ -3,6 +3,6 @@ include_rules = [
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/battery",
-    "+services/device/public/interfaces/battery_monitor.mojom-blink.h",
-    "+services/device/public/interfaces/constants.mojom-blink.h",
+    "+services/device/public/mojom/battery_monitor.mojom-blink.h",
+    "+services/device/public/mojom/constants.mojom-blink.h",
 ]

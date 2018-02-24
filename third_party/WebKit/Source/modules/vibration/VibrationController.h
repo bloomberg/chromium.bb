@@ -28,7 +28,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
-#include "services/device/public/interfaces/vibration_manager.mojom-blink.h"
+#include "services/device/public/mojom/vibration_manager.mojom-blink.h"
 
 namespace blink {
 

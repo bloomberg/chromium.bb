@@ -14,7 +14,7 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 #include "url/gurl.h"
 
 namespace net {

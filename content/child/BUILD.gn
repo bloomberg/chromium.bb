@@ -111,7 +111,7 @@ target(link_target_type, "child") {
     "//net",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
-    "//services/device/public/interfaces:constants",
+    "//services/device/public/mojom:constants",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

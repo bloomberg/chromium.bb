@@ -10,7 +10,7 @@ source_set("test_support") {
 
   public_deps = [
     "//base",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 

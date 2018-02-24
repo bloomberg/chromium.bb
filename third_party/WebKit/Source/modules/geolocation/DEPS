@@ -1,5 +1,5 @@
 include_rules = [
-    "+services/device/public/interfaces",
+    "+services/device/public/mojom",
     "-modules",
     "+modules/EventModules.h",
     "+modules/ModulesExport.h",

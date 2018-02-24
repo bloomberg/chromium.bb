@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/power_monitor.mojom.h"
+#include "services/device/public/mojom/power_monitor.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;

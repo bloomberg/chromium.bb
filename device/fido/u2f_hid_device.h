@@ -13,7 +13,7 @@
 
 #include "base/cancelable_callback.h"
 #include "device/fido/u2f_device.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

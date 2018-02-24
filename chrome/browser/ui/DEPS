@@ -11,7 +11,7 @@ include_rules = [
   "+components/feature_engagement/features.h",
   "-chrome/browser/ui/views",
   "+mash/public/mojom",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
 ]
 
 specific_include_rules = {

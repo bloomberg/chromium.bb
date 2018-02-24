@@ -13,7 +13,7 @@
 #include "device/fido/u2f_discovery.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace service_manager {
 class Connector;

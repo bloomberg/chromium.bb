@@ -13,7 +13,7 @@
 #include "platform/bindings/V8PerIsolateData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "v8/include/v8.h"

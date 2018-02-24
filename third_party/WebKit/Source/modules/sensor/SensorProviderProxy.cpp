@@ -6,7 +6,7 @@
 
 #include "modules/sensor/SensorProxy.h"
 #include "platform/mojo/MojoHelper.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {

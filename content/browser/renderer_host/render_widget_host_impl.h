@@ -66,7 +66,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #endif
 
 class SkBitmap;

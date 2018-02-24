@@ -7,7 +7,7 @@
 
 #include "platform/wtf/Allocator.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
-#include "services/device/public/interfaces/sensor.mojom-blink.h"
+#include "services/device/public/mojom/sensor.mojom-blink.h"
 
 namespace blink {
 

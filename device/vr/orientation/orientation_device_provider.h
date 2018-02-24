@@ -12,8 +12,8 @@
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {

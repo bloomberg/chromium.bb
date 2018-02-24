@@ -62,7 +62,7 @@ static_library("vr_android") {
     "//content/public/common",
     "//device/gamepad",
     "//device/vr",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/ui/public/cpp/gpu",
     "//ui/android",

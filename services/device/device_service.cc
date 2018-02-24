@@ -20,7 +20,7 @@
 #include "services/device/geolocation/public_ip_address_geolocator.h"
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
-#include "services/device/public/interfaces/battery_monitor.mojom.h"
+#include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/serial/serial_device_enumerator_impl.h"
 #include "services/device/serial/serial_io_handler_impl.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"

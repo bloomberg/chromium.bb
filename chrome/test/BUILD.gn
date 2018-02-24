@@ -939,7 +939,7 @@ test("browser_tests") {
       "//mojo/common:common_base",
       "//net",
       "//net:test_support",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
       "//services/network/public/cpp",
       "//services/service_manager/public/cpp",
       "//skia",

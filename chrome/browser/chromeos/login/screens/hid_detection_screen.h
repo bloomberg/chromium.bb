@@ -22,7 +22,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/device/public/interfaces/input_service.mojom.h"
+#include "services/device/public/mojom/input_service.mojom.h"
 
 namespace chromeos {
 

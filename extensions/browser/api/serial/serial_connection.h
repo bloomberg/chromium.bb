@@ -18,7 +18,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 #include "net/base/io_buffer.h"
-#include "services/device/public/interfaces/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
 
 using content::BrowserThread;
 

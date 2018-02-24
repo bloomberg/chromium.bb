@@ -17,7 +17,7 @@ source_set("power") {
     "//content/public/common",
     "//extensions/common/api",
     "//mojo/public/cpp/bindings",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 
   public_deps = [

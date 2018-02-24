@@ -39,7 +39,7 @@ static_library("browser") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//ppapi/features",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//sql",
     "//ui/base",

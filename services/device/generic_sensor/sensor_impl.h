@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "services/device/generic_sensor/platform_sensor.h"
-#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/mojom/sensor.mojom.h"
 
 namespace device {
 

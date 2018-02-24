@@ -5,7 +5,7 @@ include_rules = [
   "+components/viz/common",
   "+device/geolocation/public/cpp",
   "+device/usb/public/mojom",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/resource_coordinator/public",

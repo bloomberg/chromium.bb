@@ -14,7 +14,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/test_serial_io_handler.h"
-#include "services/device/public/interfaces/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/battor_agent/battor_protocol_types.h"
 

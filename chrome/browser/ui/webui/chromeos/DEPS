@@ -2,7 +2,7 @@ include_rules = [
   "+components/login",
   "+components/user_manager",
   "+media/audio/sounds",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
 ]
 
 specific_include_rules = {

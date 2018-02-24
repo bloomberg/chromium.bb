@@ -12,8 +12,8 @@
 #include "services/device/hid/hid_manager_impl.h"
 #include "services/device/hid/mock_hid_connection.h"
 #include "services/device/hid/mock_hid_service.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

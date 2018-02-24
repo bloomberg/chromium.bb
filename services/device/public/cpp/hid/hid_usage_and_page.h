@@ -5,7 +5,7 @@
 #ifndef DEVICE_HID_PUBLIC_CPP_HID_USAGE_AND_PAGE_H_
 #define DEVICE_HID_PUBLIC_CPP_HID_USAGE_AND_PAGE_H_
 
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

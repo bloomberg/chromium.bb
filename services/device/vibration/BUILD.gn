@@ -19,7 +19,7 @@ if (!is_android) {
     ]
 
     public_deps = [
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
     ]
 
     deps = [

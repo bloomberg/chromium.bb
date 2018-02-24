@@ -98,7 +98,7 @@ source_set("api") {
     "//extensions/common/api",
     "//extensions/strings",
     "//services/device/public/cpp/hid",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 
   # TODO(michaelpg): Move these deps to the individual APIs that require them.

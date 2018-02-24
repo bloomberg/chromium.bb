@@ -28,7 +28,7 @@
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
-#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
+#include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

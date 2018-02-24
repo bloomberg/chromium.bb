@@ -4,8 +4,8 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/geolocation.mojom";
-import "services/device/public/interfaces/geoposition.mojom";
+import "services/device/public/mojom/geolocation.mojom";
+import "services/device/public/mojom/geoposition.mojom";
 
 // GeolocationContext provides methods to bind Geolocation instance and to
 // set/clear overrides of geoposition that will apply to all Geolocation

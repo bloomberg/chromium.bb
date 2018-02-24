@@ -8,8 +8,8 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/public_ip_address_geolocation_provider.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace language {

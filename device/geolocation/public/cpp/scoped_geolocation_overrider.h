@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
-#include "services/device/public/interfaces/geolocation_context.mojom.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation_context.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace device {

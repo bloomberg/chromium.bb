@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "services/device/public/cpp/hid/hid_report_descriptor_item.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 

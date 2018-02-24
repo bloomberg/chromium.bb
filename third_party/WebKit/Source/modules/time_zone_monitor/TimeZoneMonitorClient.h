@@ -6,7 +6,7 @@
 #define TimeZoneMonitorClient_h
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/time_zone_monitor.mojom-blink.h"
+#include "services/device/public/mojom/time_zone_monitor.mojom-blink.h"
 
 namespace blink {
 

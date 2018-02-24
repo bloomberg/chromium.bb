@@ -17,6 +17,6 @@ source_set("power_monitor") {
   ]
 
   public_deps = [
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 }

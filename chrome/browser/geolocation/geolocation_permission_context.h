@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_extensions.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "services/device/public/interfaces/geolocation_control.mojom.h"
+#include "services/device/public/mojom/geolocation_control.mojom.h"
 
 namespace content {
 class WebContents;

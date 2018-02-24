@@ -1,9 +1,9 @@
 include_rules = [
-    "+services/device/public/interfaces/screen_orientation.mojom-blink.h",
+    "+services/device/public/mojom/screen_orientation.mojom-blink.h",
     "-modules",
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/screen_orientation",
     "+mojo/public/cpp/bindings/associated_interface_ptr.h",
-    "+services/device/public/interfaces/constants.mojom-blink.h",
+    "+services/device/public/mojom/constants.mojom-blink.h",
 ]

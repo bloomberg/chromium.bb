@@ -7,5 +7,5 @@ include_rules = [
   # safe_dial_device_description_parser_unittest.cc needs DataDecoderService.
   "+services/data_decoder/data_decoder_service.h",
   "+services/data_decoder/public",
-  "+services/device/public/interfaces",
+  "+services/device/public/mojom",
 ]

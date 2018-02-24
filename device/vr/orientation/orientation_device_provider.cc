@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "device/vr/orientation/orientation_device.h"
-#include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 

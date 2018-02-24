@@ -134,7 +134,7 @@ if (is_android) {
     java_files = device_sensors_jni_sources
     deps = [
       "//base:base_java",
-      "//services/device/public/interfaces:generic_sensor_java",
+      "//services/device/public/mojom:generic_sensor_java",
     ]
   }
 }

@@ -19,8 +19,8 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/cpp/hid/hid_report_descriptor.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 using base::ThreadTaskRunnerHandle;

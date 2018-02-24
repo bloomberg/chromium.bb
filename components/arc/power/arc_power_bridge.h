@@ -14,7 +14,7 @@
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace content {

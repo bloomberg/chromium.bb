@@ -10,7 +10,7 @@
 #include "base/callback_list.h"
 #include "device/geolocation/geolocation_export.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/device/public/interfaces/geoposition.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
 

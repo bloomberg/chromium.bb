@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "core/frame/PlatformEventDispatcher.h"
 #include "platform/heap/Handle.h"
-#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
+#include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 
 namespace blink {
 

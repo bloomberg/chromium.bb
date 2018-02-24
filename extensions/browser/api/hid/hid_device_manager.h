@@ -18,7 +18,7 @@
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/hid.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 class HidDeviceFilter;

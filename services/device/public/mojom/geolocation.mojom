@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/geoposition.mojom";
+import "services/device/public/mojom/geoposition.mojom";
 
 // Geolocation provides updates on the device's location. By default, it
 // provides updates with low accuracy, but |SetHighAccuracy()| may be called

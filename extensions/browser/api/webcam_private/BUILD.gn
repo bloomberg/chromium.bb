@@ -23,7 +23,7 @@ source_set("webcam_private") {
   deps = [
     "//extensions/common/api",
     "//mojo/public/cpp/bindings",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 

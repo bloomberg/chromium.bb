@@ -99,7 +99,7 @@ source_set("fido") {
     "//device/base",
     "//device/bluetooth",
     "//net",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//third_party/boringssl",
@@ -116,7 +116,7 @@ source_set("fido") {
 
     deps += [
       "//services/device/public/cpp/hid",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
     ]
   }
 }
@@ -227,7 +227,7 @@ source_set("test_support") {
     deps = [
       "//base",
       "//mojo/public/cpp/bindings",
-      "//services/device/public/interfaces",
+      "//services/device/public/mojom",
       "//testing/gmock",
     ]
   }

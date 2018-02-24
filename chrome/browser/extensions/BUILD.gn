@@ -886,7 +886,7 @@ static_library("extensions") {
     "//rlz/features",
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",

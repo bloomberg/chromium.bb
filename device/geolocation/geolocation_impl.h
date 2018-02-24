@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
 
 namespace device {
 

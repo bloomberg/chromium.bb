@@ -4,7 +4,7 @@
 
 module device.mojom;
 
-import "services/device/public/interfaces/battery_status.mojom";
+import "services/device/public/mojom/battery_status.mojom";
 
 interface BatteryMonitor {
   // Battery status is reported once it changes or immediately if this is the

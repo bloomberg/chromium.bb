@@ -8,7 +8,7 @@
 #include "services/device/hid/hid_device_info.h"
 #include "services/device/hid/test_report_descriptors.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
-#include "services/device/public/interfaces/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

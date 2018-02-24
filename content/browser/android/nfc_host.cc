@@ -9,8 +9,8 @@
 #include "base/atomic_sequence_num.h"
 #include "content/public/common/service_manager_connection.h"
 #include "jni/NfcHost_jni.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/nfc.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/nfc.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

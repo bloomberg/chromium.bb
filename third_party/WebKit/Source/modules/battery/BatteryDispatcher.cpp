@@ -8,7 +8,7 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/device/public/mojom/constants.mojom-blink.h"
 
 namespace blink {
 

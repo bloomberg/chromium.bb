@@ -6,7 +6,7 @@
 #define NFCError_h
 
 #include "platform/wtf/Allocator.h"
-#include "services/device/public/interfaces/nfc.mojom-blink.h"
+#include "services/device/public/mojom/nfc.mojom-blink.h"
 
 namespace blink {
 

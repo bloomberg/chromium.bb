@@ -11,7 +11,7 @@
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
-#include "services/device/public/interfaces/screen_orientation.mojom-blink.h"
+#include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 
 namespace blink {
 

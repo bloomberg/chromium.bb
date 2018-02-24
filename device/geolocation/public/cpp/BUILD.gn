@@ -10,7 +10,7 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    "//services/device/public/interfaces",
+    "//services/device/public/mojom",
   ]
 }
 

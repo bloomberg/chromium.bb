@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/language/content/browser/language_code_locator.h"
-#include "services/device/public/interfaces/geolocation.mojom.h"
+#include "services/device/public/mojom/geolocation.mojom.h"
 
 namespace base {
 template <typename T>

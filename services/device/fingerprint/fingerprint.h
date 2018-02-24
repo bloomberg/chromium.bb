@@ -6,7 +6,7 @@
 #define SERVICES_DEVICE_FINGERPRINT_FINGERPRINT_H_
 
 #include "services/device/fingerprint/fingerprint_export.h"
-#include "services/device/public/interfaces/fingerprint.mojom.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
 
 namespace device {
 

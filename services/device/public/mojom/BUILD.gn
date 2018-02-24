@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "battery_monitor.mojom",
     "battery_status.mojom",
@@ -35,7 +35,7 @@ mojom("interfaces") {
     "//services/network/public/mojom",
   ]
 
-  # The blink variant of the Device Service interfaces are depended on by the
+  # The blink variant of the Device Service mojom are depended on by the
   # blink platform target. All blink variant mojoms use WTF types, which are
   # part of the blink platform component. In order to avoid a dependency cycle,
   # these targets must be part of that component.

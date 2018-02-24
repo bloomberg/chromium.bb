@@ -21,8 +21,8 @@
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/device/public/interfaces/constants.mojom.h"
-#include "services/device/public/interfaces/power_monitor.mojom.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
