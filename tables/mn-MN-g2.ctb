@@ -1,5 +1,8 @@
 #
-#  Copyright (C) 2017 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
+# Copyright (C) 2015  Tsengel Maidar Inovation Development center of the blind at idcbinnovation@gmail.com
+# Copyright (C) 2018 Tsengel Maidar EBraillesoftLLC
+# Copyright (C) 2017, 2018 Angaragerdene angaragerdene.b@gmail.com
+
 #
 #  This file is part of liblouis.
 #
@@ -19,7 +22,7 @@
 #
 
 # This table contains braille codes and rules for Mongolian script with Unified English grade 2.
-# Contributors: Dipendra Manocha, Sreeja, Tsengel, Angaragerdene
+# Contributors:  Tsengel, Angaragerdene
 # To report any bugs or any suggestion, please write to tsengel.braille.dev@gmail.com and angaragerdene.b@gmail.com
 
 include ru-ru.dis    # All display opcodes
