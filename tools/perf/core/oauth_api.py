@@ -20,12 +20,15 @@ def with_access_token(service_account_json):
     service_account_json: The path to the service account JSON file.
   """
   fd, path = tempfile.mkstemp(suffix='.json', prefix='tok')
-  os.close(fd)
   try:
-    args = ['luci-auth', 'token', '-json-output', path]
+    args = ['luci-auth', 'token']
     if service_account_json:
       args += ['-service-account-json', service_account_json]
-    subprocess.check_call(args)
+    subprocess.check_call(args, stdout=fd)
+    os.close(fd)
+    fd = None
     yield path
   finally:
+    if fd is not None:
+      os.close(fd)
     os.remove(path)
