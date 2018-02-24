@@ -528,10 +528,6 @@ bool OmniboxViewViews::UnapplySteadyStateElisions() {
     return false;
   }
 
-  // If the mouse is pressed, we defer this operation until mouseup.
-  if (is_mouse_pressed_)
-    return false;
-
   // No need to update the text if the user is already inputting text or if
   // everything is selected.
   if (model()->user_input_in_progress() || IsSelectAll())
@@ -580,8 +576,11 @@ bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
   bool something_changed = model()->OnAfterPossibleChange(
       state_changes, allow_keyword_ui_change && !IsIMEComposing());
 
-  // If any mouse button is pressed, we defer this operation until mouseup.
-  if (UnapplySteadyStateElisions()) {
+  // Unapply steady state elisions in response to selection changes due to
+  // keystroke, tap gesture, and caret placement. Ignore selection changes while
+  // the mouse is down, as we generally defer handling that until mouse release.
+  if (state_changes.selection_differs && !is_mouse_pressed_ &&
+      UnapplySteadyStateElisions()) {
     something_changed = true;
     state_changes.text_differs = true;
   }
@@ -702,7 +701,16 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
     // invalidated this saved selection is still OK.
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
-  return views::Textfield::OnMousePressed(event);
+
+  bool handled = views::Textfield::OnMousePressed(event);
+
+  // This ensures that when the user makes a double-click partial select, we
+  // perform the unelision at the same time as we make the partial selection,
+  // which is on mousedown.
+  if (!select_all_on_mouse_release_ && UnapplySteadyStateElisions())
+    TextChanged();
+
+  return handled;
 }
 
 bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
@@ -730,6 +738,8 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   }
   select_all_on_mouse_release_ = false;
 
+  // Make an unelision check on mouse release. This handles the drag selection
+  // case, in which we defer uneliding until mouse release.
   is_mouse_pressed_ = false;
   if (UnapplySteadyStateElisions())
     TextChanged();
