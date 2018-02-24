@@ -11,25 +11,20 @@ namespace viz {
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
     : last_known_local_surface_id_(kInvalidParentSequenceNumber,
                                    kInitialChildSequenceNumber,
-                                   base::UnguessableToken()) {}
+                                   base::UnguessableToken::Create()) {}
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::UpdateFromChild(
     const LocalSurfaceId& child_allocated_local_surface_id) {
   DCHECK_GE(child_allocated_local_surface_id.child_sequence_number(),
             last_known_local_surface_id_.child_sequence_number());
 
-  last_known_local_surface_id_ =
-      LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number(),
-                     child_allocated_local_surface_id.child_sequence_number(),
-                     last_known_local_surface_id_.nonce());
+  last_known_local_surface_id_.child_sequence_number_ =
+      child_allocated_local_surface_id.child_sequence_number_;
   return last_known_local_surface_id_;
 }
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
-  last_known_local_surface_id_ =
-      LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number() + 1,
-                     last_known_local_surface_id_.child_sequence_number(),
-                     base::UnguessableToken::Create());
+  ++last_known_local_surface_id_.parent_sequence_number_;
   return last_known_local_surface_id_;
 }
 

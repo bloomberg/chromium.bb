@@ -28,8 +28,8 @@ ParentLocalSurfaceIdAllocator GetChildUpdatedAllocator();
 
 }  // namespace
 
-// The default constructor should initialize its last-known LocalSurfaceId (and
-// all of its components) to an invalid state.
+// The default constructor should generate a nonce and initialize the sequence
+// number of the last known LocalSurfaceId to an invalid state.
 TEST(ParentLocalSurfaceIdAllocatorTest,
      DefaultConstructorShouldNotSetLocalSurfaceIdComponents) {
   ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
@@ -39,7 +39,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
   EXPECT_FALSE(default_local_surface_id.is_valid());
   EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
   EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
-  EXPECT_TRUE(NonceIsEmpty(default_local_surface_id));
+  EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
 }
 
 // The move constructor should move the last-known LocalSurfaceId.
@@ -108,7 +108,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
 }
 
 // GenerateId() on a parent allocator should monotonically increment the parent
-// sequence number and create a new nonce.
+// sequence number and use the previous nonce.
 TEST(ParentLocalSurfaceIdAllocatorTest,
      GenerateIdOnlyUpdatesExpectedLocalSurfaceIdComponents) {
   ParentLocalSurfaceIdAllocator generating_parent_allocator =
@@ -125,7 +125,7 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
             postgenerateid_local_surface_id.parent_sequence_number());
   EXPECT_EQ(pregenerateid_local_surface_id.child_sequence_number(),
             postgenerateid_local_surface_id.child_sequence_number());
-  EXPECT_NE(pregenerateid_local_surface_id.nonce(),
+  EXPECT_EQ(pregenerateid_local_surface_id.nonce(),
             postgenerateid_local_surface_id.nonce());
   EXPECT_EQ(returned_local_surface_id,
             generating_parent_allocator.last_known_local_surface_id());

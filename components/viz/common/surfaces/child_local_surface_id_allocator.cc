@@ -26,10 +26,10 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
          parent_allocated_local_surface_id.nonce() ==
              last_known_local_surface_id_.nonce());
 
-  last_known_local_surface_id_ =
-      LocalSurfaceId(parent_allocated_local_surface_id.parent_sequence_number(),
-                     last_known_local_surface_id_.child_sequence_number(),
-                     parent_allocated_local_surface_id.nonce());
+  last_known_local_surface_id_.parent_sequence_number_ =
+      parent_allocated_local_surface_id.parent_sequence_number_;
+  last_known_local_surface_id_.nonce_ =
+      parent_allocated_local_surface_id.nonce_;
   return last_known_local_surface_id_;
 }
 
@@ -38,10 +38,7 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
   DCHECK_NE(last_known_local_surface_id_.parent_sequence_number(),
             kInvalidParentSequenceNumber);
 
-  last_known_local_surface_id_ =
-      LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number(),
-                     last_known_local_surface_id_.child_sequence_number() + 1,
-                     last_known_local_surface_id_.nonce());
+  ++last_known_local_surface_id_.child_sequence_number_;
   return last_known_local_surface_id_;
 }
 
