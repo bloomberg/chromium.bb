@@ -2110,4 +2110,41 @@ TEST(OptionalTest, DontCallNewMemberFunction) {
   EXPECT_TRUE(a.has_value());
 }
 
+TEST(OptionalTest, Noexcept) {
+  // non-noexcept move-constructible.
+  struct Test1 {
+    Test1(Test1&&) {}
+    Test1& operator=(Test1&&) = default;
+  };
+  // non-noexcept move-assignable.
+  struct Test2 {
+    Test2(Test2&&) = default;
+    Test2& operator=(Test2&&) { return *this; }
+  };
+
+  static_assert(
+      noexcept(Optional<int>(std::declval<Optional<int>>())),
+      "move constructor for noexcept move-constructible T must be noexcept");
+  static_assert(
+      !noexcept(Optional<Test1>(std::declval<Optional<Test1>>())),
+      "move constructor for non-noexcept move-constructible T must not be "
+      "noexcept");
+  static_assert(
+      noexcept(Optional<Test2>(std::declval<Optional<Test2>>())),
+      "move constructor for noexcept move-constructible T must be noexcept");
+
+  static_assert(
+      noexcept(std::declval<Optional<int>>() = std::declval<Optional<int>>()),
+      "move assign for noexcept move-constructible/move-assignable T "
+      "must be noexcept");
+  static_assert(
+      !noexcept(std::declval<Optional<Test1>>() =
+                    std::declval<Optional<Test1>>()),
+      "move assign for non-noexcept move-constructible T must not be noexcept");
+  static_assert(
+      !noexcept(std::declval<Optional<Test2>>() =
+                    std::declval<Optional<Test2>>()),
+      "move assign for non-noexcept move-assignable T must not be noexcept");
+}
+
 }  // namespace base

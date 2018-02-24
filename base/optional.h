@@ -244,7 +244,9 @@ class OptionalBase {
     return *this;
   }
 
-  OptionalBase& operator=(OptionalBase&& other) {
+  OptionalBase& operator=(OptionalBase&& other) noexcept(
+      std::is_nothrow_move_assignable<T>::value&&
+          std::is_nothrow_move_constructible<T>::value) {
     MoveAssign(std::move(other));
     return *this;
   }
@@ -401,6 +403,7 @@ using RemoveCvRefT = std::remove_cv_t<std::remove_reference_t<T>>;
 // - Constructors do not use 'constexpr' as it is a C++14 extension.
 // - 'constexpr' might be missing in some places for reasons specified locally.
 // - No exceptions are thrown, because they are banned from Chromium.
+//   Marked noexcept for only move constructor and move assign operators.
 // - All the non-members are in the 'base' namespace instead of 'std'.
 //
 // Note that T cannot have a constructor T(Optional<T>) etc. Optional<T> checks
@@ -424,7 +427,8 @@ class Optional
   // Defer default/copy/move constructor implementation to OptionalBase.
   constexpr Optional() = default;
   constexpr Optional(const Optional& other) = default;
-  constexpr Optional(Optional&& other) = default;
+  constexpr Optional(Optional&& other) noexcept(
+      std::is_nothrow_move_constructible<T>::value) = default;
 
   constexpr Optional(nullopt_t) {}  // NOLINT(runtime/explicit)
 
@@ -511,7 +515,9 @@ class Optional
 
   // Defer copy-/move- assign operator implementation to OptionalBase.
   Optional& operator=(const Optional& other) = default;
-  Optional& operator=(Optional&& other) = default;
+  Optional& operator=(Optional&& other) noexcept(
+      std::is_nothrow_move_assignable<T>::value&&
+          std::is_nothrow_move_constructible<T>::value) = default;
 
   Optional& operator=(nullopt_t) {
     FreeIfNeeded();
@@ -634,9 +640,7 @@ class Optional
     swap(**this, *other);
   }
 
-  void reset() {
-    FreeIfNeeded();
-  }
+  void reset() { FreeIfNeeded(); }
 
   template <class... Args>
   T& emplace(Args&&... args) {
