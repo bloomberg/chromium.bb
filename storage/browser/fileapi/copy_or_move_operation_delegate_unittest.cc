@@ -154,8 +154,8 @@ class ScopedThreadStopper {
     if (thread_) {
       // Give another chance for deleted streams to perform Close.
       base::RunLoop run_loop;
-      thread_->task_runner()->PostTaskAndReply(
-          FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
+      thread_->task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                               run_loop.QuitClosure());
       run_loop.Run();
       thread_->Stop();
     }

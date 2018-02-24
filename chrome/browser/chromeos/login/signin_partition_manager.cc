@@ -101,7 +101,7 @@ void SigninPartitionManager::StartSigninSession(
     StartSigninSessionDoneCallback signin_session_started) {
   // If we already were in a sign-in session, close it first.
   // This clears stale data from the last-used StorageParittion.
-  CloseCurrentSigninSession(base::BindOnce(&base::DoNothing));
+  CloseCurrentSigninSession(base::DoNothing());
 
   // The storage partition domain identifies the site embedding the webview. It
   // won't change when the webview navigates.

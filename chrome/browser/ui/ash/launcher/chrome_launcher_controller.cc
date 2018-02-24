@@ -91,14 +91,11 @@ int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
   return display.id();
 }
 
-// A callback that does nothing after shelf item selection handling.
-void NoopCallback(ash::ShelfAction, base::Optional<ash::MenuItemList>) {}
-
 // Calls ItemSelected with |source|, default arguments, and no callback.
 void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
                           ash::ShelfLaunchSource source) {
   delegate->ItemSelected(nullptr, display::kInvalidDisplayId, source,
-                         base::BindOnce(&NoopCallback));
+                         base::DoNothing());
 }
 
 // Returns true if the given |item| has a pinned shelf item type.

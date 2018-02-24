@@ -632,7 +632,7 @@ class HungAfterHeadersHttpResponse : public HttpResponse {
 
   void SendResponse(const SendBytesCallback& send,
                     const SendCompleteCallback& done) override {
-    send.Run("HTTP/1.1 OK\r\n\r\n", base::Bind(&base::DoNothing));
+    send.Run("HTTP/1.1 OK\r\n\r\n", base::DoNothing());
   }
 
  private:

@@ -115,12 +115,6 @@ class TestBatchableDelegate : public BatchableDelegate {
   std::vector<int64_t> progress_values_;
 };
 
-void EmptyPrepareCallback(DriveApiErrorCode) {
-}
-
-void EmptyClosure() {
-}
-
 }  // namespace
 
 class DriveApiRequestsTest : public testing::Test {
@@ -2150,20 +2144,20 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequestProgress) {
   TestBatchableDelegate* requests[] = {
       new TestBatchableDelegate(GURL("http://example.com/test"),
                                 "application/binary", std::string(100, 'a'),
-                                base::Bind(&EmptyClosure)),
+                                base::DoNothing()),
       new TestBatchableDelegate(GURL("http://example.com/test"),
                                 "application/binary", std::string(50, 'b'),
-                                base::Bind(&EmptyClosure)),
+                                base::DoNothing()),
       new TestBatchableDelegate(GURL("http://example.com/test"),
                                 "application/binary", std::string(0, 'c'),
-                                base::Bind(&EmptyClosure))};
+                                base::DoNothing())};
   const size_t kExpectedUploadDataPosition[] = {207, 515, 773};
   const size_t kExpectedUploadDataSize = 851;
   request->AddRequest(requests[0]);
   request->AddRequest(requests[1]);
   request->AddRequest(requests[2]);
   request->Commit();
-  request->Prepare(base::Bind(&EmptyPrepareCallback));
+  request->Prepare(base::DoNothing());
 
   request->OnURLFetchUploadProgress(nullptr, 0, kExpectedUploadDataSize);
   request->OnURLFetchUploadProgress(nullptr, 150, kExpectedUploadDataSize);

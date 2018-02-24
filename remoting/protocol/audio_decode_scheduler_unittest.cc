@@ -116,7 +116,7 @@ TEST_F(AudioDecodeSchedulerTest, Shutdown) {
   audio_scheduler->Initialize(*session_config_);
 
   audio_scheduler->ProcessAudioPacket(CreatePacket44100Hz_(1000),
-                                      base::Bind(&base::DoNothing));
+                                      base::DoNothing());
 
   audio_scheduler.reset();
   audio_consumer.reset();

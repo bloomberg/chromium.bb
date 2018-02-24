@@ -243,7 +243,6 @@ jumbo_component("base") {
     "big_endian.cc",
     "big_endian.h",
     "bind.h",
-    "bind_helpers.cc",
     "bind_helpers.h",
     "bind_internal.h",
     "bit_cast.h",

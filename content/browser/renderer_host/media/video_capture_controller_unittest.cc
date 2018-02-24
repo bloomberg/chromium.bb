@@ -48,7 +48,7 @@ namespace content {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb) {
   return std::make_unique<content::VideoCaptureGpuJpegDecoder>(
-      std::move(decode_done_cb), base::Bind([](const std::string&) {}));
+      std::move(decode_done_cb), base::DoNothing());
 }
 
 class MockVideoCaptureControllerEventHandler

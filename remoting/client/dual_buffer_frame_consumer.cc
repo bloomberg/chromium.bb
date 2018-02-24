@@ -101,7 +101,7 @@ void DualBufferFrameConsumer::RequestFullDesktopFrame() {
   }
   full_frame->mutable_updated_region()->SetRect(desktop_rect);
 
-  RunRenderCallback(std::move(full_frame), base::Bind(&base::DoNothing));
+  RunRenderCallback(std::move(full_frame), base::DoNothing());
 }
 
 std::unique_ptr<webrtc::DesktopFrame> DualBufferFrameConsumer::AllocateFrame(

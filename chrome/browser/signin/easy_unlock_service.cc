@@ -160,8 +160,7 @@ class EasyUnlockService::BluetoothDetector
 
   void TurnOffBluetoothDiscoverability() {
     if (adapter_) {
-      adapter_->SetDiscoverable(
-          false, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+      adapter_->SetDiscoverable(false, base::DoNothing(), base::DoNothing());
     }
   }
 

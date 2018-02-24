@@ -438,12 +438,12 @@ TEST_P(RasterBufferProviderTest, ReadyToDrawCallbackNoDuplicate) {
     array.push_back(&resource);
 
   uint64_t callback_id = raster_buffer_provider_->SetReadyToDrawCallback(
-      array, base::Bind([]() {}), 0);
+      array, base::DoNothing(), 0);
 
   // Calling SetReadyToDrawCallback a second time for the same resources
   // should return the same callback ID.
   uint64_t callback_id_2 = raster_buffer_provider_->SetReadyToDrawCallback(
-      array, base::Bind([]() {}), 0);
+      array, base::DoNothing(), 0);
 
   EXPECT_EQ(callback_id, callback_id_2);
 

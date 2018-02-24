@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -97,8 +98,6 @@ class ActivityTrackerTest : public testing::Test {
     exit_command_ = std::move(command);
     exit_data_ = std::move(data);
   }
-
-  static void DoNothing() {}
 
   int64_t exit_id_ = 0;
   int64_t exit_stamp_;
@@ -216,7 +215,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
   ASSERT_EQ(0U, snapshot.activity_stack.size());
 
   {
-    PendingTask task1(FROM_HERE, BindOnce(&DoNothing));
+    PendingTask task1(FROM_HERE, DoNothing());
     ScopedTaskRunActivity activity1(task1);
     ActivityUserData& user_data1 = activity1.user_data();
     (void)user_data1;  // Tell compiler it's been used.
@@ -227,7 +226,7 @@ TEST_F(ActivityTrackerTest, ScopedTaskTest) {
     EXPECT_EQ(Activity::ACT_TASK, snapshot.activity_stack[0].activity_type);
 
     {
-      PendingTask task2(FROM_HERE, BindOnce(&DoNothing));
+      PendingTask task2(FROM_HERE, DoNothing());
       ScopedTaskRunActivity activity2(task2);
       ActivityUserData& user_data2 = activity2.user_data();
       (void)user_data2;  // Tell compiler it's been used.
@@ -494,7 +493,7 @@ TEST_F(ActivityTrackerTest, ProcessDeathTest) {
   global->RecordProcessLaunch(other_process_id, FILE_PATH_LITERAL("foo --bar"));
 
   // Do some activities.
-  PendingTask task(FROM_HERE, BindOnce(&DoNothing));
+  PendingTask task(FROM_HERE, DoNothing());
   ScopedTaskRunActivity activity(task);
   ActivityUserData& user_data = activity.user_data();
   ASSERT_NE(0U, user_data.id());

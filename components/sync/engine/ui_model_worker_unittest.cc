@@ -87,7 +87,7 @@ TEST_F(SyncUIModelWorkerTest, MultipleDoWork) {
 }
 
 TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterUIMessageLoopDestruction) {
-  PostWorkToSyncThread(base::Bind(&base::DoNothing));
+  PostWorkToSyncThread(base::DoNothing());
 
   // Wait to allow the sync thread to post the WorkCallback to the UI
   // MessageLoop. This is racy. If the WorkCallback isn't posted fast enough,
@@ -102,7 +102,7 @@ TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterUIMessageLoopDestruction) {
 }
 
 TEST_F(SyncUIModelWorkerTest, JoinSyncThreadAfterRequestStop) {
-  PostWorkToSyncThread(base::Bind(&base::DoNothing));
+  PostWorkToSyncThread(base::DoNothing());
 
   // Wait to allow the sync thread to post the WorkCallback to the UI
   // MessageLoop. This is racy. If the WorkCallback isn't posted fast enough,

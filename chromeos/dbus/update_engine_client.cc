@@ -75,11 +75,6 @@ UpdateEngineClient::UpdateStatusOperation UpdateStatusFromString(
   return UpdateEngineClient::UPDATE_STATUS_ERROR;
 }
 
-// Used in UpdateEngineClient::EmptyUpdateCheckCallback().
-void EmptyUpdateCheckCallbackBody(
-    UpdateEngineClient::UpdateCheckResult unused_result) {
-}
-
 bool IsValidChannel(const std::string& channel) {
   return channel == kReleaseChannelDev || channel == kReleaseChannelBeta ||
          channel == kReleaseChannelStable;
@@ -680,12 +675,6 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
 UpdateEngineClient::UpdateEngineClient() = default;
 
 UpdateEngineClient::~UpdateEngineClient() = default;
-
-// static
-UpdateEngineClient::UpdateCheckCallback
-UpdateEngineClient::EmptyUpdateCheckCallback() {
-  return base::Bind(&EmptyUpdateCheckCallbackBody);
-}
 
 // static
 UpdateEngineClient* UpdateEngineClient::Create(

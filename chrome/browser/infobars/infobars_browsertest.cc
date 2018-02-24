@@ -291,12 +291,12 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           l10n_util::GetStringFUTF16(
               IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
               base::ASCIIToUTF16("file_path")),
-          base::Bind([](bool) {}));
+          base::DoNothing());
       break;
 
     case IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE:
-      extensions::ExtensionDevToolsInfoBar::Create(
-          "id", "Extension", nullptr, base::Bind(&base::DoNothing));
+      extensions::ExtensionDevToolsInfoBar::Create("id", "Extension", nullptr,
+                                                   base::DoNothing());
       break;
 
     case IBD::INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE: {
@@ -306,8 +306,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
               IDS_EXTENSION_PROMPT_EXTENSION_CONNECT_FROM_INCOGNITO,
               base::ASCIIToUTF16("http://example.com"),
               base::ASCIIToUTF16("Test Extension")),
-          base::Bind([](extensions::IncognitoConnectability::
-                            ScopedAlertTracker::Mode) {}));
+          base::DoNothing());
       break;
     }
 
@@ -327,10 +326,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::PEPPER_BROKER_INFOBAR_DELEGATE:
-      PepperBrokerInfoBarDelegate::Create(
-          GetInfoBarService(), GURL("http://example.com/"),
-          base::ASCIIToUTF16("Test Plugin"), nullptr, nullptr,
-          base::Bind([](bool) {}));
+      PepperBrokerInfoBarDelegate::Create(GetInfoBarService(),
+                                          GURL("http://example.com/"),
+                                          base::ASCIIToUTF16("Test Plugin"),
+                                          nullptr, nullptr, base::DoNothing());
       break;
 
     case IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE:

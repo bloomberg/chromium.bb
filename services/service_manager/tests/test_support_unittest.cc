@@ -77,8 +77,7 @@ class TestServiceImplBase : public Service {
  private:
   // Service:
   void OnStart() override {
-    ref_factory_.reset(
-        new ServiceContextRefFactory(base::Bind(&base::DoNothing)));
+    ref_factory_.reset(new ServiceContextRefFactory(base::DoNothing()));
     RegisterInterfaces(&registry_, ref_factory_.get());
   }
 

@@ -21,7 +21,7 @@ class FakeAsynchronousShutdownObjectContainer
  public:
   // |deletion_callback| will be invoked when the object is deleted.
   FakeAsynchronousShutdownObjectContainer(
-      const base::Closure& deletion_callback = base::Bind(&base::DoNothing));
+      const base::Closure& deletion_callback = base::DoNothing());
   ~FakeAsynchronousShutdownObjectContainer() override;
 
   base::Closure& shutdown_complete_callback() {

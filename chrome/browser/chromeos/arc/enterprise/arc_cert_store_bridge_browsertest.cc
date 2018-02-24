@@ -65,7 +65,7 @@ class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
  public:
   // mojom::CertStoreInstance:
   void InitDeprecated(mojom::CertStoreHostPtr host) override {
-    Init(std::move(host), base::BindOnce(&base::DoNothing));
+    Init(std::move(host), base::DoNothing());
   }
 
   void Init(mojom::CertStoreHostPtr host, InitCallback callback) override {

@@ -478,8 +478,7 @@ void FakeShillManagerClient::ClearProperties() {
 
 void FakeShillManagerClient::SetManagerProperty(const std::string& key,
                                                 const base::Value& value) {
-  SetProperty(key, value,
-              base::Bind(&base::DoNothing), base::Bind(&LogErrorCallback));
+  SetProperty(key, value, base::DoNothing(), base::Bind(&LogErrorCallback));
 }
 
 void FakeShillManagerClient::AddManagerService(

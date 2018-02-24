@@ -566,7 +566,7 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
       &(bytes_2[0]), bytes_2.size()));
   request->set_upload(std::make_unique<net::ElementsUploadDataStream>(
       std::move(element_readers), 0));
-  ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+  ipc_sender_.PushTask(base::DoNothing());
   request->Start();
 }
 
@@ -782,7 +782,7 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
 
   // Only one request is sent, but more than one event will be triggered.
   for (size_t i = 1; i < arraysize(kExpected); ++i)
-    ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+    ipc_sender_.PushTask(base::DoNothing());
 
   const std::vector<char> part_of_body(1);
   FireURLRequestWithData("POST", nullptr, part_of_body, part_of_body);
@@ -855,7 +855,7 @@ TEST_F(ExtensionWebRequestTest, ProperFilteringInPublicSession) {
 
   // Only one request is sent, but more than one event will be triggered.
   for (size_t i = 1; i < arraysize(kExpected); ++i)
-    ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+    ipc_sender_.PushTask(base::DoNothing());
 
   const std::vector<char> part_of_body(1);
   FireURLRequestWithData("POST", nullptr, part_of_body, part_of_body);
@@ -920,7 +920,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
         context_->CreateRequest(request_url, net::DEFAULT_PRIORITY, &delegate_,
                                 TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method(kMethods[i]);
-    ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+    ipc_sender_.PushTask(base::DoNothing());
     request->Start();
   }
 
@@ -1195,7 +1195,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   }
 
   // Don't do anything for the onSendHeaders message.
-  ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+  ipc_sender_.PushTask(base::DoNothing());
 
   // Note that we mess up the headers slightly:
   // request->Start() will first add additional headers (e.g. the User-Agent)

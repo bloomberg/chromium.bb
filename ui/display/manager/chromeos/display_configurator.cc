@@ -41,8 +41,6 @@ struct DisplayState {
   const DisplayMode* mirror_mode = nullptr;
 };
 
-void DoNothing(bool status) {}
-
 }  // namespace
 
 const int DisplayConfigurator::kSetDisplayPowerNoFlags = 0;
@@ -595,7 +593,7 @@ void DisplayConfigurator::OnDisplayControlTaken(DisplayControlCallback callback,
     force_configure_ = true;
     // Restore the last power state used before releasing control.
     SetDisplayPower(requested_power_state_, kSetDisplayPowerNoFlags,
-                    base::Bind(&DoNothing));
+                    base::DoNothing());
   }
 
   std::move(callback).Run(success);
@@ -695,7 +693,7 @@ void DisplayConfigurator::UnregisterContentProtectionClient(
     }
   }
 
-  set_protection_callbacks_.push(base::Bind(&DoNothing));
+  set_protection_callbacks_.push(base::DoNothing());
   ApplyContentProtectionTask* task = new ApplyContentProtectionTask(
       layout_manager_.get(), native_display_delegate_.get(), protections,
       base::Bind(&DisplayConfigurator::OnContentProtectionClientUnregistered,
@@ -1010,7 +1008,7 @@ void DisplayConfigurator::ResumeDisplays() {
   // If requested_power_state_ is ALL_OFF due to idle suspend, powerd will turn
   // the display power on when it enables the backlight.
   SetDisplayPower(requested_power_state_, kSetDisplayPowerNoFlags,
-                  base::Bind(&DoNothing));
+                  base::DoNothing());
 }
 
 void DisplayConfigurator::ConfigureDisplays() {

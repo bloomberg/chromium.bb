@@ -33,7 +33,7 @@ const media::VideoPixelStorage kTestPixelStorage =
 
 class VirtualDeviceTest : public ::testing::Test {
  public:
-  VirtualDeviceTest() : ref_factory_(base::Bind(&base::DoNothing)) {}
+  VirtualDeviceTest() : ref_factory_(base::DoNothing()) {}
   ~VirtualDeviceTest() override {}
 
   void SetUp() override {

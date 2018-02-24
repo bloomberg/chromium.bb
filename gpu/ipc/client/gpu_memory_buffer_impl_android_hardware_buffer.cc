@@ -151,7 +151,7 @@ base::Closure GpuMemoryBufferImplAndroidHardwareBuffer::AllocateForTesting(
   DCHECK(buffer);
   handle->handle =
       base::SharedMemoryHandle(buffer, 0, base::UnguessableToken::Create());
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 }  // namespace gpu

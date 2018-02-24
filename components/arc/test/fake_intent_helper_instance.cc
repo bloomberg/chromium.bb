@@ -72,7 +72,7 @@ void FakeIntentHelperInstance::HandleUrlList(
 
 void FakeIntentHelperInstance::InitDeprecated(
     mojom::IntentHelperHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr,

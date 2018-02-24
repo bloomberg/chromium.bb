@@ -158,7 +158,7 @@ SANDBOX_TEST(Yama, RestrictPtraceIsDefault) {
     return;
 
   CHECK(Yama::DisableYamaRestrictions());
-  ScopedProcess process1(base::Bind(&base::DoNothing));
+  ScopedProcess process1{base::DoNothing()};
 
   if (Yama::IsEnforcing()) {
     // Check that process1 is protected by Yama, even though it has

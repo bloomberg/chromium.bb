@@ -30,8 +30,6 @@ namespace {
 constexpr char kChildKey[] = "child";
 constexpr char kOtherDictionaryKey[] = "other_key";
 
-void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
-
 struct UpdateOrAck {
   std::vector<mojom::PrefUpdatePtr> updates;
   bool is_ack;
@@ -77,8 +75,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
         pref_registry->defaults().get(), pref_notifier.get());
     pref_service_ = std::make_unique<PrefService>(
         std::move(pref_notifier), std::move(pref_value_store),
-        pref_store_client_.get(), pref_registry.get(),
-        base::Bind(&DoNothingHandleReadError), true);
+        pref_store_client_.get(), pref_registry.get(), base::DoNothing(), true);
   }
 
   ~PrefServiceConnection() override {
@@ -193,7 +190,7 @@ class PersistentPrefStoreConsistencyTest : public testing::Test {
   void SetUp() override {
     pref_store_ = base::MakeRefCounted<InMemoryPrefStore>();
     pref_store_impl_ = std::make_unique<PersistentPrefStoreImpl>(
-        pref_store_, base::BindOnce(&base::DoNothing));
+        pref_store_, base::DoNothing());
   }
 
   PersistentPrefStore* pref_store() { return pref_store_.get(); }

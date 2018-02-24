@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/metrics/field_trial_params.h"
@@ -1209,7 +1210,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   if (!surfaceless_rendering_) {
     // TODO(mthiesse): Support asynchronous SwapBuffers.
     TRACE_EVENT0("gpu", "VrShellGl::SwapBuffers");
-    surface_->SwapBuffers(base::Bind([](const gfx::PresentationFeedback&) {}));
+    surface_->SwapBuffers(base::DoNothing());
   }
 
   // Report rendering completion to WebVR so that it's permitted to submit

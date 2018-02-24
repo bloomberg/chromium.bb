@@ -86,7 +86,7 @@ void ServiceWorkerHandle::RegisterIntoDispatcherHost(
 }
 
 void ServiceWorkerHandle::TerminateForTesting() {
-  version_->StopWorker(base::BindOnce(&base::DoNothing));
+  version_->StopWorker(base::DoNothing());
 }
 
 base::WeakPtr<ServiceWorkerHandle> ServiceWorkerHandle::AsWeakPtr() {

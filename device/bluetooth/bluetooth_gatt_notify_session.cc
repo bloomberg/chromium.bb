@@ -21,7 +21,7 @@ BluetoothGattNotifySession::BluetoothGattNotifySession(
 
 BluetoothGattNotifySession::~BluetoothGattNotifySession() {
   if (active_) {
-    Stop(base::Bind(&base::DoNothing));
+    Stop(base::DoNothing());
   }
 }
 

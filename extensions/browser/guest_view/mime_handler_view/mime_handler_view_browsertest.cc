@@ -68,9 +68,9 @@ class URLRequestCounter {
     // Do a round-trip to the IO thread to guarantee that the UI thread has
     // been notified of all the requests triggered by the IO thread.
     base::RunLoop run_loop;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(&base::DoNothing),
-        run_loop.QuitClosure());
+    content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
+                                             FROM_HERE, base::DoNothing(),
+                                             run_loop.QuitClosure());
     run_loop.Run();
     return count_;
   }

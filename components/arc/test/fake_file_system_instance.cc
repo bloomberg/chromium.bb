@@ -278,7 +278,7 @@ void FakeFileSystemInstance::GetRecentDocuments(
 }
 
 void FakeFileSystemInstance::InitDeprecated(mojom::FileSystemHostPtr host) {
-  Init(std::move(host), base::BindOnce(&base::DoNothing));
+  Init(std::move(host), base::DoNothing());
 }
 
 void FakeFileSystemInstance::Init(mojom::FileSystemHostPtr host,

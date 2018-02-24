@@ -34,7 +34,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/drive/chromeos/file_system_interface.h"
-#include "components/drive/file_system_core_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -637,8 +636,7 @@ void VolumeManager::OnMountEvent(
           drive::util::GetFileSystemByProfile(profile_);
       if (file_system) {
         file_system->MarkCacheFileAsUnmounted(
-            base::FilePath(mount_info.source_path),
-            base::Bind(&drive::util::EmptyFileOperationCallback));
+            base::FilePath(mount_info.source_path), base::DoNothing());
       }
     }
   }

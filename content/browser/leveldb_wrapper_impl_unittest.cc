@@ -194,8 +194,6 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
   return base::BindOnce(&SuccessCallback, std::move(callback), success_out);
 }
 
-void NoOpSuccessCallback(bool success) {}
-
 LevelDBWrapperImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
   LevelDBWrapperImpl::Options options;
   options.max_size = kTestSizeLimit;
@@ -684,7 +682,7 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithPendingMapLoad) {
   set_mock_data(dummy_key, value);
 
   wrapper()->Put(ToBytes(key), ToBytes(value), base::nullopt, kTestSource,
-                 base::BindOnce(&NoOpSuccessCallback));
+                 base::DoNothing());
 
   EXPECT_TRUE(DeleteAllSync());
   ASSERT_EQ(2u, observations().size());

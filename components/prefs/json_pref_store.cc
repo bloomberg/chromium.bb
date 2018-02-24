@@ -287,8 +287,8 @@ void JsonPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
     // posted to |file_task_runner_| will run after currently pending disk
     // operations. Also, by definition of PostTaskAndReply(), the reply will run
     // on the current sequence.
-    file_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing), std::move(done_callback));
+    file_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                        std::move(done_callback));
   }
 }
 

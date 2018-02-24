@@ -139,7 +139,7 @@ TEST_F(DesktopSessionAgentTest, StartProcessStatsReport) {
 TEST_F(DesktopSessionAgentTest, StartProcessStatsReportWithInvalidInterval) {
   std::unique_ptr<FakeDelegate> delegate(new FakeDelegate(task_runner_));
   std::unique_ptr<IPC::ChannelProxy> proxy;
-  ProcessStatsListener listener(base::Bind([]() {}));
+  ProcessStatsListener listener{base::DoNothing()};
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
       IPC::Channel::MODE_CLIENT, &listener, task_runner_,
@@ -168,7 +168,7 @@ TEST_F(DesktopSessionAgentTest, StartProcessStatsReportWithInvalidInterval) {
 TEST_F(DesktopSessionAgentTest, StartThenStopProcessStatsReport) {
   std::unique_ptr<FakeDelegate> delegate(new FakeDelegate(task_runner_));
   std::unique_ptr<IPC::ChannelProxy> proxy;
-  ProcessStatsListener listener(base::Bind([]() {}));
+  ProcessStatsListener listener{base::DoNothing()};
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
       IPC::Channel::MODE_CLIENT, &listener, task_runner_,

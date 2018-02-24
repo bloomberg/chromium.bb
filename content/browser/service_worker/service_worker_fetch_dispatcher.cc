@@ -571,8 +571,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
                      weak_factory_.GetWeakPtr(), std::move(response_callback)));
   int event_finish_id = version_->StartRequest(
-      ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+      ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL, base::DoNothing());
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
 
   // Report navigation preload to DevTools if needed.

@@ -759,7 +759,7 @@ class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
         "Content-Type: text/plain\r\n\r\n"
         "long long ago..." +
             std::string(1024 * 1024, 'a'),
-        base::Bind([]() {}));
+        base::DoNothing());
 
     // Never call |done|, so the other side will never see the completion of the
     // response body.

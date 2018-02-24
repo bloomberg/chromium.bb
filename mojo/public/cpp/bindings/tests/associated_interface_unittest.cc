@@ -761,8 +761,8 @@ TEST_F(AssociatedInterfaceTest, AssociatedPtrFlushForTesting) {
   ptr0.set_connection_error_handler(base::Bind(&Fail));
 
   bool ptr0_callback_run = false;
-  ptr0->Echo(123, ExpectValueSetFlagAndRunClosure(
-                      123, &ptr0_callback_run, base::Bind(&base::DoNothing)));
+  ptr0->Echo(123, ExpectValueSetFlagAndRunClosure(123, &ptr0_callback_run,
+                                                  base::DoNothing()));
   ptr0.FlushForTesting();
   EXPECT_TRUE(ptr0_callback_run);
 }
@@ -803,8 +803,8 @@ TEST_F(AssociatedInterfaceTest, AssociatedBindingFlushForTesting) {
   ptr0.Bind(std::move(ptr_info));
 
   bool ptr0_callback_run = false;
-  ptr0->Echo(123, ExpectValueSetFlagAndRunClosure(
-                      123, &ptr0_callback_run, base::Bind(&base::DoNothing)));
+  ptr0->Echo(123, ExpectValueSetFlagAndRunClosure(123, &ptr0_callback_run,
+                                                  base::DoNothing()));
   // Because the flush is sent from the binding, it only guarantees that the
   // request has been received, not the response. The second flush waits for the
   // response to be received.

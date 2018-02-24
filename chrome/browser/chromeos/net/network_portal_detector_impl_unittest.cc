@@ -230,7 +230,7 @@ class NetworkPortalDetectorImplTest
   void SetBehindPortal(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
         dbus::ObjectPath(service_path), shill::kStateProperty,
-        base::Value(shill::kStatePortal), base::Bind(&base::DoNothing),
+        base::Value(shill::kStatePortal), base::DoNothing(),
         base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
@@ -245,16 +245,14 @@ class NetworkPortalDetectorImplTest
 
   void SetConnected(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->Connect(
-        dbus::ObjectPath(service_path),
-        base::Bind(&base::DoNothing),
+        dbus::ObjectPath(service_path), base::DoNothing(),
         base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 
   void SetDisconnected(const std::string& service_path) {
     DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
-        dbus::ObjectPath(service_path),
-        base::Bind(&*base::DoNothing),
+        dbus::ObjectPath(service_path), base::DoNothing(),
         base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }

@@ -226,7 +226,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     {
       base::RunLoop run_loop;
       sync_service()->GetSyncLoopForTest()->task_runner()->PostTaskAndReply(
-          FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
+          FROM_HERE, base::DoNothing(), run_loop.QuitClosure());
       run_loop.Run();
     }
 
@@ -262,7 +262,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
       sync_service()->RegisterDataTypeController(
           std::make_unique<TypedUrlDataTypeController>(
-              base::Bind(&base::DoNothing), sync_service()->GetSyncClient(),
+              base::DoNothing(), sync_service()->GetSyncClient(),
               kDummySavingBrowserHistoryDisabled));
 
       sync_service()->Initialize();

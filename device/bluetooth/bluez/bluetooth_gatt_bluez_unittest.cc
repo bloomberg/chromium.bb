@@ -124,8 +124,7 @@ class BluetoothGattBlueZTest : public testing::Test {
 
     GetAdapter();
 
-    adapter_->SetPowered(true, base::Bind(&base::DoNothing),
-                         base::Bind(&base::DoNothing));
+    adapter_->SetPowered(true, base::DoNothing(), base::DoNothing());
     ASSERT_TRUE(adapter_->IsPowered());
   }
 

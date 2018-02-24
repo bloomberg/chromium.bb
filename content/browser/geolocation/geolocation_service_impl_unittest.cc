@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/permission_manager.h"
@@ -297,8 +298,7 @@ TEST_F(GeolocationServiceTest, ServiceClosedBeforePermissionResponse) {
   GeolocationPtr geolocation;
   service()->CreateGeolocation(mojo::MakeRequest(&geolocation), true);
   // Don't immediately respond to the request.
-  permission_manager()->SetRequestCallback(
-      base::Bind([](const PermissionCallback& callback) {}));
+  permission_manager()->SetRequestCallback(base::DoNothing());
 
   base::RunLoop loop;
   service_ptr()->reset();

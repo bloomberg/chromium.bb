@@ -321,8 +321,8 @@ class NetworkStateHandlerTest : public testing::Test {
                           const std::string& key,
                           const base::Value& value) {
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-        dbus::ObjectPath(service_path), key, value,
-        base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
+        dbus::ObjectPath(service_path), key, value, base::DoNothing(),
+        base::Bind(&ErrorCallbackFunction));
   }
 
   void GetTetherNetworkList(int limit,

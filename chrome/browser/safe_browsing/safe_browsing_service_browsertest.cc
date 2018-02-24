@@ -181,7 +181,7 @@ class QuasiWebSocketHttpResponse : public net::test_server::HttpResponse {
         "Sec-WebSocket-Accept: %s\r\n"
         "\r\n",
         accept_hash_.c_str());
-    send.Run(response_headers, base::Bind(&base::DoNothing));
+    send.Run(response_headers, base::DoNothing());
     // Never call done(). The connection should stay open.
   }
 

@@ -92,7 +92,7 @@ class AutofillDataTypeControllerTest : public testing::Test,
         new FakeWebDataService(base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
     autofill_dtc_ = std::make_unique<AutofillDataTypeController>(
-        base::ThreadTaskRunnerHandle::Get(), base::Bind(&base::DoNothing), this,
+        base::ThreadTaskRunnerHandle::Get(), base::DoNothing(), this,
         web_data_service_);
 
     last_type_ = syncer::UNSPECIFIED;

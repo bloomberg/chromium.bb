@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -174,8 +175,6 @@ class TestDisplayLockController : public DisplayLockController {
       std::unique_ptr<DisplayLockHandle> display_lock_handle) {
     next_display_lock_handle_ = std::move(display_lock_handle);
   }
-
-  void NoopCallback() {}
 
  private:
   // The next DisplayLockHandle to return.
@@ -858,9 +857,7 @@ TEST_F(TrackerImplTest, TestNotifyEvent) {
 }
 
 TEST_F(TrackerImplTest, ShouldPassThroughAcquireDisplayLock) {
-  auto lock_handle = std::make_unique<DisplayLockHandle>(
-      base::Bind(&TestDisplayLockController::NoopCallback,
-                 base::Unretained(display_lock_controller_)));
+  auto lock_handle = std::make_unique<DisplayLockHandle>(base::DoNothing());
   DisplayLockHandle* lock_handle_ptr = lock_handle.get();
   display_lock_controller_->SetNextDisplayLockHandle(std::move(lock_handle));
   EXPECT_EQ(lock_handle_ptr, tracker_->AcquireDisplayLock().get());

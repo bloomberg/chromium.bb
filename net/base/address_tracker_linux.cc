@@ -113,9 +113,9 @@ char* AddressTrackerLinux::GetInterfaceName(int interface_index, char* buf) {
 
 AddressTrackerLinux::AddressTrackerLinux()
     : get_interface_name_(GetInterfaceName),
-      address_callback_(base::Bind(&base::DoNothing)),
-      link_callback_(base::Bind(&base::DoNothing)),
-      tunnel_callback_(base::Bind(&base::DoNothing)),
+      address_callback_(base::DoNothing()),
+      link_callback_(base::DoNothing()),
+      tunnel_callback_(base::DoNothing()),
       netlink_fd_(-1),
       watcher_(FROM_HERE),
       ignored_interfaces_(),

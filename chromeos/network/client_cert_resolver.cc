@@ -666,8 +666,7 @@ void ClientCertResolver::ConfigureCertificates(
     }
     DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
         dbus::ObjectPath(match.service_path), shill_properties,
-        base::BindRepeating(&base::DoNothing),
-        base::BindRepeating(&LogError, match.service_path));
+        base::DoNothing(), base::BindRepeating(&LogError, match.service_path));
     network_state_handler_->RequestUpdateForNetwork(match.service_path);
   }
   resolve_task_running_ = false;

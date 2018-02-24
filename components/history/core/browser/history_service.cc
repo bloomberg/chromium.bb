@@ -326,8 +326,7 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
 }
 
 void HistoryService::FlushForTest(const base::Closure& flushed) {
-  backend_task_runner_->PostTaskAndReply(FROM_HERE,
-                                         base::Bind(&base::DoNothing), flushed);
+  backend_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(), flushed);
 }
 
 void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {

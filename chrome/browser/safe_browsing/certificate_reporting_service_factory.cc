@@ -74,7 +74,7 @@ CertificateReportingServiceFactory::CertificateReportingServiceFactory()
       clock_(new base::DefaultClock()),
       queued_report_ttl_(base::TimeDelta::FromSeconds(kMaxReportAgeInSeconds)),
       max_queued_report_count_(kMaxReportCountInQueue),
-      service_reset_callback_(base::Bind(&base::DoNothing)) {}
+      service_reset_callback_(base::DoNothing()) {}
 
 CertificateReportingServiceFactory::~CertificateReportingServiceFactory() {}
 

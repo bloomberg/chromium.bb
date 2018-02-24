@@ -12,7 +12,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -221,8 +220,7 @@ void DispatchAbortPaymentEvent(
   DCHECK(active_version);
 
   int event_finish_id = active_version->StartRequest(
-      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, base::DoNothing());
 
   // This object self-deletes after either success or error callback is invoked.
   RespondWithCallbacks* invocation_callbacks =
@@ -251,8 +249,7 @@ void DispatchCanMakePaymentEvent(
   DCHECK(active_version);
 
   int event_finish_id = active_version->StartRequest(
-      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, base::DoNothing());
 
   // This object self-deletes after either success or error callback is invoked.
   RespondWithCallbacks* invocation_callbacks = new RespondWithCallbacks(
@@ -283,8 +280,7 @@ void DispatchPaymentRequestEvent(
   DCHECK(active_version);
 
   int event_finish_id = active_version->StartRequest(
-      ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+      ServiceWorkerMetrics::EventType::PAYMENT_REQUEST, base::DoNothing());
 
   // This object self-deletes after either success or error callback is invoked.
   RespondWithCallbacks* invocation_callbacks =

@@ -603,8 +603,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_begin_, delete_end_);
       // Ask for a call back when the above call is finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
-          FROM_HERE, base::BindOnce(&base::DoNothing),
-          CreatePendingTaskCompletionClosure());
+          FROM_HERE, base::DoNothing(), CreatePendingTaskCompletionClosure());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);
@@ -884,8 +883,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_begin_, delete_end_);
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
-          FROM_HERE, base::BindOnce(&base::DoNothing),
-          CreatePendingTaskCompletionClosure());
+          FROM_HERE, base::DoNothing(), CreatePendingTaskCompletionClosure());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForProfile(profile_);

@@ -152,7 +152,7 @@ void StorageMonitorCros::CheckExistingMountPoints() {
   // AddMountedPath calls.
 
   blocking_task_runner->PostTaskAndReply(
-      FROM_HERE, base::Bind(&base::DoNothing),
+      FROM_HERE, base::DoNothing(),
       base::Bind(&StorageMonitorCros::MarkInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -305,7 +305,7 @@ class LockScreenValueStoreMigratorImplTest : public testing::Test {
 
   void RunTaskRunnerTasks() {
     base::RunLoop run_loop;
-    task_runner_->PostTaskAndReply(FROM_HERE, base::Bind(&base::DoNothing),
+    task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
                                    run_loop.QuitClosure());
     run_loop.Run();
   }

@@ -534,10 +534,10 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
     if (new_device_value == current_allow_roaming)
       continue;
 
-    SetDevicePropertyInternal(
-        device_state->path(), shill::kCellularAllowRoamingProperty,
-        base::Value(new_device_value), base::Bind(&base::DoNothing),
-        network_handler::ErrorCallback());
+    SetDevicePropertyInternal(device_state->path(),
+                              shill::kCellularAllowRoamingProperty,
+                              base::Value(new_device_value), base::DoNothing(),
+                              network_handler::ErrorCallback());
   }
 }
 
@@ -563,8 +563,8 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
     case MACAddressRandomizationSupport::SUPPORTED:
       SetDevicePropertyInternal(
           device_state->path(), shill::kMACAddressRandomizationEnabledProperty,
-          base::Value(mac_addr_randomization_enabled_),
-          base::Bind(&base::DoNothing), network_handler::ErrorCallback());
+          base::Value(mac_addr_randomization_enabled_), base::DoNothing(),
+          network_handler::ErrorCallback());
       return;
     case MACAddressRandomizationSupport::UNSUPPORTED:
       return;

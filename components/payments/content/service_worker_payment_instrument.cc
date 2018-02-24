@@ -4,6 +4,7 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_request_converter.h"
@@ -91,7 +92,7 @@ ServiceWorkerPaymentInstrument::~ServiceWorkerPaymentInstrument() {
     // destroyed, pass an empty callback to the payment app.
     content::PaymentAppProvider::GetInstance()->AbortPayment(
         browser_context_, stored_payment_app_info_->registration_id,
-        base::Bind([](bool) {}));
+        base::DoNothing());
   }
 }
 

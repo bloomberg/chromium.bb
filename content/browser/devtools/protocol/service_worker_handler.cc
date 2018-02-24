@@ -38,17 +38,6 @@ namespace protocol {
 
 namespace {
 
-void ResultNoOp(bool success) {
-}
-
-void StatusNoOp(ServiceWorkerStatusCode status) {
-}
-
-void StatusNoOpKeepingRegistration(
-    scoped_refptr<content::ServiceWorkerRegistration> protect,
-    ServiceWorkerStatusCode status) {
-}
-
 const std::string GetVersionRunningStatusString(
     EmbeddedWorkerStatus running_status) {
   switch (running_status) {
@@ -91,7 +80,7 @@ void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
                            int64_t version_id) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
-    version->StopWorker(base::BindOnce(&base::DoNothing));
+    version->StopWorker(base::DoNothing());
   }
 }
 
@@ -136,7 +125,10 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
   // Keep the registration while dispatching the sync event.
   background_sync_manager->EmulateDispatchSyncEvent(
       tag, std::move(version), last_chance,
-      base::BindOnce(&StatusNoOpKeepingRegistration, std::move(registration)));
+      base::BindOnce(base::DoNothing::Once<
+                         scoped_refptr<content::ServiceWorkerRegistration>,
+                         ServiceWorkerStatusCode>(),
+                     std::move(registration)));
 }
 
 void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
@@ -222,7 +214,7 @@ Response ServiceWorkerHandler::Unregister(const std::string& scope_url) {
   if (!context_)
     return CreateContextErrorResponse();
   context_->UnregisterServiceWorker(GURL(scope_url),
-                                    base::BindOnce(&ResultNoOp));
+                                    base::DoNothing::Repeatedly<bool>());
   return Response::OK();
 }
 
@@ -231,7 +223,8 @@ Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
     return CreateDomainNotEnabledErrorResponse();
   if (!context_)
     return CreateContextErrorResponse();
-  context_->StartServiceWorker(GURL(scope_url), base::Bind(&StatusNoOp));
+  context_->StartServiceWorker(
+      GURL(scope_url), base::DoNothing::Repeatedly<ServiceWorkerStatusCode>());
   return Response::OK();
 }
 

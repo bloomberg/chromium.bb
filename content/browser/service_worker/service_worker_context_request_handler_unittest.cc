@@ -62,8 +62,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
 
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
-    context()->storage()->LazyInitializeForTest(
-        base::BindOnce(&base::DoNothing));
+    context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // A new unstored registration/version.

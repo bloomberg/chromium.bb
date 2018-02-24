@@ -42,8 +42,6 @@ const char kGetFlashURLSecondaryDownloadRegex[] =
 const char kGetFlashURLSecondaryDownloadQuery[] =
     "P1_Prod_Version=ShockwaveFlash";
 
-void DoNothing(ContentSetting result) {}
-
 bool InterceptNavigation(
     const GURL& source_url,
     content::WebContents* source,
@@ -75,7 +73,7 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
     PermissionManager* manager = PermissionManager::Get(profile);
     manager->RequestPermission(
         CONTENT_SETTINGS_TYPE_PLUGINS, web_contents->GetMainFrame(),
-        web_contents->GetLastCommittedURL(), true, base::Bind(&DoNothing));
+        web_contents->GetLastCommittedURL(), true, base::DoNothing());
   } else if (flash_setting == CONTENT_SETTING_BLOCK) {
     auto* settings = TabSpecificContentSettings::FromWebContents(web_contents);
     if (settings)

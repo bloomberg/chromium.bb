@@ -53,7 +53,7 @@ NetworkChangeNotifierLinux::Thread::Thread(
                      base::Unretained(this)),
           base::Bind(&NetworkChangeNotifierLinux::Thread::OnLinkChanged,
                      base::Unretained(this)),
-          base::Bind(base::DoNothing),
+          base::DoNothing(),
           ignored_interfaces)),
       last_type_(NetworkChangeNotifier::CONNECTION_NONE) {}
 

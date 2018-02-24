@@ -46,7 +46,7 @@ FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
 FakeAppInstance::~FakeAppInstance() {}
 
 void FakeAppInstance::InitDeprecated(mojom::AppHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::BindOnce(&base::DoNothing));
+  Init(std::move(host_ptr), base::DoNothing());
 }
 
 void FakeAppInstance::Init(mojom::AppHostPtr host_ptr, InitCallback callback) {

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/bindings/api_event_listeners.h"
 
+#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "extensions/common/event_filter.h"
@@ -19,11 +20,6 @@ namespace {
 using APIEventListenersTest = APIBindingTest;
 using MockEventChangeHandler = ::testing::StrictMock<
     base::MockCallback<APIEventListeners::ListenersUpdated>>;
-
-void DoNothingOnUpdate(binding::EventListenersChanged changed,
-                       const base::DictionaryValue* filter,
-                       bool was_manual,
-                       v8::Local<v8::Context> context) {}
 
 const char kFunction[] = "(function() {})";
 const char kEvent[] = "event";
@@ -136,8 +132,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersIgnoreFilteringInfo) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  UnfilteredEventListeners listeners(base::Bind(&DoNothingOnUpdate),
-                                     binding::kNoListenerMax, true);
+  UnfilteredEventListeners listeners(base::DoNothing(), binding::kNoListenerMax,
+                                     true);
   v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
   std::string error;
   v8::Local<v8::Object> filter;
@@ -152,7 +148,7 @@ TEST_F(APIEventListenersTest, UnfilteredListenersMaxListenersTest) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  UnfilteredEventListeners listeners(base::Bind(&DoNothingOnUpdate), 1, true);
+  UnfilteredEventListeners listeners(base::DoNothing(), 1, true);
 
   v8::Local<v8::Function> function_a = FunctionFromString(context, kFunction);
   EXPECT_EQ(0u, listeners.GetNumListeners());
@@ -373,9 +369,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersError) {
   v8::Local<v8::Context> context = MainContext();
 
   EventFilter event_filter;
-  FilteredEventListeners listeners(base::Bind(&DoNothingOnUpdate), kEvent,
-                                   binding::kNoListenerMax, true,
-                                   &event_filter);
+  FilteredEventListeners listeners(
+      base::DoNothing(), kEvent, binding::kNoListenerMax, true, &event_filter);
 
   v8::Local<v8::Object> invalid_filter =
       V8ValueFromScriptSource(context, "({url: 'some string'})")
@@ -397,12 +392,10 @@ TEST_F(APIEventListenersTest, MultipleUnfilteredListenerEvents) {
   const char kBeta[] = "beta";
 
   EventFilter event_filter;
-  FilteredEventListeners listeners_a(base::Bind(&DoNothingOnUpdate), kAlpha,
-                                     binding::kNoListenerMax, true,
-                                     &event_filter);
-  FilteredEventListeners listeners_b(base::Bind(&DoNothingOnUpdate), kBeta,
-                                     binding::kNoListenerMax, true,
-                                     &event_filter);
+  FilteredEventListeners listeners_a(
+      base::DoNothing(), kAlpha, binding::kNoListenerMax, true, &event_filter);
+  FilteredEventListeners listeners_b(
+      base::DoNothing(), kBeta, binding::kNoListenerMax, true, &event_filter);
 
   EXPECT_EQ(0, event_filter.GetMatcherCountForEventForTesting(kAlpha));
   EXPECT_EQ(0, event_filter.GetMatcherCountForEventForTesting(kBeta));
@@ -477,8 +470,8 @@ TEST_F(APIEventListenersTest, FilteredListenersMaxListenersTest) {
   v8::Local<v8::Context> context = MainContext();
 
   EventFilter event_filter;
-  FilteredEventListeners listeners(base::Bind(&DoNothingOnUpdate), kEvent, 1,
-                                   true, &event_filter);
+  FilteredEventListeners listeners(base::DoNothing(), kEvent, 1, true,
+                                   &event_filter);
 
   v8::Local<v8::Function> function_a = FunctionFromString(context, kFunction);
   EXPECT_EQ(0u, listeners.GetNumListeners());

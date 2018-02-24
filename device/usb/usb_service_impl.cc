@@ -530,7 +530,7 @@ int LIBUSB_CALL UsbServiceImpl::HotplugCallback(libusb_context* context,
 void UsbServiceImpl::OnPlatformDeviceAdded(PlatformUsbDevice platform_device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsKey(platform_devices_, platform_device));
-  EnumerateDevice(platform_device, base::Bind(&base::DoNothing));
+  EnumerateDevice(platform_device, base::DoNothing());
   libusb_unref_device(platform_device);
 }
 

@@ -187,7 +187,7 @@ void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
     if (threads_[i]->thread.IsRunning() &&
         !threads_[i]->hang_detector.IsThreadLikelyHung()) {
       threads_[i]->thread.task_runner()->PostTaskAndReply(
-          FROM_HERE, base::Bind(&base::DoNothing),
+          FROM_HERE, base::DoNothing(),
           base::Bind(&AVDACodecAllocator::StopThreadTask,
                      weak_this_factory_.GetWeakPtr(), i));
     }

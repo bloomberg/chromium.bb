@@ -115,7 +115,7 @@ void TrayBluetoothHelper::StopBluetoothDiscovering() {
     return;
   }
   VLOG(1) << "Stopping Bluetooth device discovery session.";
-  discovery_session_->Stop(base::Bind(&base::DoNothing),
+  discovery_session_->Stop(base::DoNothing(),
                            base::Bind(&BluetoothSetDiscoveringError));
 }
 
@@ -130,7 +130,7 @@ void TrayBluetoothHelper::ConnectToBluetoothDevice(const std::string& address) {
   if (device->IsPaired() || !device->IsPairable()) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_Bluetooth_Connect_Known"));
-    device->Connect(NULL, base::Bind(&base::DoNothing),
+    device->Connect(NULL, base::DoNothing(),
                     base::Bind(&BluetoothDeviceConnectError));
     return;
   }

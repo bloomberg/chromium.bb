@@ -378,9 +378,8 @@ void CupsPrintersHandler::HandleRemoveCupsPrinter(const base::ListValue* args) {
   printers_manager_->RemoveConfiguredPrinter(printer_id);
 
   DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
-  client->CupsRemovePrinter(printer_name,
-                            base::Bind(&OnRemovedPrinter, protocol),
-                            base::Bind(&base::DoNothing));
+  client->CupsRemovePrinter(
+      printer_name, base::Bind(&OnRemovedPrinter, protocol), base::DoNothing());
 }
 
 void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {

@@ -463,8 +463,7 @@ void GLRendererCopier::SendTextureResult(
     gl->DeleteTextures(1, &result_texture);
     // TODO(crbug/754872): This non-null release callback wart is going away
     // soon, as copy requestors won't need pool/manage textures anymore.
-    release_callback = SingleReleaseCallback::Create(
-        base::Bind([](const gpu::SyncToken&, bool) {}));
+    release_callback = SingleReleaseCallback::Create(base::DoNothing());
   } else {
     // Note: There's no need to try to pool/re-use the result texture from here,
     // since only clients that are trying to re-invent video capture would see

@@ -119,8 +119,8 @@ class MockServerErrorJobInterceptor : public URLRequestInterceptor {
 class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestReportSenderNetworkDelegate()
-      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)),
-        all_url_requests_destroyed_callback_(base::Bind(&base::DoNothing)),
+      : url_request_destroyed_callback_(base::DoNothing()),
+        all_url_requests_destroyed_callback_(base::DoNothing()),
         num_requests_(0) {}
 
   void ExpectReport(const std::string& report) {

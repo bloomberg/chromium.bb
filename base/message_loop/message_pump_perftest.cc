@@ -263,8 +263,8 @@ class PostTaskTest : public testing::Test {
     do {
       for (int i = 0; i < batch_size; ++i) {
         for (int j = 0; j < tasks_per_reload; ++j) {
-          queue->AddToIncomingQueue(FROM_HERE, base::BindOnce(&DoNothing),
-                                    base::TimeDelta(), Nestable::kNonNestable);
+          queue->AddToIncomingQueue(FROM_HERE, DoNothing(), base::TimeDelta(),
+                                    Nestable::kNonNestable);
           num_posted++;
         }
         TaskQueue loop_local_queue;

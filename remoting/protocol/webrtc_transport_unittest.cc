@@ -198,8 +198,8 @@ class WebrtcTransportTest : public testing::Test {
   }
 
   void StartConnection() {
-    host_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
-    client_event_handler_.set_connected_callback(base::Bind(&base::DoNothing));
+    host_event_handler_.set_connected_callback(base::DoNothing());
+    client_event_handler_.set_connected_callback(base::DoNothing());
 
     host_event_handler_.set_error_callback(
         base::Bind(&WebrtcTransportTest::OnSessionError, base::Unretained(this),

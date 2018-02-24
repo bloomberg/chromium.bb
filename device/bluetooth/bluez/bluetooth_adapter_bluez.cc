@@ -129,11 +129,6 @@ void OnRegisterationErrorCallback(
       BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
-void DoNothingOnError(
-    device::BluetoothGattService::GattErrorCode /*error_code*/) {}
-void DoNothingOnAdvertisementError(
-    device::BluetoothAdvertisement::ErrorCode /*error_code*/) {}
-
 void SetIntervalErrorCallbackConnector(
     const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
     const std::string& error_name,
@@ -210,8 +205,7 @@ void BluetoothAdapterBlueZ::Shutdown() {
   // the fact that it has been already unregistered and will call our empty
   // error callback with an "Already unregistered" error, which we'll ignore.
   for (auto& it : advertisements_) {
-    it->Unregister(base::Bind(&base::DoNothing),
-                   base::Bind(&DoNothingOnAdvertisementError));
+    it->Unregister(base::DoNothing(), base::DoNothing());
   }
   advertisements_.clear();
 
@@ -225,8 +219,7 @@ void BluetoothAdapterBlueZ::Shutdown() {
   BLUETOOTH_LOG(EVENT) << "Unregistering pairing agent";
   bluez::BluezDBusManager::Get()
       ->GetBluetoothAgentManagerClient()
-      ->UnregisterAgent(dbus::ObjectPath(kAgentPath),
-                        base::Bind(&base::DoNothing),
+      ->UnregisterAgent(dbus::ObjectPath(kAgentPath), base::DoNothing(),
                         base::Bind(&OnUnregisterAgentError));
 
   agent_.reset();
@@ -1045,7 +1038,7 @@ void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
   const std::string address = GetAddress();
   alias = base::StringPrintf("%s_%04X", alias.c_str(),
                              base::PersistentHash(address) & 0xFFFF);
-  SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
+  SetName(alias, base::DoNothing(), base::DoNothing());
 }
 #endif
 
@@ -1212,8 +1205,7 @@ void BluetoothAdapterBlueZ::RemoveLocalGattService(
 
   if (registered_gatt_services_.count(service->object_path()) != 0) {
     registered_gatt_services_.erase(service->object_path());
-    UpdateRegisteredApplication(true, base::Bind(&base::DoNothing),
-                                base::Bind(&DoNothingOnError));
+    UpdateRegisteredApplication(true, base::DoNothing(), base::DoNothing());
   }
 
   owned_gatt_services_.erase(service_iter);

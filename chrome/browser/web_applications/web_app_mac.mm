@@ -10,6 +10,7 @@
 #include <map>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -80,7 +81,10 @@ class Latch : public base::RefCountedThreadSafe<
   // Wraps a reference to |this| in a Closure and returns it. Running the
   // Closure does nothing. The Closure just serves to keep a reference alive
   // until |this| is ready to be destroyed; invoking the |callback|.
-  base::Closure NoOpClosure() { return base::Bind(&Latch::NoOp, this); }
+  base::Closure NoOpClosure() {
+    return base::Bind(base::DoNothing::Repeatedly<Latch*>(),
+                      base::RetainedRef(this));
+  }
 
  private:
   friend class base::RefCountedThreadSafe<Latch>;
@@ -89,7 +93,6 @@ class Latch : public base::RefCountedThreadSafe<
       content::BrowserThread::UI>;
 
   ~Latch() { callback_.Run(); }
-  void NoOp() {}
 
   base::Closure callback_;
 

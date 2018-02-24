@@ -362,8 +362,7 @@ void BluetoothHostPairingController::OnForget() {
 
   if (adapter_.get()) {
     if (adapter_->IsDiscoverable()) {
-      adapter_->SetDiscoverable(false, base::Bind(&base::DoNothing),
-                                base::Bind(&base::DoNothing));
+      adapter_->SetDiscoverable(false, base::DoNothing(), base::DoNothing());
     }
 
     input_device_manager_->GetDevices(base::BindOnce(

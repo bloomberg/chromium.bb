@@ -52,10 +52,9 @@ TEST_F(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
        service_manager::mojom::kRootUserID},
       service_manager::CapabilitySet());
   service_manager::mojom::ServiceFactoryPtr factory;
-  service->OnBindInterface(source_info,
-                           service_manager::mojom::ServiceFactory::Name_,
-                           mojo::MakeRequest(&factory).PassMessagePipe(),
-                           base::Bind(&base::DoNothing));
+  service->OnBindInterface(
+      source_info, service_manager::mojom::ServiceFactory::Name_,
+      mojo::MakeRequest(&factory).PassMessagePipe(), base::DoNothing());
   service_manager::mojom::ServicePtr created_service;
   service_manager::mojom::PIDReceiverPtr pid_receiver;
   mojo::MakeRequest(&pid_receiver);

@@ -45,9 +45,8 @@ GpuModeManager::GpuModeManager()
     pref_registrar_.Init(g_browser_process->local_state());
     // Do nothing when the pref changes. It takes effect after
     // chrome restarts.
-    pref_registrar_.Add(
-        prefs::kHardwareAccelerationModeEnabled,
-        base::Bind(&base::DoNothing));
+    pref_registrar_.Add(prefs::kHardwareAccelerationModeEnabled,
+                        base::DoNothing::Repeatedly<>());
 
     initial_gpu_mode_pref_ = IsGpuModePrefEnabled();
     bool previous_gpu_mode_pref = GetPreviousGpuModePref();

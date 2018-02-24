@@ -76,8 +76,8 @@ TEST_F(ScopedMockTimeMessageLoopTaskRunnerTest,
   bool task_10_has_run = false;
   bool task_11_has_run = false;
 
-  Closure task_1 = Bind(&DoNothing);
-  Closure task_2 = Bind(&DoNothing);
+  Closure task_1 = DoNothing();
+  Closure task_2 = DoNothing();
   Closure task_10 = Bind(&AssignTrue, &task_10_has_run);
   Closure task_11 = Bind(&AssignTrue, &task_11_has_run);
 

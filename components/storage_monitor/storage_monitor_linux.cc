@@ -430,7 +430,7 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
   // AddNewMount calls.
   if (!IsInitialized()) {
     mounting_task_runner->PostTaskAndReply(
-        FROM_HERE, base::Bind(&base::DoNothing),
+        FROM_HERE, base::DoNothing(),
         base::Bind(&StorageMonitorLinux::MarkInitialized,
                    weak_ptr_factory_.GetWeakPtr()));
   }

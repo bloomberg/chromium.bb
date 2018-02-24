@@ -202,8 +202,7 @@ class ServiceWorkerURLRequestJobTest
 
   void SetUpWithHelper(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
-    helper_->context()->storage()->LazyInitializeForTest(
-        base::BindOnce(&base::DoNothing));
+    helper_->context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // Prepare HTTP response info for the version.

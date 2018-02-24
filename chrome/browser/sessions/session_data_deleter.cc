@@ -136,7 +136,7 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     if (!storage_policy_->IsStorageSessionOnly(usage.origin))
       continue;
     storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-        usage.origin, base::BindOnce(&base::DoNothing));
+        usage.origin, base::DoNothing());
   }
 }
 

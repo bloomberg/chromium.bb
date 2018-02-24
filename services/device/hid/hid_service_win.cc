@@ -277,7 +277,7 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing),
+      FROM_HERE, base::DoNothing(),
       base::BindOnce(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
                      device_path));
 }

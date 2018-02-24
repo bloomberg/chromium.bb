@@ -239,11 +239,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
         ->PostTask(FROM_HERE, base::BindOnce(
                                   [](RenderFrameHost* frame) {
                                     GetFilterForProcess(frame->GetProcess())
-                                        ->SetCookie(
-                                            frame->GetRoutingID(),
-                                            GURL("https://baz.com/"),
-                                            GURL("https://baz.com/"), "pwn=ed",
-                                            base::BindOnce(&base::DoNothing));
+                                        ->SetCookie(frame->GetRoutingID(),
+                                                    GURL("https://baz.com/"),
+                                                    GURL("https://baz.com/"),
+                                                    "pwn=ed",
+                                                    base::DoNothing());
                                   },
                                   main_frame));
 

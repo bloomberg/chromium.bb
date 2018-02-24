@@ -119,8 +119,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
 
     DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
         dbus::ObjectPath(default_device_path), shill::kIPConfigsProperty,
-        ip_configs, base::Bind(&base::DoNothing),
-        base::Bind(&ErrorCallbackFunction));
+        ip_configs, base::DoNothing(), base::Bind(&ErrorCallbackFunction));
     base::RunLoop().RunUntilIdle();
   }
 

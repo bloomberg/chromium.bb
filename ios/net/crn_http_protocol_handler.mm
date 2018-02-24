@@ -62,9 +62,6 @@ net::HTTPProtocolHandlerDelegate* g_protocol_handler_delegate = nullptr;
 // Global instance of the MetricsDelegate.
 net::MetricsDelegate* g_metrics_delegate = nullptr;
 
-// Empty callback.
-void DoNothing(bool flag) {}
-
 }  // namespace
 
 // Bridge class to forward NSStream events to the HttpProtocolHandlerCore.
@@ -480,7 +477,7 @@ void HttpProtocolHandlerCore::OnSSLCertificateError(URLRequest* request,
   if (fatal) {
     if (tracker_) {
       tracker_->OnSSLCertificateError(request, ssl_info, false,
-                                      base::Bind(&DoNothing));
+                                      base::DoNothing());
     }
     CancelAfterSSLError();  // High security host do not tolerate any issue.
   } else if (!tracker_) {

@@ -1216,43 +1216,37 @@ void FakeBluetoothDeviceClient::IncomingPairingSimulationTimer() {
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kConfirmPasskeyPath));
       SimulatePairing(dbus::ObjectPath(kConfirmPasskeyPath), true,
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&SimpleErrorCallback));
+                      base::DoNothing(), base::Bind(&SimpleErrorCallback));
       break;
     case 2:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kJustWorksPath));
-      SimulatePairing(dbus::ObjectPath(kJustWorksPath), true,
-                      base::Bind(&base::DoNothing),
+      SimulatePairing(dbus::ObjectPath(kJustWorksPath), true, base::DoNothing(),
                       base::Bind(&SimpleErrorCallback));
       break;
     case 3:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kDisplayPinCodePath));
       SimulatePairing(dbus::ObjectPath(kDisplayPinCodePath), true,
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&SimpleErrorCallback));
+                      base::DoNothing(), base::Bind(&SimpleErrorCallback));
       break;
     case 4:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kDisplayPasskeyPath));
       SimulatePairing(dbus::ObjectPath(kDisplayPasskeyPath), true,
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&SimpleErrorCallback));
+                      base::DoNothing(), base::Bind(&SimpleErrorCallback));
       break;
     case 5:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kRequestPinCodePath));
       SimulatePairing(dbus::ObjectPath(kRequestPinCodePath), true,
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&SimpleErrorCallback));
+                      base::DoNothing(), base::Bind(&SimpleErrorCallback));
       break;
     case 6:
       CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                    dbus::ObjectPath(kRequestPasskeyPath));
       SimulatePairing(dbus::ObjectPath(kRequestPasskeyPath), true,
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&SimpleErrorCallback));
+                      base::DoNothing(), base::Bind(&SimpleErrorCallback));
       break;
     default:
       return;

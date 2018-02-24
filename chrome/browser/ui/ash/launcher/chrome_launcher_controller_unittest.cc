@@ -326,17 +326,13 @@ class TestShelfController : public ash::mojom::ShelfController {
   DISALLOW_COPY_AND_ASSIGN(TestShelfController);
 };
 
-// A callback that does nothing after shelf item selection handling.
-void NoopCallback(ash::ShelfAction action, base::Optional<ash::MenuItemList>) {}
-
 // Simulates selection of the shelf item.
 void SelectItem(ash::ShelfItemDelegate* delegate) {
   std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
       ui::EF_NONE, 0);
   delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
-                         ash::LAUNCH_FROM_UNKNOWN,
-                         base::BindOnce(&NoopCallback));
+                         ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
 }
 
 }  // namespace

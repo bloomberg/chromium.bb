@@ -2592,7 +2592,7 @@ TEST_F(BluetoothBlueZTest, ForgetDevice) {
   // with the device we remove.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  devices[idx]->Forget(base::Bind(&base::DoNothing), GetErrorCallback());
+  devices[idx]->Forget(base::DoNothing(), GetErrorCallback());
   EXPECT_EQ(0, error_callback_count_);
 
   EXPECT_EQ(1, observer.device_removed_count());
@@ -2634,7 +2634,7 @@ TEST_F(BluetoothBlueZTest, ForgetUnpairedDevice) {
   // with the device we remove.
   TestBluetoothAdapterObserver observer(adapter_);
 
-  device->Forget(base::Bind(&base::DoNothing), GetErrorCallback());
+  device->Forget(base::DoNothing(), GetErrorCallback());
   EXPECT_EQ(0, error_callback_count_);
 
   EXPECT_EQ(1, observer.device_removed_count());

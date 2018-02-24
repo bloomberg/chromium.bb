@@ -241,12 +241,12 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTickClock) {
       ScopedTaskEnvironment::ExecutionMode::QUEUED);
 
   constexpr base::TimeDelta kShortTaskDelay = TimeDelta::FromDays(1);
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&base::DoNothing), kShortTaskDelay);
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
+                                                 kShortTaskDelay);
 
   constexpr base::TimeDelta kLongTaskDelay = TimeDelta::FromDays(7);
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&base::DoNothing), kLongTaskDelay);
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
+                                                 kLongTaskDelay);
 
   std::unique_ptr<base::TickClock> tick_clock =
       scoped_task_environment.GetMockTickClock();

@@ -353,7 +353,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   void LazyInitialize() {
-    storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
+    storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1414,9 +1414,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  storage()->UpdateToActiveState(
-      registration_.get(),
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
@@ -1464,9 +1462,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->SetWaitingVersion(nullptr);
-  storage()->UpdateToActiveState(
-      registration_.get(),
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
@@ -1622,9 +1618,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
-  storage()->UpdateToActiveState(
-      registration_.get(),
-      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
+  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,

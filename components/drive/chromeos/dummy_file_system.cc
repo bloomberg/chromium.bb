@@ -11,7 +11,7 @@ base::Closure DummyFileSystem::GetFileContent(
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) {
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 }  // namespace drive

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
@@ -16,12 +17,6 @@
 
 namespace extensions {
 namespace lock_screen_data {
-
-namespace {
-
-void EmptyWriteOperationCallback(OperationResult result) {}
-
-}  // namespace
 
 LockScreenValueStoreMigratorImpl::LockScreenValueStoreMigratorImpl(
     content::BrowserContext* context,
@@ -178,10 +173,8 @@ void LockScreenValueStoreMigratorImpl::OnTargetItemWritten(
     return;
 
   // Make best effort attempt to delete new item if the item migration failed.
-  if (result != OperationResult::kSuccess) {
-    migration_items_[extension_id].current_target->Delete(
-        base::Bind(&EmptyWriteOperationCallback));
-  }
+  if (result != OperationResult::kSuccess)
+    migration_items_[extension_id].current_target->Delete(base::DoNothing());
 
   migration_items_[extension_id].current_source->Delete(
       base::Bind(&LockScreenValueStoreMigratorImpl::OnCurrentItemMigrated,

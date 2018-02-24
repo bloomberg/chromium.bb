@@ -56,9 +56,9 @@ class AddressTrackerLinuxTest : public testing::Test {
 
   void InitializeAddressTracker(bool tracking) {
     if (tracking) {
-      tracker_.reset(new AddressTrackerLinux(
-          base::Bind(&base::DoNothing), base::Bind(&base::DoNothing),
-          base::Bind(&base::DoNothing), ignored_interfaces_));
+      tracker_.reset(
+          new AddressTrackerLinux(base::DoNothing(), base::DoNothing(),
+                                  base::DoNothing(), ignored_interfaces_));
     } else {
       tracker_.reset(new AddressTrackerLinux());
     }

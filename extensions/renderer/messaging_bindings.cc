@@ -152,7 +152,7 @@ void MessagingBindings::BindToGC(
   CHECK(args[1]->IsFunction());
   CHECK(args[2]->IsInt32());
   int js_port_id = args[2].As<v8::Int32>()->Value();
-  base::Closure fallback = base::Bind(&base::DoNothing);
+  base::Closure fallback = base::DoNothing();
   if (js_port_id >= 0) {
     // TODO(robwu): Falling back to closing the port shouldn't be needed. If
     // the script context is destroyed, then the frame has navigated. But that

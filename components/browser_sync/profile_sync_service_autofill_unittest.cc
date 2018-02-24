@@ -625,12 +625,12 @@ class ProfileSyncServiceAutofillTest
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL) {
       return std::make_unique<AutofillDataTypeController>(
-          data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
-          sync_client_, web_data_service_);
+          data_type_thread()->task_runner(), base::DoNothing(), sync_client_,
+          web_data_service_);
     } else {
       return std::make_unique<AutofillProfileDataTypeController>(
-          data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
-          sync_client_, web_data_service_);
+          data_type_thread()->task_runner(), base::DoNothing(), sync_client_,
+          web_data_service_);
     }
   }
 

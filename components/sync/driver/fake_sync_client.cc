@@ -69,7 +69,7 @@ bool FakeSyncClient::HasPasswordStore() {
 }
 
 base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 SyncApiComponentFactory::RegisterDataTypesMethod

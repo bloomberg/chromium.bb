@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -22,11 +21,6 @@
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
-
-namespace base {
-class Time;
-class TimeDelta;
-}
 
 namespace history {
 class HistoryService;
@@ -41,12 +35,6 @@ class PrefRegistrySyncable;
 }
 
 namespace browser_sync {
-
-// An empty syncer::NetworkTimeUpdateCallback. Used in various tests to
-// instantiate ProfileSyncService.
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&);
 
 // Call this to register preferences needed for ProfileSyncService creation.
 void RegisterPrefsForProfileSyncService(

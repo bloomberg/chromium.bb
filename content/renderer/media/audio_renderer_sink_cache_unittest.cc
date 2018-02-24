@@ -386,7 +386,7 @@ TEST_F(AudioRendererSinkCacheTest, SmokeTest) {
   media::WaitableMessageLoopEvent loop_event(
       TestTimeouts::action_max_timeout());
   threads[kThreadCount - 1]->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing), loop_event.GetClosure());
+      FROM_HERE, base::DoNothing(), loop_event.GetClosure());
   // Runs the loop and waits for the thread to call event's closure.
   loop_event.RunAndWait();
 }

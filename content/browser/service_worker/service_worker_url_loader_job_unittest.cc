@@ -495,7 +495,7 @@ class ServiceWorkerURLLoaderJobTest
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
     // Create an active service worker.
-    storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
+    storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");

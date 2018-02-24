@@ -66,7 +66,7 @@ void BluetoothConnection::Disconnect() {
   // this connection is not reused.
   SetStatus(DISCONNECTED);
   if (socket_.get()) {
-    socket_->Disconnect(base::Bind(&base::DoNothing));
+    socket_->Disconnect(base::DoNothing());
     socket_ = nullptr;
   }
   if (adapter_.get()) {

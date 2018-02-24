@@ -215,7 +215,7 @@ void TetherComponentImpl::InitiateShutdown() {
                         active_host->GetActiveHostDeviceId())
                  << "\".";
     tether_disconnector->DisconnectFromNetwork(
-        active_host->GetTetherNetworkGuid(), base::Bind(&base::DoNothing),
+        active_host->GetTetherNetworkGuid(), base::DoNothing(),
         base::Bind(&OnDisconnectErrorDuringShutdown),
         GetSessionCompletionReasonFromShutdownReason(shutdown_reason_));
   }

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -56,9 +57,6 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
   memcpy(&other, arg, sizeof(other));
   return other == sync_token;
 }
-
-static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
-                                 bool lost_resource) {}
 
 static void ReleaseCallback(gpu::SyncToken* release_sync_token,
                             bool* release_lost_resource,
@@ -510,8 +508,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
       GLuint target,
       const gpu::SyncToken& sync_token,
       DisplayResourceProvider* resource_provider) {
-    ReturnCallback return_callback =
-        base::Bind([](const std::vector<viz::ReturnedResource>&) {});
+    ReturnCallback return_callback = base::DoNothing();
 
     int child = resource_provider->CreateChild(return_callback);
 
@@ -900,8 +897,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   id1_transfer.wants_promotion_hint = true;
   id1_transfer.is_backed_by_surface_texture = true;
   viz::ResourceId id1 = child_resource_provider_->ImportResource(
-      id1_transfer,
-      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
+      id1_transfer, viz::SingleReleaseCallback::Create(base::DoNothing()));
 
   viz::TransferableResource id2_transfer =
       viz::TransferableResource::MakeGLOverlay(
@@ -910,8 +906,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   id2_transfer.wants_promotion_hint = false;
   id2_transfer.is_backed_by_surface_texture = false;
   viz::ResourceId id2 = child_resource_provider_->ImportResource(
-      id2_transfer,
-      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
+      id2_transfer, viz::SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -1026,7 +1021,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
       viz::TransferableResource::MakeGL(external_mailbox, GL_LINEAR,
                                         GL_TEXTURE_EXTERNAL_OES,
                                         external_sync_token),
-      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
+      viz::SingleReleaseCallback::Create(base::DoNothing()));
 
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id =
@@ -2830,7 +2825,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
   std::unique_ptr<viz::SingleReleaseCallback> callback =
-      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+      viz::SingleReleaseCallback::Create(base::DoNothing());
 
   auto resource = viz::TransferableResource::MakeGL(
       gpu_mailbox, GL_LINEAR, GL_TEXTURE_EXTERNAL_OES, sync_token);
@@ -3061,7 +3056,7 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
 
   std::unique_ptr<viz::SingleReleaseCallback> callback =
-      viz::SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+      viz::SingleReleaseCallback::Create(base::DoNothing());
 
   viz::ResourceId id =
       resource_provider->ImportResource(resource, std::move(callback));

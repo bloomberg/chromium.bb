@@ -66,7 +66,6 @@ namespace {
 // not supported or initialized.
 const base::Feature kLimitEarlyPreconnectsExperiment{
     "LimitEarlyPreconnects", base::FEATURE_ENABLED_BY_DEFAULT};
-void DoNothingAsyncCallback(int result) {}
 void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
                              ChannelIDService* channel_id_service,
                              std::string host) {
@@ -77,7 +76,7 @@ void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
   std::unique_ptr<crypto::ECPrivateKey> request_key;
   ChannelIDService::Request request;
   int result = channel_id_service->GetOrCreateChannelID(
-      host, &request_key, base::Bind(&DoNothingAsyncCallback), &request);
+      host, &request_key, base::DoNothing(), &request);
   // GetOrCreateChannelID only returns ERR_IO_PENDING before its first call
   // (over the lifetime of the ChannelIDService) has completed or if it is
   // creating a new key. The key that is being looked up here should already

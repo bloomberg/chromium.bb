@@ -24,7 +24,7 @@ void RendererWebCookieJarImpl::SetCookie(const WebURL& url,
       value.Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   RenderThreadImpl::current()->render_frame_message_filter()->SetCookie(
       sender_->GetRoutingID(), url, site_for_cookies, value_utf8,
-      base::BindOnce(&base::DoNothing));
+      base::DoNothing());
 }
 
 WebString RendererWebCookieJarImpl::Cookies(const WebURL& url,

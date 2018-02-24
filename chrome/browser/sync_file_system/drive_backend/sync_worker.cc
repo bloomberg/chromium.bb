@@ -35,8 +35,6 @@ namespace drive_backend {
 
 namespace {
 
-void EmptyStatusCallback(SyncStatusCode status) {}
-
 void InvokeIdleCallback(const base::Closure& idle_callback,
                         const SyncStatusCallback& callback) {
   idle_callback.Run();
@@ -453,9 +451,8 @@ void SyncWorker::DidQueryAppStatus(const AppStatusMap* app_status) {
       // Extension has been uninstalled.
       // (At this stage we can't know if it was unpacked extension or not,
       // so just purge the remote folder.)
-      UninstallOrigin(origin,
-                      RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
-                      base::Bind(&EmptyStatusCallback));
+      UninstallOrigin(origin, RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE,
+                      base::DoNothing());
       continue;
     }
 
@@ -471,9 +468,9 @@ void SyncWorker::DidQueryAppStatus(const AppStatusMap* app_status) {
     bool is_app_root_tracker_enabled =
         (tracker.tracker_kind() == TRACKER_KIND_APP_ROOT);
     if (is_app_enabled && !is_app_root_tracker_enabled)
-      EnableOrigin(origin, base::Bind(&EmptyStatusCallback));
+      EnableOrigin(origin, base::DoNothing());
     else if (!is_app_enabled && is_app_root_tracker_enabled)
-      DisableOrigin(origin, base::Bind(&EmptyStatusCallback));
+      DisableOrigin(origin, base::DoNothing());
   }
 }
 
@@ -502,7 +499,7 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
         syncer->url().is_valid() &&
         storage::VirtualPath::IsRootPath(syncer->url().path())) {
-      RegisterOrigin(syncer->url().origin(), base::Bind(&EmptyStatusCallback));
+      RegisterOrigin(syncer->url().origin(), base::DoNothing());
     }
     should_check_conflict_ = true;
   }
@@ -529,10 +526,8 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
     }
   }
 
-  if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
-    RegisterOrigin(syncer->url().origin(),
-                   base::Bind(&EmptyStatusCallback));
-  }
+  if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid())
+    RegisterOrigin(syncer->url().origin(), base::DoNothing());
 
   if (syncer->needs_remote_change_listing() &&
       !listing_remote_changes_) {
@@ -674,9 +669,8 @@ void SyncWorker::UpdateServiceState(RemoteServiceState state,
 
 void SyncWorker::CallOnIdleForTesting(const base::Closure& callback) {
   if (task_manager_->ScheduleTaskIfIdle(
-          FROM_HERE,
-          base::Bind(&InvokeIdleCallback, callback),
-          base::Bind(&EmptyStatusCallback)))
+          FROM_HERE, base::Bind(&InvokeIdleCallback, callback),
+          base::DoNothing()))
     return;
   call_on_idle_callback_ = base::Bind(
       &SyncWorker::CallOnIdleForTesting,

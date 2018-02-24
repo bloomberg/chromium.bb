@@ -285,7 +285,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // RemoveManager() when this cache storage is being deleted.
   CacheStorageManager* cache_storage_manager_;
 
-  base::CancelableClosure index_write_task_;
+  base::CancelableOnceClosure index_write_task_;
 
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 

@@ -246,8 +246,7 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
   // also wake up the observer. This simply ensures there is at least one.
-  watched_message_loop_->task_runner()->PostTask(FROM_HERE,
-                                                 base::Bind(&base::DoNothing));
+  watched_message_loop_->task_runner()->PostTask(FROM_HERE, base::DoNothing());
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
@@ -286,8 +285,8 @@ void GpuWatchdogThread::OnCheckTimeout() {
 
     // Post a task that does nothing on the watched thread to bump its priority
     // and make it more likely to get scheduled.
-    watched_message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&base::DoNothing));
+    watched_message_loop_->task_runner()->PostTask(FROM_HERE,
+                                                   base::DoNothing());
     return;
   }
 

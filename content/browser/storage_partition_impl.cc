@@ -1118,7 +1118,7 @@ void StoragePartitionImpl::ClearDataForOrigin(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
                 OriginMatcherFunction(), CookieMatcherFunction(), base::Time(),
-                base::Time::Max(), base::BindOnce(&base::DoNothing));
+                base::Time::Max(), base::DoNothing());
 }
 
 void StoragePartitionImpl::ClearData(

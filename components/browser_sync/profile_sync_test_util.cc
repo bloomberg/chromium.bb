@@ -165,10 +165,6 @@ bookmarks::BookmarkModel* BundleSyncClient::GetBookmarkModel() {
 
 }  // namespace
 
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&) {}
-
 void RegisterPrefsForProfileSyncService(
     user_prefs::PrefRegistrySyncable* registry) {
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
@@ -256,8 +252,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.signin_wrapper =
       std::make_unique<SigninManagerWrapper>(signin_manager());
   init_params.oauth2_token_service = auth_service();
-  init_params.network_time_update_callback =
-      base::Bind(&EmptyNetworkTimeUpdate);
+  init_params.network_time_update_callback = base::DoNothing();
   EXPECT_TRUE(base_directory_.CreateUniqueTempDir());
   init_params.base_directory = base_directory_.GetPath();
   init_params.url_request_context = url_request_context();

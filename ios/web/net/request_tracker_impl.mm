@@ -80,9 +80,6 @@ static void RegisterTracker(web::RequestTrackerImpl* tracker, NSString* key) {
   }
 }
 
-// Empty callback.
-void DoNothing(bool flag) {}
-
 }  // namespace
 
 // The structure used to gather the information about the resources loaded.
@@ -244,7 +241,7 @@ void RequestTrackerImpl::RunAfterRequestsCancel(const base::Closure& callback) {
   // This ensures that |callback| runs after anything elese queued on the IO
   // thread, in particular CancelRequest() calls made from closing trackers.
   web::WebThread::PostTaskAndReply(web::WebThread::IO, FROM_HERE,
-                                   base::Bind(&base::DoNothing), callback);
+                                   base::DoNothing(), callback);
 }
 
 // static
@@ -605,7 +602,7 @@ void RequestTrackerImpl::EvaluateSSLCallbackForCounts(TrackerCounts* counts) {
       break;
     case CertPolicy::ALLOWED:
       counts->ssl_callback.Run(YES);
-      counts->ssl_callback = base::Bind(&DoNothing);
+      counts->ssl_callback = base::DoNothing();
       break;
     default:
       NOTREACHED();
@@ -633,7 +630,7 @@ void RequestTrackerImpl::CancelRequestForCounts(TrackerCounts* counts) {
   counts->done = true;
   counts_by_request_.erase(counts->request);
   counts->ssl_callback.Run(NO);
-  counts->ssl_callback = base::Bind(&DoNothing);
+  counts->ssl_callback = base::DoNothing();
   Notify();
 }
 

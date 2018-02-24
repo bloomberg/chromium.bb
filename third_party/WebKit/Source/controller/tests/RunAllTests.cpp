@@ -49,8 +49,7 @@ int runHelper(base::TestSuite* testSuite) {
 
   // Tickle EndOfTaskRunner which among other things will flush the queue
   // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&base::DoNothing));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   // Collect garbage (including threadspecific persistent handles) in order

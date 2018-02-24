@@ -432,7 +432,7 @@ TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest, PostManyTasks) {
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
   constexpr size_t kNumTasksPosted = 2 * kNumWorkersInWorkerPool;
   for (size_t i = 0; i < kNumTasksPosted; ++i)
-    task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+    task_runner->PostTask(FROM_HERE, DoNothing());
 
   EXPECT_EQ(0U, worker_pool_->NumberOfWorkersForTesting());
 
@@ -575,8 +575,8 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
   // Post 2 more tasks while the first task hasn't completed its execution. It
   // is guaranteed that these tasks will run immediately after the first task,
   // without allowing the worker to sleep.
-  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
-  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+  task_runner->PostTask(FROM_HERE, DoNothing());
+  task_runner->PostTask(FROM_HERE, DoNothing());
 
   // Allow tasks to run and wait until the SchedulerWorker is idle.
   event.Signal();
@@ -585,7 +585,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
   // Wake up the SchedulerWorker that just became idle by posting a task and
   // wait until it becomes idle again. The SchedulerWorker should record the
   // TaskScheduler.NumTasksBetweenWaits.* histogram on wake up.
-  task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+  task_runner->PostTask(FROM_HERE, DoNothing());
   worker_pool_->WaitForAllWorkersIdleForTesting();
 
   // Verify that counts were recorded to the histogram as expected.
@@ -1410,7 +1410,7 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
     // Periodically post tasks to ensure that posting tasks does not prevent
     // workers that are idle due to the pool being over capacity from cleaning
     // up.
-    task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+    task_runner->PostTask(FROM_HERE, DoNothing());
     PlatformThread::Sleep(kReclaimTimeForCleanupTests / 2);
   }
   // Note: one worker above capacity will not get cleaned up since it's on the

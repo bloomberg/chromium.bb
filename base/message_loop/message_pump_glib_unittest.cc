@@ -203,24 +203,24 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
   // If changes cause this test to fail, it is reasonable to change it, but
   // TestWorkWhileWaitingForEvents and TestEventsWhileWaitingForWork have to be
   // changed accordingly, otherwise they can become flaky.
-  injector()->AddEventAsTask(0, BindOnce(&DoNothing));
+  injector()->AddEventAsTask(0, DoNothing());
   OnceClosure check_task =
       BindOnce(&ExpectProcessedEvents, Unretained(injector()), 2);
   OnceClosure posted_task =
       BindOnce(&PostMessageLoopTask, FROM_HERE, std::move(check_task));
   injector()->AddEventAsTask(0, std::move(posted_task));
-  injector()->AddEventAsTask(0, BindOnce(&DoNothing));
+  injector()->AddEventAsTask(0, DoNothing());
   injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
   RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
 
   injector()->Reset();
-  injector()->AddEventAsTask(0, BindOnce(&DoNothing));
+  injector()->AddEventAsTask(0, DoNothing());
   check_task = BindOnce(&ExpectProcessedEvents, Unretained(injector()), 2);
   posted_task =
       BindOnce(&PostMessageLoopTask, FROM_HERE, std::move(check_task));
   injector()->AddEventAsTask(0, std::move(posted_task));
-  injector()->AddEventAsTask(10, BindOnce(&DoNothing));
+  injector()->AddEventAsTask(10, DoNothing());
   injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
   RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
@@ -376,8 +376,8 @@ void AddEventsAndDrainGLib(EventInjector* injector) {
   injector->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
 
   // Post a couple of dummy tasks
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce(&DoNothing));
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce(&DoNothing));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, DoNothing());
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, DoNothing());
 
   // Drain the events
   while (g_main_context_pending(nullptr)) {

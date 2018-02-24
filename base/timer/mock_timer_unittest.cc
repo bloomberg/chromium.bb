@@ -63,9 +63,6 @@ class HasWeakPtr : public base::SupportsWeakPtr<HasWeakPtr> {
   DISALLOW_COPY_AND_ASSIGN(HasWeakPtr);
 };
 
-void DoNothingWithWeakPtr(HasWeakPtr* has_weak_ptr) {
-}
-
 TEST(MockTimerTest, DoesNotRetainClosure) {
   HasWeakPtr *has_weak_ptr = new HasWeakPtr();
   base::WeakPtr<HasWeakPtr> weak_ptr(has_weak_ptr->AsWeakPtr());
@@ -73,7 +70,7 @@ TEST(MockTimerTest, DoesNotRetainClosure) {
   base::TimeDelta delay = base::TimeDelta::FromSeconds(2);
   ASSERT_TRUE(weak_ptr.get());
   timer.Start(FROM_HERE, delay,
-              base::Bind(&DoNothingWithWeakPtr,
+              base::Bind(base::DoNothing::Repeatedly<HasWeakPtr*>(),
                          base::Owned(has_weak_ptr)));
   ASSERT_TRUE(weak_ptr.get());
   timer.Fire();

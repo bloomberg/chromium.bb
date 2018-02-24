@@ -190,9 +190,6 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
   CVPixelBufferUnlockBaseAddress(cv_pixel_buffer, 0);
 }
 
-void NoopFrameEncodedCallback(
-    std::unique_ptr<media::cast::SenderEncodedFrame> /*encoded_frame*/) {}
-
 class TestPowerSource : public base::PowerMonitorSource {
  public:
   void GenerateSuspendEvent() {
@@ -342,7 +339,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckVideoFrameFactory) {
 TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoring) {
   // Encode a frame, suspend, encode a frame, resume, encode a frame.
 
-  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  VideoEncoder::FrameEncodedCallback cb = base::DoNothing();
   EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_.NowTicks(), cb));
   power_source_->GenerateSuspendEvent();
   EXPECT_FALSE(encoder_->EncodeVideoFrame(frame_, clock_.NowTicks(), cb));
@@ -353,7 +350,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoring) {
 TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringNoInitialFrame) {
   // Suspend, encode a frame, resume, encode a frame.
 
-  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  VideoEncoder::FrameEncodedCallback cb = base::DoNothing();
   power_source_->GenerateSuspendEvent();
   EXPECT_FALSE(encoder_->EncodeVideoFrame(frame_, clock_.NowTicks(), cb));
   power_source_->GenerateResumeEvent();
@@ -361,7 +358,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringNoInitialFrame) {
 }
 
 TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringVideoFrameFactory) {
-  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  VideoEncoder::FrameEncodedCallback cb = base::DoNothing();
   auto video_frame_factory = encoder_->CreateVideoFrameFactory();
   ASSERT_TRUE(video_frame_factory.get());
 
@@ -391,7 +388,7 @@ TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringVideoFrameFactory) {
 
 TEST_F(H264VideoToolboxEncoderTest,
        CheckPowerMonitoringVideoFrameFactoryNoInitialFrame) {
-  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  VideoEncoder::FrameEncodedCallback cb = base::DoNothing();
   auto video_frame_factory = encoder_->CreateVideoFrameFactory();
   ASSERT_TRUE(video_frame_factory.get());
 

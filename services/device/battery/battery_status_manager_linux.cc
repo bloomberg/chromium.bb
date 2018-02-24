@@ -95,7 +95,7 @@ UPowerObject::UPowerObject(
 UPowerObject::~UPowerObject() {
   properties_.reset();  // before the proxy is deleted.
   dbus_->RemoveObjectProxy(kUPowerServiceName, proxy_->object_path(),
-                           base::Bind(&base::DoNothing));
+                           base::DoNothing());
 }
 
 std::vector<dbus::ObjectPath> UPowerObject::EnumerateDevices() {
@@ -261,7 +261,7 @@ BatteryObject::BatteryObject(
 BatteryObject::~BatteryObject() {
   properties_.reset();  // before the proxy is deleted.
   dbus_->RemoveObjectProxy(kUPowerServiceName, proxy_->object_path(),
-                           base::Bind(&base::DoNothing));
+                           base::DoNothing());
 }
 
 bool BatteryObject::IsValid() const {
@@ -307,10 +307,6 @@ mojom::BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
   return status;
 }
 
-void OnSignalConnectedDoNothing(const std::string& interface_name,
-                                const std::string& signal_name,
-                                bool success) {}
-
 }  // namespace
 
 // Class that represents a dedicated thread which communicates with DBus to
@@ -349,12 +345,12 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
         kUPowerServiceName, kUPowerSignalDeviceAdded,
         base::Bind(&BatteryStatusNotificationThread::DeviceAdded,
                    base::Unretained(this)),
-        base::Bind(&OnSignalConnectedDoNothing));
+        base::DoNothing());
     upower_->proxy()->ConnectToSignal(
         kUPowerServiceName, kUPowerSignalDeviceRemoved,
         base::Bind(&BatteryStatusNotificationThread::DeviceRemoved,
                    base::Unretained(this)),
-        base::Bind(&OnSignalConnectedDoNothing));
+        base::DoNothing());
 
     FindBatteryDevice();
   }
@@ -464,7 +460,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
           kUPowerDeviceInterfaceName, kUPowerDeviceSignalChanged,
           base::Bind(&BatteryStatusNotificationThread::BatteryChanged,
                      base::Unretained(this)),
-          base::Bind(&OnSignalConnectedDoNothing));
+          base::DoNothing());
     }
   }
 

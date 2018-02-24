@@ -436,7 +436,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::CancelableTaskTracker task_tracker;
     // Expire origin1, origin1a, origin2, and origin3a's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
-                                  base::Bind(&base::DoNothing), &task_tracker);
+                                  base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin1 should have a score that is not zero and is the same as the old
@@ -473,8 +473,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     expire_list.push_back(args);
 
     base::CancelableTaskTracker task_tracker;
-    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
-                           &task_tracker);
+    history->ExpireHistory(expire_list, base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin1's score should have changed but the rest should remain the same.
@@ -503,8 +502,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     expire_list.push_back(args);
 
     base::CancelableTaskTracker task_tracker;
-    history->ExpireHistory(expire_list, base::Bind(&base::DoNothing),
-                           &task_tracker);
+    history->ExpireHistory(expire_list, base::DoNothing(), &task_tracker);
     waiter.Wait();
 
     // origin3's score should be removed but the rest should remain the same.

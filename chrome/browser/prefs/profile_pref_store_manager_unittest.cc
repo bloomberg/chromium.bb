@@ -361,7 +361,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
         service_manager::CapabilitySet());
     static_cast<service_manager::mojom::Service*>(pref_service_context_.get())
         ->OnBindInterface(source, interface_name, std::move(handle),
-                          base::Bind(&base::DoNothing));
+                          base::DoNothing());
   }
 
   base::test::ScopedFeatureList feature_list_;

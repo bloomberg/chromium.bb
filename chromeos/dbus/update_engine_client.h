@@ -178,9 +178,6 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
       int64_t update_size,
       const UpdateOverCellularOneTimePermissionCallback& callback) = 0;
 
-  // Returns an empty UpdateCheckCallback that does nothing.
-  static UpdateCheckCallback EmptyUpdateCheckCallback();
-
   // Creates the instance.
   static UpdateEngineClient* Create(DBusClientImplementationType type);
 

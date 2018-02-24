@@ -88,7 +88,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   GeolocationWifiDataProviderCommonTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        wifi_data_callback_(base::Bind(&base::DoNothing)),
+        wifi_data_callback_(base::DoNothing()),
         provider_(new WifiDataProviderCommonWithMock),
         wlan_api_(provider_->wlan_api_.get()),
         polling_policy_(provider_->polling_policy_.get()) {}

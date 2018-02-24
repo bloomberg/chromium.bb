@@ -127,9 +127,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // |callback| will be called in the origin thread, once the method call
   // is complete. As it's called in the origin thread, |callback| can
   // safely reference objects in the origin thread (i.e. UI thread in most
-  // cases). If the caller is not interested in the response from the
-  // method (i.e. calling a method that does not return a value),
-  // EmptyResponseCallback() can be passed to the |callback| parameter.
+  // cases).
   //
   // If the method call is successful, a pointer to Response object will
   // be passed to the callback. If unsuccessful, nullptr will be passed to
@@ -159,9 +157,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // |callback| and |error_callback| will be called in the origin thread, once
   // the method call is complete. As it's called in the origin thread,
   // |callback| can safely reference objects in the origin thread (i.e.
-  // UI thread in most cases). If the caller is not interested in the response
-  // from the method (i.e. calling a method that does not return a value),
-  // EmptyResponseCallback() can be passed to the |callback| parameter.
+  // UI thread in most cases).
   //
   // If the method call is successful, |callback| will be invoked with a
   // Response object. If unsuccessful, |error_callback| will be invoked with an
@@ -215,10 +211,6 @@ class CHROME_DBUS_EXPORT ObjectProxy
   virtual void Detach();
 
   const ObjectPath& object_path() const { return object_path_; }
-
-  // Returns an empty callback that does nothing. Can be used for
-  // CallMethod().
-  static ResponseCallback EmptyResponseCallback();
 
  protected:
   // This is protected, so we can define sub classes.

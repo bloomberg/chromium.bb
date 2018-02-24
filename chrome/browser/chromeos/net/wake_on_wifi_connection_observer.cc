@@ -73,19 +73,15 @@ void WakeOnWifiConnectionObserver::OnDisconnected() {
 void WakeOnWifiConnectionObserver::AddWakeOnPacketConnection() {
   if (!WakeOnWifiManager::IsWakeOnPacketEnabled(feature_))
     return;
-  network_device_handler_
-      ->AddWifiWakeOnPacketConnection(ip_endpoint_,
-                                      base::Bind(&base::DoNothing),
-                                      network_handler::ErrorCallback());
+  network_device_handler_->AddWifiWakeOnPacketConnection(
+      ip_endpoint_, base::DoNothing(), network_handler::ErrorCallback());
 }
 
 void WakeOnWifiConnectionObserver::RemoveWakeOnPacketConnection() {
   if (!WakeOnWifiManager::IsWakeOnPacketEnabled(feature_))
     return;
-  network_device_handler_
-      ->RemoveWifiWakeOnPacketConnection(ip_endpoint_,
-                                         base::Bind(&base::DoNothing),
-                                         network_handler::ErrorCallback());
+  network_device_handler_->RemoveWifiWakeOnPacketConnection(
+      ip_endpoint_, base::DoNothing(), network_handler::ErrorCallback());
 }
 
 } // namespace chromeos

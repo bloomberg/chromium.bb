@@ -195,7 +195,7 @@ bool TestVideoRendererTest::SendPacketAndWaitForMatch(
 
   // Post first test packet: |packet|.
   test_video_renderer_->ProcessVideoPacket(std::move(packet),
-                                           base::Bind(&base::DoNothing));
+                                           base::DoNothing());
 
   // Second packet: |packet_copy| is posted, and |second_packet_done_callback|
   // will always be posted back to main thread, however, whether it will be
@@ -410,7 +410,7 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
 
   for (auto& packet : video_packets) {
     test_video_renderer_->ProcessVideoPacket(std::move(packet),
-                                             base::Bind(&base::DoNothing));
+                                             base::DoNothing());
   }
 }
 
@@ -448,11 +448,11 @@ TEST_F(TestVideoRendererTest, VerifySetExpectedImagePattern) {
 
   // Set expected image pattern.
   test_video_renderer_->ExpectAverageColorInRect(
-      kDefaultExpectedRect, black_color, base::Bind(&base::DoNothing));
+      kDefaultExpectedRect, black_color, base::DoNothing());
 
   // Post test video packet.
   test_video_renderer_->ProcessVideoPacket(encoder_->Encode(*frame.get()),
-                                           base::Bind(&base::DoNothing));
+                                           base::DoNothing());
 }
 
 // Verify correct image pattern can be matched for VP8.

@@ -74,8 +74,7 @@ class CountingPolicyTest : public testing::Test {
   void WaitOnActivityLogSequence() {
     base::RunLoop run_loop;
     GetActivityLogTaskRunner()->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing),
-        run_loop.QuitWhenIdleClosure());
+        FROM_HERE, base::DoNothing(), run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 

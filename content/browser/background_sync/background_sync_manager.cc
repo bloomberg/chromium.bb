@@ -1199,7 +1199,7 @@ void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
 
 base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return op_scheduler_.WrapCallbackToRunNext(base::BindOnce(&base::DoNothing));
+  return op_scheduler_.WrapCallbackToRunNext(base::DoNothing::Once());
 }
 
 }  // namespace content

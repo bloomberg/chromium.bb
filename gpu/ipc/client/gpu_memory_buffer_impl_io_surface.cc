@@ -5,6 +5,7 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -34,8 +35,6 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
   NOTREACHED();
   return 0;
 }
-
-void NoOp() {}
 
 }  // namespace
 
@@ -102,7 +101,7 @@ base::Closure GpuMemoryBufferImplIOSurface::AllocateForTesting(
   handle->type = gfx::IO_SURFACE_BUFFER;
   handle->id = kBufferId;
   handle->mach_port.reset(IOSurfaceCreateMachPort(io_surface));
-  return base::Bind(&NoOp);
+  return base::DoNothing();
 }
 
 bool GpuMemoryBufferImplIOSurface::Map() {

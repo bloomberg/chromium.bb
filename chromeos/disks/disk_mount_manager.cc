@@ -720,7 +720,7 @@ class DiskMountManagerImpl : public DiskMountManager,
             device_path,
             base::Bind(&DiskMountManagerImpl::OnGetDeviceProperties,
                        weak_ptr_factory_.GetWeakPtr()),
-            base::Bind(&base::DoNothing));
+            base::DoNothing());
         break;
       }
       case CROS_DISKS_DISK_REMOVED: {

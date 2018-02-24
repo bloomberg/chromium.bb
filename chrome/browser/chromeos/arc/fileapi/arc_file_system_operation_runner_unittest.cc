@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -69,8 +70,7 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   void CallAllFunctions(int* counter) {
     // Following functions are deferred.
     runner_->AddWatcher(
-        kAuthority, kDocumentId,
-        base::Bind([](ArcFileSystemOperationRunner::ChangeType type) {}),
+        kAuthority, kDocumentId, base::DoNothing(),
         base::Bind([](int* counter, int64_t watcher_id) { ++*counter; },
                    counter));
     runner_->GetChildDocuments(

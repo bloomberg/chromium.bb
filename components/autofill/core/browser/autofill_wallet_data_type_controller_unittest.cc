@@ -94,7 +94,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
         base::ThreadTaskRunnerHandle::Get());
     autofill_wallet_dtc_ = std::make_unique<AutofillWalletDataTypeController>(
         syncer::AUTOFILL_WALLET_DATA, base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&base::DoNothing), this, web_data_service_);
+        base::DoNothing(), this, web_data_service_);
 
     last_type_ = syncer::UNSPECIFIED;
     last_error_ = syncer::SyncError();

@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_last_error.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
@@ -15,9 +16,6 @@
 namespace extensions {
 
 namespace {
-
-void DoNothingWithError(v8::Local<v8::Context> context,
-                        const std::string& error) {}
 
 // Returns the v8 object for the lastError.
 v8::Local<v8::Value> GetLastError(v8::Local<v8::Object> parent,
@@ -63,8 +61,7 @@ TEST_F(APILastErrorTest, TestLastError) {
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
-  APILastError last_error(base::Bind(&GetParent, parents),
-                          base::Bind(&DoNothingWithError));
+  APILastError last_error(base::Bind(&GetParent, parents), base::DoNothing());
 
   EXPECT_FALSE(last_error.HasError(context));
   EXPECT_EQ("undefined", GetLastErrorMessage(parent_object, context));
@@ -159,8 +156,7 @@ TEST_F(APILastErrorTest, NonLastErrorObject) {
   v8::Local<v8::Object> parent_object = v8::Object::New(isolate());
 
   ParentList parents = {{context, parent_object}};
-  APILastError last_error(base::Bind(&GetParent, parents),
-                          base::Bind(&DoNothingWithError));
+  APILastError last_error(base::Bind(&GetParent, parents), base::DoNothing());
 
   auto checked_set = [context](v8::Local<v8::Object> object,
                                base::StringPiece key,
@@ -203,8 +199,7 @@ TEST_F(APILastErrorTest, MultipleContexts) {
   v8::Local<v8::Object> parent_a = v8::Object::New(isolate());
   v8::Local<v8::Object> parent_b = v8::Object::New(isolate());
   ParentList parents = {{context_a, parent_a}, {context_b, parent_b}};
-  APILastError last_error(base::Bind(&GetParent, parents),
-                          base::Bind(&DoNothingWithError));
+  APILastError last_error(base::Bind(&GetParent, parents), base::DoNothing());
 
   last_error.SetError(context_a, "Last error a");
   EXPECT_EQ("\"Last error a\"", GetLastErrorMessage(parent_a, context_a));

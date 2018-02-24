@@ -62,14 +62,14 @@ AliveChecker::AliveChecker(
     // PowerObserverHelper) is destroyed on.
     if (power_observer_helper_factory_callback.is_null()) {
       power_observer_ = std::make_unique<PowerObserverHelper>(
-          task_runner_, base::Bind(&base::DoNothing),
+          task_runner_, base::DoNothing(),
           base::Bind(
               &AliveChecker::SetLastAliveNotificationTimeToNowOnTaskRunner,
               base::Unretained(this)));
     } else {
       power_observer_ =
           std::move(power_observer_helper_factory_callback)
-              .Run(task_runner_, base::Bind(&base::DoNothing),
+              .Run(task_runner_, base::DoNothing(),
                    base::Bind(&AliveChecker::
                                   SetLastAliveNotificationTimeToNowOnTaskRunner,
                               base::Unretained(this)));

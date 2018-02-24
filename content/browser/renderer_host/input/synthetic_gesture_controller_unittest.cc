@@ -708,9 +708,8 @@ class SyntheticGestureControllerTestBase {
   void FlushInputUntilComplete() {
     // Start and stop the timer explicitly here, since the test does not need to
     // wait for begin-frame to start the timer.
-    controller_->dispatch_timer_.Start(FROM_HERE,
-                                       base::TimeDelta::FromSeconds(1),
-                                       base::Bind(&base::DoNothing));
+    controller_->dispatch_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(1), base::DoNothing());
     do
       time_ += base::TimeDelta::FromMilliseconds(kFlushInputRateInMs);
     while (controller_->DispatchNextEvent(time_));

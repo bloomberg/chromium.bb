@@ -20,9 +20,9 @@ TEST(TestBrowserThreadBundleTest,
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::UI);
   TestBrowserThreadBundle test_browser_thread_bundle;
-  base::PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing),
-      base::BindOnce([]() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }));
+  base::PostTaskAndReply(FROM_HERE, base::DoNothing(), base::BindOnce([]() {
+                           DCHECK_CURRENTLY_ON(BrowserThread::UI);
+                         }));
   scoped_task_environment.RunUntilIdle();
 }
 
@@ -34,7 +34,7 @@ TEST(TestBrowserThreadBundleTest,
   ScopedTaskEnvironment queued_scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::UI,
       ScopedTaskEnvironment::ExecutionMode::QUEUED);
-  base::PostTask(FROM_HERE, base::BindOnce(&base::DoNothing));
+  base::PostTask(FROM_HERE, base::DoNothing());
 
   {
     TestBrowserThreadBundle test_browser_thread_bundle;

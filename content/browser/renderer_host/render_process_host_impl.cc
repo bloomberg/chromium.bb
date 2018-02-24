@@ -3145,7 +3145,7 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
   // for avoiding races between enable and disable. Nothing is done on the
   // sequence.
   GetAecDumpFileTaskRunner().PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing),
+      FROM_HERE, base::DoNothing(),
       base::BindOnce(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                      weak_factory_.GetWeakPtr()));
 }

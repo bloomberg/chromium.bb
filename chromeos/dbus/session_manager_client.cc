@@ -183,9 +183,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
     writer.AppendFileDescriptor(fd.get());
 
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   void StartSession(const cryptohome::Identification& cryptohome_id) override {
@@ -194,9 +194,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString("");  // Unique ID is deprecated
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   void StopSession() override {
@@ -204,9 +204,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                  login_manager::kSessionManagerStopSession);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString("");  // Unique ID is deprecated
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   void StartDeviceWipe() override {
@@ -220,9 +220,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerStartTPMFirmwareUpdate);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(update_mode);
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   void RequestLockScreen() override {
@@ -346,10 +346,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     writer.AppendArrayOfStrings(flags);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   void GetServerBackedStateKeys(StateKeysCallback callback) override {
@@ -496,10 +495,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void SimpleMethodCallToSessionManager(const std::string& method_name) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
   }
 
   // Called when the method call without result is completed.

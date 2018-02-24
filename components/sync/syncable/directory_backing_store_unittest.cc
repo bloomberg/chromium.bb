@@ -4249,7 +4249,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
     std::unique_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
         new OnDiskDirectoryBackingStoreForTest(GetUsername(),
                                                GetDatabasePath()));
-    dbs->SetCatastrophicErrorHandler(base::Bind(&base::DoNothing));
+    dbs->SetCatastrophicErrorHandler(base::DoNothing());
 
     EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     EXPECT_TRUE(dbs->DidFailFirstOpenAttempt());

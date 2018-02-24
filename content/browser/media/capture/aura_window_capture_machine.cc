@@ -419,7 +419,7 @@ void AuraWindowCaptureMachine::OnWindowBoundsChanged(
 void AuraWindowCaptureMachine::OnWindowDestroying(aura::Window* window) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  InternalStop(base::Bind(&base::DoNothing));
+  InternalStop(base::DoNothing());
 
   oracle_proxy_->ReportError(FROM_HERE, "OnWindowDestroying()");
 }

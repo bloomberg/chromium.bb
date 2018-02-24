@@ -768,8 +768,7 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
       // If a profile path was specified, set it on a successful connection.
       configuration_handler_->SetNetworkProfile(
           service_path, request->profile_path,
-          NetworkConfigurationObserver::SOURCE_USER_ACTION,
-          base::Bind(&base::DoNothing),
+          NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
           chromeos::network_handler::ErrorCallback());
     }
     InvokeConnectSuccessCallback(request->service_path,

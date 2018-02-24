@@ -109,8 +109,8 @@ void VideoFrameFactoryImpl::RunAfterPendingVideoFrames(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Hop through |gpu_task_runner_| to ensure it comes after pending frames.
-  gpu_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&base::DoNothing), std::move(closure));
+  gpu_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                     std::move(closure));
 }
 
 GpuVideoFrameFactory::GpuVideoFrameFactory() : weak_factory_(this) {

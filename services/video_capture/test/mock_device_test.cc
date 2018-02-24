@@ -4,6 +4,7 @@
 
 #include "services/video_capture/test/mock_device_test.h"
 
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -24,7 +25,7 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {
 
 namespace video_capture {
 
-MockDeviceTest::MockDeviceTest() : ref_factory_(base::Bind(&base::DoNothing)) {}
+MockDeviceTest::MockDeviceTest() : ref_factory_(base::DoNothing()) {}
 
 MockDeviceTest::~MockDeviceTest() = default;
 
@@ -57,9 +58,8 @@ void MockDeviceTest::SetUp() {
   // We must wait for the response to GetDeviceInfos before calling
   // CreateDevice.
   wait_loop.Run();
-  factory_->CreateDevice(
-      mock_descriptor.device_id, mojo::MakeRequest(&device_proxy_),
-      base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
+  factory_->CreateDevice(mock_descriptor.device_id,
+                         mojo::MakeRequest(&device_proxy_), base::DoNothing());
 
   requested_settings_.requested_format.frame_size = gfx::Size(800, 600);
   requested_settings_.requested_format.frame_rate = 15;

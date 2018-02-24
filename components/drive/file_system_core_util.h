@@ -60,9 +60,6 @@ std::string UnescapeCacheFileName(const std::string& filename);
 // |input| must be a valid UTF-8 encoded string.
 std::string NormalizeFileName(const std::string& input);
 
-// Does nothing with |error|. Used with functions taking FileOperationCallback.
-void EmptyFileOperationCallback(FileError error);
-
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 struct DestroyHelper {
   template <typename T>

@@ -144,7 +144,7 @@ base::Closure FakeFileSystem::GetFileContent(
                  weak_ptr_factory_.GetWeakPtr(),
                  initialized_callback, get_content_callback,
                  completion_callback));
-  return base::Bind(&base::DoNothing);
+  return base::DoNothing();
 }
 
 void FakeFileSystem::GetResourceEntry(

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -259,9 +260,9 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     auto install_prompt =
         std::make_unique<ExtensionInstallPrompt>(web_contents);
-    install_prompt->ShowDialog(
-        base::Bind([](ExtensionInstallPrompt::Result r) {}), extension.get(),
-        &icon, std::move(prompt), ExtensionInstallPrompt::ShowDialogCallback());
+    install_prompt->ShowDialog(base::DoNothing(), extension.get(), &icon,
+                               std::move(prompt),
+                               ExtensionInstallPrompt::ShowDialogCallback());
   }
 
   void set_from_webstore() { from_webstore_ = true; }
@@ -434,9 +435,7 @@ void ExtensionInstallDialogRatingsSectionTest::TestRatingsSectionA11y(
   prompt->SetWebstoreData("1,234", true, average_rating, num_ratings);
 
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      profile(), web_contents(),
-      base::Bind([](ExtensionInstallPrompt::Result result) {}),
-      std::move(prompt));
+      profile(), web_contents(), base::DoNothing(), std::move(prompt));
 
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
       dialog, nullptr,

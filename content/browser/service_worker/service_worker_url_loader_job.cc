@@ -187,7 +187,7 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
   did_navigation_preload_ =
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
           resource_request_, url_loader_factory_getter_.get(),
-          base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
+          base::DoNothing(/* TODO(crbug/762357): metrics? */));
   response_head_.service_worker_start_time = base::TimeTicks::Now();
   response_head_.load_timing.send_start = base::TimeTicks::Now();
   response_head_.load_timing.send_end = base::TimeTicks::Now();

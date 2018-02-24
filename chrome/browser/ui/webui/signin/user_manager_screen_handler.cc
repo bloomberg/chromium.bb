@@ -102,9 +102,6 @@ const char kJsApiUserManagerAreAllProfilesLocked[] =
 const size_t kAvatarIconSize = 180;
 const int kMaxOAuthRetries = 3;
 
-void HandleAndDoNothing(const base::ListValue* args) {
-}
-
 std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
   bool is_gaia_picture = entry->IsUsingGAIAPicture() &&
                          entry->GetGAIAPicture() != nullptr;
@@ -724,21 +721,18 @@ void UserManagerScreenHandler::RegisterMessages() {
       base::Bind(&UserManagerScreenHandler::HandleAreAllProfilesLocked,
                  base::Unretained(this)));
 
-  const content::WebUI::MessageCallback& kDoNothingCallback =
-      base::Bind(&HandleAndDoNothing);
-
   // Unused callbacks from screen_account_picker.js
-  web_ui()->RegisterMessageCallback("accountPickerReady", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("loginUIStateChanged", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("hideCaptivePortal", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("getTabletModeState", kDoNothingCallback);
+  web_ui()->RegisterMessageCallback("accountPickerReady", base::DoNothing());
+  web_ui()->RegisterMessageCallback("loginUIStateChanged", base::DoNothing());
+  web_ui()->RegisterMessageCallback("hideCaptivePortal", base::DoNothing());
+  web_ui()->RegisterMessageCallback("getTabletModeState", base::DoNothing());
   // Unused callbacks from display_manager.js
-  web_ui()->RegisterMessageCallback("showAddUser", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("updateCurrentScreen", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("loginVisible", kDoNothingCallback);
+  web_ui()->RegisterMessageCallback("showAddUser", base::DoNothing());
+  web_ui()->RegisterMessageCallback("updateCurrentScreen", base::DoNothing());
+  web_ui()->RegisterMessageCallback("loginVisible", base::DoNothing());
   // Unused callbacks from user_pod_row.js
-  web_ui()->RegisterMessageCallback("focusPod", kDoNothingCallback);
-  web_ui()->RegisterMessageCallback("noPodFocused", kDoNothingCallback);
+  web_ui()->RegisterMessageCallback("focusPod", base::DoNothing());
+  web_ui()->RegisterMessageCallback("noPodFocused", base::DoNothing());
 }
 
 void UserManagerScreenHandler::GetLocalizedValues(

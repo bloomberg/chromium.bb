@@ -1473,7 +1473,7 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
       BindToCurrentLoop(base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
                                    weak_this_factory_.GetWeakPtr())),
-      base::Bind(&base::DoNothing));
+      base::DoNothing());
 
   // Deferred initialization will continue in OnMediaCryptoReady().
   media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(BindToCurrentLoop(

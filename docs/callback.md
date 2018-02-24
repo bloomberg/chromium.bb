@@ -164,6 +164,47 @@ void Foo::RunCallback() {
 }
 ```
 
+### Creating a Callback That Does Nothing
+
+Sometimes you need a callback that does nothing when run (e.g. test code that
+doesn't care to be notified about certain types of events).  It may be tempting
+to pass a default-constructed callback of the right type:
+
+```cpp
+using MyCallback = base::OnceCallback<void(bool arg)>;
+void MyFunction(MyCallback callback) {
+  std::move(callback).Run(true);  // Uh oh...
+}
+...
+MyFunction(MyCallback());  // ...this will crash when Run()!
+```
+
+Default-constructed callbacks are null, and thus cannot be Run().  Instead, use
+`base::DoNothing()`:
+
+```cpp
+...
+MyFunction(base::DoNothing());  // Can be Run(), will no-op
+```
+
+`base::DoNothing()` can be passed for any OnceCallback or RepeatingCallback that
+returns void.
+
+Implementation-wise, `base::DoNothing()` is actually a functor which produces a
+callback from `operator()`.  This makes it unusable when trying to bind other
+arguments to it.  Normally, the only reason to bind arguments to DoNothing() is
+to manage object lifetimes, and in these cases, you should strive to use idioms
+like DeleteSoon(), ReleaseSoon(), or RefCountedDeleteOnSequence instead.  If you
+truly need to bind an argument to DoNothing(), or if you need to explicitly
+create a callback object (because implicit conversion through operator()() won't
+compile), you can instantiate directly:
+
+```cpp
+// Binds |foo_ptr| to a no-op OnceCallback takes a scoped_refptr<Foo>.
+// ANTIPATTERN WARNING: This should likely be changed to ReleaseSoon()!
+base::Bind(base::DoNothing::Once<scoped_refptr<Foo>>(), foo_ptr);
+```
+
 ### Passing Unbound Input Parameters
 
 Unbound parameters are specified at the time a callback is `Run()`. They are

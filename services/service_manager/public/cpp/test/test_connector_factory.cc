@@ -52,8 +52,7 @@ class TestConnectorImplBase : public mojom::Connector {
     (*service_ptr)
         ->OnBindInterface(
             BindSourceInfo(Identity("TestConnectorFactory"), CapabilitySet()),
-            interface_name, std::move(interface_pipe),
-            base::BindOnce(&base::DoNothing));
+            interface_name, std::move(interface_pipe), base::DoNothing());
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
 

@@ -40,8 +40,6 @@ class RefCountedInterfacePtr
   mojo::InterfacePtr<Interface> ptr_;
 };
 
-void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
-
 scoped_refptr<PrefStore> CreatePrefStoreClient(
     PrefValueStore::PrefStoreType store_type,
     std::unordered_map<PrefValueStore::PrefStoreType,
@@ -119,8 +117,8 @@ void OnConnect(
       pref_notifier.get());
   auto pref_service = std::make_unique<PrefService>(
       std::move(pref_notifier), std::move(pref_value_store),
-      persistent_pref_store.get(), pref_registry.get(),
-      base::Bind(&DoNothingHandleReadError), true);
+      persistent_pref_store.get(), pref_registry.get(), base::DoNothing(),
+      true);
   switch (pref_service->GetAllPrefStoresInitializationStatus()) {
     case PrefService::INITIALIZATION_STATUS_WAITING:
       pref_service->AddPrefInitObserver(

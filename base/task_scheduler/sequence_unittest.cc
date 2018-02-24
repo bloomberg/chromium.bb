@@ -97,8 +97,8 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
 // Verifies the sort key of a sequence that contains one BACKGROUND task.
 TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
   // Create a sequence with a BACKGROUND task.
-  Task background_task(FROM_HERE, BindOnce(&DoNothing),
-                       {TaskPriority::BACKGROUND}, TimeDelta());
+  Task background_task(FROM_HERE, DoNothing(), {TaskPriority::BACKGROUND},
+                       TimeDelta());
   scoped_refptr<Sequence> background_sequence = MakeRefCounted<Sequence>();
   background_sequence->PushTask(std::move(background_task));
 
@@ -122,8 +122,8 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyBackground) {
 // USER_VISIBLE task.
 TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
   // Create a sequence with a USER_VISIBLE task.
-  Task foreground_task(FROM_HERE, BindOnce(&DoNothing),
-                       {TaskPriority::USER_VISIBLE}, TimeDelta());
+  Task foreground_task(FROM_HERE, DoNothing(), {TaskPriority::USER_VISIBLE},
+                       TimeDelta());
   scoped_refptr<Sequence> foreground_sequence = MakeRefCounted<Sequence>();
   foreground_sequence->PushTask(std::move(foreground_task));
 
@@ -147,8 +147,7 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
 // isn't empty.
 TEST(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
-  sequence->PushTask(
-      Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  sequence->PushTask(Task(FROM_HERE, DoNothing(), TaskTraits(), TimeDelta()));
 
   EXPECT_DCHECK_DEATH({ sequence->Pop(); });
 }
@@ -157,8 +156,7 @@ TEST(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
 // slot is empty.
 TEST(TaskSchedulerSequenceTest, TakeEmptyFrontSlot) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
-  sequence->PushTask(
-      Task(FROM_HERE, Bind(&DoNothing), TaskTraits(), TimeDelta()));
+  sequence->PushTask(Task(FROM_HERE, DoNothing(), TaskTraits(), TimeDelta()));
 
   EXPECT_TRUE(sequence->TakeTask());
   EXPECT_DCHECK_DEATH({ sequence->TakeTask(); });

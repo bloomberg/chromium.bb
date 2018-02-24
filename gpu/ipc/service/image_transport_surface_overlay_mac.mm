@@ -54,9 +54,6 @@ void CheckGLErrors(const char* msg) {
   }
 }
 
-void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
-}
-
 }  // namespace
 
 namespace gpu {
@@ -390,7 +387,10 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // this is to avoid creating-then-destroying the context for every image
   // transport surface that is observing the GPU switch.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&IOSurfaceContextNoOp, context_on_new_gpu));
+      FROM_HERE,
+      base::Bind(
+          base::DoNothing::Repeatedly<scoped_refptr<ui::IOSurfaceContext>>(),
+          context_on_new_gpu));
 }
 
 }  // namespace gpu

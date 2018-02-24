@@ -197,8 +197,8 @@ class VpnProviderApiTest : public ExtensionApiTest,
   void TriggerInternalRemove() {
     NetworkHandler::Get()->network_configuration_handler()->RemoveConfiguration(
         GetSingleServicePath(),
-        NetworkConfigurationObserver::SOURCE_USER_ACTION,
-        base::Bind(base::DoNothing), base::Bind(DoNothingFailureCallback));
+        NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+        base::Bind(DoNothingFailureCallback));
   }
 
   // NetworkConfigurationObserver:

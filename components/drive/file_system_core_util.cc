@@ -126,9 +126,6 @@ std::string NormalizeFileName(const std::string& input) {
   return output;
 }
 
-void EmptyFileOperationCallback(FileError error) {
-}
-
 bool CreateGDocFile(const base::FilePath& file_path,
                     const GURL& url,
                     const std::string& resource_id) {
