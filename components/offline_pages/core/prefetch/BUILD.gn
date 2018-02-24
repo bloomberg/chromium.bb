@@ -1,5 +1,5 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2017 The Chromium Authors.All rights reserved.
+# Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
 if (is_android) {
@@ -17,6 +17,8 @@ static_library("prefetch") {
     "download_cleanup_task.h",
     "download_completed_task.cc",
     "download_completed_task.h",
+    "finalize_dismissed_url_suggestion_task.cc",
+    "finalize_dismissed_url_suggestion_task.h",
     "generate_page_bundle_reconcile_task.cc",
     "generate_page_bundle_reconcile_task.h",
     "generate_page_bundle_request.cc",
@@ -169,6 +171,7 @@ source_set("unit_tests") {
     "download_archives_task_unittest.cc",
     "download_cleanup_task_unittest.cc",
     "download_completed_task_unittest.cc",
+    "finalize_dismissed_url_suggestion_task_unittest.cc",
     "generate_page_bundle_reconcile_task_unittest.cc",
     "generate_page_bundle_request_unittest.cc",
     "generate_page_bundle_task_unittest.cc",

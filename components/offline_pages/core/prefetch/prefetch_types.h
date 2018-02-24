@@ -183,8 +183,11 @@ enum class PrefetchItemErrorCode {
   // The archive importing was not completed probably due to that Chrome was
   // killed before everything finishes.
   IMPORT_LOST = 1600,
+  // The page suggestion is no longer valid, so the item no longer needs to be
+  // downloaded.
+  SUGGESTION_INVALIDATED = 1700,
   // Note: Must always have the same value as the last actual entry.
-  MAX = IMPORT_LOST
+  MAX = SUGGESTION_INVALIDATED
 };
 
 // Callback invoked upon completion of a prefetch request.
