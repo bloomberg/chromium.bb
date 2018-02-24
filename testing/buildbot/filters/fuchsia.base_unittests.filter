@@ -82,8 +82,8 @@
 # Flaky, https://crbug.com/810077.
 -MessageLoopTypedTest.RecursivePosts/*
 
-# Flaky, https://crbug.com/735701.
--TaskSchedulerWorkerPoolHistogramTest.NumTasksBeforeCleanup
+# Flaky, https://crbug.com/735701 and https://crbug.com/816170.
+-TaskSchedulerWorkerPoolHistogramTest.NumTasks*Cleanup
 
 # Flaky, https://crbug.com/811881
 -AddressSpaceRandomizationTest.RandomBitCorrelations*
