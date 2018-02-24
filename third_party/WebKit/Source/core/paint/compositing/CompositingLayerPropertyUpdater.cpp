@@ -18,8 +18,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
 
   if (!object.HasLayer())
     return;
-  CompositedLayerMapping* mapping =
-      ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping();
+  const auto* paint_layer = ToLayoutBoxModelObject(object).Layer();
+  const auto* mapping = paint_layer->GetCompositedLayerMapping();
   if (!mapping)
     return;
 
@@ -74,8 +74,18 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   }
 
   if (auto* squashing_layer = mapping->SquashingLayer()) {
+    auto state = fragment_data.PreEffectProperties();
+    // The squashing layer's ClippingContainer is the common ancestor of clip
+    // state of all squashed layers, so we should use its clip state. This skips
+    // any control clips on the squashing layer's object which should not apply
+    // on squashed layers.
+    const auto* clipping_container = paint_layer->ClippingContainer();
+    state.SetClip(
+        clipping_container
+            ? clipping_container->FirstFragment().ContentsProperties().Clip()
+            : ClipPaintPropertyNode::Root());
     squashing_layer->SetLayerState(
-        fragment_data.PreEffectProperties(),
+        state,
         snapped_paint_offset + mapping->SquashingLayerOffsetFromLayoutObject());
   }
 
