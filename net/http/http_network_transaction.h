@@ -232,13 +232,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // ERR_PROXY_HTTP_1_1_REQUIRED has to be handled.
   int HandleHttp11Required(int error);
 
-  // Called to possibly handle a client authentication error.
-  void HandleClientAuthError(int error);
-
-  // Called to possibly recover from an SSL handshake error.  Sets next_state_
+  // Called to possibly handle a client authentication error. Sets next_state_
   // and returns OK if recovering from the error.  Otherwise, the same error
   // code is returned.
-  int HandleSSLHandshakeError(int error);
+  int HandleSSLClientAuthError(int error);
 
   // Called to possibly recover from the given error.  Sets next_state_ and
   // returns OK if recovering from the error.  Otherwise, the same error code
@@ -341,6 +338,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // True if we can send the request over early data.
   bool can_send_early_data_;
+
+  // True if |server_ssl_config_.client_cert| was looked up from the
+  // SSLClientAuthCache, rather than provided externally by the caller.
+  bool server_ssl_client_cert_was_cached_;
 
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
