@@ -350,11 +350,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
 
   if (!is_inter_block(mbmi)) {
-    for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
-      if (mbmi->palette_mode_info.palette_size[plane])
-        av1_decode_palette_tokens(xd, plane, r);
-    }
-
     const struct macroblockd_plane *const y_pd = &xd->plane[0];
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, y_pd);
     int row, col;
@@ -513,6 +508,134 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
+static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
+                               TX_SIZE tx_size, int depth, int blk_row,
+                               int blk_col, aom_reader *r) {
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  int is_split = 0;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int max_blocks_high = max_block_high(xd, bsize, 0);
+  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
+  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
+  assert(tx_size > TX_4X4);
+
+  if (depth == MAX_VARTX_DEPTH) {
+    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+        const int index =
+            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+        mbmi->inter_tx_size[index] = tx_size;
+      }
+    }
+    mbmi->tx_size = tx_size;
+    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
+    return;
+  }
+
+  const int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
+                                         xd->left_txfm_context + blk_row,
+                                         mbmi->sb_type, tx_size);
+  is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
+
+  if (is_split) {
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
+    const int bsw = tx_size_wide_unit[sub_txs];
+    const int bsh = tx_size_high_unit[sub_txs];
+
+    if (sub_txs == TX_4X4) {
+      for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+        for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+          const int index =
+              av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+          mbmi->inter_tx_size[index] = sub_txs;
+        }
+      }
+      mbmi->tx_size = sub_txs;
+      mbmi->min_tx_size = mbmi->tx_size;
+      txfm_partition_update(xd->above_txfm_context + blk_col,
+                            xd->left_txfm_context + blk_row, sub_txs, tx_size);
+      return;
+    }
+
+    assert(bsw > 0 && bsh > 0);
+    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
+      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
+        int offsetr = blk_row + row;
+        int offsetc = blk_col + col;
+        read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1, offsetr, offsetc, r);
+      }
+    }
+  } else {
+    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
+      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
+        const int index =
+            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
+        mbmi->inter_tx_size[index] = tx_size;
+      }
+    }
+    mbmi->tx_size = tx_size;
+    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
+  }
+}
+
+static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
+                                     aom_reader *r) {
+  // TODO(debargha): Clean up the logic here. This function should only
+  // be called for intra.
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
+  const int max_depths = bsize_to_max_depth(bsize, 0);
+  const int ctx = get_tx_size_context(xd);
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
+                                    max_depths + 1, ACCT_STR);
+  assert(depth >= 0 && depth <= max_depths);
+  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize, 0);
+  return tx_size;
+}
+
+static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
+                            int allow_select_inter, aom_reader *r) {
+  const TX_MODE tx_mode = cm->tx_mode;
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
+
+  if (block_signals_txsize(bsize)) {
+    if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
+      const TX_SIZE coded_tx_size = read_selected_tx_size(xd, is_inter, r);
+      return coded_tx_size;
+    } else {
+      return tx_size_from_tx_mode(bsize, tx_mode);
+    }
+  } else {
+    assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
+    return get_max_rect_tx_size(bsize);
+  }
+}
+
+#if CONFIG_FILTER_INTRA
+static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
+  MODE_INFO *const mi = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &mi->mbmi;
+  FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
+      &mbmi->filter_intra_mode_info;
+
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
+      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+    filter_intra_mode_info->use_filter_intra = aom_read_symbol(
+        r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
+    if (filter_intra_mode_info->use_filter_intra) {
+      filter_intra_mode_info->filter_intra_mode = aom_read_symbol(
+          r, xd->tile_ctx->filter_intra_mode_cdf, FILTER_INTRA_MODES, ACCT_STR);
+    }
+  }
+}
+#endif  // CONFIG_FILTER_INTRA
+
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          int mi_row, int mi_col, aom_reader *r,
 #if CONFIG_EXT_PARTITION_TYPES
@@ -524,6 +647,42 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                     partition,
 #endif
                     bsize);
+
+  if (!is_inter_block(&xd->mi[0]->mbmi)) {
+    for (int plane = 0; plane < AOMMIN(2, av1_num_planes(&pbi->common));
+         ++plane) {
+      if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane])
+        av1_decode_palette_tokens(xd, plane, r);
+    }
+  }
+
+  AV1_COMMON *cm = &pbi->common;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  int inter_block_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
+  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
+      !mbmi->skip && inter_block_tx && !xd->lossless[mbmi->segment_id]) {
+    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
+    const int bh = tx_size_high_unit[max_tx_size];
+    const int bw = tx_size_wide_unit[max_tx_size];
+    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+    const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
+
+    mbmi->min_tx_size = TX_SIZES_LARGEST;
+    for (int idy = 0; idy < height; idy += bh)
+      for (int idx = 0; idx < width; idx += bw)
+        read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
+  } else {
+    mbmi->tx_size = read_tx_size(cm, xd, inter_block_tx, !mbmi->skip, r);
+    if (inter_block_tx)
+      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
+    mbmi->min_tx_size = mbmi->tx_size;
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+  }
+
+#if CONFIG_FILTER_INTRA
+  if (!inter_block_tx) read_filter_intra_mode_info(xd, r);
+#endif  // CONFIG_FILTER_INTRA
+
   decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
 }
 

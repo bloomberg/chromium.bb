@@ -342,115 +342,6 @@ static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
 }
 #endif
 
-static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
-                               TX_SIZE tx_size, int depth, int blk_row,
-                               int blk_col, aom_reader *r) {
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  int is_split = 0;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int max_blocks_high = max_block_high(xd, bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
-  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
-  assert(tx_size > TX_4X4);
-
-  if (depth == MAX_VARTX_DEPTH) {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
-    mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
-    txfm_partition_update(xd->above_txfm_context + blk_col,
-                          xd->left_txfm_context + blk_row, tx_size, tx_size);
-    return;
-  }
-
-  const int ctx = txfm_partition_context(xd->above_txfm_context + blk_col,
-                                         xd->left_txfm_context + blk_row,
-                                         mbmi->sb_type, tx_size);
-  is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
-
-  if (is_split) {
-    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
-    const int bsw = tx_size_wide_unit[sub_txs];
-    const int bsh = tx_size_high_unit[sub_txs];
-
-    if (sub_txs == TX_4X4) {
-      for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-        for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-          const int index =
-              av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-          mbmi->inter_tx_size[index] = sub_txs;
-        }
-      }
-      mbmi->tx_size = sub_txs;
-      mbmi->min_tx_size = mbmi->tx_size;
-      txfm_partition_update(xd->above_txfm_context + blk_col,
-                            xd->left_txfm_context + blk_row, sub_txs, tx_size);
-      return;
-    }
-
-    assert(bsw > 0 && bsh > 0);
-    for (int row = 0; row < tx_size_high_unit[tx_size]; row += bsh) {
-      for (int col = 0; col < tx_size_wide_unit[tx_size]; col += bsw) {
-        int offsetr = blk_row + row;
-        int offsetc = blk_col + col;
-        read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1, offsetr, offsetc, r);
-      }
-    }
-  } else {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
-    mbmi->tx_size = tx_size;
-    mbmi->min_tx_size = TXSIZEMIN(mbmi->min_tx_size, tx_size);
-    txfm_partition_update(xd->above_txfm_context + blk_col,
-                          xd->left_txfm_context + blk_row, tx_size, tx_size);
-  }
-}
-
-static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
-                                     aom_reader *r) {
-  // TODO(debargha): Clean up the logic here. This function should only
-  // be called for intra.
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
-  const int max_depths = bsize_to_max_depth(bsize, 0);
-  const int ctx = get_tx_size_context(xd);
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
-                                    max_depths + 1, ACCT_STR);
-  assert(depth >= 0 && depth <= max_depths);
-  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize, 0);
-  return tx_size;
-}
-
-static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
-                            int allow_select_inter, aom_reader *r) {
-  const TX_MODE tx_mode = cm->tx_mode;
-  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
-
-  if (block_signals_txsize(bsize)) {
-    if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
-      const TX_SIZE coded_tx_size = read_selected_tx_size(xd, is_inter, r);
-      return coded_tx_size;
-    } else {
-      return tx_size_from_tx_mode(bsize, tx_mode);
-    }
-  } else {
-    assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
-    return get_max_rect_tx_size(bsize);
-  }
-}
-
 static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
                               int mi_offset, int x_mis, int y_mis) {
   int segment_id = INT_MAX;
@@ -757,25 +648,6 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-#if CONFIG_FILTER_INTRA
-static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
-  MODE_INFO *const mi = xd->mi[0];
-  MB_MODE_INFO *const mbmi = &mi->mbmi;
-  FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
-      &mbmi->filter_intra_mode_info;
-
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
-      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    filter_intra_mode_info->use_filter_intra = aom_read_symbol(
-        r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
-    if (filter_intra_mode_info->use_filter_intra) {
-      filter_intra_mode_info->filter_intra_mode = aom_read_symbol(
-          r, xd->tile_ctx->filter_intra_mode_cdf, FILTER_INTRA_MODES, ACCT_STR);
-    }
-  }
-}
-#endif  // CONFIG_FILTER_INTRA
-
 static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
 #if CONFIG_EXT_INTRA_MOD
   const int sym = aom_read_symbol(r, cdf, 2 * MAX_ANGLE_DELTA + 1, ACCT_STR);
@@ -880,26 +752,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
   if (mbmi->use_intrabc) {
-    const BLOCK_SIZE bsize = mbmi->sb_type;
-    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-    if ((cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
-         !xd->lossless[mbmi->segment_id] && !mbmi->skip)) {
-      const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
-      const int bh = tx_size_high_unit[max_tx_size];
-      const int bw = tx_size_wide_unit[max_tx_size];
-      mbmi->min_tx_size = TX_SIZES_LARGEST;
-      for (int idy = 0; idy < height; idy += bh) {
-        for (int idx = 0; idx < width; idx += bw) {
-          read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
-        }
-      }
-    } else {
-      mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
-      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-      mbmi->min_tx_size = mbmi->tx_size;
-      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-    }
+    BLOCK_SIZE bsize = mbmi->sb_type;
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = UV_DC_PRED;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
@@ -1021,8 +874,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     if (is_intrabc_block(mbmi)) return;
   }
 
-  mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
-  set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   mbmi->mode = read_intra_mode(r, get_y_mode_cdf(ec_ctx, above_mi, left_mi));
 
   const int use_angle_delta = av1_use_angle_delta(bsize);
@@ -1069,9 +920,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
-#if CONFIG_FILTER_INTRA
-  read_filter_intra_mode_info(xd, r);
-#endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd, r);
@@ -1376,7 +1224,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
-  read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 }
 
@@ -2014,7 +1861,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   int inter_block = 1;
-  BLOCK_SIZE bsize = mbmi->sb_type;
 
   mbmi->mv[0].as_int = 0;
   mbmi->mv[1].as_int = 0;
@@ -2080,26 +1926,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-
-  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
-      !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
-    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
-    const int bh = tx_size_high_unit[max_tx_size];
-    const int bw = tx_size_wide_unit[max_tx_size];
-    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-    const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
-
-    mbmi->min_tx_size = TX_SIZES_LARGEST;
-    for (int idy = 0; idy < height; idy += bh)
-      for (int idx = 0; idx < width; idx += bw)
-        read_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, r);
-  } else {
-    mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
-    if (inter_block)
-      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    mbmi->min_tx_size = mbmi->tx_size;
-    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-  }
 
   if (inter_block)
     read_inter_block_mode_info(pbi, xd, mi, mi_row, mi_col, r);
