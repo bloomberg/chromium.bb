@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
@@ -18,10 +17,6 @@
 #include "ui/android/view_android.h"
 #include "ui/android/view_client.h"
 #include "ui/gfx/geometry/rect_f.h"
-
-namespace blink {
-class WebGestureEvent;
-}
 
 namespace content {
 class ContentViewCore;
@@ -55,9 +50,6 @@ class WebContentsViewAndroid : public WebContentsView,
       std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler);
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
-
-  void SetGestureListenerManager(
-      std::unique_ptr<GestureListenerManager> manager);
 
   // WebContentsView implementation --------------------------------------------
   gfx::NativeView GetNativeView() const override;
@@ -110,8 +102,6 @@ class WebContentsViewAndroid : public WebContentsView,
   int GetTopControlsHeight() const override;
   int GetBottomControlsHeight() const override;
   bool DoBrowserControlsShrinkBlinkSize() const override;
-  void GestureEventAck(const blink::WebGestureEvent& event,
-                       InputEventAckState ack_result) override;
 
   // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;
@@ -150,9 +140,6 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // Interface used to get notified of events from the synchronous compositor.
   SynchronousCompositorClient* synchronous_compositor_client_;
-
-  // The manager for gesture event listeners.
-  std::unique_ptr<GestureListenerManager> gesture_listener_manager_;
 
   gfx::PointF drag_location_;
   gfx::PointF drag_screen_location_;

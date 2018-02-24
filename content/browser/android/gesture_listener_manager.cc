@@ -24,8 +24,7 @@ namespace content {
 GestureListenerManager::GestureListenerManager(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                WebContents* web_contents)
-    : java_ref_(env, obj) {
-}
+    : RenderWidgetHostConnector(web_contents), java_ref_(env, obj) {}
 
 GestureListenerManager::~GestureListenerManager() {
   JNIEnv* env = AttachCurrentThread();
@@ -91,6 +90,24 @@ void GestureListenerManager::GestureEventAck(
   }
 }
 
+void GestureListenerManager::DidStopFlinging() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_GestureListenerManagerImpl_onFlingEnd(env, j_obj);
+}
+
+void GestureListenerManager::UpdateRenderProcessConnection(
+    RenderWidgetHostViewAndroid* old_rwhva,
+    RenderWidgetHostViewAndroid* new_rwhva) {
+  if (old_rwhva)
+    old_rwhva->set_gesture_listener_manager(nullptr);
+  if (new_rwhva) {
+    new_rwhva->set_gesture_listener_manager(this);
+  }
+}
+
 jlong JNI_GestureListenerManagerImpl_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -98,11 +115,9 @@ jlong JNI_GestureListenerManagerImpl_Init(
   auto* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   CHECK(web_contents) << "Should be created with a valid WebContents.";
 
-  WebContentsViewAndroid* view = static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents)->GetView());
+  // Owns itself and gets destroyed when |WebContentsDestroyed| is called.
   auto* manager = new GestureListenerManager(env, obj, web_contents);
-  view->SetGestureListenerManager(
-      std::unique_ptr<GestureListenerManager>(manager));
+  manager->Initialize();
   return reinterpret_cast<intptr_t>(manager);
 }
 

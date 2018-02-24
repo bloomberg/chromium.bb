@@ -111,7 +111,13 @@ public class ContentViewCoreImpl
     private class ContentGestureStateListener implements GestureStateListener {
         @Override
         public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {
-            mPotentiallyActiveFlingCount++;
+            setTouchScrollInProgress(false);
+        }
+
+        @Override
+        public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
+            // Note that mTouchScrollInProgress should normally be false at this
+            // point, but we reset it anyway as another failsafe.
             setTouchScrollInProgress(false);
         }
 
@@ -173,10 +179,6 @@ public class ContentViewCoreImpl
     // handles. Note that a scroll sequence will *always* bound a pinch
     // sequence, so this will also be true for the duration of a pinch gesture.
     private boolean mTouchScrollInProgress;
-
-    // The outstanding fling start events that hasn't got fling end yet. It may be > 1 because
-    // onNativeFlingStopped() is called asynchronously.
-    private int mPotentiallyActiveFlingCount;
 
     /**
      * PID used to indicate an invalid render process.
@@ -473,7 +475,7 @@ public class ContentViewCoreImpl
 
     @Override
     public boolean isScrollInProgress() {
-        return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0;
+        return mTouchScrollInProgress || getGestureListenerManager().hasPotentiallyActiveFling();
     }
 
     private void setTouchScrollInProgress(boolean inProgress) {
@@ -756,7 +758,7 @@ public class ContentViewCoreImpl
         // It's a very real (and valid) possibility that a fling may still
         // be active when programatically scrolling. Cancelling the fling in
         // such cases ensures a consistent gesture event stream.
-        if (mPotentiallyActiveFlingCount > 0) {
+        if (getGestureListenerManager().hasPotentiallyActiveFling()) {
             getEventForwarder().onCancelFling(time);
         }
         // x/y represents starting location of scroll.
@@ -1043,23 +1045,10 @@ public class ContentViewCoreImpl
         if (!isScrollInProgress()) return;
 
         final boolean touchScrollInProgress = mTouchScrollInProgress;
-        final int potentiallyActiveFlingCount = mPotentiallyActiveFlingCount;
 
-        mPotentiallyActiveFlingCount = 0;
         setTouchScrollInProgress(false);
         if (touchScrollInProgress) getGestureListenerManager().updateOnScrollEnd();
-        if (potentiallyActiveFlingCount > 0) getGestureListenerManager().updateOnFlingEnd();
-    }
-
-    @CalledByNative
-    private void onNativeFlingStopped() {
-        if (mPotentiallyActiveFlingCount > 0) {
-            mPotentiallyActiveFlingCount--;
-            getGestureListenerManager().updateOnFlingEnd();
-        }
-        // Note that mTouchScrollInProgress should normally be false at this
-        // point, but we reset it anyway as another failsafe.
-        setTouchScrollInProgress(false);
+        getGestureListenerManager().resetFlingGesture();
     }
 
     // DisplayAndroidObserver method.

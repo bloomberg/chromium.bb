@@ -205,8 +205,6 @@ class ContentViewCore : public WebContentsObserver {
   void RequestDisallowInterceptTouchEvent();
   bool FilterInputEvent(const blink::WebInputEvent& event);
 
-  void DidStopFlinging();
-
   // Returns the context with which the ContentViewCore was created, typically
   // the Activity context.
   base::android::ScopedJavaLocalRef<jobject> GetContext() const;

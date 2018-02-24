@@ -483,14 +483,6 @@ void ContentViewCore::RequestDisallowInterceptTouchEvent() {
     Java_ContentViewCoreImpl_requestDisallowInterceptTouchEvent(env, obj);
 }
 
-void ContentViewCore::DidStopFlinging() {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_ContentViewCoreImpl_onNativeFlingStopped(env, obj);
-}
-
 gfx::Size ContentViewCore::GetViewportSizePix() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
