@@ -18,6 +18,7 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -64,6 +65,10 @@ public class DataReductionPromoUtilsTest {
     testCanShowPromos() throws Throwable {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
         Assert.assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+        Assert.assertTrue(FieldTrialList.findFullName("DataCompressionProxyPromoVisibility")
+                                  .equals("Enabled"));
+        Assert.assertTrue(
+                DataReductionProxySettings.getInstance().isDataReductionProxyPromoAllowed());
         Assert.assertTrue(DataReductionPromoUtils.canShowPromos());
         DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(mContext, true);
         Assert.assertFalse(DataReductionPromoUtils.canShowPromos());
