@@ -138,11 +138,6 @@ constexpr float kExpandArrowDismissEndFraction = 0.2f;
 constexpr float kExpandArrowShowStartFraction = 0.5f;
 constexpr float kExpandArrowShowEndFraction = 1.0f;
 
-// The length of time we ignore scroll events on the AppsGridView after the
-// AppListView transitions to FULLSCREEN_ALL_APPS.
-constexpr base::TimeDelta kIgnoreScrollEventsDurationMs =
-    base::TimeDelta::FromMilliseconds(500);
-
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
   return gfx::Size(kGridTileWidth, kGridTileHeight);
@@ -947,15 +942,8 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  if (!contents_view_->app_list_view()->is_in_drag() &&
-      pagination_controller_->OnGestureEvent(*event, GetContentsBounds())) {
+  if (pagination_controller_->OnGestureEvent(*event, GetContentsBounds()))
     event->SetHandled();
-  } else {
-    event->ConvertLocationToTarget(
-        static_cast<View*>(this),
-        static_cast<View*>(contents_view_->app_list_view()));
-    contents_view_->app_list_view()->OnGestureEvent(event);
-  }
 }
 
 void AppsGridView::Update() {
@@ -1048,9 +1036,6 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
 }
 
 bool AppsGridView::HandleScroll(int offset, ui::EventType type) {
-  if (is_ignoring_scroll_events_)
-    return false;
-
   // Bail on STATE_START or no apps page to make PaginationModel happy.
   if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
@@ -1796,14 +1781,9 @@ void AppsGridView::UpdateOpacity() {
   }
 }
 
-void AppsGridView::StartTimerToIgnoreScrollEvents() {
-  is_ignoring_scroll_events_ = true;
-  scroll_ignore_timer_.Start(FROM_HERE, kIgnoreScrollEventsDurationMs, this,
-                             &AppsGridView::StopIgnoringScrollEvents);
-}
-
 bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
-  if (!pagination_model()->IsValidPageRelative(offset <= 0 ? 1 : -1))
+  // Scroll up at first page should close the launcher.
+  if (offset > 0 && !pagination_model()->IsValidPageRelative(-1))
     return false;
 
   HandleScroll(offset, type);
@@ -2306,6 +2286,7 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
 }
 
 void AppsGridView::TransitionStarted() {
+  contents_view_->app_list_view()->SetIsIgnoringScrollEvents(true);
   CancelContextMenusOnCurrentPage();
   pagination_animation_start_frame_number_ =
       GetCompositorActivatedFrameCount(layer());
@@ -2321,6 +2302,7 @@ void AppsGridView::TransitionChanged() {
 }
 
 void AppsGridView::TransitionEnded() {
+  contents_view_->app_list_view()->SetIsIgnoringScrollEvents(false);
   const base::TimeDelta duration =
       pagination_model_.GetTransitionAnimationSlideDuration();
   const int end_frame_number = GetCompositorActivatedFrameCount(layer());
@@ -2351,10 +2333,6 @@ void AppsGridView::SetViewHidden(AppListItemView* view,
 void AppsGridView::OnImplicitAnimationsCompleted() {
   if (layer()->opacity() == 0.0f)
     SetVisible(false);
-}
-
-void AppsGridView::StopIgnoringScrollEvents() {
-  is_ignoring_scroll_events_ = false;
 }
 
 bool AppsGridView::EnableFolderDragDropUI() {

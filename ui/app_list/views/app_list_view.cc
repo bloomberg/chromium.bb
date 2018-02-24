@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
-#include "base/timer/elapsed_timer.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -193,6 +192,24 @@ class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
 
+// An animation observer to decide whether to ignore scroll events.
+class ScrollAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  ScrollAnimationObserver(base::WeakPtr<AppListView> view) : view_(view) {}
+  ~ScrollAnimationObserver() override = default;
+
+ private:
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    if (view_)
+      view_->SetIsIgnoringScrollEvents(false);
+  }
+
+  base::WeakPtr<AppListView> view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollAnimationObserver);
+};
+
 }  // namespace
 
 // An animation observer to hide the view at the end of the animation.
@@ -248,6 +265,9 @@ AppListView::AppListView(AppListViewDelegate* delegate)
   // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
   // the same focus movement as tab/shift+tab.
   views::FocusManager::set_arrow_key_traversal_enabled(true);
+
+  scroll_animation_observer_.reset(
+      new ScrollAnimationObserver(weak_ptr_factory_.GetWeakPtr()));
 }
 
 AppListView::~AppListView() {
@@ -707,9 +727,6 @@ void AppListView::SetChildViewsForStateTransition(
       pagination_model->SelectPage(0, false /* animate */);
     }
   } else {
-    // Set timer to ignore further scroll events for this transition.
-    GetRootAppsGridView()->StartTimerToIgnoreScrollEvents();
-
     app_list_main_view_->contents_view()->SetActiveState(
         ash::AppListState::kStateApps, !is_side_shelf_);
   }
@@ -1008,6 +1025,12 @@ void AppListView::OnTabletModeChanged(bool started) {
 }
 
 bool AppListView::HandleScroll(int offset, ui::EventType type) {
+  // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
+  // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
+  // touchpad mouse moves. Those may be passed via mojo APIs and handled here.
+  if (offset == 0 || is_in_drag() || is_ignoring_scroll_events_)
+    return false;
+
   if (app_list_state_ != AppListViewState::PEEKING &&
       app_list_state_ != AppListViewState::FULLSCREEN_ALL_APPS)
     return false;
@@ -1017,19 +1040,9 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
     AppsGridView* apps_grid_view = GetAppsContainerView()->IsInFolderView()
                                        ? GetFolderAppsGridView()
                                        : GetRootAppsGridView();
-    if (apps_grid_view->HandleScrollFromAppListView(offset, type)) {
-      // Set the scroll ignore timer to avoid processing the tail end of the
-      // stream of scroll events, which would close the view.
-      SetOrRestartScrollIgnoreTimer();
+    if (apps_grid_view->HandleScrollFromAppListView(offset, type))
       return true;
-    }
   }
-
-  // Ignore 0-offset events to prevent spurious dismissal, see crbug.com/806338
-  // The system generates 0-offset ET_SCROLL_FLING_CANCEL events during simple
-  // touchpad mouse moves. Those may be passed via mojo APIs and handled here.
-  if (ShouldIgnoreScrollEvents() || offset == 0)
-    return true;
 
   // If the event is a mousewheel event, the offset is always large enough,
   // otherwise the offset must be larger than the scroll threshold.
@@ -1048,16 +1061,6 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
     }
   }
   return true;
-}
-
-void AppListView::SetOrRestartScrollIgnoreTimer() {
-  scroll_ignore_timer_.reset(new base::ElapsedTimer());
-}
-
-bool AppListView::ShouldIgnoreScrollEvents() {
-  return scroll_ignore_timer_ &&
-         scroll_ignore_timer_->Elapsed() <=
-             base::TimeDelta::FromMilliseconds(kScrollIgnoreTimeMs);
 }
 
 void AppListView::SetState(AppListViewState new_state) {
@@ -1148,20 +1151,20 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
   transform.Translate(0, original_state_y - target_state_y);
   layer->SetTransform(transform);
 
-  {
-    ui::LayerAnimator* animator = layer->GetAnimator();
-    animator->StopAnimating();
-    ui::ScopedLayerAnimationSettings settings(animator);
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(animation_duration));
-    settings.SetTweenType(gfx::Tween::EASE_OUT);
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.SetAnimationMetricsReporter(
-        state_animation_metrics_reporter_.get());
+  ui::LayerAnimator* animator = layer->GetAnimator();
+  animator->StopAnimating();
+  ui::ScopedLayerAnimationSettings settings(animator);
+  settings.AddObserver(scroll_animation_observer_.get());
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(animation_duration));
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
+  settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.SetAnimationMetricsReporter(state_animation_metrics_reporter_.get());
 
-    layer->SetTransform(gfx::Transform());
-  }
+  layer->SetTransform(gfx::Transform());
+
+  SetIsIgnoringScrollEvents(true);
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
@@ -1251,6 +1254,11 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
 
 int AppListView::GetScreenBottom() {
   return GetDisplayNearestView().bounds().bottom();
+}
+
+void AppListView::SetIsIgnoringScrollEvents(bool is_ignoring) {
+  DCHECK_NE(is_ignoring_scroll_events_, is_ignoring);
+  is_ignoring_scroll_events_ = is_ignoring;
 }
 
 void AppListView::DraggingLayout() {

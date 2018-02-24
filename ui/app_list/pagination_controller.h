@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_PAGINATION_CONTROLLER_H_
 #define UI_APP_LIST_PAGINATION_CONTROLLER_H_
 
+#include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/events/event_constants.h"
 
@@ -47,8 +48,7 @@ class APP_LIST_EXPORT PaginationController {
   PaginationModel* pagination_model_;  // Not owned.
   ScrollAxis scroll_axis_;
 
-  // Whether a drag event sequence succeeded in moving the app grid.
-  bool drag_moved_app_grid_ = false;
+  DISALLOW_COPY_AND_ASSIGN(PaginationController);
 };
 
 }  // namespace app_list

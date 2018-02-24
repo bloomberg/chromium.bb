@@ -25,16 +25,13 @@ namespace aura {
 class Window;
 }
 
-namespace base {
-class ElapsedTimer;
-}
-
 namespace display {
 class Screen;
 }
 
 namespace ui {
 class AnimationMetricsReporter;
+class ImplicitAnimationObserver;
 }
 
 namespace app_list {
@@ -216,6 +213,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
 
+  void SetIsIgnoringScrollEvents(bool is_ignoring);
+  bool is_ignoring_scroll_events() const { return is_ignoring_scroll_events_; }
+
  private:
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
@@ -234,12 +234,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Closes the AppListView when a click or tap event propogates to the
   // AppListView.
   void HandleClickOrTap(ui::LocatedEvent* event);
-
-  // Sets or restarts the scroll ignore timer.
-  void SetOrRestartScrollIgnoreTimer();
-
-  // Whether scroll events should be ignored.
-  bool ShouldIgnoreScrollEvents();
 
   // Initializes |initial_drag_point_|.
   void StartDrag(const gfx::Point& location);
@@ -373,9 +367,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // True if the dragging started from PEEKING state.
   bool drag_started_from_peeking_ = false;
 
-  // Timer to ignore scroll events which would close the view by accident.
-  std::unique_ptr<base::ElapsedTimer> scroll_ignore_timer_;
-
   // Accessibility announcement dialogue.
   base::string16 state_announcement_;
 
@@ -385,6 +376,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
       state_animation_metrics_reporter_;
+
+  // Whether to ignore the scroll events.
+  bool is_ignoring_scroll_events_ = false;
+
+  // Observes the completion of scroll animation.
+  std::unique_ptr<ui::ImplicitAnimationObserver> scroll_animation_observer_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 
