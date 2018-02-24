@@ -3594,86 +3594,85 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
 
   *tile_size_bytes = tsb;
   *tile_col_size_bytes = tcsb;
+  if (tsb == 4 && tcsb == 4) return data_size;
 
-  if (tsb == 4 && tcsb == 4) {
-    return data_size;
-  } else {
-    uint32_t wpos = 0;
-    uint32_t rpos = 0;
+  uint32_t wpos = 0;
+  uint32_t rpos = 0;
 
 #if CONFIG_EXT_TILE
-    if (cm->large_scale_tile) {
-      int tile_row;
-      int tile_col;
+  if (cm->large_scale_tile) {
+    int tile_row;
+    int tile_col;
 
-      for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
-        // All but the last column has a column header
-        if (tile_col < cm->tile_cols - 1) {
-          uint32_t tile_col_size = mem_get_le32(dst + rpos);
-          rpos += 4;
+    for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
+      // All but the last column has a column header
+      if (tile_col < cm->tile_cols - 1) {
+        uint32_t tile_col_size = mem_get_le32(dst + rpos);
+        rpos += 4;
 
-          // Adjust the tile column size by the number of bytes removed
-          // from the tile size fields.
-          tile_col_size -= (4 - tsb) * cm->tile_rows;
+        // Adjust the tile column size by the number of bytes removed
+        // from the tile size fields.
+        tile_col_size -= (4 - tsb) * cm->tile_rows;
 
-          mem_put_varsize(dst + wpos, tcsb, tile_col_size);
-          wpos += tcsb;
-        }
-
-        for (tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
-          // All, including the last row has a header
-          uint32_t tile_header = mem_get_le32(dst + rpos);
-          rpos += 4;
-
-          // If this is a copy tile, we need to shift the MSB to the
-          // top bit of the new width, and there is no data to copy.
-          if (tile_header >> 31 != 0) {
-            if (tsb < 4) tile_header >>= 32 - 8 * tsb;
-            mem_put_varsize(dst + wpos, tsb, tile_header);
-            wpos += tsb;
-          } else {
-            mem_put_varsize(dst + wpos, tsb, tile_header);
-            wpos += tsb;
-
-            memmove(dst + wpos, dst + rpos, tile_header);
-            rpos += tile_header;
-            wpos += tile_header;
-          }
-        }
+        mem_put_varsize(dst + wpos, tcsb, tile_col_size);
+        wpos += tcsb;
       }
-    } else {
-#endif  // CONFIG_EXT_TILE
-      const int n_tiles = cm->tile_cols * cm->tile_rows;
-      int n;
 
-      for (n = 0; n < n_tiles; n++) {
-        int tile_size;
+      for (tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
+        // All, including the last row has a header
+        uint32_t tile_header = mem_get_le32(dst + rpos);
+        rpos += 4;
 
-        if (n == n_tiles - 1) {
-          tile_size = data_size - rpos;
-        } else {
-          tile_size = mem_get_le32(dst + rpos);
-          rpos += 4;
-          mem_put_varsize(dst + wpos, tsb, tile_size);
+        // If this is a copy tile, we need to shift the MSB to the
+        // top bit of the new width, and there is no data to copy.
+        if (tile_header >> 31 != 0) {
+          if (tsb < 4) tile_header >>= 32 - 8 * tsb;
+          mem_put_varsize(dst + wpos, tsb, tile_header);
           wpos += tsb;
+        } else {
+          mem_put_varsize(dst + wpos, tsb, tile_header);
+          wpos += tsb;
+
+          memmove(dst + wpos, dst + rpos, tile_header);
+          rpos += tile_header;
+          wpos += tile_header;
         }
-
-        memmove(dst + wpos, dst + rpos, tile_size);
-
-        rpos += tile_size;
-        wpos += tile_size;
       }
-#if CONFIG_EXT_TILE
     }
-#endif  // CONFIG_EXT_TILE
 
     assert(rpos > wpos);
     assert(rpos == data_size);
 
     return wpos;
   }
+#endif  // CONFIG_EXT_TILE
+  const int n_tiles = cm->tile_cols * cm->tile_rows;
+  int n;
+
+  for (n = 0; n < n_tiles; n++) {
+    int tile_size;
+
+    if (n == n_tiles - 1) {
+      tile_size = data_size - rpos;
+    } else {
+      tile_size = mem_get_le32(dst + rpos);
+      rpos += 4;
+      mem_put_varsize(dst + wpos, tsb, tile_size);
+      wpos += tsb;
+    }
+
+    memmove(dst + wpos, dst + rpos, tile_size);
+
+    rpos += tile_size;
+    wpos += tile_size;
+  }
+
+  assert(rpos > wpos);
+  assert(rpos == data_size);
+
+  return wpos;
 }
-#endif
+#endif  // CONFIG_EXT_TILE
 
 uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
                           uint8_t *const dst) {
@@ -3944,105 +3943,103 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
       aom_wb_write_literal(saved_wb, tile_size_bytes - 1, 2);
     }
-  } else {
+    return (uint32_t)total_size;
+  }
 #endif  // CONFIG_EXT_TILE
 
-    for (tile_row = 0; tile_row < tile_rows; tile_row++) {
-      TileInfo tile_info;
-      const int is_last_row = (tile_row == tile_rows - 1);
-      av1_tile_set_row(&tile_info, cm, tile_row);
+  for (tile_row = 0; tile_row < tile_rows; tile_row++) {
+    TileInfo tile_info;
+    const int is_last_row = (tile_row == tile_rows - 1);
+    av1_tile_set_row(&tile_info, cm, tile_row);
 
-      for (tile_col = 0; tile_col < tile_cols; tile_col++) {
-        const int tile_idx = tile_row * tile_cols + tile_col;
-        TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-        TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
-        const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
-        const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
-        const int is_last_col = (tile_col == tile_cols - 1);
-        const int is_last_tile = is_last_col && is_last_row;
-        int is_last_tile_in_tg = 0;
+    for (tile_col = 0; tile_col < tile_cols; tile_col++) {
+      const int tile_idx = tile_row * tile_cols + tile_col;
+      TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
+      TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
+      const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
+      const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
+      const int is_last_col = (tile_col == tile_cols - 1);
+      const int is_last_tile = is_last_col && is_last_row;
+      int is_last_tile_in_tg = 0;
 
-        if (new_tg) {
-          data = dst + total_size;
-          // A new tile group begins at this tile.  Write the obu header and
-          // tile group header
-          curr_tg_data_size = write_obu_header(
-              OBU_TILE_GROUP, obu_extension_header, data + PRE_OBU_SIZE_BYTES);
-          if (n_log2_tiles)
-            curr_tg_data_size += write_tile_group_header(
-                data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
-                AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
-                n_log2_tiles);
-          total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
-          new_tg = 0;
-          tile_count = 0;
-        }
-        tile_count++;
-        av1_tile_set_col(&tile_info, cm, tile_col);
+      if (new_tg) {
+        data = dst + total_size;
+        // A new tile group begins at this tile.  Write the obu header and
+        // tile group header
+        curr_tg_data_size = write_obu_header(
+            OBU_TILE_GROUP, obu_extension_header, data + PRE_OBU_SIZE_BYTES);
+        if (n_log2_tiles)
+          curr_tg_data_size += write_tile_group_header(
+              data + curr_tg_data_size + PRE_OBU_SIZE_BYTES, tile_idx,
+              AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
+              n_log2_tiles);
+        total_size += curr_tg_data_size + PRE_OBU_SIZE_BYTES;
+        new_tg = 0;
+        tile_count = 0;
+      }
+      tile_count++;
+      av1_tile_set_col(&tile_info, cm, tile_col);
 
-        if (tile_count == tg_size || tile_idx == (tile_cols * tile_rows - 1)) {
-          is_last_tile_in_tg = 1;
-          new_tg = 1;
-        } else {
-          is_last_tile_in_tg = 0;
-        }
+      if (tile_count == tg_size || tile_idx == (tile_cols * tile_rows - 1)) {
+        is_last_tile_in_tg = 1;
+        new_tg = 1;
+      } else {
+        is_last_tile_in_tg = 0;
+      }
 
 #if CONFIG_DEPENDENT_HORZTILES
-        av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
+      av1_tile_set_tg_boundary(&tile_info, cm, tile_row, tile_col);
 #endif
-        buf->data = dst + total_size;
+      buf->data = dst + total_size;
 
-        // The last tile of the tile group does not have a header.
-        if (!is_last_tile_in_tg) total_size += 4;
+      // The last tile of the tile group does not have a header.
+      if (!is_last_tile_in_tg) total_size += 4;
 
-        // Initialise tile context from the frame context
-        this_tile->tctx = *cm->fc;
-        cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-        mode_bc.allow_update_cdf = 1;
+      // Initialise tile context from the frame context
+      this_tile->tctx = *cm->fc;
+      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
+      mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
-        const int num_planes = av1_num_planes(cm);
-        av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
+      const int num_planes = av1_num_planes(cm);
+      av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 #endif  // CONFIG_LOOP_RESTORATION
 
-        aom_start_encode(&mode_bc, dst + total_size);
-        write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-        aom_stop_encode(&mode_bc);
-        tile_size = mode_bc.pos;
-        assert(tile_size > 0);
+      aom_start_encode(&mode_bc, dst + total_size);
+      write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
+      aom_stop_encode(&mode_bc);
+      tile_size = mode_bc.pos;
+      assert(tile_size > 0);
 
-        curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));
-        buf->size = tile_size;
-        if (tile_size > *max_tile_size) {
-          cm->largest_tile_id = tile_cols * tile_row + tile_col;
-        }
-        if (!is_last_tile) {
-          *max_tile_size = AOMMAX(*max_tile_size, tile_size);
-        }
+      curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));
+      buf->size = tile_size;
+      if (tile_size > *max_tile_size) {
+        cm->largest_tile_id = tile_cols * tile_row + tile_col;
+      }
+      if (!is_last_tile) {
+        *max_tile_size = AOMMAX(*max_tile_size, tile_size);
+      }
 
-        if (!is_last_tile_in_tg) {
-          // size of this tile
-          mem_put_le32(buf->data, tile_size);
-        } else {
+      if (!is_last_tile_in_tg) {
+        // size of this tile
+        mem_put_le32(buf->data, tile_size);
+      } else {
 // write current tile group size
 #if CONFIG_OBU_SIZING
-          const size_t length_field_size =
-              aom_uleb_size_in_bytes(curr_tg_data_size);
-          memmove(data + length_field_size, data, curr_tg_data_size);
-          if (write_uleb_obu_size(curr_tg_data_size, data) != AOM_CODEC_OK)
-            assert(0);
-          curr_tg_data_size += length_field_size;
-          total_size += length_field_size;
+        const size_t length_field_size =
+            aom_uleb_size_in_bytes(curr_tg_data_size);
+        memmove(data + length_field_size, data, curr_tg_data_size);
+        if (write_uleb_obu_size(curr_tg_data_size, data) != AOM_CODEC_OK)
+          assert(0);
+        curr_tg_data_size += length_field_size;
+        total_size += length_field_size;
 #else
         mem_put_le32(data, curr_tg_data_size);
 #endif  // CONFIG_OBU_SIZING
-        }
-
-        total_size += tile_size;
       }
+
+      total_size += tile_size;
     }
-#if CONFIG_EXT_TILE
   }
-#endif  // CONFIG_EXT_TILE
   return (uint32_t)total_size;
 }
 
