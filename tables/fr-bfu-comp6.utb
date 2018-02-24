@@ -5,18 +5,18 @@
 
 #-display-name: Unified French 6 dots
 #-author: Michel Such <michel.such@free.fr>
-#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: André-Abush Clause <dev@andreabc.net>
 #-author: Ludovic Oger <oger.ludovic@gmail.com>
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-02-22
+#-updated: 2018-02-24
 
 # liblouis: Unified French 6 dots Braille table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012-2017 Michel Such <michel.such@free.fr>
-# Copyright (C) 2017 André-Abush CLAUSE <dev@andreabc.net>
+# Copyright (C) 2012-2018 Michel Such <michel.such@free.fr>
+# Copyright (C) 2017-2018 André-Abush Clause <dev@andreabc.net>
 # Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
 #  This file is part of liblouis.
@@ -37,11 +37,10 @@
 
 # Définitions pour code braille français international unifié
 # Par Nicolas Pitre <nico@cam.org>
-# Référence: http://www.inlb.qc.ca/apropos/c2003unificationdubraille.aspx
 # maintenu par Michel Such <michel.such@free.fr>
 
 # Uncontracted Unified French Table
-# ----------------------------------
+# ---------------------------------
 
 #include unicode.dis
 undefined 0
@@ -57,7 +56,7 @@ display * 35
 display | 456
 display ¸ 456
 display ¤ 45
-display  56
+display „ 56
 display ^ 4
 display \s 0
 display @ 345
@@ -151,10 +150,6 @@ math \x003e 5-345  # supérieur à
 # guillemets
 punctuation \x00AB 2356     # right-pointing double angle quotation mark
 punctuation \x00BB 2356     # left-pointing double angle quotation mark
-punctuation \x0091 2356     # [left single quotation mark] (private use one)
-punctuation \x0092 2356     # [right single quotation mark] (private use two)
-punctuation \x0093 2356     # [left double quotation mark] (set transmit state)
-punctuation \x0094 2356     # [right double quotation mark] (cancel character)
 punctuation \x2018 2356     # left single quotation mark
 punctuation \x2019 2356     # right single quotation mark
 punctuation \x201C 2356     # left double quotation mark
@@ -272,14 +267,12 @@ include fr-bfu-comp68.cti
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=[]
-#numericnocontchars âêîôûëïüœ
 numericnocontchars 0123456789
 
 
 capsletter 46
 begcaps 46-46-46
 begcapsword 46-46
-endcapsword 5-46
 begcaps 46-46
 endcaps 5-5-46
 emphclass italic

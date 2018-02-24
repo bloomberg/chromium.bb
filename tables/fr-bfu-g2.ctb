@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2018-02-19
+#-updated: 2018-02-24
 
 # liblouis: Unified French Grade 2 Table
 
@@ -55,7 +55,7 @@ include fr-bfu-comp6.utb
 class con bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ
 class voy aeiouyéàèùâêîôûëïüœAEIOUYÉÀÈÙÂÊÄËÏÜŒ
 class bmp bmpBMP
-class apost '\X2019\X0092
+class apost '\X2018\x2019
 
 #Pour désabréger, il nous faut une classe contenant les consonnes et les abréviations commençant par une consonne
 class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘⠆⠷⠩⠒⠹⠶⠻⠸⠫⠖⠴
@@ -74,7 +74,7 @@ class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙœŒ⠈⠅⠜⠢⠦⠐⠨⠵⠠⠾⠺�
 class frmath ⠬⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠂⠆⠒⠲⠖⠶⠦⠔⠴⠤⠄⠐⠠⠌⠘⠷⠾⠜⠃⠨⠈
 class puncEnd ⠂,;:.?!")]}
 letsign 56
-noletsignafter '\X2019\X0092
+noletsignafter '\X2018\X2019
 hyphen - 36
 math [ 12356a
 math ] 23456a
@@ -2812,8 +2812,8 @@ contraction w
 contraction x
 contraction z
 endword 's 3-234
+endword \x2018s 3-234
 endword \x2019s 3-234
-endword \x0092s 3-234
 
 contraction B
 contraction C
