@@ -21,6 +21,8 @@ static_library("client") {
     "empty_cursor_filter.h",
     "host_experiment_sender.cc",
     "host_experiment_sender.h",
+    "in_memory_log_handler.cc",
+    "in_memory_log_handler.h",
     "queued_task_poster.cc",
     "queued_task_poster.h",
     "software_video_renderer.cc",
