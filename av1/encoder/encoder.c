@@ -1110,6 +1110,8 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->seq_params.enable_dual_filter = oxcf->enable_dual_filter;
 #if CONFIG_JNT_COMP
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
+  // disable jnt_comp at sequence header for error resilient mode
+  cm->seq_params.enable_jnt_comp &= !oxcf->error_resilient_mode;
 #endif
   cm->width = oxcf->width;
   cm->height = oxcf->height;
