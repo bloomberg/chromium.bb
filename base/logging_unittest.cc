@@ -295,7 +295,7 @@ void CheckCrashTestSighandler(int, siginfo_t* info, void* context_ptr) {
 #if defined(OS_MACOSX)
   crash_addr = reinterpret_cast<uintptr_t>(info->si_addr);
 #else  // OS_POSIX && !OS_MACOSX
-  struct ucontext* context = reinterpret_cast<struct ucontext*>(context_ptr);
+  ucontext_t* context = reinterpret_cast<ucontext_t*>(context_ptr);
 #if defined(ARCH_CPU_X86)
   crash_addr = static_cast<uintptr_t>(context->uc_mcontext.gregs[REG_EIP]);
 #elif defined(ARCH_CPU_X86_64)

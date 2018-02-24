@@ -242,7 +242,7 @@ DEBIAN_PACKAGES="\
   libvorbis0a
   libvorbisenc2
   libvpx-dev
-  libvpx4
+  libvpx5
   libwayland-client0
   libwayland-cursor0
   libwayland-dev
