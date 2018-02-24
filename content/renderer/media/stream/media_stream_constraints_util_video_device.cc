@@ -749,6 +749,20 @@ blink::WebString GetVideoKindForFormat(
              : blink::WebString::FromASCII(kVideoKindColor);
 }
 
+blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
+    media::VideoFacingMode video_facing) {
+  switch (video_facing) {
+    case media::MEDIA_VIDEO_FACING_NONE:
+      return blink::WebMediaStreamTrack::FacingMode::kNone;
+    case media::MEDIA_VIDEO_FACING_USER:
+      return blink::WebMediaStreamTrack::FacingMode::kUser;
+    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
+      return blink::WebMediaStreamTrack::FacingMode::kEnvironment;
+    default:
+      return blink::WebMediaStreamTrack::FacingMode::kNone;
+  }
+}
+
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities() = default;
 VideoDeviceCaptureCapabilities::VideoDeviceCaptureCapabilities(
     VideoDeviceCaptureCapabilities&& other) = default;

@@ -146,6 +146,12 @@ class CONTENT_EXPORT UserMediaProcessor
                          const std::string& label,
                          const MediaStreamDevices& audio_devices,
                          const MediaStreamDevices& video_devices);
+
+  void GotAllVideoInputFormatsForDevice(
+      const std::string& label,
+      const std::string& device_id,
+      const media::VideoCaptureFormats& formats);
+
   void OnStreamGenerationFailed(int request_id,
                                 MediaStreamRequestResult result);
 
@@ -163,14 +169,16 @@ class CONTENT_EXPORT UserMediaProcessor
   // Called when |source| has been stopped from JavaScript.
   void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
 
-  // Creates a WebKit representation of stream sources based on
-  // |devices| from the MediaStreamDispatcherHost.
+  // Creates a WebKit representation of a stream source based on
+  // |device| from the MediaStreamDispatcherHost.
   blink::WebMediaStreamSource InitializeVideoSourceObject(
       const MediaStreamDevice& device);
 
   blink::WebMediaStreamSource InitializeAudioSourceObject(
       const MediaStreamDevice& device,
       bool* is_pending);
+
+  void StartTracks(const std::string& label);
 
   void CreateVideoTracks(
       const MediaStreamDevices& devices,

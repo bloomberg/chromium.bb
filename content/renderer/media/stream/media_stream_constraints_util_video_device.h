@@ -26,6 +26,9 @@ namespace content {
 blink::WebString CONTENT_EXPORT
 GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
+blink::WebMediaStreamTrack::FacingMode CONTENT_EXPORT
+ToWebFacingMode(media::VideoFacingMode video_facing);
+
 struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
