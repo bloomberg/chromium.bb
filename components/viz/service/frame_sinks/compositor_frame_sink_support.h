@@ -231,6 +231,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // frames.
   std::vector<CapturableFrameSink::Client*> capture_clients_;
 
+  // The set of SharedBitmapIds that have been reported as allocated to this
+  // interface. On closing this interface, the display compositor should drop
+  // ownership of the bitmaps with these ids to avoid leaking them.
+  std::set<SharedBitmapId> owned_bitmaps_;
+
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupport);

@@ -57,6 +57,12 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   EvictCurrentSurface();
   frame_sink_manager_->UnregisterCompositorFrameSinkSupport(frame_sink_id_);
 
+  // The display compositor has ownership of shared memory for each
+  // SharedBitmapId that has been reported from the client. Since the client is
+  // gone that memory can be freed. If we don't then it would leak.
+  for (const auto& id : owned_bitmaps_)
+    ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+
   // No video capture clients should remain at this point.
   DCHECK(capture_clients_.empty());
 }
@@ -188,13 +194,18 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 bool CompositorFrameSinkSupport::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const SharedBitmapId& id) {
-  return ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
-      std::move(buffer), id);
+  if (!ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+          std::move(buffer), id))
+    return false;
+
+  owned_bitmaps_.insert(id);
+  return true;
 }
 
 void CompositorFrameSinkSupport::DidDeleteSharedBitmap(
     const SharedBitmapId& id) {
   ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  owned_bitmaps_.erase(id);
 }
 
 CompositorFrameSinkSupport::SubmitResult
