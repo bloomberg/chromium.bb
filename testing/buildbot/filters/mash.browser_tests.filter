@@ -271,3 +271,7 @@
 
 # DCHECK in DelegatedFrameHost
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
+
+# https://crbug.com/815379
+-WindowOpenApiTest.RemoveLockedFullscreenFromWindow
+-WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
