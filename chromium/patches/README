@@ -108,9 +108,6 @@ Current patches:
     decode_cabac_residual_internal(): Limit the value of |j| to avoid integer
     overflow. https://crbug.com/806580
 
-  libavformat/mov.c
-    mov_read_trun(): Fix memset size on ctts_data. https://crbug.com/812567
-
   libavcodec/mpegaudio_parser.c
     mpegaudio_parse(): Drop trailing garbage on flush. Submitted upstream, so
     should be present for M67 ffmpeg roll. http://crbug.com/794782
