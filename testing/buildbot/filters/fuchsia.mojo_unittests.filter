@@ -17,3 +17,6 @@
 
 # Flaky since migration to unified mojo_unittests, https://crbug.com/814914.
 -FileDataPipeProducerTest.HugeFile
+
+# Flaky, https://crbug.com/815314.
+-SharedBufferTest.CreateAndPassFromChildReadOnlyBuffer
