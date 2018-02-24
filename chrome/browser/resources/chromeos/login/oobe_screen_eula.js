@@ -8,6 +8,15 @@
 
 login.createScreen('EulaScreen', 'eula', function() {
   var CONTEXT_KEY_USAGE_STATS_ENABLED = 'usageStatsEnabled';
+  var CLEAR_ANCHORS_CONTENT_SCRIPT = {
+    code: 'A=Array.from(document.getElementsByTagName("a"));' +
+        'for(var i = 0; i < A.length; ++i) {' +
+        '  const el = A[i];' +
+        '  let e = document.createElement("span");' +
+        '  e.textContent=el.textContent;' +
+        '  el.parentNode.replaceChild(e,el);' +
+        '}'
+  };
 
   /**
    * Load text/html contents from the given url into the given webview. The
@@ -334,6 +343,15 @@ login.createScreen('EulaScreen', 'eula', function() {
       var loadBundledEula = function() {
         loadUrlToWebview(webview, TERMS_URL);
       };
+
+      webview.addContentScripts([{
+        name: 'clearAnchors',
+        matches: ['<all_urls>'],
+        js: CLEAR_ANCHORS_CONTENT_SCRIPT,
+      }]);
+      webview.addEventListener('contentload', () => {
+        webview.executeScript(CLEAR_ANCHORS_CONTENT_SCRIPT);
+      });
 
       var onlineEulaUrl = loadTimeData.getString('eulaOnlineUrl');
       if (!onlineEulaUrl) {
