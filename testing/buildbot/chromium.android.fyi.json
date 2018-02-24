@@ -186,7 +186,7 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "cronet_unittests"
+            "cronet_unittests_android"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
@@ -217,7 +217,7 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "args": [
@@ -294,7 +294,7 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "swarming": {
@@ -489,7 +489,7 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "cronet_unittests"
+            "cronet_unittests_android"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
@@ -520,7 +520,7 @@
             }
           ]
         },
-        "test": "cronet_unittests"
+        "test": "cronet_unittests_android"
       },
       {
         "args": [
