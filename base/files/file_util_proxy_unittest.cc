@@ -65,7 +65,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_File) {
   // Run.
   FileUtilProxy::GetFileInfo(
       file_task_runner(), TestPath(),
-      Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.
@@ -87,7 +87,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
   // Run.
   FileUtilProxy::GetFileInfo(
       file_task_runner(), TestPath(),
-      Bind(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileUtilProxyTest::DidGetFileInfo, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
 
   // Verify.
@@ -107,7 +107,7 @@ TEST_F(FileUtilProxyTest, Touch) {
 
   FileUtilProxy::Touch(
       file_task_runner(), TestPath(), last_accessed_time, last_modified_time,
-      Bind(&FileUtilProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
+      BindOnce(&FileUtilProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
   RunLoop().Run();
   EXPECT_EQ(File::FILE_OK, error_);
 

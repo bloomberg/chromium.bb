@@ -16,10 +16,10 @@ namespace base {
 
 namespace {
 
-void CallWithTranslatedParameter(const FileUtilProxy::StatusCallback& callback,
+void CallWithTranslatedParameter(FileUtilProxy::StatusCallback callback,
                                  bool value) {
   DCHECK(!callback.is_null());
-  callback.Run(value ? File::FILE_OK : File::FILE_ERROR_FAILED);
+  std::move(callback).Run(value ? File::FILE_OK : File::FILE_ERROR_FAILED);
 }
 
 class GetFileInfoHelper {
@@ -36,9 +36,9 @@ class GetFileInfoHelper {
       error_ = File::FILE_ERROR_FAILED;
   }
 
-  void Reply(const FileUtilProxy::GetFileInfoCallback& callback) {
+  void Reply(FileUtilProxy::GetFileInfoCallback callback) {
     if (!callback.is_null()) {
-      callback.Run(error_, file_info_);
+      std::move(callback).Run(error_, file_info_);
     }
   }
 
@@ -52,30 +52,27 @@ class GetFileInfoHelper {
 
 // Retrieves the information about a file. It is invalid to pass NULL for the
 // callback.
-bool FileUtilProxy::GetFileInfo(
-    TaskRunner* task_runner,
-    const FilePath& file_path,
-    const GetFileInfoCallback& callback) {
+bool FileUtilProxy::GetFileInfo(TaskRunner* task_runner,
+                                const FilePath& file_path,
+                                GetFileInfoCallback callback) {
   GetFileInfoHelper* helper = new GetFileInfoHelper;
   return task_runner->PostTaskAndReply(
       FROM_HERE,
       BindOnce(&GetFileInfoHelper::RunWorkForFilePath, Unretained(helper),
                file_path),
-      BindOnce(&GetFileInfoHelper::Reply, Owned(helper), callback));
+      BindOnce(&GetFileInfoHelper::Reply, Owned(helper), std::move(callback)));
 }
 
 // static
-bool FileUtilProxy::Touch(
-    TaskRunner* task_runner,
-    const FilePath& file_path,
-    const Time& last_access_time,
-    const Time& last_modified_time,
-    const StatusCallback& callback) {
+bool FileUtilProxy::Touch(TaskRunner* task_runner,
+                          const FilePath& file_path,
+                          const Time& last_access_time,
+                          const Time& last_modified_time,
+                          StatusCallback callback) {
   return base::PostTaskAndReplyWithResult(
-      task_runner,
-      FROM_HERE,
-      Bind(&TouchFile, file_path, last_access_time, last_modified_time),
-      Bind(&CallWithTranslatedParameter, callback));
+      task_runner, FROM_HERE,
+      BindOnce(&TouchFile, file_path, last_access_time, last_modified_time),
+      BindOnce(&CallWithTranslatedParameter, std::move(callback)));
 }
 
 }  // namespace base
