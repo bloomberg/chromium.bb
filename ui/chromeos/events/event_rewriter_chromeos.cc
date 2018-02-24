@@ -723,6 +723,11 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
     // XK_ISO_Level3_Shift with Mod3Mask, not XF86XK_Launch7).
     case ui::DomCode::F16:
     case ui::DomCode::CAPS_LOCK:
+      // This key is already remapped to Mod3 in remapping based on DomKey. Skip
+      // more remapping.
+      if (IsISOLevel5ShiftUsedByCurrentInputMethod() && remapped_key)
+        break;
+
       characteristic_flag = ui::EF_CAPS_LOCK_ON;
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, delegate_);
