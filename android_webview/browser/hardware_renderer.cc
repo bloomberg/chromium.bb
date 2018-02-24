@@ -173,7 +173,7 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   surfaces_->RemoveChildId(viz::SurfaceId(frame_sink_id_, child_id_));
-  support_->EvictCurrentSurface();
+  support_->EvictLastActivatedSurface();
   child_id_ = viz::LocalSurfaceId();
   surfaces_->GetFrameSinkManager()->surface_manager()->GarbageCollectSurfaces();
 }

@@ -63,7 +63,6 @@ void LayerTreeFrameSinkLocal::DetachFromClient() {
   DCHECK(thread_checker_->CalledOnValidThread());
   client_->SetBeginFrameSource(nullptr);
   begin_frame_source_.reset();
-  support_->EvictCurrentSurface();
   support_.reset();
   thread_checker_.reset();
   cc::LayerTreeFrameSink::DetachFromClient();

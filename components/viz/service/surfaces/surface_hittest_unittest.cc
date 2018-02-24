@@ -135,8 +135,6 @@ TEST_F(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
                                    root_surface_id, gfx::Point(100, 100),
                                    &transform, &query_renderer));
   }
-
-  root_support().EvictCurrentSurface();
 }
 
 TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
@@ -157,8 +155,6 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface) {
   };
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
-
-  root_support().EvictCurrentSurface();
 }
 
 TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
@@ -249,9 +245,6 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
     EXPECT_NE(transform, target_transform);
     EXPECT_EQ(gfx::Point(25, 25), point_in_target_space);
   }
-
-  root_support().EvictCurrentSurface();
-  child_support().EvictCurrentSurface();
 }
 
 TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
@@ -316,9 +309,6 @@ TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
                        gfx::Point(290, 290), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
-
-  root_support().EvictCurrentSurface();
-  child_support().EvictCurrentSurface();
 }
 
 // This test verifies that hit testing will progress to the next quad if it
@@ -382,9 +372,6 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
                        gfx::Point(290, 290), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
-
-  root_support().EvictCurrentSurface();
-  child_support().EvictCurrentSurface();
 }
 
 TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
@@ -446,8 +433,6 @@ TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
                        gfx::Point(100, 100), false}};
 
   RunTests(nullptr, surface_manager(), tests, arraysize(tests));
-
-  root_support().EvictCurrentSurface();
 }
 
 TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
@@ -571,9 +556,6 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
   // Verify that insets have affected hit targeting.
   EXPECT_EQ(0, accept_delegate.reject_target_overrides());
   EXPECT_EQ(2, accept_delegate.accept_target_overrides());
-
-  root_support().EvictCurrentSurface();
-  child_support().EvictCurrentSurface();
 }
 
 }  // namespace viz

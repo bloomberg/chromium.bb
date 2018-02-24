@@ -1040,7 +1040,7 @@ void RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
   if (!support_)
     return;
-  support_->EvictCurrentSurface();
+  support_->EvictLastActivatedSurface();
   has_frame_ = false;
 }
 

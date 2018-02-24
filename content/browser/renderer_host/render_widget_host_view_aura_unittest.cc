@@ -3361,7 +3361,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     ASSERT_TRUE(views[i]->HasPrimarySurface());
     ASSERT_FALSE(views[i]->HasFallbackSurface());
     views[i]->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
+        views[i]->GetLocalSurfaceId(),
         MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     ASSERT_TRUE(views[i]->HasPrimarySurface());
     EXPECT_TRUE(views[i]->HasFallbackSurface());
@@ -3381,17 +3381,18 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // Swap a frame on it, it should evict the next LRU [1].
   views[0]->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      nullptr);
+      views[0]->GetLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_FALSE(views[1]->HasFallbackSurface());
   views[0]->Hide();
 
-  // LRU renderer is [1], still hidden. Swap a frame on it, it should evict
-  // the next LRU [2].
+  // LRU renderer is [1], which is still hidden. Showing it and submitting a
+  // CompositorFrame to it should evict the next LRU [2].
+  views[1]->Show();
   views[1]->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      nullptr);
+      views[1]->GetLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_TRUE(views[1]->HasFallbackSurface());
   EXPECT_FALSE(views[2]->HasFallbackSurface());
@@ -3405,7 +3406,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     // The renderers who don't have a frame should be waiting. The ones that
     // have a frame should not.
     views[i]->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
+        views[i]->GetLocalSurfaceId(),
         MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
@@ -3413,18 +3414,18 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // Swap a frame on [0], it should be evicted immediately.
   views[0]->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      nullptr);
+      views[0]->GetLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   EXPECT_FALSE(views[0]->HasFallbackSurface());
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
   views[0]->Show();
   views[0]->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      nullptr);
+      views[0]->GetLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, frame_size, view_rect), nullptr);
   for (size_t i = 0; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_TRUE(views[i]->HasFallbackSurface()) << i;
 
   // Make [0] hidden, it should evict its frame.
   views[0]->Hide();
@@ -3439,13 +3440,13 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[1]->Hide();
   EXPECT_TRUE(views[1]->HasFallbackSurface());
   gfx::Size size2(200, 200);
-  viz::LocalSurfaceId id2 = parent_local_surface_id_allocator_.GenerateId();
   views[1]->SetSize(size2);
   EXPECT_FALSE(views[1]->HasFallbackSurface());
   // Show it, it should block until we give it a frame.
   views[1]->Show();
   views[1]->SubmitCompositorFrame(
-      id2, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), nullptr);
+      views[1]->GetLocalSurfaceId(),
+      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), nullptr);
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
