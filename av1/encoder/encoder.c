@@ -6007,7 +6007,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       cm->frame_type != KEY_FRAME) {
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
-      ++cm->current_video_frame;
       aom_free(tile_ctxs);
       aom_free(cdf_ptrs);
       return AOM_CODEC_OK;
