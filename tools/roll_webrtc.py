@@ -34,7 +34,8 @@ TRYJOB_STATUS_SLEEP_SECONDS = 30
 # Use a shell for subcommands on Windows to get a PATH search.
 IS_WIN = sys.platform.startswith('win')
 WEBRTC_PATH = os.path.join('third_party', 'webrtc')
-# Run these CQ trybots in addition to the default ones in infra/config/cq.cfg.
+# Run these CQ trybots in addition to the default ones in
+# infra/config/branch/cq.cfg.
 EXTRA_TRYBOTS = (
     'master.tryserver.chromium.linux:linux_chromium_archive_rel_ng;'
     'master.tryserver.chromium.mac:mac_chromium_archive_rel_ng'
