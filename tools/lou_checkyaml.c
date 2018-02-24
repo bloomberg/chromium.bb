@@ -170,7 +170,7 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display
 					event.type == YAML_SCALAR_EVENT ||
 					event.type == YAML_MAPPING_START_EVENT))
 		error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
-				"Expected %s or %s or %s (actual %s)",
+				"Expected %s, %s or %s (actual %s)",
 				event_names[YAML_SEQUENCE_START_EVENT], event_names[YAML_SCALAR_EVENT],
 				event_names[YAML_MAPPING_START_EVENT], event_names[event.type]);
 	if (event.type == YAML_SEQUENCE_START_EVENT) {
@@ -228,7 +228,9 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser, const char *display
 		query = read_table_query(parser, &table_file_name_check);
 		table = lou_findTable(query);
 		free(query);
-		if (!table) exit(EXIT_FAILURE);
+		if (!table)
+			error_at_line(EXIT_FAILURE, 0, file_name, start_event->start_mark.line + 1,
+					"Table query did not match a table");
 		if (table_file_name_check) {
 			const char *table_file_name = table;
 			do { table_file_name++; } while (*table_file_name);
