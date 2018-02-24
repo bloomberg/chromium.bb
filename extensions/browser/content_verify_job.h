@@ -11,9 +11,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/version.h"
+#include "extensions/browser/content_verifier/content_verifier_key.h"
 #include "extensions/common/extension_id.h"
 
 namespace base {
@@ -52,7 +55,11 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   using FailureCallback = base::OnceCallback<void(FailureReason)>;
 
   // The |failure_callback| will be called at most once if there was a failure.
-  ContentVerifyJob(ContentHashReader* hash_reader,
+  ContentVerifyJob(const ExtensionId& extension_id,
+                   const base::Version& extension_version,
+                   const base::FilePath& extension_root,
+                   const base::FilePath& relative_path,
+                   const ContentVerifierKey& content_verifier_key,
                    FailureCallback failure_callback);
 
   // This begins the process of getting expected hashes, so it should be called
@@ -106,7 +113,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   void DispatchFailureCallback(FailureReason reason);
 
   // Called when our ContentHashReader has finished initializing.
-  void OnHashesReady(bool success);
+  void OnHashesReady(std::unique_ptr<const ContentHashReader> hash_reader);
 
   // Indicates whether the caller has told us they are done calling BytesRead.
   bool done_reading_;
@@ -130,7 +137,16 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   // The number of bytes we've already input into |current_hash_|.
   int current_hash_byte_count_;
 
-  scoped_refptr<ContentHashReader> hash_reader_;
+  // Valid and set after |hashes_ready_| is set to true.
+  std::unique_ptr<const ContentHashReader> hash_reader_;
+
+  // Resource info for this verify job.
+  const ExtensionId extension_id_;
+  const base::Version extension_version_;
+  const base::FilePath extension_root_;
+  const base::FilePath relative_path_;
+
+  const ContentVerifierKey content_verifier_key_;
 
   base::TimeDelta time_spent_;
 
