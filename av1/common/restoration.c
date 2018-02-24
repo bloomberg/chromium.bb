@@ -748,7 +748,6 @@ static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
 #if CONFIG_SKIP_SGR
 void decode_xq(const int *xqd, int *xq, const sgr_params_type *params) {
   if (params->r0 == 0) {
-    assert(xqd[0] == 0);
     xq[0] = 0;
     xq[1] = (1 << SGRPROJ_PRJ_BITS) - xqd[1];
   } else if (params->r1 == 0) {
