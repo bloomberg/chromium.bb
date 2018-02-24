@@ -39,6 +39,13 @@ class KeyboardShortcutItemView : public views::View {
   const KeyboardShortcutItem* shortcut_item() const { return shortcut_item_; }
 
  private:
+  // Calculates how to layout child views, sets their size and position. |width|
+  // is the horizontal space, in pixels, that the view has to work with.
+  // Returns the needed size and caches the result in |calculated_size_|.
+  // Does nothing when the |width| equals the cached width of
+  // |calculated_size_|.
+  void MaybeCalculateAndDoLayout(int width) const;
+
   // Not owned. Pointer to the keyboard shortcut item.
   const KeyboardShortcutItem* shortcut_item_;
 
@@ -49,6 +56,10 @@ class KeyboardShortcutItemView : public views::View {
 
   // View of the text listing the keys making up the shortcut.
   views::StyledLabel* shortcut_label_view_;
+
+  // This variable saves the result of the last GetHeightForWidth call in order
+  // to avoid repeated calculation.
+  mutable gfx::Size calculated_size_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutItemView);
 };
