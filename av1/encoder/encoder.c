@@ -3432,11 +3432,11 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #if CONFIG_OBMC_HIGH_PREC_BLENDING
   CHECK_MEM_ERROR(cm, cpi->td.mb.above_pred_hp_buf,
                   (CONV_BUF_TYPE *)aom_memalign(
-                      16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                      16, buf_scaler * MAX_MB_PLANE * (MAX_SB_SQUARE >> 1) *
                               sizeof(*cpi->td.mb.above_pred_hp_buf)));
   CHECK_MEM_ERROR(cm, cpi->td.mb.left_pred_hp_buf,
                   (CONV_BUF_TYPE *)aom_memalign(
-                      16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                      16, buf_scaler * MAX_MB_PLANE * (MAX_SB_SQUARE >> 1) *
                               sizeof(*cpi->td.mb.left_pred_hp_buf)));
 #else
   CHECK_MEM_ERROR(
