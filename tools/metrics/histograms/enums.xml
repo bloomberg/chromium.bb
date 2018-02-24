@@ -4067,6 +4067,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Revoked"/>
 </enum>
 
+<enum name="BooleanSafeBrowsingUserOptIn">
+  <int value="0" label="User has opted-out"/>
+  <int value="1" label="User has opted-in"/>
+</enum>
+
 <enum name="BooleanSafeMode">
   <int value="0" label="Regular mode"/>
   <int value="1" label="Safe mode"/>
