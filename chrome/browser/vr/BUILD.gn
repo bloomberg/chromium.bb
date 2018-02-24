@@ -262,6 +262,7 @@ test("vr_common_unittests") {
     "elements/vector_icon_unittest.cc",
     "elements/viewport_aware_root_unittest.cc",
     "fps_meter_unittest.cc",
+    "model/text_input_info_unittest.cc",
     "pose_util_unittest.cc",
     "service/vr_device_manager_unittest.cc",
     "sliding_average_unittest.cc",

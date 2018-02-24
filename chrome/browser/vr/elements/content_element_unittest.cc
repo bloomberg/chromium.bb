@@ -199,65 +199,6 @@ class ContentElementInputEditingTest : public UiTest {
   ContentElement* content_;
 };
 
-// Test that the diff between the current and previous edited text is calculated
-// correctly.
-TEST_F(ContentElementInputEditingTest, CommitDiff) {
-  // Add a character.
-  SetInput(GetInputInfo("a", 1, 1), GetInputInfo("", 0, 0));
-  auto edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("a"), 1));
-
-  // Add more characters.
-  SetInput(GetInputInfo("asdf", 4, 4), GetInputInfo("a", 1, 1));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("sdf"), 3));
-
-  // Delete a character.
-  SetInput(GetInputInfo("asd", 3, 3), GetInputInfo("asdf", 4, 4));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::DELETE_TEXT,
-                                     base::UTF8ToUTF16(""), -1));
-
-  // Add characters while the cursor is not at the end.
-  SetInput(GetInputInfo("asqwed", 5, 5), GetInputInfo("asd", 2, 2));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("qwe"), 3));
-}
-
-TEST_F(ContentElementInputEditingTest, CommitDiffWithSelection) {
-  // There was a selection and the new text is shorter than the selection text.
-  SetInput(GetInputInfo("This a text", 6, 6),
-           GetInputInfo("This is text", 5, 7));
-  auto edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("a"), 1));
-
-  // There was a selection and the new text is longer than the selection text.
-  // This could happen when the user clicks on a keyboard suggestion.
-  SetInput(GetInputInfo("This was the text", 12, 12),
-           GetInputInfo("This is text", 5, 7));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("was the"), 7));
-  // There was a selection and the new text is of the same length as the
-  // selection.
-  SetInput(GetInputInfo("This ha text", 7, 7),
-           GetInputInfo("This is text", 5, 7));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("ha"), 2));
-}
-
 TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
   // If the changed indices match with that from the last keyboard edit, the
   // given callback is triggered right away.
@@ -310,58 +251,6 @@ TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
   EXPECT_EQ(edits.size(), 1u);
   EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
                                      base::UTF8ToUTF16("q"), 1));
-}
-
-TEST_F(ContentElementInputEditingTest, CompositionDiff) {
-  // Start composition
-  SetInput(GetInputInfo("a", 1, 1, 0, 1), GetInputInfo("", 0, 0));
-  auto edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
-                                     base::UTF8ToUTF16("a"), 1));
-
-  // Add more characters.
-  SetInput(GetInputInfo("asdf", 4, 4, 0, 4), GetInputInfo("a", 1, 1, 0, 1));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
-                                     base::UTF8ToUTF16("asdf"), 3));
-
-  // Delete a few characters.
-  SetInput(GetInputInfo("as", 2, 2, 0, 2), GetInputInfo("asdf", 4, 4, 0, 4));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 1u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::SET_COMPOSING_TEXT,
-                                     base::UTF8ToUTF16("as"), -2));
-
-  // Finish composition.
-  SetInput(GetInputInfo("as ", 3, 3, -1, -1), GetInputInfo("as", 2, 2, 0, 2));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 2u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
-  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("as "), 3));
-
-  // Finish composition, but the text is different. This could happen when the
-  // user hits a suggestion that's different from the current composition, but
-  // has the same length.
-  SetInput(GetInputInfo("lk", 2, 2, -1, -1), GetInputInfo("as", 2, 2, 0, 2));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 2u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
-  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("lk"), 2));
-
-  // Finish composition, but the new text is shorter than the previous
-  // composition. This could happen when the user hits a suggestion that's
-  // shorter than the text they were composing.
-  SetInput(GetInputInfo("hi hello", 2, 2, -1, -1),
-           GetInputInfo("hii hello", 3, 3, 0, 3));
-  edits = input_forwarder_->edits();
-  EXPECT_EQ(edits.size(), 2u);
-  EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::CLEAR_COMPOSING_TEXT));
-  EXPECT_EQ(edits[1], TextEditAction(TextEditActionType::COMMIT_TEXT,
-                                     base::UTF8ToUTF16("hi"), 2));
 }
 
 }  // namespace vr
