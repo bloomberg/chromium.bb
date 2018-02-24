@@ -463,6 +463,12 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     frame_worker_data->pbi->inspect_ctx = ctx->inspect_ctx;
 #endif
 
+#if CONFIG_EXT_TILE
+    frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
+    frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
+    frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
+#endif  // CONFIG_EXT_TILE
+
     worker->had_error = 0;
     winterface->execute(worker);
 
