@@ -738,7 +738,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
   // TODO(trchen): Can't omit effect node if we have 3D children.
   if (NeedsPaintPropertyUpdate()) {
-    const ClipPaintPropertyNode* output_clip = nullptr;
+    // Use the current clip as output_clip for SVG children because their
+    // effects never interleave with clips.
+    const ClipPaintPropertyNode* output_clip =
+        object_.IsSVGChild() ? context_.current.clip : nullptr;
     if (NeedsEffect(object_)) {
       // We may begin to composite our subtree prior to an animation starts,
       // but a compositor element ID is only needed when an animation is
