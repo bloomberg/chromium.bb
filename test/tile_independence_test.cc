@@ -31,7 +31,7 @@ class TileIndependenceTest
     init_flags_ = AOM_CODEC_USE_PSNR;
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 704;
-    cfg.h = 144;
+    cfg.h = 576;
     cfg.threads = 1;
     cfg.allow_lowbitdepth = 1;
     fw_dec_ = codec_->CreateDecoder(cfg, 0);
