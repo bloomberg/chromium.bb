@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: en-US
   grade: 2
-  __match: en_US.tbl # en-us-g2.ctb
+  __assert-match: en_US.tbl # en-us-g2.ctb
 tests:
   - [AA's, ⠠⠠⠁⠁⠄⠎, {xfail: true}]
   - [AB's, ⠰⠠⠠⠁⠃⠄⠎, {xfail: true}]

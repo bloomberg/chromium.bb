@@ -4,7 +4,7 @@ table:
   grade: 1
   dots: 6
   direction: both
-  __match: da-dk-g16.ctb
+  __assert-match: da-dk-g16.ctb
 tests:
 # Test characters
   - [" ", " "]
@@ -279,7 +279,7 @@ table:
   grade: 1
   dots: 6
   direction: both
-  __match: da-dk-g16.ctb
+  __assert-match: da-dk-g16.ctb
 flags: {testmode: backward}
 tests:
 # Test characters

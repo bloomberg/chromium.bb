@@ -1,7 +1,7 @@
 display: unicode.dis
 table:
   locale: mn
-  __match: mn-MN.utb
+  __assert-match: mn-MN.utb
 tests:
   - # Hello world
     - Сайн байна уу дэлхий

@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: ga
   grade: 2
-  __match: ga.tbl # ga-g2.ctb
+  __assert-match: ga.tbl # ga-g2.ctb
 tests:
   - [Bíonn Seán ag siúil abhaile ón, ⠠⠃ ⠠⠎⠑⠯⠝ ⠁⠛ ⠎⠊⠾⠊⠇ ⠁⠃⠓⠁⠊⠇⠑ ⠮⠝]
   - [scoil gach lá. Uaireanta buaileann, ⠎⠉⠕⠊⠇ ⠛ ⠇⠯⠲ ⠠⠥ ⠃⠥⠁⠊⠇⠂⠝⠝]

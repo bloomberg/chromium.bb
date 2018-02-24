@@ -3,7 +3,7 @@ table:
   locale: hu
   type: computer
   dots: 8
-  __match: hu-hu-comp8.ctb
+  __assert-match: hu-hu-comp8.ctb
 tests:
   - [adásszerű, ⠁⠙⢈⠎⠎⠵⠑⠗⢾]
   - [adásszünet, ⠁⠙⢈⠎⠎⠵⢷⠝⠑⠞]

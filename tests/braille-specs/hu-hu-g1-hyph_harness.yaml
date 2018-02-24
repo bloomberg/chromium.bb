@@ -3,7 +3,7 @@ table:
   locale: hu
   grade: 1
   hyphenation: yes
-  __match: hu.tbl # hu-hu-g1.ctb, hyph_hu_HU.dic
+  __assert-match: hu.tbl # hu-hu-g1.ctb, hyph_hu_HU.dic
 flags: {testmode: hyphenate}
 tests:
   - [adásszalagokat, adássza-la-go-kat]

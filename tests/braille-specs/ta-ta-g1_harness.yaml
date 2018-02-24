@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: ta
   grade: 1
-  __match: ta-ta-g1.ctb
+  __assert-match: ta-ta-g1.ctb
 tests:
   - [இ, ⠊]
   - [ப, ⠏, {xfail: true}]

@@ -2,7 +2,7 @@ display: en-us-brf.dis
 table:
   locale: eo
   grade: 1
-  __match: eo.tbl # eo-g1.ctb
+  __assert-match: eo.tbl # eo-g1.ctb
 tests:
   - [a, A]
   - [b, B]

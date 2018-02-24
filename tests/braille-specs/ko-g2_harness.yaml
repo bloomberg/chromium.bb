@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: ko
   grade: 2
-  __match: ko-g2.ctb
+  __assert-match: ko-g2.ctb
 tests:
   - # Numbers followed by Korean words.
     - 2000년

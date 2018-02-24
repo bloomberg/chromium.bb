@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: en-GB
   grade: 2
-  __match: en_GB.tbl # en-GB-g2.ctb
+  __assert-match: en_GB.tbl # en-GB-g2.ctb
 flags: {testmode: backward}
 tests:
   - # an example of testing simple backtranslation.

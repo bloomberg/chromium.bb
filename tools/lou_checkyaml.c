@@ -128,7 +128,7 @@ read_table_query(yaml_parser_t *parser, const char **table_file_name_check) {
 		if (event.type == YAML_SCALAR_EVENT) {
 			
 			// (temporary) feature to check whether the table query matches an expected table
-			if (!strcmp((const char *)event.data.scalar.value, "__match")) {
+			if (!strcmp((const char *)event.data.scalar.value, "__assert-match")) {
 				yaml_event_delete(&event);
 				if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
 					yaml_error(YAML_SCALAR_EVENT, &event);

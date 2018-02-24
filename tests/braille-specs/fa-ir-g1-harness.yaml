@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: fa-IR
   grade: 1
-  __match: fa-ir-g1.utb
+  __assert-match: fa-ir-g1.utb
 tests:
   - ['=', ⠰⠶]
   - [===, ⠰⠶⠰⠶⠰⠶]

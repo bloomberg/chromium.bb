@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: sk
   grade: 1
-  __match: sk.tbl # sk-g1.ctb
+  __assert-match: sk.tbl # sk-g1.ctb
 tests:
   -
     - "Ä Ö Ü Ô Ĺ Ľ ä ö ü ô ĺ ľ"

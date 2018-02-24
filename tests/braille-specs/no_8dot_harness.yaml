@@ -3,7 +3,7 @@ table:
   locale: no
   type: computer
   dots: 8
-  __match: no-no-8dot-fallback-6dot-g0.utb
+  __assert-match: no-no-8dot-fallback-6dot-g0.utb
 tests:
   - ["\u0001", ⣁] # START OF HEADING
   - ["\u0002", ⣃] # START OF TEXT

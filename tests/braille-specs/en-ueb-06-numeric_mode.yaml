@@ -2,7 +2,7 @@ table:
   locale: en
   grade: 2
   system: ueb
-  __match: en-ueb-g2.ctb
+  __assert-match: en-ueb-g2.ctb
 tests:
 
 # 6.2.1 page 60

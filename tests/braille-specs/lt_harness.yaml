@@ -1,7 +1,7 @@
 display: unicode.dis
 table:
   locale: lt
-  __match: lt.tbl # lt.ctb
+  __assert-match: lt.tbl # lt.ctb
 tests:
   - - Pangram
     - Įlinkdama fechtuotojo špaga sublykčiojusi pragręžė apvalų arbūzą.

@@ -3,7 +3,7 @@ table:
   locale: ko
   grade: 2
   version: 2006
-  __match: ko-2006-g2.ctb
+  __assert-match: ko-2006-g2.ctb
 tests:
   - # Numbers followed by Korean words.
     - 2000년

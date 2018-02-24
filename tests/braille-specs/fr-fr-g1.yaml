@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: fr
   grade: 1
-  __match: fr-fr-g1.utb
+  __assert-match: fr-fr-g1.utb
 flags: {testmode: forward}
 tests:
 # Forward translations
@@ -27,7 +27,7 @@ tests:
 table:
   locale: fr
   grade: 1
-  __match: fr-fr-g1.utb
+  __assert-match: fr-fr-g1.utb
 flags: {testmode: backward}
 tests:
 # Backward translations

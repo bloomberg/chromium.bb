@@ -1,7 +1,7 @@
 display: unicode.dis
 table:
   locale: el
-  __match: el.tbl # el.ctb
+  __assert-match: el.tbl # el.ctb
 flags: {testmode: forward}
 tests:
 

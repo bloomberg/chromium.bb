@@ -4,7 +4,7 @@ table:
   grade: 1.5
   dots: 6
   direction: forward
-  __match: da-dk-g26l-lit.ctb
+  __assert-match: da-dk-g26l-lit.ctb
 tests:
 # Test characters
   - [" ", " "]

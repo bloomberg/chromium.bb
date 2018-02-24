@@ -3,7 +3,7 @@ table:
   locale: fa-IR
   type: computer
   dots: 8
-  __match: fa-ir-comp8.ctb
+  __assert-match: fa-ir-comp8.ctb
 tests:
   - ['=', ⠶]
   - [===, ⠶⠶⠶]

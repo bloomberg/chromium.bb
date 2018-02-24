@@ -1,7 +1,7 @@
 display: unicode.dis
 table:
   locale: zh-CHN
-  __match: zh_CHN.tbl # zh-chn.ctb
+  __assert-match: zh_CHN.tbl # zh-chn.ctb
 tests:
   - [八,⠃⠔]
   - [白,⠃⠪]

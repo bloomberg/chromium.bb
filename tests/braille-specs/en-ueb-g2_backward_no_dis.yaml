@@ -3,7 +3,7 @@ table:
   locale: en
   grade: 2
   system: ueb
-  __match: en-ueb-g2.ctb
+  __assert-match: en-ueb-g2.ctb
 flags: {testmode: backward}
 tests:
   # #309: Ensure the display rule is used for "?",

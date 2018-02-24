@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: fi
   type: literary
-  __match: fi.utb
+  __assert-match: fi.utb
 tests:
   - # Pangram
     - törkylempijävongahdus bcfqwxzå

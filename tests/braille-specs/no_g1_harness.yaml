@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: no
   grade: 1
-  __match: no-no-g1.ctb
+  __assert-match: no-no-g1.ctb
 tests:
   - [Det tyngste regnet, ⠠⠙⠬ ⠞⠽⠝⠛⠎⠞⠑ ⠗⠑⠛⠝⠬]
   - [faller på huset, ⠋⠁⠇⠇⠱ ⠏ ⠓⠥⠎⠬]

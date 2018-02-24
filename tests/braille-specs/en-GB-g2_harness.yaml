@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: en-GB
   grade: 2
-  __match: en_GB.tbl # en-GB-g2.ctb
+  __assert-match: en_GB.tbl # en-GB-g2.ctb
 tests:
   - [Parthenoi, ⠠⠐⠏⠓⠢⠕⠊]
   - [Parthenon, ⠠⠐⠏⠓⠢⠕⠝]

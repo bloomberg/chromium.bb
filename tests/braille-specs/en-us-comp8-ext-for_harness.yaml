@@ -3,7 +3,7 @@ table:
   locale: en-US
   type: computer
   dots: 8
-  __match: en_US-comp8-ext.tbl # en-us-comp8-ext.utb
+  __assert-match: en_US-comp8-ext.tbl # en-us-comp8-ext.utb
 flags: {testmode: forward}
 tests:
   - - Uppercase and lowercase

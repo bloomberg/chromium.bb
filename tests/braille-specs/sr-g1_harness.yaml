@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: sr
   grade: 1
-  __match: sr.tbl # sr-g1.ctb
+  __assert-match: sr.tbl # sr-g1.ctb
 tests:
   - [WILDCARD, ⠘⠺⠊⠇⠙⠉⠁⠗⠙] # tested buggy behavior
   - [-, ⠤] # same thing again

@@ -3,7 +3,7 @@ table:
   locale: da
   grade: 0
   dots: 8
-  __match: da-dk-g08.ctb
+  __assert-match: da-dk-g08.ctb
 tests:
 # Test all characters from 0x21 to 0xff
   - [' ', ' ']
@@ -230,7 +230,7 @@ table:
   locale: da
   grade: 0
   dots: 8
-  __match: da-dk-g08.ctb
+  __assert-match: da-dk-g08.ctb
 flags: {testmode: backward}
 tests:
 # Test all characters from 0x21 to 0xff

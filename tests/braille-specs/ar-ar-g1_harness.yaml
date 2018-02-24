@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: ar
   grade: 1
-  __match: ar.tbl # ar-ar-g1.utb
+  __assert-match: ar.tbl # ar-ar-g1.utb
 tests:
   - ['=', ⠰⠶]
   - [==, ⠰⠶⠰⠶]
