@@ -6109,9 +6109,28 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // Pick the loop filter level for the frame.
 #if CONFIG_INTRABC
-  if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC))
-#endif
+  if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
     loopfilter_frame(cpi, cm);
+  } else {
+#if CONFIG_LOOPFILTER_LEVEL
+    cm->lf.filter_level[0] = 0;
+    cm->lf.filter_level[1] = 0;
+#else
+    cm->lf.filter_level = 0;
+#endif  // CONFIG_LOOPFILTER_LEVEL
+    cm->cdef_bits = 0;
+    cm->cdef_strengths[0] = 0;
+    cm->nb_cdef_strengths = 1;
+    cm->cdef_uv_strengths[0] = 0;
+#if CONFIG_LOOP_RESTORATION
+    cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
+    cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
+#endif  // CONFIG_LOOP_RESTORATION
+  }
+#else
+  loopfilter_frame(cpi, cm);
+#endif  // CONFIG_INTRABC
 
   // TODO(debargha): Fix mv search range on encoder side
   // aom_extend_frame_inner_borders(cm->frame_to_show, av1_num_planes(cm));
