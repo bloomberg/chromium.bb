@@ -149,8 +149,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           clock_.get())),
       host_scan_scheduler_(
           std::make_unique<HostScanSchedulerImpl>(network_state_handler_,
-                                                  host_scanner_.get(),
-                                                  session_manager)),
+                                                  host_scanner_.get())),
       host_connection_metrics_logger_(
           std::make_unique<HostConnectionMetricsLogger>()),
       tether_connector_(std::make_unique<TetherConnectorImpl>(
