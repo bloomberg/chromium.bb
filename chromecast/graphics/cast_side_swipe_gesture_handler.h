@@ -23,6 +23,8 @@ class CastSideSwipeGestureHandlerInterface {
   virtual ~CastSideSwipeGestureHandlerInterface() = default;
 
   // Triggered on the beginning of a swipe.
+  // Note: Consumers of the event should call SetHandled on it to prevent its
+  // further propagation.
   virtual void OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
                                 ui::GestureEvent* gesture_event) = 0;
 
