@@ -93,6 +93,9 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   virtual ~ContentVerifyJob();
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
 
+  // Same as BytesRead, but is run without acquiring lock.
+  void BytesReadImpl(int count, const char* data);
+
   // Called each time we're done adding bytes for the current block, and are
   // ready to finish the hash operation for those bytes and make sure it
   // matches what was expected for that block. Returns true if everything is

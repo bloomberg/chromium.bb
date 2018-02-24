@@ -68,8 +68,30 @@ void ContentVerifyJob::Start() {
 }
 
 void ContentVerifyJob::BytesRead(int count, const char* data) {
-  ScopedElapsedTimer timer(&time_spent_);
   base::AutoLock auto_lock(lock_);
+  BytesReadImpl(count, data);
+}
+
+void ContentVerifyJob::DoneReading() {
+  base::AutoLock auto_lock(lock_);
+  ScopedElapsedTimer timer(&time_spent_);
+  if (failed_)
+    return;
+  if (g_ignore_verification_for_tests)
+    return;
+  done_reading_ = true;
+  if (hashes_ready_) {
+    if (!FinishBlock()) {
+      DispatchFailureCallback(HASH_MISMATCH);
+    } else if (g_content_verify_job_test_observer) {
+      g_content_verify_job_test_observer->JobFinished(
+          hash_reader_->extension_id(), hash_reader_->relative_path(), NONE);
+    }
+  }
+}
+
+void ContentVerifyJob::BytesReadImpl(int count, const char* data) {
+  ScopedElapsedTimer timer(&time_spent_);
   if (failed_)
     return;
   if (g_ignore_verification_for_tests)
@@ -109,24 +131,6 @@ void ContentVerifyJob::BytesRead(int count, const char* data) {
   }
 }
 
-void ContentVerifyJob::DoneReading() {
-  ScopedElapsedTimer timer(&time_spent_);
-  base::AutoLock auto_lock(lock_);
-  if (failed_)
-    return;
-  if (g_ignore_verification_for_tests)
-    return;
-  done_reading_ = true;
-  if (hashes_ready_) {
-    if (!FinishBlock()) {
-      DispatchFailureCallback(HASH_MISMATCH);
-    } else if (g_content_verify_job_test_observer) {
-      g_content_verify_job_test_observer->JobFinished(
-          hash_reader_->extension_id(), hash_reader_->relative_path(), NONE);
-    }
-  }
-}
-
 bool ContentVerifyJob::FinishBlock() {
   DCHECK(!failed_);
   if (current_hash_byte_count_ == 0) {
@@ -160,6 +164,7 @@ bool ContentVerifyJob::FinishBlock() {
 void ContentVerifyJob::OnHashesReady(bool success) {
   if (g_ignore_verification_for_tests)
     return;
+  base::AutoLock auto_lock(lock_);
   if (g_content_verify_job_test_observer) {
     g_content_verify_job_test_observer->OnHashesReady(
         hash_reader_->extension_id(), hash_reader_->relative_path(), success);
@@ -191,7 +196,7 @@ void ContentVerifyJob::OnHashesReady(bool success) {
   if (!queue_.empty()) {
     std::string tmp;
     queue_.swap(tmp);
-    BytesRead(tmp.size(), base::string_as_array(&tmp));
+    BytesReadImpl(tmp.size(), base::string_as_array(&tmp));
     if (failed_)
       return;
   }
