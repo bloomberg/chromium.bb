@@ -70,9 +70,7 @@ class EncodeTxbTest : public ::testing::TestWithParam<GetNzMapContextsFunc> {
           const int height = get_txb_high((TX_SIZE)tx_size);
           const int real_width = tx_size_wide[tx_size];
           const int real_height = tx_size_high[tx_size];
-          const int16_t *const scan =
-              is_inter ? av1_inter_scan_orders[tx_size][tx_type].scan
-                       : av1_intra_scan_orders[tx_size][tx_type].scan;
+          const int16_t *const scan = av1_scan_orders[tx_size][tx_type].scan;
 
           levels_ = set_levels(levels_buf_, width);
           for (int i = 0; i < kNumTests && !result; ++i) {
@@ -108,7 +106,7 @@ class EncodeTxbTest : public ::testing::TestWithParam<GetNzMapContextsFunc> {
       const int real_width = tx_size_wide[tx_size];
       const int real_height = tx_size_high[tx_size];
       const TX_TYPE tx_type = DCT_DCT;
-      const int16_t *const scan = av1_inter_scan_orders[tx_size][tx_type].scan;
+      const int16_t *const scan = av1_scan_orders[tx_size][tx_type].scan;
       const int eob = width * height;
       const int numTests = kNumTests / (width * height);
 
