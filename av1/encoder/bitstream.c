@@ -68,19 +68,6 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              const RestorationUnitInfo *rui,
                                              aom_writer *const w, int plane);
 #endif  // CONFIG_LOOP_RESTORATION
-static void write_uncompressed_header_obu(AV1_COMP *cpi,
-#if CONFIG_EXT_TILE
-                                          struct aom_write_bit_buffer *saved_wb,
-#endif
-                                          struct aom_write_bit_buffer *wb);
-
-#if CONFIG_EXT_TILE
-static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
-                       const uint32_t data_size, const uint32_t max_tile_size,
-                       const uint32_t max_tile_col_size,
-                       int *const tile_size_bytes,
-                       int *const tile_col_size_bytes);
-#endif
 
 static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
                                 const MODE_INFO *above_mi,
