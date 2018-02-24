@@ -102,8 +102,12 @@ public class AwSafeBrowsingConfigHelper {
         return sSafeBrowsingUserOptIn;
     }
 
+    // Should only be called once during startup after we receive the result of the underlying GMS
+    // API.
     public static void setSafeBrowsingUserOptIn(boolean optin) {
         sSafeBrowsingUserOptIn = optin;
+
+        RecordHistogram.recordBooleanHistogram("SafeBrowsing.WebView.UserOptIn", optin);
     }
 
     // Not meant to be instantiated.
