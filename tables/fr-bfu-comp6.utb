@@ -118,9 +118,8 @@ uplow \x00cb\x00eb   1246 # e tréma (Ëë)
 uplow \x00cf\x00ef  12456 # i tréma (Ïï)
 uplow \x00d6\x00f6    246 # o tréma (Öö)
 uplow \x00dc\x00fc   1256 # u tréma (Üü)
-
-uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above
-letter \x00d8 3456
+uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above (unofficial)
+uplow \x00d8\x00f8 56-246 # o barré (non officiel)
 
 digit 0 3456
 litdigit        0      3456
@@ -262,6 +261,7 @@ noback math \X00B1 235-36 ± plus ou moins
 noback math \X00D7 35 × multiplié par
 noback math \X2715 35 ✕ multiplié par
 noback math \X00B7 35-35 · point multiplicatif ; produit scalaire
+noback math \X00F7 25 ÷ divisé par
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand
