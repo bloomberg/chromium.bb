@@ -207,8 +207,6 @@
       'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols',
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
 
-      'Blink Heap Incremental Marking': 'debug_bot_enable_blink_heap_incremental_marking',
-
       'EarlGreyiOS': 'ios',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
@@ -235,6 +233,7 @@
       'Linux ARM (dbg)': 'debug_bot_arm',
       'Linux ARM64': 'release_bot_arm64',
       'Linux ARM64 (dbg)': 'debug_bot_arm64',
+      'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
       'Linux Clang Analyzer': 'linux_chromium_analysis',
       'Linux deterministic': 'release_bot',
       'Linux deterministic (dbg)': 'debug_bot',
