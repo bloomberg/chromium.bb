@@ -84,8 +84,8 @@ const base::Feature kCompositeOpaqueFixedPosition{
 const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kCompositorImageAnimation{
-    "CompositorImageAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCompositorImageAnimation{"CompositorImageAnimation",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables handling touch events in compositor using impl side touch action
 // knowledge.
