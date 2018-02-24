@@ -3176,11 +3176,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   cm->refresh_frame_context =
       (oxcf->error_resilient_mode || oxcf->frame_parallel_decoding_mode)
-          ? REFRESH_FRAME_CONTEXT_FORWARD
+          ? REFRESH_FRAME_CONTEXT_DISABLED
           : REFRESH_FRAME_CONTEXT_BACKWARD;
 #if CONFIG_EXT_TILE
   if (oxcf->large_scale_tile)
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 #endif  // CONFIG_EXT_TILE
 
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
@@ -5970,14 +5970,14 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     // By default, encoder assumes decoder can use prev_mi.
     if (cm->error_resilient_mode) {
       cm->reset_frame_context = RESET_FRAME_CONTEXT_NONE;
-      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
     } else if (cm->intra_only) {
       // Only reset the current context.
       cm->reset_frame_context = RESET_FRAME_CONTEXT_CURRENT;
     }
 #if CONFIG_EXT_TILE
     if (cpi->oxcf.large_scale_tile)
-      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+      cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 #endif  // CONFIG_EXT_TILE
 #endif  // !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
@@ -6739,11 +6739,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif
   cm->refresh_frame_context =
       (oxcf->error_resilient_mode || oxcf->frame_parallel_decoding_mode)
-          ? REFRESH_FRAME_CONTEXT_FORWARD
+          ? REFRESH_FRAME_CONTEXT_DISABLED
           : REFRESH_FRAME_CONTEXT_BACKWARD;
 #if CONFIG_EXT_TILE
   if (oxcf->large_scale_tile)
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 #endif  // CONFIG_EXT_TILE
 
   cpi->refresh_last_frame = 1;

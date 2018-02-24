@@ -3522,7 +3522,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (might_bwd_adapt) {
     aom_wb_write_bit(
-        wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD);
+        wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
   }
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);

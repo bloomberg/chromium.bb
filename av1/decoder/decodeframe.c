@@ -2623,7 +2623,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
   }
 #endif  // CONFIG_REFERENCE_BUFFER
 
-  cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+  cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
   // Generate next_ref_frame_map.
   lock_buffer_pool(pool);
@@ -3097,10 +3097,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EXT_TILE
   if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
-                                    ? REFRESH_FRAME_CONTEXT_FORWARD
+                                    ? REFRESH_FRAME_CONTEXT_DISABLED
                                     : REFRESH_FRAME_CONTEXT_BACKWARD;
   } else {
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_FORWARD;
+    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
   }
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   // This flag will be overridden by the call to av1_setup_past_independence
@@ -3506,7 +3506,7 @@ static void setup_frame_info(AV1Decoder *pbi) {
       cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD) {
     AVxWorker *const worker = pbi->frame_worker_owner;
     FrameWorkerData *const frame_worker_data = worker->data1;
-    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_FORWARD) {
+    if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
       cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
@@ -3641,7 +3641,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     // TODO(yunqingwang): If cm->frame_parallel_decode = 0, then the following
     // update always happens. Seems it is done more than necessary.
     if (!cm->frame_parallel_decode ||
-        cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_FORWARD) {
+        cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_DISABLED) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
       cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else

@@ -108,10 +108,9 @@ typedef enum {
 
 typedef enum {
   /**
-   * Update frame context to values resulting from forward probability
-   * updates signaled in the frame header
+   * Frame context updates are disabled
    */
-  REFRESH_FRAME_CONTEXT_FORWARD,
+  REFRESH_FRAME_CONTEXT_DISABLED,
   /**
    * Update frame context to values resulting from backward probability
    * updates based on entropy/counts in the decoded frame
