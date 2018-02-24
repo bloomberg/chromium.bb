@@ -1,5 +1,7 @@
 include_rules = [
   "+base",
+  "+chrome/common/chrome_constants.h",
+  "+chrome/common/chrome_switches.h",
   "+chrome/install_static",
   "+chrome/installer/setup",
   "+chrome/installer/util",

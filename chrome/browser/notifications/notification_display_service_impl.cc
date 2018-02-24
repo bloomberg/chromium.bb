@@ -33,7 +33,7 @@
 
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
+#include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #endif
 
 namespace {
@@ -68,10 +68,8 @@ NotificationPlatformBridge* GetNativeNotificationPlatformBridge() {
   DCHECK(base::FeatureList::IsEnabled(features::kNativeNotifications));
   return g_browser_process->notification_platform_bridge();
 #elif defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10_RS1 &&
-      base::FeatureList::IsEnabled(features::kNativeNotifications)) {
+  if (NotificationPlatformBridgeWin::NativeNotificationEnabled())
     return g_browser_process->notification_platform_bridge();
-  }
 #else
   if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
       g_browser_process->notification_platform_bridge()) {

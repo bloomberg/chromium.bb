@@ -38,6 +38,16 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       const GetDisplayedNotificationsCallback& callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
 
+  // Handles notification activation given |launch_id_str| via the
+  // notification_helper process. Returns false if |launch_id_str| is invalid.
+  static bool HandleActivation(const std::string& launch_id_str);
+
+  // Extracts the profile ID from |launch_id_str|.
+  static std::string GetProfileIdFromLaunchId(const std::string& launch_id_str);
+
+  // Checks if native notification is enabled.
+  static bool NativeNotificationEnabled();
+
  private:
   friend class NotificationPlatformBridgeWinImpl;
   friend class NotificationPlatformBridgeWinTest;

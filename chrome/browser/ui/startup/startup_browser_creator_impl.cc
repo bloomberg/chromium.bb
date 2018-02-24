@@ -85,6 +85,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #endif
@@ -125,6 +126,8 @@ enum LaunchMode {
   LM_MAC_DOCK_STATUS_ERROR = 15,      // Error determining dock status.
   LM_MAC_DMG_STATUS_ERROR = 16,       // Error determining dmg status.
   LM_MAC_DOCK_DMG_STATUS_ERROR = 17,  // Error determining dock and dmg status.
+  LM_WIN_PLATFORM_NOTIFICATION = 18,  // Launched from toast notification
+                                      // activation on Windows.
 };
 
 #if defined(OS_WIN)
@@ -323,6 +326,22 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       return true;
     }
   }
+
+#if defined(OS_WIN)
+  // If the command line has the kNotificationLaunchId switch, then this
+  // Launch() call is from notification_helper.exe to process toast activation.
+  // Delegate to the notification system; do not open a browser window here.
+  if (command_line_.HasSwitch(switches::kNotificationLaunchId)) {
+    if (NotificationPlatformBridgeWin::NativeNotificationEnabled() &&
+        NotificationPlatformBridgeWin::HandleActivation(
+            command_line_.GetSwitchValueASCII(
+                switches::kNotificationLaunchId))) {
+      RecordLaunchModeHistogram(LM_WIN_PLATFORM_NOTIFICATION);
+      return true;
+    }
+    return false;
+  }
+#endif  // defined(OS_WIN)
 
   // Open the required browser windows and tabs. First, see if
   // we're being run as an application window. If so, the user

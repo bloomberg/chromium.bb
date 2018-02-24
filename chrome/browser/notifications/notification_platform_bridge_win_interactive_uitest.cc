@@ -171,8 +171,9 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
 
   // Simulate clicks on the toast.
   NotificationPlatformBridgeWin* bridge =
-      reinterpret_cast<NotificationPlatformBridgeWin*>(
+      static_cast<NotificationPlatformBridgeWin*>(
           g_browser_process->notification_platform_bridge());
+  ASSERT_TRUE(bridge);
   bridge->ForwardHandleEventForTesting(NotificationCommon::CLICK, &toast, &args,
                                        base::nullopt);
   run_loop.Run();
@@ -195,8 +196,9 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
     return;
 
   NotificationPlatformBridgeWin* bridge =
-      reinterpret_cast<NotificationPlatformBridgeWin*>(
+      static_cast<NotificationPlatformBridgeWin*>(
           g_browser_process->notification_platform_bridge());
+  ASSERT_TRUE(bridge);
 
   std::vector<winui::Notifications::IToastNotification*> notifications;
   bridge->SetDisplayedNotificationsForTesting(&notifications);

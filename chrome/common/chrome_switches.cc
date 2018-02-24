@@ -939,6 +939,10 @@ const char kHideIcons[]                     = "hide-icons";
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";
 
+// Used for launching Chrome when a toast displayed in the Windows Action Center
+// has been activated. Should contain the launch ID encoded by Chrome.
+const char kNotificationLaunchId[] = "notification-launch-id";
+
 // /prefetch:# arguments for the browser process launched in background mode and
 // for the watcher process. Use profiles 5, 6 and 7 as documented on
 // kPrefetchArgument* in content_switches.cc.
