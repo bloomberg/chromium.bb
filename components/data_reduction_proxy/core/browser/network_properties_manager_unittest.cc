@@ -8,7 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -23,7 +25,14 @@ class TestNetworkPropertiesManager : public NetworkPropertiesManager {
   TestNetworkPropertiesManager(
       PrefService* pref_service,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-      : NetworkPropertiesManager(pref_service, ui_task_runner) {}
+      : TestNetworkPropertiesManager(base::DefaultClock::GetInstance(),
+                                     pref_service,
+                                     ui_task_runner) {}
+  TestNetworkPropertiesManager(
+      base::Clock* clock,
+      PrefService* pref_service,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+      : NetworkPropertiesManager(clock, pref_service, ui_task_runner) {}
   ~TestNetworkPropertiesManager() override {}
 };
 
@@ -418,6 +427,66 @@ TEST(NetworkPropertyTest, TestDeleteHistory) {
         "DataReductionProxy.NetworkProperties.CacheHit", false, 2);
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.NetworkProperties.CacheHit", 3);
+  }
+}
+
+TEST(NetworkPropertyTest, TestDeleteOldValues) {
+  base::HistogramTester histogram_tester;
+  base::SimpleTestClock test_clock;
+  test_clock.SetNow(base::DefaultClock::GetInstance()->Now());
+
+  TestingPrefServiceSimple test_prefs;
+  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
+  base::MessageLoopForIO loop;
+  TestNetworkPropertiesManager network_properties_manager(
+      &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+
+  for (size_t i = 0; i < 5; ++i) {
+    std::string network_id("test" + base::IntToString(i));
+    network_properties_manager.OnChangeInNetworkID(network_id);
+    network_properties_manager.SetIsCaptivePortal(true);
+  }
+
+  test_clock.Advance(base::TimeDelta::FromDays(20));
+
+  for (size_t i = 5; i < 10; ++i) {
+    std::string network_id("test" + base::IntToString(i));
+    network_properties_manager.OnChangeInNetworkID(network_id);
+    network_properties_manager.SetIsCaptivePortal(true);
+  }
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the prefs.
+  EXPECT_EQ(10u, test_prefs.GetDictionary(prefs::kNetworkProperties)->size());
+  for (size_t i = 0; i < 10; ++i) {
+    std::string network_id("test" + base::IntToString(i));
+    EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
+                    ->HasKey(network_id));
+  }
+
+  // Entries should not be cleared since all values are less than 30 days old.
+  {
+    TestNetworkPropertiesManager network_properties_manager_2(
+        &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    for (size_t i = 0; i < 10; ++i) {
+      std::string network_id("test" + base::IntToString(i));
+
+      EXPECT_TRUE(test_prefs.GetDictionary(prefs::kNetworkProperties)
+                      ->HasKey(network_id));
+    }
+  }
+
+  // Only the entries from 5 to 9 should be cleared since they are 40 days old.
+  test_clock.Advance(base::TimeDelta::FromDays(20));
+  {
+    TestNetworkPropertiesManager network_properties_manager_3(
+        &test_clock, &test_prefs, base::ThreadTaskRunnerHandle::Get());
+    for (size_t i = 0; i < 10; ++i) {
+      std::string network_id("test" + base::IntToString(i));
+      EXPECT_EQ(i >= 5, test_prefs.GetDictionary(prefs::kNetworkProperties)
+                            ->HasKey(network_id));
+    }
   }
 }
 

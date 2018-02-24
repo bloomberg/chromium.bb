@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -225,7 +226,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
   base::MessageLoopForIO loop;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(&test_prefs,
+  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
+                                   &test_prefs,
                                    base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
@@ -252,7 +254,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   base::MessageLoopForIO loop;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(&test_prefs,
+  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
+                                   &test_prefs,
                                    base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<DataReductionProxyServer> http_proxies;
@@ -290,7 +293,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   base::MessageLoopForIO loop;
   TestingPrefServiceSimple test_prefs;
   test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
-  NetworkPropertiesManager manager(&test_prefs,
+  NetworkPropertiesManager manager(base::DefaultClock::GetInstance(),
+                                   &test_prefs,
                                    base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<DataReductionProxyServer> http_proxies;

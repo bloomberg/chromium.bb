@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 
 namespace base {
+class Clock;
 class Value;
 }
 
@@ -28,6 +29,7 @@ namespace data_reduction_proxy {
 class NetworkPropertiesManager {
  public:
   NetworkPropertiesManager(
+      base::Clock* clock,
       PrefService* pref_service,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
@@ -108,6 +110,9 @@ class NetworkPropertiesManager {
 
   static NetworkPropertiesContainer ConvertDictionaryValueToParsedPrefs(
       const base::Value* value);
+
+  // Clock used for querying current time. Guaranteed to be non-null.
+  base::Clock* clock_;
 
   // Task runner on which prefs should be accessed.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
