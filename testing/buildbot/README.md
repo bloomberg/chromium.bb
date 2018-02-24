@@ -77,7 +77,7 @@ your tryjob). Non-trybot changes have to be landed manually :(.
 When adding tests or bumping timeouts, care must be taken to ensure the
 infrastructure has capacity to handle the extra load.  This is especially true
 for the established
-[Chromium CQ builders](https://chromium.googlesource.com/chromium/src/+/master/infra/config/cq.cfg),
+[Chromium CQ builders](https://chromium.googlesource.com/chromium/src/+/master/infra/config/branch/cq.cfg),
 as they operate under strict execution requirements. Make sure to get an
 infrastructure engineer on the Crossover Team to sign off that there is both
 buildbot and swarming capacity available.

@@ -749,7 +749,7 @@
       'filepath': 'courgette/',
     },
     'cq': {
-      'filepath': 'infra/config/cq.cfg',
+      'filepath': 'infra/config/branch/cq.cfg',
     },
     'cr_elements': {
       'filepath': 'ui/webui/resources/cr_element',
