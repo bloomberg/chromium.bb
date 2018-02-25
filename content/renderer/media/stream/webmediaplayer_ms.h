@@ -98,7 +98,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void PictureInPicture() override;
+  void EnterPictureInPicture() override;
   void SetSinkId(const blink::WebString& sink_id,
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;

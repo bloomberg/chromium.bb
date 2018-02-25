@@ -210,6 +210,7 @@ class CORE_EXPORT HTMLMediaElement
   void setVolume(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   bool muted() const;
   void setMuted(bool);
+  void enterPictureInPicture();
 
   void TogglePlayState();
 
@@ -309,8 +310,6 @@ class CORE_EXPORT HTMLMediaElement
 
   // Returns the "effective media volume" value as specified in the HTML5 spec.
   double EffectiveMediaVolume() const;
-
-  void pictureInPicture();
 
   // Predicates also used when dispatching wrapper creation (cf.
   // [SpecialWrapFor] IDL attribute usage.)

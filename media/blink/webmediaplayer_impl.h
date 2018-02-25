@@ -121,6 +121,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnWebLayerUpdated() override;
   void RegisterContentsLayer(blink::WebLayer* web_layer) override;
   void UnregisterContentsLayer(blink::WebLayer* web_layer) override;
+  void OnSurfaceIdUpdated(viz::SurfaceId surface_id) override;
 
   void Load(LoadType load_type,
             const blink::WebMediaPlayerSource& source,
@@ -132,7 +133,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void PictureInPicture() override;
+  void EnterPictureInPicture() override;
   void SetSinkId(const blink::WebString& sink_id,
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
@@ -871,6 +872,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   mojom::MediaMetricsProviderPtr media_metrics_provider_;
 
   base::Optional<bool> stale_state_override_for_testing_;
+
+  // Keeps track of the SurfaceId for Picture-in-Picture. This is used to
+  // route the video to be shown in the Picture-in-Picture window.
+  viz::SurfaceId pip_surface_id_;
+
+  // Callback to pass updated information about the current surface info.
+  WebMediaPlayerParams::PipSurfaceInfoCB pip_surface_info_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

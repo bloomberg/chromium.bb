@@ -877,6 +877,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // frame.
   void FrameDidCallFocus();
 
+  // Send SurfaceId information to FrameHost to use for Picture-in-Picture.
+  void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id);
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 

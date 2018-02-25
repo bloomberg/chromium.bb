@@ -3437,3 +3437,7 @@ crbug.com/811565 [ Fuchsia ] fast/css3-text/css3-text-decoration/text-decoration
 crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug1188.html [ Failure Pass ]
 crbug.com/811565 [ Fuchsia ] tables/mozilla/bugs/bug2479-3.html [ Failure Pass ]
 crbug.com/811565 [ Fuchsia ] tables/mozilla/core/bloomberg.html [ Failure Pass ]
+
+# TODO(apacible): Remove these once SurfaceLayerForVideo works on LayoutTests.
+crbug.com/811977 media/controls/picture-in-picture-interstitial.html [ Skip ]
+crbug.com/811977 virtual/new-remote-playback-pipeline/media/controls/picture-in-picture-interstitial.html [ Skip ]

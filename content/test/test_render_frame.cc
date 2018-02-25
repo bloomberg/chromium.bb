@@ -109,6 +109,9 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FrameRectsChanged(const gfx::Rect& frame_rect) override {}
 
+  void OnUpdatePictureInPictureSurfaceId(
+      const viz::SurfaceId& surface_id) override {}
+
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

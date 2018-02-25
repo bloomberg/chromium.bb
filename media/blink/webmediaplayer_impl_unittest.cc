@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
@@ -130,6 +131,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD1(MediaRemotingStopped, void(blink::WebLocalizedString::Name));
   MOCK_METHOD0(PictureInPictureStarted, void());
   MOCK_METHOD0(PictureInPictureStopped, void());
+  MOCK_METHOD0(IsInPictureInPictureMode, bool());
 
   void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
 
@@ -307,7 +309,8 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                    base::Unretained(this)),
         cc::TestContextProvider::Create(),
-        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo));
+        base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
+        base::BindRepeating(pip_surface_info_cb_.Get()));
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -535,6 +538,10 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
+
+  // Callback used for updating Picture-in-Picture about new Surface info.
+  base::MockCallback<WebMediaPlayerParams::PipSurfaceInfoCB>
+      pip_surface_info_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
@@ -1064,6 +1071,29 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
     wmpi_->SetRate(0.8);  // This should log change from 0 -> 0.8
     wmpi_->SetRate(0.8);  // No change from previous rate, so no log.
   }
+}
+
+// Tests when the PipSurfaceInfoCB for |wmpi_| is triggered for
+// Picture-in-Picture.
+TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
+  InitializeWebMediaPlayerImpl();
+
+  // Set up valid viz::SurfaceId. Values are arbitrary for test purposes.
+  viz::FrameSinkId frame_sink_id = viz::FrameSinkId(1, 1);
+  viz::LocalSurfaceId local_surface_id =
+      viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
+  const viz::SurfaceId& surface_id =
+      viz::SurfaceId(frame_sink_id, local_surface_id);
+
+  // This call should do nothing because there is no SurfaceId set.
+  wmpi_->EnterPictureInPicture();
+  EXPECT_CALL(client_, IsInPictureInPictureMode());
+  wmpi_->OnSurfaceIdUpdated(surface_id);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+
+  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id));
+  // This call should trigger the callback since the SurfaceId is set.
+  wmpi_->EnterPictureInPicture();
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

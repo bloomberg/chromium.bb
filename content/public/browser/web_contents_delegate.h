@@ -44,6 +44,7 @@ namespace content {
 class ColorChooser;
 class JavaScriptDialogManager;
 class RenderFrameHost;
+class RenderProcessHost;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -65,6 +66,10 @@ class Size;
 namespace url {
 class Origin;
 }
+
+namespace viz {
+class SurfaceId;
+}  // namespace viz
 
 namespace blink {
 class WebGestureEvent;
@@ -565,6 +570,10 @@ class CONTENT_EXPORT WebContentsDelegate {
                                          int document_cookie,
                                          RenderFrameHost* subframe_host) const {
   }
+
+  // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
+  // of the video to be in Picture-in-Picture mode.
+  virtual void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id);
 
  protected:
   virtual ~WebContentsDelegate();

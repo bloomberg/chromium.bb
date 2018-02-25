@@ -22,7 +22,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
     blink::WebContentDecryptionModule* initial_cdm,
     SurfaceManager* surface_manager,
-    const RequestRoutingTokenCallback request_routing_token_cb,
+    RequestRoutingTokenCallback request_routing_token_cb,
     base::WeakPtr<MediaObserver> media_observer,
     base::TimeDelta max_keyframe_distance_to_disable_background_video,
     base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
@@ -32,7 +32,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
         blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback,
     scoped_refptr<viz::ContextProvider> context_provider,
-    bool use_surface_layer_for_video)
+    bool use_surface_layer_for_video,
+    const PipSurfaceInfoCB& pip_surface_info_cb)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(std::move(media_log)),
@@ -54,7 +55,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       metrics_provider_(std::move(metrics_provider)),
       create_bridge_callback_(create_bridge_callback),
       context_provider_(std::move(context_provider)),
-      use_surface_layer_for_video_(use_surface_layer_for_video) {}
+      use_surface_layer_for_video_(use_surface_layer_for_video),
+      pip_surface_info_cb_(pip_surface_info_cb) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() = default;
 

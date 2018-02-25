@@ -2582,16 +2582,16 @@ void HTMLMediaElement::setMuted(bool muted) {
   autoplay_policy_->StopAutoplayMutedWhenVisible();
 }
 
+void HTMLMediaElement::enterPictureInPicture() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->EnterPictureInPicture();
+}
+
 double HTMLMediaElement::EffectiveMediaVolume() const {
   if (muted_)
     return 0;
 
   return volume_;
-}
-
-void HTMLMediaElement::pictureInPicture() {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->PictureInPicture();
 }
 
 // The spec says to fire periodic timeupdate events (those sent while playing)

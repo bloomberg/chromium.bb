@@ -527,6 +527,7 @@ class WebMediaPlayerMSTest
       blink::WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStarted() override {}
   void PictureInPictureStopped() override {}
+  bool IsInPictureInPictureMode() override { return false; }
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

@@ -66,6 +66,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -1404,6 +1405,18 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
   // click-through metrics.
   content_settings->OnFramebustBlocked(
       url, FramebustBlockTabHelper::ClickCallback());
+}
+
+void Browser::UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {
+  if (!surface_id.is_valid())
+    return;
+
+  pip_window_controller_.reset(
+      PictureInPictureWindowController::GetOrCreateForWebContents(
+          tab_strip_model_->GetActiveWebContents()));
+  pip_window_controller_->Init();
+  pip_window_controller_->EmbedSurface(surface_id);
+  pip_window_controller_->Show();
 }
 
 bool Browser::IsMouseLocked() const {

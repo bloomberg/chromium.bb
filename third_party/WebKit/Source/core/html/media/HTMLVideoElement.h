@@ -149,6 +149,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   void PictureInPictureStarted() final;
   void PictureInPictureStopped() final;
+  bool IsInPictureInPictureMode() final;
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
 

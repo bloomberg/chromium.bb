@@ -2377,6 +2377,12 @@ void RenderFrameHostImpl::FrameRectsChanged(const gfx::Rect& frame_rect) {
   frame_rect_ = frame_rect;
 }
 
+void RenderFrameHostImpl::OnUpdatePictureInPictureSurfaceId(
+    const viz::SurfaceId& surface_id) {
+  if (delegate_)
+    delegate_->UpdatePictureInPictureSurfaceId(surface_id);
+}
+
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }

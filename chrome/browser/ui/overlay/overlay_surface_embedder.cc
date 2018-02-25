@@ -8,12 +8,14 @@
 
 OverlaySurfaceEmbedder::OverlaySurfaceEmbedder(OverlayWindow* window)
     : window_(window) {
+  DCHECK(window_);
   surface_layer_ = std::make_unique<ui::Layer>(ui::LAYER_TEXTURED);
   surface_layer_->SetMasksToBounds(true);
 
   // The frame provided by the parent window's layer needs to show through
   // the surface layer.
   surface_layer_->SetFillsBoundsOpaquely(false);
+  surface_layer_->SetBounds(window_->GetBounds());
   window_->GetLayer()->Add(surface_layer_.get());
 }
 

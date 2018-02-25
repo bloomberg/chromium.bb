@@ -619,6 +619,7 @@ test("browser_tests") {
       "../browser/permissions/permission_request_manager_browsertest.cc",
       "../browser/permissions/permissions_browsertest.cc",
       "../browser/permissions/permissions_browsertest.h",
+      "../browser/picture_in_picture/picture_in_picture_window_controller_browsertest.cc",
       "../browser/plugins/flash_permission_browsertest.cc",
       "../browser/plugins/plugin_power_saver_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
