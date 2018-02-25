@@ -95,6 +95,7 @@ enum fd_version {
 	FD_VERSION_UNLIMITED_CMDS = 1,     /* submits w/ >4 cmd buffers (growable ringbuffer) */
 	FD_VERSION_FENCE_FD = 2,           /* submit command supports in/out fences */
 	FD_VERSION_SUBMIT_QUEUES = 3,      /* submit queues and multiple priority levels */
+	FD_VERSION_BO_IOVA = 3,            /* supports fd_bo_get/put_iova() */
 };
 enum fd_version fd_device_version(struct fd_device *dev);
 
@@ -123,6 +124,8 @@ struct fd_bo *fd_bo_from_handle(struct fd_device *dev,
 		uint32_t handle, uint32_t size);
 struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name);
 struct fd_bo * fd_bo_from_dmabuf(struct fd_device *dev, int fd);
+uint64_t fd_bo_get_iova(struct fd_bo *bo);
+void fd_bo_put_iova(struct fd_bo *bo);
 struct fd_bo * fd_bo_ref(struct fd_bo *bo);
 void fd_bo_del(struct fd_bo *bo);
 int fd_bo_get_name(struct fd_bo *bo, uint32_t *name);
