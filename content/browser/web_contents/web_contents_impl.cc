@@ -4050,6 +4050,12 @@ void WebContentsImpl::PrintCrossProcessSubframe(
                                        subframe_host);
 }
 
+void WebContentsImpl::UpdatePictureInPictureSurfaceId(
+    viz::SurfaceId surface_id) {
+  if (delegate_)
+    delegate_->UpdatePictureInPictureSurfaceId(surface_id);
+}
+
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaRenderFrameHostDelegate() {

@@ -12,6 +12,7 @@
 
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
@@ -353,6 +354,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void PrintCrossProcessSubframe(const gfx::Rect& rect,
                                          int document_cookie,
                                          RenderFrameHost* render_frame_host) {}
+
+  // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
+  // of the video to be in Picture-in-Picture mode.
+  virtual void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

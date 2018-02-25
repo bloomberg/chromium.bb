@@ -550,6 +550,11 @@ void HTMLVideoElement::PictureInPictureStopped() {
     picture_in_picture_interstitial_->Hide();
 }
 
+bool HTMLVideoElement::IsInPictureInPictureMode() {
+  return picture_in_picture_interstitial_ &&
+         picture_in_picture_interstitial_->IsVisible();
+}
+
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   if (is_picture_in_picture_)
     return WebMediaPlayer::DisplayType::kPictureInPicture;

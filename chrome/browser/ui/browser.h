@@ -70,6 +70,7 @@ class BrowserLiveTabContext;
 class BrowserWindow;
 class FastUnloadController;
 class FindBarController;
+class PictureInPictureWindowController;
 class Profile;
 class ScopedKeepAlive;
 class StatusBubble;
@@ -102,6 +103,10 @@ struct SelectedFileInfo;
 
 namespace web_modal {
 class WebContentsModalDialogHost;
+}
+
+namespace viz {
+class SurfaceId;
 }
 
 class Browser : public TabStripModelObserver,
@@ -490,6 +495,7 @@ class Browser : public TabStripModelObserver,
                            bool is_audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
+  void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -982,6 +988,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<extensions::WindowController> extension_window_controller_;
 
   std::unique_ptr<chrome::BrowserCommandController> command_controller_;
+
+  std::unique_ptr<PictureInPictureWindowController> pip_window_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;

@@ -60,7 +60,7 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
 void SurfaceLayerBridge::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
-    // First time a SurfaceId is received
+    // First time a SurfaceId is received.
     current_surface_id_ = surface_info.id();
     if (web_layer_) {
       if (observer_)
@@ -83,7 +83,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
       observer_->RegisterContentsLayer(web_layer_.get());
   } else if (current_surface_id_ != surface_info.id()) {
     // A different SurfaceId is received, prompting change to existing
-    // SurfaceLayer
+    // SurfaceLayer.
     current_surface_id_ = surface_info.id();
     cc::SurfaceLayer* surface_layer =
         static_cast<cc::SurfaceLayer*>(cc_layer_.get());
@@ -92,8 +92,11 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     surface_layer->SetFallbackSurfaceId(surface_info.id());
   }
 
-  if (observer_)
+  if (observer_) {
     observer_->OnWebLayerUpdated();
+    observer_->OnSurfaceIdUpdated(surface_info.id());
+  }
+
   cc_layer_->SetBounds(surface_info.size_in_pixels());
 }
 

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
@@ -267,5 +268,8 @@ int WebContentsDelegate::GetBottomControlsHeight() const {
 bool WebContentsDelegate::DoBrowserControlsShrinkBlinkSize() const {
   return false;
 }
+
+void WebContentsDelegate::UpdatePictureInPictureSurfaceId(
+    viz::SurfaceId surface_id) {}
 
 }  // namespace content

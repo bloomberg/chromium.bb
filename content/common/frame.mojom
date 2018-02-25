@@ -13,6 +13,7 @@ import "mojo/common/unguessable_token.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
+import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/commit_result.mojom";
@@ -314,4 +315,8 @@ interface FrameHost {
   // replicated in the browser so that the browser can correctly set the initial
   // size of the frame in case of a cross-process navigation.
   FrameRectsChanged(gfx.mojom.Rect rect);
+
+  // Sent by the renderer to update Picture-in-Picture with SurfaceId information
+  // to be used to show content in the Picture-in-Picture window.
+  OnUpdatePictureInPictureSurfaceId(viz.mojom.SurfaceId surface_id);
 };

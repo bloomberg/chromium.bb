@@ -4,7 +4,9 @@
 
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
 
+#include "chrome/browser/ui/overlay/overlay_surface_embedder.h"
 #include "chrome/browser/ui/overlay/overlay_window.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PictureInPictureWindowController);
@@ -21,7 +23,8 @@ PictureInPictureWindowController::GetOrCreateForWebContents(
 }
 
 PictureInPictureWindowController::~PictureInPictureWindowController() {
-  window_->Close();
+  if (window_)
+    window_->Close();
 }
 
 PictureInPictureWindowController::PictureInPictureWindowController(
@@ -30,18 +33,31 @@ PictureInPictureWindowController::PictureInPictureWindowController(
   DCHECK(initiator_);
 }
 
-void PictureInPictureWindowController::Show() {
-  if (window_ && window_->IsActive())
-    return;
-
-  if (!window_) {
+void PictureInPictureWindowController::Init() {
+  if (!window_)
     window_ = OverlayWindow::Create();
-    window_->Init();
-  }
+  window_->Init();
+}
+
+void PictureInPictureWindowController::Show() {
+  DCHECK(window_);
   window_->Show();
 }
 
 void PictureInPictureWindowController::Close() {
   if (window_->IsActive())
     window_->Close();
+}
+
+void PictureInPictureWindowController::EmbedSurface(viz::SurfaceId surface_id) {
+  DCHECK(window_);
+  DCHECK(surface_id.is_valid());
+
+  embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));
+  surface_id_ = surface_id;
+  embedder_->SetPrimarySurfaceId(surface_id_);
+}
+
+OverlayWindow* PictureInPictureWindowController::GetWindowForTesting() {
+  return window_.get();
 }

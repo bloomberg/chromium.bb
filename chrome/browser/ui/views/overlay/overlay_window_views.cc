@@ -25,12 +25,13 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   }
   ~OverlayWindowWidgetDelegate() override = default;
 
-  // WidgetDelegate:
+  // views::WidgetDelegate:
   bool CanResize() const override { return false; }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
   base::string16 GetWindowTitle() const override {
     return l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
   }
+  void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
 
@@ -77,7 +78,6 @@ void OverlayWindowViews::Init() {
   params.delegate = new OverlayWindowWidgetDelegate(widget_.get());
 
   widget_->Init(params);
-  widget_->Show();
 }
 
 bool OverlayWindowViews::IsActive() const {
@@ -98,6 +98,10 @@ void OverlayWindowViews::Close() {
 
 void OverlayWindowViews::Activate() {
   widget_->Activate();
+}
+
+bool OverlayWindowViews::IsVisible() {
+  return widget_->IsVisible();
 }
 
 bool OverlayWindowViews::IsAlwaysOnTop() const {

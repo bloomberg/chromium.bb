@@ -576,6 +576,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                   ResourceType resource_type,
                                   const std::string& ip,
                                   net::CertStatus cert_status) override;
+  void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

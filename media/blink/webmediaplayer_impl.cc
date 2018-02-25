@@ -263,7 +263,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       surface_layer_for_video_enabled_(params->use_surface_layer_for_video()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
-      media_metrics_provider_(params->take_metrics_provider()) {
+      media_metrics_provider_(params->take_metrics_provider()),
+      pip_surface_info_cb_(params->pip_surface_info_cb()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -418,6 +419,15 @@ void WebMediaPlayerImpl::RegisterContentsLayer(blink::WebLayer* web_layer) {
 void WebMediaPlayerImpl::UnregisterContentsLayer(blink::WebLayer* web_layer) {
   // |client_| will unregister its WebLayer if given a nullptr.
   client_->SetWebLayer(nullptr);
+}
+
+void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
+  pip_surface_id_ = surface_id;
+
+  // TODO(726619): Handle the behavior when Picture-in-Picture mode is
+  // disabled.
+  if (client_ && client_->IsInPictureInPictureMode())
+    pip_surface_info_cb_.Run(pip_surface_id_);
 }
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
@@ -789,7 +799,12 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::PictureInPicture() {
+void WebMediaPlayerImpl::EnterPictureInPicture() {
+  if (!pip_surface_id_.is_valid())
+    return;
+
+  pip_surface_info_cb_.Run(pip_surface_id_);
+
   if (client_)
     client_->PictureInPictureStarted();
 }

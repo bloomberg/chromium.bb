@@ -129,8 +129,14 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // to a localized string that explains the reason as user-readable text.
   virtual void MediaRemotingStopped(WebLocalizedString::Name error_msg) = 0;
 
+  // Informs that Picture-in-Picture mode has started for the media element.
   virtual void PictureInPictureStarted() = 0;
+
+  // Informs that Picture-in-Picture mode has stopped for the media element.
   virtual void PictureInPictureStopped() = 0;
+
+  // Returns whether the media element is in Picture-in-Picture mode.
+  virtual bool IsInPictureInPictureMode() = 0;
 
   // Returns whether the media element has native controls. It does not mean
   // that the controls are currently visible.

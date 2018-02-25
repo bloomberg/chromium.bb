@@ -34,6 +34,7 @@ class OverlayWindow {
   virtual void Hide() = 0;
   virtual void Close() = 0;
   virtual void Activate() = 0;
+  virtual bool IsVisible() = 0;
   virtual bool IsAlwaysOnTop() const = 0;
   virtual ui::Layer* GetLayer() = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
