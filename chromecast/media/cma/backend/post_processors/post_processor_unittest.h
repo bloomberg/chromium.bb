@@ -101,7 +101,7 @@ std::vector<float> LinearChirp(int frames,
 // Equivalent to LinearChirp(frames,
 //                          {start_frequency_left, start_frequency_right},
 //                          {end_frequency_left, end_frequency_right})
-std::vector<float> GetStereoChirp(size_t frames,
+std::vector<float> GetStereoChirp(int frames,
                                   float start_frequency_left,
                                   float end_frequency_left,
                                   float start_frequency_right,
