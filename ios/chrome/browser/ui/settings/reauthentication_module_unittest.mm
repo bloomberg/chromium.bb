@@ -8,6 +8,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -42,7 +43,7 @@
 
 namespace {
 
-class ReauthenticationModuleTest : public ::testing::Test {
+class ReauthenticationModuleTest : public PlatformTest {
  protected:
   ReauthenticationModuleTest() {}
 
