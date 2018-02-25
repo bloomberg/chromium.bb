@@ -1042,6 +1042,13 @@ test("content_browsertests") {
     ]
   }
 
+  # HID support is not available without udev.
+  is_linux_without_udev = is_linux && !use_udev
+  if (!is_linux_without_udev && !is_android) {
+    sources += [ "../browser/webauth/webauth_browsertest.cc" ]
+    deps += [ "//device/fido:test_support" ]
+  }
+
   if (is_mac) {
     sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
     deps += [
