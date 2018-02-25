@@ -268,12 +268,11 @@ numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=[]
 numericnocontchars 0123456789
 
-
 capsletter 46
-begcaps 46-46-46
 begcapsword 46-46
-begcaps 46-46
-endcaps 5-5-46
+begcaps 25-46
+endcaps 46-25 # official = 46 but conflict with capsletter
+
 emphclass italic
 emphclass underline
 emphclass bold
