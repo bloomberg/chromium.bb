@@ -31,13 +31,12 @@ base::LazySingleThreadTaskRunner g_task_runner =
 
 // A wrapper for |write_function|, which can be bound and keep a copy of its
 // data on the closure.
-bool Write(int (*write_function)(const base::FilePath& filename,
-                                 const char* data,
-                                 int size),
-           const base::FilePath& destination,
-           const std::string& serialised) {
+bool Write(
+    password_manager::PasswordManagerExporter::WriteCallback write_function,
+    const base::FilePath& destination,
+    const std::string& serialised) {
   int written =
-      write_function(destination, serialised.c_str(), serialised.size());
+      write_function.Run(destination, serialised.c_str(), serialised.size());
   return written == static_cast<int>(serialised.size());
 }
 
@@ -54,7 +53,7 @@ PasswordManagerExporter::PasswordManagerExporter(
     : credential_provider_interface_(credential_provider_interface),
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
-      write_function_(&base::WriteFile),
+      write_function_(base::BindRepeating(&base::WriteFile)),
       delete_function_(base::BindRepeating(&base::DeleteFile)),
       task_runner_(g_task_runner.Get()),
       weak_factory_(this) {}
@@ -127,16 +126,13 @@ PasswordManagerExporter::GetProgressStatus() {
   return last_progress_status_;
 }
 
-void PasswordManagerExporter::SetWriteForTesting(
-    int (*write_function)(const base::FilePath& filename,
-                          const char* data,
-                          int size)) {
-  write_function_ = write_function;
+void PasswordManagerExporter::SetWriteForTesting(WriteCallback write_function) {
+  write_function_ = std::move(write_function);
 }
 
 void PasswordManagerExporter::SetDeleteForTesting(
     DeleteCallback delete_callback) {
-  delete_function_ = delete_callback;
+  delete_function_ = std::move(delete_callback);
 }
 
 bool PasswordManagerExporter::IsReadyForExport() {

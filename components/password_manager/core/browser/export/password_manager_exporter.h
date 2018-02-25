@@ -29,6 +29,8 @@ class PasswordManagerExporter {
   using ProgressCallback =
       base::RepeatingCallback<void(password_manager::ExportProgressStatus,
                                    const std::string&)>;
+  using WriteCallback =
+      base::RepeatingCallback<int(const base::FilePath&, const char*, int)>;
   using DeleteCallback =
       base::RepeatingCallback<bool(const base::FilePath&, bool)>;
 
@@ -55,9 +57,7 @@ class PasswordManagerExporter {
 
   // Replace the function which writes to the filesystem with a custom action.
   // The return value is -1 on error, otherwise the number of bytes written.
-  void SetWriteForTesting(int (*write_function)(const base::FilePath& filename,
-                                                const char* data,
-                                                int size));
+  void SetWriteForTesting(WriteCallback write_callback);
 
   // Replace the function which writes to the filesystem with a custom action.
   // The return value is true when deleting successfully.
@@ -112,11 +112,9 @@ class PasswordManagerExporter {
   // list. Useful for metrics.
   base::Time export_preparation_started_;
 
-  // The function which does the actual writing. It should point to
+  // The function which does the actual writing. It should wrap
   // base::WriteFile, unless it's changed for testing purposes.
-  int (*write_function_)(const base::FilePath& filename,
-                         const char* data,
-                         int size);
+  WriteCallback write_function_;
 
   // The function which does the actual deleting of a file. It should wrap
   // base::DeleteFile, unless it's changed for testing purposes.
