@@ -1801,9 +1801,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(notification_message_filter_.get());
 
 #if defined(OS_ANDROID)
-  synchronous_compositor_filter_ =
-      new SynchronousCompositorBrowserFilter(GetID());
-  AddFilter(synchronous_compositor_filter_.get());
+  if (!base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+    synchronous_compositor_filter_ =
+        new SynchronousCompositorBrowserFilter(GetID());
+    AddFilter(synchronous_compositor_filter_.get());
+  }
 #endif
 }
 

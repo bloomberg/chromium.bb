@@ -157,6 +157,14 @@ void WidgetInputHandlerImpl::DispatchNonBlockingEvent(
   DispatchEvent(std::move(event), DispatchEventCallback());
 }
 
+void WidgetInputHandlerImpl::AttachSynchronousCompositor(
+    mojom::SynchronousCompositorControlHostPtr control_host,
+    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+  input_handler_manager_->AttachSynchronousCompositor(
+      std::move(control_host), std::move(host), std::move(compositor_request));
+}
+
 void WidgetInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   if (input_event_queue_) {
     input_event_queue_->QueueClosure(base::BindOnce(

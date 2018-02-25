@@ -52,6 +52,11 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   void DispatchEvent(std::unique_ptr<content::InputEvent>,
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(std::unique_ptr<content::InputEvent>) override;
+  void AttachSynchronousCompositor(
+      mojom::SynchronousCompositorControlHostPtr control_host,
+      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+      mojom::SynchronousCompositorAssociatedRequest compositor_request)
+      override;
 
  private:
   bool ShouldProxyToMainThread() const;

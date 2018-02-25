@@ -215,6 +215,11 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(
       std::unique_ptr<content::InputEvent> event) override;
+  void AttachSynchronousCompositor(
+      mojom::SynchronousCompositorControlHostPtr control_host,
+      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+      mojom::SynchronousCompositorAssociatedRequest compositor_request)
+      override;
 
   using MessageVector = std::vector<std::unique_ptr<DispatchedMessage>>;
   MessageVector GetAndResetDispatchedMessages();

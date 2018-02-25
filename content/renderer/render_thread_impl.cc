@@ -98,6 +98,7 @@
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
+#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -183,6 +184,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_filter.h"
+#include "content/renderer/android/synchronous_compositor_proxy.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
@@ -1322,12 +1324,6 @@ void RenderThreadImpl::InitializeCompositorThread() {
     input_handler_manager_.reset(new InputHandlerManager(
         compositor_task_runner_, input_handler_manager_client,
         synchronous_input_handler_proxy_client, renderer_scheduler_.get()));
-  } else {
-#if defined(OS_ANDROID)
-    // TODO(dtapuska): Implement a mojo channel for the synchronous
-    // compositor android webview uses.
-    DCHECK(!GetContentClient()->UsingSynchronousCompositing());
-#endif
   }
 }
 
@@ -1666,7 +1662,7 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
 }
 
 bool RenderThreadImpl::EnableStreamTextureCopy() {
-  return sync_compositor_message_filter_.get();
+  return GetContentClient()->UsingSynchronousCompositing();
 }
 
 #endif
@@ -2209,15 +2205,34 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   }
 
 #if defined(OS_ANDROID)
-  if (sync_compositor_message_filter_) {
-    callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
-        std::move(context_provider), std::move(worker_context_provider),
-        compositor_task_runner_, GetGpuMemoryBufferManager(), routing_id,
-        g_next_layer_tree_frame_sink_id++,
-        std::move(params.synthetic_begin_frame_source),
-        sync_compositor_message_filter_.get(),
-        std::move(frame_swap_message_queue)));
-    return;
+  if (GetContentClient()->UsingSynchronousCompositing()) {
+    if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+      RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
+      if (view) {
+        callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
+            std::move(context_provider), std::move(worker_context_provider),
+            compositor_task_runner_, GetGpuMemoryBufferManager(),
+            sync_message_filter(), routing_id,
+            g_next_layer_tree_frame_sink_id++,
+            std::move(params.synthetic_begin_frame_source),
+            view->widget_input_handler_manager()
+                ->GetSynchronousCompositorRegistry(),
+            std::move(frame_swap_message_queue)));
+        return;
+      } else {
+        NOTREACHED();
+      }
+    } else {
+      callback.Run(std::make_unique<SynchronousLayerTreeFrameSink>(
+          std::move(context_provider), std::move(worker_context_provider),
+          compositor_task_runner_, GetGpuMemoryBufferManager(),
+          sync_compositor_message_filter_.get(), routing_id,
+          g_next_layer_tree_frame_sink_id++,
+          std::move(params.synthetic_begin_frame_source),
+          sync_compositor_message_filter_.get(),
+          std::move(frame_swap_message_queue)));
+      return;
+    }
   }
 #endif
   frame_sink_provider_->CreateForWidget(

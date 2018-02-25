@@ -509,6 +509,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual void DidNavigate() {}
 
+  // Called when the RenderWidgetHostImpl has be initialized.
+  virtual void OnRenderWidgetInit() {}
+
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();

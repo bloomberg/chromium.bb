@@ -8,22 +8,22 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
-namespace IPC {
-class Message;
-class Sender;
-}  // namespace IPC
-
 namespace viz {
+namespace cc {
 class CompositorFrame;
 }  // namespace cc
+}  // namespace viz
 
 namespace content {
 
@@ -34,100 +34,93 @@ struct SyncCompositorDemandDrawSwParams;
 struct SyncCompositorSetSharedMemoryParams;
 
 class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
-                                   public SynchronousLayerTreeFrameSinkClient {
+                                   public SynchronousLayerTreeFrameSinkClient,
+                                   public mojom::SynchronousCompositor {
  public:
   SynchronousCompositorProxy(
-      int routing_id,
-      IPC::Sender* sender,
       ui::SynchronousInputHandlerProxy* input_handler_proxy);
   ~SynchronousCompositorProxy() override;
 
+  void Init();
+
   // ui::SynchronousInputHandler overrides.
-  void SetNeedsSynchronousAnimateInput() override;
+  void SetNeedsSynchronousAnimateInput() final;
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
                             float page_scale_factor,
                             float min_page_scale_factor,
-                            float max_page_scale_factor) override;
+                            float max_page_scale_factor) final;
 
   // SynchronousLayerTreeFrameSinkClient overrides.
-  void DidActivatePendingTree() override;
-  void Invalidate() override;
+  void DidActivatePendingTree() final;
+  void Invalidate() final;
   void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
-                             viz::CompositorFrame frame) override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
+                             viz::CompositorFrame frame) final;
+  void SetNeedsBeginFrames(bool needs_begin_frames) final;
+  void SinkDestroyed() final;
 
   void SetLayerTreeFrameSink(
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
-  void OnMessageReceived(const IPC::Message& message);
-  bool Send(IPC::Message* message);
-  void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
-
- private:
-  struct SharedMemoryWithSize;
+  void PopulateCommonParams(SyncCompositorCommonRendererParams* params);
 
   void SendSetNeedsBeginFramesIfNeeded();
 
-  // IPC handlers.
-  void OnComputeScroll(base::TimeTicks animation_time);
-  void OnSetBeginFrameSourcePaused(bool paused);
-  void OnBeginFrame(const viz::BeginFrameArgs& args);
-  void DemandDrawHwAsync(const SyncCompositorDemandDrawHwParams& params);
+  // mojom::SynchronousCompositor overrides.
+  void ComputeScroll(base::TimeTicks animation_time) final;
+  void DemandDrawHwAsync(
+      const SyncCompositorDemandDrawHwParams& draw_params) final;
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
-                    IPC::Message* reply_message);
-  void SetSharedMemory(
-      const SyncCompositorSetSharedMemoryParams& params,
-      bool* success,
-      SyncCompositorCommonRendererParams* common_renderer_params);
-  void ZeroSharedMemory();
+                    DemandDrawHwCallback callback) final;
+  void SetSharedMemory(const SyncCompositorSetSharedMemoryParams& params,
+                       SetSharedMemoryCallback callback) final;
   void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
-                    IPC::Message* reply_message);
-  void SynchronouslyZoomBy(
-      float zoom_delta,
-      const gfx::Point& anchor,
-      SyncCompositorCommonRendererParams* common_renderer_params);
-  void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
+                    DemandDrawSwCallback callback) final;
+  void ZeroSharedMemory() final;
+  void ZoomBy(float zoom_delta, const gfx::Point& anchor, ZoomByCallback) final;
+  void SetMemoryPolicy(uint32_t bytes_limit) final;
+  void ReclaimResources(
+      uint32_t layer_tree_frame_sink_id,
+      const std::vector<viz::ReturnedResource>& resources) final;
+  void SetScroll(const gfx::ScrollOffset& total_scroll_offset) final;
+  void BeginFrame(const viz::BeginFrameArgs& args) final;
+  void SetBeginFrameSourcePaused(bool paused) final;
 
-  void SubmitCompositorFrameHwAsync(uint32_t layer_tree_frame_sink_id,
-                                    viz::CompositorFrame frame);
-  void SubmitCompositorFrameHw(uint32_t layer_tree_frame_sink_id,
-                               viz::CompositorFrame frame);
-  void SendDemandDrawHwReply(base::Optional<viz::CompositorFrame> frame,
-                             uint32_t layer_tree_frame_sink_id,
-                             IPC::Message* reply_message);
-  void SendDemandDrawHwReplyAsync(base::Optional<viz::CompositorFrame> frame,
-                                  uint32_t layer_tree_frame_sink_id);
-  void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
-  void SubmitCompositorFrameSw(viz::CompositorFrame frame);
-  void SendDemandDrawSwReply(
-      base::Optional<viz::CompositorFrameMetadata> metadata,
-      IPC::Message* reply_message);
-  void SendAsyncRendererStateIfNeeded();
-  void DoDemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
-                      IPC::Message* reply_message);
+ protected:
+  virtual void SendSetNeedsBeginFrames(bool needs_begin_frames) = 0;
+  virtual void SendAsyncRendererStateIfNeeded() = 0;
+  virtual void LayerTreeFrameSinkCreated() = 0;
+  virtual void SendBeginFrameResponse(
+      const content::SyncCompositorCommonRendererParams&) = 0;
+  virtual void SendDemandDrawHwAsyncReply(
+      const content::SyncCompositorCommonRendererParams&,
+      uint32_t,
+      base::Optional<viz::CompositorFrame>) = 0;
 
-  const int routing_id_;
-  IPC::Sender* const sender_;
-  ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
-  const bool use_in_process_zero_copy_software_draw_;
-  SynchronousLayerTreeFrameSink* layer_tree_frame_sink_;
-  bool inside_receive_;
-  IPC::Message* hardware_draw_reply_;
-  IPC::Message* software_draw_reply_;
-  bool hardware_draw_reply_async_;
+  DemandDrawHwCallback hardware_draw_reply_;
+  DemandDrawSwCallback software_draw_reply_;
+  ZoomByCallback zoom_by_reply_;
+  SynchronousLayerTreeFrameSink* layer_tree_frame_sink_ = nullptr;
   bool begin_frame_paused_ = false;
 
-  bool compute_scroll_called_via_ipc_;
-  bool browser_needs_begin_frame_state_;
-  bool needs_begin_frame_for_frame_sink_;
-  bool needs_begin_frame_for_animate_input_;
+ private:
+  void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
+
+  struct SharedMemoryWithSize;
+
+  ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
+  const bool use_in_process_zero_copy_software_draw_;
+
+  bool compute_scroll_called_via_ipc_ = false;
+  bool browser_needs_begin_frame_state_ = false;
+  bool needs_begin_frame_for_frame_sink_ = false;
+  bool needs_begin_frame_for_animate_input_ = false;
 
   // From browser.
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // To browser.
-  mutable uint32_t version_;  // Mustable so PopulateCommonParams can be const.
+  uint32_t version_ = 0;
   gfx::ScrollOffset total_scroll_offset_;  // Modified by both.
   gfx::ScrollOffset max_scroll_offset_;
   gfx::SizeF scrollable_size_;

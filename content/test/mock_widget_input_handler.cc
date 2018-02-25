@@ -104,6 +104,11 @@ MockWidgetInputHandler::GetAndResetDispatchedMessages() {
   return dispatched_events;
 }
 
+void MockWidgetInputHandler::AttachSynchronousCompositor(
+    mojom::SynchronousCompositorControlHostPtr control_host,
+    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+    mojom::SynchronousCompositorAssociatedRequest compositor_request) {}
+
 MockWidgetInputHandler::DispatchedMessage::DispatchedMessage(
     const std::string& name)
     : name_(name) {}
