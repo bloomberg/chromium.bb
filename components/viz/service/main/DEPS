@@ -1,6 +1,7 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 include_rules = [
+  "+components/discardable_memory/client",
   "+components/viz/service",
   "+gpu/command_buffer",
   "+gpu/config",

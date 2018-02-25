@@ -277,11 +277,19 @@ void Service::OnStart() {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
+  if (!discardable_shared_memory_manager_) {
+    owned_discardable_shared_memory_manager_ =
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
+    discardable_shared_memory_manager_ =
+        owned_discardable_shared_memory_manager_.get();
+  }
+
   window_server_ = base::MakeUnique<ws::WindowServer>(this, should_host_viz_);
   if (should_host_viz_) {
     std::unique_ptr<ws::GpuHost> gpu_host =
-        base::MakeUnique<ws::DefaultGpuHost>(window_server_.get(),
-                                             context()->connector());
+        base::MakeUnique<ws::DefaultGpuHost>(
+            window_server_.get(), context()->connector(),
+            discardable_shared_memory_manager_);
     window_server_->SetGpuHost(std::move(gpu_host));
 
     registry_.AddInterface<mojom::Gpu>(
@@ -296,12 +304,6 @@ void Service::OnStart() {
 
   ime_driver_.Init(context()->connector(), test_config_);
 
-  if (!discardable_shared_memory_manager_) {
-    owned_discardable_shared_memory_manager_ =
-        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
-    discardable_shared_memory_manager_ =
-        owned_discardable_shared_memory_manager_.get();
-  }
   registry_with_source_info_.AddInterface<mojom::AccessibilityManager>(
       base::Bind(&Service::BindAccessibilityManagerRequest,
                  base::Unretained(this)));

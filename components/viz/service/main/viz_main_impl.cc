@@ -138,9 +138,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   CreateUkmRecorderIfNeeded(dependencies.connector);
 
   gpu_service_ = std::make_unique<GpuServiceImpl>(
-      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-      io_thread_ ? io_thread_->task_runner()
-                 : dependencies_.io_thread_task_runner,
+      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_task_runner(),
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences());
 }
 
@@ -185,6 +183,8 @@ void VizMainImpl::BindAssociated(mojom::VizMainAssociatedRequest request) {
 void VizMainImpl::CreateGpuService(
     mojom::GpuServiceRequest request,
     mojom::GpuHostPtr gpu_host,
+    discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+        discardable_memory_manager,
     mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   gpu_service_->UpdateGPUInfo();
@@ -198,6 +198,16 @@ void VizMainImpl::CreateGpuService(
     if (delegate_)
       delegate_->OnInitializationFailed();
     return;
+  }
+
+  if (!gpu_init_->gpu_info().in_process_gpu) {
+    // If the GPU is running in the browser process, discardable memory manager
+    // has already been initialized.
+    discardable_shared_memory_manager_ = std::make_unique<
+        discardable_memory::ClientDiscardableSharedMemoryManager>(
+        std::move(discardable_memory_manager), io_task_runner());
+    base::DiscardableMemoryAllocator::SetInstance(
+        discardable_shared_memory_manager_.get());
   }
 
   gpu_service_->Bind(std::move(request));
