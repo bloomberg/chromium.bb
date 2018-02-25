@@ -83,7 +83,9 @@ void SlewVolume::SetVolume(double volume_scale) {
   volume_scale_ = volume_scale;
   if (interrupted_) {
     current_volume_ = volume_scale_;
+    last_starting_volume_ = current_volume_;
   }
+
   if (volume_scale_ > current_volume_) {
     max_slew_per_sample_ = (volume_scale_ - current_volume_) * 1000.0 /
                            (max_slew_time_ms_ * sample_rate_);

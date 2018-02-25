@@ -94,13 +94,8 @@ MixerOutputStreamFuchsia::GetRenderingDelay() {
       /*timestamp_microseconds=*/(now - base::TimeTicks()).InMicroseconds());
 }
 
-bool MixerOutputStreamFuchsia::GetTimeUntilUnderrun(base::TimeDelta* result) {
-  if (!started_time_.is_null()) {
-    *result = GetCurrentStreamTime() - base::TimeTicks::Now();
-  } else {
-    *result = base::TimeDelta();
-  }
-  return true;
+int MixerOutputStreamFuchsia::OptimalWriteFramesCount() {
+  return kDefaultPeriodSize;
 }
 
 bool MixerOutputStreamFuchsia::Write(const float* data,

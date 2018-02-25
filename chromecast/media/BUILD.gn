@@ -31,7 +31,7 @@ group("libcast_media") {
     }
   } else if (is_fuchsia) {
     deps = [
-      "//chromecast/media/cma/backend/fuchsia",
+      "//chromecast/media/cma/backend/fuchsia:media_backend",
     ]
   } else {
     deps = [

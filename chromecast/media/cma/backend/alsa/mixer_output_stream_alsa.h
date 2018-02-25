@@ -26,12 +26,12 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
 
   void SetAlsaWrapperForTest(std::unique_ptr<AlsaWrapper> alsa);
 
-  // MixerOutputStream interface.
+  // MixerOutputStream implementation:
   bool Start(int requested_sample_rate, int channels) override;
-  bool GetTimeUntilUnderrun(base::TimeDelta* result) override;
   int GetSampleRate() override;
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay()
       override;
+  int OptimalWriteFramesCount() override;
   bool Write(const float* data,
              int data_size,
              bool* out_playback_interrupted) override;
@@ -54,7 +54,7 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
   // rate the device supports.
   int DetermineOutputRate(int requested_rate);
 
-  void UpdateRenderingDelay(int newly_pushed_frames);
+  void UpdateRenderingDelay();
 
   std::unique_ptr<AlsaWrapper> alsa_;
 

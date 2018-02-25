@@ -5,11 +5,10 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 
-#include "chromecast/media/cma/backend/mixer_output_stream.h"
-
 #include <media/audio.h>
 
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/mixer_output_stream.h"
 
 namespace chromecast {
 namespace media {
@@ -20,12 +19,12 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
   MixerOutputStreamFuchsia();
   ~MixerOutputStreamFuchsia() override;
 
-  // MixerOutputStream interface.
+  // MixerOutputStream implementation:
   bool Start(int requested_sample_rate, int channels) override;
-  bool GetTimeUntilUnderrun(base::TimeDelta* result) override;
   int GetSampleRate() override;
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay()
       override;
+  int OptimalWriteFramesCount() override;
   bool Write(const float* data,
              int data_size,
              bool* out_playback_interrupted) override;

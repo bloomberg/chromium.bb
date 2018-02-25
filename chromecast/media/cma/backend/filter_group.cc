@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
@@ -52,17 +53,24 @@ void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
   CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
   post_processing_pipeline_->SetContentType(content_type_);
+  active_inputs_.clear();
 }
 
-bool FilterGroup::CanProcessInput(StreamMixer::InputQueue* input) {
-  return !(device_ids_.find(input->device_id()) == device_ids_.end());
+bool FilterGroup::CanProcessInput(const std::string& input_device_id) {
+  return !(device_ids_.find(input_device_id) == device_ids_.end());
 }
 
-void FilterGroup::AddActiveInput(StreamMixer::InputQueue* input) {
-  active_inputs_.push_back(input);
+void FilterGroup::AddInput(MixerInput* input) {
+  active_inputs_.insert(input);
 }
 
-float FilterGroup::MixAndFilter(int num_frames) {
+void FilterGroup::RemoveInput(MixerInput* input) {
+  active_inputs_.erase(input);
+}
+
+float FilterGroup::MixAndFilter(
+    int num_frames,
+    MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay) {
   DCHECK_NE(output_samples_per_second_, 0);
 
   bool resize_needed = ResizeBuffersIfNecessary(num_frames);
@@ -70,9 +78,12 @@ float FilterGroup::MixAndFilter(int num_frames) {
   float volume = 0.0f;
   AudioContentType content_type = static_cast<AudioContentType>(-1);
 
+  rendering_delay.delay_microseconds += GetRenderingDelayMicroseconds();
+
   // Recursively mix inputs.
   for (auto* filter_group : mixed_inputs_) {
-    volume = std::max(volume, filter_group->MixAndFilter(num_frames));
+    volume = std::max(volume,
+                      filter_group->MixAndFilter(num_frames, rendering_delay));
     content_type = std::max(content_type, filter_group->content_type());
   }
 
@@ -102,10 +113,10 @@ float FilterGroup::MixAndFilter(int num_frames) {
 
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, num_frames);
-  for (StreamMixer::InputQueue* input : active_inputs_) {
-    input->GetResampledData(temp_.get(), num_frames);
+  for (MixerInput* input : active_inputs_) {
+    int filled = input->FillAudioData(num_frames, rendering_delay, temp_.get());
     for (int c = 0; c < num_channels_; ++c) {
-      input->VolumeScaleAccumulate(c != 0, temp_->channel(c), num_frames,
+      input->VolumeScaleAccumulate(c != 0, temp_->channel(c), filled,
                                    mixed_->channel(c));
     }
     volume = std::max(volume, input->InstantaneousVolume());
@@ -175,10 +186,6 @@ float* FilterGroup::GetOutputBuffer() {
 int64_t FilterGroup::GetRenderingDelayMicroseconds() {
   return delay_frames_ * base::Time::kMicrosecondsPerSecond /
          output_samples_per_second_;
-}
-
-void FilterGroup::ClearActiveInputs() {
-  active_inputs_.clear();
 }
 
 int FilterGroup::GetOutputChannelCount() {
