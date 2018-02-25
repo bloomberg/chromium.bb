@@ -26,7 +26,9 @@ template <typename T, typename = void>
 struct IsRefCountedType : std::false_type {};
 
 template <typename T>
-struct IsRefCountedType<T, void_t<decltype(&T::AddRef), decltype(&T::Release)>>
+struct IsRefCountedType<T,
+                        void_t<decltype(std::declval<T*>()->AddRef()),
+                               decltype(std::declval<T*>()->Release())>>
     : std::true_type {};
 
 template <typename T>
