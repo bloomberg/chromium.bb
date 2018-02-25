@@ -118,4 +118,11 @@ void LegacyIPCWidgetInputHandler::DispatchNonBlockingEvent(
   NOTREACHED();
 }
 
+void LegacyIPCWidgetInputHandler::AttachSynchronousCompositor(
+    mojom::SynchronousCompositorControlHostPtr control_host,
+    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+  NOTREACHED();
+}
+
 }  // namespace content

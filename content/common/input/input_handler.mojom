@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/ui/public/interfaces/ime/ime.mojom";
@@ -251,6 +252,13 @@ interface WidgetInputHandler {
   // of this API is the same as DispatchEvent just that there is no callback
   // after the event is processed.
   DispatchNonBlockingEvent(Event event);
+
+  // Attach the synchronous compositor interface. This method only
+  // should be called for Android WebView.
+  AttachSynchronousCompositor(
+      SynchronousCompositorControlHost control_host,
+      associated SynchronousCompositorHost host,
+      associated SynchronousCompositor& compositor_request);
 };
 
 // This interface provides the input actions associated with the RenderFrame.

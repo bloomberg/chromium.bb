@@ -22,6 +22,12 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/events/base_event_utils.h"
 
+#if defined(OS_ANDROID)
+#include "content/public/common/content_client.h"
+#include "content/renderer/android/synchronous_compositor_proxy_mojo.h"
+#include "content/renderer/android/synchronous_compositor_registry.h"
+#endif
+
 namespace content {
 namespace {
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
@@ -38,6 +44,68 @@ void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
 }
 
 }  // namespace
+
+#if defined(OS_ANDROID)
+class SynchronousCompositorProxyRegistry
+    : public SynchronousCompositorRegistry {
+ public:
+  explicit SynchronousCompositorProxyRegistry(
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
+      : compositor_task_runner_(std::move(compositor_task_runner)) {}
+
+  ~SynchronousCompositorProxyRegistry() override {
+    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  }
+
+  using ProxyAutoDeleted = std::unique_ptr<SynchronousCompositorProxyRegistry,
+                                           base::OnTaskRunnerDeleter>;
+
+  static ProxyAutoDeleted Create(
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner) {
+    if (!compositor_task_runner)
+      return ProxyAutoDeleted(nullptr, base::OnTaskRunnerDeleter(nullptr));
+
+    return ProxyAutoDeleted(
+        new SynchronousCompositorProxyRegistry(compositor_task_runner),
+        base::OnTaskRunnerDeleter(compositor_task_runner));
+  }
+
+  void CreateProxy(ui::SynchronousInputHandlerProxy* handler) {
+    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+    proxy_ = std::make_unique<SynchronousCompositorProxyMojo>(handler);
+    proxy_->Init();
+
+    if (sink_)
+      proxy_->SetLayerTreeFrameSink(sink_);
+  }
+
+  SynchronousCompositorProxyMojo* proxy() { return proxy_.get(); }
+
+  void RegisterLayerTreeFrameSink(
+      int routing_id,
+      SynchronousLayerTreeFrameSink* layer_tree_frame_sink) override {
+    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+    DCHECK_EQ(nullptr, sink_);
+    sink_ = layer_tree_frame_sink;
+    if (proxy_)
+      proxy_->SetLayerTreeFrameSink(layer_tree_frame_sink);
+  }
+
+  void UnregisterLayerTreeFrameSink(
+      int routing_id,
+      SynchronousLayerTreeFrameSink* layer_tree_frame_sink) override {
+    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+    DCHECK_EQ(layer_tree_frame_sink, sink_);
+    sink_ = nullptr;
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  std::unique_ptr<SynchronousCompositorProxyMojo> proxy_;
+  SynchronousLayerTreeFrameSink* sink_ = nullptr;
+};
+
+#endif
 
 scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::WeakPtr<RenderWidget> render_widget,
@@ -59,21 +127,33 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
       renderer_scheduler_(renderer_scheduler),
       input_event_queue_(render_widget->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      compositor_task_runner_(compositor_task_runner) {
+      compositor_task_runner_(std::move(compositor_task_runner))
+#if defined(OS_ANDROID)
+      ,
+      synchronous_compositor_registry_(
+          SynchronousCompositorProxyRegistry::Create(compositor_task_runner_))
+#endif
+{
 }
 
 void WidgetInputHandlerManager::Init() {
   if (compositor_task_runner_) {
+    bool sync_compositing = false;
+#if defined(OS_ANDROID)
+    sync_compositing = GetContentClient()->UsingSynchronousCompositing();
+#endif
+
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &WidgetInputHandlerManager::InitOnCompositorThread, this,
             render_widget_->compositor()->GetInputHandler(),
-            render_widget_->compositor_deps()->IsScrollAnimatorEnabled()));
+            render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
+            sync_compositing));
   }
 }
 
-WidgetInputHandlerManager::~WidgetInputHandlerManager() {}
+WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
 
 void WidgetInputHandlerManager::AddAssociatedInterface(
     mojom::WidgetInputHandlerAssociatedRequest request,
@@ -214,6 +294,17 @@ WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   return nullptr;
 }
 
+void WidgetInputHandlerManager::AttachSynchronousCompositor(
+    mojom::SynchronousCompositorControlHostPtr control_host,
+    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+#if defined(OS_ANDROID)
+  DCHECK(synchronous_compositor_registry_);
+  synchronous_compositor_registry_->proxy()->BindChannel(
+      std::move(control_host), std::move(host), std::move(compositor_request));
+#endif
+}
+
 void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
     const blink::WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
@@ -272,12 +363,20 @@ void WidgetInputHandlerManager::DispatchEvent(
 
 void WidgetInputHandlerManager::InitOnCompositorThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    bool smooth_scroll_enabled) {
+    bool smooth_scroll_enabled,
+    bool sync_compositing) {
   input_handler_proxy_ = std::make_unique<ui::InputHandlerProxy>(
       input_handler.get(), this,
       base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching),
       base::FeatureList::IsEnabled(features::kAsyncWheelEvents));
   input_handler_proxy_->set_smooth_scroll_enabled(smooth_scroll_enabled);
+
+#if defined(OS_ANDROID)
+  if (sync_compositing) {
+    DCHECK(synchronous_compositor_registry_);
+    synchronous_compositor_registry_->CreateProxy(input_handler_proxy_.get());
+  }
+#endif
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
@@ -414,5 +513,13 @@ void WidgetInputHandlerManager::ObserveGestureEventOnCompositorThread(
   input_handler_proxy_->scroll_elasticity_controller()
       ->ObserveGestureEventAndResult(gesture_event, scroll_result);
 }
+
+#if defined(OS_ANDROID)
+content::SynchronousCompositorRegistry*
+WidgetInputHandlerManager::GetSynchronousCompositorRegistry() {
+  DCHECK(synchronous_compositor_registry_);
+  return synchronous_compositor_registry_.get();
+}
+#endif
 
 }  // namespace content

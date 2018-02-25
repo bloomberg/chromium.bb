@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 #define CONTENT_RENDERER_INPUT_WIDGET_INPUT_HANDLER_MANAGER_H_
 
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
@@ -21,6 +22,8 @@ class RendererScheduler;
 
 namespace content {
 class MainThreadEventQueue;
+class SynchronousCompositorRegistry;
+class SynchronousCompositorProxyRegistry;
 
 // This class maintains the compositor InputHandlerProxy and is
 // responsible for passing input events on the compositor and main threads.
@@ -76,6 +79,15 @@ class CONTENT_EXPORT WidgetInputHandlerManager
 
   mojom::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
 
+  void AttachSynchronousCompositor(
+      mojom::SynchronousCompositorControlHostPtr control_host,
+      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+      mojom::SynchronousCompositorAssociatedRequest compositor_request);
+
+#if defined(OS_ANDROID)
+  content::SynchronousCompositorRegistry* GetSynchronousCompositorRegistry();
+#endif
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;
@@ -88,7 +100,8 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   void Init();
   void InitOnCompositorThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      bool smooth_scroll_enabled);
+      bool smooth_scroll_enabled,
+      bool sync_compositing);
   void BindAssociatedChannel(
       mojom::WidgetInputHandlerAssociatedRequest request);
   void BindChannel(mojom::WidgetInputHandlerRequest request);
@@ -135,6 +148,11 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<SynchronousCompositorProxyRegistry, base::OnTaskRunnerDeleter>
+      synchronous_compositor_registry_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WidgetInputHandlerManager);
 };

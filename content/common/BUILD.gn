@@ -553,6 +553,7 @@ mojom("mojo_bindings") {
     "indexed_db/indexed_db.mojom",
     "input/input_handler.mojom",
     "input/input_injector.mojom",
+    "input/synchronous_compositor.mojom",
     "leveldb_wrapper.mojom",
     "manifest_observer.mojom",
     "media/media_stream.mojom",

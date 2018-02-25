@@ -44,6 +44,11 @@ class CONTENT_EXPORT LegacyIPCWidgetInputHandler
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(
       std::unique_ptr<content::InputEvent> event) override;
+  void AttachSynchronousCompositor(
+      mojom::SynchronousCompositorControlHostPtr control_host,
+      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+      mojom::SynchronousCompositorAssociatedRequest compositor_request)
+      override;
 
  private:
   void SendInput(std::unique_ptr<IPC::Message> message);
