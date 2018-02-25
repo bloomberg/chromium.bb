@@ -17,6 +17,34 @@
 
 namespace payments {
 
+TestPaymentRequest::TestPaymentRequest(
+    const payments::WebPaymentRequest& web_payment_request,
+    ios::ChromeBrowserState* browser_state,
+    web::WebState* web_state,
+    autofill::PersonalDataManager* personal_data_manager,
+    id<PaymentRequestUIDelegate> payment_request_ui_delegate)
+    : PaymentRequest(web_payment_request,
+                     browser_state,
+                     web_state,
+                     personal_data_manager,
+                     payment_request_ui_delegate),
+      address_normalization_manager_(&address_normalizer_, "en-US"),
+      region_data_loader_(nullptr),
+      pref_service_(nullptr),
+      profile_comparator_(nullptr),
+      is_incognito_(false) {}
+
+TestPaymentRequest::TestPaymentRequest(
+    const payments::WebPaymentRequest& web_payment_request,
+    ios::ChromeBrowserState* browser_state,
+    web::WebState* web_state,
+    autofill::PersonalDataManager* personal_data_manager)
+    : TestPaymentRequest(web_payment_request,
+                         browser_state,
+                         web_state,
+                         personal_data_manager,
+                         /*payment_request_ui_delegate=*/nil) {}
+
 void TestPaymentRequest::ClearShippingProfiles() {
   shipping_profiles_.clear();
 }
@@ -62,6 +90,10 @@ PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
   if (profile_comparator_)
     return profile_comparator_;
   return PaymentRequest::profile_comparator();
+}
+
+bool TestPaymentRequest::IsIncognito() const {
+  return is_incognito_;
 }
 
 }  // namespace payments

@@ -32,12 +32,8 @@
 #endif
 
 namespace {
-class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
- public:
-  MockTestPersonalDataManager() : TestPersonalDataManager() {}
-  MOCK_METHOD1(AddCreditCard, void(const autofill::CreditCard&));
-  MOCK_METHOD1(UpdateCreditCard, void(const autofill::CreditCard&));
-};
+
+using ::testing::_;
 
 class MockPaymentRequest : public payments::TestPaymentRequest {
  public:
@@ -50,8 +46,10 @@ class MockPaymentRequest : public payments::TestPaymentRequest {
                                      web_state,
                                      personal_data_manager) {}
   MOCK_METHOD1(
-      AddAutofillPaymentInstrument,
+      CreateAndAddAutofillPaymentInstrument,
       payments::AutofillPaymentInstrument*(const autofill::CreditCard&));
+  MOCK_METHOD1(UpdateAutofillPaymentInstrument,
+               void(const autofill::CreditCard&));
 };
 
 MATCHER_P5(CreditCardMatches,
@@ -109,8 +107,6 @@ NSArray<EditorField*>* GetEditorFields(bool save_card) {
                       required:YES],
   ];
 }
-
-using ::testing::_;
 }  // namespace
 
 class PaymentRequestCreditCardEditCoordinatorTest
@@ -129,7 +125,7 @@ class PaymentRequestCreditCardEditCoordinatorTest
 
   void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
-  MockTestPersonalDataManager personal_data_manager_;
+  autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<MockPaymentRequest> payment_request_;
 };
 
@@ -199,16 +195,12 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
 
   // Expect a payment method to be added to the PaymentRequest.
   EXPECT_CALL(*payment_request_,
-              AddAutofillPaymentInstrument(CreditCardMatches(
+              CreateAndAddAutofillPaymentInstrument(CreditCardMatches(
                   "4111111111111111", "John Doe", "12", "2090", "12345")))
       .Times(1);
-  // Expect a payment method to be added to the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_,
-              AddCreditCard(CreditCardMatches("4111111111111111", "John Doe",
-                                              "12", "2090", "12345")))
-      .Times(1);
-  // No payment method should get updated in the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
+
+  // No payment method should get updated in the PaymentRequest.
+  EXPECT_CALL(*payment_request_, UpdateAutofillPaymentInstrument(_)).Times(0);
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
@@ -256,15 +248,11 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 
-  // Expect a payment method to be added to the PaymentRequest.
-  EXPECT_CALL(*payment_request_,
-              AddAutofillPaymentInstrument(CreditCardMatches(
-                  "4111111111111111", "John Doe", "12", "2090", "12345")))
-      .Times(1);
-  // No payment method should get added to the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_, AddCreditCard(_)).Times(0);
-  // No payment method should get updated in the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_, UpdateCreditCard(_)).Times(0);
+  // No payment method should get added to the PaymentRequest.
+  EXPECT_CALL(*payment_request_, CreateAndAddAutofillPaymentInstrument(_))
+      .Times(0);
+  // No payment method should get updated in the PaymentRequest.
+  EXPECT_CALL(*payment_request_, UpdateAutofillPaymentInstrument(_)).Times(0);
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
@@ -318,13 +306,12 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 
   // No payment method should get added to the PaymentRequest.
-  EXPECT_CALL(*payment_request_, AddAutofillPaymentInstrument(_)).Times(0);
-  // No payment method should get added to the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_, AddCreditCard(_)).Times(0);
-  // Expect a payment method to be updated in the PersonalDataManager.
-  EXPECT_CALL(personal_data_manager_,
-              UpdateCreditCard(CreditCardMatches("4111111111111111", "John Doe",
-                                                 "12", "2090", "12345")))
+  EXPECT_CALL(*payment_request_, CreateAndAddAutofillPaymentInstrument(_))
+      .Times(0);
+  // No payment method should get updated in the PaymentRequest.
+  EXPECT_CALL(*payment_request_,
+              UpdateAutofillPaymentInstrument(CreditCardMatches(
+                  "4111111111111111", "John Doe", "12", "2090", "12345")))
       .Times(1);
 
   // Call the controller delegate method.

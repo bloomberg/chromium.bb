@@ -128,9 +128,10 @@
   // Create an empty credit card. If a credit card is being edited, copy over
   // the information.
   autofill::CreditCard creditCard =
-      _creditCard ? *_creditCard
-                  : autofill::CreditCard(base::GenerateGUID(),
-                                         autofill::kSettingsOrigin);
+      _creditCard ? *_creditCard : autofill::CreditCard();
+
+  // Set the origin, or override it if the card is being edited.
+  creditCard.set_origin(autofill::kSettingsOrigin);
 
   for (EditorField* field in fields) {
     if (field.autofillUIType == AutofillUITypeCreditCardExpDate) {
@@ -159,25 +160,15 @@
   }
 
   if (!_creditCard) {
-    if (saveCreditCard)
-      _paymentRequest->GetPersonalDataManager()->AddCreditCard(creditCard);
-
     // Add the credit card to the list of payment methods in |_paymentRequest|.
-    _paymentMethod = _paymentRequest->AddAutofillPaymentInstrument(creditCard);
+    if (saveCreditCard) {
+      _paymentMethod =
+          _paymentRequest->CreateAndAddAutofillPaymentInstrument(creditCard);
+    }
   } else {
-    // Override the origin.
-    creditCard.set_origin(autofill::kSettingsOrigin);
-
     // Update the original credit card instance that is being edited.
     *_creditCard = creditCard;
-
-    if (autofill::IsCreditCardLocal(creditCard)) {
-      _paymentRequest->GetPersonalDataManager()->UpdateCreditCard(creditCard);
-    } else {
-      // Update server credit card's billing address.
-      _paymentRequest->GetPersonalDataManager()->UpdateServerCardMetadata(
-          creditCard);
-    }
+    _paymentRequest->UpdateAutofillPaymentInstrument(creditCard);
   }
 
   [_delegate creditCardEditCoordinator:self

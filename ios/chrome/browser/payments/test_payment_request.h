@@ -41,26 +41,12 @@ class TestPaymentRequest : public PaymentRequest {
                      ios::ChromeBrowserState* browser_state,
                      web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager,
-                     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
-      : PaymentRequest(web_payment_request,
-                       browser_state,
-                       web_state,
-                       personal_data_manager,
-                       payment_request_ui_delegate),
-        address_normalization_manager_(&address_normalizer_, "en-US"),
-        region_data_loader_(nullptr),
-        pref_service_(nullptr),
-        profile_comparator_(nullptr) {}
+                     id<PaymentRequestUIDelegate> payment_request_ui_delegate);
 
   TestPaymentRequest(const payments::WebPaymentRequest& web_payment_request,
                      ios::ChromeBrowserState* browser_state,
                      web::WebState* web_state,
-                     autofill::PersonalDataManager* personal_data_manager)
-      : TestPaymentRequest(web_payment_request,
-                           browser_state,
-                           web_state,
-                           personal_data_manager,
-                           nil) {}
+                     autofill::PersonalDataManager* personal_data_manager);
 
   ~TestPaymentRequest() override {}
 
@@ -101,6 +87,8 @@ class TestPaymentRequest : public PaymentRequest {
     selected_shipping_option_ = option;
   }
 
+  void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
+
   // PaymentRequest
   autofill::AddressNormalizer* GetAddressNormalizer() override;
   autofill::AddressNormalizationManager* GetAddressNormalizationManager()
@@ -108,6 +96,7 @@ class TestPaymentRequest : public PaymentRequest {
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   PrefService* GetPrefService() override;
   PaymentsProfileComparator* profile_comparator() override;
+  bool IsIncognito() const override;
 
  private:
   autofill::TestAddressNormalizer address_normalizer_;
@@ -121,6 +110,9 @@ class TestPaymentRequest : public PaymentRequest {
 
   // Not owned and must outlive this object.
   PaymentsProfileComparator* profile_comparator_;
+
+  // Whether the user is in incognito mode.
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentRequest);
 };
