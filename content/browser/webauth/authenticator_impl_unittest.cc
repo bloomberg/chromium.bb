@@ -11,6 +11,7 @@
 
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -342,10 +343,15 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
+    DLOG(INFO) << "got options";
     options->relying_party->id = test_case.relying_party_id;
+    DLOG(INFO) << options->relying_party->id;
     TestMakeCredentialCallback cb;
+    DLOG(INFO) << "got callback";
     authenticator->MakeCredential(std::move(options), cb.callback());
+    DLOG(INFO) << "called make cred";
     cb.WaitForCallback();
+    DLOG(INFO) << "finished waiting";
     EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
               cb.GetResponseStatus());
   }
