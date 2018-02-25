@@ -506,7 +506,6 @@ class StreamMixerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StreamMixerTest);
 };
 
-
 TEST_F(StreamMixerTest, AddSingleInput) {
   auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
   StreamMixer* mixer = StreamMixer::Get();
