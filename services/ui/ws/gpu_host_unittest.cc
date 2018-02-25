@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
@@ -85,6 +86,8 @@ class GpuHostTest : public testing::Test {
 
   base::Thread io_thread_;
   TestGpuHostDelegate gpu_host_delegate_;
+  discardable_memory::DiscardableSharedMemoryManager
+      discardable_memory_manager_;
   std::unique_ptr<TestGpuService> gpu_service_;
   viz::mojom::GpuServicePtr gpu_service_ptr_;
   std::unique_ptr<DefaultGpuHost> gpu_host_;
@@ -103,7 +106,8 @@ void GpuHostTest::DestroyHost() {
 
 void GpuHostTest::SetUp() {
   testing::Test::SetUp();
-  gpu_host_ = std::make_unique<DefaultGpuHost>(&gpu_host_delegate_, nullptr);
+  gpu_host_ = std::make_unique<DefaultGpuHost>(&gpu_host_delegate_, nullptr,
+                                               &discardable_memory_manager_);
   gpu_service_->Bind(mojo::MakeRequest(&gpu_service_ptr_));
   gpu_host_->gpu_service_ = std::move(gpu_service_ptr_);
 }

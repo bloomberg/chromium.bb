@@ -7,6 +7,7 @@
 
 #include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -79,9 +80,12 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   void BindAssociated(mojom::VizMainAssociatedRequest request);
 
   // mojom::VizMain implementation:
-  void CreateGpuService(mojom::GpuServiceRequest request,
-                        mojom::GpuHostPtr gpu_host,
-                        mojo::ScopedSharedBufferHandle activity_flags) override;
+  void CreateGpuService(
+      mojom::GpuServiceRequest request,
+      mojom::GpuHostPtr gpu_host,
+      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+          discardable_memory_manager,
+      mojo::ScopedSharedBufferHandle activity_flags) override;
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
 
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
@@ -102,6 +106,11 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   bool EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
                                 const gpu::GPUInfo* gpu_info,
                                 const gpu::GpuPreferences& gpu_prefs) override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
+    return io_thread_ ? io_thread_->task_runner()
+                      : dependencies_.io_thread_task_runner;
+  }
 
   Delegate* const delegate_;
 
@@ -140,6 +149,9 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   mojo::Binding<mojom::VizMain> binding_;
   mojo::AssociatedBinding<mojom::VizMain> associated_binding_;
+
+  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VizMainImpl);
 };

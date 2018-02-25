@@ -23,6 +23,10 @@
 #include "services/ui/public/interfaces/arc.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
+namespace discardable_memory {
+class DiscardableSharedMemoryManager;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -66,7 +70,9 @@ class GpuHost {
 class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
  public:
   DefaultGpuHost(GpuHostDelegate* delegate,
-                 service_manager::Connector* connector);
+                 service_manager::Connector* connector,
+                 discardable_memory::DiscardableSharedMemoryManager*
+                     discardable_shared_memory_manager);
   ~DefaultGpuHost() override;
 
  private:

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
@@ -46,13 +47,18 @@ bool HasSplitVizProcess() {
 
 }  // namespace
 
-DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
-                               service_manager::Connector* connector)
+DefaultGpuHost::DefaultGpuHost(
+    GpuHostDelegate* delegate,
+    service_manager::Connector* connector,
+    discardable_memory::DiscardableSharedMemoryManager*
+        discardable_shared_memory_manager)
     : delegate_(delegate),
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this),
       gpu_thread_("GpuThread") {
+  DCHECK(discardable_shared_memory_manager);
+
   auto request = MakeRequest(&viz_main_);
   if (connector && HasSplitVizProcess()) {
     connector->BindInterface(viz::mojom::kVizServiceName, std::move(request));
@@ -65,11 +71,17 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
                                   base::Passed(MakeRequest(&viz_main_))));
   }
 
+  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+      discardable_manager_ptr;
+  service_manager::BindSourceInfo source_info;
+  discardable_shared_memory_manager->Bind(
+      mojo::MakeRequest(&discardable_manager_ptr), source_info);
+
   viz::mojom::GpuHostPtr gpu_host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
-  viz_main_->CreateGpuService(MakeRequest(&gpu_service_),
-                              std::move(gpu_host_proxy),
-                              mojo::ScopedSharedBufferHandle());
+  viz_main_->CreateGpuService(
+      MakeRequest(&gpu_service_), std::move(gpu_host_proxy),
+      std::move(discardable_manager_ptr), mojo::ScopedSharedBufferHandle());
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::ServerGpuMemoryBufferManager>(gpu_service_.get(),
                                                           next_client_id_++);

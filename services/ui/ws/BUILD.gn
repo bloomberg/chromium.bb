@@ -127,6 +127,7 @@ static_library("lib") {
   ]
 
   deps = [
+    "//components/discardable_memory/service",
     "//components/viz/service/main",  # TODO(sad): Temporary until GPU process split.
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
@@ -298,6 +299,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//cc:cc",
     "//cc:test_support",
+    "//components/discardable_memory/service",
     "//components/viz/service/main",
     "//components/viz/test:test_support",
     "//gpu/ipc/client",
