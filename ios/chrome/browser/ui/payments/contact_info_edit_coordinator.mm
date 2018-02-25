@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/payments/core/payments_profile_comparator.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/contact_info_edit_mediator.h"
@@ -88,9 +87,9 @@ using ::AutofillTypeFromAutofillUIType;
   // Create an empty autofill profile. If a profile is being edited, copy over
   // the information.
   autofill::AutofillProfile profile =
-      self.profile ? *self.profile
-                   : autofill::AutofillProfile(base::GenerateGUID(),
-                                               autofill::kSettingsOrigin);
+      self.profile ? *self.profile : autofill::AutofillProfile();
+  // Set the origin, or override it if the autofill profile is being edited.
+  profile.set_origin(autofill::kSettingsOrigin);
 
   for (EditorField* field in fields) {
     profile.SetInfo(autofill::AutofillType(
@@ -100,20 +99,12 @@ using ::AutofillTypeFromAutofillUIType;
   }
 
   if (!self.profile) {
-    self.paymentRequest->GetPersonalDataManager()->AddProfile(profile);
-
     // Add the profile to the list of profiles in |self.paymentRequest|.
     self.profile = self.paymentRequest->AddAutofillProfile(profile);
   } else {
-    // Override the origin.
-    profile.set_origin(autofill::kSettingsOrigin);
-    self.paymentRequest->GetPersonalDataManager()->UpdateProfile(profile);
-
-    // Cached profile must be invalidated once the profile is modified.
-    _paymentRequest->profile_comparator()->Invalidate(profile);
-
     // Update the original profile instance that is being edited.
     *self.profile = profile;
+    self.paymentRequest->UpdateAutofillProfile(profile);
   }
 
   [self.delegate contactInfoEditCoordinator:self

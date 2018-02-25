@@ -20,6 +20,7 @@
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_options.h"
 #include "components/payments/core/payment_shipping_option.h"
+#include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/web_payment_request.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -36,17 +37,29 @@
 #endif
 
 namespace {
+using ::testing::_;
 
 class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
  public:
   MockTestPersonalDataManager() : TestPersonalDataManager() {}
   MOCK_METHOD1(RecordUseOf, void(const autofill::AutofillDataModel&));
+  MOCK_METHOD1(UpdateCreditCard, void(const autofill::CreditCard&));
+  MOCK_METHOD1(UpdateServerCardMetadata, void(const autofill::CreditCard&));
+  MOCK_METHOD1(UpdateProfile, void(const autofill::AutofillProfile&));
+};
+
+class MockPaymentsProfileComparator
+    : public payments::PaymentsProfileComparator {
+ public:
+  MockPaymentsProfileComparator(const std::string& app_locale,
+                                const payments::PaymentOptionsProvider& options)
+      : PaymentsProfileComparator(app_locale, options) {}
+  MOCK_METHOD1(Invalidate, void(const autofill::AutofillProfile&));
 };
 
 MATCHER_P(GuidMatches, guid, "") {
   return arg.guid() == guid;
 }
-
 }  // namespace
 
 namespace payments {
@@ -318,7 +331,58 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
 
 // Tests that an autofill payment instrumnt e.g., credit cards can be added
 // to the list of available payment methods.
-TEST_F(PaymentRequestTest, AddAutofillPaymentInstrument) {
+TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrument) {
+  WebPaymentRequest web_payment_request;
+  PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("visa");
+  web_payment_request.method_data.push_back(method_datum);
+
+  autofill::TestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  EXPECT_EQ(0U, payment_request.payment_methods().size());
+
+  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
+  AutofillPaymentInstrument* added_credit_card_1 =
+      payment_request.CreateAndAddAutofillPaymentInstrument(credit_card_1);
+  EXPECT_EQ(credit_card_1, *added_credit_card_1->credit_card());
+
+  EXPECT_EQ(1U, payment_request.payment_methods().size());
+  // The card is expected to have been added to the PersonalDataManager.
+  EXPECT_EQ(1U, personal_data_manager.GetCreditCards().size());
+}
+
+// Tests that an autofill payment instrumnt e.g., credit cards can be added
+// to the list of available payment methods in incognito mode.
+TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrumentIncognito) {
+  WebPaymentRequest web_payment_request;
+  PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("visa");
+  web_payment_request.method_data.push_back(method_datum);
+
+  autofill::TestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  EXPECT_EQ(0U, payment_request.payment_methods().size());
+
+  payment_request.set_is_incognito(true);
+
+  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
+  AutofillPaymentInstrument* added_credit_card_1 =
+      payment_request.CreateAndAddAutofillPaymentInstrument(credit_card_1);
+  EXPECT_EQ(credit_card_1, *added_credit_card_1->credit_card());
+
+  EXPECT_EQ(1U, payment_request.payment_methods().size());
+  // The card should not get added to the PersonalDataManager.
+  EXPECT_EQ(0U, personal_data_manager.GetCreditCards().size());
+}
+
+// Tests updating local and server autofill payment instruments.
+TEST_F(PaymentRequestTest, UpdateAutofillPaymentInstrument) {
   WebPaymentRequest web_payment_request;
   PaymentMethodData method_datum;
   method_datum.supported_methods.push_back("basic-card");
@@ -326,22 +390,54 @@ TEST_F(PaymentRequestTest, AddAutofillPaymentInstrument) {
   method_datum.supported_networks.push_back("amex");
   web_payment_request.method_data.push_back(method_datum);
 
-  autofill::TestPersonalDataManager personal_data_manager;
-
-  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
-  personal_data_manager.AddCreditCard(credit_card_1);
-
+  MockTestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
-  EXPECT_EQ(1U, payment_request.payment_methods().size());
 
-  autofill::CreditCard credit_card_2 = autofill::test::GetCreditCard2();
-  AutofillPaymentInstrument* added_credit_card =
-      payment_request.AddAutofillPaymentInstrument(credit_card_2);
+  // Credit card should get updated in Personal Data Manager.
+  EXPECT_CALL(personal_data_manager, UpdateCreditCard(_)).Times(1);
 
-  EXPECT_EQ(2U, payment_request.payment_methods().size());
-  EXPECT_EQ(credit_card_2, *added_credit_card->credit_card());
+  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
+  payment_request.UpdateAutofillPaymentInstrument(credit_card_1);
+
+  // Only credit card's meta data should get updated in PersonalDataManager.
+  EXPECT_CALL(personal_data_manager, UpdateServerCardMetadata(_)).Times(1);
+
+  autofill::CreditCard credit_card_2 =
+      autofill::test::GetMaskedServerCardAmex();
+  payment_request.UpdateAutofillPaymentInstrument(credit_card_2);
+}
+
+// Tests updating local and server autofill payment instruments in incognito
+// mode.
+TEST_F(PaymentRequestTest, UpdateAutofillPaymentInstrumentIncognito) {
+  WebPaymentRequest web_payment_request;
+  PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("visa");
+  method_datum.supported_networks.push_back("amex");
+  web_payment_request.method_data.push_back(method_datum);
+
+  MockTestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+
+  payment_request.set_is_incognito(true);
+
+  // Credit card should not get updated in Personal Data Manager.
+  EXPECT_CALL(personal_data_manager, UpdateCreditCard(_)).Times(0);
+
+  autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
+  payment_request.UpdateAutofillPaymentInstrument(credit_card_1);
+
+  // Only credit card's meta data should not get updated in PersonalDataManager.
+  EXPECT_CALL(personal_data_manager, UpdateServerCardMetadata(_)).Times(0);
+
+  autofill::CreditCard credit_card_2 =
+      autofill::test::GetMaskedServerCardAmex();
+  payment_request.UpdateAutofillPaymentInstrument(credit_card_2);
 }
 
 // Tests that a profile can be added to the list of available profiles.
@@ -352,23 +448,101 @@ TEST_F(PaymentRequestTest, AddAutofillProfile) {
       /*request_payer_email=*/true, /*request_shipping=*/true);
 
   autofill::TestPersonalDataManager personal_data_manager;
-
-  autofill::AutofillProfile profile_1 = autofill::test::GetFullProfile();
-  personal_data_manager.AddProfile(profile_1);
-
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
                                      &personal_data_manager);
+  EXPECT_EQ(0U, payment_request.shipping_profiles().size());
+  EXPECT_EQ(0U, payment_request.contact_profiles().size());
+
+  autofill::AutofillProfile profile_1 = autofill::test::GetFullProfile();
+  autofill::AutofillProfile* added_profile_1 =
+      payment_request.AddAutofillProfile(profile_1);
+  EXPECT_EQ(profile_1, *added_profile_1);
+
   EXPECT_EQ(1U, payment_request.shipping_profiles().size());
   EXPECT_EQ(1U, payment_request.contact_profiles().size());
+  // The autofill profile should have been added to the PersonalDataManager.
+  EXPECT_EQ(1U, personal_data_manager.GetProfiles().size());
+}
 
-  autofill::AutofillProfile profile_2 = autofill::test::GetFullProfile2();
-  autofill::AutofillProfile* added_profile =
-      payment_request.AddAutofillProfile(profile_2);
+// Tests that a profile can be added to the list of available profiles in
+// incognito mode.
+TEST_F(PaymentRequestTest, AddAutofillProfileIncognito) {
+  WebPaymentRequest web_payment_request;
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
 
-  EXPECT_EQ(2U, payment_request.shipping_profiles().size());
-  EXPECT_EQ(2U, payment_request.contact_profiles().size());
-  EXPECT_EQ(profile_2, *added_profile);
+  autofill::TestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  EXPECT_EQ(0U, payment_request.shipping_profiles().size());
+  EXPECT_EQ(0U, payment_request.contact_profiles().size());
+
+  payment_request.set_is_incognito(true);
+
+  autofill::AutofillProfile profile_1 = autofill::test::GetFullProfile();
+  autofill::AutofillProfile* added_profile_1 =
+      payment_request.AddAutofillProfile(profile_1);
+  EXPECT_EQ(profile_1, *added_profile_1);
+
+  EXPECT_EQ(1U, payment_request.shipping_profiles().size());
+  EXPECT_EQ(1U, payment_request.contact_profiles().size());
+  // The autofill profile should not get added to the PersonalDataManager.
+  EXPECT_EQ(0U, personal_data_manager.GetProfiles().size());
+}
+
+// Tests updating an autofill profile.
+TEST_F(PaymentRequestTest, UpdateAutofillProfile) {
+  WebPaymentRequest web_payment_request;
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  MockTestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+
+  MockPaymentsProfileComparator profile_comparator(
+      payment_request.GetApplicationLocale(), payment_request);
+  payment_request.SetProfileComparator(&profile_comparator);
+
+  // Profile should get updated in PersonalDataManager.
+  EXPECT_CALL(personal_data_manager, UpdateProfile(_)).Times(1);
+
+  EXPECT_CALL(profile_comparator, Invalidate(_)).Times(1);
+
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  payment_request.UpdateAutofillProfile(profile);
+}
+
+// Tests updating an autofill profile in incognito mode.
+TEST_F(PaymentRequestTest, UpdateAutofillProfileIncognito) {
+  WebPaymentRequest web_payment_request;
+  web_payment_request.options = CreatePaymentOptions(
+      /*request_payer_name=*/true, /*request_payer_phone=*/true,
+      /*request_payer_email=*/true, /*request_shipping=*/true);
+
+  MockTestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+
+  payment_request.set_is_incognito(true);
+
+  MockPaymentsProfileComparator profile_comparator(
+      payment_request.GetApplicationLocale(), payment_request);
+  payment_request.SetProfileComparator(&profile_comparator);
+
+  // Profile should not get updated in PersonalDataManager.
+  EXPECT_CALL(personal_data_manager, UpdateProfile(_)).Times(0);
+
+  EXPECT_CALL(profile_comparator, Invalidate(_)).Times(1);
+
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  payment_request.UpdateAutofillProfile(profile);
 }
 
 // Test that parsing shipping options works as expected.

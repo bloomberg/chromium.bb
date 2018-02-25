@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/autofill/core/browser/validation.h"
+#import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/features.h"
@@ -289,7 +290,19 @@ autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(
   contact_profiles_.push_back(profile_cache_.back().get());
   shipping_profiles_.push_back(profile_cache_.back().get());
 
+  if (!IsIncognito())
+    personal_data_manager_->AddProfile(profile);
+
   return profile_cache_.back().get();
+}
+
+void PaymentRequest::UpdateAutofillProfile(
+    const autofill::AutofillProfile& profile) {
+  // Cached profile must be invalidated once the profile is modified.
+  profile_comparator()->Invalidate(profile);
+
+  if (!IsIncognito())
+    personal_data_manager_->UpdateProfile(profile);
 }
 
 const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
@@ -361,8 +374,17 @@ void PaymentRequest::PopulateAvailableProfiles() {
       profile_comparator_.FilterProfilesForShipping(raw_profiles_for_filtering);
 }
 
-AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
+AutofillPaymentInstrument*
+PaymentRequest::CreateAndAddAutofillPaymentInstrument(
     const autofill::CreditCard& credit_card) {
+  return CreateAndAddAutofillPaymentInstrument(
+      credit_card, /*may_update_personal_data_manager=*/true);
+}
+
+AutofillPaymentInstrument*
+PaymentRequest::CreateAndAddAutofillPaymentInstrument(
+    const autofill::CreditCard& credit_card,
+    bool may_update_personal_data_manager) {
   std::string basic_card_issuer_network =
       autofill::data_util::GetPaymentRequestData(credit_card.network())
           .basic_card_issuer_network;
@@ -398,8 +420,22 @@ AutofillPaymentInstrument* PaymentRequest::AddAutofillPaymentInstrument(
 
   payment_methods_.push_back(payment_method_cache_.back().get());
 
+  if (may_update_personal_data_manager && !IsIncognito())
+    personal_data_manager_->AddCreditCard(credit_card);
+
   return static_cast<AutofillPaymentInstrument*>(
       payment_method_cache_.back().get());
+}
+
+void PaymentRequest::UpdateAutofillPaymentInstrument(
+    const autofill::CreditCard& credit_card) {
+  if (IsIncognito())
+    return;
+
+  if (autofill::IsCreditCardLocal(credit_card))
+    personal_data_manager_->UpdateCreditCard(credit_card);
+  else
+    personal_data_manager_->UpdateServerCardMetadata(credit_card);
 }
 
 PaymentsProfileComparator* PaymentRequest::profile_comparator() {
@@ -513,8 +549,12 @@ void PaymentRequest::PopulatePaymentMethodCache(
   for (auto& instrument : native_app_instruments)
     payment_method_cache_.push_back(std::move(instrument));
 
-  for (const auto* credit_card : credit_cards_to_suggest)
-    AddAutofillPaymentInstrument(*credit_card);
+  for (const auto* credit_card : credit_cards_to_suggest) {
+    // We only want to add the credit cards read from the PersonalDataManager to
+    // the list of payment instrument. Don't re-add them to PersonalDataManager.
+    CreateAndAddAutofillPaymentInstrument(
+        *credit_card, /*may_update_personal_data_manager=*/false);
+  }
 
   PopulateAvailablePaymentMethods();
 
