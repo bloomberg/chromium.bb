@@ -5,7 +5,7 @@
 [
     Exposed=AnimationWorklet,
     Global=(Worklet,AnimationWorklet),
-    RuntimeEnabled=AnimationWorklet
+    OriginTrialEnabled=AnimationWorklet
 ] interface AnimationWorkletGlobalScope : WorkletGlobalScope {
     [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, Function animatorConstructor);
 };

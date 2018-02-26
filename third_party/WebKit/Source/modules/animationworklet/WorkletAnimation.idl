@@ -12,7 +12,7 @@
                 SerializedScriptValue options),
     RaisesException=Constructor,
     MeasureAs=WorkletAnimationConstructor,
-    RuntimeEnabled=AnimationWorklet
+    OriginTrialEnabled=AnimationWorklet
 ] interface WorkletAnimation {
   readonly attribute AnimationPlayState playState;
   void play();

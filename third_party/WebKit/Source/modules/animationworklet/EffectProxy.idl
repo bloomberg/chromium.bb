@@ -7,7 +7,7 @@
 [
     Exposed=AnimationWorklet,
     Global=(AnimationWorklet),
-    RuntimeEnabled=AnimationWorklet
+    OriginTrialEnabled=AnimationWorklet
 ] interface EffectProxy {
   attribute unrestricted double localTime;
 };
