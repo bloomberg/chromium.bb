@@ -21,6 +21,15 @@ void FakeBlobRegistry::Register(mojom::blink::BlobRequest blob,
   std::move(callback).Run();
 }
 
+void FakeBlobRegistry::RegisterFromStream(
+    const String& content_type,
+    const String& content_disposition,
+    uint64_t expected_length,
+    mojo::ScopedDataPipeConsumerHandle data,
+    RegisterFromStreamCallback) {
+  NOTREACHED();
+}
+
 void FakeBlobRegistry::GetBlobFromUUID(mojom::blink::BlobRequest blob,
                                        const String& uuid,
                                        GetBlobFromUUIDCallback callback) {

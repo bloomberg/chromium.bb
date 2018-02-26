@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -534,6 +535,24 @@ void BlobRegistryImpl::Register(
   std::move(callback).Run();
 }
 
+void BlobRegistryImpl::RegisterFromStream(
+    const std::string& content_type,
+    const std::string& content_disposition,
+    uint64_t expected_length,
+    mojo::ScopedDataPipeConsumerHandle data,
+    RegisterFromStreamCallback callback) {
+  if (!context_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  blobs_being_streamed_.insert(std::make_unique<BlobBuilderFromStream>(
+      context_, content_type, content_disposition, expected_length,
+      std::move(data),
+      base::BindOnce(&BlobRegistryImpl::StreamingBlobDone,
+                     base::Unretained(this), std::move(callback))));
+}
+
 void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
                                        const std::string& uuid,
                                        GetBlobFromUUIDCallback callback) {
@@ -575,6 +594,21 @@ void BlobRegistryImpl::URLStoreForOrigin(
 void BlobRegistryImpl::SetURLStoreCreationHookForTesting(
     URLStoreCreationHook* hook) {
   g_url_store_creation_hook = hook;
+}
+
+void BlobRegistryImpl::StreamingBlobDone(
+    RegisterFromStreamCallback callback,
+    BlobBuilderFromStream* builder,
+    std::unique_ptr<BlobDataHandle> result) {
+  blobs_being_streamed_.erase(builder);
+  blink::mojom::SerializedBlobPtr blob;
+  if (result) {
+    DCHECK_EQ(BlobStatus::DONE, result->GetBlobStatus());
+    blob = blink::mojom::SerializedBlob::New(
+        result->uuid(), result->content_type(), result->size(), nullptr);
+    BlobImpl::Create(std::move(result), MakeRequest(&blob->blob));
+  }
+  std::move(callback).Run(std::move(blob));
 }
 
 }  // namespace storage

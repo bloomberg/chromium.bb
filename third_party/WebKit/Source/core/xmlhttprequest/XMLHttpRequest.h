@@ -44,6 +44,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 
 namespace blink {
 

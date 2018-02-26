@@ -128,6 +128,7 @@ mojom("mojo_platform_bindings") {
     "../public/mojom/blob/blob.mojom",
     "../public/mojom/blob/blob_registry.mojom",
     "../public/mojom/blob/blob_url_store.mojom",
+    "../public/mojom/blob/data_element.mojom",
     "../public/mojom/blob/serialized_blob.mojom",
     "../public/mojom/clipboard/clipboard.mojom",
     "../public/mojom/color_chooser/color_chooser.mojom",

@@ -85,10 +85,14 @@ class STORAGE_EXPORT BlobMemoryController {
                      size_t length);
     ~MemoryAllocation();
 
+    size_t length() const { return length_; }
+
    private:
-    base::WeakPtr<BlobMemoryController> controller;
-    uint64_t item_id;
-    size_t length;
+    friend class BlobMemoryController;
+
+    base::WeakPtr<BlobMemoryController> controller_;
+    uint64_t item_id_;
+    size_t length_;
 
     DISALLOW_COPY_AND_ASSIGN(MemoryAllocation);
   };
@@ -170,11 +174,19 @@ class STORAGE_EXPORT BlobMemoryController {
     limits_ = limits;
   }
 
+  void ShrinkMemoryAllocation(ShareableBlobDataItem* item);
+  void ShrinkFileAllocation(ShareableFileReference* file_reference,
+                            uint64_t old_length,
+                            uint64_t new_length);
+
   using DiskSpaceFuncPtr = int64_t (*)(const base::FilePath&);
 
   void set_testing_disk_space(DiskSpaceFuncPtr disk_space_function) {
     disk_space_function_ = disk_space_function;
   }
+
+  size_t GetAvailableMemoryForBlobs() const;
+  uint64_t GetAvailableFileSpaceForBlobs() const;
 
  private:
   class FileQuotaAllocationTask;
@@ -228,9 +240,6 @@ class STORAGE_EXPORT BlobMemoryController {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  size_t GetAvailableMemoryForBlobs() const;
-  uint64_t GetAvailableFileSpaceForBlobs() const;
-
   void GrantMemoryAllocations(
       std::vector<scoped_refptr<ShareableBlobDataItem>>* items,
       size_t total_bytes);
@@ -239,6 +248,8 @@ class STORAGE_EXPORT BlobMemoryController {
   // This is registered as a callback for file deletions on the file reference
   // of our paging files. We decrement the disk space used.
   void OnBlobFileDelete(uint64_t size, const base::FilePath& path);
+  void OnShrunkenBlobFileDelete(uint64_t shrink_delta,
+                                const base::FilePath& path);
 
   base::FilePath GenerateNextPageFileName();
 

@@ -6,6 +6,8 @@ import("//testing/test.gni")
 component("browser") {
   output_name = "storage_browser"
   sources = [
+    "blob/blob_builder_from_stream.cc",
+    "blob/blob_builder_from_stream.h",
     "blob/blob_data_builder.cc",
     "blob/blob_data_builder.h",
     "blob/blob_data_handle.cc",
@@ -243,6 +245,7 @@ source_set("unittests") {
   sources = [
     # This target is in the process of being populated. See
     # http://crbug.com/653751
+    "blob/blob_builder_from_stream_unittest.cc",
     "blob/blob_data_builder_unittest.cc",
     "blob/blob_flattener_unittest.cc",
     "blob/blob_impl_unittest.cc",

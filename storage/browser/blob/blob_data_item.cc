@@ -139,6 +139,12 @@ void BlobDataItem::PopulateBytes(base::span<const char> data) {
   bytes_.assign(data.begin(), data.end());
 }
 
+void BlobDataItem::ShrinkBytes(size_t new_length) {
+  DCHECK_EQ(type_, Type::kBytes);
+  length_ = new_length;
+  bytes_.resize(length_);
+}
+
 void BlobDataItem::PopulateFile(base::FilePath path,
                                 base::Time expected_modification_time,
                                 scoped_refptr<DataHandle> data_handle) {
@@ -147,6 +153,11 @@ void BlobDataItem::PopulateFile(base::FilePath path,
   path_ = std::move(path);
   expected_modification_time_ = std::move(expected_modification_time);
   data_handle_ = std::move(data_handle);
+}
+
+void BlobDataItem::ShrinkFile(uint64_t new_length) {
+  DCHECK_EQ(type_, Type::kFile);
+  length_ = new_length;
 }
 
 // static
