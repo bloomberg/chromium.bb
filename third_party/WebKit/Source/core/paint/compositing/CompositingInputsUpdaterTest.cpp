@@ -127,4 +127,46 @@ TEST_P(CompositingInputsUpdaterTest, UnclippedAndClippedRectsUnderScroll) {
   }
 }
 
+TEST_P(CompositingInputsUpdaterTest, ClipPathAncestor) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent" style="clip-path: circle(100%)">
+      <div id="child" style="width: 20px; height: 20px; will-change: transform">
+        <div id="grandchild" style="position: relative";
+      </div>
+    </div>
+  )HTML");
+
+  PaintLayer* parent =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("parent"))->Layer();
+  PaintLayer* child =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("child"))->Layer();
+  PaintLayer* grandchild =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("grandchild"))->Layer();
+
+  EXPECT_EQ(nullptr, parent->ClipPathAncestor());
+  EXPECT_EQ(parent, child->ClipPathAncestor());
+  EXPECT_EQ(parent, grandchild->ClipPathAncestor());
+}
+
+TEST_P(CompositingInputsUpdaterTest, MaskAncestor) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent" style="-webkit-mask-image: linear-gradient(black, white);">
+      <div id="child" style="width: 20px; height: 20px; will-change: transform">
+        <div id="grandchild" style="position: relative";
+      </div>
+    </div>
+  )HTML");
+
+  PaintLayer* parent =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("parent"))->Layer();
+  PaintLayer* child =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("child"))->Layer();
+  PaintLayer* grandchild =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("grandchild"))->Layer();
+
+  EXPECT_EQ(nullptr, parent->MaskAncestor());
+  EXPECT_EQ(parent, child->MaskAncestor());
+  EXPECT_EQ(parent, grandchild->MaskAncestor());
+}
+
 }  // namespace blink

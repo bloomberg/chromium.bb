@@ -73,6 +73,12 @@ constexpr SquashingDisallowedReasonStringMap
         {SquashingDisallowedReason::kFragmentedContent,
          "SquashingDisallowedReasonFragmentedContent",
          "Cannot squash layers that are inside fragmentation contexts."},
+        {SquashingDisallowedReason::kClipPathMismatch,
+         "SquashingDisallowedReasonClipPathMismatch",
+         "Cannot squash layers across clip-path boundaries."},
+        {SquashingDisallowedReason::kMaskMismatch,
+         "SquashingDisallowedReasonMaskMismatch",
+         "Cannot squash layers across mask boundaries."},
 };
 
 }  // anonymous namespace

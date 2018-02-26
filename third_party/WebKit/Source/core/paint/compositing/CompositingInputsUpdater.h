@@ -37,8 +37,7 @@ class CompositingInputsUpdater {
           enclosing_composited_layer(nullptr),
           last_overflow_clip_layer(nullptr),
           last_scrolling_ancestor(nullptr),
-          has_ancestor_with_clip_related_property(false),
-          has_ancestor_with_clip_path(false) {}
+          has_ancestor_with_clip_related_property(false) {}
 
     PaintLayer* ancestor_stacking_context;
     PaintLayer* enclosing_composited_layer;
