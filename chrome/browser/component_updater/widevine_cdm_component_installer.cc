@@ -39,6 +39,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "crypto/sha2.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -56,10 +57,12 @@ namespace component_updater {
 namespace {
 
 // CRX hash. The extension id is: oimompecagnajdejgnnjijobebaeigek.
-const uint8_t kSha2Hash[] = {0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
-                             0x6d, 0xd9, 0x89, 0xe1, 0x41, 0x04, 0x86, 0x4a,
-                             0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58, 0x9b, 0xfb,
-                             0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
+const uint8_t kWidevineSha2Hash[] = {
+    0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49, 0x6d, 0xd9, 0x89,
+    0xe1, 0x41, 0x04, 0x86, 0x4a, 0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58,
+    0x9b, 0xfb, 0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
+static_assert(arraysize(kWidevineSha2Hash) == crypto::kSHA256Length,
+              "Wrong hash length");
 
 // File name of the Widevine CDM adapter version file. The CDM adapter shares
 // the same version number with Chromium version.
@@ -375,7 +378,8 @@ base::FilePath WidevineCdmComponentInstallerPolicy::GetRelativeInstallDir()
 
 void WidevineCdmComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(kSha2Hash, kSha2Hash + arraysize(kSha2Hash));
+  hash->assign(kWidevineSha2Hash,
+               kWidevineSha2Hash + arraysize(kWidevineSha2Hash));
 }
 
 std::string WidevineCdmComponentInstallerPolicy::GetName() const {
