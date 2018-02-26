@@ -40,6 +40,22 @@ static INLINE void btf_16_w4_sse2(
   *out1 = _mm_packs_epi32(d0, c0);
 }
 
+#define btf_16_4p_sse2(w0, w1, in0, in1, out0, out1) \
+  {                                                  \
+    __m128i t0 = _mm_unpacklo_epi16(in0, in1);       \
+    __m128i u0 = _mm_madd_epi16(t0, w0);             \
+    __m128i v0 = _mm_madd_epi16(t0, w1);             \
+                                                     \
+    __m128i a0 = _mm_add_epi32(u0, __rounding);      \
+    __m128i b0 = _mm_add_epi32(v0, __rounding);      \
+                                                     \
+    __m128i c0 = _mm_srai_epi32(a0, cos_bit);        \
+    __m128i d0 = _mm_srai_epi32(b0, cos_bit);        \
+                                                     \
+    out0 = _mm_packs_epi32(c0, c0);                  \
+    out1 = _mm_packs_epi32(d0, d0);                  \
+  }
+
 #define btf_16_sse2(w0, w1, in0, in1, out0, out1) \
   {                                               \
     __m128i t0 = _mm_unpacklo_epi16(in0, in1);    \
