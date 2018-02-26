@@ -19,14 +19,15 @@ class DOMStorageSession;
 
 class SessionStorageNamespaceImpl : public SessionStorageNamespace {
  public:
-  // Constructs a |SessionStorageNamespaceImpl| and allocates a new ID for it.
+  // Constructs a SessionStorageNamespaceImpl and allocates a new ID for it.
   //
   // The CONTENT_EXPORT allows TestRenderViewHost to instantiate these.
   CONTENT_EXPORT static scoped_refptr<SessionStorageNamespaceImpl> Create(
       scoped_refptr<DOMStorageContextWrapper> context);
 
-  // Constructs a |SessionStorageNamespaceImpl| and assigns |namepace_id|
-  // to it.
+  // If there is an existing SessionStorageNamespaceImpl with the given id in
+  // the DOMStorageContextWrapper, this will return that object. Otherwise this
+  // constructs a SessionStorageNamespaceImpl and assigns |namepace_id| to it.
   static scoped_refptr<SessionStorageNamespaceImpl> Create(
       scoped_refptr<DOMStorageContextWrapper> context,
       const std::string& namepace_id);

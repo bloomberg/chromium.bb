@@ -23,8 +23,14 @@ scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
 scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
     scoped_refptr<DOMStorageContextWrapper> context,
     const std::string& namepace_id) {
-  return base::WrapRefCounted(new SessionStorageNamespaceImpl(
-      DOMStorageSession::CreateWithNamespace(std::move(context), namepace_id)));
+  scoped_refptr<SessionStorageNamespaceImpl> existing =
+      context->MaybeGetExistingNamespace(namepace_id);
+  if (!existing) {
+    existing = base::WrapRefCounted(
+        new SessionStorageNamespaceImpl(DOMStorageSession::CreateWithNamespace(
+            std::move(context), namepace_id)));
+  }
+  return existing;
 }
 
 // static
@@ -61,9 +67,12 @@ bool SessionStorageNamespaceImpl::IsFromContext(
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     std::unique_ptr<DOMStorageSession> session)
-    : session_(std::move(session)) {}
+    : session_(std::move(session)) {
+  session_->context()->AddNamespace(session_->namespace_id(), this);
+}
 
 SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
+  session_->context()->RemoveNamespace(session_->namespace_id());
 }
 
 }  // namespace content

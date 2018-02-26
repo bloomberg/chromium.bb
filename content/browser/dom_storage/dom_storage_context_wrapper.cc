@@ -393,6 +393,26 @@ void DOMStorageContextWrapper::SetLocalStorageDatabaseForTesting(
                      base::Unretained(mojo_state_), std::move(database)));
 }
 
+scoped_refptr<SessionStorageNamespaceImpl>
+DOMStorageContextWrapper::MaybeGetExistingNamespace(
+    const std::string& namespace_id) const {
+  auto it = alive_namespaces_.find(namespace_id);
+  return (it != alive_namespaces_.end()) ? it->second : nullptr;
+}
+
+void DOMStorageContextWrapper::AddNamespace(
+    const std::string& namespace_id,
+    SessionStorageNamespaceImpl* session_namespace) {
+  DCHECK(alive_namespaces_.find(namespace_id) == alive_namespaces_.end());
+  alive_namespaces_[namespace_id] = session_namespace;
+}
+
+void DOMStorageContextWrapper::RemoveNamespace(
+    const std::string& namespace_id) {
+  DCHECK(alive_namespaces_.find(namespace_id) != alive_namespaces_.end());
+  alive_namespaces_.erase(namespace_id);
+}
+
 void DOMStorageContextWrapper::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   DOMStorageContextImpl::PurgeOption purge_option =

@@ -52,6 +52,7 @@ class CONTENT_EXPORT DOMStorageSession {
   const std::string& namespace_id() const { return namespace_id_; }
   void SetShouldPersist(bool should_persist);
   bool should_persist() const;
+  DOMStorageContextWrapper* context() const { return context_wrapper_.get(); }
   bool IsFromContext(DOMStorageContextWrapper* context);
 
   std::unique_ptr<DOMStorageSession> Clone();
