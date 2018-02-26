@@ -483,10 +483,6 @@ weston_pointer_motion_to_abs(struct weston_pointer *pointer,
 			     struct weston_pointer_motion_event *event,
 			     wl_fixed_t *x, wl_fixed_t *y);
 
-struct weston_pointer *
-weston_pointer_create(struct weston_seat *seat);
-void
-weston_pointer_destroy(struct weston_pointer *pointer);
 void
 weston_pointer_send_motion(struct weston_pointer *pointer,
 			   const struct timespec *time,
@@ -531,10 +527,6 @@ weston_pointer_set_default_grab(struct weston_pointer *pointer,
 void
 weston_pointer_constraint_destroy(struct weston_pointer_constraint *constraint);
 
-struct weston_keyboard *
-weston_keyboard_create(void);
-void
-weston_keyboard_destroy(struct weston_keyboard *keyboard);
 void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			  struct weston_surface *surface);
@@ -563,10 +555,6 @@ weston_keyboard_send_modifiers(struct weston_keyboard *keyboard,
 			       uint32_t mods_latched,
 			       uint32_t mods_locked, uint32_t group);
 
-struct weston_touch *
-weston_touch_create(void);
-void
-weston_touch_destroy(struct weston_touch *touch);
 void
 weston_touch_set_focus(struct weston_touch *touch,
 		       struct weston_view *view);

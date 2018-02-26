@@ -1136,7 +1136,7 @@ weston_pointer_reset_state(struct weston_pointer *pointer)
 static void
 weston_pointer_handle_output_destroy(struct wl_listener *listener, void *data);
 
-WL_EXPORT struct weston_pointer *
+static struct weston_pointer *
 weston_pointer_create(struct weston_seat *seat)
 {
 	struct weston_pointer *pointer;
@@ -1175,7 +1175,7 @@ weston_pointer_create(struct weston_seat *seat)
 	return pointer;
 }
 
-WL_EXPORT void
+static void
 weston_pointer_destroy(struct weston_pointer *pointer)
 {
 	struct weston_pointer_client *pointer_client, *tmp;
@@ -1209,7 +1209,7 @@ weston_pointer_set_default_grab(struct weston_pointer *pointer,
 			&default_pointer_grab_interface;
 }
 
-WL_EXPORT struct weston_keyboard *
+static struct weston_keyboard *
 weston_keyboard_create(void)
 {
 	struct weston_keyboard *keyboard;
@@ -1235,7 +1235,7 @@ weston_keyboard_create(void)
 static void
 weston_xkb_info_destroy(struct weston_xkb_info *xkb_info);
 
-WL_EXPORT void
+static void
 weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
 	struct wl_resource *resource;
@@ -1268,7 +1268,7 @@ weston_touch_reset_state(struct weston_touch *touch)
 	touch->num_tp = 0;
 }
 
-WL_EXPORT struct weston_touch *
+static struct weston_touch *
 weston_touch_create(void)
 {
 	struct weston_touch *touch;
@@ -1292,7 +1292,7 @@ weston_touch_create(void)
 	return touch;
 }
 
-WL_EXPORT void
+static void
 weston_touch_destroy(struct weston_touch *touch)
 {
 	struct wl_resource *resource;
