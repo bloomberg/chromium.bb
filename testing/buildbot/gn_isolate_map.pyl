@@ -446,6 +446,14 @@
     "label": "//components/cronet/ios/test:cronet_test",
     "type": "raw",
   },
+  "cronet_tests": {
+    "label": "//components/cronet:cronet_tests",
+    "type": "console_test_launcher",
+  },
+  "cronet_unittests": {
+    "label": "//components/cronet:cronet_unittests",
+    "type": "console_test_launcher",
+  },
   "cronet_unittests_android": {
     "label": "//components/cronet/android:cronet_unittests_android",
     "type": "console_test_launcher",

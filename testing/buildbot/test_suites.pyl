@@ -798,6 +798,8 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
       ],
     },
+    'cronet_tests': {},
+    'cronet_unittests': {},
     'crypto_unittests': {},
     'ipc_tests': {
       'args': [
