@@ -4,8 +4,8 @@
 
 #include "ui/aura/test/aura_test_context_factory.h"
 
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/test_context_provider.h"
+#include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 
 namespace aura {
@@ -22,7 +22,7 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
-    return cc::FakeOutputSurface::Create3d(
+    return viz::FakeOutputSurface::Create3d(
         std::move(display_context_provider_));
   }
   void DisplayReceivedLocalSurfaceId(
@@ -48,15 +48,15 @@ AuraTestContextFactory::~AuraTestContextFactory() = default;
 
 void AuraTestContextFactory::CreateLayerTreeFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<viz::TestContextProvider> context_provider =
+      viz::TestContextProvider::Create();
   std::unique_ptr<FrameSinkClient> frame_sink_client =
       std::make_unique<FrameSinkClient>(context_provider);
   constexpr bool synchronous_composite = false;
   constexpr bool disable_display_vsync = false;
   const double refresh_rate = GetRefreshRate();
   auto frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
-      context_provider, cc::TestContextProvider::CreateWorker(), nullptr,
+      context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
       GetGpuMemoryBufferManager(), renderer_settings(),
       base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
       disable_display_vsync, refresh_rate);

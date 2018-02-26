@@ -30,7 +30,6 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
@@ -46,7 +45,6 @@
 #include "cc/test/push_properties_counting_layer_impl.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/skia_common.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/frame_rate_counter.h"
@@ -67,7 +65,9 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -461,14 +461,14 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
     // Create the main viz::ContextProvider with a MockContextSupport.
     auto main_support = std::make_unique<MockContextSupport>();
     mock_main_context_support_ = main_support.get();
-    auto test_main_context_provider = TestContextProvider::Create(
-        TestWebGraphicsContext3D::Create(), std::move(main_support));
+    auto test_main_context_provider = viz::TestContextProvider::Create(
+        viz::TestWebGraphicsContext3D::Create(), std::move(main_support));
 
     // Create the main viz::ContextProvider with a MockContextSupport.
     auto worker_support = std::make_unique<MockContextSupport>();
     mock_worker_context_support_ = worker_support.get();
-    auto test_worker_context_provider = TestContextProvider::CreateWorker(
-        TestWebGraphicsContext3D::Create(), std::move(worker_support));
+    auto test_worker_context_provider = viz::TestContextProvider::CreateWorker(
+        viz::TestWebGraphicsContext3D::Create(), std::move(worker_support));
 
     // At init, visibility is set to true, so SetAggressivelyFreeResources will
     // be disabled.
@@ -490,7 +490,7 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
   void AfterTest() override {}
 
  protected:
-  class MockContextSupport : public TestContextSupport {
+  class MockContextSupport : public viz::TestContextSupport {
    public:
     MockContextSupport() = default;
     MOCK_METHOD1(SetAggressivelyFreeResources,
@@ -3991,7 +3991,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    auto* context = static_cast<TestContextProvider*>(
+    auto* context = static_cast<viz::TestContextProvider*>(
                         impl->layer_tree_frame_sink()->context_provider())
                         ->TestContext3d();
 
@@ -6030,12 +6030,12 @@ class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
       scoped_refptr<viz::ContextProvider> ignored_compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> ignored_worker_context_provider)
       override {
-    auto context_provider = TestContextProvider::Create();
+    auto context_provider = viz::TestContextProvider::Create();
     context_provider->UnboundTestContext3d()->SetMaxSamples(4);
     context_provider->UnboundTestContext3d()
         ->set_support_multisample_compatibility(false);
     context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
-    auto worker_context_provider = TestContextProvider::CreateWorker();
+    auto worker_context_provider = viz::TestContextProvider::CreateWorker();
     worker_context_provider->UnboundTestContext3d()->SetMaxSamples(4);
     worker_context_provider->UnboundTestContext3d()
         ->set_support_multisample_compatibility(false);
@@ -6894,9 +6894,9 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
-    scoped_refptr<TestContextProvider> display_context_provider =
-        TestContextProvider::Create();
-    TestWebGraphicsContext3D* context3d =
+    scoped_refptr<viz::TestContextProvider> display_context_provider =
+        viz::TestContextProvider::Create();
+    viz::TestWebGraphicsContext3D* context3d =
         display_context_provider->UnboundTestContext3d();
     context3d->set_support_sync_query(true);
 #if defined(OS_MACOSX)

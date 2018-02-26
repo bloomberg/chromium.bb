@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_context_support.h"
+#include "components/viz/test/test_context_support.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace cc {
+namespace viz {
 
 TestContextSupport::TestContextSupport()
     : out_of_order_callbacks_(false), weak_ptr_factory_(this) {}
@@ -141,4 +141,4 @@ unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
   return 0;
 }
 
-}  // namespace cc
+}  // namespace viz

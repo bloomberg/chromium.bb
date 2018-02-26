@@ -16,8 +16,6 @@
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -35,7 +33,9 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -179,7 +179,7 @@ template <typename OverlayCandidateValidatorType>
 class OverlayOutputSurface : public OutputSurface {
  public:
   explicit OverlayOutputSurface(
-      scoped_refptr<cc::TestContextProvider> context_provider)
+      scoped_refptr<TestContextProvider> context_provider)
       : OutputSurface(std::move(context_provider)) {
     is_displayed_as_overlay_plane_ = true;
   }
@@ -499,7 +499,7 @@ class OverlayTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    provider_ = cc::TestContextProvider::Create();
+    provider_ = TestContextProvider::Create();
     provider_->BindToCurrentThread();
     output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
     output_surface_->BindToClient(&client_);
@@ -511,7 +511,7 @@ class OverlayTest : public testing::Test {
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             provider_.get(), shared_bitmap_manager_.get());
 
-    child_provider_ = cc::TestContextProvider::Create();
+    child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
@@ -522,12 +522,12 @@ class OverlayTest : public testing::Test {
     overlay_processor_->Initialize();
   }
 
-  scoped_refptr<cc::TestContextProvider> provider_;
+  scoped_refptr<TestContextProvider> provider_;
   std::unique_ptr<OutputSurfaceType> output_surface_;
   cc::FakeOutputSurfaceClient client_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
-  scoped_refptr<cc::TestContextProvider> child_provider_;
+  scoped_refptr<TestContextProvider> child_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<OverlayProcessor> overlay_processor_;
   gfx::Rect damage_rect_;
@@ -541,8 +541,7 @@ using UnderlayCastTest = OverlayTest<UnderlayCastOverlayValidator>;
 using CALayerOverlayTest = OverlayTest<CALayerValidator>;
 
 TEST(OverlayTest, NoOverlaysByDefault) {
-  scoped_refptr<cc::TestContextProvider> provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   OverlayOutputSurface<OverlayCandidateValidator> output_surface(provider);
   EXPECT_EQ(nullptr, output_surface.GetOverlayCandidateValidator());
 
@@ -551,8 +550,7 @@ TEST(OverlayTest, NoOverlaysByDefault) {
 }
 
 TEST(OverlayTest, OverlaysProcessorHasStrategy) {
-  scoped_refptr<cc::TestContextProvider> provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   provider->BindToCurrentThread();
   OverlayOutputSurface<OverlayCandidateValidator> output_surface(provider);
   cc::FakeOutputSurfaceClient client;
@@ -2401,7 +2399,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
 
  protected:
   GLRendererWithOverlaysTest() {
-    provider_ = cc::TestContextProvider::Create();
+    provider_ = TestContextProvider::Create();
     provider_->BindToCurrentThread();
     output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
     output_surface_->BindToClient(&output_surface_client_);
@@ -2412,7 +2410,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));
 
-    child_provider_ = cc::TestContextProvider::Create();
+    child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
         cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
@@ -2456,8 +2454,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
   std::unique_ptr<OutputSurfaceType> output_surface_;
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<OverlayInfoRendererGL> renderer_;
-  scoped_refptr<cc::TestContextProvider> provider_;
-  scoped_refptr<cc::TestContextProvider> child_provider_;
+  scoped_refptr<TestContextProvider> provider_;
+  scoped_refptr<TestContextProvider> child_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
   MockOverlayScheduler scheduler_;
 };

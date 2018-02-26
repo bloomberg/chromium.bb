@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_CONTEXT_SUPPORT_H_
-#define CC_TEST_TEST_CONTEXT_SUPPORT_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_CONTEXT_SUPPORT_H_
+#define COMPONENTS_VIZ_TEST_TEST_CONTEXT_SUPPORT_H_
 
 #include <stdint.h>
 
@@ -18,9 +18,9 @@ namespace gfx {
 class GpuFence;
 class Rect;
 class RectF;
-}
+}  // namespace gfx
 
-namespace cc {
+namespace viz {
 
 class TestContextSupport : public gpu::ContextSupport {
  public:
@@ -67,12 +67,12 @@ class TestContextSupport : public gpu::ContextSupport {
 
   void CallAllSyncPointCallbacks();
 
-  typedef base::Callback<void(int plane_z_order,
-                              gfx::OverlayTransform plane_transform,
-                              unsigned overlay_texture_id,
-                              const gfx::Rect& display_bounds,
-                              const gfx::RectF& crop_rect)>
-      ScheduleOverlayPlaneCallback;
+  using ScheduleOverlayPlaneCallback =
+      base::RepeatingCallback<void(int plane_z_order,
+                                   gfx::OverlayTransform plane_transform,
+                                   unsigned overlay_texture_id,
+                                   const gfx::Rect& display_bounds,
+                                   const gfx::RectF& crop_rect)>;
   void SetScheduleOverlayPlaneCallback(
       const ScheduleOverlayPlaneCallback& schedule_overlay_plane_callback);
 
@@ -92,6 +92,6 @@ class TestContextSupport : public gpu::ContextSupport {
   DISALLOW_COPY_AND_ASSIGN(TestContextSupport);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_CONTEXT_SUPPORT_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_CONTEXT_SUPPORT_H_

@@ -21,8 +21,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_client.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -33,6 +31,8 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -952,10 +952,10 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
 }
 
 void LayerTreeTest::RequestNewLayerTreeFrameSink() {
-  scoped_refptr<TestContextProvider> shared_context_provider =
-      TestContextProvider::Create();
-  scoped_refptr<TestContextProvider> worker_context_provider =
-      TestContextProvider::CreateWorker();
+  scoped_refptr<viz::TestContextProvider> shared_context_provider =
+      viz::TestContextProvider::Create();
+  scoped_refptr<viz::TestContextProvider> worker_context_provider =
+      viz::TestContextProvider::CreateWorker();
 
   viz::RendererSettings renderer_settings;
   // Spend less time waiting for BeginFrame because the output is
@@ -1000,7 +1000,8 @@ std::unique_ptr<viz::OutputSurface>
 LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<viz::ContextProvider> compositor_context_provider) {
   // By default the Display shares a context with the LayerTreeHostImpl.
-  return FakeOutputSurface::Create3d(std::move(compositor_context_provider));
+  return viz::FakeOutputSurface::Create3d(
+      std::move(compositor_context_provider));
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {

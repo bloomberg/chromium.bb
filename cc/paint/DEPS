@@ -1,0 +1,5 @@
+specific_include_rules = {
+  "paint_op_buffer_fuzzer.cc": [
+    "+components/viz/test",
+  ],
+}

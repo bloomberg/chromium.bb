@@ -118,6 +118,7 @@ fuzzer_test("paint_op_buffer_fuzzer") {
   deps = [
     "//cc:test_support",
     "//cc/paint",
+    "//components/viz/test:test_support",
   ]
 }
 

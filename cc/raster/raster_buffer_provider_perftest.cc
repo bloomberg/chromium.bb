@@ -20,13 +20,12 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_resource_provider.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_context_support.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tile_task_manager.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_context_support.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -116,7 +115,7 @@ class PerfContextProvider
   gpu::ContextSupport* ContextSupport() override { return &support_; }
   class GrContext* GrContext() override {
     if (!test_context_provider_) {
-      test_context_provider_ = TestContextProvider::Create();
+      test_context_provider_ = viz::TestContextProvider::Create();
     }
     return test_context_provider_->GrContext();
   }
@@ -138,8 +137,8 @@ class PerfContextProvider
   std::unique_ptr<PerfGLES2Interface> context_gl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
 
-  scoped_refptr<TestContextProvider> test_context_provider_;
-  TestContextSupport support_;
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
+  viz::TestContextSupport support_;
   viz::ContextCacheController cache_controller_;
   base::Lock context_lock_;
   gpu::Capabilities capabilities_;

@@ -10,12 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -245,8 +245,8 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
                float scale_increment,
                float ideal_contents_scale,
                float expected_scale) {
-    scoped_refptr<TestContextProvider> context_provider =
-        TestContextProvider::Create();
+    scoped_refptr<viz::TestContextProvider> context_provider =
+        viz::TestContextProvider::Create();
     ASSERT_EQ(context_provider->BindToCurrentThread(),
               gpu::ContextResult::kSuccess);
     auto shared_bitmap_manager =

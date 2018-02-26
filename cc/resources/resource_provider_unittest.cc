@@ -21,15 +21,15 @@
 #include "base/memory/ref_counted.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_texture.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_texture.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +98,7 @@ static viz::ResourceSettings CreateResourceSettings() {
   return resource_settings;
 }
 
-class TextureStateTrackingContext : public TestWebGraphicsContext3D {
+class TextureStateTrackingContext : public viz::TestWebGraphicsContext3D {
  public:
   MOCK_METHOD2(bindTexture, void(GLenum target, GLuint texture));
   MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
@@ -148,7 +148,7 @@ class ContextSharedData {
 
   void ProduceTexture(const GLbyte* mailbox_name,
                       const gpu::SyncToken& sync_token,
-                      scoped_refptr<TestTexture> texture) {
+                      scoped_refptr<viz::TestTexture> texture) {
     uint32_t sync_point = static_cast<uint32_t>(sync_token.release_count());
 
     unsigned mailbox = 0;
@@ -159,8 +159,9 @@ class ContextSharedData {
     sync_point_for_mailbox_[mailbox] = sync_point;
   }
 
-  scoped_refptr<TestTexture> ConsumeTexture(const GLbyte* mailbox_name,
-                                            const gpu::SyncToken& sync_token) {
+  scoped_refptr<viz::TestTexture> ConsumeTexture(
+      const GLbyte* mailbox_name,
+      const gpu::SyncToken& sync_token) {
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
     DCHECK(mailbox && mailbox < next_mailbox_);
@@ -170,7 +171,7 @@ class ContextSharedData {
     // ProduceTexture.
     if (sync_point_for_mailbox_[mailbox] > sync_token.release_count()) {
       NOTREACHED();
-      return scoped_refptr<TestTexture>();
+      return scoped_refptr<viz::TestTexture>();
     }
     return textures_[mailbox];
   }
@@ -180,12 +181,13 @@ class ContextSharedData {
 
   uint64_t next_fence_sync_;
   unsigned next_mailbox_;
-  using TextureMap = std::unordered_map<unsigned, scoped_refptr<TestTexture>>;
+  using TextureMap =
+      std::unordered_map<unsigned, scoped_refptr<viz::TestTexture>>;
   TextureMap textures_;
   std::unordered_map<unsigned, uint32_t> sync_point_for_mailbox_;
 };
 
-class ResourceProviderContext : public TestWebGraphicsContext3D {
+class ResourceProviderContext : public viz::TestWebGraphicsContext3D {
  public:
   static std::unique_ptr<ResourceProviderContext> Create(
       ContextSharedData* shared_data) {
@@ -305,7 +307,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   GLuint createAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override {
     GLuint texture_id = createTexture();
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<TestTexture> texture =
+    scoped_refptr<viz::TestTexture> texture =
         shared_data_->ConsumeTexture(mailbox, last_waited_sync_token_);
     namespace_->textures.Replace(texture_id, texture);
     return texture_id;
@@ -316,7 +318,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                  uint8_t* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
+    scoped_refptr<viz::TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
     memcpy(pixels, texture->data.get(), TextureSizeBytes(size, format));
@@ -349,7 +351,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                  const void* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
-    scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
+    scoped_refptr<viz::TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
     ASSERT_TRUE(texture->data.get());
     ASSERT_TRUE(xoffset >= 0 && xoffset + width <= texture->size.width());
     ASSERT_TRUE(yoffset >= 0 && yoffset + height <= texture->size.height());
@@ -369,7 +371,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
   struct PendingProduceTexture {
     GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-    scoped_refptr<TestTexture> texture;
+    scoped_refptr<viz::TestTexture> texture;
   };
   ContextSharedData* shared_data_;
   gpu::SyncToken last_waited_sync_token_;
@@ -405,7 +407,8 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
     if (use_gpu_) {
       auto context3d(ResourceProviderContext::Create(shared_data_.get()));
       context3d_ = context3d.get();
-      context_provider_ = TestContextProvider::Create(std::move(context3d));
+      context_provider_ =
+          viz::TestContextProvider::Create(std::move(context3d));
       context_provider_->UnboundTestContext3d()
           ->set_support_texture_format_bgra8888(true);
       context_provider_->BindToCurrentThread();
@@ -414,7 +417,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
           ResourceProviderContext::Create(shared_data_.get());
       child_context_ = child_context_owned.get();
       child_context_provider_ =
-          TestContextProvider::Create(std::move(child_context_owned));
+          viz::TestContextProvider::Create(std::move(child_context_owned));
       child_context_provider_->UnboundTestContext3d()
           ->set_support_texture_format_bgra8888(true);
       child_context_provider_->BindToCurrentThread();
@@ -529,8 +532,8 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
   const std::unique_ptr<ContextSharedData> shared_data_;
   ResourceProviderContext* context3d_ = nullptr;
   ResourceProviderContext* child_context_ = nullptr;
-  scoped_refptr<TestContextProvider> context_provider_;
-  scoped_refptr<TestContextProvider> child_context_provider_;
+  scoped_refptr<viz::TestContextProvider> context_provider_;
+  scoped_refptr<viz::TestContextProvider> child_context_provider_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager>
@@ -1575,8 +1578,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   if (use_gpu())
     return;
 
-  scoped_refptr<TestContextProvider> child_context_provider =
-      TestContextProvider::Create(
+  scoped_refptr<viz::TestContextProvider> child_context_provider =
+      viz::TestContextProvider::Create(
           ResourceProviderContext::Create(shared_data_.get()));
   child_context_provider->BindToCurrentThread();
 
@@ -1872,7 +1875,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     TextureStateTrackingContext* child_context = child_context_owned.get();
 
     auto child_context_provider =
-        TestContextProvider::Create(std::move(child_context_owned));
+        viz::TestContextProvider::Create(std::move(child_context_owned));
     child_context_provider->BindToCurrentThread();
     auto shared_bitmap_manager =
         std::make_unique<viz::TestSharedBitmapManager>();
@@ -1886,7 +1889,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     TextureStateTrackingContext* parent_context = parent_context_owned.get();
 
     auto parent_context_provider =
-        TestContextProvider::Create(std::move(parent_context_owned));
+        viz::TestContextProvider::Create(std::move(parent_context_owned));
     parent_context_provider->BindToCurrentThread();
 
     auto parent_resource_provider(std::make_unique<DisplayResourceProvider>(
@@ -2336,7 +2339,8 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
 
   auto context_owned = std::make_unique<TextureStateTrackingContext>();
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   viz::ResourceSettings resource_settings = CreateResourceSettings();
@@ -2347,7 +2351,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   TextureStateTrackingContext* child_context = child_context_owned.get();
 
   auto child_context_provider =
-      TestContextProvider::Create(std::move(child_context_owned));
+      viz::TestContextProvider::Create(std::move(child_context_owned));
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2429,7 +2433,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2468,7 +2473,8 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2508,7 +2514,8 @@ TEST_P(ResourceProviderTest, TextureHint) {
   TextureStateTrackingContext* context = context_owned.get();
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2632,7 +2639,7 @@ class ResourceProviderTestImportedResourceGLFilters
     auto context_owned(std::make_unique<TextureStateTrackingContext>());
     TextureStateTrackingContext* context = context_owned.get();
     auto context_provider =
-        TestContextProvider::Create(std::move(context_owned));
+        viz::TestContextProvider::Create(std::move(context_owned));
     context_provider->BindToCurrentThread();
 
     auto resource_provider(std::make_unique<DisplayResourceProvider>(
@@ -2641,7 +2648,7 @@ class ResourceProviderTestImportedResourceGLFilters
     auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
     TextureStateTrackingContext* child_context = child_context_owned.get();
     auto child_context_provider =
-        TestContextProvider::Create(std::move(child_context_owned));
+        viz::TestContextProvider::Create(std::move(child_context_owned));
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2796,7 +2803,8 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
@@ -2805,7 +2813,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* child_context = child_context_owned.get();
   auto child_context_provider =
-      TestContextProvider::Create(std::move(child_context_owned));
+      viz::TestContextProvider::Create(std::move(child_context_owned));
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -2903,7 +2911,8 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
@@ -2959,7 +2968,8 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_WithSyncToken) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
@@ -3002,7 +3012,8 @@ TEST_P(ResourceProviderTest,
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
@@ -3039,7 +3050,8 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
 
   auto context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -3153,7 +3165,8 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -3210,7 +3223,8 @@ TEST_P(ResourceProviderTest, TextureStorageAllocation) {
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
 
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
@@ -3241,7 +3255,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGpuMemoryBuffer) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   const int kWidth = 2;
@@ -3301,7 +3316,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
       new AllocationTrackingContext3D);
   AllocationTrackingContext3D* context = context_owned.get();
   context_owned->set_support_compressed_texture_etc1(true);
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
@@ -3330,7 +3346,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
       new AllocationTrackingContext3D);
   AllocationTrackingContext3D* context = context_owned.get();
   context_owned->set_support_compressed_texture_etc1(true);
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
@@ -3359,7 +3376,8 @@ INSTANTIATE_TEST_CASE_P(ResourceProviderTests,
                         ResourceProviderTest,
                         ::testing::Values(true, false));
 
-class TextureIdAllocationTrackingContext : public TestWebGraphicsContext3D {
+class TextureIdAllocationTrackingContext
+    : public viz::TestWebGraphicsContext3D {
  public:
   GLuint NextTextureId() override {
     base::AutoLock lock(namespace_->lock);
@@ -3407,7 +3425,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   const int kWidth = 2;
@@ -3460,7 +3479,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Overlay) {
   AllocationTrackingContext3D* context = context_owned.get();
   context->set_support_texture_storage_image(true);
 
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   const int kWidth = 2;
@@ -3511,7 +3531,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox) {
   std::unique_ptr<AllocationTrackingContext3D> context_owned(
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   const int kWidth = 2;
@@ -3598,7 +3619,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox_Overlay) {
   AllocationTrackingContext3D* context = context_owned.get();
   context->set_support_texture_storage_image(true);
 
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto context_provider =
+      viz::TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
   const int kWidth = 2;

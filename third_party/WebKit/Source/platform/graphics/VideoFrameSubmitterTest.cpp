@@ -12,10 +12,10 @@
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/test_context_provider.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/graphics/VideoFrameResourceProvider.h"
@@ -127,7 +127,7 @@ class VideoFrameSubmitterTest : public ::testing::Test {
       : now_src_(new base::SimpleTestTickClock()),
         begin_frame_source_(new viz::FakeExternalBeginFrameSource(0.f, false)),
         provider_(new StrictMock<MockVideoFrameProvider>()),
-        context_provider_(cc::TestContextProvider::CreateWorker()) {
+        context_provider_(viz::TestContextProvider::CreateWorker()) {
     context_provider_->BindToCurrentThread();
   }
 
@@ -158,7 +158,7 @@ class VideoFrameSubmitterTest : public ::testing::Test {
   std::unique_ptr<StrictMock<MockCompositorFrameSink>> sink_;
   std::unique_ptr<StrictMock<MockVideoFrameProvider>> provider_;
   StrictMock<MockVideoFrameResourceProvider>* resource_provider_;
-  scoped_refptr<cc::TestContextProvider> context_provider_;
+  scoped_refptr<viz::TestContextProvider> context_provider_;
   std::unique_ptr<VideoFrameSubmitter> submitter_;
 };
 

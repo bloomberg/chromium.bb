@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#define COMPONENTS_VIZ_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -21,8 +21,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
-#include "cc/test/ordered_texture_map.h"
-#include "cc/test/test_texture.h"
+#include "components/viz/test/ordered_texture_map.h"
+#include "components/viz/test/test_texture.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -30,7 +30,8 @@
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
-namespace cc {
+namespace viz {
+
 class TestContextSupport;
 
 class TestWebGraphicsContext3D {
@@ -512,6 +513,6 @@ class TestWebGraphicsContext3D {
   base::WeakPtrFactory<TestWebGraphicsContext3D> weak_ptr_factory_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_

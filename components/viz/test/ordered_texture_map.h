@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_ORDERED_TEXTURE_MAP_H_
-#define CC_TEST_ORDERED_TEXTURE_MAP_H_
+#ifndef COMPONENTS_VIZ_TEST_ORDERED_TEXTURE_MAP_H_
+#define COMPONENTS_VIZ_TEST_ORDERED_TEXTURE_MAP_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace cc {
+namespace viz {
 
 struct TestTexture;
 
@@ -41,6 +41,6 @@ class OrderedTextureMap {
   TextureList ordered_textures_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_ORDERED_TEXTURE_MAP_H_
+#endif  // COMPONENTS_VIZ_TEST_ORDERED_TEXTURE_MAP_H_

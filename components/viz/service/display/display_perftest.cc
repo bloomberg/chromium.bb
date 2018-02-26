@@ -8,8 +8,6 @@
 #include "base/test/null_task_runner.h"
 #include "base/time/time.h"
 #include "cc/base/lap_timer.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/test_context_provider.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -21,6 +19,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -47,11 +46,8 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
     auto scheduler = std::make_unique<DisplayScheduler>(&begin_frame_source_,
                                                         task_runner_.get(), 1);
 
-    std::unique_ptr<cc::FakeOutputSurface> output_surface;
-
-    auto provider = cc::TestContextProvider::Create();
-    provider->BindToCurrentThread();
-    output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
+    std::unique_ptr<FakeOutputSurface> output_surface =
+        FakeOutputSurface::Create3d();
 
     auto display = std::make_unique<Display>(
         &bitmap_manager_, RendererSettings(), frame_sink_id,

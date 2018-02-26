@@ -29,9 +29,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -40,6 +38,8 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1382,7 +1382,8 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
 
   // Try something extreme to be larger than max texture size, and make it a
   // non-integer for funsies.
-  scoped_refptr<TestContextProvider> context = TestContextProvider::Create();
+  scoped_refptr<viz::TestContextProvider> context =
+      viz::TestContextProvider::Create();
   // Keep the max texture size reasonable so we don't OOM on low end devices
   // (crbug.com/642333).
   context->UnboundTestContext3d()->set_max_texture_size(512);

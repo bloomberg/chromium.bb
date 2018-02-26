@@ -6,9 +6,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -18,8 +18,8 @@ TEST(TextureDeleterTest, Destroy) {
   auto deleter =
       std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
 
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> context_provider =
+      TestContextProvider::Create();
   context_provider->BindToCurrentThread();
 
   GLuint texture_id = 0u;
@@ -47,8 +47,8 @@ TEST(TextureDeleterTest, Destroy) {
 TEST(TextureDeleterTest, NullTaskRunner) {
   auto deleter = std::make_unique<TextureDeleter>(nullptr);
 
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> context_provider =
+      TestContextProvider::Create();
   context_provider->BindToCurrentThread();
 
   GLuint texture_id = 0u;

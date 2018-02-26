@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@
 namespace cc {
 namespace {
 
-class WebGraphicsContext3DUploadCounter : public TestWebGraphicsContext3D {
+class WebGraphicsContext3DUploadCounter : public viz::TestWebGraphicsContext3D {
  public:
   void texSubImage2D(GLenum target,
                      GLint level,
@@ -94,7 +94,7 @@ class VideoResourceUpdaterTest : public testing::Test {
     context3d_ = context3d.get();
     context3d_->set_support_texture_storage(true);
 
-    context_provider_ = TestContextProvider::Create(std::move(context3d));
+    context_provider_ = viz::TestContextProvider::Create(std::move(context3d));
     context_provider_->BindToCurrentThread();
   }
 
@@ -244,7 +244,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   static const gpu::SyncToken kMailboxSyncToken;
 
   WebGraphicsContext3DUploadCounter* context3d_;
-  scoped_refptr<TestContextProvider> context_provider_;
+  scoped_refptr<viz::TestContextProvider> context_provider_;
   std::unique_ptr<SharedBitmapManagerAllocationCounter> shared_bitmap_manager_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider3d_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_software_;

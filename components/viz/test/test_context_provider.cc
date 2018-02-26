@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_context_provider.h"
+#include "components/viz/test/test_context_provider.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,15 +15,15 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "cc/test/test_gles2_interface.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 
@@ -195,11 +195,10 @@ TestContextProvider::TestContextProvider(
   context3d_->set_test_support(support_.get());
   raster_context_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
       context_gl_.get(), support_.get(), context3d_->test_capabilities());
-  // Just pass nullptr to the viz::ContextCacheController for its task runner.
-  // Idle handling is tested directly in viz::ContextCacheController's
+  // Just pass nullptr to the ContextCacheController for its task runner.
+  // Idle handling is tested directly in ContextCacheController's
   // unittests, and isn't needed here.
-  cache_controller_.reset(
-      new viz::ContextCacheController(support_.get(), nullptr));
+  cache_controller_.reset(new ContextCacheController(support_.get(), nullptr));
 }
 
 TestContextProvider::~TestContextProvider() {
@@ -281,7 +280,7 @@ class GrContext* TestContextProvider::GrContext() {
   return gr_context_->get();
 }
 
-viz::ContextCacheController* TestContextProvider::CacheController() {
+ContextCacheController* TestContextProvider::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
 }
@@ -319,12 +318,12 @@ TestWebGraphicsContext3D* TestContextProvider::UnboundTestContext3d() {
   return context3d_.get();
 }
 
-void TestContextProvider::AddObserver(viz::ContextLostObserver* obs) {
+void TestContextProvider::AddObserver(ContextLostObserver* obs) {
   observers_.AddObserver(obs);
 }
 
-void TestContextProvider::RemoveObserver(viz::ContextLostObserver* obs) {
+void TestContextProvider::RemoveObserver(ContextLostObserver* obs) {
   observers_.RemoveObserver(obs);
 }
 
-}  // namespace cc
+}  // namespace viz

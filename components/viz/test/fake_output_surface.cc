@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/fake_output_surface.h"
+#include "components/viz/test/fake_output_surface.h"
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,16 +13,16 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gl/gl_utils.h"
 
-namespace cc {
+namespace viz {
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_refptr<viz::ContextProvider> context_provider)
+    scoped_refptr<ContextProvider> context_provider)
     : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
   DCHECK(OutputSurface::context_provider());
 }
 
 FakeOutputSurface::FakeOutputSurface(
-    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
+    std::unique_ptr<SoftwareOutputDevice> software_device)
     : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
   DCHECK(OutputSurface::software_device());
 }
@@ -44,9 +44,8 @@ void FakeOutputSurface::Reshape(const gfx::Size& size,
   last_reshape_color_space_ = color_space;
 }
 
-void FakeOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
-  last_sent_frame_ =
-      std::make_unique<viz::OutputSurfaceFrame>(std::move(frame));
+void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
+  last_sent_frame_ = std::make_unique<OutputSurfaceFrame>(std::move(frame));
   ++num_sent_frames_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -75,7 +74,7 @@ uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
     return GL_RGB;
 }
 
-void FakeOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {
+void FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
@@ -89,8 +88,8 @@ bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
   return suspended_for_recycle_;
 }
 
-viz::OverlayCandidateValidator*
-FakeOutputSurface::GetOverlayCandidateValidator() const {
+OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
+    const {
   return overlay_candidate_validator_;
 }
 
@@ -113,4 +112,4 @@ gpu::VulkanSurface* FakeOutputSurface::GetVulkanSurface() {
 }
 #endif
 
-}  // namespace cc
+}  // namespace viz

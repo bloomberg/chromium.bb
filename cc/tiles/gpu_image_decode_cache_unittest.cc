@@ -11,11 +11,11 @@
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/skia_common.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_tile_task_runner.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/test/transfer_cache_test_helper.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -25,7 +25,7 @@ namespace {
 
 class FakeDiscardableManager {
  public:
-  void SetGLES2Interface(TestGLES2Interface* gl) { gl_ = gl; }
+  void SetGLES2Interface(viz::TestGLES2Interface* gl) { gl_ = gl; }
   void Initialize(GLuint texture_id) {
     EXPECT_EQ(textures_.end(), textures_.find(texture_id));
     textures_[texture_id] = kHandleLockedStart;
@@ -92,11 +92,11 @@ class FakeDiscardableManager {
   std::map<GLuint, int32_t> textures_;
   size_t live_textures_count_ = 0;
   size_t cached_textures_limit_ = std::numeric_limits<size_t>::max();
-  TestGLES2Interface* gl_ = nullptr;
+  viz::TestGLES2Interface* gl_ = nullptr;
 };
 
-class FakeGPUImageDecodeTestGLES2Interface : public TestGLES2Interface,
-                                             public TestContextSupport {
+class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
+                                             public viz::TestContextSupport {
  public:
   explicit FakeGPUImageDecodeTestGLES2Interface(
       FakeDiscardableManager* discardable_manager,
@@ -165,7 +165,7 @@ class FakeGPUImageDecodeTestGLES2Interface : public TestGLES2Interface,
     return std::make_pair(static_cast<TransferCacheEntryType>(type), id);
   }
 
-  // TestGLES2Interface:
+  // viz::TestGLES2Interface:
   const GLubyte* GetString(GLenum name) override {
     switch (name) {
       case GL_EXTENSIONS:
@@ -209,7 +209,7 @@ class FakeGPUImageDecodeTestGLES2Interface : public TestGLES2Interface,
   std::unique_ptr<uint8_t[]> mapped_entry_;
 };
 
-class GPUImageDecodeTestMockContextProvider : public TestContextProvider {
+class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
  public:
   static scoped_refptr<GPUImageDecodeTestMockContextProvider> Create(
       FakeDiscardableManager* discardable_manager,
@@ -219,15 +219,15 @@ class GPUImageDecodeTestMockContextProvider : public TestContextProvider {
             discardable_manager, transfer_cache_helper),
         std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
             discardable_manager, transfer_cache_helper),
-        TestWebGraphicsContext3D::Create());
+        viz::TestWebGraphicsContext3D::Create());
   }
 
  private:
   ~GPUImageDecodeTestMockContextProvider() override = default;
   GPUImageDecodeTestMockContextProvider(
-      std::unique_ptr<TestContextSupport> support,
-      std::unique_ptr<TestGLES2Interface> gl,
-      std::unique_ptr<TestWebGraphicsContext3D> context)
+      std::unique_ptr<viz::TestContextSupport> support,
+      std::unique_ptr<viz::TestGLES2Interface> gl,
+      std::unique_ptr<viz::TestWebGraphicsContext3D> context)
       : TestContextProvider(std::move(support),
                             std::move(gl),
                             std::move(context),

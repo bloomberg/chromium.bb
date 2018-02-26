@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_gles2_interface.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -21,7 +21,7 @@ namespace viz {
 
 namespace {
 
-class CopierTestGLES2Interface : public cc::TestGLES2Interface {
+class CopierTestGLES2Interface : public TestGLES2Interface {
  public:
   // Sets how GL will respond to queries regarding the implementation's internal
   // read-back format.
@@ -44,7 +44,7 @@ class CopierTestGLES2Interface : public cc::TestGLES2Interface {
         params[0] = type_;
         break;
       default:
-        cc::TestGLES2Interface::GetIntegerv(pname, params);
+        TestGLES2Interface::GetIntegerv(pname, params);
         break;
     }
   }
@@ -59,7 +59,7 @@ class CopierTestGLES2Interface : public cc::TestGLES2Interface {
 class GLRendererCopierTest : public testing::Test {
  public:
   void SetUp() override {
-    auto context_provider = cc::TestContextProvider::Create(
+    auto context_provider = TestContextProvider::Create(
         std::make_unique<CopierTestGLES2Interface>());
     context_provider->BindToCurrentThread();
     copier_ = std::make_unique<GLRendererCopier>(

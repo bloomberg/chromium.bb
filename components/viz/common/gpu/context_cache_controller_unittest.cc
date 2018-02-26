@@ -6,9 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_context_support.h"
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +16,7 @@ using ::testing::StrictMock;
 namespace viz {
 namespace {
 
-class MockContextSupport : public cc::TestContextSupport {
+class MockContextSupport : public TestContextSupport {
  public:
   MockContextSupport() {}
   MOCK_METHOD1(SetAggressivelyFreeResources,

@@ -41,7 +41,6 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_mask_layer_impl.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
@@ -51,7 +50,6 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -71,7 +69,9 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,6 +93,7 @@ using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::_;
 using media::VideoFrame;
+using viz::TestWebGraphicsContext3D;
 
 namespace cc {
 namespace {
@@ -8865,8 +8866,8 @@ class FakeDrawableLayerImpl : public LayerImpl {
 // submitted to the LayerTreeFrameSink, where it should request to swap only
 // the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
-  scoped_refptr<TestContextProvider> context_provider(
-      TestContextProvider::Create());
+  scoped_refptr<viz::TestContextProvider> context_provider(
+      viz::TestContextProvider::Create());
   context_provider->BindToCurrentThread();
   context_provider->TestContext3d()->set_have_post_sub_buffer(true);
 
@@ -9637,7 +9638,8 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
-    return FakeOutputSurface::Create3d(std::move(display_context_provider_));
+    return viz::FakeOutputSurface::Create3d(
+        std::move(display_context_provider_));
   }
 
   void DisplayReceivedLocalSurfaceId(
@@ -9654,17 +9656,18 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
 };
 
 TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
-  scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create();
+  scoped_refptr<viz::TestContextProvider> context_provider =
+      viz::TestContextProvider::Create();
   FrameSinkClient test_client(context_provider);
 
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
   auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
-      context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
-      viz::RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-      synchronous_composite, disable_display_vsync, refresh_rate);
+      context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
+      nullptr, viz::RendererSettings(),
+      base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
+      disable_display_vsync, refresh_rate);
   layer_tree_frame_sink->SetClient(&test_client);
 
   CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));

@@ -10,14 +10,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
@@ -138,17 +139,19 @@ class LayerTreeHostCopyRequestTestMultipleRequests
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
     if (!use_gl_renderer_) {
-      return FakeOutputSurface::CreateSoftware(
+      return viz::FakeOutputSurface::CreateSoftware(
           std::make_unique<viz::SoftwareOutputDevice>());
     }
 
-    scoped_refptr<TestContextProvider> display_context_provider =
-        TestContextProvider::Create();
-    TestContextSupport* context_support = display_context_provider->support();
+    scoped_refptr<viz::TestContextProvider> display_context_provider =
+        viz::TestContextProvider::Create();
+    viz::TestContextSupport* context_support =
+        display_context_provider->support();
     context_support->set_out_of_order_callbacks(out_of_order_callbacks_);
     display_context_provider->BindToCurrentThread();
 
-    return FakeOutputSurface::Create3d(std::move(display_context_provider));
+    return viz::FakeOutputSurface::Create3d(
+        std::move(display_context_provider));
   }
 
   bool use_gl_renderer_;
@@ -762,9 +765,9 @@ class LayerTreeHostCopyRequestTestDeleteTexture
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
-    display_context_provider_ = TestContextProvider::Create();
+    display_context_provider_ = viz::TestContextProvider::Create();
     display_context_provider_->BindToCurrentThread();
-    return FakeOutputSurface::Create3d(display_context_provider_);
+    return viz::FakeOutputSurface::Create3d(display_context_provider_);
   }
 
   void SetupTree() override {
@@ -868,7 +871,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
 
   void AfterTest() override {}
 
-  scoped_refptr<TestContextProvider> display_context_provider_;
+  scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
   size_t num_textures_without_readback_ = 0;
   size_t num_textures_after_readback_ = 0;
@@ -890,10 +893,11 @@ class LayerTreeHostCopyRequestTestCountTextures
     // the Display so that sync points are not needed and the texture counts
     // are visible together.
     // Since this test does not override CreateLayerTreeFrameSink, the
-    // |compositor_context_provider| will be a TestContextProvider.
-    display_context_provider_ =
-        static_cast<TestContextProvider*>(compositor_context_provider.get());
-    return FakeOutputSurface::Create3d(std::move(compositor_context_provider));
+    // |compositor_context_provider| will be a viz::TestContextProvider.
+    display_context_provider_ = static_cast<viz::TestContextProvider*>(
+        compositor_context_provider.get());
+    return viz::FakeOutputSurface::Create3d(
+        std::move(compositor_context_provider));
   }
 
   void SetupTree() override {
@@ -968,7 +972,7 @@ class LayerTreeHostCopyRequestTestCountTextures
 
   virtual void DoEndTest() { EndTest(); }
 
-  scoped_refptr<TestContextProvider> display_context_provider_;
+  scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
   size_t num_textures_without_readback_ = 0;
   size_t num_textures_with_readback_ = 0;
@@ -1017,7 +1021,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
     : public LayerTreeHostCopyRequestTestCountTextures {
  protected:
   void BeginTest() override {
-    external_context_provider_ = TestContextProvider::Create();
+    external_context_provider_ = viz::TestContextProvider::Create();
     EXPECT_EQ(external_context_provider_->BindToCurrentThread(),
               gpu::ContextResult::kSuccess);
     LayerTreeHostCopyRequestTestCountTextures::BeginTest();
@@ -1064,7 +1068,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
     EXPECT_EQ(num_textures_without_readback_, num_textures_with_readback_);
   }
 
-  scoped_refptr<TestContextProvider> external_context_provider_;
+  scoped_refptr<viz::TestContextProvider> external_context_provider_;
   gpu::SyncToken sync_token_;
 };
 

@@ -9,13 +9,13 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/test/test_context_provider.h"
+#include "components/viz/test/test_context_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 
 TEST(StagingBufferPoolTest, ShutdownImmediatelyAfterCreation) {
-  auto context_provider = TestContextProvider::CreateWorker();
+  auto context_provider = viz::TestContextProvider::CreateWorker();
   LayerTreeResourceProvider* resource_provider = nullptr;
   bool use_partial_raster = false;
   int max_staging_buffer_usage_in_bytes = 1024;
