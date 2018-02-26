@@ -51,7 +51,7 @@ TEST_F(CrashKeysTest, Switches) {
     EXPECT_TRUE(GetCrashKeyValue("switch-4").empty());
   }
 
-  // Set more than the max switches.
+  // Set more than 15 switches.
   {
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     const size_t kMax = kSwitchesMaxCount + 2;
@@ -62,8 +62,8 @@ TEST_F(CrashKeysTest, Switches) {
     EXPECT_EQ("--many-1", GetCrashKeyValue("switch-1"));
     EXPECT_EQ("--many-9", GetCrashKeyValue("switch-9"));
     EXPECT_EQ("--many-15", GetCrashKeyValue("switch-15"));
-    EXPECT_TRUE(GetCrashKeyValue("switch-16").empty());
-    EXPECT_TRUE(GetCrashKeyValue("switch-17").empty());
+    EXPECT_FALSE(GetCrashKeyValue("switch-16").empty());
+    EXPECT_FALSE(GetCrashKeyValue("switch-17").empty());
   }
 
   // Set fewer to ensure that old ones are erased.
