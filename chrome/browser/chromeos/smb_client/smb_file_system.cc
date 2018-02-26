@@ -173,12 +173,13 @@ AbortCallback SmbFileSystem::RequestUnmount(
 void SmbFileSystem::HandleRequestUnmountCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) {
-  if (TranslateError(error) == base::File::FILE_OK) {
-    callback.Run(RunUnmountCallback(
+  base::File::Error result = TranslateError(error);
+  if (result == base::File::FILE_OK) {
+    result = RunUnmountCallback(
         file_system_info_.provider_id(), file_system_info_.file_system_id(),
-        file_system_provider::Service::UNMOUNT_REASON_USER));
+        file_system_provider::Service::UNMOUNT_REASON_USER);
   }
-  callback.Run(TranslateError(error));
+  callback.Run(result);
 }
 
 AbortCallback SmbFileSystem::GetMetadata(
