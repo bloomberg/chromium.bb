@@ -86,6 +86,14 @@ public class CronetTestUtil {
         return (CronetEngineBuilderImpl) builder.getBuilderDelegate();
     }
 
+    /**
+     * Query the system to find out how many bytes were received with tag
+     * {@code expectedTag} for our UID.
+     * @param expectedTag the tag to query for.
+     * @return the count of recieved bytes.
+     */
+    public static native long nativeGetTaggedBytes(int expectedTag);
+
     private static native int nativeGetLoadFlags(long urlRequestAdapter);
 
     private static native void nativePrepareNetworkThread(long contextAdapter);

@@ -144,7 +144,11 @@ class CronetURLRequest {
                    net::RequestPriority priority,
                    bool disable_cache,
                    bool disable_connection_migration,
-                   bool enable_metrics);
+                   bool enable_metrics,
+                   bool traffic_stats_tag_set,
+                   int32_t traffic_stats_tag,
+                   bool traffic_stats_uid_set,
+                   int32_t traffic_stats_uid);
 
   // Methods called prior to Start are never called on network thread.
 
@@ -190,7 +194,11 @@ class CronetURLRequest {
                  const GURL& url,
                  net::RequestPriority priority,
                  int load_flags,
-                 bool enable_metrics);
+                 bool enable_metrics,
+                 bool traffic_stats_tag_set,
+                 int32_t traffic_stats_tag,
+                 bool traffic_stats_uid_set,
+                 int32_t traffic_stats_uid);
 
     // Invoked on the network thread.
     ~NetworkTasks() override;
@@ -249,6 +257,15 @@ class CronetURLRequest {
     const bool enable_metrics_;
     // Whether metrics have been reported.
     bool metrics_reported_;
+
+    // Whether |traffic_stats_tag_| should be applied.
+    const bool traffic_stats_tag_set_;
+    // TrafficStats tag to apply to URLRequest.
+    const int32_t traffic_stats_tag_;
+    // Whether |traffic_stats_uid_| should be applied.
+    const bool traffic_stats_uid_set_;
+    // UID to be applied to URLRequest.
+    const int32_t traffic_stats_uid_;
 
     scoped_refptr<net::IOBuffer> read_buffer_;
     std::unique_ptr<net::URLRequest> url_request_;

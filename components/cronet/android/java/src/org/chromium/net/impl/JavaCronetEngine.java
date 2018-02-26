@@ -65,9 +65,12 @@ public final class JavaCronetEngine extends CronetEngineBase {
     @Override
     public UrlRequestBase createRequest(String url, UrlRequest.Callback callback, Executor executor,
             int priority, Collection<Object> connectionAnnotations, boolean disableCache,
-            boolean disableConnectionMigration, boolean allowDirectExecutor) {
-        return new JavaUrlRequest(
-                callback, mExecutorService, executor, url, mUserAgent, allowDirectExecutor);
+            boolean disableConnectionMigration, boolean allowDirectExecutor,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid) {
+        return new JavaUrlRequest(callback, mExecutorService, executor, url, mUserAgent,
+                allowDirectExecutor, trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet,
+                trafficStatsUid);
     }
 
     @Override

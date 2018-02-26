@@ -24,6 +24,7 @@ android_library("net_java") {
     "java/src/org/chromium/net/X509Util.java",
   ]
   deps = [
+    ":net_thread_stats_uid_java",
     "//base:base_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -32,6 +33,10 @@ android_library("net_java") {
     ":net_errors_java",
     ":net_android_java_enums_srcjar",
   ]
+}
+
+android_library("net_thread_stats_uid_java") {
+  java_files = [ "java/src/org/chromium/net/ThreadStatsUid.java" ]
 }
 
 android_aidl("embedded_test_server_aidl") {

@@ -50,11 +50,19 @@ public abstract class CronetEngineBase extends ExperimentalCronetEngine {
      *         request if it is enabled for the session.
      * @param allowDirectExecutor whether executors used by this request are permitted
      *         to execute submitted tasks inline.
+     * @param trafficStatsTagSet {@code true} if {@code trafficStatsTag} represents a TrafficStats
+     *         tag to apply to sockets used to perform this request.
+     * @param trafficStatsTag TrafficStats tag to apply to sockets used to perform this request.
+     * @param trafficStatsUidSet {@code true} if {@code trafficStatsUid} represents a UID to
+     *         attribute traffic used to perform this request.
+     * @param trafficStatsUid UID to attribute traffic used to perform this request.
      * @return new request.
      */
     protected abstract UrlRequestBase createRequest(String url, UrlRequest.Callback callback,
             Executor executor, @RequestPriority int priority, Collection<Object> requestAnnotations,
-            boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor);
+            boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid);
 
     /**
      * Creates a {@link BidirectionalStream} object. {@code callback} methods will

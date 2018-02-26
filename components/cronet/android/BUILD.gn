@@ -275,6 +275,9 @@ cronet_impl_common_java_srcjar_deps = [
   ":rtt_throughput_values_java",
 ]
 
+cronet_impl_common_java_deps_to_package =
+    [ "//net/android:net_thread_stats_uid_java" ]
+
 # cronet_impl_common_java.jar - common Cronet code that is shared
 # by all Cronet engine implementations.
 android_library("cronet_impl_common_java") {
@@ -298,6 +301,7 @@ android_library("cronet_impl_common_java") {
     ":cronet_api_java",
     "//third_party/android_tools:android_support_annotations_java",
   ]
+  deps += cronet_impl_common_java_deps_to_package
 
   srcjar_deps = cronet_impl_common_java_srcjar_deps
 }
@@ -324,6 +328,12 @@ cronet_impl_native_java_srcjar_deps = [
   ":net_request_priority_java",
   ":network_quality_observation_source_java",
   ":url_request_error_java",
+]
+
+cronet_impl_native_java_deps_to_package = [
+  "//base:base_java",
+  "//net/android:net_java",
+  "//url:url_java",
 ]
 
 # cronet_impl_native_java.jar - native implementation of the Cronet engine.
@@ -354,11 +364,10 @@ android_library("cronet_impl_native_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_java",
-    "//base:base_java",
-    "//net/android:net_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
+  deps += cronet_impl_native_java_deps_to_package
 
   srcjar_deps = cronet_impl_native_java_srcjar_deps
 }
@@ -864,10 +873,11 @@ test("cronet_unittests_android") {
 
 _package_dir = "$root_out_dir/cronet"
 _test_package_dir = "$root_out_dir/cronet/test"
-_extract_cronet_jars_dir = "$target_gen_dir/cronet_jar_extract"
+_extract_cronet_native_jars_dir = "$target_gen_dir/cronet_native_jar_extract"
+_extract_cronet_common_jars_dir = "$target_gen_dir/cronet_common_jar_extract"
 _extract_cronet_test_jars_dir = "$target_gen_dir/cronet_test_jar_extract"
 
-action("extract_cronet_jars") {
+action("extract_cronet_native_jars") {
   # extract_from_jars.py deletes the target directory before extracting.
   script = "//components/cronet/tools/extract_from_jars.py"
   depfile = "$target_gen_dir/$target_name.d"
@@ -879,10 +889,8 @@ action("extract_cronet_jars") {
 
   deps = [
     ":cronet_impl_native_java",
-    "//base:base_java",
-    "//net/android:net_java",
-    "//url:url_java",
   ]
+  deps += cronet_impl_native_java_deps_to_package
 
   sources = []
   foreach(dep, deps) {
@@ -894,7 +902,7 @@ action("extract_cronet_jars") {
 
   args = [
     "--classes-dir",
-    rebase_path(_extract_cronet_jars_dir, root_build_dir),
+    rebase_path(_extract_cronet_native_jars_dir, root_build_dir),
     "--jars=${_rebased_sources}",
     "--depfile",
     rebase_path(depfile, root_build_dir),
@@ -903,7 +911,7 @@ action("extract_cronet_jars") {
   ]
 }
 
-action("repackage_extracted_jars") {
+action("repackage_extracted_native_jars") {
   _output_jar = "$_package_dir/cronet_impl_native_java.jar"
 
   script = "//build/android/gyp/jar.py"
@@ -913,13 +921,67 @@ action("repackage_extracted_jars") {
 
   args = [
     "--classes-dir",
-    rebase_path(_extract_cronet_jars_dir, root_build_dir),
+    rebase_path(_extract_cronet_native_jars_dir, root_build_dir),
     "--jar-path",
     rebase_path(_output_jar, root_build_dir),
   ]
 
   deps = [
-    ":extract_cronet_jars",
+    ":extract_cronet_native_jars",
+  ]
+}
+
+action("extract_cronet_common_jars") {
+  # extract_from_jars.py deletes the target directory before extracting.
+  script = "//components/cronet/tools/extract_from_jars.py"
+  depfile = "$target_gen_dir/$target_name.d"
+
+  _stamp_file = "$target_gen_dir/$target_name.stamp"
+  outputs = [
+    _stamp_file,
+  ]
+
+  deps = [
+    ":cronet_impl_common_java",
+  ]
+  deps += cronet_impl_common_java_deps_to_package
+
+  sources = []
+  foreach(dep, deps) {
+    sources += [ get_label_info(dep, "target_gen_dir") + "/" +
+                 get_label_info(dep, "name") + ".javac.jar" ]
+  }
+
+  _rebased_sources = rebase_path(sources, root_build_dir)
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_common_jars_dir, root_build_dir),
+    "--jars=${_rebased_sources}",
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+    "--stamp",
+    rebase_path(_stamp_file, root_build_dir),
+  ]
+}
+
+action("repackage_extracted_common_jars") {
+  _output_jar = "$_package_dir/cronet_impl_common_java.jar"
+
+  script = "//build/android/gyp/jar.py"
+  outputs = [
+    _output_jar,
+  ]
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_common_jars_dir, root_build_dir),
+    "--jar-path",
+    rebase_path(_output_jar, root_build_dir),
+  ]
+
+  deps = [
+    ":extract_cronet_common_jars",
   ]
 }
 
@@ -1227,7 +1289,6 @@ template("copy_java8_jars") {
 copy_java8_jars("copy_cronet_java8_jars") {
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_java",
     ":cronet_impl_platform_java",
   ]
 }
@@ -1438,7 +1499,8 @@ group("cronet_package") {
       ":jar_cronet_impl_native_java_source",
       ":jar_cronet_impl_platform_java_source",
       ":jar_cronet_sample_source",
-      ":repackage_extracted_jars",
+      ":repackage_extracted_common_jars",
+      ":repackage_extracted_native_jars",
     ]
     if (current_cpu == "arm" && arm_version == 7) {
       deps += [ ":enforce_no_neon" ]

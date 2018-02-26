@@ -13,6 +13,7 @@
 #include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "jni/CronetTestUtil_jni.h"
+#include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 
 using base::android::JavaParamRef;
@@ -101,6 +102,12 @@ void JNI_CronetTestUtil_CleanupNetworkThread(
     jlong jcontext_adapter) {
   TestUtil::RunAfterContextInit(
       jcontext_adapter, base::Bind(&CleanupNetworkThreadOnNetworkThread));
+}
+
+jlong JNI_CronetTestUtil_GetTaggedBytes(JNIEnv* env,
+                                        const JavaParamRef<jclass>& jcaller,
+                                        jint jexpected_tag) {
+  return net::GetTaggedBytes(jexpected_tag);
 }
 
 }  // namespace cronet
