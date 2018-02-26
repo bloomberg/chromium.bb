@@ -105,6 +105,12 @@ cr.define('downloadInternals', function() {
      *     of downloads is fetched.
      */
     getServiceDownloads() {}
+
+    /**
+     * Starts a download with the Download Service.
+     * @param {string} url The download URL.
+     */
+    startDownload(url) {}
   }
 
   /**
@@ -119,6 +125,11 @@ cr.define('downloadInternals', function() {
     /** @override */
     getServiceDownloads() {
       return cr.sendWithPromise('getServiceDownloads');
+    }
+
+    /** @override */
+    startDownload(url) {
+      return cr.sendWithPromise('startDownload', url);
     }
   }
 
