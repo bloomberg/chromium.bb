@@ -922,6 +922,12 @@
           'empty_main',
         ],
       },
+      'linux-annotator-rel': {
+        # TODO(dpranke): Replace this with the full test when it's ready.
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        }
+      },
       'Chromium Mac 10.10 MacViews': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',
