@@ -36,7 +36,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/frame/Deprecation.h"
+#include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html_names.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -44,6 +46,8 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+
+using namespace HTMLNames;
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
@@ -120,7 +124,7 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
     sheet->SetMedia(options.media().GetAsMediaList());
   }
   if (options.alternate())
-    sheet->SetAlternate(true);
+    sheet->SetAlternateFromConstructor(true);
   if (options.disabled())
     sheet->setDisabled(true);
   sheet->SetText(text);
@@ -498,8 +502,44 @@ void CSSStyleSheet::SetText(const String& text) {
   contents_->ParseString(text);
 }
 
-void CSSStyleSheet::SetAlternate(bool alternate) {
-  alternate_ = alternate;
+void CSSStyleSheet::SetAlternateFromConstructor(
+    bool alternate_from_constructor) {
+  alternate_from_constructor_ = alternate_from_constructor;
+}
+
+bool CSSStyleSheet::IsAlternate() const {
+  if (owner_node_) {
+    return owner_node_->IsElementNode() &&
+           ToElement(owner_node_)->getAttribute(relAttr).Contains("alternate");
+  }
+  return alternate_from_constructor_;
+}
+
+bool CSSStyleSheet::CanBeActivated(
+    const String& current_preferrable_name) const {
+  if (disabled())
+    return false;
+
+  if (owner_node_ && owner_node_->IsInShadowTree()) {
+    if (IsHTMLStyleElement(owner_node_) || IsSVGStyleElement(owner_node_))
+      return true;
+    if (IsHTMLLinkElement(owner_node_) &&
+        ToHTMLLinkElement(owner_node_)->IsImport())
+      return !IsAlternate();
+  }
+
+  if (!owner_node_ ||
+      owner_node_->getNodeType() == Node::kProcessingInstructionNode ||
+      !IsHTMLLinkElement(owner_node_) ||
+      !ToHTMLLinkElement(owner_node_)->IsEnabledViaScript()) {
+    if (!title_.IsEmpty() && title_ != current_preferrable_name)
+      return false;
+  }
+
+  if (IsAlternate() && title_.IsEmpty())
+    return false;
+
+  return true;
 }
 
 void CSSStyleSheet::Trace(blink::Visitor* visitor) {

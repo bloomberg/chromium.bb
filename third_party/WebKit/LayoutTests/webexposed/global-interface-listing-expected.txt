@@ -1525,6 +1525,7 @@ interface Document : Node
     getter lastModified
     getter linkColor
     getter links
+    getter moreStyleSheets
     getter onabort
     getter onauxclick
     getter onbeforecopy
@@ -1709,6 +1710,7 @@ interface Document : Node
     setter domain
     setter fgColor
     setter linkColor
+    setter moreStyleSheets
     setter onabort
     setter onauxclick
     setter onbeforecopy
@@ -6757,6 +6759,7 @@ interface ShadowRoot : DocumentFragment
     getter host
     getter innerHTML
     getter mode
+    getter moreStyleSheets
     getter pictureInPictureElement
     getter pointerLockElement
     getter styleSheets
@@ -6765,6 +6768,7 @@ interface ShadowRoot : DocumentFragment
     method elementsFromPoint
     method getSelection
     setter innerHTML
+    setter moreStyleSheets
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
