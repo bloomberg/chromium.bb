@@ -273,14 +273,10 @@ noback math \x215e 12456-34-1256 ⅞ 7/8
 noback math \x2151 16-34-246 ⅑ 1/9
 noback math \x2152 16-34-16-3456 ⅒ 1/10
 
-# phonèmes français de l'alphabet phonétique international
-noback sign \X0283 156         # ʃ - esh - voiceless postalveolar fricative
-noback sign \X0292 2346        # ʒ - ezh - voiced postalveolar fricative
-noback sign \X0272 123456      # ɲ - left-tail n (at left) - voiced palatal nasal
-# sign \X025B 345       # ɛ - epsilon - open-mid front unrounded vowel - Ligne commentée car conflit avec l'alphabet grec, à prendre en compte dans vos transcriptions.
-noback sign \X0251 16          # ɑ - script a - open back unrounded vowel
-noback sign \X0254 126         # ɔ - open o - open-mid back rounded vowel
-noback sign \X00F8 1256        # ø - slashed o - close-mid front rounded vowel
-noback sign \X0259 26          # ə - schwa - mid central vowel
-noback sign \X0265 256-125     # ɥ - turned h - voiced labial-palatal approximant
-noback sign \X0303 4-12456     # ̃  - tilde above - nasalized
+# Alphabet phonétique international
+include IPA-unicode-range.uti
+# ajouts issus de la table IPA.utb :
+# Conflit avec une autre table ? noback sign \X00F8 1256 # ø - slashed o - close-mid front rounded vowel
+# Conflit avec une autre table ? noback sign \X00E6 146  # æ - ash - near-open front unrounded vowel
+# ATTENTION ! Le symbole ci-dessous est très utilisé en phonétique (son anglais 'th' dans 'the' par exemple) mais le code braille phonétique entre en conflit avec la lettre grecque thêta.
+# sign \X03B8 46-1456   # θ - theta - voiceless dental fricative (WARNING: greek letter)
