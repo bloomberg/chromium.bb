@@ -84,6 +84,7 @@
     },
     {
       name: "AnimationWorklet",
+      origin_trial_feature_name: "AnimationWorklet",
       status: "experimental",
     },
     {
