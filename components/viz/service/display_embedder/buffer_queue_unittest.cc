@@ -12,10 +12,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,12 +115,10 @@ class BufferQueueTest : public ::testing::Test {
  public:
   BufferQueueTest() : doublebuffering_(true), first_frame_(true) {}
 
-  void SetUp() override {
-    InitWithContext(cc::TestWebGraphicsContext3D::Create());
-  }
+  void SetUp() override { InitWithContext(TestWebGraphicsContext3D::Create()); }
 
-  void InitWithContext(std::unique_ptr<cc::TestWebGraphicsContext3D> context) {
-    context_provider_ = cc::TestContextProvider::Create(std::move(context));
+  void InitWithContext(std::unique_ptr<TestWebGraphicsContext3D> context) {
+    context_provider_ = TestContextProvider::Create(std::move(context));
     context_provider_->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
     mock_output_surface_ = new MockBufferQueue(context_provider_->ContextGL(),
@@ -203,7 +201,7 @@ class BufferQueueTest : public ::testing::Test {
     return true;
   }
 
-  scoped_refptr<cc::TestContextProvider> context_provider_;
+  scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BufferQueue> output_surface_;
   MockBufferQueue* mock_output_surface_;
@@ -223,7 +221,7 @@ GLuint CreateImageDefault() {
   return ++id;
 }
 
-class MockedContext : public cc::TestWebGraphicsContext3D {
+class MockedContext : public TestWebGraphicsContext3D {
  public:
   MockedContext() {
     ON_CALL(*this, createImageCHROMIUM(_, _, _, _))
@@ -243,19 +241,19 @@ class BufferQueueMockedContextTest : public BufferQueueTest {
  public:
   void SetUp() override {
     context_ = new MockedContext();
-    InitWithContext(std::unique_ptr<cc::TestWebGraphicsContext3D>(context_));
+    InitWithContext(std::unique_ptr<TestWebGraphicsContext3D>(context_));
   }
 
  protected:
   MockedContext* context_;
 };
 
-scoped_refptr<cc::TestContextProvider> CreateMockedContextProvider(
+scoped_refptr<TestContextProvider> CreateMockedContextProvider(
     MockedContext** context) {
   std::unique_ptr<MockedContext> owned_context(new MockedContext);
   *context = owned_context.get();
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create(std::move(owned_context));
+  scoped_refptr<TestContextProvider> context_provider =
+      TestContextProvider::Create(std::move(owned_context));
   context_provider->BindToCurrentThread();
   return context_provider;
 }
@@ -273,7 +271,7 @@ std::unique_ptr<BufferQueue> CreateBufferQueue(
 
 TEST(BufferQueueStandaloneTest, FboInitialization) {
   MockedContext* context;
-  scoped_refptr<cc::TestContextProvider> context_provider =
+  scoped_refptr<TestContextProvider> context_provider =
       CreateMockedContextProvider(&context);
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager(
       new StubGpuMemoryBufferManager);
@@ -294,7 +292,7 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
     GLenum target = targets[i];
 
     MockedContext* context;
-    scoped_refptr<cc::TestContextProvider> context_provider =
+    scoped_refptr<TestContextProvider> context_provider =
         CreateMockedContextProvider(&context);
     std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager(
         new StubGpuMemoryBufferManager);
@@ -322,8 +320,8 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
 }
 
 TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> context_provider =
+      TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager;
   std::unique_ptr<BufferQueue> output_surface;

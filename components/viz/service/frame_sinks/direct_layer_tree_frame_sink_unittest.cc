@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
-#include "cc/test/fake_output_surface.h"
-#include "cc/test/test_context_provider.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -22,7 +20,9 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +68,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         display_size_(1920, 1080),
         display_rect_(display_size_),
         support_manager_(&frame_sink_manager_),
-        context_provider_(cc::TestContextProvider::Create()) {
-    auto display_output_surface = cc::FakeOutputSurface::Create3d();
+        context_provider_(TestContextProvider::Create()) {
+    auto display_output_surface = FakeOutputSurface::Create3d();
     display_output_surface_ = display_output_surface.get();
 
     begin_frame_source_ = std::make_unique<BackToBackBeginFrameSource>(
@@ -134,8 +134,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
   TestSharedBitmapManager bitmap_manager_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
-  scoped_refptr<cc::TestContextProvider> context_provider_;
-  cc::FakeOutputSurface* display_output_surface_ = nullptr;
+  scoped_refptr<TestContextProvider> context_provider_;
+  FakeOutputSurface* display_output_surface_ = nullptr;
   std::unique_ptr<BackToBackBeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   cc::FakeLayerTreeFrameSinkClient layer_tree_frame_sink_client_;

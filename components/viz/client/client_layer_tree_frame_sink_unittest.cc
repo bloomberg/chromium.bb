@@ -12,8 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
-#include "cc/test/test_context_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -53,8 +53,7 @@ TEST(ClientLayerTreeFrameSinkTest,
   base::Thread bg_thread("BG Thread");
   bg_thread.Start();
 
-  scoped_refptr<cc::TestContextProvider> provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   TestGpuMemoryBufferManager test_gpu_memory_buffer_manager;
 
   mojom::CompositorFrameSinkPtrInfo sink_info;

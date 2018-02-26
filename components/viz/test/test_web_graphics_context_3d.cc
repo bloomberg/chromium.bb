@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,19 +16,19 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
-#include "cc/test/test_context_support.h"
+#include "components/viz/test/test_context_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-namespace cc {
+namespace viz {
 
 static unsigned s_context_id = 1;
 
 const GLuint TestWebGraphicsContext3D::kExternalTextureId = 1337;
 
-static base::LazyInstance<base::Lock>::Leaky
-    g_shared_namespace_lock = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::Lock>::Leaky g_shared_namespace_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 TestWebGraphicsContext3D::Namespace*
     TestWebGraphicsContext3D::shared_namespace_ = nullptr;
@@ -37,8 +37,7 @@ TestWebGraphicsContext3D::Namespace::Namespace()
     : next_buffer_id(1),
       next_image_id(1),
       next_texture_id(1),
-      next_renderbuffer_id(1) {
-}
+      next_renderbuffer_id(1) {}
 
 TestWebGraphicsContext3D::Namespace::~Namespace() {
   g_shared_namespace_lock.Get().AssertAcquired();
@@ -90,8 +89,9 @@ void TestWebGraphicsContext3D::CreateNamespace() {
   }
 }
 
-void TestWebGraphicsContext3D::reshapeWithScaleFactor(
-    int width, int height, float scale_factor) {
+void TestWebGraphicsContext3D::reshapeWithScaleFactor(int width,
+                                                      int height,
+                                                      float scale_factor) {
   reshape_called_ = true;
   width_ = width;
   height_ = height;
@@ -102,57 +102,47 @@ bool TestWebGraphicsContext3D::isContextLost() {
   return context_lost_;
 }
 
-GLenum TestWebGraphicsContext3D::checkFramebufferStatus(
-    GLenum target) {
+GLenum TestWebGraphicsContext3D::checkFramebufferStatus(GLenum target) {
   if (context_lost_)
     return GL_FRAMEBUFFER_UNDEFINED_OES;
   return GL_FRAMEBUFFER_COMPLETE;
 }
 
-GLint TestWebGraphicsContext3D::getUniformLocation(
-    GLuint program,
-    const GLchar* name) {
+GLint TestWebGraphicsContext3D::getUniformLocation(GLuint program,
+                                                   const GLchar* name) {
   return 0;
 }
 
-GLsizeiptr TestWebGraphicsContext3D::getVertexAttribOffset(
-    GLuint index,
-    GLenum pname) {
+GLsizeiptr TestWebGraphicsContext3D::getVertexAttribOffset(GLuint index,
+                                                           GLenum pname) {
   return 0;
 }
 
-GLboolean TestWebGraphicsContext3D::isBuffer(
-    GLuint buffer) {
+GLboolean TestWebGraphicsContext3D::isBuffer(GLuint buffer) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isEnabled(
-    GLenum cap) {
+GLboolean TestWebGraphicsContext3D::isEnabled(GLenum cap) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isFramebuffer(
-    GLuint framebuffer) {
+GLboolean TestWebGraphicsContext3D::isFramebuffer(GLuint framebuffer) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isProgram(
-    GLuint program) {
+GLboolean TestWebGraphicsContext3D::isProgram(GLuint program) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isRenderbuffer(
-    GLuint renderbuffer) {
+GLboolean TestWebGraphicsContext3D::isRenderbuffer(GLuint renderbuffer) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isShader(
-    GLuint shader) {
+GLboolean TestWebGraphicsContext3D::isShader(GLuint shader) {
   return false;
 }
 
-GLboolean TestWebGraphicsContext3D::isTexture(
-    GLuint texture) {
+GLboolean TestWebGraphicsContext3D::isTexture(GLuint texture) {
   return false;
 }
 
@@ -161,14 +151,12 @@ void TestWebGraphicsContext3D::genBuffers(GLsizei count, GLuint* ids) {
     ids[i] = NextBufferId();
 }
 
-void TestWebGraphicsContext3D::genFramebuffers(
-    GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::genFramebuffers(GLsizei count, GLuint* ids) {
   for (int i = 0; i < count; ++i)
     ids[i] = NextFramebufferId();
 }
 
-void TestWebGraphicsContext3D::genRenderbuffers(
-    GLsizei count, GLuint* ids) {
+void TestWebGraphicsContext3D::genRenderbuffers(GLsizei count, GLuint* ids) {
   for (int i = 0; i < count; ++i)
     ids[i] = NextRenderbufferId();
 }
@@ -300,8 +288,8 @@ void TestWebGraphicsContext3D::useProgram(GLuint program) {
     ADD_FAILURE() << "useProgram called on unknown program " << program;
 }
 
-void TestWebGraphicsContext3D::bindFramebuffer(
-    GLenum target, GLuint framebuffer) {
+void TestWebGraphicsContext3D::bindFramebuffer(GLenum target,
+                                               GLuint framebuffer) {
   base::AutoLock lock_for_framebuffer_access(namespace_->lock);
   if (framebuffer != 0 &&
       framebuffer_set_.find(framebuffer) == framebuffer_set_.end()) {
@@ -314,14 +302,13 @@ void TestWebGraphicsContext3D::bindFramebuffer(
   }
 }
 
-void TestWebGraphicsContext3D::bindRenderbuffer(
-      GLenum target, GLuint renderbuffer) {
+void TestWebGraphicsContext3D::bindRenderbuffer(GLenum target,
+                                                GLuint renderbuffer) {
   if (!renderbuffer)
     return;
   base::AutoLock lock_for_renderbuffer_access(namespace_->lock);
-  if (renderbuffer != 0 &&
-      namespace_->renderbuffer_set.find(renderbuffer) ==
-          namespace_->renderbuffer_set.end()) {
+  if (renderbuffer != 0 && namespace_->renderbuffer_set.find(renderbuffer) ==
+                               namespace_->renderbuffer_set.end()) {
     ADD_FAILURE() << "bindRenderbuffer called with unknown renderbuffer";
   } else if ((renderbuffer >> 16) != context_id_) {
     ADD_FAILURE()
@@ -329,8 +316,7 @@ void TestWebGraphicsContext3D::bindRenderbuffer(
   }
 }
 
-void TestWebGraphicsContext3D::bindTexture(
-    GLenum target, GLuint texture_id) {
+void TestWebGraphicsContext3D::bindTexture(GLenum target, GLuint texture_id) {
   if (times_bind_texture_succeeds_ >= 0) {
     if (!times_bind_texture_succeeds_) {
       loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -347,8 +333,7 @@ void TestWebGraphicsContext3D::bindTexture(
   used_textures_.insert(texture_id);
 }
 
-GLuint TestWebGraphicsContext3D::BoundTextureId(
-    GLenum target) {
+GLuint TestWebGraphicsContext3D::BoundTextureId(GLenum target) {
   return texture_targets_.BoundTexture(target);
 }
 
@@ -370,7 +355,9 @@ void TestWebGraphicsContext3D::CheckTextureIsBound(GLenum target) {
   DCHECK(BoundTextureId(target));
 }
 
-GLuint TestWebGraphicsContext3D::createQueryEXT() { return 1u; }
+GLuint TestWebGraphicsContext3D::createQueryEXT() {
+  return 1u;
+}
 
 void TestWebGraphicsContext3D::endQueryEXT(GLenum target) {
   if (times_end_query_succeeds_ >= 0) {
@@ -382,18 +369,15 @@ void TestWebGraphicsContext3D::endQueryEXT(GLenum target) {
   }
 }
 
-void TestWebGraphicsContext3D::getQueryObjectuivEXT(
-    GLuint query,
-    GLenum pname,
-    GLuint* params) {
+void TestWebGraphicsContext3D::getQueryObjectuivEXT(GLuint query,
+                                                    GLenum pname,
+                                                    GLuint* params) {
   // If the context is lost, behave as if result is available.
   if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
     *params = 1;
 }
 
-void TestWebGraphicsContext3D::getIntegerv(
-    GLenum pname,
-    GLint* value) {
+void TestWebGraphicsContext3D::getIntegerv(GLenum pname, GLint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
     *value = max_texture_size_;
   else if (pname == GL_ACTIVE_TEXTURE)
@@ -510,10 +494,11 @@ GLint TestWebGraphicsContext3D::getAttribLocation(GLuint program,
   return 0;
 }
 
-GLenum TestWebGraphicsContext3D::getError() { return GL_NO_ERROR; }
+GLenum TestWebGraphicsContext3D::getError() {
+  return GL_NO_ERROR;
+}
 
-void TestWebGraphicsContext3D::bindBuffer(GLenum target,
-                                          GLuint buffer) {
+void TestWebGraphicsContext3D::bindBuffer(GLenum target, GLuint buffer) {
   bound_buffer_[target] = buffer;
   if (!buffer)
     return;
@@ -594,8 +579,7 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
   return buffers[bound_buffer_[target]]->pixels.get();
 }
 
-GLboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
-    GLenum target) {
+GLboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(GLenum target) {
   base::AutoLock lock(namespace_->lock);
   std::unordered_map<unsigned, std::unique_ptr<Buffer>>& buffers =
       namespace_->buffers;
@@ -620,8 +604,7 @@ GLuint TestWebGraphicsContext3D::createImageCHROMIUM(ClientBuffer buffer,
   return image_id;
 }
 
-void TestWebGraphicsContext3D::destroyImageCHROMIUM(
-    GLuint id) {
+void TestWebGraphicsContext3D::destroyImageCHROMIUM(GLuint id) {
   RetireImageId(id);
   base::AutoLock lock(namespace_->lock);
   std::unordered_set<unsigned>& images = namespace_->images;
@@ -791,9 +774,8 @@ TestWebGraphicsContext3D::TextureTargets::TextureTargets() {
 
 TestWebGraphicsContext3D::TextureTargets::~TextureTargets() = default;
 
-void TestWebGraphicsContext3D::TextureTargets::BindTexture(
-    GLenum target,
-    GLuint id) {
+void TestWebGraphicsContext3D::TextureTargets::BindTexture(GLenum target,
+                                                           GLuint id) {
   // Make sure this is a supported target by seeing if it was bound to before.
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   bound_textures_[target] = id;
@@ -821,19 +803,16 @@ void TestWebGraphicsContext3D::getTexParameteriv(GLenum target,
     *value = it->second;
 }
 
-void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(
-    GLuint id) {
+void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(GLuint id) {
   // Bind zero to any targets that the id is bound to.
   for (TargetTextureMap::iterator it = bound_textures_.begin();
-       it != bound_textures_.end();
-       it++) {
+       it != bound_textures_.end(); it++) {
     if (it->second == id)
       it->second = 0;
   }
 }
 
-GLuint TestWebGraphicsContext3D::TextureTargets::BoundTexture(
-    GLenum target) {
+GLuint TestWebGraphicsContext3D::TextureTargets::BoundTexture(GLenum target) {
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   return bound_textures_[target];
 }
@@ -846,4 +825,4 @@ TestWebGraphicsContext3D::Image::Image() = default;
 
 TestWebGraphicsContext3D::Image::~Image() = default;
 
-}  // namespace cc
+}  // namespace viz

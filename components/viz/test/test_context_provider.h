@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_CONTEXT_PROVIDER_H_
-#define CC_TEST_TEST_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_TEST_TEST_CONTEXT_PROVIDER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,9 +16,9 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/test/test_context_support.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
+#include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -27,18 +27,15 @@ namespace skia_bindings {
 class GrContextForGLES2Interface;
 }
 
-namespace cc {
+namespace viz {
 class TestWebGraphicsContext3D;
 class TestGLES2Interface;
 
 class TestContextProvider
     : public base::RefCountedThreadSafe<TestContextProvider>,
-      public viz::ContextProvider,
-      public viz::RasterContextProvider {
+      public ContextProvider,
+      public RasterContextProvider {
  public:
-  typedef base::Callback<std::unique_ptr<TestWebGraphicsContext3D>(void)>
-      CreateCallback;
-
   static scoped_refptr<TestContextProvider> Create();
   // Creates a worker context provider that can be used on any thread. This is
   // equivalent to: Create(); BindToCurrentThread().
@@ -54,7 +51,7 @@ class TestContextProvider
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
 
-  // viz::ContextProvider / viz::RasterContextProvider implementation.
+  // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;
   void Release() const override;
   gpu::ContextResult BindToCurrentThread() override;
@@ -64,11 +61,11 @@ class TestContextProvider
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
-  viz::ContextCacheController* CacheController() override;
+  ContextCacheController* CacheController() override;
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
-  void AddObserver(viz::ContextLostObserver* obs) override;
-  void RemoveObserver(viz::ContextLostObserver* obs) override;
+  void AddObserver(ContextLostObserver* obs) override;
+  void RemoveObserver(ContextLostObserver* obs) override;
 
   TestWebGraphicsContext3D* TestContext3d();
 
@@ -108,7 +105,7 @@ class TestContextProvider
   std::unique_ptr<TestGLES2Interface> context_gl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
-  std::unique_ptr<viz::ContextCacheController> cache_controller_;
+  std::unique_ptr<ContextCacheController> cache_controller_;
   const bool support_locking_ ALLOW_UNUSED_TYPE;
   bool bound_ = false;
 
@@ -119,13 +116,13 @@ class TestContextProvider
 
   base::Lock context_lock_;
 
-  base::ObserverList<viz::ContextLostObserver> observers_;
+  base::ObserverList<ContextLostObserver> observers_;
 
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProvider);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_CONTEXT_PROVIDER_H_

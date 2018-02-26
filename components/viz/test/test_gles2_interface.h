@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_GLES2_INTERFACE_H_
-#define CC_TEST_TEST_GLES2_INTERFACE_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_
+#define COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_
 
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 
-namespace cc {
+namespace viz {
+
 class TestWebGraphicsContext3D;
 
 class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
@@ -167,6 +168,6 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   TestWebGraphicsContext3D* test_context_ = nullptr;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_GLES2_INTERFACE_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_

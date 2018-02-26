@@ -30,12 +30,12 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tile_task_manager.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -296,10 +296,11 @@ class RasterBufferProviderTest
 
  private:
   void Create3dResourceProvider() {
-    context_provider_ = TestContextProvider::Create();
+    context_provider_ = viz::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    worker_context_provider_ = TestContextProvider::CreateWorker();
-    TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
+    worker_context_provider_ = viz::TestContextProvider::CreateWorker();
+    viz::TestWebGraphicsContext3D* context3d =
+        context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         context_provider_.get(), &shared_bitmap_manager_,
@@ -317,8 +318,8 @@ class RasterBufferProviderTest
   }
 
  protected:
-  scoped_refptr<TestContextProvider> context_provider_;
-  scoped_refptr<TestContextProvider> worker_context_provider_;
+  scoped_refptr<viz::TestContextProvider> context_provider_;
+  scoped_refptr<viz::TestContextProvider> worker_context_provider_;
   std::unique_ptr<ResourcePool> pool_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
@@ -352,7 +353,7 @@ TEST_P(RasterBufferProviderTest, FailedMapResource) {
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_BITMAP)
     return;
 
-  TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
+  viz::TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
   context3d->set_times_map_buffer_chromium_succeeds(0);
   AppendTask(0u);
   ScheduleTasks();

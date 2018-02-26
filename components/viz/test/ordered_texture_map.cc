@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/ordered_texture_map.h"
+#include "components/viz/test/ordered_texture_map.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 
 #include "base/logging.h"
-#include "cc/test/test_texture.h"
+#include "components/viz/test/test_texture.h"
 
-namespace cc {
+namespace viz {
 
 OrderedTextureMap::OrderedTextureMap() = default;
 
 OrderedTextureMap::~OrderedTextureMap() = default;
 
-void OrderedTextureMap::Append(GLuint id,
-                               scoped_refptr<TestTexture> texture) {
+void OrderedTextureMap::Append(GLuint id, scoped_refptr<TestTexture> texture) {
   DCHECK(texture.get());
   DCHECK(!ContainsId(id));
 
@@ -26,8 +25,7 @@ void OrderedTextureMap::Append(GLuint id,
   ordered_textures_.push_back(id);
 }
 
-void OrderedTextureMap::Replace(GLuint id,
-                                scoped_refptr<TestTexture> texture) {
+void OrderedTextureMap::Replace(GLuint id, scoped_refptr<TestTexture> texture) {
   DCHECK(texture.get());
   DCHECK(ContainsId(id));
 
@@ -48,7 +46,9 @@ void OrderedTextureMap::Remove(GLuint id) {
   ordered_textures_.erase(list_it);
 }
 
-size_t OrderedTextureMap::Size() { return ordered_textures_.size(); }
+size_t OrderedTextureMap::Size() {
+  return ordered_textures_.size();
+}
 
 bool OrderedTextureMap::ContainsId(GLuint id) {
   return textures_.find(id) != textures_.end();
@@ -66,4 +66,4 @@ GLuint OrderedTextureMap::IdAt(size_t index) {
   return ordered_textures_[index];
 }
 
-}  // namespace cc
+}  // namespace viz

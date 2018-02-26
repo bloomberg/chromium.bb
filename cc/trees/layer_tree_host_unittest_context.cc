@@ -29,15 +29,15 @@
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_utils.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/media.h"
@@ -92,8 +92,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       override {
     base::AutoLock lock(context3d_lock_);
 
-    std::unique_ptr<TestWebGraphicsContext3D> compositor_context3d =
-        TestWebGraphicsContext3D::Create();
+    std::unique_ptr<viz::TestWebGraphicsContext3D> compositor_context3d =
+        viz::TestWebGraphicsContext3D::Create();
     if (context_should_support_io_surface_) {
       compositor_context3d->set_have_extension_io_surface(true);
       compositor_context3d->set_have_extension_egl_image(true);
@@ -109,7 +109,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     return LayerTreeTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate,
-        TestContextProvider::Create(std::move(compositor_context3d)),
+        viz::TestContextProvider::Create(std::move(compositor_context3d)),
         std::move(worker_context_provider));
   }
 
@@ -162,7 +162,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   // Protects use of context3d_ so LoseContext and
   // CreateDisplayLayerTreeFrameSink can both use it on different threads.
   base::Lock context3d_lock_;
-  TestWebGraphicsContext3D* context3d_;
+  viz::TestWebGraphicsContext3D* context3d_;
 
   int times_to_fail_create_;
   int times_to_lose_during_commit_;
@@ -882,7 +882,7 @@ class LayerTreeHostContextTestDontUseLostResources
   LayerTreeHostContextTestDontUseLostResources() : lost_context_(false) {
     context_should_support_io_surface_ = true;
 
-    child_context_provider_ = TestContextProvider::Create();
+    child_context_provider_ = viz::TestContextProvider::Create();
     auto result = child_context_provider_->BindToCurrentThread();
     CHECK_EQ(result, gpu::ContextResult::kSuccess);
     shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
@@ -1041,7 +1041,7 @@ class LayerTreeHostContextTestDontUseLostResources
   FakeContentLayerClient client_;
   bool lost_context_;
 
-  scoped_refptr<TestContextProvider> child_context_provider_;
+  scoped_refptr<viz::TestContextProvider> child_context_provider_;
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<ResourceProvider> child_resource_provider_;
 

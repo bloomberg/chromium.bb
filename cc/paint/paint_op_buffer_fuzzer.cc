@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #include "cc/paint/paint_op_buffer.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/test/transfer_cache_test_helper.h"
+#include "components/viz/test/test_context_provider.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -19,8 +19,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   SkImageInfo image_info = SkImageInfo::MakeN32(
       kRasterDimension, kRasterDimension, kOpaque_SkAlphaType);
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create();
+  scoped_refptr<viz::TestContextProvider> context_provider =
+      viz::TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       context_provider->GrContext(), SkBudgeted::kYes, image_info);

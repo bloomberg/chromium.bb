@@ -193,7 +193,7 @@ component("gles2_implementation") {
 }
 
 source_set("raster_sources") {
-  # External code should depend on this via //gpu/raster above rather than
+  # External code should depend on this via //gpu:raster above rather than
   # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]

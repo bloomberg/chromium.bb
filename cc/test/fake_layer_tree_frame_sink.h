@@ -13,15 +13,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/test/test_context_provider.h"
-#include "cc/test/test_gles2_interface.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 
 namespace viz {
 class BeginFrameSource;
@@ -42,7 +42,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
     // Calls a function on both the compositor and worker context.
     template <typename... Args>
-    Builder& AllContexts(void (TestWebGraphicsContext3D::*fn)(Args...),
+    Builder& AllContexts(void (viz::TestWebGraphicsContext3D::*fn)(Args...),
                          Args... args) {
       DCHECK(compositor_context_provider_);
       DCHECK(worker_context_provider_);
@@ -55,42 +55,45 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
     }
 
    private:
-    scoped_refptr<TestContextProvider> compositor_context_provider_;
-    scoped_refptr<TestContextProvider> worker_context_provider_;
+    scoped_refptr<viz::TestContextProvider> compositor_context_provider_;
+    scoped_refptr<viz::TestContextProvider> worker_context_provider_;
   };
 
   ~FakeLayerTreeFrameSink() override;
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3d() {
-    return base::WrapUnique(new FakeLayerTreeFrameSink(
-        TestContextProvider::Create(), TestContextProvider::CreateWorker()));
+    return base::WrapUnique(
+        new FakeLayerTreeFrameSink(viz::TestContextProvider::Create(),
+                                   viz::TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
-      scoped_refptr<TestContextProvider> context_provider) {
+      scoped_refptr<viz::TestContextProvider> context_provider) {
     return base::WrapUnique(new FakeLayerTreeFrameSink(
-        std::move(context_provider), TestContextProvider::CreateWorker()));
+        std::move(context_provider), viz::TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
-      scoped_refptr<TestContextProvider> context_provider,
-      scoped_refptr<TestContextProvider> worker_context_provider) {
+      scoped_refptr<viz::TestContextProvider> context_provider,
+      scoped_refptr<viz::TestContextProvider> worker_context_provider) {
     return base::WrapUnique(new FakeLayerTreeFrameSink(
         std::move(context_provider), std::move(worker_context_provider)));
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
-      std::unique_ptr<TestWebGraphicsContext3D> context) {
+      std::unique_ptr<viz::TestWebGraphicsContext3D> context) {
     return base::WrapUnique(new FakeLayerTreeFrameSink(
-        TestContextProvider::Create(std::move(context)),
-        TestContextProvider::CreateWorker()));
+        viz::TestContextProvider::Create(std::move(context)),
+        viz::TestContextProvider::CreateWorker()));
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForGpuRasterization(
       int max_msaa_samples = 0) {
     return Builder()
-        .AllContexts(&TestWebGraphicsContext3D::set_gpu_rasterization, true)
-        .AllContexts(&TestWebGraphicsContext3D::SetMaxSamples, max_msaa_samples)
+        .AllContexts(&viz::TestWebGraphicsContext3D::set_gpu_rasterization,
+                     true)
+        .AllContexts(&viz::TestWebGraphicsContext3D::SetMaxSamples,
+                     max_msaa_samples)
         .Build();
   }
 

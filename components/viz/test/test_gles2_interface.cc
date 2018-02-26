@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_gles2_interface.h"
+#include "components/viz/test/test_gles2_interface.h"
 
 #include "base/logging.h"
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
-namespace cc {
+namespace viz {
 
 TestGLES2Interface::TestGLES2Interface() = default;
 TestGLES2Interface::~TestGLES2Interface() = default;
@@ -98,8 +98,8 @@ void TestGLES2Interface::GetShaderPrecisionFormat(GLenum shadertype,
                                                   GLenum precisiontype,
                                                   GLint* range,
                                                   GLint* precision) {
-  test_context_->getShaderPrecisionFormat(
-      shadertype, precisiontype, range, precision);
+  test_context_->getShaderPrecisionFormat(shadertype, precisiontype, range,
+                                          precision);
 }
 
 void TestGLES2Interface::Viewport(GLint x,
@@ -132,8 +132,8 @@ void TestGLES2Interface::DrawElements(GLenum mode,
                                       GLsizei count,
                                       GLenum type,
                                       const void* indices) {
-  test_context_->drawElements(
-      mode, count, type, reinterpret_cast<intptr_t>(indices));
+  test_context_->drawElements(mode, count, type,
+                              reinterpret_cast<intptr_t>(indices));
 }
 
 void TestGLES2Interface::ClearColor(GLclampf red,
@@ -147,11 +147,17 @@ void TestGLES2Interface::ClearStencil(GLint s) {
   test_context_->clearStencil(s);
 }
 
-void TestGLES2Interface::Clear(GLbitfield mask) { test_context_->clear(mask); }
+void TestGLES2Interface::Clear(GLbitfield mask) {
+  test_context_->clear(mask);
+}
 
-void TestGLES2Interface::Flush() { test_context_->flush(); }
+void TestGLES2Interface::Flush() {
+  test_context_->flush();
+}
 
-void TestGLES2Interface::Finish() { test_context_->finish(); }
+void TestGLES2Interface::Finish() {
+  test_context_->finish();
+}
 
 void TestGLES2Interface::ShallowFinishCHROMIUM() {
   test_context_->shallowFinishCHROMIUM();
@@ -161,9 +167,13 @@ void TestGLES2Interface::ShallowFlushCHROMIUM() {
   test_context_->shallowFlushCHROMIUM();
 }
 
-void TestGLES2Interface::Enable(GLenum cap) { test_context_->enable(cap); }
+void TestGLES2Interface::Enable(GLenum cap) {
+  test_context_->enable(cap);
+}
 
-void TestGLES2Interface::Disable(GLenum cap) { test_context_->disable(cap); }
+void TestGLES2Interface::Disable(GLenum cap) {
+  test_context_->disable(cap);
+}
 
 void TestGLES2Interface::BindRenderbuffer(GLenum target, GLuint buffer) {
   test_context_->bindRenderbuffer(target, buffer);
@@ -190,15 +200,8 @@ void TestGLES2Interface::TexImage2D(GLenum target,
                                     GLenum format,
                                     GLenum type,
                                     const void* pixels) {
-  test_context_->texImage2D(target,
-                            level,
-                            internalformat,
-                            width,
-                            height,
-                            border,
-                            format,
-                            type,
-                            pixels);
+  test_context_->texImage2D(target, level, internalformat, width, height,
+                            border, format, type, pixels);
 }
 
 void TestGLES2Interface::TexSubImage2D(GLenum target,
@@ -210,8 +213,8 @@ void TestGLES2Interface::TexSubImage2D(GLenum target,
                                        GLenum format,
                                        GLenum type,
                                        const void* pixels) {
-  test_context_->texSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  test_context_->texSubImage2D(target, level, xoffset, yoffset, width, height,
+                               format, type, pixels);
 }
 
 void TestGLES2Interface::TexStorage2DEXT(GLenum target,
@@ -241,16 +244,16 @@ void TestGLES2Interface::FramebufferRenderbuffer(GLenum target,
                                                  GLenum attachment,
                                                  GLenum renderbuffertarget,
                                                  GLuint renderbuffer) {
-  test_context_->framebufferRenderbuffer(
-      target, attachment, renderbuffertarget, renderbuffer);
+  test_context_->framebufferRenderbuffer(target, attachment, renderbuffertarget,
+                                         renderbuffer);
 }
 void TestGLES2Interface::FramebufferTexture2D(GLenum target,
                                               GLenum attachment,
                                               GLenum textarget,
                                               GLuint texture,
                                               GLint level) {
-  test_context_->framebufferTexture2D(
-      target, attachment, textarget, texture, level);
+  test_context_->framebufferTexture2D(target, attachment, textarget, texture,
+                                      level);
 }
 
 void TestGLES2Interface::RenderbufferStorage(GLenum target,
@@ -268,16 +271,16 @@ void TestGLES2Interface::CompressedTexImage2D(GLenum target,
                                               GLint border,
                                               GLsizei image_size,
                                               const void* data) {
-  test_context_->compressedTexImage2D(
-      target, level, internalformat, width, height, border, image_size, data);
+  test_context_->compressedTexImage2D(target, level, internalformat, width,
+                                      height, border, image_size, data);
 }
 
 GLuint TestGLES2Interface::CreateImageCHROMIUM(ClientBuffer buffer,
                                                GLsizei width,
                                                GLsizei height,
                                                GLenum internalformat) {
-  return test_context_->createImageCHROMIUM(
-      buffer, width, height, internalformat);
+  return test_context_->createImageCHROMIUM(buffer, width, height,
+                                            internalformat);
 }
 
 void TestGLES2Interface::DestroyImageCHROMIUM(GLuint image_id) {
@@ -383,4 +386,4 @@ void TestGLES2Interface::set_test_context(TestWebGraphicsContext3D* context) {
   InitializeTestContext(test_context_);
 }
 
-}  // namespace cc
+}  // namespace viz

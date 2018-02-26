@@ -4,8 +4,8 @@
 
 #include "components/viz/service/display/shader.h"
 
-#include "cc/test/test_gles2_interface.h"
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -15,9 +15,9 @@ namespace viz {
 TEST(ShaderTest, HighpThresholds) {
   // The test context always uses a mediump precision of 10 bits which
   // corresponds to a native highp threshold of 2^10 = 1024
-  std::unique_ptr<cc::TestWebGraphicsContext3D> test_context =
-      cc::TestWebGraphicsContext3D::Create();
-  cc::TestGLES2Interface test_gl;
+  std::unique_ptr<TestWebGraphicsContext3D> test_context =
+      TestWebGraphicsContext3D::Create();
+  TestGLES2Interface test_gl;
   test_gl.set_test_context(test_context.get());
 
   int threshold_cache = 0;

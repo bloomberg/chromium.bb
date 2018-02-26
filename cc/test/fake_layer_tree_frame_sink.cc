@@ -17,8 +17,8 @@
 namespace cc {
 
 FakeLayerTreeFrameSink::Builder::Builder()
-    : compositor_context_provider_(TestContextProvider::Create()),
-      worker_context_provider_(TestContextProvider::CreateWorker()) {}
+    : compositor_context_provider_(viz::TestContextProvider::Create()),
+      worker_context_provider_(viz::TestContextProvider::CreateWorker()) {}
 
 FakeLayerTreeFrameSink::Builder::~Builder() = default;
 

@@ -18,6 +18,7 @@
 
 namespace viz {
 class BeginFrameSource;
+class TestContextProvider;
 class TestLayerTreeFrameSink;
 }
 
@@ -30,7 +31,6 @@ class LayerTreeHostForTesting;
 class LayerTreeTestLayerTreeFrameSinkClient;
 class Proxy;
 class SingleKeyframeEffectAnimation;
-class TestContextProvider;
 class TestTaskGraphRunner;
 
 // Creates the virtual viewport layer hierarchy under the given root_layer.
@@ -210,7 +210,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;
   base::CancelableClosure timeout_;
-  scoped_refptr<TestContextProvider> compositor_contexts_;
+  scoped_refptr<viz::TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_;
 };

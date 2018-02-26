@@ -32,13 +32,13 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1452,8 +1452,8 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
+  std::unique_ptr<viz::TestWebGraphicsContext3D> context =
+      viz::TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   ResetLayerTreeFrameSink(FakeLayerTreeFrameSink::Create3d(std::move(context)));
 
@@ -1487,8 +1487,8 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
+  std::unique_ptr<viz::TestWebGraphicsContext3D> context =
+      viz::TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   ResetLayerTreeFrameSink(FakeLayerTreeFrameSink::Create3d(std::move(context)));
 

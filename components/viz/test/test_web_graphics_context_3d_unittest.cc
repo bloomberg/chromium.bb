@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_web_graphics_context_3d.h"
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 static bool check_parameter_value(TestWebGraphicsContext3D* context,
@@ -24,8 +24,8 @@ static bool check_parameter_value(TestWebGraphicsContext3D* context,
 
 static void expect_default_parameter_values(TestWebGraphicsContext3D* context) {
   EXPECT_TRUE(check_parameter_value(context, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-  EXPECT_TRUE(check_parameter_value(
-      context, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+  EXPECT_TRUE(check_parameter_value(context, GL_TEXTURE_MIN_FILTER,
+                                    GL_NEAREST_MIPMAP_LINEAR));
   EXPECT_TRUE(
       check_parameter_value(context, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   EXPECT_TRUE(
@@ -75,15 +75,15 @@ TEST(TestWebGraphicsContext3DTest,
   // texture.
   GLuint second_texture = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, second_texture);
-  context->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-  context->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                         GL_LINEAR_MIPMAP_NEAREST);
+  context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                         GL_LINEAR_MIPMAP_LINEAR);
 
-  EXPECT_TRUE(check_parameter_value(
-      context.get(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
-  EXPECT_TRUE(check_parameter_value(
-      context.get(), GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+  EXPECT_TRUE(check_parameter_value(context.get(), GL_TEXTURE_MIN_FILTER,
+                                    GL_LINEAR_MIPMAP_NEAREST));
+  EXPECT_TRUE(check_parameter_value(context.get(), GL_TEXTURE_MAG_FILTER,
+                                    GL_LINEAR_MIPMAP_LINEAR));
 
   // Get texture parameters on the first texture and verify they are still
   // intact.
@@ -110,4 +110,4 @@ TEST(TestWebGraphicsContext3DTest, UseMultipleRenderAndFramebuffers) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

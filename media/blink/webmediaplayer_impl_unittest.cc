@@ -22,7 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/test/test_context_provider.h"
+#include "components/viz/test/test_context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/mock_media_log.h"
@@ -265,7 +265,7 @@ class WebMediaPlayerImplTest : public testing::Test {
                                                   &web_frame_client_,
                                                   nullptr,
                                                   nullptr)),
-        context_provider_(cc::TestContextProvider::Create()),
+        context_provider_(viz::TestContextProvider::Create()),
         audio_parameters_(TestAudioParameters::Normal()) {
     media_thread_.StartAndWaitForTesting();
   }
@@ -311,7 +311,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         std::move(provider),
         base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
                    base::Unretained(this)),
-        cc::TestContextProvider::Create(),
+        viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
         base::BindRepeating(pip_surface_info_cb_.Get()));
 
@@ -517,7 +517,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   blink::WebView* web_view_;
   blink::WebLocalFrame* web_local_frame_;
 
-  scoped_refptr<cc::TestContextProvider> context_provider_;
+  scoped_refptr<viz::TestContextProvider> context_provider_;
   StrictMock<MockVideoFrameCompositor>* compositor_;
 
   std::unique_ptr<media::UrlIndex> url_index_;
