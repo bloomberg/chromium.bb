@@ -40,10 +40,9 @@ void V8EmbedderGraphBuilder::VisitPersistentHandle(
       isolate_, v8::Persistent<v8::Object>::Cast(*value));
   ScriptWrappable* traceable = ToScriptWrappable(v8_value);
   if (traceable) {
-    // Add v8_value => traceable edge.
+    Graph::Node* wrapper = GraphNode(v8_value);
     Graph::Node* graph_node =
-        GraphNode(traceable, traceable->NameInHeapSnapshot());
-    graph_->AddEdge(GraphNode(v8_value), graph_node);
+        GraphNode(traceable, traceable->NameInHeapSnapshot(), wrapper);
     // Visit traceable members. This will also add traceable => v8_value edge.
     ParentScope parent(this, graph_node);
     traceable->TraceWrappers(this);
@@ -65,8 +64,8 @@ void V8EmbedderGraphBuilder::Visit(
   // Add an edge from the current parent to this object.
   // Also push the object to the worklist in order to process its members.
   const void* traceable = wrapper_descriptor.traceable;
-  Graph::Node* graph_node =
-      GraphNode(traceable, wrapper_descriptor.name_callback(traceable));
+  Graph::Node* graph_node = GraphNode(
+      traceable, wrapper_descriptor.name_callback(traceable), nullptr);
   graph_->AddEdge(current_parent_, graph_node);
   if (!visited_.Contains(traceable)) {
     visited_.insert(traceable);
@@ -90,14 +89,15 @@ v8::EmbedderGraph::Node* V8EmbedderGraphBuilder::GraphNode(
 
 v8::EmbedderGraph::Node* V8EmbedderGraphBuilder::GraphNode(
     Traceable traceable,
-    const char* name) const {
+    const char* name,
+    v8::EmbedderGraph::Node* wrapper) const {
   auto iter = graph_node_.find(traceable);
   if (iter != graph_node_.end())
     return iter->value;
   // Ownership of the new node is transferred to the graph_.
   // graph_node_.at(tracable) is valid for all BuildEmbedderGraph execution.
-  auto node =
-      graph_->AddNode(std::unique_ptr<Graph::Node>(new EmbedderNode(name)));
+  auto node = graph_->AddNode(
+      std::unique_ptr<Graph::Node>(new EmbedderNode(name, wrapper)));
   graph_node_.insert(traceable, node);
   return node;
 }

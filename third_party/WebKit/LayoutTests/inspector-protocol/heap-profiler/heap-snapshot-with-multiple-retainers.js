@@ -43,9 +43,6 @@
   for (var iter = eventListener.retainers(); iter.hasNext(); iter.next()) {
     var path = helper.firstRetainingPath(iter.retainer.node());
     path = path.map(node => node.name());
-    // Limit the path until the Window object to keep the test robust
-    // against root node name changes.
-    path = path.slice(0, path.indexOf('Window'));
     retainingPaths.push(path.join(', '));
   }
 

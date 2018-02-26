@@ -1,15 +1,18 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(
-      `Test retaining path for an event listener.`);
+      `Test that DOM node and its JS wrapper appear as a single node.`);
 
   await session.evaluate(`
-    function addEventListenerAndRunTest() {
-      function myEventListener(e) {
-        console.log('myEventListener');
+    var retainer = null;
+    function run() {
+      function leaking() {
+        console.log('leaking');
       }
-      document.body.addEventListener('click', myEventListener, true);
+      var div = document.createElement('div');
+      div.addEventListener('click', leaking, true);
+      retainer = div;
     }
-    addEventListenerAndRunTest();
+    run();
   `);
 
   var Helper = await testRunner.loadScript('resources/heap-snapshot-common.js');
@@ -18,7 +21,7 @@
   var snapshot = await helper.takeHeapSnapshot();
   var node;
   for (var it = snapshot._allNodes(); it.hasNext(); it.next()) {
-    if (it.node.type() === 'closure' && it.node.name() === 'myEventListener') {
+    if (it.node.type() === 'closure' && it.node.name() === 'leaking') {
       node = it.node;
       break;
     }
@@ -26,7 +29,7 @@
   if (node)
     testRunner.log('SUCCESS: found ' + node.name());
   else
-    return testRunner.fail('cannot find myEventListener node');
+    return testRunner.fail('cannot find leaking node');
 
   var retainers = helper.firstRetainingPath(node).map(node => node.name());
   var actual = retainers.join(', ');
