@@ -25,6 +25,12 @@
     defined(__mips_dsp) && (__mips_dsp_rev >= 2)
 #define SIMD_MIPS_DSPR2 1
 #endif
+
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#define SIMD_NEON 1
+#endif
+
 // avoid confusion with Mac OS X's math library (Carbon)
 #if defined(__APPLE__)
 #undef FloatToFixed

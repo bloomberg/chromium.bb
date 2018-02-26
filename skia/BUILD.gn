@@ -281,6 +281,11 @@ component("skia") {
       "ext/convolver_mips_dspr2.cc",
       "ext/convolver_mips_dspr2.h",
     ]
+  } else if (current_cpu == "arm" || current_cpu == "arm64") {
+    sources += [
+      "ext/convolver_neon.cc",
+      "ext/convolver_neon.h",
+    ]
   }
 
   # The imported Skia gni source paths are made absolute by gn.
