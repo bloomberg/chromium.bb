@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_component_updater_service_provider_delegate.h"
 
+#include "base/bind.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
 
 namespace chromeos {
