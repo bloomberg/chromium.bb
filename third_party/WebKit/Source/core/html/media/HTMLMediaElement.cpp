@@ -2645,21 +2645,21 @@ void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
 void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
   // Per spec, consult current playback position to check for changing time.
   double media_time = CurrentPlaybackPosition();
-  TimeTicks now = CurrentTimeTicks();
-
-  bool have_not_recently_fired_timeupdate =
-      (now - last_time_update_event_wall_time_) >= kMaxTimeupdateEventFrequency;
   bool media_time_has_progressed =
       media_time != last_time_update_event_media_time_;
 
-  // Non-periodic timeupdate events must always fire as mandated by the spec,
-  // otherwise we shouldn't fire duplicate periodic timeupdate events when the
-  // movie time hasn't changed.
-  if (!periodic_event ||
-      (have_not_recently_fired_timeupdate && media_time_has_progressed)) {
-    ScheduleEvent(EventTypeNames::timeupdate);
-    last_time_update_event_wall_time_ = now;
-    last_time_update_event_media_time_ = media_time;
+  if (periodic_event && !media_time_has_progressed)
+    return;
+
+  ScheduleEvent(EventTypeNames::timeupdate);
+
+  last_time_update_event_media_time_ = media_time;
+
+  // Ensure periodic event fires 250ms from _this_ event. Restarting the timer
+  // cancels pending callbacks.
+  if (!periodic_event && playback_progress_timer_.IsActive()) {
+    playback_progress_timer_.StartRepeating(kMaxTimeupdateEventFrequency,
+                                            FROM_HERE);
   }
 }
 
@@ -3169,11 +3169,6 @@ void HTMLMediaElement::TimeChanged() {
       !GetWebMediaPlayer()->Seeking())
     FinishSeek();
 
-  // Always call scheduleTimeupdateEvent when the media engine reports a time
-  // discontinuity, it will only queue a 'timeupdate' event if we haven't
-  // already posted one at the current movie time.
-  ScheduleTimeupdateEvent(false);
-
   double now = CurrentPlaybackPosition();
   double dur = duration();
 
@@ -3188,6 +3183,10 @@ void HTMLMediaElement::TimeChanged() {
       //  abort these steps.
       Seek(EarliestPossiblePosition());
     } else {
+      // Queue a task to fire a simple event named timeupdate at the media
+      // element.
+      ScheduleTimeupdateEvent(false);
+
       // If the media element has still ended playback, and the direction of
       // playback is still forwards, and paused is false,
       if (!paused_) {

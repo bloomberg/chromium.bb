@@ -182,14 +182,9 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
 
   // 5 - If the time was reached through the usual monotonic increase of the
   // current playback position during normal playback, and if the user agent
-  // has not fired a timeupdate event at the element in the past 15 to 250ms
-  // and is not still running event handlers for such an event, then the user
-  // agent must queue a task to fire a simple event named timeupdate at the
-  // element. (In the other cases, such as explicit seeks, relevant events get
-  // fired as part of the overall process of changing the current playback
-  // position.)
-  if (!media_element.seeking() && last_seek_time < last_time)
-    media_element.ScheduleTimeupdateEvent(true);
+  // has not fired a timeupdate event at the element in the past 15 to 250ms...
+  // NOTE: periodic 'timeupdate' scheduling is handled by HTMLMediaElement in
+  // PlaybackProgressTimerFired().
 
   // Explicitly cache vector sizes, as their content is constant from here.
   size_t missed_cues_size = missed_cues.size();
