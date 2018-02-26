@@ -36,6 +36,7 @@ namespace content {
 class DOMStorageContextImpl;
 class LocalStorageContextMojo;
 class SessionStorageContextMojo;
+class SessionStorageNamespaceImpl;
 
 // This is owned by Storage Partition and encapsulates all its dom storage
 // state.
@@ -101,6 +102,14 @@ class CONTENT_EXPORT DOMStorageContextWrapper
     return mojo_task_runner_.get();
   }
 
+  scoped_refptr<SessionStorageNamespaceImpl> MaybeGetExistingNamespace(
+      const std::string& namespace_id) const;
+
+  void AddNamespace(const std::string& namespace_id,
+                    SessionStorageNamespaceImpl* session_namespace);
+
+  void RemoveNamespace(const std::string& namespace_id);
+
   // Called on UI thread when the system is under memory pressure.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -116,6 +125,18 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   LocalStorageContextMojo* mojo_state_ = nullptr;
   SessionStorageContextMojo* mojo_session_state_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> mojo_task_runner_;
+
+  // Since the tab restore code keeps a reference to the session namespaces
+  // of recently closed tabs (see sessions::ContentPlatformSpecificTabData and
+  // sessions::TabRestoreService), a SessionStorageNamespaceImpl can outlive the
+  // destruction of the browser window. A session restore can also happen
+  // without the browser context being shutdown or destroyed in between. The
+  // design of SessionStorageNamespaceImpl assumes there is only one object per
+  // namespace. A session restore creates new objects for all tabs while the
+  // Profile wasn't destructed. This map allows the restored session to re-use
+  // the SessionStorageNamespaceImpl objects that are still alive thanks to the
+  // sessions component.
+  std::map<std::string, SessionStorageNamespaceImpl*> alive_namespaces_;
 
   base::FilePath legacy_localstorage_path_;
 
