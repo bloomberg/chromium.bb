@@ -80,12 +80,14 @@ class NonSfiUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
   }
 
  private:
-  bool CreateTemporaryFile(base::FilePath* path) override {
+  bool CreateResultsFile(base::FilePath* path) override {
     if (!base::CreateNewTempDirectory(base::FilePath::StringType(), path))
       return false;
     *path = path->AppendASCII("test_results.xml");
     return true;
   }
+
+  bool CreateTemporaryFile(base::FilePath* path) override { return false; }
 
   bool GetTests(std::vector<base::TestIdentifier>* output) override {
     base::FilePath output_file;
@@ -112,7 +114,8 @@ class NonSfiUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
 
   base::CommandLine GetCommandLineForChildGTestProcess(
       const std::vector<std::string>& test_names,
-      const base::FilePath& output_file) override {
+      const base::FilePath& output_file,
+      const base::FilePath& flag_file) override {
     base::CommandLine cmd_line(test_path_);
     cmd_line.AppendSwitchPath(
         switches::kTestLauncherOutput, output_file);
