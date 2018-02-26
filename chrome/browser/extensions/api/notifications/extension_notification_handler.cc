@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/notifications.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -105,6 +107,14 @@ void ExtensionNotificationHandler::OnClick(
             EventRouter::USER_GESTURE_ENABLED, std::move(args));
 
   std::move(completed_closure).Run();
+}
+
+void ExtensionNotificationHandler::DisableNotifications(Profile* profile,
+                                                        const GURL& origin) {
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION, origin.host());
+  NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
+      notifier_id, false /* enabled */);
 }
 
 void ExtensionNotificationHandler::SendEvent(
