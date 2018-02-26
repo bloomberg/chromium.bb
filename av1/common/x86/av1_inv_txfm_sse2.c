@@ -824,10 +824,12 @@ void idct32_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   output[16] = _mm_subs_epi16(x8[15], x8[16]);
 }
 
-void idct64_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
+void idct64_low32_new_sse2(const __m128i *input, __m128i *output,
+                           int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m128i __rounding = _mm_set1_epi32(1 << (INV_COS_BIT - 1));
+  const __m128i zeros = _mm_setzero_si128();
 
   __m128i cospi_p63_m01 = pair_set_epi16(cospi[63], -cospi[1]);
   __m128i cospi_p01_p63 = pair_set_epi16(cospi[1], cospi[63]);
@@ -919,69 +921,69 @@ void idct64_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   // stage 1
   __m128i x1[64];
   x1[0] = input[0];
-  x1[1] = input[32];
+  x1[1] = zeros;
   x1[2] = input[16];
-  x1[3] = input[48];
+  x1[3] = zeros;
   x1[4] = input[8];
-  x1[5] = input[40];
+  x1[5] = zeros;
   x1[6] = input[24];
-  x1[7] = input[56];
+  x1[7] = zeros;
   x1[8] = input[4];
-  x1[9] = input[36];
+  x1[9] = zeros;
   x1[10] = input[20];
-  x1[11] = input[52];
+  x1[11] = zeros;
   x1[12] = input[12];
-  x1[13] = input[44];
+  x1[13] = zeros;
   x1[14] = input[28];
-  x1[15] = input[60];
+  x1[15] = zeros;
   x1[16] = input[2];
-  x1[17] = input[34];
+  x1[17] = zeros;
   x1[18] = input[18];
-  x1[19] = input[50];
+  x1[19] = zeros;
   x1[20] = input[10];
-  x1[21] = input[42];
+  x1[21] = zeros;
   x1[22] = input[26];
-  x1[23] = input[58];
+  x1[23] = zeros;
   x1[24] = input[6];
-  x1[25] = input[38];
+  x1[25] = zeros;
   x1[26] = input[22];
-  x1[27] = input[54];
+  x1[27] = zeros;
   x1[28] = input[14];
-  x1[29] = input[46];
+  x1[29] = zeros;
   x1[30] = input[30];
-  x1[31] = input[62];
+  x1[31] = zeros;
   x1[32] = input[1];
-  x1[33] = input[33];
+  x1[33] = zeros;
   x1[34] = input[17];
-  x1[35] = input[49];
+  x1[35] = zeros;
   x1[36] = input[9];
-  x1[37] = input[41];
+  x1[37] = zeros;
   x1[38] = input[25];
-  x1[39] = input[57];
+  x1[39] = zeros;
   x1[40] = input[5];
-  x1[41] = input[37];
+  x1[41] = zeros;
   x1[42] = input[21];
-  x1[43] = input[53];
+  x1[43] = zeros;
   x1[44] = input[13];
-  x1[45] = input[45];
+  x1[45] = zeros;
   x1[46] = input[29];
-  x1[47] = input[61];
+  x1[47] = zeros;
   x1[48] = input[3];
-  x1[49] = input[35];
+  x1[49] = zeros;
   x1[50] = input[19];
-  x1[51] = input[51];
+  x1[51] = zeros;
   x1[52] = input[11];
-  x1[53] = input[43];
+  x1[53] = zeros;
   x1[54] = input[27];
-  x1[55] = input[59];
+  x1[55] = zeros;
   x1[56] = input[7];
-  x1[57] = input[39];
+  x1[57] = zeros;
   x1[58] = input[23];
-  x1[59] = input[55];
+  x1[59] = zeros;
   x1[60] = input[15];
-  x1[61] = input[47];
+  x1[61] = zeros;
   x1[62] = input[31];
-  x1[63] = input[63];
+  x1[63] = zeros;
 
   // stage 2
   __m128i x2[64];
@@ -1017,6 +1019,7 @@ void idct64_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   x2[29] = x1[29];
   x2[30] = x1[30];
   x2[31] = x1[31];
+
   btf_16_sse2(cospi_p63_m01, cospi_p01_p63, x1[32], x1[63], x2[32], x2[63]);
   btf_16_sse2(cospi_p31_m33, cospi_p33_p31, x1[33], x1[62], x2[33], x2[62]);
   btf_16_sse2(cospi_p47_m17, cospi_p17_p47, x1[34], x1[61], x2[34], x2[61]);
@@ -2323,14 +2326,14 @@ static void iidentity32_new_sse2(const __m128i *input, __m128i *output,
   }
 }
 
-static void iidentity64_new_sse2(const __m128i *input, __m128i *output,
-                                 int8_t cos_bit) {
+static void iidentity64_low32_new_sse2(const __m128i *input, __m128i *output,
+                                       int8_t cos_bit) {
   (void)cos_bit;
   const __m128i scale = _mm_set1_epi16(4 * NewSqrt2);
   const __m128i rounding = _mm_set1_epi16(1 << (NewSqrt2Bits - 1));
   const __m128i one = _mm_set1_epi16(1);
   const __m128i scale_rounding = _mm_unpacklo_epi16(scale, rounding);
-  for (int i = 0; i < 64; ++i) {
+  for (int i = 0; i < 32; ++i) {
     __m128i a_lo = _mm_unpacklo_epi16(input[i], one);
     __m128i a_hi = _mm_unpackhi_epi16(input[i], one);
     __m128i b_lo = _mm_madd_epi16(a_lo, scale_rounding);
@@ -2338,6 +2341,12 @@ static void iidentity64_new_sse2(const __m128i *input, __m128i *output,
     __m128i c_lo = _mm_srai_epi32(b_lo, NewSqrt2Bits);
     __m128i c_hi = _mm_srai_epi32(b_hi, NewSqrt2Bits);
     output[i] = _mm_packs_epi32(c_lo, c_hi);
+  }
+  // TODO(binpengsmail@gmail.com):
+  // Potential optimization to drop this store to output
+  // by adding dedicate functions for inv txfm include identity type
+  for (int i = 32; i < 64; ++i) {
+    output[i] = _mm_setzero_si128();
   }
 }
 
@@ -2404,7 +2413,7 @@ static const transform_1d_sse2
       { idct8_new_sse2, iadst8_new_sse2, iidentity8_new_sse2 },
       { idct16_new_sse2, iadst16_new_sse2, iidentity16_new_sse2 },
       { idct32_new_sse2, NULL, iidentity32_new_sse2 },
-      { idct64_new_sse2, NULL, iidentity64_new_sse2 },
+      { idct64_low32_new_sse2, NULL, iidentity64_low32_new_sse2 },
     };
 
 // 1D functions process process 4 pixels at one time.
@@ -2414,8 +2423,8 @@ static const transform_1d_sse2
       { idct4_w4_new_sse2, iadst4_w4_new_sse2, iidentity4_w4_new_sse2 },
       { idct8_w4_new_sse2, iadst8_w4_new_sse2, iidentity8_new_sse2 },
       { idct16_w4_new_sse2, iadst16_w4_new_sse2, iidentity16_w4_new_sse2 },
-      { idct32_new_sse2, NULL, iidentity32_new_sse2 },
-      { idct64_new_sse2, NULL, iidentity64_new_sse2 },
+      { NULL, NULL, NULL },
+      { NULL, NULL, NULL },
     };
 
 void av1_lowbd_inv_txfm2d_add_4x4_sse2(const int32_t *input, uint8_t *output,
@@ -2541,7 +2550,8 @@ static INLINE void lowbd_inv_txfm2d_add_internal_sse2(const int32_t *input,
   const int txfm_size_col = tx_size_wide[tx_size];
   const int txfm_size_row = tx_size_high[tx_size];
   const int buf_size_w_div8 = txfm_size_col >> 3;
-  const int buf_size_h_div8 = txfm_size_row >> 3;
+  const int buf_size_h_div8 = AOMMIN(32, txfm_size_row) >> 3;
+  const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
   const transform_1d_sse2 row_txfm =
@@ -2555,14 +2565,14 @@ static INLINE void lowbd_inv_txfm2d_add_internal_sse2(const int32_t *input,
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
   for (int i = 0; i < buf_size_h_div8; i++) {
     __m128i buf0[64];
-    const int32_t *input_row = input + i * txfm_size_col * 8;
-    for (int j = 0; j < buf_size_w_div8; ++j) {
+    const int32_t *input_row = input + i * input_stride * 8;
+    for (int j = 0; j < AOMMIN(4, buf_size_w_div8); ++j) {
       __m128i *buf0_cur = buf0 + j * 8;
-      load_buffer_32bit_to_16bit(input_row + j * 8, txfm_size_col, buf0_cur, 8);
+      load_buffer_32bit_to_16bit(input_row + j * 8, input_stride, buf0_cur, 8);
       transpose_16bit_8x8(buf0_cur, buf0_cur);
     }
     if (rect_type == 1 || rect_type == -1) {
-      round_shift_sse2(buf0, buf0, txfm_size_col);  // rect special code
+      round_shift_sse2(buf0, buf0, input_stride);  // rect special code
     }
     row_txfm(buf0, buf0, cos_bit_row);
     round_shift_16bit(buf0, txfm_size_col, shift[0]);
@@ -2612,20 +2622,9 @@ void av1_lowbd_inv_txfm2d_add_64x64_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
   // TODO(binpengsmail@gmail.com):
-  // Potential optimization to take advantage of zeros outside
-  // of the top-left block, and same for all other TX_SIZE with 64
-
-  // Remap 32x32 input into a modified 64x64 by:
-  // - Copying over these values in top-left 32x32 locations.
-  // - Setting the rest of the locations to 0.
-  DECLARE_ALIGNED(32, int32_t, mod_input[64 * 64]);
-  for (int row = 0; row < 32; ++row) {
-    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
-    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
-  }
-  memset(mod_input + 32 * 64, 0, 32 * 64 * sizeof(*mod_input));
-  lowbd_inv_txfm2d_add_internal_sse2(mod_input, output, stride, tx_type,
-                                     TX_64X64);
+  // To add dedicate functions for inv txfm include identity type
+  // Should be simpler and faster then the general one
+  lowbd_inv_txfm2d_add_internal_sse2(input, output, stride, tx_type, TX_64X64);
 }
 
 void av1_lowbd_inv_txfm2d_add_4x8_sse2(const int32_t *input, uint8_t *output,
@@ -2729,29 +2728,13 @@ void av1_lowbd_inv_txfm2d_add_32x16_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_32x64_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
-  // Remap 32x32 input into a modified 32x64 input by:
-  // - Copying over these values in top-left 32x32 locations.
-  // - Setting the rest of the locations to 0.
-  DECLARE_ALIGNED(32, int32_t, mod_input[32 * 64]);
-  memcpy(mod_input, input, 32 * 32 * sizeof(*mod_input));
-  memset(mod_input + 32 * 32, 0, 32 * 32 * sizeof(*mod_input));
-  lowbd_inv_txfm2d_add_internal_sse2(mod_input, output, stride, tx_type,
-                                     TX_32X64);
+  lowbd_inv_txfm2d_add_internal_sse2(input, output, stride, tx_type, TX_32X64);
 }
 
 void av1_lowbd_inv_txfm2d_add_64x32_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
-  // Remap 32x32 input into a modified 64x32 by:
-  // - Copying over these values in top-left 32x32 locations.
-  // - Setting the rest of the locations to 0.
-  DECLARE_ALIGNED(32, int32_t, mod_input[64 * 32]);
-  for (int row = 0; row < 32; ++row) {
-    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
-    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
-  }
-  lowbd_inv_txfm2d_add_internal_sse2(mod_input, output, stride, tx_type,
-                                     TX_64X32);
+  lowbd_inv_txfm2d_add_internal_sse2(input, output, stride, tx_type, TX_64X32);
 }
 
 void av1_lowbd_inv_txfm2d_add_4x16_sse2(const int32_t *input, uint8_t *output,
@@ -2860,29 +2843,13 @@ void av1_lowbd_inv_txfm2d_add_32x8_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_16x64_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
-  // Remap 16x32 input into a modified 16x64 input by:
-  // - Copying over these values in top-left 16x32 locations.
-  // - Setting the rest of the locations to 0.
-  DECLARE_ALIGNED(32, int32_t, mod_input[16 * 64]);
-  memcpy(mod_input, input, 16 * 32 * sizeof(*mod_input));
-  memset(mod_input + 16 * 32, 0, 16 * 32 * sizeof(*mod_input));
-  lowbd_inv_txfm2d_add_internal_sse2(mod_input, output, stride, tx_type,
-                                     TX_16X64);
+  lowbd_inv_txfm2d_add_internal_sse2(input, output, stride, tx_type, TX_16X64);
 }
 
 void av1_lowbd_inv_txfm2d_add_64x16_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
-  // Remap 32x16 input into a modified 64x16 by:
-  // - Copying over these values in top-left 32x16 locations.
-  // - Setting the rest of the locations to 0.
-  DECLARE_ALIGNED(32, int32_t, mod_input[64 * 16]);
-  for (int row = 0; row < 16; ++row) {
-    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
-    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
-  }
-  lowbd_inv_txfm2d_add_internal_sse2(mod_input, output, stride, tx_type,
-                                     TX_64X16);
+  lowbd_inv_txfm2d_add_internal_sse2(input, output, stride, tx_type, TX_64X16);
 }
 
 typedef void (*inv_txfm_func)(const int32_t *input, uint8_t *output, int stride,
