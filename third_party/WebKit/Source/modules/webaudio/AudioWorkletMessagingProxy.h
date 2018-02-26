@@ -38,7 +38,6 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
       WorkerThread*,
       AudioWorkletHandler*,
       const String& name,
-      float sample_rate,
       MessagePortChannel,
       scoped_refptr<SerializedScriptValue> node_options);
 

@@ -16,7 +16,8 @@ class AudioWorkletObjectProxy final
     : public ThreadedWorkletObjectProxy {
  public:
   AudioWorkletObjectProxy(AudioWorkletMessagingProxy*,
-                          ParentFrameTaskRunners*);
+                          ParentFrameTaskRunners*,
+                          float context_sample_rate);
 
   // Implements WorkerReportingProxy.
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
@@ -28,6 +29,8 @@ class AudioWorkletObjectProxy final
       GetAudioWorkletMessagingProxyWeakPtr();
 
   CrossThreadPersistent<AudioWorkletGlobalScope> global_scope_;
+
+  float context_sample_rate_;
 };
 
 }  // namespace blink

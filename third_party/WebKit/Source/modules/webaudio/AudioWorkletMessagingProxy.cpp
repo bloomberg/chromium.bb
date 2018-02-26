@@ -35,7 +35,6 @@ void AudioWorkletMessagingProxy::CreateProcessor(
           CrossThreadUnretained(GetWorkerThread()),
           CrossThreadUnretained(handler),
           handler->Name(),
-          handler->Context()->sampleRate(),
           std::move(message_port_channel),
           std::move(node_options)));
 }
@@ -44,15 +43,13 @@ void AudioWorkletMessagingProxy::CreateProcessorOnRenderingThread(
     WorkerThread* worker_thread,
     AudioWorkletHandler* handler,
     const String& name,
-    float sample_rate,
     MessagePortChannel message_port_channel,
     scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(worker_thread->IsCurrentThread());
   AudioWorkletGlobalScope* global_scope =
       ToAudioWorkletGlobalScope(worker_thread->GlobalScope());
   AudioWorkletProcessor* processor =
-      global_scope->CreateProcessor(name, sample_rate, message_port_channel,
-                                    node_options);
+      global_scope->CreateProcessor(name, message_port_channel, node_options);
   handler->SetProcessorOnRenderThread(processor);
 }
 
@@ -92,7 +89,8 @@ AudioWorkletMessagingProxy::CreateObjectProxy(
     ParentFrameTaskRunners* parent_frame_task_runners) {
   return std::make_unique<AudioWorkletObjectProxy>(
       static_cast<AudioWorkletMessagingProxy*>(messaging_proxy),
-      parent_frame_task_runners);
+      parent_frame_task_runners,
+      worklet_->GetBaseAudioContext()->sampleRate());
 }
 
 std::unique_ptr<WorkerThread> AudioWorkletMessagingProxy::CreateWorkerThread() {
