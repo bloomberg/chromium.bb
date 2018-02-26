@@ -189,7 +189,7 @@ const mojom::PaymentItemPtr& PaymentRequestSpec::GetTotal(
     PaymentInstrument* selected_instrument) const {
   const mojom::PaymentDetailsModifierPtr* modifier =
       GetApplicableModifier(selected_instrument);
-  return modifier ? (*modifier)->total : details_->total;
+  return modifier && (*modifier)->total ? (*modifier)->total : details_->total;
 }
 
 std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
