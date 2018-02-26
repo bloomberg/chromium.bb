@@ -73,19 +73,6 @@ bool GetProductDetails(
                                     &(product_details->version));
 }
 
-int64_t GetFileOffset(base::File* file) {
-  DCHECK(file);
-  return file->Seek(base::File::FROM_CURRENT, 0LL);
-}
-
-// Returns true if the file is empty, and false if the file is not empty or if
-// there is an error.
-bool IsFileEmpty(base::File* file) {
-  DCHECK(file);
-  int64_t end = file->Seek(base::File::FROM_END, 0LL);
-  return end == 0LL;
-}
-
 // A class with functionality for writing minimal minidump containers to wrap
 // postmortem stability reports.
 // TODO(manzagop): remove this class once Crashpad takes over writing postmortem
@@ -102,16 +89,13 @@ class PostmortemMinidumpWriter {
     WRITE_STATUS_MAX = 3
   };
 
-  PostmortemMinidumpWriter();
+  // |minidump_file| is expected to be empty and a binary stream.
+  PostmortemMinidumpWriter(crashpad::FileWriterInterface* minidump_file);
   ~PostmortemMinidumpWriter();
 
-  // Write to |minidump_file| a minimal minidump that wraps |report|. Returns
+  // Write to |minidump_file_| a minimal minidump that wraps |report|. Returns
   // true on success, false otherwise.
-  // Note: the caller owns |minidump_file| and is responsible for keeping it
-  // valid for this object's lifetime. |minidump_file| is expected to be empty
-  // and a binary stream.
-  bool WriteDump(base::PlatformFile minidump_file,
-                 const crashpad::UUID& client_id,
+  bool WriteDump(const crashpad::UUID& client_id,
                  const crashpad::UUID& report_id,
                  StabilityReport* report);
 
@@ -172,8 +156,8 @@ class PostmortemMinidumpWriter {
   // Storage for the directory during writes.
   std::vector<MINIDUMP_DIRECTORY> directory_;
 
-  // The file to write to. Only valid within the scope of a call to WriteDump.
-  base::File* minidump_file_;
+  // The file to write to.
+  crashpad::FileWriterInterface* minidump_file_;
 
   DISALLOW_COPY_AND_ASSIGN(PostmortemMinidumpWriter);
 };
@@ -184,24 +168,24 @@ void RecordWriteDumpStatus(PostmortemMinidumpWriter::WriteStatus status) {
                             PostmortemMinidumpWriter::WRITE_STATUS_MAX);
 }
 
-PostmortemMinidumpWriter::PostmortemMinidumpWriter()
-    : next_available_byte_(0U), minidump_file_(nullptr) {}
-
-PostmortemMinidumpWriter::~PostmortemMinidumpWriter() {
-  DCHECK_EQ(nullptr, minidump_file_);
+PostmortemMinidumpWriter::PostmortemMinidumpWriter(
+    crashpad::FileWriterInterface* minidump_file)
+    : next_available_byte_(0U), minidump_file_(minidump_file) {
+  DCHECK_NE(nullptr, minidump_file_);
+  DCHECK_EQ(0LL, minidump_file_->SeekGet());
+  DCHECK_EQ(0LL, minidump_file_->Seek(0LL, SEEK_END));
 }
 
+PostmortemMinidumpWriter::~PostmortemMinidumpWriter() {}
+
 bool PostmortemMinidumpWriter::WriteDump(
-    base::PlatformFile minidump_platform_file,
     const crashpad::UUID& client_id,
     const crashpad::UUID& report_id,
     StabilityReport* report) {
-  DCHECK_NE(base::kInvalidPlatformFile, minidump_platform_file);
   DCHECK(report);
 
   DCHECK_EQ(0U, next_available_byte_);
   DCHECK(directory_.empty());
-  DCHECK_EQ(nullptr, minidump_file_);
 
   // Ensure the report contains the crasher's product details.
   ProductDetails product_details = {};
@@ -218,27 +202,10 @@ bool PostmortemMinidumpWriter::WriteDump(
   report->mutable_global_data()->erase(kStabilityPlatform);
   report->mutable_global_data()->erase(kStabilityVersion);
 
-  // We do not own |minidump_platform_file|, but we want to rely on base::File's
-  // API, and so we need to duplicate it.
-  HANDLE duplicated_handle;
-  BOOL duplicate_success = ::DuplicateHandle(
-      ::GetCurrentProcess(), minidump_platform_file, ::GetCurrentProcess(),
-      &duplicated_handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
-  if (!duplicate_success) {
-    RecordWriteDumpStatus(FAILED);
-    return false;
-  }
-  base::File minidump_file(duplicated_handle);
-  DCHECK(minidump_file.IsValid());
-  minidump_file_ = &minidump_file;
-  DCHECK_EQ(0LL, GetFileOffset(minidump_file_));
-  DCHECK(IsFileEmpty(minidump_file_));
-
   // Write the minidump, then reset members.
   bool success = WriteDumpImpl(*report, client_id, report_id, product_details);
   next_available_byte_ = 0U;
   directory_.clear();
-  minidump_file_ = nullptr;
 
   RecordWriteDumpStatus(success ? SUCCESS : FAILED);
   return success;
@@ -383,16 +350,11 @@ bool PostmortemMinidumpWriter::Allocate(size_t size_bytes, FilePosition* pos) {
 }
 
 bool PostmortemMinidumpWriter::SeekCursor(FilePosition destination) {
-  DCHECK_NE(nullptr, minidump_file_);
-  DCHECK(minidump_file_->IsValid());
-
   // Validate the write does not extend past the allocated space.
   if (destination > next_available_byte_)
     return false;
 
-  int64_t new_pos = minidump_file_->Seek(base::File::FROM_BEGIN,
-                                         static_cast<int64_t>(destination));
-  return new_pos != -1;
+  return minidump_file_->SeekSet(destination);
 }
 
 template <class DataType>
@@ -406,9 +368,7 @@ bool PostmortemMinidumpWriter::WriteBytes(FilePosition pos,
                                           size_t size_bytes,
                                           const char* data) {
   DCHECK(data);
-  DCHECK_NE(nullptr, minidump_file_);
-  DCHECK(minidump_file_->IsValid());
-  DCHECK_EQ(static_cast<int64_t>(pos), GetFileOffset(minidump_file_));
+  DCHECK_EQ(static_cast<int64_t>(pos), minidump_file_->SeekGet());
 
   // Validate the write does not extend past the next available byte.
   base::CheckedNumeric<FilePosition> pos_end = pos;
@@ -416,14 +376,7 @@ bool PostmortemMinidumpWriter::WriteBytes(FilePosition pos,
   if (!pos_end.IsValid() || pos_end.ValueOrDie() > next_available_byte_)
     return false;
 
-  int size_bytes_signed = static_cast<int>(size_bytes);
-  CHECK_LE(0, size_bytes_signed);
-
-  int written_bytes =
-      minidump_file_->WriteAtCurrentPos(data, size_bytes_signed);
-  if (written_bytes < 0)
-    return false;
-  return static_cast<size_t>(written_bytes) == size_bytes;
+  return minidump_file_->Write(data, size_bytes);
 }
 
 template <class DataType>
@@ -482,14 +435,14 @@ void PostmortemMinidumpWriter::RegisterDirectoryEntry(uint32_t stream_type,
 
 }  // namespace
 
-bool WritePostmortemDump(base::PlatformFile minidump_file,
+bool WritePostmortemDump(crashpad::FileWriterInterface* minidump_file,
                          const crashpad::UUID& client_id,
                          const crashpad::UUID& report_id,
                          StabilityReport* report) {
   DCHECK(report);
 
-  PostmortemMinidumpWriter writer;
-  return writer.WriteDump(minidump_file, client_id, report_id, report);
+  PostmortemMinidumpWriter writer(minidump_file);
+  return writer.WriteDump(client_id, report_id, report);
 }
 
 }  // namespace browser_watcher

@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "base/files/file.h"
 #include "components/browser_watcher/stability_report.pb.h"
+#include "third_party/crashpad/crashpad/util/file/file_writer.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
 
 namespace browser_watcher {
@@ -20,7 +20,7 @@ namespace browser_watcher {
 // Note: the caller owns |minidump_file| and is responsible for keeping it valid
 // for this function's duration. |minidump_file| is expected to be empty
 // and a binary stream.
-bool WritePostmortemDump(base::PlatformFile minidump_file,
+bool WritePostmortemDump(crashpad::FileWriterInterface* minidump_file,
                          const crashpad::UUID& client_id,
                          const crashpad::UUID& report_id,
                          StabilityReport* report);
