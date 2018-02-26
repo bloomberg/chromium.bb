@@ -107,37 +107,52 @@
                                             url(./images/ic_google_2x.png) 2x);
       }
     </style>
+
+    <!--
+      Use the 'consent-description' attribute to annotate all the UI elements
+      that are part of the text the user reads before consenting to the Sync
+      data collection . Similarly, use 'consent-confirmation' on UI elements on
+      which user clicks to indicate consent.
+    -->
+
     <div id="illustration-container"></div>
-    <h1 id="heading">$i18n{syncConfirmationTitle}</h1>
+    <h1 id="heading" consent-description>$i18n{syncConfirmationTitle}</h1>
     <div class="message-container">
       <!-- Container needed to contain the icon in a green circle. -->
       <div id="sync-logo-container" class="logo">
         <iron-icon icon="notification:sync" class="logo">
         </iron-icon>
       </div>
-      <div>$i18n{syncConfirmationChromeSyncBody}</div>
+      <div consent-description>$i18n{syncConfirmationChromeSyncBody}</div>
     </div>
     <div class="message-container">
       <iron-icon icon="image:assistant" id="personalize-logo" class="logo">
       </iron-icon>
-      <div>$i18n{syncConfirmationPersonalizeServicesBody}</div>
+      <div consent-description>
+        $i18n{syncConfirmationPersonalizeServicesBody}
+      </div>
     </div>
     <div class="message-container">
       <div id="googleg-logo" class="logo"></div>
-      <div>$i18n{syncConfirmationGoogleServicesBody}</div>
+      <div consent-description>$i18n{syncConfirmationGoogleServicesBody}</div>
     </div>
     <div class="footer">
       <div class="message-container">
         <iron-icon icon="icons:settings" class="logo"></iron-icon>
-        <div>$i18nRaw{syncConfirmationSyncSettingsLinkBody}</div>
+        <div consent-description consent-confirmation>
+          $i18nRaw{syncConfirmationSyncSettingsLinkBody}
+        </div>
       </div>
       <div class="message-container">
         <div class="logo"><!-- Spacer to line up with other texts --></div>
-        <div>$i18n{syncConfirmationSyncSettingsDescription}</div>
+        <div consent-description>
+          $i18n{syncConfirmationSyncSettingsDescription}
+        </div>
       </div>
     </div>
     <div class="action-container">
-      <paper-button class="primary-action" id="confirmButton" on-tap="onConfirm_">
+      <paper-button class="primary-action" id="confirmButton"
+          on-tap="onConfirm_" consent-confirmation>
         $i18n{syncConfirmationConfirmLabel}
       </paper-button>
       <paper-button class="secondary-action" id="undoButton" on-tap="onUndo_">

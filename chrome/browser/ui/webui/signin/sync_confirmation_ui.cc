@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -15,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
@@ -44,19 +46,16 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     source->AddResourcePath("sync_confirmation.js",
                             IDR_DICE_SYNC_CONFIRMATION_JS);
 
-    source->AddLocalizedString("syncConfirmationChromeSyncBody",
-                               IDS_SYNC_CONFIRMATION_DICE_CHROME_SYNC_MESSAGE);
-    source->AddLocalizedString(
-        "syncConfirmationPersonalizeServicesBody",
-        IDS_SYNC_CONFIRMATION_DICE_PERSONALIZE_SERVICES_BODY);
-    source->AddLocalizedString("syncConfirmationGoogleServicesBody",
-                               IDS_SYNC_CONFIRMATION_DICE_GOOGLE_SERVICES_BODY);
-    source->AddLocalizedString(
-        "syncConfirmationSyncSettingsLinkBody",
-        IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_LINK_BODY);
-    source->AddLocalizedString(
-        "syncConfirmationSyncSettingsDescription",
-        IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_DESCRIPTION);
+    AddStringResource(source, "syncConfirmationChromeSyncBody",
+                      IDS_SYNC_CONFIRMATION_DICE_CHROME_SYNC_MESSAGE);
+    AddStringResource(source, "syncConfirmationPersonalizeServicesBody",
+                      IDS_SYNC_CONFIRMATION_DICE_PERSONALIZE_SERVICES_BODY);
+    AddStringResource(source, "syncConfirmationGoogleServicesBody",
+                      IDS_SYNC_CONFIRMATION_DICE_GOOGLE_SERVICES_BODY);
+    AddStringResource(source, "syncConfirmationSyncSettingsLinkBody",
+                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_LINK_BODY);
+    AddStringResource(source, "syncConfirmationSyncSettingsDescription",
+                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_DESCRIPTION);
 
     title_ids = IDS_SYNC_CONFIRMATION_UNITY_TITLE;
     confirm_button_ids = IDS_SYNC_CONFIRMATION_DICE_CONFIRM_BUTTON_LABEL;
@@ -68,19 +67,18 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
     source->AddBoolean("isSyncAllowed", is_sync_allowed);
 
-    source->AddLocalizedString("syncConfirmationChromeSyncTitle",
-                               IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE);
-    source->AddLocalizedString("syncConfirmationChromeSyncBody",
-                               IDS_SYNC_CONFIRMATION_CHROME_SYNC_MESSAGE);
-    source->AddLocalizedString(
-        "syncConfirmationPersonalizeServicesTitle",
-        IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE);
-    source->AddLocalizedString("syncConfirmationPersonalizeServicesBody",
-                               IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY);
-    source->AddLocalizedString("syncConfirmationSyncSettingsLinkBody",
-                               IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY);
-    source->AddLocalizedString("syncDisabledConfirmationDetails",
-                               IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
+    AddStringResource(source, "syncConfirmationChromeSyncTitle",
+                      IDS_SYNC_CONFIRMATION_CHROME_SYNC_TITLE);
+    AddStringResource(source, "syncConfirmationChromeSyncBody",
+                      IDS_SYNC_CONFIRMATION_CHROME_SYNC_MESSAGE);
+    AddStringResource(source, "syncConfirmationPersonalizeServicesTitle",
+                      IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE);
+    AddStringResource(source, "syncConfirmationPersonalizeServicesBody",
+                      IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY);
+    AddStringResource(source, "syncConfirmationSyncSettingsLinkBody",
+                      IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LINK_BODY);
+    AddStringResource(source, "syncDisabledConfirmationDetails",
+                      IDS_SYNC_DISABLED_CONFIRMATION_DETAILS);
 
     title_ids = AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)
                     ? IDS_SYNC_CONFIRMATION_DICE_TITLE
@@ -98,10 +96,9 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   DCHECK_GE(confirm_button_ids, 0);
   DCHECK_GE(undo_button_ids, 0);
 
-  source->AddLocalizedString("syncConfirmationTitle", title_ids);
-  source->AddLocalizedString("syncConfirmationConfirmLabel",
-                             confirm_button_ids);
-  source->AddLocalizedString("syncConfirmationUndoLabel", undo_button_ids);
+  AddStringResource(source, "syncConfirmationTitle", title_ids);
+  AddStringResource(source, "syncConfirmationConfirmLabel", confirm_button_ids);
+  AddStringResource(source, "syncConfirmationUndoLabel", undo_button_ids);
 
   base::DictionaryValue strings;
   webui::SetLoadTimeDataDefaults(
@@ -111,7 +108,17 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, source);
 }
 
+SyncConfirmationUI::~SyncConfirmationUI() {}
+
 void SyncConfirmationUI::InitializeMessageHandlerWithBrowser(Browser* browser) {
-  web_ui()->AddMessageHandler(
-      std::make_unique<SyncConfirmationHandler>(browser));
+  web_ui()->AddMessageHandler(std::make_unique<SyncConfirmationHandler>(
+      browser, js_localized_string_to_ids_map_));
+}
+
+void SyncConfirmationUI::AddStringResource(content::WebUIDataSource* source,
+                                           const std::string& name,
+                                           int ids) {
+  source->AddLocalizedString(name, ids);
+  js_localized_string_to_ids_map_[base::UTF16ToUTF8(
+      l10n_util::GetStringUTF16(ids))] = ids;
 }

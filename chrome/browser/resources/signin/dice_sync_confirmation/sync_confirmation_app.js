@@ -33,8 +33,9 @@ Polymer({
   },
 
   /** @private */
-  onConfirm_: function() {
-    this.syncConfirmationBrowserProxy_.confirm();
+  onConfirm_: function(e) {
+    this.syncConfirmationBrowserProxy_.confirm(
+        this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
   },
 
   /** @private */
@@ -43,15 +44,41 @@ Polymer({
   },
 
   /** @private */
-  onGoToSettings_: function() {
-    this.syncConfirmationBrowserProxy_.goToSettings();
+  onGoToSettings_: function(e) {
+    this.syncConfirmationBrowserProxy_.goToSettings(
+        this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
   },
 
   /** @private */
   onKeyDown_: function(e) {
     if (e.key == 'Enter' && !/^(A|PAPER-BUTTON)$/.test(e.path[0].tagName)) {
-      this.onConfirm_();
+      this.onConfirm_(e);
       e.preventDefault();
     }
   },
+
+  /**
+   * @param {!Array<!HTMLElement>} path Path of the click event. Must contain
+   *     a consent confirmation element.
+   * @return {string} The text of the consent confirmation element.
+   * @private
+   */
+  getConsentConfirmation_: function(path) {
+    for (var element of path) {
+      if (element.hasAttribute('consent-confirmation'))
+        return element.innerHTML.trim();
+    }
+    assertNotReached('No consent confirmation element found.');
+    return '';
+  },
+
+  /** @return {!Array<string>} Text of the consent description elements. */
+  getConsentDescription_: function() {
+    var consentDescription =
+        Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
+            .filter(element => element.clientWidth * element.clientHeight > 0)
+            .map(element => element.innerHTML.trim());
+    assert(consentDescription);
+    return consentDescription;
+  }
 });

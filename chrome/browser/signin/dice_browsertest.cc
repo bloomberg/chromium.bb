@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -46,6 +47,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -435,6 +437,19 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     // stable state.
     reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
+
+    // TODO(crbug.com/709094, crbug.com/761485): This browsertest exercises
+    // the Sync confirmation dialog and thus triggers consent recording. For
+    // that to happen successfully, UserEventSyncBridge must be ready to
+    // receive events. UserEventSyncBridge initializes asynchronously which
+    // is not a problem for regular usage, but in this browsertest, we must
+    // give it enough time to do so.
+    while (!browser_sync::UserEventServiceFactory::GetForProfile(
+                browser()->profile())
+                ->GetSyncBridge()
+                ->change_processor()
+                ->IsTrackingMetadata())
+      base::RunLoop().RunUntilIdle();
   }
 
   void TearDownOnMainThread() override {

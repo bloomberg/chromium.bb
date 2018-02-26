@@ -11,9 +11,27 @@ cr.define('sync.confirmation', function() {
 
   /** @interface */
   class SyncConfirmationBrowserProxy {
-    confirm() {}
+    /**
+     * Called when the user confirms the Sync Confirmation dialog.
+     * @param {!Array<string>} description Strings that the user was presented
+     *     with in the UI.
+     * @param {string} confirmation Text of the element that the user
+     *     clicked on.
+     */
+    confirm(description, confirmation) {}
+
+    /** Called when the user undoes the Sync confirmation. */
     undo() {}
-    goToSettings() {}
+
+    /**
+     * Called when the user clicks on the Settings link in
+     *     the Sync Confirmation dialog.
+     * @param {!Array<string>} description Strings that the user was presented
+     *     with in the UI.
+     * @param {string} confirmation Text of the element that the user
+     *     clicked on.
+     */
+    goToSettings(description, confirmation) {}
 
     /** @param {!Array<number>} height */
     initializedWithSize(height) {}
@@ -22,8 +40,8 @@ cr.define('sync.confirmation', function() {
   /** @implements {sync.confirmation.SyncConfirmationBrowserProxy} */
   class SyncConfirmationBrowserProxyImpl {
     /** @override */
-    confirm() {
-      chrome.send('confirm');
+    confirm(description, confirmation) {
+      chrome.send('confirm', [description, confirmation]);
     }
 
     /** @override */
@@ -32,8 +50,8 @@ cr.define('sync.confirmation', function() {
     }
 
     /** @override */
-    goToSettings() {
-      chrome.send('goToSettings');
+    goToSettings(description, confirmation) {
+      chrome.send('goToSettings', [description, confirmation]);
     }
 
     /** @override */

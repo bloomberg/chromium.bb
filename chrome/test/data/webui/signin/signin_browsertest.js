@@ -37,6 +37,10 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
   /** @override */
   get extraLibraries() {
     return PolymerTest.getLibraries(ROOT_PATH).concat([
+      ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
+      ROOT_PATH + 'chrome/browser/resources/signin/dice_sync_confirmation/' +
+          'sync_confirmation_browser_proxy.js',
+      'test_sync_confirmation_browser_proxy.js',
       'sync_confirmation_test.js',
     ]);
   }
