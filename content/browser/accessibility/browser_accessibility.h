@@ -261,13 +261,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasInheritedStringAttribute(ax::mojom::StringAttribute attribute) const;
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
-  bool GetInheritedStringAttribute(ax::mojom::StringAttribute attribute,
-                                   std::string* value) const;
-
   base::string16 GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
-  bool GetInheritedString16Attribute(ax::mojom::StringAttribute attribute,
-                                     base::string16* value) const;
 
   bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
   int GetIntAttribute(ax::mojom::IntAttribute attribute) const;

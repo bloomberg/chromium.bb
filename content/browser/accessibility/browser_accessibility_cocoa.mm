@@ -1275,8 +1275,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSString*)language {
   if (![self instanceActive])
     return nil;
-  return NSStringForStringAttribute(browserAccessibility_,
-                                    ax::mojom::StringAttribute::kLanguage);
+  return base::SysUTF8ToNSString(
+      browserAccessibility_->GetInheritedStringAttribute(
+          ax::mojom::StringAttribute::kLanguage));
 }
 
 // private

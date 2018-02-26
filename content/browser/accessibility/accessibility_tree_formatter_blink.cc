@@ -162,6 +162,17 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
   dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
 
+  // Language and Font Family are different from other string attributes
+  // in that they inherit.
+  std::string font_family =
+      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily);
+  if (!font_family.empty())
+    dict->SetString("fontFamily", font_family);
+  std::string language =
+      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
+  if (!language.empty())
+    dict->SetString("language", language);
+
   for (int32_t state_index = static_cast<int32_t>(ax::mojom::State::kNone);
        state_index <= static_cast<int32_t>(ax::mojom::State::kLast);
        ++state_index) {
@@ -178,8 +189,11 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= static_cast<int32_t>(ax::mojom::StringAttribute::kLast);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::StringAttribute>(attr_index);
-    if (node.HasStringAttribute(attr))
-      dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
+    if (attr != ax::mojom::StringAttribute::kFontFamily &&
+        attr != ax::mojom::StringAttribute::kLanguage) {
+      if (node.HasStringAttribute(attr))
+        dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
+    }
   }
 
   for (int32_t attr_index =

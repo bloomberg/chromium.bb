@@ -658,8 +658,12 @@ void AutomationInternalCustomBindings::AddRoutes() {
         ax::mojom::StringAttribute attribute =
             ui::ParseStringAttribute(attribute_name.c_str());
         std::string attr_value;
-        if (!node->data().GetStringAttribute(attribute, &attr_value))
+        if (attribute == ax::mojom::StringAttribute::kFontFamily ||
+            attribute == ax::mojom::StringAttribute::kLanguage) {
+          attr_value = node->GetInheritedStringAttribute(attribute);
+        } else if (!node->data().GetStringAttribute(attribute, &attr_value)) {
           return;
+        }
 
         result.Set(v8::String::NewFromUtf8(isolate, attr_value.c_str()));
       });

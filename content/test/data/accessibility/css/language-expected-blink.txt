@@ -1,6 +1,7 @@
 rootWebArea
 ++paragraph language='en-US'
-++++staticText name='How are you?'
-++++++inlineTextBox name='How are you?'
+++++staticText language='en-US' name='How are you?'
+++++++inlineTextBox language='en-US' name='How are you?'
 ++staticText language='fr-FR' name='Comment allez-vous?'
-++++inlineTextBox name='Comment allez-vous?'
+++++inlineTextBox language='fr-FR' name='Comment allez-vous?'
+<-- End-of-file -->
