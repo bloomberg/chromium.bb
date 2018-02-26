@@ -1091,12 +1091,10 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->color_space = oxcf->color_space;
 #endif  // CONFIG_CICP
   cm->seq_params.monochrome = oxcf->monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->transfer_function = oxcf->transfer_function;
 #endif
   cm->chroma_sample_position = oxcf->chroma_sample_position;
-#endif
   cm->color_range = oxcf->color_range;
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
   cm->timing_info_present = oxcf->timing_info_present;
@@ -3137,12 +3135,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->color_space = oxcf->color_space;
 #endif
   cm->seq_params.monochrome = oxcf->monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->transfer_function = oxcf->transfer_function;
 #endif
   cm->chroma_sample_position = oxcf->chroma_sample_position;
-#endif
   cm->color_range = oxcf->color_range;
 
   assert(IMPLIES(cm->profile <= PROFILE_1, cm->bit_depth <= AOM_BITS_10));
@@ -6085,12 +6081,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->frame_to_show->color_space = cm->color_space;
 #endif
   cm->frame_to_show->monochrome = cm->seq_params.monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   cm->frame_to_show->transfer_function = cm->transfer_function;
 #endif
   cm->frame_to_show->chroma_sample_position = cm->chroma_sample_position;
-#endif
   cm->frame_to_show->color_range = cm->color_range;
   cm->frame_to_show->render_width = cm->render_width;
   cm->frame_to_show->render_height = cm->render_height;

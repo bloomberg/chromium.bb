@@ -2838,12 +2838,8 @@ static void write_bitdepth_colorspace_sampling(
     aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
   }
 #else
-#if CONFIG_COLORSPACE_HEADERS
   if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 5);
   aom_wb_write_literal(wb, cm->transfer_function, 5);
-#else
-  if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 4);
-#endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
   if (is_monochrome) return;
 #if CONFIG_CICP
@@ -2882,11 +2878,9 @@ static void write_bitdepth_colorspace_sampling(
         assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);
       }
     }
-#if CONFIG_COLORSPACE_HEADERS
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
       aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
     }
-#endif
   }
   aom_wb_write_bit(wb, cm->separate_uv_delta_q);
 }

@@ -445,14 +445,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, matrix_coefficients, AOM_CICP_MC_BT_709,
               AOM_CICP_MC_ICTCP);
 #else
-#if CONFIG_COLORSPACE_HEADERS
   RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_ICTCP);
   RANGE_CHECK(extra_cfg, transfer_function, AOM_TF_UNKNOWN, AOM_TF_HLG);
   RANGE_CHECK(extra_cfg, chroma_sample_position, AOM_CSP_UNKNOWN,
               AOM_CSP_COLOCATED);
-#else
-  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_SRGB);
-#endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
@@ -678,19 +674,10 @@ static aom_codec_err_t set_encoder_config(
 #else
   oxcf->color_space = extra_cfg->color_space;
 #endif  // CONFIG_CICP
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   oxcf->transfer_function = extra_cfg->transfer_function;
 #endif
   oxcf->chroma_sample_position = extra_cfg->chroma_sample_position;
-#else
-#if !CONFIG_CICP
-  if (extra_cfg->transfer_function != AOM_TF_UNKNOWN)
-    return AOM_CODEC_UNSUP_FEATURE;
-#endif
-  if (extra_cfg->chroma_sample_position != AOM_CSP_UNKNOWN)
-    return AOM_CODEC_UNSUP_FEATURE;
-#endif
 
   oxcf->color_range = extra_cfg->color_range;
   oxcf->render_width = extra_cfg->render_width;
@@ -1693,30 +1680,18 @@ static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_set_transfer_function(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
-#if CONFIG_COLORSPACE_HEADERS
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.transfer_function = CAST(AV1E_SET_TRANSFER_FUNCTION, args);
   return update_extra_cfg(ctx, &extra_cfg);
-#else
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_UNSUP_FEATURE;
-#endif
 }
 #endif
 
 static aom_codec_err_t ctrl_set_chroma_sample_position(
     aom_codec_alg_priv_t *ctx, va_list args) {
-#if CONFIG_COLORSPACE_HEADERS
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.chroma_sample_position =
       CAST(AV1E_SET_CHROMA_SAMPLE_POSITION, args);
   return update_extra_cfg(ctx, &extra_cfg);
-#else
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_UNSUP_FEATURE;
-#endif
 }
 
 static aom_codec_err_t ctrl_set_color_range(aom_codec_alg_priv_t *ctx,

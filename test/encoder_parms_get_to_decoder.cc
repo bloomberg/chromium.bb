@@ -47,18 +47,16 @@ struct EncodeParameters {
 #else
   aom_color_space_t cs;
 #endif
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   aom_transfer_function_t tf;
 #endif
   aom_chroma_sample_position_t csp;
-#endif
   int render_size[2];
   // TODO(JBB): quantizers / bitrate
 };
 
 const EncodeParameters kAV1EncodeParameterSet[] = {
-#if CONFIG_CICP && CONFIG_COLORSPACE_HEADERS
+#if CONFIG_CICP
   { 0,
     0,
     1,
@@ -104,7 +102,6 @@ const EncodeParameters kAV1EncodeParameterSet[] = {
     AOM_CSP_VERTICAL,
     { 0, 0 } },
 #else
-#if CONFIG_COLORSPACE_HEADERS
   { 0,
     0,
     1,
@@ -115,12 +112,6 @@ const EncodeParameters kAV1EncodeParameterSet[] = {
     AOM_TF_BT_709,
     AOM_CSP_COLOCATED,
     { 0, 0 } },
-#else
-  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020{ 0, 0 } },
-  { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601, { 0, 0 } },
-  { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709, { 0, 0 } },
-  { 0, 2, 0, 0, 1, AOM_CR_STUDIO_RANGE, AOM_CS_UNKNOWN, { 640, 480 } },
-#endif
 #endif
   // TODO(JBB): Test profiles (requires more work).
 };
@@ -156,12 +147,10 @@ class AvxEncoderParmsGetToDecoder
 #else
       encoder->Control(AV1E_SET_COLOR_SPACE, encode_parms.cs);
 #endif
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
       encoder->Control(AV1E_SET_TRANSFER_FUNCTION, encode_parms.tf);
 #endif
       encoder->Control(AV1E_SET_CHROMA_SAMPLE_POSITION, encode_parms.csp);
-#endif
       encoder->Control(AV1E_SET_COLOR_RANGE, encode_parms.color_range);
       encoder->Control(AV1E_SET_LOSSLESS, encode_parms.lossless);
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING,
@@ -207,12 +196,10 @@ class AvxEncoderParmsGetToDecoder
 #else
     EXPECT_EQ(encode_parms.cs, common->color_space);
 #endif
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
     EXPECT_EQ(encode_parms.tf, common->transfer_function);
 #endif
     EXPECT_EQ(encode_parms.csp, common->chroma_sample_position);
-#endif
     if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0) {
       EXPECT_EQ(encode_parms.render_size[0], common->render_width);
       EXPECT_EQ(encode_parms.render_size[1], common->render_height);

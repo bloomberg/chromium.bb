@@ -1296,14 +1296,12 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
   pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
       cm->transfer_function;
 #endif
   pool->frame_bufs[cm->new_fb_idx].buf.chroma_sample_position =
       cm->chroma_sample_position;
-#endif
   pool->frame_bufs[cm->new_fb_idx].buf.color_range = cm->color_range;
   pool->frame_bufs[cm->new_fb_idx].buf.render_width = cm->render_width;
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
@@ -1415,14 +1413,12 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
   pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
       cm->transfer_function;
 #endif
   pool->frame_bufs[cm->new_fb_idx].buf.chroma_sample_position =
       cm->chroma_sample_position;
-#endif
   pool->frame_bufs[cm->new_fb_idx].buf.color_range = cm->color_range;
   pool->frame_bufs[cm->new_fb_idx].buf.render_width = cm->render_width;
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
@@ -2309,19 +2305,13 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   }
 #else
   cm->color_space = AOM_CS_UNKNOWN;
-#if CONFIG_COLORSPACE_HEADERS
   if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 5);
   cm->transfer_function = aom_rb_read_literal(rb, 5);
-#else
-  if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 4);
-#endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
   if (is_monochrome) {
     cm->color_range = AOM_CR_FULL_RANGE;
     cm->subsampling_y = cm->subsampling_x = 1;
-#if CONFIG_COLORSPACE_HEADERS
     cm->chroma_sample_position = AOM_CSP_UNKNOWN;
-#endif  // CONFIG_COLORSPACE_HEADERS
     cm->separate_uv_delta_q = 0;
     return;
   }
@@ -2362,11 +2352,9 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
         cm->subsampling_y = 0;
       }
     }
-#if CONFIG_COLORSPACE_HEADERS
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
       cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
     }
-#endif  // CONFIG_COLORSPACE_HEADERS
   }
   cm->separate_uv_delta_q = aom_rb_read_bit(rb);
 }
@@ -3062,12 +3050,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   get_frame_new_buffer(cm)->color_space = cm->color_space;
 #endif
   get_frame_new_buffer(cm)->monochrome = cm->seq_params.monochrome;
-#if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   get_frame_new_buffer(cm)->transfer_function = cm->transfer_function;
 #endif
   get_frame_new_buffer(cm)->chroma_sample_position = cm->chroma_sample_position;
-#endif
   get_frame_new_buffer(cm)->color_range = cm->color_range;
   get_frame_new_buffer(cm)->render_width = cm->render_width;
   get_frame_new_buffer(cm)->render_height = cm->render_height;
