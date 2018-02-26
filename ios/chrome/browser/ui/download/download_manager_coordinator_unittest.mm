@@ -155,6 +155,46 @@ TEST_F(DownloadManagerCoordinatorTest, DelegateCreatedDownload) {
   [coordinator_ stop];
 }
 
+// Tests calling downloadManagerTabHelper:didCreateDownload:webStateIsVisible:
+// callback twice. Second call should replace the old download task with the new
+// one.
+TEST_F(DownloadManagerCoordinatorTest, DelegateReplacedDownload) {
+  auto task = CreateTestTask();
+  task->SetDone(true);
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:task.get()
+                       webStateIsVisible:YES];
+
+  // Verify that presented view controller is DownloadManagerViewController.
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Verify that DownloadManagerViewController configuration matches download
+  // task.
+  EXPECT_NSEQ(@"file.zip", viewController.statusLabel.text);
+  EXPECT_FALSE(viewController.actionButton.hidden);
+  EXPECT_NSEQ(@"Open in…",
+              [viewController.actionButton titleForState:UIControlStateNormal]);
+
+  // Replace download task with a new one.
+  auto new_task = CreateTestTask();
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                       didCreateDownload:new_task.get()
+                       webStateIsVisible:YES];
+
+  // Verify that DownloadManagerViewController configuration matches new
+  // download task.
+  EXPECT_NSEQ(@"file.zip - 10 bytes", viewController.statusLabel.text);
+  EXPECT_FALSE(viewController.actionButton.hidden);
+  EXPECT_NSEQ(@"Download",
+              [viewController.actionButton titleForState:UIControlStateNormal]);
+
+  // Stop to avoid holding a dangling pointer to destroyed task.
+  [coordinator_ stop];
+}
+
 // Tests downloadManagerTabHelper:didCreateDownload:webStateIsVisible: callback
 // for hidden web state. Verifies that coordinator ignores callback from
 // a background tab.

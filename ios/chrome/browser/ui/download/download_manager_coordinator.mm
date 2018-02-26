@@ -80,9 +80,15 @@
     return;
   }
 
+  BOOL replacingExistingDownload = _downloadTask ? YES : NO;
   _downloadTask = download;
-  self.animatesPresentation = YES;
-  [self start];
+
+  if (replacingExistingDownload) {
+    _mediator.SetDownloadTask(_downloadTask);
+  } else {
+    self.animatesPresentation = YES;
+    [self start];
+  }
 }
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
