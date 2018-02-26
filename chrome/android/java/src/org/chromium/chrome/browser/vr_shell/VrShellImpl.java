@@ -29,7 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
@@ -46,7 +45,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.vr_shell.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
@@ -865,25 +863,6 @@ public class VrShellImpl
     }
 
     @CalledByNative
-    private void showTab(int id) {
-        Tab tab = mActivity.getTabModelSelector().getTabById(id);
-        if (tab == null) {
-            return;
-        }
-        int index = mActivity.getTabModelSelector().getModel(tab.isIncognito()).indexOf(tab);
-        if (index == TabModel.INVALID_TAB_INDEX) {
-            return;
-        }
-        TabModelUtils.setIndex(mActivity.getTabModelSelector().getModel(tab.isIncognito()), index);
-    }
-
-    @CalledByNative
-    private void openNewTab(boolean incognito) {
-        mActivity.getTabCreator(incognito).launchUrl(
-                UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
-    }
-
-    @CalledByNative
     private void loadUrl(String url) {
         if (mTab == null) {
             mActivity.getCurrentTabCreator().createNewTab(
@@ -895,7 +874,6 @@ public class VrShellImpl
 
     @VisibleForTesting
     @Override
-    @CalledByNative
     public void navigateForward() {
         if (!mCanGoForward) return;
         mActivity.getToolbarManager().forward();
@@ -941,12 +919,6 @@ public class VrShellImpl
         mCanGoBack = canGoBack;
         mCanGoForward = canGoForward;
         nativeSetHistoryButtonsEnabled(mNativeVrShell, mCanGoBack, mCanGoForward);
-    }
-
-    @CalledByNative
-    public void reload() {
-        if (mTab == null) return;
-        mTab.reload();
     }
 
     private float getNativePageScrollRatio() {
