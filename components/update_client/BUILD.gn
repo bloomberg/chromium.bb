@@ -106,6 +106,7 @@ static_library("test_support") {
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
