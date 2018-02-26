@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,6 +21,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
 using UkmEntry = ukm::builders::Security_SiteEngagement;
@@ -123,6 +125,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Https) {
   ui_test_utils::NavigateToURL(browser(), url);
   CloseAllTabs();
 
+  // Site Engagement metrics.
   histogram_tester()->ExpectTotalCount(
       SecurityStatePageLoadMetricsObserver::
           GetEngagementFinalHistogramNameForTesting(security_state::NONE),
@@ -144,6 +147,12 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Https) {
                      security_state::SECURE);
   ExpectMetricForUrl(url, UkmEntry::kFinalSecurityLevelName,
                      security_state::SECURE);
+
+  // Navigation metrics.
+  histogram_tester()->ExpectUniqueSample(
+      SecurityStatePageLoadMetricsObserver::
+          GetPageEndReasonHistogramNameForTesting(security_state::SECURE),
+      page_load_metrics::END_CLOSE, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Http) {
@@ -172,6 +181,43 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, Simple_Http) {
   EXPECT_EQ(0u, CountUkmEntries());
 }
 
+IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, ReloadPage) {
+  StartHttpsServer(net::EmbeddedTestServer::CERT_OK);
+  GURL url = https_test_server()->GetURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
+
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetEngagementFinalHistogramNameForTesting(security_state::NONE),
+      0);
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetEngagementFinalHistogramNameForTesting(security_state::SECURE),
+      1);
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetEngagementDeltaHistogramNameForTesting(security_state::NONE),
+      0);
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetEngagementDeltaHistogramNameForTesting(security_state::SECURE),
+      1);
+  EXPECT_EQ(1u, CountUkmEntries());
+  ExpectMetricForUrl(url, UkmEntry::kInitialSecurityLevelName,
+                     security_state::SECURE);
+  ExpectMetricForUrl(url, UkmEntry::kFinalSecurityLevelName,
+                     security_state::SECURE);
+
+  histogram_tester()->ExpectUniqueSample(
+      SecurityStatePageLoadMetricsObserver::
+          GetPageEndReasonHistogramNameForTesting(security_state::SECURE),
+      page_load_metrics::END_RELOAD, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, OtherScheme) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   CloseAllTabs();
@@ -192,6 +238,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, OtherScheme) {
           GetEngagementDeltaHistogramNameForTesting(security_state::SECURE),
       0);
   EXPECT_EQ(0u, CountUkmEntries());
+
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetPageEndReasonHistogramNameForTesting(security_state::NONE),
+      0);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest, MixedContent) {
@@ -282,6 +333,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
           GetEngagementDeltaHistogramNameForTesting(security_state::SECURE),
       0);
   EXPECT_EQ(0u, CountUkmEntries());
+
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetPageEndReasonHistogramNameForTesting(security_state::SECURE),
+      0);
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
@@ -312,4 +368,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
           GetEngagementDeltaHistogramNameForTesting(security_state::SECURE),
       0);
   EXPECT_EQ(0u, CountUkmEntries());
+
+  histogram_tester()->ExpectTotalCount(
+      SecurityStatePageLoadMetricsObserver::
+          GetPageEndReasonHistogramNameForTesting(security_state::SECURE),
+      0);
 }

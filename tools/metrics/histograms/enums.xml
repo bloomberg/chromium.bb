@@ -33112,6 +33112,35 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="FAIL_DIFFERENT_PROXY_LIST"/>
 </enum>
 
+<enum name="PageEndReason">
+  <int value="0" label="END_NONE">
+    Page lifetime has not yet ended (page is still active)
+  </int>
+  <int value="1" label="END_RELOAD">Page was reloaded</int>
+  <int value="2" label="END_FORWARD_BACK">
+    Page was navigated away from, via a back or forward navigation
+  </int>
+  <int value="3" label="END_CLIENT_REDIRECT">
+    Page was redirected via Javascript or the meta refresh tag
+  </int>
+  <int value="4" label="END_NEW_NAVIGATION">
+    Page load was replaced by a new navigation
+  </int>
+  <int value="5" label="END_STOP">Page load was stopped</int>
+  <int value="6" label="END_CLOSE">
+    Page load ended due to closing the tab or browser
+  </int>
+  <int value="7" label="END_PROVISIONAL_LOAD_FAILED">
+    Provisional load for this page load failed before comitting
+  </int>
+  <int value="8" label="END_RENDER_PROCESS_GONE">
+    Render process hosting the page terminated unexpectedly
+  </int>
+  <int value="9" label="END_OTHER">
+    Unknown reason; page load may have finished without comitting
+  </int>
+</enum>
+
 <enum name="PageLoadEvent">
   <obsolete>
     Deprecated in favor of {Committed|Provisional|InternalError}LoadEvent
