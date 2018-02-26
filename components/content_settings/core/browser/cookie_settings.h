@@ -61,9 +61,12 @@ class CookieSettings : public RefcountedKeyedService {
 
   // Returns true if the cookie set by a page identified by |url| should be
   // session only or blocked.
+  // If an http |url| is BLOCKED, but the https version of |url| is ALLOWED,
+  // the cookie will not be deleted to allow blocking http cookie without
+  // affecting cookies from https sites that are not marked as "Secure".
   //
   // This may be called on any thread.
-  bool IsCookieSessionOnlyOrBlocked(const GURL& url) const;
+  bool ShouldDeleteCookieOnExit(const GURL& url) const;
 
   // Returns all patterns with a non-default cookie setting, mapped to their
   // actual settings, in the precedence order of the setting rules. |settings|
