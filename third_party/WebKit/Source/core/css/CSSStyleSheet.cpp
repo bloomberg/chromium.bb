@@ -301,6 +301,8 @@ bool CSSStyleSheet::CanAccessRules() const {
   Document* document = OwnerDocument();
   if (!document)
     return true;
+  if (document->GetStyleEngine().InspectorStyleSheet() == this)
+    return true;
   if (document->GetSecurityOrigin()->CanRequest(base_url))
     return true;
   if (allow_rule_access_from_origin_ &&
