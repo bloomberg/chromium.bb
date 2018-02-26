@@ -37,6 +37,9 @@ class LayoutWordBreak final : public LayoutText {
  public:
   explicit LayoutWordBreak(HTMLElement*);
 
+  Position PositionForCaretOffset(unsigned offset) const final;
+  Optional<unsigned> CaretOffsetForPosition(const Position&) const final;
+
   const char* GetName() const override { return "LayoutWordBreak"; }
   bool IsWordBreak() const override;
 };

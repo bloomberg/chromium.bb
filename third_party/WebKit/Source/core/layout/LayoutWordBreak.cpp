@@ -26,6 +26,7 @@
 
 #include "core/layout/LayoutWordBreak.h"
 
+#include "core/editing/Position.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -35,6 +36,25 @@ LayoutWordBreak::LayoutWordBreak(HTMLElement* element)
 
 bool LayoutWordBreak::IsWordBreak() const {
   return true;
+}
+
+Position LayoutWordBreak::PositionForCaretOffset(unsigned offset) const {
+  if (!GetNode())
+    return Position();
+  // The only allowed caret offset is 0, since LayoutWordBreak always has
+  // |TextLength() == 0|.
+  DCHECK_EQ(0u, offset) << offset;
+  return Position::BeforeNode(*GetNode());
+}
+
+Optional<unsigned> LayoutWordBreak::CaretOffsetForPosition(
+    const Position& position) const {
+  if (position.IsNull() || position.AnchorNode() != GetNode())
+    return WTF::nullopt;
+  DCHECK(position.IsBeforeAnchor() || position.IsAfterAnchor());
+  // The only allowed caret offset is 0, since LayoutWordBreak always has
+  // |TextLength() == 0|.
+  return 0;
 }
 
 }  // namespace blink
