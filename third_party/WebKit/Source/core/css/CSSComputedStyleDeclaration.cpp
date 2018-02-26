@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -484,6 +485,10 @@ String CSSComputedStyleDeclaration::removeProperty(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     CSSPropertyID property_id) {
+  if (property_id == CSSPropertyWebkitAppearance && node_) {
+    UseCounter::Count(node_->GetDocument(),
+                      WebFeature::kGetComputedStyleWebkitAppearance);
+  }
   return GetPropertyCSSValue(CSSProperty::Get(property_id));
 }
 

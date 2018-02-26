@@ -1864,6 +1864,7 @@ enum WebFeature {
   kAsyncClipboardAPIReadText = 2371,
   kAsyncClipboardAPIWriteText = 2372,
   kOpenerNavigationWithoutGesture = 2373,
+  kGetComputedStyleWebkitAppearance = 2374,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
