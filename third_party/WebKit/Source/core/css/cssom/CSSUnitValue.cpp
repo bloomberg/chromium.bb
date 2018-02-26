@@ -34,6 +34,23 @@ CSSPrimitiveValue::UnitType ToCanonicalUnitIfPossible(
   return canonical_unit;
 }
 
+bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
+  // FIXME: Avoid this CSSProperty::Get call as it can be costly.
+  // The caller often has a CSSProperty already, so we can just pass it here.
+  if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
+          kValueRangeNonNegative &&
+      value < 0)
+    return true;
+
+  // For non-length properties and special cases.
+  switch (property_id) {
+    case CSSPropertyFontWeight:
+      return value < 0 || value > 1000;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 CSSUnitValue* CSSUnitValue::Create(double value,
@@ -121,11 +138,7 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
     CSSPropertyID property_id) const {
-  // FIXME: Avoid this CSSProperty::Get call as it can be costly.
-  // The caller often has a CSSProperty already, so we can just pass it here.
-  if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
-          kValueRangeNonNegative &&
-      value_ < 0) {
+  if (IsValueOutOfRangeForProperty(property_id, value_)) {
     // Wrap out of range values with a calc.
     CSSCalcExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();
