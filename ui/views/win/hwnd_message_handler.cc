@@ -2315,7 +2315,10 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     // so use base::TimeTicks::Now().
     const base::TimeTicks event_time = base::TimeTicks::Now();
     TouchEvents touch_events;
+    TouchIDs stale_touches(touch_ids_);
+
     for (int i = 0; i < num_points; ++i) {
+      stale_touches.erase(input[i].dwID);
       POINT point;
       point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
       point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
@@ -2336,7 +2339,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       last_touch_or_pen_message_time_ = ::GetMessageTime();
 
       gfx::Point touch_point(point.x, point.y);
-      unsigned int touch_id = id_generator_.GetGeneratedID(input[i].dwID);
+      size_t touch_id = id_generator_.GetGeneratedID(input[i].dwID);
 
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
@@ -2361,6 +2364,19 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         }
       }
     }
+    // If a touch has been dropped from the list (without a TOUCH_EVENTF_UP)
+    // we generate a simulated TOUCHEVENTF_UP event.
+    for (auto touch_number : stale_touches) {
+      // Log that we've hit this code. When usage drops off, we can remove
+      // this "workaround". See https://crbug.com/811273
+      UMA_HISTOGRAM_BOOLEAN("TouchScreen.MissedTOUCHEVENTF_UP", true);
+      size_t touch_id = id_generator_.GetGeneratedID(touch_number);
+      touch_ids_.erase(touch_number);
+      GenerateTouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0), touch_id,
+                         event_time, &touch_events);
+      id_generator_.ReleaseNumber(touch_number);
+    }
+
     // Handle the touch events asynchronously. We need this because touch
     // events on windows don't fire if we enter a modal loop in the context of
     // a touch event.
@@ -2735,7 +2751,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     return 0;
   }
 
-  unsigned int mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
+  size_t mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;
   POINT client_point = pointer_info.ptPixelLocationRaw;
   ScreenToClient(hwnd(), &client_point);
@@ -2891,7 +2907,7 @@ void HWNDMessageHandler::PerformDwmTransition() {
 
 void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
                                             const gfx::Point& point,
-                                            unsigned int id,
+                                            size_t id,
                                             base::TimeTicks time_stamp,
                                             TouchEvents* touch_events) {
   ui::TouchEvent event(

@@ -44,4 +44,5 @@ TEST(SequentialIDGeneratorTest, MaybeRemoveNumbers) {
   EXPECT_FALSE(generator.HasGeneratedIDFor(42));
   generator.ReleaseNumber(42);
 }
+
 }  // namespace ui

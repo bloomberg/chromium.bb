@@ -550,12 +550,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
       const POINTER_INFO& pointer_info,
       const gfx::Point& point,
       const ui::PointerDetails& pointer_details);
-  LRESULT GenerateTouchEventFromPointerEvent(
-      UINT message,
-      UINT32 pointer_id,
-      const POINTER_INFO& pointer_info,
-      const gfx::Point& point,
-      const ui::PointerDetails& pointer_details);
 
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.
@@ -575,7 +569,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // |time_stamp| is the time stamp associated with the message.
   void GenerateTouchEvent(ui::EventType event_type,
                           const gfx::Point& point,
-                          unsigned int id,
+                          size_t id,
                           base::TimeTicks time_stamp,
                           TouchEvents* touch_events);
 
