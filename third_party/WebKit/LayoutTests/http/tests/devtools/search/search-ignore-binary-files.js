@@ -15,7 +15,7 @@
 
   function doSearch(next) {
     var scope = new Sources.SourcesSearchScope();
-    var searchConfig = new Workspace.SearchConfig('AAAAAAA', true, false);
+    var searchConfig = new Search.SearchConfig('sources.search-in-files', 'AAAAAAA', true, false);
     SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, TestRunner.completeTest.bind(TestRunner));
   }
 })();

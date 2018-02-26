@@ -9,6 +9,7 @@ Loaded modules:
     inline_editor
     object_ui
     quick_open
+    search
     snippets
     source_frame
     sources

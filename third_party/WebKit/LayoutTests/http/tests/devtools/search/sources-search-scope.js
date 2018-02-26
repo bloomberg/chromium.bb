@@ -10,7 +10,7 @@
   await TestRunner.showPanel('sources');
   await TestRunner.loadHTML(`<iframe src="resources/search.html"></iframe>`);
 
-  UI.viewManager.showView('sources.search');
+  UI.viewManager.showView('search.search');
   var scope = new Sources.SourcesSearchScope();
   await Promise.all([
     TestRunner.waitForUISourceCode('search.html'),
@@ -22,7 +22,7 @@
     function testIgnoreCaseAndIgnoreDynamicScript(next) {
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -30,14 +30,14 @@
       Common.settingForTest('searchInAnonymousAndContentScripts').set(true);
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
     function testCaseSensitive(next) {
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, false /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, false /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -45,7 +45,7 @@
       var query = 'searchTest' +
           'UniqueString' +
           ' file:html';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -53,7 +53,7 @@
       var query = 'file:js ' +
           'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -62,7 +62,7 @@
           'searchTest' +
           'UniqueString' +
           ' file:html';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -71,7 +71,7 @@
           'Unique' +
           ' space' +
           ' String';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -81,7 +81,7 @@
           'Unique' +
           ' space' +
           ' String';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -92,7 +92,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -103,7 +103,7 @@
           ' space' +
           ' String' +
           ' file:search file:html';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -113,7 +113,7 @@
           ' file:html' +
           ' space' +
           ' String';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -124,7 +124,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -136,7 +136,7 @@
           ' space' +
           ' String' +
           ' file:search';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -146,7 +146,7 @@
           ' -file:css' +
           ' space' +
           ' String';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -155,7 +155,7 @@
       var query = 'searchTest' +
           'Unique' +
           ' file:127.0.0.1';
-      var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, step2);
 
       function step2() {
@@ -163,7 +163,7 @@
         query = 'searchTest' +
             'Unique' +
             ' file:128.0.0.1';
-        searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+        searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
         SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
       }
     },
@@ -179,7 +179,7 @@
             ' BAR');
         var query = 'searchTest' +
             'UniqueString';
-        var searchConfig = new Workspace.SearchConfig(query, true /* ignoreCase */, false /* isRegex */);
+        var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true /* ignoreCase */, false /* isRegex */);
         SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
       }
     }
