@@ -26,7 +26,8 @@ PasswordUpdatePendingView::PasswordUpdatePendingView(
   // Credential row.
   if (model()->ShouldShowMultipleAccountUpdateUI()) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(new CredentialsSelectionView(model()));
+    selection_view_ = new CredentialsSelectionView(model());
+    AddChildView(selection_view_);
   } else {
     const autofill::PasswordForm& password_form = model()->pending_password();
     views::GridLayout* layout =
