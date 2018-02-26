@@ -303,14 +303,9 @@ static int cost_and_tokenize_map(Av1ColorMapParam *param, TOKENEXTRA **t,
 
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
-#if CONFIG_PALETTE_THROUGHPUT
   for (int k = 1; k < rows + cols - 1; ++k) {
     for (int j = AOMMIN(k, cols - 1); j >= AOMMAX(0, k - rows + 1); --j) {
       int i = k - j;
-#else
-  for (int i = 0; i < rows; ++i) {
-    for (int j = (i == 0 ? 1 : 0); j < cols; ++j) {
-#endif  // CONFIG_PALETTE_THROUGHPUT
       int color_new_idx;
       const int color_ctx = av1_get_palette_color_index_context(
           color_map, plane_block_width, i, j, n, color_order, &color_new_idx);

@@ -162,7 +162,6 @@ static void decode_color_map_tokens(Av1ColorMapParam *param, aom_reader *r) {
   color_map[0] = av1_read_uniform(r, n);
   assert(color_map[0] < n);
 
-#if CONFIG_PALETTE_THROUGHPUT
   // Run wavefront on the palette map index decoding.
   for (int i = 1; i < rows + cols - 1; ++i) {
     for (int j = AOMMIN(i, cols - 1); j >= AOMMAX(0, i - rows + 1); --j) {
@@ -182,21 +181,6 @@ static void decode_color_map_tokens(Av1ColorMapParam *param, aom_reader *r) {
              (plane_block_width - cols));
     }
   }
-#else
-  for (int i = 0; i < rows; ++i) {
-    for (int j = (i == 0 ? 1 : 0); j < cols; ++j) {
-      const int color_ctx = av1_get_palette_color_index_context(
-          color_map, plane_block_width, i, j, n, color_order, NULL);
-      const int color_idx = aom_read_symbol(
-          r, color_map_cdf[n - PALETTE_MIN_SIZE][color_ctx], n, ACCT_STR);
-      assert(color_idx >= 0 && color_idx < n);
-      color_map[i * plane_block_width + j] = color_order[color_idx];
-    }
-    memset(color_map + i * plane_block_width + cols,
-           color_map[i * plane_block_width + cols - 1],
-           (plane_block_width - cols));  // Copy last column to extra columns.
-  }
-#endif  // CONFIG_PALETTE_THROUGHPUT
   // Copy last row to extra rows.
   for (int i = rows; i < plane_block_height; ++i) {
     memcpy(color_map + i * plane_block_width,
