@@ -514,6 +514,7 @@
       name_for_methods: "Style",
       converter: "ConvertFontStyle",
       priority: "High",
+      keywords: ["normal", "italic", "oblique"]
     },
     {
       name: "font-variant-ligatures",
@@ -1616,6 +1617,8 @@
       getter: "SpecifiedLineHeight",
       computed_style_custom_functions: ["getter"],
       converter: "ConvertLineHeight",
+      keywords: ["normal"],
+      typedom_types: ["Length", "Number", "Percentage"]
     },
     {
       name: "line-height-step",
