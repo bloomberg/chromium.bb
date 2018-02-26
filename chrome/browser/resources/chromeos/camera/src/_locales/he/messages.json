@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "קולנוע",
+    "message": "בית קולנוע",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -100,27 +100,33 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "בדקו אם המצלמה מחוברת כראוי.",
+    "message": "יש לבדוק אם המצלמה מחוברת כראוי.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "לא ניתן לשמור את התמונה בגלריה.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "לא ניתן לטעון את הגלריה.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "לא ניתן למחוק את התמונה הנבחרת.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "לא ניתן להוסיף לגלריה.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "לא ניתן לשמור את התמונה הנבחרת.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "לא ניתן לשמור את $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "לא הוקלט כלום.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "האצת חומרה אינה זמינה.",
+    "message": "שיפור מהירות באמצעות חומרה אינו זמין.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -164,19 +170,43 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "צלם תמונה",
+    "message": "צילום תמונה",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "צילום סרטון",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "הצג/הסתר טיימר",
+    "message": "החלפת מצב טיימר",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "הפעל/הפסק צילומים ברצף",
+    "message": "החלפת מצב של צילומים ברצף",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "החלפת מצב מצלמה",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "מעבר לצילום וידאו",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "מעבר לצילום תמונה",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "מצב צילום וידאו פעיל",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "מצב צילום תמונה פעיל",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "הפעל/הפסק שיקוף",
+    "message": "החלפת מצב של שיקוף מסך",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "האם אתה בטוח שברצונך להסיר את הפריט הזה?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "להסיר את $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "האם אתה בטוח שברצונך להסיר את הפריטים האלה?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "החלף מצב מצלמה",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "להסיר את $count$ הפריטים?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

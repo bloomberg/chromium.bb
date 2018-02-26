@@ -103,21 +103,27 @@
     "message": "Asegúrate de que la cámara esté conectada de forma correcta.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "No se puede guardar la imagen en la galería.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "No se puede cargar la galería.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "No se puede borrar la imagen seleccionada.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "No se puede agregar a la galería.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "No se puede guardar la imagen seleccionada.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "No se puede guardar $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "No se grabaron datos.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "La aceleración de hardware no está disponible.",
@@ -167,6 +173,10 @@
     "message": "Tomar una foto",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Grabar video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Activar o desactivar temporizador",
     "description": "Label for the button to toggle the countdown timer."
@@ -175,8 +185,28 @@
     "message": "Activar o desactivar el modo de disparo múltiple",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Activar o desactivar cámara",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Cambiar al modo para grabar video",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Cambiar al modo para tomar fotos",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Se activó la función para grabar video",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Se activó la función para tomar fotos",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "Activar o desactivar reflejo",
+    "message": "Activar o desactivar duplicación",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -196,11 +226,11 @@
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Reflejo activo",
+    "message": "Duplicación activa",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Reflejo inactivo",
+    "message": "Duplicación inactiva",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -212,19 +242,27 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "ACEPTAR",
+    "message": "Aceptar",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "¿Confirmas que deseas quitar este elemento?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "¿Confirmas que deseas quitar $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "¿Confirmas que deseas quitar estos elementos?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Activar o desactivar cámara",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "¿Confirmas que deseas quitar $count$ elementos?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

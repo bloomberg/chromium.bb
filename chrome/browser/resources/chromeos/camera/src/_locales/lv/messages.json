@@ -103,24 +103,30 @@
     "message": "Pārbaudiet, vai ir pareizi izveidots savienojums ar kameru.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Attēlu nevar saglabāt galerijā.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Galeriju nevar ielādēt.",
+    "message": "Nevar ielādēt galeriju.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Atlasīto attēlu nevar dzēst.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Nevar pievienot galerijai.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Atlasīto attēlu nevar saglabāt galerijā.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Nevar saglabāt failu $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Nekas nav ierakstīts.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Aparatūras paātrināšana nav pieejama.",
+    "message": "Paātrināta aparatūras darbība nav pieejama.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -167,13 +173,37 @@
     "message": "Uzņemt attēlu",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Ierakstīt videoklipu",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Pārslēgšanas taimeris",
+    "message": "Ieslēgt/izslēgt funkciju Taimeris",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Pārslēgt uz vairāku attēlu uzņemšanu",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Ieslēgt/izslēgt funkciju Kamera",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Pārslēgt uz videoklipa ierakstīšanu",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Pārslēgt uz attēla uzņemšanu",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Videoklipa ierakstīšanas ieslēgšana",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Attēla uzņemšanas ieslēgšana",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Pārslēgt uz spoguļošanu",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Vai tiešām vēlaties noņemt šo vienumu?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Vai tiešām vēlaties noņemt failu $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Vai tiešām vēlaties noņemt šos vienumus?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Pārslēgt kameru",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Vai tiešām vēlaties noņemt $count$ failu(-us)?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

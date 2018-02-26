@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "የማጋደል ቅያሬ",
+    "message": "የቲልት ቅያሬ",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -103,21 +103,27 @@
     "message": "ካሜራው በትክክል ተገናኝቶ ከሆነ ይፈትሹ።",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ምስሉን ወደ ማዕከለ-ስዕላት ውስጥ ማስቀመጥ አልተቻለም።",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "ማዕከለ-ስዕላቱን መጫን አልተቻለም።",
+    "message": "ማዕከለ-ሥዕላቱን መጫን አልተቻለም።",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "የተመረጠውን ምስል መሰረዝ አልተቻለም።",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "ወደ ማዕከለ-ሥዕላት ማከል አልተቻለም።",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "የተመረጠውን ምስል መሰረዝ አልተቻለም።",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ን ማስቀመጥ አልተቻለም።",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ምንም አልተቀረጸም።",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "ሃርድዌር ማፍጠኛ አይገኝም።",
@@ -128,7 +134,7 @@
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "ወደ ማዕከለ-ስዕላት ይሂዱ",
+    "message": "ወደ ማዕከለ-ሥዕላት ይሂዱ",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
@@ -160,12 +166,16 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "የማዕከለ-ስዕላት ምስሎች",
+    "message": "የማዕከለ-ሥዕላት ምስሎች",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
     "message": "ፎቶ ያንሱ",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "ቪድዮ ቅዳ",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "ሰዓት ቆጣሪ ቀያይር",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "ብዙ-ማንሳት ቀያይር",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "ካሜራን ቀያይር",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "ቪዲዮ ለመቅረጽ ቀይር",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "ፎቶ ለማንሣት ቀይር",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "ቪዲዮ ቀረጻ ገቢር",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "ፎቶ ማንሣት ገቢር",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "የመቀያየሪያ ነጸብራቅ",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "የምር ይህን ንጥል ማስወገድ ይፈልጋሉ?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "$file$ን ማስወገድ በእርግጥ ይፈልጋሉ?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "የምር እነዚህን ንጥሎች ማስወገድ ይፈልጋሉ?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "ካሜራን ቀያይር",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "$count$ ንጥሎችን በእርግጥ ማስወገድ ይፈልጋሉ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

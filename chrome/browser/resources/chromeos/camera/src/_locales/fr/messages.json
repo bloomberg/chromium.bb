@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Rétro/années 30",
+    "message": "Années 30",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Rétro/années 50",
+    "message": "Années 50",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Rétro/années 60",
+    "message": "Années 60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "Rétro",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -103,21 +103,27 @@
     "message": "Vérifiez si la caméra est bien connectée.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Impossible d'enregistrer la photo dans la galerie.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Impossible de charger la galerie.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Impossible de supprimer la photo sélectionnée.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Impossible d'ajouter l'élément à la galerie.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Impossible d'enregistrer la photo sélectionnée.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Impossible d'enregistrer $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Aucune donnée enregistrée.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "L'accélération matérielle n'est pas disponible.",
@@ -167,6 +173,10 @@
     "message": "Prendre une photo",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Enregistrer une vidéo",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Activer/Désactiver le minuteur",
     "description": "Label for the button to toggle the countdown timer."
@@ -175,8 +185,28 @@
     "message": "Activer/Désactiver le mode rafale",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Changer de caméra",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Passer à l'enregistrement de vidéo",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Passer à la prise de photo",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Enregistrement vidéo actif",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Prise de photo active",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "Activer/Désactiver la mise en miroir",
+    "message": "Activer/Désactiver la duplication d'écran",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -196,11 +226,11 @@
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Mise en miroir activée",
+    "message": "Duplication d'écran activée",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Mise en miroir désactivée",
+    "message": "Duplication d'écran désactivée",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Voulez-vous vraiment supprimer cet élément ?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Voulez-vous vraiment supprimer $file$ ?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Voulez-vous vraiment supprimer ces éléments ?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Changer de caméra",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Voulez-vous vraiment supprimer $count$ éléments ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

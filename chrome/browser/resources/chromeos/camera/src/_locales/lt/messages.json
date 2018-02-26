@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Kinas",
+    "message": "Kino teatras",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -103,21 +103,27 @@
     "message": "Patikrinkite, ar žiniatinklio kamera tinkamai prijungta.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Neįmanoma išsaugoti nuotraukos galerijoje.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Neįmanoma įkelti galerijos.",
+    "message": "Nepavyko įkelti galerijos.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Neįmanoma ištrinti pasirinktos nuotraukos.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Nepavyko pridėti prie galerijos.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Neįmanoma išsaugoti pasirinktos nuotraukos.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Nepavyko išsaugoti failo $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Nieko neįrašyta.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Negalima paspartinti aparatinės įrangos.",
@@ -167,6 +173,10 @@
     "message": "Fotografuoti",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Įrašyti Video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Perjungti laikmatį",
     "description": "Label for the button to toggle the countdown timer."
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "Perjungti kelių nuotraukų funkciją",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Kaitalioti „Kamera“",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Perjungti į vaizdo įrašymo režimą",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Perjungti į fotografavimo režimą",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Vaizdo įrašymo funkcija aktyvi",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Fotografavimo funkcija aktyvi",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Perjungti ekrano vaizdo bendrinimą",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Ar tikrai norite pašalinti šį elementą?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Ar tikrai norite pašalinti failą $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Ar tikrai norite pašalinti šiuos elementus?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Perjungti fotoaparatą",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Ar tikrai norite pašalinti elementus ($count$)?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

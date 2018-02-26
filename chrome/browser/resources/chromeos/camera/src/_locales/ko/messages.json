@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "웹캠으로 멋진 사진을 찍으세요.",
+    "message": "웹 카메라로 멋진 사진을 찍으세요.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -100,24 +100,30 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "카메라가 제대로 연결되어 있는지 확인합니다.",
+    "message": "카메라가 제대로 연결되어 있는지 확인하세요.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "사진을 갤러리에 저장할 수 없습니다.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "갤러리를 로드할 수 없습니다.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "선택한 사진을 삭제할 수 없습니다.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "갤러리에 추가할 수 없습니다.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "선택한 사진을 저장할 수 없습니다.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ 파일을 저장할 수 없습니다.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "녹화된 동영상이 없습니다.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "하드웨어 가속을 사용할 수 없습니다.",
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "사진 찍기",
+    "message": "사진 촬영",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "동영상 녹화",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "타이머 전환",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "연속 촬영 전환",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "카메라 전환",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "동영상 녹화 모드로 전환",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "사진 촬영 모드로 전환",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "동영상 녹화 사용 중",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "사진 촬영 사용 중",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "미러링 전환",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "이 항목을 삭제하시겠습니까?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "$file$ 파일을 삭제하시겠습니까?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "이 항목을 삭제하시겠습니까?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "카메라 전환",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "$count$개의 항목을 삭제하시겠습니까?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

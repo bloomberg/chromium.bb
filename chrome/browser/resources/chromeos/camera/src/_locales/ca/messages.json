@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Color",
+    "message": "Afegeix color",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -40,7 +40,7 @@
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "Cap gran",
+    "message": "Cap gros",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Laboratori de fotos",
+    "message": "Laboratori fotogràfic",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Maqueta",
+    "message": "Inclina/desplaça",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -103,21 +103,27 @@
     "message": "Comproveu que la càmera estigui ben connectada.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "No es pot desar la foto a la galeria.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "No es pot carregar la galeria.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "No es pot suprimir la foto seleccionada.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "No es pot afegir a la galeria.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "No es pot desar la foto seleccionada.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "El fitxer $file$ no es pot desar.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "No s'ha gravat res.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "L'acceleració per maquinari no està disponible.",
@@ -128,7 +134,7 @@
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Vés a la galeria",
+    "message": "Ves a la galeria",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
@@ -167,6 +173,10 @@
     "message": "Fes una foto",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Grava vídeo",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Activa o desactiva el temporitzador",
     "description": "Label for the button to toggle the countdown timer."
@@ -175,32 +185,52 @@
     "message": "Activa o desactiva el disparament múltiple",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Canvia de càmera",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Canvia al mode per gravar vídeo",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Canvia al mode per fer fotos",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Funció per gravar vídeo activada",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Funció per fer fotos activada",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
     "message": "Activa o desactiva la rèplica",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Temporitzador actiu",
+    "message": "Temporitzador activat",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Temporitzador inactiu",
+    "message": "Temporitzador desactivat",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Disparament múltiple actiu",
+    "message": "Disparament múltiple activat",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Disparament múltiple inactiu",
+    "message": "Disparament múltiple desactivat",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "Rèplica activa",
+    "message": "Rèplica activada",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "Rèplica inactiva",
+    "message": "Rèplica desactivada",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -212,19 +242,27 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "D'acord",
+    "message": "D’acord",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Confirmeu que voleu suprimir aquest element?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Confirmeu que voleu suprimir el fitxer $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Confirmeu que voleu suprimir aquests elements?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Canvia de càmera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Confirmeu que voleu suprimir $count$ elements?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

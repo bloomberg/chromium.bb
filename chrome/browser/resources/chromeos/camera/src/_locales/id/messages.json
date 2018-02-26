@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Jepret foto heboh dengan kamera web Anda.",
+    "message": "Berfoto heboh dengan kamera web Anda.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -28,7 +28,7 @@
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Skala abu-abu",
+    "message": "Grayscale",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Berhantu",
+    "message": "Hantu",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -100,27 +100,33 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Periksa apakah kamera tersambung dengan benar.",
+    "message": "Periksa apakah kamera terhubung dengan benar.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "Tidak dapat menyimpan gambar ke galeri.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "Tidak dapat memuat galeri.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Tidak dapat menghapus gambar yang dipilih.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Tidak dapat menambahkan ke galeri.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Tidak dapat menyimpan gambar yang dipilih.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Tidak dapat menyimpan $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Tidak ada yang direkam.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Akselerasi perangkat keras tidak tersedia.",
+    "message": "Akselerasi hardware tidak tersedia.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -167,32 +173,56 @@
     "message": "Ambil foto",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Rekam video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Aktifkan/matikan pewaktu",
+    "message": "Aktifkan/matikan timer",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Beralih multi-jepret",
+    "message": "Beralih multi-foto",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Beralih kamera",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Beralih ke mode rekam video",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Beralih ke mode ambil gambar",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Fitur perekaman video aktif",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Fitur pengambilan gambar aktif",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Aktifkan/matikan pencerminan",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Pewaktu aktif",
+    "message": "Timer aktif",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Pewaktu tidak aktif",
+    "message": "Timer tidak aktif",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Multi-jepret aktif",
+    "message": "Multi-foto aktif",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Multi-jepret tidak aktif",
+    "message": "Multi-foto tidak aktif",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Yakin ingin menghapus item ini?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Yakin ingin menghapus $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Yakin ingin menghapus item ini?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Beralih kamera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Yakin ingin menghapus $count$?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

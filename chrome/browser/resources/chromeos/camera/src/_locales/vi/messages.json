@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Chụp những bức ảnh tuyệt vời bằng máy ảnh web của bạn.",
+    "message": "Chụp những bức ảnh tuyệt đẹp bằng webcam.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -16,7 +16,7 @@
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Sắc đẹp",
+    "message": "Làm đẹp",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Hiện đại",
+    "message": "Cá tính",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -56,15 +56,15 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Trở về những năm 30",
+    "message": "Những năm 30",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Trở về những năm 50",
+    "message": "Những năm 50",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Trở về những năm 60",
+    "message": "Những năm 60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Điện ảnh",
+    "message": "Rạp chiếu phim",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -92,35 +92,41 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Ma",
+    "message": "Bóng ma",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Máy ảnh của bạn không khả dụng.",
+    "message": "Máy ảnh của bạn hiện chưa sẵn sàng.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
     "message": "Kiểm tra xem máy ảnh có được kết nối đúng cách không.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Không thể lưu ảnh vào thư viện.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Không thể tải thư viện.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Không thể xóa ảnh đã chọn.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Không thể thêm vào thư viện.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Không thể lưu ảnh đã chọn.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Không thể lưu $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Chưa ghi dữ liệu nào.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Tăng tốc phần cứng không khả dụng.",
+    "message": "Chế độ tăng tốc phần cứng không có sẵn.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -152,7 +158,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Phóng đại",
+    "message": "Phóng to",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -167,6 +173,10 @@
     "message": "Chụp ảnh",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Quay video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Chuyển đổi bộ hẹn giờ",
     "description": "Label for the button to toggle the countdown timer."
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "Chuyển đổi tính năng chụp nhiều ảnh",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Bật/tắt máy ảnh",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Chuyển sang quay video",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Chuyển sang chụp ảnh",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Quay video đang hoạt động",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Chụp ảnh đang hoạt động",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Chuyển đổi phản chiếu",
@@ -212,19 +242,27 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "Khá tốt",
+    "message": "OK",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Bạn có thực sự muốn xóa mục này không?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Bạn có thực sự muốn xóa $file$ không?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Bạn có thực sự muốn xóa các mục này không?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Chuyển đổi máy ảnh",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Bạn có thực sự muốn xóa $count$ mục không?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

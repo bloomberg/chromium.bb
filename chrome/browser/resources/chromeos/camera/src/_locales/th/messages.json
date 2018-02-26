@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "ภาพยนตร์",
+    "message": "โรงภาพยนตร์",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -96,35 +96,41 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "กล้องของคุณยังไม่สามารถใช้งานได้ในขณะนี้",
+    "message": "กล้องของคุณยังใช้งานไม่ได้ในขณะนี้",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
     "message": "ตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้องแล้ว",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ไม่สามารถบันทึกภาพลงในแกลเลอรี",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "ไม่สามารถโหลดแกลเลอรี",
+    "message": "โหลดแกลเลอรีไม่ได้",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "ไม่สามารถลบภาพที่เลือก",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "เพิ่มแกลเลอรีไม่ได้",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "ไม่สามารถบันทึกภาพที่เลือก",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "บันทึก $file$ ไม่ได้",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ไม่ได้บันทึกรายการใดๆ",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "การเร่งฮาร์ดแวร์ไม่สามารถใช้งานได้",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "คอมพิวเตอร์ของคุณอาจมีการ์ดจอที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
+    "message": "คอมพิวเตอร์อาจมีการ์ดจอที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -132,7 +138,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "เปิด-ปิดตัวกรอง",
+    "message": "สลับเปิด/ปิดตัวกรอง",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -167,16 +173,40 @@
     "message": "ถ่ายภาพ",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "บันทึกวิดีโอ",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "เปิด-ปิดเครื่องจับเวลา",
+    "message": "สลับเปิด/ปิดตัวจับเวลา",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "เปิด-ปิดมัลติช็อต",
+    "message": "สลับมัลติช็อต",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "สลับกล้อง",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "เปลี่ยนเป็นบันทึกวิดีโอ",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "เปลี่ยนเป็นถ่ายภาพ",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "บันทึกวิดีโอเปิดอยู่",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "ถ่ายภาพเปิดอยู่",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "เปิด-ปิดการมิเรอร์",
+    "message": "สลับเปิด/ปิดการมิเรอร์",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "คุณต้องการนำรายการนี้ออกจริงๆ ใช่ไหม",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "คุณต้องการนำ $file$ ออกจริงๆ ใช่ไหม",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "คุณต้องการนำรายการเหล่านี้ออกจริงๆ ใช่ไหม",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "สลับกล้อง",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "คุณต้องการนำออก $count$ ไฟล์จริงๆ ใช่ไหม",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

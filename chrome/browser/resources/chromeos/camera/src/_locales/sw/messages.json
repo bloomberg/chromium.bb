@@ -28,7 +28,7 @@
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Bila rangi",
+    "message": "Rangi nyeusi na nyeupe",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
@@ -36,7 +36,7 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Ya Kawaida",
+    "message": "Kawaida",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
@@ -72,19 +72,19 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Ya kisasa",
+    "message": "Kisasa",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "Zungusha",
+    "message": "Kinyamkera",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt Shift",
+    "message": "Mwonekano wa Mwinamo",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Sinema",
+    "message": "Filamu",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -103,21 +103,27 @@
     "message": "Angalia ikiwa kamera imeunganishwa vizuri.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Haikuweza kuhifadhi picha kwenye matunzio.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Haikuweza kupakia matunzio.",
+    "message": "Imeshindwa kufungua matunzio.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Haikuweza kufuta picha iliyochaguliwa.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Imeshindwa kuongeza kwenye matunzio.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Haikuweza kuhifadhi picha iliyochaguliwa.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Imeshindwa kuhifadhi $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Haijarekodi chochote.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Kipengele cha kuongeza kasi kwa kutumia maunzi hakipatikani.",
@@ -148,7 +154,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Rudi ",
+    "message": "Rudi nyuma",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -167,24 +173,48 @@
     "message": "Piga picha",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Rekodi video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Geuza kipima saa",
+    "message": "Geuza kipima muda",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Geuza upigaji picha nyingi",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Geuza kamera",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Rekodi video",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Piga picha",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Kipengele cha kurekodi video kinatumika",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Kipengele cha kupiga picha kinatumika",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
     "message": "Geuza uakisi",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "Kipima saa kinatumika",
+    "message": "Kipima muda kinatumika",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Kipima saa hakitumiki",
+    "message": "Kipima muda hakitumiki",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Una uhakika ungependa kuondoa kipengee hiki?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Una uhakika ungependa kuondoa $file$ kwenye matunzio?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Una uhakika ungependa kuondoa vipengee hivi?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Geuza kamera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Una uhakika ungependa kuondoa vipengee $count$?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

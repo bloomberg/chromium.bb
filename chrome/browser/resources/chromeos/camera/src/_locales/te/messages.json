@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "చలనచిత్రం",
+    "message": "సినిమా",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "దెయ్యం",
+    "message": "భూతం",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -100,24 +100,30 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "కెమెరా సరిగ్గా కనెక్ట్ అయ్యిందో లేదో తనిఖీ చేయండి.",
+    "message": "కెమెరా సరిగ్గా కనెక్ట్ అయ్యిందో లేదో సరి చూడండి.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "చిత్రాన్ని గ్యాలరీకి సేవ్ చేయడం సాధ్యపడలేదు.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "గ్యాలరీని లోడ్ చేయడం సాధ్యపడలేదు.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "ఎంచుకున్న చిత్రాన్ని తొలగించడం సాధ్యపడలేదు.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "గ్యాలరీకి జోడించడం సాధ్యపడలేదు.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "ఎంచుకున్న చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ను సేవ్ చేయడం సాధ్యపడలేదు.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ఏదీ రికార్డ్ చేయబడలేదు.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "హార్డ్‌వేర్ వేగవృద్ధి అందుబాటులో లేదు.",
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "చిత్రం తీయి",
+    "message": "చిత్రాన్ని తీయండి",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "వీడియోను రికార్డ్ చేయి",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "టైమర్‌ను టోగుల్ చేయి",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "బహుళ-షాట్‌ను టోగుల్ చేయి",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "కెమెరాను టోగుల్ చేయి",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "వీడియో రికార్డ్ చేయడానికి మారండి",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "చిత్రాన్ని తీయడానికి మారండి",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "వీడియోను రికార్డ్ చేయి సక్రియంగా ఉంది",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "చిత్రాన్ని తీయండి సక్రియంగా ఉంది",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "మిర్రరింగ్‌ను టోగుల్ చేయి",
@@ -208,7 +238,7 @@
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
-    "message": "కాదు",
+    "message": "వద్దు",
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "మీరు ఈ అంశాన్ని ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "మీరు $file$ని ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "మీరు ఈ అంశాలను ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "కెమెరాను టోగుల్ చేయి",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "మీరు $count$ అంశాలను ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

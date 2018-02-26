@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "আপনার ওয়েব ক্যামেরা দিয়ে অভিনব ছবি তুলুন৷",
+    "message": "ওয়েব ক্যামেরা ব্যবহার করে মজাদার ছবি তুলুন।",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -28,11 +28,11 @@
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "গ্রেস্কেইল",
+    "message": "গ্রেস্কেল",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "সংবাদপত্র",
+    "message": "নিউজপেপার",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -48,7 +48,7 @@
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "বানি হেড",
+    "message": "খরগোশের মাথা",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "টিল্ট-শিফ্ট",
+    "message": "টিল্ট শিফ্ট",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "ভিন্টেইজ",
+    "message": "ভিনটেজ",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -96,35 +96,41 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "আপনার ক্যামেরা বর্তমানে অনুপলব্ধ৷",
+    "message": "বর্তমানে ক্যামেরা উপলভ্য নেই।",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ক্যামেরা সঠিকভাবে সংযুক্ত আছে কিনা তা পরীক্ষা করুন।",
+    "message": "ক্যামেরা সঠিকভাবে কানেক্ট আছে কিনা তা পরীক্ষা করুন।",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "গ্যালারিতে ছবিটির সংরক্ষণ করা যায়নি৷",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "গ্যালারি লোড করা যায়নি৷",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "নির্বাচিত ছবিটি মুছে ফেলা যায়নি৷",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "গ্যালারিতে যোগ করা যায়নি।",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "নির্বাচিত ছবিটির সংরক্ষণ করা যায়নি৷",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ সেভ করা যায়নি।",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "কিছুই রেকর্ড করা হয়নি।",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "হার্ডওয়্যার অ্যাক্সিলারেশন উপলব্ধ নয়৷",
+    "message": "হার্ডওয়্যার অ্যাক্সিলারেশন উপলভ্য নয়।",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "সম্ভবত আপনার কম্পিউটারে একটি বেমানান গ্রাফিক্স কার্ড, বা পুরোনো ড্রাইভার রয়েছে৷",
+    "message": "সম্ভবত আপনার কম্পিউটারে একটি বেমানান গ্রাফিক্স কার্ড বা পুরোনো ড্রাইভার রয়েছে৷",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -140,11 +146,11 @@
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ডিস্কে সংরক্ষণ করুন",
+    "message": "ডিস্কে সেভ করুন",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "মুদ্রণ",
+    "message": "প্রিন্ট করুন",
     "description": "Label for the printing button."
   },
   "backButton": {
@@ -160,12 +166,16 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "গ্যালারির চিত্রগুলি",
+    "message": "গ্যালারির ছবিগুলি",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
     "message": "একটি ছবি তুলুন",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "ভিডিও রেকর্ড করুন",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "টাইমার টগল করুন",
@@ -175,32 +185,52 @@
     "message": "একাধিক-শট টগল করুন",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "ক্যামেরা টগল করুন",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "ভিডিও রেকর্ড করতে পরিবর্তন করুন",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "ছবি তোলার জন্য পরিবর্তন করুন",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "ভিডিও রেকর্ডিং চালু আছে",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "ছবি তোলার বিকল্প চালু আছে",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
     "message": "মিররিং টগল করুন",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "টাইমার সক্রিয় করা আছে",
+    "message": "টাইমার চালু আছে",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "টাইমার নিষ্ক্রিয় করা আছে",
+    "message": "টাইমার বন্ধ আছে",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "একাধিক-শট সক্রিয় করা আছে",
+    "message": "একাধিক-শট চালু আছে",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "একাধিক-শট নিষ্ক্রিয় করা আছে",
+    "message": "একাধিক-শট বন্ধ আছে",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "মিররিং সক্রিয় করা আছে",
+    "message": "মিররিং চালু আছে",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "মিররিং নিষ্ক্রিয় করা আছে",
+    "message": "মিররিং বন্ধ আছে",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "আপনি কি সত্যিই এই আইটেমটি সরাতে চান?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "আপনি কি সত্যিই $file$ সরিয়ে ফেলতে চান?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "আপনি কি সত্যিই এই আইটেমগুলি সরাতে চান?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "ক্যামেরা টগল করুন",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "আপনি কি সত্যিই $count$টি আইটেম সরিয়ে ফেলতে চান?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

@@ -100,24 +100,30 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ക്യാമറ ശരിയായാണോ കണക്റ്റുചെയ്തിരിക്കുന്നതെന്ന് പരിശോധിക്കുക.",
+    "message": "ക്യാമറ ശരിയായി കണക്‌റ്റ് ചെയ്തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ഗാലറിയിൽ ചിത്രം സംരക്ഷിക്കാനായില്ല.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "ഗാലറി ലോഡുചെയ്യാനായില്ല.",
+    "message": "ഗാലറി ലോഡ് ചെയ്യാനായില്ല.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "തിരഞ്ഞെടുത്ത ചിത്രം ഇല്ലാതാക്കാനായില്ല.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "ഗാലറിയിലേക്ക് ചേർക്കാനായില്ല.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "തിരഞ്ഞെടുത്ത ചിത്രം സംരക്ഷിക്കാനായില്ല.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ സംരക്ഷിക്കാനാവില്ല.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "ഹാർഡ്‌വെയർ ആക്‌സിലറേഷൻ ലഭ്യമല്ല.",
@@ -132,7 +138,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "ഫിൽട്ടറുകൾ ടോഗിൾ ചെയ്യുക",
+    "message": "ഫിൽട്ടറുകൾ മാറ്റുക",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -140,15 +146,15 @@
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ഡിസ്‌ക്കിൽ സംരക്ഷിക്കുക",
+    "message": "ഡിസ്‌ക്കിലേക്ക് സംരക്ഷിക്കുക",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "പ്രിന്റുചെയ്യുക",
+    "message": "പ്രിന്റ് ചെയ്യുക",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "തിരിച്ചുപോവുക",
+    "message": "തിരികെ പോവുക",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -156,7 +162,7 @@
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "അടയ്ക്കുക",
+    "message": "അവസാനിപ്പിക്കുക",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
@@ -167,16 +173,40 @@
     "message": "ഒരു ചിത്രമെടുക്കുക",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുക",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "ടൈമർ ടോഗിൾ ചെയ്യുക",
+    "message": "ടൈമർ മാറ്റുക",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "മൾട്ടി-ഷോട്ട് ടോഗിൾ ചെയ്യുക",
+    "message": "മൾട്ടി-ഷോട്ട് മാറ്റുക",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "ക്യാമറ മാറ്റുക",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് മാറുക",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "ചിത്രമെടുക്കുന്നതിലേക്ക് മാറുക",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യൽ സജീവമാണ്",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "ചിത്രമെടുക്കൽ സജീവമാണ്",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "മിററിംഗ് ടോഗിൾ ചെയ്യുക",
+    "message": "മിററിംഗ് മാറ്റുക",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "നിങ്ങൾക്ക് ശരിക്കും ഈ ഇനം നീക്കംചെയ്യണമെന്നുണ്ടോ?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "നിങ്ങൾക്ക് ശരിക്കും $file$ നീക്കം ചെയ്യണോ?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "നിങ്ങൾക്ക് ശരിക്കും ഈ ഇനങ്ങൾ നീക്കംചെയ്യണമെന്നുണ്ടോ?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "ക്യാമറ മാറ്റുക ",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "നിങ്ങൾക്ക് ശരിക്കും $count$ ഇനങ്ങൾ നീക്കം ചെയ്യണോ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

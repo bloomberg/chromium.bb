@@ -100,24 +100,30 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Ελέγξτε αν η κάμερά σας έχει συνδεθεί σωστά.",
+    "message": "Ελέγξτε αν η κάμερα έχει συνδεθεί σωστά.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση της φωτογραφίας στο gallery.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "Δεν είναι δυνατή η φόρτωση του gallery.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Δεν είναι δυνατή η διαγραφή της επιλεγμένης φωτογραφίας.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Δεν είναι δυνατή η προσθήκη στο gallery.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση της επιλεγμένης φωτογραφίας.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Καμία εγγραφή.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Η επιτάχυνση υλικού δεν είναι διαθέσιμη.",
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Τραβήξτε μια φωτογραφία",
+    "message": "Λήψη φωτογραφίας",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "Εγγραφή βίντεο",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "Εναλλαγή χρονομέτρου",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "Εναλλαγή πολλαπλών λήψεων",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Εναλλαγή Κάμερα",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Μετάβαση στη λειτουργία εγγραφής βίντεο",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Μετάβαση στη λειτουργία λήψης φωτογραφιών",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Η λειτουργία εγγραφής βίντεο είναι ενεργή",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Η λειτουργία λήψης φωτογραφιών είναι ενεργή",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Εναλλαγή κατοπτρισμού",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτό το στοιχείο;",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε το αρχείο $file$;",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτά τα στοιχεία;",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Εναλλαγή κάμερας",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε $count$ στοιχεία;",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

@@ -8,11 +8,11 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "அண்டி",
+    "message": "ஆண்டி",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "பெரிய கண்களுடன்",
+    "message": "பெரிய கண்கள்",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
@@ -36,19 +36,19 @@
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "சாதாரண",
+    "message": "இயல்பானது",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "பெரிய தலையுடன்",
+    "message": "பெரிய தலை",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "பெரிய தாடையுடன்",
+    "message": "பெரிய தாடை",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "முயல் தலையுடன்",
+    "message": "முயல் தலை",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
@@ -72,7 +72,7 @@
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "நவீனமான",
+    "message": "நவீனம்",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
@@ -103,24 +103,30 @@
     "message": "கேமரா சரியாக இணைக்கப்பட்டுள்ளதா எனப் பார்க்கவும்.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "படத்தைக் கேலரியில் சேமிக்க முடியவில்லை.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "கேலரியை ஏற்ற முடியவில்லை.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "தேர்வுசெய்த படத்தை நீக்க முடியவில்லை.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "கேலரியில் சேர்க்க முடியவில்லை.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "தேர்வுசெய்த படத்தைச் சேமிக்க முடியவில்லை.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ஐச் சேமிக்க முடியவில்லை.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "எதுவும் பதிவு செய்யப்படவில்லை.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "வன்பொருளை விரைவுப்படுத்துதல் இல்லை.",
+    "message": "வன்பொருள் விரைவுப்படுத்துதல் இல்லை.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "படமெடு",
+    "message": "படமெடுக்கவும்",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "வீடியோவைப் பதிவுசெய்",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "டைமரை நிலைமாற்று",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "மல்டி-ஷாட்டை நிலைமாற்று",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "கேமராவை மாற்று",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "வீடியோ ரெக்கார்டு செய்யும் பயன்முறைக்கு மாறு",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "படம் எடுக்கும் பயன்முறைக்கு மாறு",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "வீடியோவைப் பதிவு செய்வது செயலில் உள்ளது",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "படம் எடுப்பது செயலில் உள்ளது",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "பிரதிபலித்தலை நிலைமாற்று",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "இந்த உருப்படியை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "$file$ஐ நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "இந்த உருப்படிகளை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "கேமராவை மாற்று",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "$count$ உருப்படிகளை நிச்சயமாக அகற்ற விரும்புகிறீர்களா?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }
