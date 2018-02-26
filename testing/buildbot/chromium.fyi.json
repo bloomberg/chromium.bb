@@ -8967,6 +8967,14 @@
       "chromiumos_preflight"
     ]
   },
+  "linux-annotator-rel": {
+    "scripts": [
+      {
+        "name": "check_network_annotations",
+        "script": "check_network_annotations.py"
+      }
+    ]
+  },
   "linux-blink-heap-incremental-marking": {
     "isolated_scripts": [
       {
