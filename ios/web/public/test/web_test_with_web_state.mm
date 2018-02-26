@@ -22,6 +22,7 @@
 
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForJSCompletionTimeout;
+using testing::kWaitForPageLoadTimeout;
 
 namespace {
 // Returns CRWWebController for the given |web_state|.
@@ -125,12 +126,11 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     return web_controller.loadPhase == PAGE_LOADED;
   });
 
-  // Reload the page if script execution is not possible. Script execution will
-  // fail if WKUserScript was not injected by WKWebView (which sometimes happens
-  // after -[WKWebView loadHTMLString:baseURL:]).
-  if (![ExecuteJavaScript(@"0;") isEqual:@0]) {
-    LoadHtml(html, url);
-  }
+  // Wait until the script execution is possible. Script execution will fail if
+  // WKUserScript was not jet injected by WKWebView.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return [ExecuteJavaScript(@"0;") isEqual:@0];
+  }));
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html) {
