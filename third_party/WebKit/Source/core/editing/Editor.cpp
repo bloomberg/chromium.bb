@@ -342,16 +342,6 @@ void Editor::DeleteSelectionWithSmartDelete(
       ->Apply();
 }
 
-void Editor::PasteAsPlainText(const String& pasting_text,
-                              bool smart_replace,
-                              EditorCommandSource source) {
-  Element* target = FindEventTargetForClipboardEvent(source);
-  if (!target)
-    return;
-  target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
-      GetFrame().DomWindow(), pasting_text, smart_replace));
-}
-
 bool Editor::DispatchCopyEvent(EditorCommandSource source) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
