@@ -1356,13 +1356,46 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
   if (!number_of_code_units)
     return nullptr;
 
-  DCHECK_LE(number_of_code_units, 4u);
-  size_t entity_length_in_utf8 = ConvertUTF16EntityToUTF8(
-      utf16_decoded_entity, number_of_code_units,
-      reinterpret_cast<char*>(g_shared_xhtml_entity_result),
-      WTF_ARRAY_LENGTH(g_shared_xhtml_entity_result));
-  if (!entity_length_in_utf8)
-    return nullptr;
+  constexpr size_t kSharedXhtmlEntityResultLength =
+      arraysize(g_shared_xhtml_entity_result);
+  size_t entity_length_in_utf8;
+  // Unlike HTML parser, XML parser parses the content of named
+  // entities. So we need to escape '&' and '<'.
+  if (number_of_code_units == 1 && utf16_decoded_entity[0] == '&') {
+    g_shared_xhtml_entity_result[0] = '&';
+    g_shared_xhtml_entity_result[1] = '#';
+    g_shared_xhtml_entity_result[2] = '3';
+    g_shared_xhtml_entity_result[3] = '8';
+    g_shared_xhtml_entity_result[4] = ';';
+    entity_length_in_utf8 = 5;
+  } else if (number_of_code_units == 1 && utf16_decoded_entity[0] == '<') {
+    g_shared_xhtml_entity_result[0] = '&';
+    g_shared_xhtml_entity_result[1] = '#';
+    g_shared_xhtml_entity_result[2] = '6';
+    g_shared_xhtml_entity_result[3] = '0';
+    g_shared_xhtml_entity_result[4] = ';';
+    entity_length_in_utf8 = 5;
+  } else if (number_of_code_units == 2 && utf16_decoded_entity[0] == '<' &&
+             utf16_decoded_entity[1] == 0x20D2) {
+    g_shared_xhtml_entity_result[0] = '&';
+    g_shared_xhtml_entity_result[1] = '#';
+    g_shared_xhtml_entity_result[2] = '6';
+    g_shared_xhtml_entity_result[3] = '0';
+    g_shared_xhtml_entity_result[4] = ';';
+    g_shared_xhtml_entity_result[5] = 0xE2;
+    g_shared_xhtml_entity_result[6] = 0x83;
+    g_shared_xhtml_entity_result[7] = 0x92;
+    entity_length_in_utf8 = 8;
+  } else {
+    DCHECK_LE(number_of_code_units, 4u);
+    entity_length_in_utf8 = ConvertUTF16EntityToUTF8(
+        utf16_decoded_entity, number_of_code_units,
+        reinterpret_cast<char*>(g_shared_xhtml_entity_result),
+        kSharedXhtmlEntityResultLength);
+    if (entity_length_in_utf8 == 0)
+      return nullptr;
+  }
+  DCHECK_LE(entity_length_in_utf8, kSharedXhtmlEntityResultLength);
 
   xmlEntityPtr entity = SharedXHTMLEntity();
   entity->length = entity_length_in_utf8;
