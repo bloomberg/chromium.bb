@@ -408,6 +408,12 @@ bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   return true;
 }
 
+void AXTreeSourceArc::GetChildrenForTest(
+    mojom::AccessibilityNodeInfoData* node,
+    std::vector<mojom::AccessibilityNodeInfoData*>* out_children) const {
+  GetChildren(node, out_children);
+}
+
 mojom::AccessibilityNodeInfoData* AXTreeSourceArc::GetRoot() const {
   mojom::AccessibilityNodeInfoData* root = GetFromId(root_id_);
   return root;
@@ -437,9 +443,43 @@ void AXTreeSourceArc::GetChildren(
   if (it == node->int_list_properties->end())
     return;
 
-  for (size_t i = 0; i < it->second.size(); ++i) {
+  for (size_t i = 0; i < it->second.size(); ++i)
     out_children->push_back(GetFromId(it->second[i]));
-  }
+
+  // Sort children based on their enclosing bounding rectangles, based on their
+  // descendants.
+  std::sort(out_children->begin(), out_children->end(),
+            [this](auto left, auto right) {
+              auto left_bounds = ComputeEnclosingBounds(left);
+              auto right_bounds = ComputeEnclosingBounds(right);
+
+              // Top to bottom sort (non-overlapping).
+              if (!left_bounds.Intersects(right_bounds))
+                return left_bounds.y() < right_bounds.y();
+
+              // Overlapping
+              // Left to right.
+              int left_difference = left_bounds.x() - right_bounds.x();
+              if (left_difference != 0)
+                return left_difference < 0;
+
+              // Top to bottom.
+              int top_difference = left_bounds.y() - right_bounds.y();
+              if (top_difference != 0)
+                return top_difference < 0;
+
+              // Larger to smaller.
+              int height_difference =
+                  left_bounds.height() - right_bounds.height();
+              if (height_difference != 0)
+                return height_difference > 0;
+
+              int width_difference = left_bounds.width() - right_bounds.width();
+              if (width_difference != 0)
+                return width_difference > 0;
+
+              return true;
+            });
 }
 
 mojom::AccessibilityNodeInfoData* AXTreeSourceArc::GetParent(
@@ -529,7 +569,7 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   if (root_id_ != -1 && wm_helper) {
     aura::Window* focused_window =
         is_notification_ ? nullptr : wm_helper->GetFocusedWindow();
-    const gfx::Rect local_bounds = GetBounds(node, focused_window);
+    const gfx::Rect& local_bounds = GetBounds(node, focused_window);
     out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
                                local_bounds.width(), local_bounds.height());
   }
@@ -593,6 +633,44 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
   gfx::Rect root_bounds = GetFromId(root_id_)->bounds_in_screen;
   node_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
   return node_bounds;
+}
+
+gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
+    mojom::AccessibilityNodeInfoData* node) const {
+  gfx::Rect computed_bounds;
+  ComputeEnclosingBoundsInternal(node, computed_bounds);
+  return computed_bounds.IsEmpty() ? node->bounds_in_screen : computed_bounds;
+}
+
+void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
+    mojom::AccessibilityNodeInfoData* node,
+    gfx::Rect& computed_bounds) const {
+  // Only consider nodes that can possibly be accessibility focused. In Chrome,
+  // this amounts to nodes with a non-generic container role.
+  ui::AXNodeData data;
+  PopulateAXRole(node, &data);
+  const gfx::Rect& bounds = node->bounds_in_screen;
+  if (data.role != ax::mojom::Role::kGenericContainer &&
+      data.role != ax::mojom::Role::kGroup && !bounds.IsEmpty() &&
+      GetBooleanProperty(
+          node, arc::mojom::AccessibilityBooleanProperty::VISIBLE_TO_USER)) {
+    computed_bounds.Union(bounds);
+    return;
+  }
+
+  if (!node->int_list_properties)
+    return;
+
+  auto it = node->int_list_properties->find(
+      arc::mojom::AccessibilityIntListProperty::CHILD_NODE_IDS);
+  if (it == node->int_list_properties->end())
+    return;
+
+  for (size_t i = 0; i < it->second.size(); ++i) {
+    ComputeEnclosingBoundsInternal(GetFromId(it->second[i]), computed_bounds);
+  }
+
+  return;
 }
 
 void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
