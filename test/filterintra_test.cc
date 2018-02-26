@@ -110,15 +110,15 @@ TEST_P(AV1FilterIntraPredTest, BitExactCheck) { RunTest(); }
 using std::tr1::make_tuple;
 
 const PredFuncMode kPredFuncMdArray[] = {
-  make_tuple(av1_filter_intra_predictor_c, av1_filter_intra_predictor_sse4_1,
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_DC_PRED),
-  make_tuple(av1_filter_intra_predictor_c, av1_filter_intra_predictor_sse4_1,
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_V_PRED),
-  make_tuple(av1_filter_intra_predictor_c, av1_filter_intra_predictor_sse4_1,
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_H_PRED),
-  make_tuple(av1_filter_intra_predictor_c, av1_filter_intra_predictor_sse4_1,
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_D153_PRED),
-  make_tuple(av1_filter_intra_predictor_c, av1_filter_intra_predictor_sse4_1,
+  make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_PAETH_PRED),
 };
 
