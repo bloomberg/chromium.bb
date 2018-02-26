@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,14 @@ namespace {
 // Site Engagement score behavior histogram prefixes.
 const char kEngagementFinalPrefix[] = "Security.SiteEngagement";
 const char kEngagementDeltaPrefix[] = "Security.SiteEngagementDelta";
+
+// Navigation histogram prefixes.
+const char kPageEndReasonPrefix[] = "Security.PageEndReason";
+const char kTimeOnPagePrefix[] = "Security.TimeOnPage";
+
+// Security level histograms.
+const char kSecurityLevelOnCommit[] = "Security.SecurityLevel.OnCommit";
+const char kSecurityLevelOnComplete[] = "Security.SecurityLevel.OnComplete";
 
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
@@ -52,8 +61,11 @@ std::string GetHistogramName(const char* prefix,
 std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
 SecurityStatePageLoadMetricsObserver::MaybeCreateForProfile(
     content::BrowserContext* profile) {
+  // If the site engagement service is not enabled, this observer will not track
+  // site engagement metrics, but will still track the security level and
+  // navigation related metrics.
   if (!SiteEngagementService::IsEnabled())
-    return nullptr;
+    return std::make_unique<SecurityStatePageLoadMetricsObserver>(nullptr);
   auto* engagement_service = SiteEngagementServiceFactory::GetForProfile(
       static_cast<Profile*>(profile));
   return std::make_unique<SecurityStatePageLoadMetricsObserver>(
@@ -74,6 +86,13 @@ SecurityStatePageLoadMetricsObserver::GetEngagementFinalHistogramNameForTesting(
   return GetHistogramName(kEngagementFinalPrefix, level);
 }
 
+// static
+std::string
+SecurityStatePageLoadMetricsObserver::GetPageEndReasonHistogramNameForTesting(
+    security_state::SecurityLevel level) {
+  return GetHistogramName(kPageEndReasonPrefix, level);
+}
+
 SecurityStatePageLoadMetricsObserver::SecurityStatePageLoadMetricsObserver(
     SiteEngagementService* engagement_service)
     : content::WebContentsObserver(), engagement_service_(engagement_service) {}
@@ -86,8 +105,12 @@ SecurityStatePageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
-  initial_engagement_score_ =
-      engagement_service_->GetScore(navigation_handle->GetURL());
+  if (started_in_foreground)
+    OnShown();
+  if (engagement_service_) {
+    initial_engagement_score_ =
+        engagement_service_->GetScore(navigation_handle->GetURL());
+  }
   return CONTINUE_OBSERVING;
 }
 
@@ -112,7 +135,29 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
   security_state_tab_helper_->GetSecurityInfo(&security_info);
   initial_security_level_ = security_info.security_level;
   current_security_level_ = initial_security_level_;
+
+  base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
+                                security_state::SECURITY_LEVEL_COUNT);
+
   source_id_ = source_id;
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SecurityStatePageLoadMetricsObserver::OnHidden(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (currently_in_foreground_) {
+    foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
+    currently_in_foreground_ = false;
+  }
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SecurityStatePageLoadMetricsObserver::OnShown() {
+  last_time_shown_ = base::TimeTicks::Now();
+  currently_in_foreground_ = true;
   return CONTINUE_OBSERVING;
 }
 
@@ -122,31 +167,45 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   if (!extra_info.did_commit)
     return;
 
-  double final_engagement_score = engagement_service_->GetScore(extra_info.url);
+  if (engagement_service_) {
+    double final_engagement_score =
+        engagement_service_->GetScore(extra_info.url);
 
-  // HTTPS UI Indicator Study (https://crbug.com/803501): Only collect UKM data
-  // for EV_SECURE or SECURE sites (which are potentially affected by the
-  // experimental UI).
-  if (initial_security_level_ == security_state::EV_SECURE ||
-      initial_security_level_ == security_state::SECURE) {
-    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    ukm::builders::Security_SiteEngagement(source_id_)
-        .SetInitialSecurityLevel(initial_security_level_)
-        .SetFinalSecurityLevel(current_security_level_)
-        .SetScoreDelta(final_engagement_score - initial_engagement_score_)
-        .Record(ukm_recorder);
+    // HTTPS UI Indicator Study (https://crbug.com/803501): Only collect UKM
+    // data for EV_SECURE or SECURE sites (which are potentially affected by the
+    // experimental UI).
+    if (initial_security_level_ == security_state::EV_SECURE ||
+        initial_security_level_ == security_state::SECURE) {
+      ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+      ukm::builders::Security_SiteEngagement(source_id_)
+          .SetInitialSecurityLevel(initial_security_level_)
+          .SetFinalSecurityLevel(current_security_level_)
+          .SetScoreDelta(final_engagement_score - initial_engagement_score_)
+          .Record(ukm_recorder);
+    }
+
+    // Get the change in Site Engagement score and transform it into the range
+    // [0, 100] so it can be logged in an EXACT_LINEAR histogram.
+    int delta = std::round(
+        (final_engagement_score - initial_engagement_score_ + 100) / 2);
+    base::UmaHistogramExactLinear(
+        GetHistogramName(kEngagementDeltaPrefix, current_security_level_),
+        delta, 100);
+    base::UmaHistogramExactLinear(
+        GetHistogramName(kEngagementFinalPrefix, current_security_level_),
+        final_engagement_score, 100);
   }
 
-  // Get the change in Site Engagement score and transform it into the range
-  // [0, 100] so it can be logged in an EXACT_LINEAR histogram.
-  int delta = std::round(
-      (final_engagement_score - initial_engagement_score_ + 100) / 2);
-  base::UmaHistogramExactLinear(
-      GetHistogramName(kEngagementDeltaPrefix, current_security_level_), delta,
-      100);
-  base::UmaHistogramExactLinear(
-      GetHistogramName(kEngagementFinalPrefix, current_security_level_),
-      final_engagement_score, 100);
+  base::UmaHistogramEnumeration(
+      GetHistogramName(kPageEndReasonPrefix, current_security_level_),
+      extra_info.page_end_reason, page_load_metrics::PAGE_END_REASON_COUNT);
+  base::UmaHistogramCustomTimes(
+      GetHistogramName(kTimeOnPagePrefix, current_security_level_),
+      foreground_time_, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramEnumeration(kSecurityLevelOnComplete,
+                                current_security_level_,
+                                security_state::SECURITY_LEVEL_COUNT);
 }
 
 void SecurityStatePageLoadMetricsObserver::DidChangeVisibleSecurityState() {
