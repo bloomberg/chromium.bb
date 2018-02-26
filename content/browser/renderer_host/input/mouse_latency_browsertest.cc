@@ -259,7 +259,8 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 // Disabled on Android because we don't support synthetic mouse input on
 // Android (crbug.com/723618).
 // Disabled on Windows due to flakyness (https://crbug.com/800303).
-#if defined(OS_ANDROID) || defined(OS_WIN)
+// Disabled on Linux due to flakyness (https://crbug.com/815363).
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_MouseDownAndUpRecordedWithoutSwap \
   DISABLED_MouseDownAndUpRecordedWithoutSwap
 #else
