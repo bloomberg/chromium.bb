@@ -11250,9 +11250,9 @@
       'desc': '''Allows you to control the triggering of passwore protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
 
       If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
-      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when users reuse google passwords on any non-whitelisted sites.
-      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when users reuse google passwords on phishing sites.
-      If this policy is left unset, password protection warning will be triggered when users reuse google passwords on phishing sites but the user can change it.''',
+      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their Google password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their Google password on a phishing site.
+      If this policy is left unset, password protection warning will be triggered when the user reuses their Google password on a phishing site but the user will be able to change this setting.''',
     },
     {
       'name': 'PasswordProtectionRiskTrigger',
@@ -11290,9 +11290,9 @@
       'desc': '''Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at-risk of being hijacked.
 
       If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
-      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when users reuse google passwords on any non-whitelisted sites.
-      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when users reuse google passwords on phishing sites.
-      If this policy is left unset, password protection at-risk account flagging will be triggered when users reuse google passwords on phishing sites but the user can change it.''',
+      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a non-whitelisted site.
+      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site.
+      If this policy is left unset, password protection at-risk account flagging will be triggered when the user reuses their Google password on a phishing site but the user will be able to change this setting.''',
     },
     {
       'id': 419,
@@ -11383,7 +11383,7 @@
       'caption': '''Configure the list of domains on which Safe Browsing will not trigger warnings.''',
       'tags': [],
       'desc': '''Configure the list of domains which Safe Browsing will trust. This means:
-      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URL matches these domains.
+      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URLs match these domains.
       Safe Browsing's download protection service will not check downloads hosted on these domains.
       Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
 
@@ -11427,10 +11427,10 @@
       'id': 424,
       'caption': '''Configure the change password URL.''',
       'tags': [],
-      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password if they've been phished.
+      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
       This setting should only be used by GSuite users using a SSO/SMAL system.
 
-      If this setting is enabled, then password protection service will send users to this URL to change their password if they've been phished.
+      If this setting is enabled, then password protection service will send users to this URL to change their passwords if they've been phished.
       If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
