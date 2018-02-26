@@ -747,7 +747,7 @@ static void setup_ref_mv_list(
   uint8_t nearest_refmv_count[MODE_CTX_REF_FRAMES];
 
   nearest_match[ref_frame] =
-      row_match_count[ref_frame] + col_match_count[ref_frame];
+      (row_match_count[ref_frame] > 0) + (col_match_count[ref_frame] > 0);
   nearest_refmv_count[ref_frame] = refmv_count[ref_frame];
 
   // TODO(yunqing): for comp_search, do it for all 3 cases.
@@ -887,7 +887,7 @@ static void setup_ref_mv_list(
                   max_col_offset, &processed_cols);
 
   ref_match_count[ref_frame] =
-      row_match_count[ref_frame] + col_match_count[ref_frame];
+      (row_match_count[ref_frame] > 0) + (col_match_count[ref_frame] > 0);
 
 #if CONFIG_OPT_REF_MV
   switch (nearest_match[ref_frame])
