@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Clicking on an <area> element with a download attribute must not throw an exception assert_unreached: Navigated instead of downloading Reached unreachable code
-Harness: the test ran to completion.
-

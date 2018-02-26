@@ -5976,7 +5976,10 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
       info.url_request.CheckForBrowserSideNavigation() &&
       // No need to dispatch beforeunload if the frame has not committed a
       // navigation and contains an empty initial document.
-      (has_accessed_initial_document_ || !current_history_item_.IsNull());
+      (has_accessed_initial_document_ || !current_history_item_.IsNull()) &&
+      // Don't dispatch beforeunload if the navigation might end up as a
+      // download.
+      !info.url_request.GetSuggestedFilename().has_value();
 
   if (should_dispatch_before_unload) {
     // Execute the BeforeUnload event. If asked not to proceed or the frame is
