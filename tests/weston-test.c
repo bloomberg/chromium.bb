@@ -595,12 +595,14 @@ send_touch(struct wl_client *client, struct wl_resource *resource,
 	   int32_t touch_id, wl_fixed_t x, wl_fixed_t y, uint32_t touch_type)
 {
 	struct weston_test *test = wl_resource_get_user_data(resource);
-	struct weston_seat *seat = get_seat(test);
+	struct weston_touch_device *device = test->touch_device[0];
 	struct timespec time;
+
+	assert(device);
 
 	timespec_from_proto(&time, tv_sec_hi, tv_sec_lo, tv_nsec);
 
-	notify_touch(seat, &time, touch_id, wl_fixed_to_double(x),
+	notify_touch(device, &time, touch_id, wl_fixed_to_double(x),
 		     wl_fixed_to_double(y), touch_type);
 }
 

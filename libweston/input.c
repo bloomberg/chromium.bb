@@ -2347,12 +2347,12 @@ weston_touch_set_focus(struct weston_touch *touch, struct weston_view *view)
  *
  */
 WL_EXPORT void
-notify_touch(struct weston_seat *seat, const struct timespec *time,
+notify_touch(struct weston_touch_device *device, const struct timespec *time,
 	     int touch_id, double double_x, double double_y, int touch_type)
 {
-	struct weston_compositor *ec = seat->compositor;
-	struct weston_touch *touch = weston_seat_get_touch(seat);
-	struct weston_touch_grab *grab = touch->grab;
+	struct weston_touch *touch = device->aggregate;
+	struct weston_touch_grab *grab = device->aggregate->grab;
+	struct weston_compositor *ec = device->aggregate->seat->compositor;
 	struct weston_view *ev;
 	wl_fixed_t sx, sy;
 	wl_fixed_t x = wl_fixed_from_double(double_x);
@@ -2426,19 +2426,17 @@ notify_touch(struct weston_seat *seat, const struct timespec *time,
 }
 
 WL_EXPORT void
-notify_touch_frame(struct weston_seat *seat)
+notify_touch_frame(struct weston_touch_device *device)
 {
-	struct weston_touch *touch = weston_seat_get_touch(seat);
-	struct weston_touch_grab *grab = touch->grab;
+	struct weston_touch_grab *grab = device->aggregate->grab;
 
 	grab->interface->frame(grab);
 }
 
 WL_EXPORT void
-notify_touch_cancel(struct weston_seat *seat)
+notify_touch_cancel(struct weston_touch_device *device)
 {
-	struct weston_touch *touch = weston_seat_get_touch(seat);
-	struct weston_touch_grab *grab = touch->grab;
+	struct weston_touch_grab *grab = device->aggregate->grab;
 
 	grab->interface->cancel(grab);
 }

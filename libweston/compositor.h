@@ -1543,13 +1543,13 @@ void
 notify_keyboard_focus_out(struct weston_seat *seat);
 
 void
-notify_touch(struct weston_seat *seat, const struct timespec *time,
+notify_touch(struct weston_touch_device *device, const struct timespec *time,
 	     int touch_id, double x, double y, int touch_type);
 void
-notify_touch_frame(struct weston_seat *seat);
+notify_touch_frame(struct weston_touch_device *device);
 
 void
-notify_touch_cancel(struct weston_seat *seat);
+notify_touch_cancel(struct weston_touch_device *device);
 
 void
 weston_layer_entry_insert(struct weston_layer_entry *list,

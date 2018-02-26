@@ -438,7 +438,7 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 	weston_output_transform_coordinate(device->output,
 					   x, y, &x, &y);
 
-	notify_touch(device->seat, &time, slot, x, y, touch_type);
+	notify_touch(device->touch_device, &time, slot, x, y, touch_type);
 }
 
 static void
@@ -467,7 +467,7 @@ handle_touch_up(struct libinput_device *libinput_device,
 	timespec_from_usec(&time,
 			   libinput_event_touch_get_time_usec(touch_event));
 
-	notify_touch(device->seat, &time, slot, 0, 0, WL_TOUCH_UP);
+	notify_touch(device->touch_device, &time, slot, 0, 0, WL_TOUCH_UP);
 }
 
 static void
@@ -476,9 +476,8 @@ handle_touch_frame(struct libinput_device *libinput_device,
 {
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
-	struct weston_seat *seat = device->seat;
 
-	notify_touch_frame(seat);
+	notify_touch_frame(device->touch_device);
 }
 
 int
