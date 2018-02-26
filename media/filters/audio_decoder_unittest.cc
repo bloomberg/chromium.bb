@@ -445,13 +445,20 @@ const TestParams kMediaCodecTestParams[] = {
 
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxMp3Expectations[] = {
     {0, 1065, "2.81,3.99,4.53,4.10,3.08,2.46,"},
     {1065, 26122, "-3.81,-4.14,-3.90,-3.36,-3.03,-3.23,"},
     {27188, 26122, "4.24,3.95,4.22,4.78,5.13,4.93,"},
 };
 
+// File has trailing garbage, but should still decode without error.
+const DecodedBufferExpectations kTrailingGarbageMp3Expectations[] = {
+    {0, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
+    {26122, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
+    {52244, 26122, "-0.57,-0.77,-0.39,0.27,0.74,0.65,"},
+};
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxAdtsExpectations[] = {
     {0, 23219, "-1.90,-1.53,-0.15,1.28,1.23,-0.33,"},
     {23219, 23219, "0.54,0.88,2.19,3.54,3.24,1.63,"},
@@ -504,13 +511,15 @@ const DecodedBufferExpectations kSfxOpusExpectations[] = {
 #endif
 
 const TestParams kFFmpegTestParams[] = {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {kCodecMP3, "sfx.mp3", kSfxMp3Expectations, 0, 44100, CHANNEL_LAYOUT_MONO},
+    {kCodecMP3, "trailing-garbage.mp3", kTrailingGarbageMp3Expectations, 0,
+     44100, CHANNEL_LAYOUT_MONO},
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {kCodecAAC, "sfx.adts", kSfxAdtsExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
+#endif
     {kCodecFLAC, "sfx-flac.mp4", kSfxFlacExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
-#endif
     {kCodecFLAC, "sfx.flac", kSfxFlacExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
     {kCodecPCM, "sfx_f32le.wav", kSfxWaveExpectations, 0, 44100,
