@@ -529,7 +529,7 @@ public class Stack {
                 // state of the tab switcher and the OverviewAnimationType specified.
                 mTabAnimations =
                         mAnimationFactory.createAnimatorSetForType(type, mStackTabs, focusIndex,
-                                sourceIndex, mSpacing, mScrollOffset, mWarpSize, getDiscardRange());
+                                sourceIndex, mSpacing, mWarpSize, getDiscardRange());
             }
 
             if (mTabAnimations != null) mTabAnimations.start();
