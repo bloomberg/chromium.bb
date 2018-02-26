@@ -112,11 +112,16 @@ void IdleEventNotifier::SuspendImminent(
 }
 
 void IdleEventNotifier::SuspendDone(const base::TimeDelta& sleep_duration) {
-  // TODO(jiameng): consider check sleep_duration to decide whether to log
-  // event.
-  DCHECK(!idle_delay_timer_.IsRunning());
+  if (idle_delay_timer_.IsRunning()) {
+    idle_delay_timer_.AbandonAndStop();
+  }
+
   // SuspendDone is triggered by user opening the lid (or other user
   // activities).
+  if (sleep_duration >= idle_delay_) {
+    internal_data_->last_activity_since_boot = base::TimeDelta();
+    internal_data_->earliest_activity_since_boot = base::nullopt;
+  }
   UpdateActivityData(ActivityType::USER_OTHER);
   ResetIdleDelayTimer();
 }
@@ -208,7 +213,11 @@ void IdleEventNotifier::OnIdleDelayTimeout() {
 
   for (auto& observer : observers_)
     observer.OnIdleEventObserved(data);
-  internal_data_ = std::make_unique<ActivityDataInternal>();
+  // Only clears out |last_activity_since_boot| and
+  // |earliest_activity_since_boot because they are used to calculate recent
+  // time active, which should be reset between idle events.
+  internal_data_->last_activity_since_boot = base::TimeDelta();
+  internal_data_->earliest_activity_since_boot = base::nullopt;
 }
 
 void IdleEventNotifier::UpdateActivityData(ActivityType type) {
