@@ -3370,6 +3370,23 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
 
   anchor_layout_object->MapToVisualRectInAncestorSpace(
       root_view, graphics_layer_bounds_in_root_view_space);
+
+  // In RLS, the root_view is scrolled. However, MapToVisualRectInAncestorSpace
+  // doesn't account for this scroll, since it earlies out as soon as we reach
+  // this ancestor. That is, it only maps to the space of the root_view, not
+  // accounting for the fact that the root_view itself can be scrolled. If the
+  // root_view is our anchor_layout_object, then this extra offset is counted in
+  // offset_from_anchor_layout_object. In other cases, we need to account for it
+  // here. Otherwise, the paint clip below might clip the whole (visible) rect
+  // out.
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      root_view != anchor_layout_object) {
+    if (auto* scrollable_area = root_view->GetScrollableArea()) {
+      graphics_layer_bounds_in_root_view_space.MoveBy(
+          -scrollable_area->VisibleContentRect().Location());
+    }
+  }
+
   FloatRect visible_content_rect(graphics_layer_bounds_in_root_view_space);
   root_view->GetFrameView()->ClipPaintRect(&visible_content_rect);
 

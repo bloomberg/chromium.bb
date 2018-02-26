@@ -163,6 +163,43 @@ TEST_P(CompositedLayerMappingTest, TallLayerInterestRect) {
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 
+TEST_P(CompositedLayerMappingTest, TallCompositedScrolledLayerInterestRect) {
+  SetBodyInnerHTML(R"HTML(
+      <div style='width: 200px; height: 1000px;'></div>
+      <div id='target'
+           style='width: 200px; height: 10000px; will-change: transform'>
+       </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 8000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* element = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
+  EXPECT_EQ(IntRect(0, 2992, 200, 7008),
+            RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
+}
+
+TEST_P(CompositedLayerMappingTest, TallNonCompositedScrolledLayerInterestRect) {
+  SetHtmlInnerHTML(R"HTML(
+    <div style='width: 200px; height: 11000px;'></div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 8000), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  PaintLayer* paint_layer = GetDocument().View()->Layer();
+  ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
+  EXPECT_EQ(IntRect(0, 4000, 800, 7016),
+            RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
+}
+
 TEST_P(CompositedLayerMappingTest, TallLayerWholeDocumentInterestRect) {
   SetBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
