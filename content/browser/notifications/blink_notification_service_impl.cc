@@ -4,12 +4,15 @@
 
 #include "content/browser/notifications/blink_notification_service_impl.h"
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/notification_resources.h"
@@ -162,9 +165,34 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     return;
   }
 
-  // TODO(https://crbug.com/796991): Write notification data to the database,
-  // and get back a real notification ID to use here.
-  std::string notification_id = "FIXME";
+  // TODO(awdf): Necessary to validate resources here?
+
+  NotificationDatabaseData database_data;
+  database_data.origin = origin_.GetURL();
+  database_data.service_worker_registration_id = service_worker_registration_id;
+  database_data.notification_data = platform_notification_data;
+
+  notification_context_->WriteNotificationData(
+      origin_.GetURL(), database_data,
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId,
+          weak_ptr_factory_.GetWeakPtr(), service_worker_registration_id,
+          platform_notification_data, notification_resources,
+          std::move(callback))));
+}
+
+void BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId(
+    int64_t service_worker_registration_id,
+    const PlatformNotificationData& platform_notification_data,
+    const NotificationResources& notification_resources,
+    DisplayPersistentNotificationCallback callback,
+    bool success,
+    const std::string& notification_id) {
+  if (!success) {
+    std::move(callback).Run(
+        blink::mojom::PersistentNotificationError::INTERNAL_ERROR);
+    return;
+  }
 
   // Using base::Unretained here is safe because Service() returns a singleton.
   // TODO(https://crbug.com/796991): Get service worker registration from its
@@ -177,6 +205,7 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
           origin_.GetURL() /* service_worker_scope */,
           origin_.GetURL() /* origin */, platform_notification_data,
           notification_resources));
+
   std::move(callback).Run(blink::mojom::PersistentNotificationError::NONE);
 }
 
