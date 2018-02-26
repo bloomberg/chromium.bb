@@ -216,17 +216,48 @@ TEST_F(IdleEventNotifierTest, SuspendImminent) {
   FastForwardAndCheckResults(0, data);
 }
 
-// SuspendDone means user is back to active, hence it will trigger a future idle
-// event.
-TEST_F(IdleEventNotifierTest, SuspendDone) {
-  base::Time now = task_runner_->Now();
-  idle_event_notifier_->SuspendDone(base::TimeDelta::FromSeconds(1));
+// Short sleep duration behaves as if there was no idle period.
+TEST_F(IdleEventNotifierTest, ShortSuspendDone) {
+  base::Time now_1 = task_runner_->Now();
+  idle_event_notifier_->PowerChanged(ac_power_);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  idle_event_notifier_->SuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+  idle_event_notifier_->SuspendDone(idle_event_notifier_->idle_delay() / 2);
+  task_runner_->FastForwardBy(idle_event_notifier_->idle_delay() / 2);
+  base::Time now_2 = task_runner_->Now();
+  idle_event_notifier_->PowerChanged(disconnected_power_);
+
   IdleEventNotifier::ActivityData data;
-  data.last_activity_day = GetDayOfWeek(now);
-  const base::TimeDelta time_of_day = GetTimeSinceMidnight(now);
+  data.last_activity_day = GetDayOfWeek(now_2);
+  const base::TimeDelta time_of_day = GetTimeSinceMidnight(now_2);
   data.last_activity_time_of_day = time_of_day;
   data.last_user_activity_time_of_day = time_of_day;
-  data.recent_time_active = base::TimeDelta();
+  data.recent_time_active = now_2 - now_1;
+  FastForwardAndCheckResults(1, data);
+}
+
+// Long sleep duration behaves as if there was an idle period.
+TEST_F(IdleEventNotifierTest, LongSuspendDone) {
+  idle_event_notifier_->PowerChanged(ac_power_);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  idle_event_notifier_->SuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+  idle_event_notifier_->SuspendDone(idle_event_notifier_->idle_delay() +
+                                    base::TimeDelta::FromSeconds(10));
+  base::Time now_1 = task_runner_->Now();
+  task_runner_->FastForwardBy(idle_event_notifier_->idle_delay() / 2);
+  base::Time now_2 = task_runner_->Now();
+  idle_event_notifier_->PowerChanged(disconnected_power_);
+
+  IdleEventNotifier::ActivityData data;
+  data.last_activity_day = GetDayOfWeek(now_2);
+  const base::TimeDelta time_of_day = GetTimeSinceMidnight(now_2);
+  data.last_activity_time_of_day = time_of_day;
+  data.last_user_activity_time_of_day = time_of_day;
+  data.recent_time_active = now_2 - now_1;
   FastForwardAndCheckResults(1, data);
 }
 
@@ -347,6 +378,44 @@ TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
   data.time_since_last_mouse =
       idle_event_notifier_->idle_delay() + now_3 - now_2;
   FastForwardAndCheckResults(1, data);
+}
+
+TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
+  base::Time now_1 = task_runner_->Now();
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  idle_event_notifier_->OnUserActivity(&key_event);
+
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  base::Time now_2 = task_runner_->Now();
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_EXITED, gfx::Point(0, 0),
+                             gfx::Point(0, 0), base::TimeTicks(), 0, 0);
+  idle_event_notifier_->OnUserActivity(&mouse_event);
+
+  IdleEventNotifier::ActivityData data_1;
+  data_1.last_activity_day = GetDayOfWeek(now_2);
+  const base::TimeDelta time_of_day_2 = GetTimeSinceMidnight(now_2);
+  data_1.last_activity_time_of_day = time_of_day_2;
+  data_1.last_user_activity_time_of_day = time_of_day_2;
+  data_1.recent_time_active = now_2 - now_1;
+  data_1.time_since_last_key =
+      idle_event_notifier_->idle_delay() + now_2 - now_1;
+  data_1.time_since_last_mouse = idle_event_notifier_->idle_delay();
+  FastForwardAndCheckResults(1, data_1);
+
+  idle_event_notifier_->PowerChanged(ac_power_);
+  base::Time now_3 = task_runner_->Now();
+
+  IdleEventNotifier::ActivityData data_2;
+  data_2.last_activity_day = GetDayOfWeek(now_3);
+  const base::TimeDelta time_of_day_3 = GetTimeSinceMidnight(now_3);
+  data_2.last_activity_time_of_day = time_of_day_3;
+  data_2.last_user_activity_time_of_day = time_of_day_3;
+  data_2.recent_time_active = base::TimeDelta();
+  data_2.time_since_last_key =
+      idle_event_notifier_->idle_delay() + now_3 - now_1;
+  data_2.time_since_last_mouse =
+      idle_event_notifier_->idle_delay() + now_3 - now_2;
+  FastForwardAndCheckResults(2, data_2);
 }
 
 }  // namespace ml
