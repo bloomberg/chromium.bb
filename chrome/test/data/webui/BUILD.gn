@@ -104,7 +104,10 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
-  extra_js_files = [ "//chrome/browser/resources/md_downloads/constants.js" ]
+  extra_js_files = [
+    "//chrome/browser/resources/md_downloads/constants.js",
+    "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js",
+  ]
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [ "discards/discards_browsertest.js" ]

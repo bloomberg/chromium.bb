@@ -57,10 +57,10 @@ class ConsentAuditor : public KeyedService {
   // Consent text consisted of strings with |consent_grd_ids|, and the UI
   // element the user clicked had the ID |confirmation_grd_id|.
   // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
-  void RecordGaiaConsent(Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         ConsentStatus status);
+  virtual void RecordGaiaConsent(Feature feature,
+                                 const std::vector<int>& description_grd_ids,
+                                 int confirmation_grd_id,
+                                 ConsentStatus status);
 
   // Records that the user consented to a |feature|. The user was presented with
   // |description_text| and accepted it by interacting |confirmation_text|
