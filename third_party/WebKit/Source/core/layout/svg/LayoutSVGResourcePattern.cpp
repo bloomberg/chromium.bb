@@ -68,8 +68,9 @@ void LayoutSVGResourcePattern::RemoveClientFromCache(
                                         : kParentOnlyInvalidation);
 }
 
-PatternData* LayoutSVGResourcePattern::PatternForLayoutObject(
-    const LayoutObject& object) {
+PatternData* LayoutSVGResourcePattern::PatternForClient(
+    const LayoutObject& object,
+    const FloatRect& object_bounding_box) {
   DCHECK(!should_collect_pattern_attributes_);
 
   // FIXME: the double hash lookup is needed to guard against paint-time
@@ -79,12 +80,12 @@ PatternData* LayoutSVGResourcePattern::PatternForLayoutObject(
   if (PatternData* current_data = pattern_map_.at(&object))
     return current_data;
 
-  return pattern_map_.Set(&object, BuildPatternData(object))
+  return pattern_map_.Set(&object, BuildPatternData(object_bounding_box))
       .stored_value->value.get();
 }
 
 std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
-    const LayoutObject& object) {
+    const FloatRect& object_bounding_box) {
   // If we couldn't determine the pattern content element root, stop here.
   const PatternAttributes& attributes = Attributes();
   if (!attributes.PatternContentElement())
@@ -96,9 +97,8 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 
   DCHECK(GetElement());
   // Compute tile metrics.
-  FloatRect client_bounding_box = object.ObjectBoundingBox();
   FloatRect tile_bounds = SVGLengthContext::ResolveRectangle(
-      GetElement(), attributes.PatternUnits(), client_bounding_box,
+      GetElement(), attributes.PatternUnits(), object_bounding_box,
       *attributes.X(), *attributes.Y(), *attributes.Width(),
       *attributes.Height());
   if (tile_bounds.IsEmpty())
@@ -114,9 +114,10 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
   } else {
     // A viewbox overrides patternContentUnits, per spec.
     if (attributes.PatternContentUnits() ==
-        SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
-      tile_transform.Scale(client_bounding_box.Width(),
-                           client_bounding_box.Height());
+        SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+      tile_transform.Scale(object_bounding_box.Width(),
+                           object_bounding_box.Height());
+    }
   }
 
   std::unique_ptr<PatternData> pattern_data = WTF::WrapUnique(new PatternData);
@@ -132,14 +133,15 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
 }
 
 SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
-    const LayoutObject& object) {
+    const LayoutObject& object,
+    const FloatRect& object_bounding_box) {
   ClearInvalidationMask();
 
   SVGPatternElement* pattern_element = ToSVGPatternElement(GetElement());
   if (!pattern_element)
     return SVGPaintServer::Invalid();
 
-  // Validate patter DOM state before building the actual
+  // Validate pattern DOM state before building the actual
   // pattern. This should avoid tearing down the pattern we're
   // currently working on. Preferably the state validation should have
   // no side-effects though.
@@ -154,13 +156,12 @@ SVGPaintServer LayoutSVGResourcePattern::PreparePaintServer(
   // Spec: When the geometry of the applicable element has no width or height
   // and objectBoundingBox is specified, then the given effect (e.g. a gradient
   // or a filter) will be ignored.
-  FloatRect object_bounding_box = object.ObjectBoundingBox();
   if (Attributes().PatternUnits() ==
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
       object_bounding_box.IsEmpty())
     return SVGPaintServer::Invalid();
 
-  PatternData* pattern_data = PatternForLayoutObject(object);
+  PatternData* pattern_data = PatternForClient(object, object_bounding_box);
   if (!pattern_data || !pattern_data->pattern)
     return SVGPaintServer::Invalid();
 

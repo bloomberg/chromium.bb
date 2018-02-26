@@ -102,7 +102,9 @@ class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
   LayoutSVGResourcePaintServer(SVGElement*);
   ~LayoutSVGResourcePaintServer() override;
 
-  virtual SVGPaintServer PreparePaintServer(const LayoutObject&) = 0;
+  virtual SVGPaintServer PreparePaintServer(
+      const LayoutObject&,
+      const FloatRect& object_bounding_box) = 0;
 
   // Helper utilities used in to access the underlying resources for DRT.
   static SVGPaintDescription RequestPaintDescription(const LayoutObject&,
