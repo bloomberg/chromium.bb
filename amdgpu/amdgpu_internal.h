@@ -73,7 +73,6 @@ struct amdgpu_device {
 	int flink_fd;
 	unsigned major_version;
 	unsigned minor_version;
-	uint32_t address32_hi;
 
 	char *marketing_name;
 	/** List of buffer handles. Protected by bo_table_mutex. */
