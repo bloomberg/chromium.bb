@@ -67,11 +67,9 @@ extern "C" {
 // normal reference pool.
 #define FRAME_BUFFERS (REF_FRAMES + 7)
 
-#if CONFIG_REFERENCE_BUFFER
 /* Constant values while waiting for the sequence header */
 #define FRAME_ID_LENGTH 15
 #define DELTA_FRAME_ID_LENGTH 14
-#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 #define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
@@ -206,7 +204,6 @@ typedef struct {
 typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
                           [BASE_CONTEXT_POSITION_NUM + 1];
 
-#if CONFIG_REFERENCE_BUFFER
 /* Initial version of sequence header structure */
 typedef struct SequenceHeader {
 #if CONFIG_FRAME_SIZE
@@ -237,7 +234,6 @@ typedef struct SequenceHeader {
                         // 1 - enable it
 #endif
 } SequenceHeader;
-#endif  // CONFIG_REFERENCE_BUFFER
 
 typedef struct AV1Common {
   struct aom_internal_error_info error;
@@ -587,14 +583,12 @@ typedef struct AV1Common {
   int delta_lf_multi;
 #endif
   int num_tg;
-#if CONFIG_REFERENCE_BUFFER
   SequenceHeader seq_params;
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
   int refresh_mask;
   int invalid_delta_frame_id_minus1;
-#endif  // CONFIG_REFERENCE_BUFFER
   LV_MAP_CTX_TABLE coeff_ctx_table;
 #if CONFIG_MFMV
   TPL_MV_REF *tpl_mvs;
@@ -1403,12 +1397,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
 }
 
 static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
-#if CONFIG_REFERENCE_BUFFER
   cm->seq_params.frame_id_numbers_present_flag = use;
-#else
-  (void)cm;
-  (void)use;
-#endif
 }
 
 static INLINE void set_sb_size(SequenceHeader *const seq_params,

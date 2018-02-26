@@ -341,9 +341,7 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
-#if CONFIG_REFERENCE_BUFFER
     set_use_reference_buffer(cm, 0);
-#endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
 #else
@@ -5939,9 +5937,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #if CONFIG_EXT_TILE
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
-#if CONFIG_REFERENCE_BUFFER
   if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
-#endif  // CONFIG_REFERENCE_BUFFER
 #endif  // CONFIG_EXT_TILE
 
   cm->seq_params.monochrome = oxcf->monochrome;
@@ -5965,7 +5961,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
          MAX_MODES * sizeof(*cpi->mode_chosen_counts));
 #endif
 
-#if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
     /* Non-normative definition of current_frame_id ("frame counter" with
      * wraparound) */
@@ -5987,7 +5982,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
           (1 << frame_id_length);
     }
   }
-#endif  // CONFIG_REFERENCE_BUFFER
 
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     encode_without_recode_loop(cpi);
@@ -6074,7 +6068,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     return AOM_CODEC_OK;
   }
 
-#if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int i;
     /* Update reference frame id values based on the value of refresh_mask */
@@ -6084,7 +6077,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       }
     }
   }
-#endif  // CONFIG_REFERENCE_BUFFER
 
 #if DUMP_RECON_FRAMES == 1
   // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -6941,13 +6933,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->min_qmlevel = cpi->oxcf.qm_minlevel;
   cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
 
-#if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
     if (*time_stamp == 0) {
       cpi->common.current_frame_id = -1;
     }
   }
-#endif  // CONFIG_REFERENCE_BUFFER
+
 #if CONFIG_AMVR
   cpi->cur_poc++;
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {

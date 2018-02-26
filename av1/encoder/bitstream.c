@@ -3170,7 +3170,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(wb, 1);  // show_existing_frame
     aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
-#if CONFIG_REFERENCE_BUFFER
     if (cm->seq_params.frame_id_numbers_present_flag) {
       int frame_id_len = cm->seq_params.frame_id_length;
       int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
@@ -3180,7 +3179,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       /* Consider to have this logic only one place */
       aom_wb_write_literal(wb, 0, 8);
     }
-#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_FILM_GRAIN
     if (cm->film_grain_params_present && cm->show_frame) {
@@ -3244,13 +3242,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
 #endif  // CONFIG_AMVR
 
-#if CONFIG_REFERENCE_BUFFER
   cm->invalid_delta_frame_id_minus1 = 0;
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int frame_id_len = cm->seq_params.frame_id_length;
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
-#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_FRAME_SIZE
   if (cm->width > cm->seq_params.max_frame_width ||
@@ -3375,7 +3371,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (cm->frame_type == S_FRAME) {
         assert(cm->ref_frame_sign_bias[ref_frame] == 0);
       }
-#if CONFIG_REFERENCE_BUFFER
+
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);
         int frame_id_len = cm->seq_params.frame_id_length;
@@ -3390,7 +3386,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
           cm->invalid_delta_frame_id_minus1 = 1;
         aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
       }
-#endif  // CONFIG_REFERENCE_BUFFER
     }
 
 #if CONFIG_FRAME_SIZE
@@ -3431,12 +3426,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
 
-#if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
     cm->refresh_mask =
         cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
   }
-#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_EXT_TILE
   const int might_bwd_adapt =
