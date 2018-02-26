@@ -1878,7 +1878,7 @@ class CipdDependency(Dependency):
     url = urlparse.urljoin(
         cipd_root.service_url, '%s@%s' % (package, version))
     super(CipdDependency, self).__init__(
-        parent, name, url, url, None, None, custom_vars,
+        parent, name + ':' + package, url, url, None, None, custom_vars,
         None, None, should_process, relative, condition, condition_value)
     if relative:
       # TODO(jbudorick): Implement relative if necessary.
@@ -1887,13 +1887,19 @@ class CipdDependency(Dependency):
     self._cipd_root = cipd_root
 
     self._cipd_subdir = os.path.relpath(
-        os.path.join(self.root.root_dir, self.name), cipd_root.root_dir)
+        os.path.join(self.root.root_dir, name), cipd_root.root_dir)
     self._cipd_package = self._cipd_root.add_package(
         self._cipd_subdir, package, version)
 
   def ParseDepsFile(self):
     """CIPD dependencies are not currently allowed to have nested deps."""
     self.add_dependencies_and_close([], [])
+
+  #override
+  def verify_validity(self):
+    """CIPD dependencies allow duplicate name for packages in same directory."""
+    logging.info('Dependency(%s).verify_validity()' % self.name)
+    return True
 
   #override
   def GetScmName(self, url):
