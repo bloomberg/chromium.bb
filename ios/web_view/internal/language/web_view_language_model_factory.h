@@ -44,6 +44,8 @@ class WebViewLanguageModelFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* const registry) override;
+  web::BrowserState* GetBrowserStateToUse(
+      web::BrowserState* state) const override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewLanguageModelFactory);
 };

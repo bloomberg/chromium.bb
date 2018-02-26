@@ -85,14 +85,14 @@
     std::unique_ptr<IdentityProvider> identityProvider(
         std::make_unique<ProfileIdentityProvider>(
             ios_web_view::WebViewSigninManagerFactory::GetForBrowserState(
-                browserState),
+                browserState->GetRecordingBrowserState()),
             ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
-                browserState),
+                browserState->GetRecordingBrowserState()),
             base::Closure()));
     _autofillClient.reset(new autofill::WebViewAutofillClientIOS(
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
-            browserState),
+            browserState->GetRecordingBrowserState()),
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetInstance()
             ->GetForBrowserState(browserState),

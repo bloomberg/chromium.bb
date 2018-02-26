@@ -18,7 +18,6 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
-#import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/language/web_view_language_model_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
@@ -35,21 +34,13 @@ DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::WebViewTranslateClient);
 
 namespace ios_web_view {
 
-namespace {
-// Translate settings for off-the-record browser states are inherited from a
-// non-off-the-record browser state. This allows them to share settings.
-WebViewBrowserState* GetMainBrowserState() {
-  return [CWVWebViewConfiguration defaultConfiguration].browserState;
-}
-}  // namespace
-
 WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
-    : translate_manager_(std::make_unique<translate::TranslateManager>(
+    : browser_state_(
+          WebViewBrowserState::FromBrowserState(web_state->GetBrowserState())),
+      translate_manager_(std::make_unique<translate::TranslateManager>(
           this,
-          WebViewTranslateRankerFactory::GetForBrowserState(
-              WebViewBrowserState::FromBrowserState(GetMainBrowserState())),
-          WebViewLanguageModelFactory::GetForBrowserState(
-              WebViewBrowserState::FromBrowserState(GetMainBrowserState())))),
+          WebViewTranslateRankerFactory::GetForBrowserState(browser_state_),
+          WebViewLanguageModelFactory::GetForBrowserState(browser_state_))),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {
@@ -84,7 +75,8 @@ translate::IOSTranslateDriver* WebViewTranslateClient::GetTranslateDriver() {
 }
 
 PrefService* WebViewTranslateClient::GetPrefs() {
-  return GetMainBrowserState()->GetPrefs();
+  // Use recording browser state to share user settings.
+  return browser_state_->GetRecordingBrowserState()->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
@@ -97,7 +89,7 @@ translate::TranslateAcceptLanguages*
 WebViewTranslateClient::GetTranslateAcceptLanguages() {
   translate::TranslateAcceptLanguages* accept_languages =
       WebViewTranslateAcceptLanguagesFactory::GetForBrowserState(
-          WebViewBrowserState::FromBrowserState(GetMainBrowserState()));
+          browser_state_);
   DCHECK(accept_languages);
   return accept_languages;
 }
