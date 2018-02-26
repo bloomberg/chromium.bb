@@ -66,6 +66,8 @@ class SVGGeometryElement : public SVGGraphicsElement {
                      Document&,
                      ConstructionType = kCreateSVGElement);
 
+  void GeometryAttributeChanged();
+
  private:
   bool IsSVGGeometryElement() const final { return true; }
   virtual float ComputePathLength() const;

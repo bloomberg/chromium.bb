@@ -21,7 +21,7 @@
 #include "core/svg/SVGPathElement.h"
 
 #include "core/css/StyleChangeReason.h"
-#include "core/layout/svg/LayoutSVGPath.h"
+#include "core/layout/LayoutObject.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathQuery.h"
 #include "core/svg/SVGPathUtilities.h"
@@ -81,14 +81,8 @@ void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     InvalidateSVGPresentationAttributeStyle();
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::FromAttribute(attr_name));
-
-    if (LayoutSVGShape* layout_path = ToLayoutSVGShape(this->GetLayoutObject()))
-      layout_path->SetNeedsShapeUpdate();
-
     InvalidateMPathDependencies();
-    if (GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(GetLayoutObject());
-
+    GeometryAttributeChanged();
     return;
   }
 

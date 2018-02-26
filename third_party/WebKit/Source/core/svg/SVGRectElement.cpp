@@ -139,19 +139,11 @@ void SVGRectElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       attr_name == SVGNames::widthAttr || attr_name == SVGNames::heightAttr ||
       attr_name == SVGNames::rxAttr || attr_name == SVGNames::ryAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
     InvalidateSVGPresentationAttributeStyle();
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::FromAttribute(attr_name));
     UpdateRelativeLengthsInformation();
-
-    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
-    if (!layout_object)
-      return;
-
-    layout_object->SetNeedsShapeUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
-
+    GeometryAttributeChanged();
     return;
   }
 
