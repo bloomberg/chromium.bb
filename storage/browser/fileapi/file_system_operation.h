@@ -78,9 +78,9 @@ class FileSystemOperation {
   // Used for OpenFile(). |on_close_callback| will be called after the file is
   // closed in the child process. It can be null, if no operation is needed on
   // closing a file.
-  typedef base::Callback<
-      void(base::File file,
-           const base::Closure& on_close_callback)> OpenFileCallback;
+  typedef base::Callback<void(base::File file,
+                              base::OnceClosure on_close_callback)>
+      OpenFileCallback;
 
   // Used for ReadDirectoryCallback.
   typedef std::vector<DirectoryEntry> FileEntryList;

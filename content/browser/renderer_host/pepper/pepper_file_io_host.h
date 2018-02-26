@@ -105,7 +105,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       UIThreadStuff ui_thread_stuff);
   void DidOpenInternalFile(ppapi::host::ReplyMessageContext reply_context,
                            base::File file,
-                           const base::Closure& on_close_callback);
+                           base::OnceClosure on_close_callback);
   void GotResolvedRenderProcessId(
       ppapi::host::ReplyMessageContext reply_context,
       base::FilePath path,
@@ -145,7 +145,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   storage::FileSystemURL file_system_url_;
-  base::Closure on_close_callback_;
+  base::OnceClosure on_close_callback_;
   int64_t max_written_offset_;
   bool check_quota_;
 

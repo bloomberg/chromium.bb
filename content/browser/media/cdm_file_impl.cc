@@ -200,9 +200,8 @@ void CdmFileImpl::OpenFile(const std::string& file_name,
                           std::move(callback));
 }
 
-void CdmFileImpl::OnFileOpenedForReading(
-    base::File file,
-    const base::Closure& on_close_callback) {
+void CdmFileImpl::OnFileOpenedForReading(base::File file,
+                                         base::OnceClosure on_close_callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(LockState::kFileLocked, lock_state_);
@@ -255,7 +254,7 @@ void CdmFileImpl::OpenFileForWriting(OpenFileForWritingCallback callback) {
 
 void CdmFileImpl::OnTempFileOpenedForWriting(
     base::File file,
-    const base::Closure& on_close_callback) {
+    base::OnceClosure on_close_callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(LockState::kFileAndTempFileLocked, lock_state_);

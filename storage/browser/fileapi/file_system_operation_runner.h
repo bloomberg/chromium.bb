@@ -276,11 +276,10 @@ class STORAGE_EXPORT FileSystemOperationRunner
                 base::File::Error rv,
                 int64_t bytes,
                 bool complete);
-  void DidOpenFile(
-      const OperationHandle& handle,
-      const OpenFileCallback& callback,
-      base::File file,
-      const base::Closure& on_close_callback);
+  void DidOpenFile(const OperationHandle& handle,
+                   const OpenFileCallback& callback,
+                   base::File file,
+                   base::OnceClosure on_close_callback);
   void DidCreateSnapshot(
       const OperationHandle& handle,
       const SnapshotFileCallback& callback,

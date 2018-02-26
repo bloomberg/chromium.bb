@@ -54,9 +54,9 @@ class AsyncFileUtil {
   // |on_close_callback| will be called after the |file| is closed in the
   // child process. |on_close_callback|.is_null() can be true, if no operation
   // is needed on closing the file.
-  typedef base::Callback<
-      void(base::File file,
-           const base::Closure& on_close_callback)> CreateOrOpenCallback;
+  typedef base::Callback<void(base::File file,
+                              base::OnceClosure on_close_callback)>
+      CreateOrOpenCallback;
 
   typedef base::Callback<
       void(base::File::Error result,
