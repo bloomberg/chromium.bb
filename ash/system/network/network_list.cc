@@ -699,14 +699,17 @@ NetworkListView::UpdateNetworkListEntries() {
       &wifi_header_view_, &wifi_separator_view_);
 
   // "Wifi Enabled / Disabled".
-  int wifi_message_id = 0;
-  if (!handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()))
-    wifi_message_id = IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-  else if (!handler->FirstNetworkByType(NetworkTypePattern::WiFi()))
-    wifi_message_id = IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED;
-  UpdateInfoLabel(wifi_message_id, index, &no_wifi_networks_view_);
-  if (wifi_message_id)
+  if (!handler->IsTechnologyEnabled(NetworkTypePattern::WiFi())) {
+    UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED, index,
+                    &no_wifi_networks_view_);
+    return new_guids;
+  }
+
+  if (!handler->FirstNetworkByType(NetworkTypePattern::WiFi())) {
+    UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED, index,
+                    &no_wifi_networks_view_);
     ++index;
+  }
 
   // Add Wi-Fi networks.
   std::unique_ptr<std::set<std::string>> new_wifi_guids =

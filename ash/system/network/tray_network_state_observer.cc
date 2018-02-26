@@ -21,6 +21,11 @@ namespace {
 
 const int kUpdateFrequencyMs = 1000;
 
+bool IsWifiEnabled() {
+  return NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi());
+}
+
 }  // namespace
 
 namespace ash {
@@ -36,6 +41,7 @@ TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(this,
                                                                 FROM_HERE);
+    wifi_enabled_ = IsWifiEnabled();
   }
 }
 
@@ -84,6 +90,15 @@ void TrayNetworkStateObserver::DevicePropertiesUpdated(
 }
 
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
+  bool old_state = wifi_enabled_;
+  wifi_enabled_ = IsWifiEnabled();
+
+  // Update immediately when wifi network changed from enabled->disabled.
+  if (old_state && !wifi_enabled_) {
+    SendNetworkStateChanged(notify_a11y);
+    return;
+  }
+
   if (timer_.IsRunning())
     return;
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(update_frequency_),
