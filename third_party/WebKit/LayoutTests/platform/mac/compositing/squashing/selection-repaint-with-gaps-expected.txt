@@ -33,7 +33,12 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ipsum'",
+          "rect": [0, 80, 42, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'lorem'",
           "rect": [0, 80, 42, 36],
           "reason": "geometry"
         }
@@ -102,12 +107,22 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'ipsum'",
           "rect": [0, 80, 44, 36],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
+          "object": "InlineTextBox 'lorem'",
+          "rect": [0, 80, 44, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'ipsum'",
+          "rect": [0, 160, 42, 36],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'lorem'",
           "rect": [0, 160, 42, 36],
           "reason": "geometry"
         }
