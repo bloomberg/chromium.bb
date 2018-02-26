@@ -6,6 +6,7 @@
 #define ASH_WM_NATIVE_CURSOR_MANAGER_ASH_MUS_H_
 
 #include "ash/wm/native_cursor_manager_ash.h"
+#include "ui/base/cursor/cursor_data.h"
 
 namespace ui {
 class CursorDataFactoryOzone;
@@ -47,6 +48,8 @@ class ASH_EXPORT NativeCursorManagerAshMus : public NativeCursorManagerAsh {
       bool enabled,
       ::wm::NativeCursorManagerDelegate* delegate) override;
 
+  void SetCursorOnAllRootWindows(gfx::NativeCursor cursor);
+
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;
 
@@ -55,6 +58,11 @@ class ASH_EXPORT NativeCursorManagerAshMus : public NativeCursorManagerAsh {
   std::unique_ptr<ui::CursorDataFactoryOzone> cursor_factory_ozone_;
 
   std::unique_ptr<::ui::ImageCursors> image_cursors_;
+
+  // Cached version of the last Cursor sent to the ws. Cached to avoid
+  // unnecessary IPCs as well as avoiding pushing the cursor to hardware, which
+  // can be slow.
+  ui::CursorData last_cursor_sent_to_window_server_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerAshMus);
 };
