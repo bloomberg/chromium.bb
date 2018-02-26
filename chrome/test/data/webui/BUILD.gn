@@ -165,6 +165,7 @@ js2gtest("unit_tests_js") {
   if (is_chromeos) {
     sources += [
       "../../../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+      "../../../browser/resources/chromeos/select_to_speak/node_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/paragraph_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/rect_utils_unittest.gtestjs",
       "../../../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
@@ -177,6 +178,7 @@ js2gtest("unit_tests_js") {
       "../../../browser/resources/chromeos/select_to_speak/select_to_speak.js",
       "../../../browser/resources/chromeos/select_to_speak/test_support.js",
       "../../../browser/resources/chromeos/select_to_speak/word_utils.js",
+      "../../../browser/resources/chromeos/select_to_speak/node_utils.js",
     ]
   }
 }

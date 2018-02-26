@@ -33,6 +33,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "checked.png",
     "closure_shim.js",
     "earcons/null_selection.ogg",
+    "node_utils.js",
     "options.css",
     "options.html",
     "paragraph_utils.js",
