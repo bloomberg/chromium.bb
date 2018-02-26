@@ -77,7 +77,7 @@ sk_sp<SkPicture> DeserializeOopPicture(const void* data,
 
   auto* context = reinterpret_cast<DeserializationContext*>(ctx);
   auto iter = context->find(pic_id);
-  if (iter == context->end()) {
+  if (iter == context->end() || !iter->second) {
     // When we don't have the out-of-process picture available, we return
     // an empty picture. Returning a nullptr will cause the deserialization
     // crash.
