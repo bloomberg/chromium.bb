@@ -27,8 +27,15 @@ class GLVirtualContextsTest
   void SetUp() override {
     GpuDriverBugWorkarounds workarounds = GetParam();
     GLManager::Options options;
+    options.context_type = CONTEXT_TYPE_OPENGLES3;
     options.size = gfx::Size(kSize0, kSize0);
     gl_real_.InitializeWithWorkarounds(options, workarounds);
+    // If the gl_real context is not initialised, switch to ES2 context type
+    // and re-initialise
+    if (!gl_real_.IsInitialized()) {
+      options.context_type = CONTEXT_TYPE_OPENGLES2;
+      gl_real_.InitializeWithWorkarounds(options, workarounds);
+    }
     gl_real_shared_.InitializeWithWorkarounds(options, workarounds);
     options.virtual_manager = &gl_real_shared_;
     options.size = gfx::Size(kSize1, kSize1);
@@ -363,6 +370,57 @@ TEST_P(GLVirtualContextsTest, VirtualQueries) {
   }
 }
 
+// http://crbug.com/930327
+TEST_P(GLVirtualContextsTest, Texture2DArrayAnd3DRestore) {
+  // This test should only be run for ES3 or higher context
+  // So if the current version is ES2, do not run this test
+  if (gl1_.GetContextType() == CONTEXT_TYPE_OPENGLES2)
+    return;
+
+  // Context 1
+  gl1_.MakeCurrent();
+  GLuint tex1_2d_array = 0, tex1_3d = 0;
+  glActiveTexture(GL_TEXTURE0);
+  // 2d array texture
+  glGenTextures(1, &tex1_2d_array);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, tex1_2d_array);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  // 3d texture
+  glGenTextures(1, &tex1_3d);
+  glBindTexture(GL_TEXTURE_3D, tex1_3d);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER,
+                  GL_NEAREST_MIPMAP_NEAREST);
+  glFinish();
+
+  // switch to context 2
+  gl2_.MakeCurrent();
+  GLuint tex2_2d_array = 0, tex2_3d = 0;
+  glActiveTexture(GL_TEXTURE0);
+  // 2d array texture
+  glGenTextures(1, &tex2_2d_array);
+  glBindTexture(GL_TEXTURE_2D_ARRAY, tex2_2d_array);
+  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  // 3d texture
+  glGenTextures(1, &tex2_3d);
+  glBindTexture(GL_TEXTURE_3D, tex2_3d);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glFinish();
+
+  // switch back to context1
+  gl1_.MakeCurrent();
+
+  // get the texture parameters which were programmed earlier for context1
+  GLint tex_2d_array_params = 0, tex_3d_params = 0;
+  glGetTexParameteriv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER,
+                      &tex_2d_array_params);
+  glGetTexParameteriv(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, &tex_3d_params);
+  // Do checks to make sure texture params are restored correctly after context
+  // switching
+  EXPECT_EQ(GL_NEAREST, tex_2d_array_params);
+  EXPECT_EQ(GL_NEAREST_MIPMAP_NEAREST, tex_3d_params);
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
 static const GpuDriverBugWorkarounds workarounds_cases[] = {
     // No extra workarounds.
     GpuDriverBugWorkarounds(),

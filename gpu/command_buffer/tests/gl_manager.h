@@ -155,6 +155,7 @@ class GLManager : private GpuControl {
   void SetSnapshotRequested() override;
 
   size_t GetSharedMemoryBytesAllocated() const;
+  ContextType GetContextType() const;
 
  private:
   void SetupBaseContext();
@@ -192,6 +193,7 @@ class GLManager : private GpuControl {
   static scoped_refptr<gl::GLShareGroup>* base_share_group_;
   static scoped_refptr<gl::GLSurface>* base_surface_;
   static scoped_refptr<gl::GLContext>* base_context_;
+  ContextType context_type_ = CONTEXT_TYPE_OPENGLES2;
 };
 
 }  // namespace gpu

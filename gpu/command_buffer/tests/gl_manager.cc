@@ -269,6 +269,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
 
+  context_type_ = options.context_type;
   if (options.share_mailbox_manager) {
     mailbox_manager_ = options.share_mailbox_manager->mailbox_manager();
   } else if (options.share_group_manager) {
@@ -574,4 +575,7 @@ bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
 
 void GLManager::SetSnapshotRequested() {}
 
+ContextType GLManager::GetContextType() const {
+  return context_type_;
+}
 }  // namespace gpu
