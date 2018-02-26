@@ -527,8 +527,9 @@ DispatchEventResult DragController::DispatchTextInputEventFor(
   const PositionWithAffinity& caret_position =
       page_->GetDragCaret().CaretPosition();
   DCHECK(caret_position.IsConnected()) << caret_position;
-  Element* target =
-      inner_frame->GetEditor().FindEventTargetFrom(CreateVisibleSelection(
+  Element* target = FindEventTargetFrom(
+      *inner_frame,
+      CreateVisibleSelection(
           SelectionInDOMTree::Builder().Collapse(caret_position).Build()));
   return target->DispatchEvent(
       TextEvent::CreateForDrop(inner_frame->DomWindow(), text));
@@ -647,7 +648,8 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
               : InsertMode::kSimple;
 
       if (!inner_frame->GetEditor().DeleteSelectionAfterDraggingWithEvents(
-              inner_frame->GetEditor().FindEventTargetFrom(
+              FindEventTargetFrom(
+                  *inner_frame,
                   inner_frame->Selection()
                       .ComputeVisibleSelectionInDOMTreeDeprecated()),
               delete_mode, drag_caret.Base()))
