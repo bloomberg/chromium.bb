@@ -23,7 +23,7 @@ class CORE_EXPORT FilteredComputedStylePropertyMap
                                                 custom_properties);
   }
 
-  int size() final;
+  unsigned int size() final;
 
  private:
   FilteredComputedStylePropertyMap(

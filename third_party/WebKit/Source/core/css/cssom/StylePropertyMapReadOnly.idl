@@ -13,5 +13,5 @@
     [RaisesException] CSSStyleValue? get(DOMString property);
     [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);
-    readonly attribute long size;
+    readonly attribute unsigned long size;
 };

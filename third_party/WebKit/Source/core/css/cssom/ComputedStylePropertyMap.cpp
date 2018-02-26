@@ -13,7 +13,7 @@
 
 namespace blink {
 
-int ComputedStylePropertyMap::size() {
+unsigned int ComputedStylePropertyMap::size() {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return 0;
