@@ -18,7 +18,6 @@
 
 namespace libaom_test {
 
-const char kVP8Name[] = "WebM Project VP8";
 const char kAV1Name[] = "AOMedia Project AV1 Decoder";
 
 aom_codec_err_t Decoder::PeekStream(const uint8_t *cxdata, size_t size,
@@ -41,34 +40,18 @@ aom_codec_err_t Decoder::DecodeFrame(const uint8_t *cxdata, size_t size,
   return res_dec;
 }
 
-bool Decoder::IsVP8() const {
-  const char *codec_name = GetDecoderName();
-  return strncmp(kVP8Name, codec_name, sizeof(kVP8Name) - 1) == 0;
-}
-
 bool Decoder::IsAV1() const {
   const char *codec_name = GetDecoderName();
   return strncmp(kAV1Name, codec_name, sizeof(kAV1Name) - 1) == 0;
 }
 
-void DecoderTest::HandlePeekResult(Decoder *const decoder,
-                                   CompressedVideoSource *video,
+void DecoderTest::HandlePeekResult(Decoder *const /*decoder*/,
+                                   CompressedVideoSource * /*video*/,
                                    const aom_codec_err_t res_peek) {
-  const bool is_vp8 = decoder->IsVP8();
-  if (is_vp8) {
-    /* Vp8's implementation of PeekStream returns an error if the frame you
-     * pass it is not a keyframe, so we only expect AOM_CODEC_OK on the first
-     * frame, which must be a keyframe. */
-    if (video->frame_number() == 0) {
-      ASSERT_EQ(AOM_CODEC_OK, res_peek)
-          << "Peek return failed: " << aom_codec_err_to_string(res_peek);
-    }
-  } else {
-    /* The Av1 implementation of PeekStream returns an error only if the
-     * data passed to it isn't a valid Av1 chunk. */
-    ASSERT_EQ(AOM_CODEC_OK, res_peek)
-        << "Peek return failed: " << aom_codec_err_to_string(res_peek);
-  }
+  /* The Av1 implementation of PeekStream returns an error only if the
+   * data passed to it isn't a valid Av1 chunk. */
+  ASSERT_EQ(AOM_CODEC_OK, res_peek)
+      << "Peek return failed: " << aom_codec_err_to_string(res_peek);
 }
 
 void DecoderTest::RunLoop(CompressedVideoSource *video,
