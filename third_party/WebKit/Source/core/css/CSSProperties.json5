@@ -562,6 +562,8 @@
       name_for_methods: "Weight",
       converter: "ConvertFontWeight",
       priority: "High",
+      keywords: ["normal", "bold", "bolder", "lighter"],
+      typedom_types: ["Number"]
     },
     {
       name: "font-feature-settings",
