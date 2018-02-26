@@ -216,10 +216,6 @@
                   '|third_party/WebKit/LayoutTests/battery-status/' \
                   '|third_party/WebKit/Source/core/frame/PlatformEvent(Controller|Dispatcher)'
     },
-    'blink_bidi': {
-      'filepath': 'third_party/WebKit/Source/platform/text/.*Bidi' \
-                  '|third_party/WebKit/Source/core/rendering/.*Bidi',
-    },
     'blink_bindings': {
       'filepath': 'third_party/WebKit/Source/platform/bindings' \
                   '|third_party/WebKit/Source/bindings',
@@ -1713,7 +1709,6 @@
                     'rtoy@chromium.org'],
     'blink_battery_status': ['mlamouri+watch-blink@chromium.org',
                              'timvolodine@chromium.org'],
-    'blink_bidi': ['leviw+bidiwatch@chromium.org'],
     'blink_bindings': ['blink-reviews-bindings@chromium.org'],
     'blink_bindings_serialization': ['jbroman+watch@chromium.org'],
     'blink_bluetooth': ['cco3+watch@chromium.org',
@@ -1772,8 +1767,6 @@
     'blink_layers': ['blink-layers+watch@chromium.org'],
     'blink_layout': ['blink-reviews-layout@chromium.org',
                      'eae+blinkwatch@chromium.org',
-                     'jchaffraix+rendering@chromium.org',
-                     'leviw+renderwatch@chromium.org',
                      'pdr+renderingwatchlist@chromium.org',
                      'szager+layoutwatch@chromium.org',
                      'zoltan@webkit.org'],
