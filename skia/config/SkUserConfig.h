@@ -212,6 +212,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
 #endif
 
+// Remove after M66 branch to use new read/writePixels implementations
+#ifndef SK_LEGACY_GPU_PIXEL_OPS
+#define SK_LEGACY_GPU_PIXEL_OPS
+#endif
+
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 10
 
