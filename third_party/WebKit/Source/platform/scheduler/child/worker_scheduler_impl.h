@@ -6,8 +6,10 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
@@ -21,13 +23,14 @@ namespace blink {
 namespace scheduler {
 
 class TaskQueueManager;
+class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
                                             public IdleHelper::Delegate,
                                             public TaskTimeObserver {
  public:
-  explicit WorkerSchedulerImpl(
-      std::unique_ptr<TaskQueueManager> task_queue_manager);
+  WorkerSchedulerImpl(std::unique_ptr<TaskQueueManager> task_queue_manager,
+                      WorkerSchedulerProxy* proxy);
   ~WorkerSchedulerImpl() override;
 
   // ChildScheduler implementation:
@@ -59,6 +62,17 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 
   void SetThreadType(WebThreadType thread_type) override;
 
+  // Virtual for test.
+  virtual void OnThrottlingStateChanged(
+      WebFrameScheduler::ThrottlingState throttling_state);
+
+  // Returns the control task queue.  Tasks posted to this queue are executed
+  // with the highest priority. Care must be taken to avoid starvation of other
+  // task queues.
+  scoped_refptr<WorkerTaskQueue> ControlTaskQueue();
+
+  base::WeakPtr<WorkerSchedulerImpl> GetWeakPtr();
+
  protected:
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
@@ -69,6 +83,10 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void OnIdlePeriodEnded() override {}
   void OnPendingTasksChanged(bool new_state) override {}
 
+  WebFrameScheduler::ThrottlingState throttling_state() const {
+    return throttling_state_;
+  }
+
  private:
   void MaybeStartLongIdlePeriod();
 
@@ -77,8 +95,12 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;
+  scoped_refptr<WorkerTaskQueue> control_task_queue_;
+  WebFrameScheduler::ThrottlingState throttling_state_;
 
   WorkerMetricsHelper worker_metrics_helper_;
+
+  base::WeakPtrFactory<WorkerSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);
 };

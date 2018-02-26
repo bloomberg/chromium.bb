@@ -6,7 +6,6 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
 
 #include <memory>
-#include <set>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,7 +14,10 @@
 #include "platform/PlatformExport.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/child/page_visibility_state.h"
+#include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/util/tracing_helper.h"
+#include "platform/wtf/HashSet.h"
 
 namespace base {
 namespace trace_event {
@@ -80,11 +82,15 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
 
+  scoped_refptr<TaskQueue> ControlTaskQueue();
+
   bool has_active_connection() const { return active_connection_count_; }
 
   void OnTraceLogEnabled() {
     tracing_controller_.OnTraceLogEnabled();
   }
+
+  base::WeakPtr<WebFrameSchedulerImpl> GetWeakPtr();
 
  private:
   friend class WebViewSchedulerImpl;
@@ -135,8 +141,6 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> PausableTaskQueue();
   scoped_refptr<TaskQueue> UnpausableTaskQueue();
 
-  base::WeakPtr<WebFrameSchedulerImpl> AsWeakPtr();
-
   TraceableVariableController tracing_controller_;
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
   scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
@@ -157,7 +161,8 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   std::set<Observer*> loader_observers_;             // NOT OWNED
   WebFrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
-  TraceableState<bool, kTracingCategoryNameInfo> page_visible_;
+  TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
+      page_visibility_;
   TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<bool, kTracingCategoryNameInfo> cross_origin_;

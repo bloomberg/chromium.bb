@@ -36,6 +36,7 @@
 #include "core/html/forms/FileChooser.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
+#include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"

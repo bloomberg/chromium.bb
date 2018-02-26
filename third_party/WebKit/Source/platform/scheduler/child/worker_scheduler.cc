@@ -20,8 +20,9 @@ WorkerScheduler::~WorkerScheduler() = default;
 
 // static
 std::unique_ptr<WorkerScheduler> WorkerScheduler::Create() {
-  return base::WrapUnique(
-      new WorkerSchedulerImpl(TaskQueueManager::TakeOverCurrentThread()));
+  // TODO(altimin): Plumb WorkerSchedulerProxy to the constructor.
+  return base::WrapUnique(new WorkerSchedulerImpl(
+      TaskQueueManager::TakeOverCurrentThread(), nullptr /* proxy */));
 }
 
 scoped_refptr<WorkerTaskQueue> WorkerScheduler::CreateTaskRunner() {

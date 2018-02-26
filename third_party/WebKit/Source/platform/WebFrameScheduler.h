@@ -21,7 +21,7 @@ class WebFrameScheduler {
   virtual ~WebFrameScheduler() = default;
 
   // Observer type that regulates conditions to invoke callbacks.
-  enum class ObserverType { kLoader };
+  enum class ObserverType { kLoader, kWorkerScheduler };
 
   // Represents throttling state.
   enum class ThrottlingState {
@@ -48,6 +48,8 @@ class WebFrameScheduler {
   // Observer interface to receive scheduling policy change events.
   class Observer {
    public:
+    virtual ~Observer() = default;
+
     // Notified when throttling state is changed.
     virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
   };

@@ -99,7 +99,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     bool disable_background_timer_throttling)
     : intervention_reporter_(intervention_reporter),
       renderer_scheduler_(renderer_scheduler),
-      page_visible_(true),
+      page_visible_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
       reported_background_throttling_since_navigation_(false),
