@@ -5876,7 +5876,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=NetworkService,NetworkServiceInProcess",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -5916,7 +5916,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 5
         },
         "test": "content_browsertests"
       }
