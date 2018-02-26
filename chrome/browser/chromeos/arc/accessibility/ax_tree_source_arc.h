@@ -59,6 +59,11 @@ class AXTreeSourceArc
   // Gets the window id of this tree.
   int32_t window_id() const { return window_id_; }
 
+  // Gets children for testing.
+  void GetChildrenForTest(
+      mojom::AccessibilityNodeInfoData* node,
+      std::vector<mojom::AccessibilityNodeInfoData*>* out_children) const;
+
  private:
   class FocusStealer;
 
@@ -87,6 +92,15 @@ class AXTreeSourceArc
   // focused_window is nullptr for notification.
   const gfx::Rect GetBounds(mojom::AccessibilityNodeInfoData* node,
                             aura::Window* focused_window) const;
+
+  // Computes the smallest rect that encloses all of the descendants of |node|.
+  gfx::Rect ComputeEnclosingBounds(
+      mojom::AccessibilityNodeInfoData* node) const;
+
+  // Helper to recursively compute bounds for |node|. Returns true if non-empty
+  // bounds were encountered.
+  void ComputeEnclosingBoundsInternal(mojom::AccessibilityNodeInfoData* node,
+                                      gfx::Rect& computed_bounds) const;
 
   // AXHostDelegate overrides.
   void PerformAction(const ui::AXActionData& data) override;
