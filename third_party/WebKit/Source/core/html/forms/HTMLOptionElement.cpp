@@ -91,7 +91,7 @@ void HTMLOptionElement::AttachLayoutTree(AttachContext& context) {
   if (!GetNonAttachedStyle() && ParentComputedStyle()) {
     if (HTMLSelectElement* select = OwnerSelectElement())
       select->UpdateListOnLayoutObject();
-    SetNonAttachedStyle(StyleForLayoutObject());
+    SetNonAttachedStyle(OriginalStyleForLayoutObject());
   }
   HTMLElement::AttachLayoutTree(option_context);
 }
