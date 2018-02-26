@@ -75,7 +75,8 @@ class WebMediaPlayerMS::FrameDeliverer {
         weak_factory_(this) {
     io_thread_checker_.DetachFromThread();
 
-    if (gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
+    if (gpu_factories &&
+        gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
         base::FeatureList::IsEnabled(
             features::kWebRtcUseGpuMemoryBufferVideoFrames)) {
       gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
