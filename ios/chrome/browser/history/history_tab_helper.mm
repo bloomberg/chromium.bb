@@ -93,6 +93,10 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
+  if (navigation_context->IsDownload()) {
+    return;
+  }
+
   DCHECK(web_state->GetNavigationManager()->GetVisibleItem());
   web::NavigationItem* visible_item =
       web_state_->GetNavigationManager()->GetVisibleItem();

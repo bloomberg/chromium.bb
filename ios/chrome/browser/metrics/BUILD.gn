@@ -22,6 +22,8 @@ source_set("metrics") {
     "previous_session_info.h",
     "previous_session_info.mm",
     "previous_session_info_private.h",
+    "ukm_url_recorder.h",
+    "ukm_url_recorder.mm",
   ]
   deps = [
     "//base",
@@ -69,6 +71,7 @@ source_set("unit_tests") {
     "ios_chrome_stability_metrics_provider_unittest.mm",
     "mobile_session_shutdown_metrics_provider_unittest.mm",
     "previous_session_info_unittest.mm",
+    "ukm_url_recorder_unittest.mm",
   ]
   deps = [
     ":metrics",
@@ -78,9 +81,14 @@ source_set("unit_tests") {
     "//components/metrics:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
+    "//components/ukm:test_support",
     "//components/version_info",
+    "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/web/public:public",
     "//ios/web/public/test/fakes",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }
@@ -158,6 +166,7 @@ source_set("eg_tests") {
     "//components/metrics_services_manager",
     "//components/strings",
     "//components/ukm",
+    "//components/ukm:test_support",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/metrics",
