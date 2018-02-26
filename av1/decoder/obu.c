@@ -299,6 +299,11 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     const size_t length_field_size = PRE_OBU_SIZE_BYTES;
 #endif  // CONFIG_OBU_SIZING
 
+    if (obu_size > bytes_available) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
+
     av1_init_read_bit_buffer(pbi, &rb, data + length_field_size, data_end);
 
 #if !CONFIG_SCALABILITY
