@@ -797,12 +797,11 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                     ^ (getOrientation() == Orientation.PORTRAIT
                               && LocalizationUtils.isLayoutRtl())) {
                 return SwipeMode.SEND_TO_STACK;
+            } else {
+                return SwipeMode.SWITCH_STACK;
             }
         }
-        if (isDraggingStackInWrongDirection(
-                    mLastOnDownX, mLastOnDownY, x, y, dx, dy, getOrientation(), currentIndex)) {
-            return SwipeMode.SWITCH_STACK;
-        }
+
         // Not moving the finger
         if (time - mLastOnDownTimeStamp > THRESHOLD_TIME_TO_SWITCH_STACK_INPUT_MODE) {
             return SwipeMode.SEND_TO_STACK;
@@ -944,31 +943,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
             }
             return mCachedLandscapeViewport;
         }
-    }
-
-    /**
-     * Check if we are dragging stack in a wrong direction.
-     *
-     * @param downX The X coordinate on the last down event.
-     * @param downY The Y coordinate on the last down event.
-     * @param x The current X coordinate.
-     * @param y The current Y coordinate.
-     * @param dx The amount of change in X coordinate.
-     * @param dy The amount of change in Y coordinate.
-     * @param orientation The device orientation (portrait / landscape).
-     * @param stackIndex The index of stack tab.
-     * @return True iff we are dragging stack in a wrong direction.
-     */
-    @VisibleForTesting
-    public static boolean isDraggingStackInWrongDirection(float downX, float downY, float x,
-            float y, float dx, float dy, int orientation, int stackIndex) {
-        float switchDelta = orientation == Orientation.PORTRAIT ? x - downX : y - downY;
-
-        // Should not prevent scrolling even when switchDelta is in a wrong direction.
-        if (Math.abs(dx) < Math.abs(dy)) {
-            return false;
-        }
-        return (stackIndex == 0 && switchDelta < 0) || (stackIndex == 1 && switchDelta > 0);
     }
 
     private void scrollStacks(float delta) {
