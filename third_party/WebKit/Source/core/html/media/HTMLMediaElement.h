@@ -306,7 +306,6 @@ class CORE_EXPORT HTMLMediaElement
   bool IsInCrossOriginFrame() const;
 
   void ScheduleEvent(Event*);
-  void ScheduleTimeupdateEvent(bool periodic_event);
 
   // Returns the "effective media volume" value as specified in the HTML5 spec.
   double EffectiveMediaVolume() const;
@@ -431,6 +430,7 @@ class CORE_EXPORT HTMLMediaElement
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);
   void PlaybackProgressTimerFired(TimerBase*);
+  void ScheduleTimeupdateEvent(bool periodic_event);
   void CheckViewportIntersectionTimerFired(TimerBase*);
   void StartPlaybackProgressTimer();
   void StartProgressEventTimer();
@@ -572,9 +572,6 @@ class CORE_EXPORT HTMLMediaElement
 
   // Cached duration to suppress duplicate events if duration unchanged.
   double duration_;
-
-  // The last time a timeupdate event was sent (wall clock).
-  TimeTicks last_time_update_event_wall_time_;
 
   // The last time a timeupdate event was sent in movie time.
   double last_time_update_event_media_time_;
