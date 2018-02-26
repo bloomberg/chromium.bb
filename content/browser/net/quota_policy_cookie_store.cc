@@ -47,7 +47,7 @@ QuotaPolicyCookieStore::~QuotaPolicyCookieStore() {
     const GURL url(net::cookie_util::CookieOriginToURL(cookie.first.first,
                                                        cookie.first.second));
     if (!url.is_valid() ||
-        !special_storage_policy_->IsStorageSessionOnlyOrBlocked(url))
+        !special_storage_policy_->ShouldDeleteCookieOnExit(url))
       continue;
 
     session_only_cookies.push_back(cookie.first);

@@ -112,11 +112,11 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
-bool ExtensionSpecialStoragePolicy::IsStorageSessionOnlyOrBlocked(
+bool ExtensionSpecialStoragePolicy::ShouldDeleteCookieOnExit(
     const GURL& origin) {
   if (cookie_settings_.get() == NULL)
     return false;
-  return cookie_settings_->IsCookieSessionOnlyOrBlocked(origin);
+  return cookie_settings_->ShouldDeleteCookieOnExit(origin);
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {

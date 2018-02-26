@@ -113,6 +113,29 @@ TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
+TEST_F(CookieSettingsTest, CookiesDeleteSessionOnlyAndBlocked) {
+  // Delete blocked cookies.
+  cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
+  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kBlockedSite));
+
+  // Delete session_only cookies.
+  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
+  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
+  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
+
+  // Keep blocked http cookies if https is allowed.
+  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
+  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
+
+  // Delete cookies if http is blocked and https session only.
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
+  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
+}
+
 TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
   cookie_settings_->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);

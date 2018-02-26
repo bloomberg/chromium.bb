@@ -32,6 +32,12 @@ bool IsAllowed(ContentSetting setting) {
           setting == CONTENT_SETTING_SESSION_ONLY);
 }
 
+GURL ToHttps(GURL url) {
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr(url::kHttpsScheme);
+  return url.ReplaceComponents(replace_scheme);
+}
+
 }  // namespace
 
 namespace content_settings {
@@ -71,10 +77,16 @@ bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
   return (setting == CONTENT_SETTING_SESSION_ONLY);
 }
 
-bool CookieSettings::IsCookieSessionOnlyOrBlocked(const GURL& origin) const {
+bool CookieSettings::ShouldDeleteCookieOnExit(const GURL& origin) const {
   ContentSetting setting;
   GetCookieSetting(origin, origin, nullptr, &setting);
   DCHECK(IsValidSetting(setting));
+
+  if (setting == CONTENT_SETTING_BLOCK && origin.SchemeIs(url::kHttpScheme)) {
+    // Keep blocked, non-secure cookies if the secure origin is set to ALLOW.
+    GURL https_origin = ToHttps(origin);
+    return ShouldDeleteCookieOnExit(https_origin);
+  }
   return (setting == CONTENT_SETTING_SESSION_ONLY) ||
          (setting == CONTENT_SETTING_BLOCK);
 }

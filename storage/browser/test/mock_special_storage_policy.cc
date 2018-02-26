@@ -24,8 +24,7 @@ bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return base::ContainsKey(session_only_, origin);
 }
 
-bool MockSpecialStoragePolicy::IsStorageSessionOnlyOrBlocked(
-    const GURL& origin) {
+bool MockSpecialStoragePolicy::ShouldDeleteCookieOnExit(const GURL& origin) {
   return base::ContainsKey(session_only_, origin);
 }
 
