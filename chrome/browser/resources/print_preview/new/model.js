@@ -257,14 +257,11 @@ Polymer({
   /** @private {boolean} */
   initialized_: false,
 
-  /** @private {?print_preview.Destination} */
-  lastDestination_: null,
+  /** @private {?print_preview_new.SerializedSettings} */
+  stickySettings_: null,
 
   /** @private {?print_preview.Cdd} */
-  lastCapabilities_: null,
-
-  /** @private {boolean} */
-  hasStickySettings_: true,
+  lastDestinationCapabilities_: null,
 
   /**
    * Updates the availability of the settings sections and values of dpi and
@@ -276,19 +273,15 @@ Polymer({
         this.destination.capabilities.printer :
         null;
     this.updateSettingsAvailability_(caps);
-    // This check is needed to avoid overwriting the sticky settings at
-    // startup, since the sticky settings will be known before the printer
-    // capabilities. These values should be updated only when the printer
-    // changes from the original selection or when the first printer is loaded
-    // and there are no sticky values.
-    if ((this.destination != this.lastDestination_ ||
-         this.destination.capabilities_ != this.lastCapabilities_) &&
-        ((this.lastDestination_ != null && this.lastCapabilities_ != null) ||
-         !this.hasStickySettings_)) {
-      this.updateSettingsValues_(caps);
-    }
-    this.lastDestination_ = this.destination;
-    this.lastCapabilities_ = this.destination.capabilities;
+
+    if (!caps)
+      return;
+
+    if (this.destination.capabilities == this.lastDestinationCapabilities_)
+      return;
+
+    this.lastDestinationCapabilities_ = this.destination.capabilities;
+    this.updateSettingsValues_(caps);
   },
 
   /**
@@ -437,11 +430,13 @@ Polymer({
   },
 
   /**
+   * Caches the sticky settings and sets up the recent destinations. Sticky
+   * settings will be applied when destinaton capabilities have been retrieved.
    * @param {?string} savedSettingsStr The sticky settings from native layer
    */
-  updateFromStickySettings: function(savedSettingsStr) {
-    this.initialized_ = true;
-    this.hasStickySettings_ = false;
+  setStickySettings: function(savedSettingsStr) {
+    assert(!this.stickySettings_ && this.recentDestinations.length == 0);
+
     if (!savedSettingsStr)
       return;
 
@@ -456,23 +451,32 @@ Polymer({
     if (savedSettings.version != 2)
       return;
 
-    this.hasStickySettings_ = true;
     let recentDestinations = savedSettings.recentDestinations || [];
     if (!Array.isArray(recentDestinations)) {
       recentDestinations = [recentDestinations];
     }
     this.recentDestinations = recentDestinations;
 
-    // Reset initialized, or stickySettingsChanged_ will get called for
-    // every setting that gets set below.
-    this.initialized_ = false;
-    STICKY_SETTING_NAMES.forEach(settingName => {
-      const setting = this.get(settingName, this.settings);
-      const value = savedSettings[setting.key];
-      if (value != undefined)
-        this.set(`settings.${settingName}.value`, value);
-    });
+    this.stickySettings_ = savedSettings;
+  },
+
+  applyStickySettings: function() {
+    if (this.stickySettings_) {
+      STICKY_SETTING_NAMES.forEach(settingName => {
+        const setting = this.get(settingName, this.settings);
+        const value = this.stickySettings_[setting.key];
+        if (value != undefined)
+          this.set(`settings.${settingName}.value`, value);
+      });
+    }
     this.initialized_ = true;
+    this.stickySettings_ = null;
+    this.stickySettingsChanged_();
+  },
+
+  /** @return {boolean} Whether the model has been initialized. */
+  initialized: function() {
+    return this.initialized_;
   },
 
   /** @private */
