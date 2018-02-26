@@ -229,9 +229,7 @@ typedef struct SequenceHeader {
                          // 1 - force to integer
                          // 2 - adaptive
 #endif
-#if CONFIG_MONO_VIDEO
   int monochrome;
-#endif                     // CONFIG_MONO_VIDEO
   int enable_dual_filter;  // 0 - disable dual interpolation filter
                            // 1 - enable vertical and horiz filter selection
 #if CONFIG_JNT_COMP
@@ -772,12 +770,7 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 #endif  // CONFIG_CFL
 
 static INLINE int av1_num_planes(const AV1_COMMON *cm) {
-#if CONFIG_MONO_VIDEO
   return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
-#else
-  (void)cm;
-  return MAX_MB_PLANE;
-#endif  // CONFIG_MONO_VIDEO
 }
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,

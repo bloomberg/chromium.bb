@@ -1295,9 +1295,7 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #else
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
-#if CONFIG_MONO_VIDEO
   pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
@@ -1416,9 +1414,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #else
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
 #endif
-#if CONFIG_MONO_VIDEO
   pool->frame_bufs[cm->new_fb_idx].buf.monochrome = cm->seq_params.monochrome;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
@@ -2297,13 +2293,9 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   av1_read_bitdepth(cm, rb);
 
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
-#if CONFIG_MONO_VIDEO
   // monochrome bit (not needed for PROFILE_1)
   const int is_monochrome = cm->profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
   cm->seq_params.monochrome = is_monochrome;
-#elif !CONFIG_CICP
-  const int is_monochrome = 0;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   int color_description_present_flag = aom_rb_read_bit(rb);
   if (color_description_present_flag) {
@@ -2324,7 +2316,6 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 4);
 #endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
-#if CONFIG_MONO_VIDEO
   if (is_monochrome) {
     cm->color_range = AOM_CR_FULL_RANGE;
     cm->subsampling_y = cm->subsampling_x = 1;
@@ -2334,7 +2325,6 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     cm->separate_uv_delta_q = 0;
     return;
   }
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -3071,9 +3061,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #else
   get_frame_new_buffer(cm)->color_space = cm->color_space;
 #endif
-#if CONFIG_MONO_VIDEO
   get_frame_new_buffer(cm)->monochrome = cm->seq_params.monochrome;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_COLORSPACE_HEADERS
 #if !CONFIG_CICP
   get_frame_new_buffer(cm)->transfer_function = cm->transfer_function;
@@ -3537,7 +3525,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
 
-#if CONFIG_MONO_VIDEO
   const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.
   if (num_planes < 3) {
@@ -3559,7 +3546,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       }
     }
   }
-#endif
 
   if (endTile != cm->tile_rows * cm->tile_cols - 1) {
     return;

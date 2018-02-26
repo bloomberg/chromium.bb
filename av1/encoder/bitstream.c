@@ -1181,15 +1181,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                         ec_ctx->angle_delta_cdf[mode - V_PRED]);
     }
 
-#if CONFIG_MONO_VIDEO
     if (!cm->seq_params.monochrome &&
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y))
-#else
-    if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y))
-#endif  // CONFIG_MONO_VIDEO
-    {
+                            xd->plane[1].subsampling_y)) {
       const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
 #if !CONFIG_CFL
       write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
@@ -1510,15 +1504,9 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
                       ec_ctx->angle_delta_cdf[mode - V_PRED]);
   }
 
-#if CONFIG_MONO_VIDEO
   if (!cm->seq_params.monochrome &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y))
-#else
-  if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y))
-#endif  // CONFIG_MONO_VIDEO
-  {
+                          xd->plane[1].subsampling_y)) {
     const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
 #if !CONFIG_CFL
     write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
@@ -2832,16 +2820,12 @@ static void write_bitdepth(AV1_COMMON *const cm,
 static void write_bitdepth_colorspace_sampling(
     AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
   write_bitdepth(cm, wb);
-#if CONFIG_MONO_VIDEO
   const int is_monochrome = cm->seq_params.monochrome;
   // monochrome bit
   if (cm->profile != PROFILE_1)
     aom_wb_write_bit(wb, is_monochrome);
   else
     assert(!is_monochrome);
-#elif !CONFIG_CICP
-  const int is_monochrome = 0;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
       cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
@@ -2861,9 +2845,7 @@ static void write_bitdepth_colorspace_sampling(
   if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 4);
 #endif  // CONFIG_COLORSPACE_HEADERS
 #endif  // CONFIG_CICP
-#if CONFIG_MONO_VIDEO
   if (is_monochrome) return;
-#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&

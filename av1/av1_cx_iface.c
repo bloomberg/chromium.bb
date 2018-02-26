@@ -374,9 +374,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_MONO_VIDEO
   RANGE_CHECK_HI(cfg, monochrome, 1);
-#endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_EXT_TILE
   if (cfg->large_scale_tile && extra_cfg->aq_mode)
@@ -750,9 +748,7 @@ static aom_codec_err_t set_encoder_config(
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_MONO_VIDEO
   oxcf->monochrome = cfg->monochrome;
-#endif  // CONFIG_MONO_VIDEO
   oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
 #if CONFIG_JNT_COMP
   oxcf->enable_jnt_comp = extra_cfg->use_jnt_comp;
