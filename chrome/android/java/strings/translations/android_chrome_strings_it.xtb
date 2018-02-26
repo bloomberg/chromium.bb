@@ -683,7 +683,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
-<translation id="7077143737582773186">Secure Digital</translation>
+<translation id="7077143737582773186">Scheda SD</translation>
 <translation id="7121362699166175603">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi. Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Consenti motore di ricerca corrente</translation>
 <translation id="7138678301420049075">Altro</translation>
@@ -699,7 +699,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7253272406652746122">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
 <translation id="729975465115245577">Il tuo dispositivo non ha un'app per archiviare il file di password.</translation>
-<translation id="7318797029885648322">Tocca Altro per ricevere articoli</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>

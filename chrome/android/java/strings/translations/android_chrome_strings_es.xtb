@@ -148,7 +148,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2286841657746966508">Dirección de facturación</translation>
 <translation id="230115972905494466">No se han podido encontrar dispositivos compatibles</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados de cliente.</translation>
-<translation id="2321086116217818302">Preparando Contraseña…</translation>
+<translation id="2321086116217818302">Preparando contraseñas…</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer cómodamente. El texto debe tener al menos este tamaño después de tocar un párrafo dos veces.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio web</translation>
 <translation id="2328985652426384049">No se puede iniciar sesión</translation>
@@ -683,7 +683,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se ha podido conectar con el servidor de sincronización.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
-<translation id="7077143737582773186">Secure Digital</translation>
+<translation id="7077143737582773186">Tarjeta SD</translation>
 <translation id="7121362699166175603">Borra el historial y los autocompletados de la barra de direcciones. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Permitirlo para el motor de búsqueda actual</translation>
 <translation id="7138678301420049075">Otro</translation>
@@ -699,7 +699,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
-<translation id="7318797029885648322">Toca Más para acceder a los artículos</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>

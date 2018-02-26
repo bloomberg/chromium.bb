@@ -277,7 +277,7 @@
 
           Si no s'estableix aquesta política, s'utilitzaran els quatre esquemes.</translation>
 <translation id="2067011586099792101">Bloqueja l'accés a llocs situats fora de paquets de contingut.</translation>
-<translation id="2070270043919235595">Notifica els usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> per aplicar una actualització pendent.
+<translation id="2070270043919235595">Notifica als usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> per aplicar una actualització pendent.
 
       Aquesta política activa les notificacions per avisar l'usuari que es recomana o es requereix reiniciar el navegador. Si no s'estableix, <ph name="PRODUCT_NAME" /> fa canvis subtils al seu menú per indicar a l'usuari que cal reiniciar el navegador. Si s'estableix en "Recommended", s'avisa periòdicament l'usuari que es recomana reiniciar el navegador. L'usuari pot ignorar aquest advertiment per posposar el reinici. Si s'estableix en "Required", s'avisa periòdicament l'usuari que el navegador es reiniciarà a la força en finalitzar el període de notificació. La durada predeterminada d'aquest període és de 7 dies i es pot configurar amb la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
@@ -1100,7 +1100,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           De manera predeterminada, els usuaris rebran un advertiment, no un error, si es considera que el PIN és poc segur.</translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
-<translation id="4725123658714754485">Controla si es notifiquen a Google les mètriques d'ús i les dades de diagnòstic, inclosos els informes d'error. Si es defineix en "true", <ph name="PRODUCT_OS_NAME" /> informarà de les mètriques d'ús i de les dades de diagnòstic. Si no es configura o es defineix en "false", es desactivaran els informes de mètriques i de dades de diagnòstic.</translation>
 <translation id="4725528134735324213">Activa Android Backup Service</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
 <translation id="4744190513568488164">Servidors en què <ph name="PRODUCT_NAME" /> pot delegar les credencials de l'usuari.
@@ -1503,13 +1502,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Per fixar aplicacions al menú d'aplicacions, consulta la política PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
-<translation id="6029950823657977211">
-      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política "IsolateOrigins" que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques.
-      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, també s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
-      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
-      Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminat a la plataforma.
-      </translation>
 <translation id="603410445099326293">Paràmetres per a l'URL suggerit que utilitza POST</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
 <translation id="6070667616071269965">Dissenys de teclat de la pantalla d'inici de sessió del dispositiu</translation>
@@ -1680,9 +1672,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política no es defineix o es defineix en "true", s'aplicarà el comportament predeterminat: els usuaris podran iniciar la sessió en un altre compte des de l'àrea de contingut del navegador, excepte en el cas dels comptes secundaris, en què es bloquejarà aquesta política a l'àrea de contingut dels navegadors que no estiguin en mode d'incògnit.
 
-      En cas que no es vulgui permetre l'inici de sessió a un altre compte mitjançant el mode d'incògnit, pots bloquejar aquest mode amb la política IncognitoModeAvailability.
+      En cas que no vulguis permetre l'inici de sessió a un altre compte mitjançant el mode d'incògnit, pots bloquejar aquest mode amb la política IncognitoModeAvailability.
 
-      Tinguis en compte que els usuaris poden bloquejar les galetes per accedir als serveis de Google sense autenticar-se.</translation>
+      Tingues en compte que els usuaris poden bloquejar les galetes per accedir als serveis de Google sense autenticar-se.</translation>
 <translation id="6757438632136860443">Permet definir una llista de patrons d'URL que especifiquin llocs que poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -2404,11 +2396,5 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
-<translation id="9775893229076211">Permet controlar si s'activa el marcatge de la protecció de contrasenyes als comptes en perill, és a dir, si s'informa Google que el compte corre el risc que el pirategin.
-
-      Si aquesta política es defineix en "PasswordProtectionRiskOff", no s'activarà el marcatge de la protecció de contrasenyes als comptes en perill.
-      Si aquesta política es defineix en "PasswordProtectionRiskOnPasswordReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan els usuaris utilitzin les contrasenyes de Google en llocs web que no estiguin inclosos a la llista blanca.
-      Si aquesta política es defineix en "PasswordProtectionRiskOnPhishingReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan els usuaris utilitzin les contrasenyes de Google en llocs web de pesca.
-      Si aquesta política no es defineix, el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan els usuaris utilitzin les contrasenyes de Google en llocs web de pesca, però els usuaris podran canviar-ho.</translation>
 <translation id="982497069985795632">Activa el corrector ortogràfic</translation>
 </translationbundle>

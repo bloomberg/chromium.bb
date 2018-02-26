@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">ไฟล์ไม่ถูกต้องหรือเสียหาย</translation>
 <translation id="1042174272890264476">คอมพิวเตอร์ของคุณมาพร้อมกับไลบรารี RLZ ของ <ph name="SHORT_PRODUCT_NAME" /> ในตัว โดย RLZ จะระบุแท็กที่ซ้ำกันได้และไม่สามารถระบุตัวบุคคลเพื่อวัดการค้นหาและการใช้งาน <ph name="SHORT_PRODUCT_NAME" /> ที่ทำงานโดยแคมเปญส่งเสริมการขายบางรายการ บางครั้งป้ายกำกับจะปรากฏในคำค้นหาของ Google Search ใน <ph name="PRODUCT_NAME" /></translation>
 <translation id="1046059554679513793">ขออภัย ชื่อนี้มีการใช้งานแล้ว!</translation>
-<translation id="1046286965898806214">ต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> บันทึกบัญชีของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="1047431265488717055">คัดลอก&amp;ข้อความของลิงก์</translation>
 <translation id="1047726139967079566">บุ๊กมาร์กหน้านี้...</translation>
 <translation id="1047956942837015229">กำลังลบ <ph name="COUNT" /> รายการ...</translation>
@@ -423,7 +422,6 @@
 <translation id="1635033183663317347">ติดตั้งโดยผู้ดูแล</translation>
 <translation id="1637224376458524414">รับบุ๊กมาร์กนี้ใน iPhone ของคุณ</translation>
 <translation id="1637765355341780467">เกิดข้อผิดพลาดขณะเปิดโปรไฟล์ ฟีเจอร์บางอย่างอาจไม่พร้อมใช้งาน</translation>
-<translation id="1638447702436460526">ไม่พบเครื่องพิมพ์</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 พร้อมการเข้ารหัส RSA</translation>
 <translation id="1642494467033190216">ต้องนำการป้องกัน rootfs ออกและรีสตาร์ทก่อนที่จะเปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่องอื่นๆ</translation>
@@ -574,6 +572,7 @@
 <translation id="1856813161013948396">ข้ามหน้าจอล็อกโดยแตะเซ็นเซอร์ลายนิ้วมือ คลิกเพื่อกำหนดค่า</translation>
 <translation id="1858585891038687145">เชื่อถือใบรับรองนี้ในการระบุตัวตนผู้ผลิตซอฟต์แวร์</translation>
 <translation id="1859234291848436338">การเขียนเส้นทาง</translation>
+<translation id="1861262398884155592">โฟลเดอร์นี้ว่างเปล่า</translation>
 <translation id="1864111464094315414">ลงชื่อเข้าใช้</translation>
 <translation id="1864400682872660285">เย็น</translation>
 <translation id="1864676585353837027">เปลี่ยนวิธีการแชร์ไฟล์เหล่านี้</translation>
@@ -588,7 +587,6 @@
 <translation id="1878524442024357078">ไม่อนุญาตให้เว็บไซต์ทั้งหมดใช้ปลั๊กอินเพื่อเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="1879449842763884566">ติดตั้งลงในแอปพลิเคชัน...</translation>
 <translation id="1880905663253319515">ลบใบรับรอง "<ph name="CERTIFICATE_NAME" />" หรือไม่</translation>
-<translation id="188190999506226223">ต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> บันทึกรหัสผ่านสำหรับ <ph name="ORIGIN" /> ไหม</translation>
 <translation id="1886996562706621347">อนุญาตให้ไซต์แจ้งขอเป็นเครื่องจัดการเริ่มต้นสำหรับโปรโตคอล (แนะนำ)</translation>
 <translation id="1887442540531652736">ข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
@@ -1149,7 +1147,6 @@
 <translation id="2762441749940182211">บล็อกกล้องถ่ายรูป</translation>
 <translation id="2765217105034171413">ขนาดเล็ก</translation>
 <translation id="2766006623206032690">&amp;วางแล้วไป</translation>
-<translation id="2767084307624729667">รหัสผ่านที่บันทึกไว้สำหรับ <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">ลงชื่อเข้าใช้โดยใช้ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="2770465223704140727">ลบจากรายการ</translation>
 <translation id="2770690685823456775">ส่งออกรหัสผ่านไปยังโฟลเดอร์อื่น</translation>
@@ -1222,7 +1219,6 @@
 <translation id="2849936225196189499">สำคัญ</translation>
 <translation id="2850124913210091882">สำรองข้อมูล</translation>
 <translation id="2850541429955027218">เพิ่มธีม</translation>
-<translation id="2853121255651601031">บันทึกรหัสผ่านแล้ว</translation>
 <translation id="2853916256216444076">วิดีโอ $1</translation>
 <translation id="2857608528410806398">เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่</translation>
 <translation id="2860150991415616761">นานมาก (4 วินาที)</translation>
@@ -1232,6 +1228,7 @@
 <translation id="2867768963760577682">เปิดเป็นแท็บที่ถูกตรึง</translation>
 <translation id="2868746137289129307">ส่วนขยายนี้ล้าสมัยแล้วและปิดใช้อยู่โดยนโยบายองค์กร แต่อาจเปิดใช้โดยอัตโนมัติได้เมื่อมีเวอร์ชันใหม่</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
+<translation id="2870909136778269686">กำลังอัปเดต...</translation>
 <translation id="2871813825302180988">มีการใช้บัญชีนี้กับอุปกรณ์นี้อยู่แล้ว</translation>
 <translation id="2872353916818027657">สลับหน้าจอหลัก</translation>
 <translation id="287286579981869940">เพิ่ม <ph name="PROVIDER_NAME" />...</translation>
@@ -1762,7 +1759,6 @@
 <translation id="3665842570601375360">ความปลอดภัย:</translation>
 <translation id="3668570675727296296">การตั้งค่าภาษา</translation>
 <translation id="3668823961463113931">เครื่องจัดการ</translation>
-<translation id="3669030672519623291">ไม่มีรหัสผ่านบันทึกไว้สำหรับเว็บไซต์นี้</translation>
 <translation id="3670229581627177274">เปิดบลูทูธ</translation>
 <translation id="3672681487849735243">ตรวจพบข้อผิดพลาดจากโรงงาน</translation>
 <translation id="367645871420407123">เว้นว่างไว้หากคุณต้องการตั้งรหัสผ่านระดับรูทเป็นภาพทดสอบเริ่มต้น</translation>
@@ -2298,7 +2294,6 @@
 <translation id="4576541033847873020">จับคู่อุปกรณ์บลูทูธ</translation>
 <translation id="4579581181964204535">ไม่สามารถแคสต์ <ph name="HOST_NAME" /></translation>
 <translation id="4580526846085481512">คุณแน่ใจหรือไม่ว่าต้องการลบ $1 รายการ</translation>
-<translation id="458150753955139441">กดเพื่อย้อนกลับ ใช้เมนูตามบริบทเพื่อดูประวัติ</translation>
 <translation id="4582563038311694664">รีเซ็ตการตั้งค่าทั้งหมด</translation>
 <translation id="4585793705637313973">แก้ไขหน้า</translation>
 <translation id="4589268276914962177">เทอร์มินัลใหม่</translation>
@@ -2331,7 +2326,6 @@
 <translation id="4632483769545853758">เปิดเสียงแท็บ</translation>
 <translation id="4633003931260532286">ส่วนขยายต้องใช้ "<ph name="IMPORT_NAME" />" เวอร์ชัน "<ph name="IMPORT_VERSION" />" เป็นอย่างน้อย แต่ที่ติดตั้งอยู่เป็นเวอร์ชัน "<ph name="INSTALLED_VERSION" />"</translation>
 <translation id="4634771451598206121">ลงชื่อเข้าใช้อีกครั้ง...</translation>
-<translation id="4636315944522859212">พบเครื่องพิมพ์</translation>
 <translation id="4640525840053037973">ลงชื่อเข้าใช้ด้วยบัญชี Google ของคุณ</translation>
 <translation id="4641539339823703554">Chrome ไม่สามารถตั้งเวลาระบบได้ โปรดตรวจสอบเวลาด้านล่างและแก้ไขให้ถูกต้องหากจำเป็น</translation>
 <translation id="4643612240819915418">เ&amp;ปิดวิดีโอในแท็บใหม่</translation>
@@ -2463,7 +2457,6 @@
 <translation id="4850669014075537160">การเลื่อน</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4853020600495124913">เปิดใน&amp;หน้าต่างใหม่</translation>
-<translation id="4853882474657327078">ต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านสำหรับ <ph name="ORIGIN" /> ไหม</translation>
 <translation id="4856478137399998590">บริการดาต้าบนมือถือของคุณเปิดใช้งานและพร้อมทำงานแล้ว</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{เปิดทั้งหมดใน&amp;หน้าต่างที่ไม่ระบุตัวตน}=1{เปิดใน&amp;หน้าต่างที่ไม่ระบุตัวตน}other{เปิดทั้งหมด (#) ใน&amp;หน้าต่างที่ไม่ระบุตัวตน}}</translation>
 <translation id="4858913220355269194">ฟริทซ์</translation>
@@ -2946,7 +2939,6 @@
 <translation id="558170650521898289">การตรวจสอบโปรแกรมควบคุมฮาร์ดแวร์ของ Microsoft Windows</translation>
 <translation id="5582839680698949063">เมนูหลัก</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">รหัสผ่านที่บันทึกไว้สำหรับเว็บไซต์นี้</translation>
 <translation id="5585118885427931890">ไม่สามารถสร้างโฟลเดอร์บุ๊กมาร์ก</translation>
 <translation id="558563010977877295">เปิดหน้าที่เฉพาะเจาะจงหรือชุดของหน้า</translation>
 <translation id="5585912436068747822">การจัดรูปแบบล้มเหลว</translation>
@@ -2958,7 +2950,6 @@
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
 <translation id="5600706100022181951">ระบบจะดาวน์โหลดอัปเดตโดยใช้อินเทอร์เน็ตมือถือ <ph name="UPDATE_SIZE_MB" /> MB คุณต้องการดำเนินการต่อไหม</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">ต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="5605623530403479164">เครื่องมือค้นหาอื่นๆ</translation>
 <translation id="5608580678041221894">แตะแป้นต่อไปนี้เพื่อปรับหรือเลื่อนพื้นที่ครอบตัด</translation>
 <translation id="5609231933459083978">ดูเหมือนแอปพลิเคชันไม่ถูกต้อง</translation>
@@ -3143,7 +3134,6 @@
 <translation id="5882919346125742463">เครือข่ายที่รู้จัก</translation>
 <translation id="5884474295213649357">แท็บนี้เชื่อมต่อกับอุปกรณ์ USB อยู่</translation>
 <translation id="5885324376209859881">จัดการการตั้งค่าสื่อ...</translation>
-<translation id="5887341066363321040">ไม่มีรหัสผ่านบันทึกไว้สำหรับ <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">จำนวนสูงสุดของ CA ระดับกลาง: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5895187275912066135">ออกเมื่อ</translation>
@@ -3627,7 +3617,6 @@
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="6664237456442406323">น่าเสียดายที่คอมพิวเตอร์ของคุณถูกกำหนดค่าด้วย ID ฮาร์ดแวร์ที่มีรูปแบบที่ไม่ถูกต้อง ซึ่งจะป้องกันไม่ให้ Chrome OS อัปเดตการแก้ใขปัญหาความปลอดภัยล่าสุดได้ และคอมพิวเตอร์ของคุณ <ph name="BEGIN_BOLD" />อาจเสี่ยงต่อการโจมตีที่เป็นอันตราย<ph name="END_BOLD" /></translation>
 <translation id="6664774537677393800">เกิดข้อผิดพลาดขณะเปิดโปรไฟล์ของคุณ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง</translation>
-<translation id="6669827579181361875">ต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> บันทึกรหัสผ่านสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">คุณต้องการให้ Google แปลหน้านี้จากภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" />ไหม</translation>
 <translation id="6675665718701918026">เชื่อมต่ออุปกรณ์ชี้ตำแหน่งแล้ว</translation>
@@ -4992,6 +4981,7 @@
 <translation id="8871696467337989339">คุณกำลังใช้แฟล็กบรรทัดคำสั่งที่ไม่ได้รับการสนับสนุน: <ph name="BAD_FLAG" /> ซึ่งอาจส่งผลต่อเสถียรภาพและความปลอดภัย</translation>
 <translation id="8871974300055371298">การตั้งค่าเนื้อหา</translation>
 <translation id="8872155268274985541">พบไฟล์ Manifest การอัปเดตภายนอกของคีออสก์ที่ไม่ถูกต้อง ไม่สามารถอัปเดตแอปคีออสก์ได้ โปรดนำ USB สติ๊กออก</translation>
+<translation id="8872506776304248286">เปิดในแอป</translation>
 <translation id="8874184842967597500">ไม่ได้เชื่อมต่อ</translation>
 <translation id="8876215549894133151">รูปแบบ:</translation>
 <translation id="8876309039915144086">สร้างรหัสผ่าน...</translation>
@@ -5005,7 +4995,6 @@
 <translation id="88986195241502842">เลื่อนหน้าลง</translation>
 <translation id="8898786835233784856">เลือกแท็บถัดไป</translation>
 <translation id="8898840733695078011">ความแรงสัญญาณ</translation>
-<translation id="8899551033019439140">กำลังค้นหาเครื่องพิมพ์...</translation>
 <translation id="8899851313684471736">เปิดลิงก์ใน&amp;หน้าต่างใหม่</translation>
 <translation id="8902667442496790482">เปิดการตั้งค่าการเลือกเพื่อให้อ่าน</translation>
 <translation id="8903921497873541725">ขยาย</translation>
@@ -5127,6 +5116,7 @@
 <translation id="9100765901046053179">การตั้งค่าขั้นสูง</translation>
 <translation id="9101691533782776290">เปิดแอป</translation>
 <translation id="9102610709270966160">เปิดใช้ส่วนขยาย</translation>
+<translation id="9103868373786083162">กดเพื่อย้อนกลับไปที่เมนูตามบริบทเพื่อดูประวัติ</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">หากต้องการเพิ่มพื้นที่ว่าง ให้ลบไฟล์ออกจากพื้นที่เก็บข้อมูลของอุปกรณ์</translation>
 <translation id="9110990317705400362">เรายังคงค้นหาวิธีที่จะทำให้การท่องเว็บของคุณปลอดภัยยิ่งขึ้นอย่างสม่ำเสมอ ก่อนหน้านี้ทุกเว็บไซต์สามารถแสดงข้อความแจ้งให้คุณเพิ่มส่วนขยายในเบราว์เซอร์ แต่ใน Google Chrome เวอร์ชันล่าสุด คุณจะต้องแจ้งให้ Chrome ทราบอย่างชัดเจนว่าคุณต้องการติดตั้งส่วนขยายเหล่านี้โดยการเพิ่มส่วนขยายผ่านหน้า "ส่วนขยาย" <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>

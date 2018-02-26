@@ -1167,7 +1167,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Par défaut, les utilisateurs recevront un avertissement, et non un message d'erreur, si le code saisi est considéré comme étant trop faible.</translation>
 <translation id="4723829699367336876">Activer la traversée de pare-feu depuis le client d'accès à distance</translation>
-<translation id="4725123658714754485">Détermine si les statistiques d'utilisation et les données de diagnostic, telles que des rapports d'erreurs, doivent être envoyées à Google. Si cette règle est définie sur "true", <ph name="PRODUCT_OS_NAME" /> les envoie. Si cette règle n'est pas configurée ou si elle est définie sur "false", les rapports sur les statistiques et les données de diagnostic ne sont pas envoyés.</translation>
 <translation id="4725528134735324213">Activer Android Backup Service</translation>
 <translation id="4733471537137819387">Stratégies liées à l'authentification HTTP intégrée</translation>
 <translation id="4744190513568488164">Serveurs susceptibles d'être utilisés par <ph name="PRODUCT_NAME" />
@@ -1618,13 +1617,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Pour épingler des applications sur le lanceur d'applications, reportez-vous à PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
-<translation id="6029950823657977211">
-      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle "IsolateOrigins" qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par des virgules exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez "https://example.com/", https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, la logique de gestion du processus d'isolation par site prend effet.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="603410445099326293">Paramètres pour l'URL de suggestion utilisant POST</translation>
 <translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
@@ -2587,11 +2579,5 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Active la connexion forcée pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Définir la taille du cache disque</translation>
-<translation id="9775893229076211">Vous permet de contrôler le déclenchement du signalement de compte à risque au niveau de la protection par mot de passe. Ce type de signalement permet d'informer Google que le compte concerné risque d'être piraté.
-
-      Si cette règle est définie sur "PasswordProtectionRiskOff", aucun signalement de compte à risque au niveau de la protection par mot de passe n'est déclenché.
-      Si cette règle est définie sur "PasswordProtectionRiskOnPasswordReuse", les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas dans la liste blanche.
-      Si cette règle est définie sur "PasswordProtectionRiskOnPhishingReuse", les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage.
-      Si cette règle n'est pas configurée, les comptes à risque au niveau de la protection par mot de passe sont signalés lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites d'hameçonnage, mais les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="982497069985795632">Activer la vérification orthographique</translation>
 </translationbundle>

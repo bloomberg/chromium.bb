@@ -1107,7 +1107,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Oletuksena käyttäjät saavat varoituksen, eivät virheilmoitusta, jos PIN-koodia pidetään heikkona.</translation>
 <translation id="4723829699367336876">Ota käyttöön palomuurin siirto etäasiakkaasta</translation>
-<translation id="4725123658714754485">Määrittää, lähetetäänkö Googlelle kaatumisraportteja ja muita käyttö- ja diagnostiikkatietoja. Jos arvo on tosi, <ph name="PRODUCT_OS_NAME" /> lähettää käyttötilastoja. Jos arvo on epätosi tai sitä ei määritetä, tietoja ei lähetetä.</translation>
 <translation id="4725528134735324213">Ota käyttöön Android Backup Service</translation>
 <translation id="4733471537137819387">Integroituun HTTP-todennukseen liittyvät käytännöt.</translation>
 <translation id="4744190513568488164">Palvelimet, joille <ph name="PRODUCT_NAME" /> voi siirtää käyttöoikeustietoja.
@@ -1520,17 +1519,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Sovellusten kiinnittämistä käynnistysohjelmaan hallinnoi PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
-<translation id="6029950823657977211">
-      HUOM. Tämä käytäntö on kokeellinen ja saattaa rikkoa toimintoja!
-      Tämä käytäntö koskee kirjautumisnäyttöjä. Tutustu IsolateOrigins-käytäntöön, joka koskee käyttökertaa. Suosittelemme määrittämään molemmille käytännöille saman arvon.
-      Jos käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon nimetyistä 
-      alkuperistä suorittavat oman prosessinsa. Tämä eristää myös aliverkkotunnusten
-      mukaan nimetyt alkuperät, esim. jos https://example.com/ määritetään,
-      https://foo.example.com/ eristetään myös osana
-      https://example.com/-sivustoa.
-      Jos käytäntöä ei ole otettu käyttöön, sivuston eristämistä edeltävän prosessin hallintalogiikka tulee voimaan.
-      Jos käytäntöä ei ole määritetty, alustan sivun erillään pidon oletusasetusta käytetään kirjautumisnäytössä.
-      </translation>
 <translation id="603410445099326293">POST-metodia käyttävän ehdotushaun URL-osoitteen parametrit</translation>
 <translation id="6036523166753287175">Ota käyttöön palomuurin siirto etäisännästä</translation>
 <translation id="6070667616071269965">Laitteen kirjautumisnäytön näppäimistöasettelut</translation>
@@ -2430,11 +2418,5 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="930930237275114205">Määritä tuotteen <ph name="PRODUCT_FRAME_NAME" /> käyttäjätietohakemisto</translation>
 <translation id="934390688529359269">Ottaa käyttöön pakotetun kirjautumisen kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="944817693306670849">Aseta levyn välimuistin koko</translation>
-<translation id="9775893229076211">Sallii salasanasuojauksen riskialttiin tilin merkinnän käynnistyksen hallinnan. Salasanasuojauksen riskialttiin tilin merkintä tarkoittaa sitä, että Googlelle ilmoitetaan tilin olevan riskialtis kaappauksille.
-
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOff, salasanasuojauksen riskialttiin tilin merkintää ei käynnistetä.
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPasswordReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
-      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPhishingReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
-      Jos käytäntöä ei ole määritetty, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla, mutta käyttäjä voi muuttaa tämän asetuksen.</translation>
 <translation id="982497069985795632">Ota oikeinkirjoituksen tarkistus käyttöön</translation>
 </translationbundle>

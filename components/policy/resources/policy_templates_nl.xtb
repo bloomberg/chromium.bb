@@ -206,7 +206,7 @@
       Het beleid moet op een URL worden ingesteld vanaf waar de Servicevoorwaarden door <ph name="PRODUCT_OS_NAME" /> kunnen worden gedownload. De Servicevoorwaarden moeten platte tekst zijn die als tekst met MIME-type/plat wordt weergegeven. Er is geen opmaak toegestaan.</translation>
 <translation id="1750315445671978749">Alle downloads blokkeren</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op True (Waar), hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op False (Onwaar) of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
-<translation id="1797233582739332495">Toon de gebruiker een terugkerende prompt om aan te geven dat een herstart is vereist</translation>
+<translation id="1797233582739332495">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten vereist is</translation>
 <translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
@@ -287,9 +287,9 @@
 <translation id="2067011586099792101">Toegang blokkeren naar sites die zich niet in inhoudspakketten bevinden</translation>
 <translation id="2070270043919235595">Laat gebruikers weten dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart om een update toe te passen.
 
-      Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker op de hoogte wordt gebracht dat een herstart van de browser wordt aanbevolen of is vereist. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat een herstart is vereist via kleine wijzigingen in het menu. Als dit is ingesteld op Aanbevolen, wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat een herstart wordt aanbevolen. De gebruiker kan deze waarschuwing negeren om de herstart uit te stellen. Als dit is ingesteld op Vereist, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat een herstart van de browser wordt afgedwongen zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser opnieuw op te starten. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat de browser opnieuw moet worden opgestart via kleine wijzigingen in het menu. Als dit is ingesteld op 'Recommended', wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat het raadzaam is de browser opnieuw op te starten. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op 'Required', wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
-      De sessie van de gebruiker wordt na de herstart hersteld.</translation>
+      De sessie van de gebruiker wordt hersteld zodra de browser opnieuw is opgestart.</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
@@ -336,7 +336,7 @@
           Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
 
           Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
-<translation id="2188722565665306629">Hiermee kun je de periode instellen waarin herstartmeldingen voor <ph name="PRODUCT_NAME" /> worden weergegeven om een update toe te passen.
+<translation id="2188722565665306629">Hiermee kun je de periode instellen waarin meldingen om <ph name="PRODUCT_NAME" /> opnieuw op te starten, worden weergegeven om een update toe te passen.
 
       Met deze beleidsinstellingen kun je de periode tot op de milliseconde nauwkeurig bepalen waarin een gebruiker op progressieve wijze wordt geïnformeerd dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart (of dat <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden gestart) om een update toe te passen. De gebruiker wordt gedurende deze periode herhaaldelijk geïnformeerd over de update op basis van de instelling van het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid. Als dit niet is ingesteld, wordt de standaardperiode van 604.800.000 milliseconden (één week) gehanteerd.</translation>
 <translation id="2194470398825717446">Dit beleid is beëindigd in M61. Gebruik EcryptfsMigrationStrategy.
@@ -771,7 +771,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen nieuwe tabbladpagina weergegeven.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
-<translation id="3465852069254497664">Laat een gebruiker weten dat een herstart van de browser wordt aanbevolen of is vereist</translation>
+<translation id="3465852069254497664">Laat een gebruiker weten dat het aanbevolen of vereist is om de browser opnieuw op te starten</translation>
 <translation id="346731943813722404">Hiermee wordt aangegeven of vertragingen in energiebeheer en de limiet voor sessielengte pas moeten worden gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
 
           Als dit beleid is ingesteld op 'True', worden vertragingen in energiebeheer en de limiet voor sessielengte pas gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
@@ -805,7 +805,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="3711895659073496551">Onderbreken</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
 <translation id="3737544779868348650">Hostnaam van apparaat in netwerk</translation>
-<translation id="3740754010292550733">Stel de periode in voor meldingen over een herstart na updates</translation>
+<translation id="3740754010292550733">Stel de periode in voor meldingen over opnieuw opstarten na updates</translation>
 <translation id="3750220015372671395">Het genereren van sleutels op deze sites blokkeren</translation>
 <translation id="3756011779061588474">Ontwikkelaarsmodus blokkeren</translation>
 <translation id="3758089716224084329">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
@@ -1153,7 +1153,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
           Standaard krijgen gebruikers een waarschuwing en geen foutmelding te zien als de pincode als zwak wordt beschouwd.</translation>
 <translation id="4723829699367336876">Firewallpassage vanaf client voor externe toegang inschakelen</translation>
-<translation id="4725123658714754485">Hiermee wordt beheerd of gebruiksstatistieken en diagnostische gegevens, waaronder crashrapporten, worden gerapporteerd aan Google. Als dit is ingesteld op 'true' (waar), rapporteert <ph name="PRODUCT_OS_NAME" /> gebruiksstatistieken en diagnostische gegevens. Als het niet is geconfigureerd of is ingesteld op 'false' (onwaar), wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.</translation>
 <translation id="4725528134735324213">Android Backup Service inschakelen</translation>
 <translation id="4733471537137819387">Beleid met betrekking tot geïntegreerde HTTP-authenticatie.</translation>
 <translation id="4744190513568488164">Servers waarnaar <ph name="PRODUCT_NAME" /> mag delegeren.
@@ -1588,17 +1587,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Bekijk PinnedLauncherApps als je apps wilt vastzetten in de Launcher.</translation>
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
-<translation id="6029950823657977211">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid IsolateOrigins, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels in te stellen op dezelfde waarde.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een
-      door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook
-      herkomsten geïsoleerd die worden benoemd door subdomeinen (als je https://example.com/ specificeert,
-      wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site 
-      https://example.com/).
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica die voorafgaat aan site-isolatie van kracht.
-      Als het beleid niet is geconfigureerd, worden de standaardinstellingen van het platform voor site-isolatie gebruikt voor het inlogscherm.
-      </translation>
 <translation id="603410445099326293">Parameters voor suggestie-URL die POST gebruikt</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
 <translation id="6070667616071269965">Toetsenbordindelingen voor inlogscherm van apparaat</translation>
@@ -1793,7 +1781,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
-<translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat een herstart wordt aanbevolen</translation>
+<translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
 <translation id="685769593149966548">Strenge 'Beperkte modus' voor YouTube afdwingen</translation>
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
@@ -2547,11 +2535,5 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
 <translation id="934390688529359269">Schakelt gedwongen inloggen voor <ph name="PRODUCT_NAME" /> in</translation>
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
-<translation id="9775893229076211">Hiermee kun je de activering van accountmarkering wegens wachtwoordbeveiligingsrisico beheren. Accountmarkering wegens wachtwoordbeveiligingsrisico houdt in dat Google op de hoogte wordt gebracht dat dit account risico loopt om te worden gehackt.
-
-      Als dit beleid is ingesteld op PasswordProtectionRiskOff, wordt er geen accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd.
-      Als dit beleid is ingesteld op PasswordProtectionRiskOnPasswordReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer gebruikers Google-wachtwoorden hergebruiken op sites die niet op de witte lijst staan.
-      Als dit beleid is ingesteld op PasswordProtectionRiskOnPhishingReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer gebruikers Google-wachtwoorden hergebruiken op phishingsites.
-      Als dit beleid niet is ingesteld, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer gebruikers Google-wachtwoorden hergebruiken op phishingsites, maar de gebruiker dit kan aanpassen.</translation>
 <translation id="982497069985795632">Spellingcontrole inschakelen</translation>
 </translationbundle>

@@ -1147,7 +1147,6 @@
 
           Bilang default, makakatanggap ng babala ang mga user, hindi ng error, kung itinuturing na madaling mahulaan ang PIN.</translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
-<translation id="4725123658714754485">Nagkokontrol kung iuulat sa Google ang mga sukatan ng paggamit at data ng diagnostic, kabilang ang mga ulat ng pag-crash. Kung itatakda sa true, iuulat ng <ph name="PRODUCT_OS_NAME" /> ang mga sukatan ng paggamit at data ng diagnostic. Kung hindi iko-configure o kung itatakda sa false, idi-disable ang pag-uulat ng mga sukatan at data ng diagnostic.</translation>
 <translation id="4725528134735324213">I-enable ang Android Backup Service</translation>
 <translation id="4733471537137819387">Mga patakarang kaugnay ng pinagsamang pagpapatotoo ng HTTP.</translation>
 <translation id="4744190513568488164">Ang mga server kung saan maaaring maglaan ang <ph name="PRODUCT_NAME" />.
@@ -1591,17 +1590,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Upang mag-pin ng mga app sa launcher, tingnan ang PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
-<translation id="6029950823657977211">
-      TANDAAN: Pang-eksperimento ang patakarang ito at maaaring lumabag sa functionality!
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang 'IsolateOrigins' na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value.
-      Kung naka-enable ang patakaran, tatakbo sa sarili nitong proseso ang bawat isa sa mga pinangalanang pinagmulan sa isang
-      comma-separated list. Ia-isolate din nito ang
-      mga pinagmulang pinangalanan ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      https://example.com/ site.
-      Kung naka-disable ang patakaran, magkakabisa ang logic sa pamamahala ng proseso ng Pag-isolate ng Bawat Site.
-      Kung hindi na-configure ang patakaran, gagamitin ang mga default na setting ng pag-isolate ng site ng platform para sa screen ng pag-sign in.
-      </translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
 <translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
@@ -2561,11 +2549,5 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="930930237275114205">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ine-enable ang pwersahang pag-sign in para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
-<translation id="9775893229076211">Pinapayagan kang kontrolin ang pag-trigger sa pag-flag ng account na may nakompromisong proteksyon sa password. Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nangangahulugang pagbibigay-alam sa Google na nanganganib na ma-hijack ang account na ito.
-
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOff,' walang mati-trigger na pag-flag ng account na may nakompromisong proteksyon sa password.
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOnPasswordReuse,' mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa anumang hindi naka-whitelist na site.
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionRiskOnPhishingReuse,' mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa mga phishing site.
-      Kung hinayaang hindi nakatakda ang patakaran, mati-trigger ang pag-flag ng account na may nakompromisong proteksyon sa password kapag muling ginamit ng mga user ang mga password sa Google sa mga phishing site ngunit mababago ito ng user.</translation>
 <translation id="982497069985795632">Ine-enable ang spellcheck</translation>
 </translationbundle>

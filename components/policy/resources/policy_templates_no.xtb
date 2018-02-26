@@ -27,7 +27,7 @@
       Hvis denne regelen er spesifisert, vises påloggingsskjermen alltid med lokaliteten som er angitt av den første verdien i denne regelen. (Regelen defineres som en liste for fremoverkompatibilitet.) Hvis regelen ikke er spesifisert eller den er angitt som en tom liste, vises påloggingsskjermen med lokaliteten for den forrige brukerøkten. Hvis regelen er angitt som en verdi som ikke er noen gyldig lokalitet, vises påloggingsskjermen med en reservelokalitet (som for øyeblikket er en-US).</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="1062407476771304334">Erstatt</translation>
-<translation id="109166998561583554">Utløser som kontrollerer hvordan tjenesten for passordbeskyttelse merker brukerkontoer som er i fare</translation>
+<translation id="109166998561583554">Utløser for rapportering av kontoer der passordbeskyttelsen kan være kompromittert</translation>
 <translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
 
           Hvis denne innstillingen er slått av eller ikke er angitt, kjøres verten for fjernhjelp i brukerens kontekst. Eksterne brukere kan i så fall ikke kommunisere via uthevede vinduer på skrivebordet.</translation>
@@ -100,7 +100,7 @@
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
-<translation id="1457305643416399820">Merking av kontoer der passordbeskyttelse er i fare, er slått av</translation>
+<translation id="1457305643416399820">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, er slått av</translation>
 <translation id="1464848559468748897">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME" />-enheter.
 
       Hvis denne innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofiløkt.
@@ -336,9 +336,9 @@
       Hvis denne innstillingen er konfigurert, kan brukere som bruker hurtigopplåsing, bli bedt om å skrive inn passordet sitt på låseskjermen. Dette avhenger imidlertid av hvilken innstilling som er valgt.
 
       Hvis denne innstillingen ikke konfigureres, blir brukere som bruker hurtigopplåsing, bedt om å skrive inn passordet sitt på låseskjermen hver dag.</translation>
-<translation id="2188722565665306629">Lar deg angi tidsperioden varslene om omstart av <ph name="PRODUCT_NAME" /> skal vises i når det finnes en oppdatering som ikke er installert ennå.
+<translation id="2188722565665306629">Lar deg angi hvor lenge varsler for omstart av <ph name="PRODUCT_NAME" /> skal vises når det finnes en oppdatering som ikke er installert ennå.
 
-      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) må startes på nytt på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen i regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 604 800 000 millisekunder (én uke).</translation>
+      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) må startes på nytt på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen for regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 604 800 000 millisekunder (én uke).</translation>
 <translation id="2194470398825717446">Denne regelen er avviklet i M61. Bruk EcryptfsMigrationStrategy i stedet.
 
       Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.
@@ -402,7 +402,7 @@
       Innstillingen må angis i millisekunder.</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
-<translation id="2411817661175306360">Advarselen om passordbeskyttelse er slått av</translation>
+<translation id="2411817661175306360">Advarsler om passordbeskyttelse er slått av</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
 <translation id="2418507228189425036">Slår av lagringen av nettleserloggen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
@@ -788,7 +788,7 @@
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
-<translation id="3740754010292550733">Angi perioden for varsler for omstart på grunn av en oppdatering</translation>
+<translation id="3740754010292550733">Angi hvor lenge varsler om omstart skal sendes i forbindelse med oppdateringer</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
@@ -1088,7 +1088,7 @@
 
           For å få en fullstendig beskrivelse over mulige innstilinger samt strukturen i denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
-<translation id="4554651132977135445">Behandlingsmodus med tilbakekobling for brukerinnstillinger</translation>
+<translation id="4554651132977135445">Behandlingsmodus for tilbakekobling av brukerinnstillinger</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
@@ -1127,7 +1127,6 @@
 
           Som standard ser brukerne en advarsel – ikke en feilmelding – hvis PIN-koden anses som svak.</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
-<translation id="4725123658714754485">Kontrollerer om bruksberegninger og diagnostikkdata, inkludert programstopprapporter, rapporteres til Google. Hvis regelen er angitt som «True» (sann), rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger og diagnostikkdata. Hvis den ikke er konfigurert eller er angitt som «False» (usann), er rapportering av beregninger og dianostikkdata deaktivert.</translation>
 <translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
 <translation id="4744190513568488164">Tjenere <ph name="PRODUCT_NAME" /> kan delegere til.
@@ -1364,7 +1363,7 @@
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5530347722229944744">Blokkér potensielt farlige nedlastinger</translation>
-<translation id="5530586312297447592">Tjenesten for passordbeskyttelse merker brukerkontoer som i fare ved gjenbruk av passord på sider som driver med nettfisking</translation>
+<translation id="5530586312297447592">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord på nettfiskingssider</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
 <translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
@@ -1559,17 +1558,6 @@
 
       For å feste apper til appoversikten, se PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
-<translation id="6029950823657977211">
-      MERK: Dette er en eksperimentell regel som kan føre til at funksjonaliteten ikke fungerer som den skal!
-      Denne regelen gjelder for påloggingsskjermen. Se også «IsolateOrigins»-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke samme verdi for begge reglene.
-      Hvis regelen er aktivert, kjøres hver av de navngitte opprinnelsene
-      i en kommadelt liste i sin egen prosess. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis for eksempel
-      http://example.com/ spesifiseres, blir også https://foo.example.com/ isolert
-      som en del av nettstedet https://example.com/.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
-      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
-      </translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
@@ -1739,7 +1727,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen ikke spesifiseres, er nettverksforutsigelse slått på, men brukeren kan endre innstillingen.</translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
-<translation id="6698071416141001300">Tjenesten for passordbeskyttelse merker brukerkontoer som i fare ved gjenbruk av passord</translation>
+<translation id="6698071416141001300">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 
@@ -1751,7 +1739,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis regelen er angitt som False (usann), kan ikke brukerne logge på andre kontoer i innholdsområdet hvis nettleseren ikke er i inkognitomodus.
 
-      Hvis regelen ikke er angitt eller er angitt som True (sann), brukes standardinnstillingen, det vil si at det er tillatt å logge på andre kontoer i innholdsområdet i nettleseren. Dette gjelder imidlertid ikke for underkontoer, der det blokkeres for innholdsområder som ikke er i inkognitomodus.
+      Hvis regelen ikke er angitt eller er angitt som True (sann), brukes standardinnstillingen. Det vil si at det er tillatt å logge på andre kontoer i innholdsområdet i nettleseren. Dette gjelder imidlertid ikke for underkontoer, der det blokkeres for innholdsområder som ikke er i inkognitomodus.
 
       Hvis det ikke skal være lov å logge på andre kontoer i inkognitomodus, kan du blokkere denne modusen i IncognitoModeAvailability-regelen.
 
@@ -2368,7 +2356,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
 <translation id="8818768076343557335">Forutsi nettverkshandlinger på et hvilket som helst nettverk som ikke er et mobilnettverk.
           (Avviklet i 50, fjernet i 52. Etter 52 behandles verdien som 0 – Forutsi nettverkshandlinger på alle nettverkstilkoblinger – selv om verdien er satt til 1.)</translation>
-<translation id="8825782996899863372">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord på sider som driver med nettfisking</translation>
+<translation id="8825782996899863372">Advarselen om passordbeskyttelse utløses ved gjenbruk av passord på nettfiskingssider</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME" /> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
 <translation id="8833109046074170275">Autentisering via den normale GAIA-prosessen</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> bufrer apper og utvidelser som skal installeres av flere brukere på én enkelt enhet, for å unngå å laste dem ned på nytt for hver bruker.
@@ -2514,11 +2502,5 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="930930237275114205">Angi <ph name="PRODUCT_FRAME_NAME" />-katalog for brukerdata</translation>
 <translation id="934390688529359269">Slår på tvunget pålogging for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Angi størrelse på diskbuffer</translation>
-<translation id="9775893229076211">Lar deg styre hva som utløser kontovarsling om passordbeskyttelse i fare. Kontovarsling om passordbeskyttelse i fare, betyr at Google informeres om at denne kontoen står i fare for å bli kapret.
-
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen kontovarsling om passordbeskyttelse i fare.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
-      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
-      Hvis denne regelen ikke er angitt, blir det utløst kontovarsling om passordbeskyttelse i fare når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking. Men brukerne kan endre dette.</translation>
 <translation id="982497069985795632">Aktiver stavekontrollen</translation>
 </translationbundle>

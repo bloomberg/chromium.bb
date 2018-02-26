@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">Nieprawidłowy lub uszkodzony plik</translation>
 <translation id="1042174272890264476">Twój komputer zawiera również wbudowaną bibliotekę RLZ <ph name="SHORT_PRODUCT_NAME" />. Przypisuje ona powtarzalny, nieumożliwiający identyfikacji użytkownika tag służący do monitorowania wyszukiwań i używania <ph name="SHORT_PRODUCT_NAME" /> w ramach określonej kampanii promocyjnej. Etykiety te czasami pojawiają się w zapytaniach wyszukiwarki Google w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Niestety, ta nazwa jest już używana.</translation>
-<translation id="1046286965898806214">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zapisać Twoje konto na tej stronie?</translation>
 <translation id="1047431265488717055">Kopiuj te&amp;kst linku</translation>
 <translation id="1047726139967079566">Dodaj stronę do zakładek...</translation>
 <translation id="1047956942837015229">Usuwam <ph name="COUNT" /> elementy(ów)...</translation>
@@ -423,7 +422,6 @@
 <translation id="1635033183663317347">Zainstalowane przez opiekuna.</translation>
 <translation id="1637224376458524414">Pobierz tę zakładkę na swojego iPhone'a</translation>
 <translation id="1637765355341780467">Coś poszło nie tak podczas otwierania Twojego profilu. Niektóre funkcje mogą być niedostępne.</translation>
-<translation id="1638447702436460526">Nie znaleziono drukarki</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
 <translation id="1640283014264083726">PKCS #1, MD4 z szyfrowaniem RSA</translation>
 <translation id="1642494467033190216">Zanim włączysz inne funkcje debugowania, musisz wyłączyć zabezpieczenie rootfs i ponownie uruchomić urządzenie.</translation>
@@ -574,6 +572,7 @@
 <translation id="1856813161013948396">Pomiń ekran blokady, dotykając czujnika linii papilarnych. Kliknij, by skonfigurować.</translation>
 <translation id="1858585891038687145">Ufaj temu certyfikatowi przy identyfikowaniu producentów oprogramowania</translation>
 <translation id="1859234291848436338">Kierunek pisania</translation>
+<translation id="1861262398884155592">Ten folder jest pusty</translation>
 <translation id="1864111464094315414">Zaloguj się</translation>
 <translation id="1864400682872660285">Chłodniejsze</translation>
 <translation id="1864676585353837027">Zmień sposób udostępniania tych plików</translation>
@@ -588,7 +587,6 @@
 <translation id="1878524442024357078">Nie zezwalaj żadnym stronom na dostęp do komputera przez wtyczkę</translation>
 <translation id="1879449842763884566">Zainstaluj w Programach…</translation>
 <translation id="1880905663253319515">Czy usunąć certyfikat „<ph name="CERTIFICATE_NAME" />”?</translation>
-<translation id="188190999506226223">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zapisać hasło do strony <ph name="ORIGIN" />?</translation>
 <translation id="1886996562706621347">Zezwalaj witrynom, by mogły prosić o ustawienie ich jako domyślnego modułu obsługi protokołu (zalecane)</translation>
 <translation id="1887442540531652736">Błąd logowania</translation>
 <translation id="1887850431809612466">Wersja sprzętu</translation>
@@ -1149,7 +1147,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2762441749940182211">Zablokowano dostęp do kamery</translation>
 <translation id="2765217105034171413">Mały</translation>
 <translation id="2766006623206032690">Wk&amp;lej i otwórz</translation>
-<translation id="2767084307624729667">Zapisane hasła do <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">Zalogowano jako <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
 <translation id="2770690685823456775">Eksportuj hasła do innego folderu</translation>
@@ -1222,7 +1219,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2849936225196189499">Krytyczne</translation>
 <translation id="2850124913210091882">Utwórz kopię zapasową</translation>
 <translation id="2850541429955027218">Dodaj motyw</translation>
-<translation id="2853121255651601031">Hasło zostało zapisane</translation>
 <translation id="2853916256216444076">Plik wideo ($1)</translation>
 <translation id="2857608528410806398">Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania.</translation>
 <translation id="2860150991415616761">bardzo długie (4 s)</translation>
@@ -1232,6 +1228,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2867768963760577682">Otwórz jako przypiętą kartę</translation>
 <translation id="2868746137289129307">To rozszerzenie jest nieaktualne i zostało wyłączone zgodnie z polityką firmy. Może zostać włączone automatycznie, gdy dostępna będzie nowa wersja.</translation>
 <translation id="2870560284913253234">Witryna</translation>
+<translation id="2870909136778269686">Aktualizuję...</translation>
 <translation id="2871813825302180988">To konto jest już używane na tym urządzeniu.</translation>
 <translation id="2872353916818027657">Zamień główny monitor</translation>
 <translation id="287286579981869940">Dodaj dostawcę <ph name="PROVIDER_NAME" />...</translation>
@@ -1762,7 +1759,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3665842570601375360">Zabezpieczenia:</translation>
 <translation id="3668570675727296296">Ustawienia języka</translation>
 <translation id="3668823961463113931">Moduły obsługi</translation>
-<translation id="3669030672519623291">Nie zapisano żadnych haseł do tej strony</translation>
 <translation id="3670229581627177274">Włącz Bluetooth</translation>
 <translation id="3672681487849735243">Wykryto błąd fabryczny</translation>
 <translation id="367645871420407123">pozostaw puste, jeśli chcesz ustawić hasło główne na domyślną wartość obrazu testowego</translation>
@@ -2298,7 +2294,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4576541033847873020">Sparuj urządzenie Bluetooth</translation>
 <translation id="4579581181964204535">Nie udało się przesłać <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Czy na pewno chcesz usunąć następującą liczbę elementów: $1?</translation>
-<translation id="458150753955139441">Naciśnij, by wrócić, lub otwórz menu kontekstowe, by wyświetlić historię</translation>
 <translation id="4582563038311694664">Zresetuj wszystkie ustawienia</translation>
 <translation id="4585793705637313973">Edytuj stronę</translation>
 <translation id="4589268276914962177">Nowy terminal</translation>
@@ -2331,7 +2326,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4632483769545853758">Wyłącz wyciszenie karty</translation>
 <translation id="4633003931260532286">Rozszerzenie wymaga: „<ph name="IMPORT_NAME" />” przynajmniej w wersji „<ph name="IMPORT_VERSION" />”, ale zainstalowana jest tylko wersja „<ph name="INSTALLED_VERSION" />”</translation>
 <translation id="4634771451598206121">Zaloguj się ponownie</translation>
-<translation id="4636315944522859212">Znaleziono drukarkę</translation>
 <translation id="4640525840053037973">Zaloguj się na konto Google</translation>
 <translation id="4641539339823703554">Chrome nie może ustawić czasu systemowego. Sprawdź i w razie potrzeby popraw godzinę poniżej.</translation>
 <translation id="4643612240819915418">&amp;Otwórz film wideo w nowej karcie</translation>
@@ -2463,7 +2457,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4850669014075537160">Przewijanie</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4853020600495124913">Otwórz w &amp;nowym oknie</translation>
-<translation id="4853882474657327078">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do strony <ph name="ORIGIN" />?</translation>
 <translation id="4856478137399998590">Komórkowa usługa transmisji danych została aktywowana i jest gotowa do użycia</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Otwórz wszystkie w oknie &amp;incognito}=1{Otwórz w oknie &amp;incognito}few{Otwórz wszystkie (#) w oknie &amp;incognito}many{Otwórz wszystkie (#) w oknie &amp;incognito}other{Otwórz wszystkie (#) w oknie &amp;incognito}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
@@ -2946,7 +2939,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="558170650521898289">Weryfikacja sprzętowych sterowników systemu Microsoft Windows</translation>
 <translation id="5582839680698949063">Menu główne</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">Zapisano hasła do tej strony</translation>
 <translation id="5585118885427931890">Nie można utworzyć folderu zakładek.</translation>
 <translation id="558563010977877295">Otwórz konkretną stronę lub zestaw stron</translation>
 <translation id="5585912436068747822">Formatowanie nie powiodło się</translation>
@@ -2958,7 +2950,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5600706100022181951">Pobranie aktualizacji wykorzysta <ph name="UPDATE_SIZE_MB" /> MB mobilnej transmisji danych. Czy chcesz kontynuować?</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="5605623530403479164">Inne wyszukiwarki</translation>
 <translation id="5608580678041221894">Kliknij te przyciski, by zmienić lub przesunąć obszar przycinania</translation>
 <translation id="5609231933459083978">Wygląda na to, że aplikacja jest nieprawidłowa.</translation>
@@ -3143,7 +3134,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5882919346125742463">Znane sieci</translation>
 <translation id="5884474295213649357">Ta karta jest połączona z urządzeniem USB.</translation>
 <translation id="5885324376209859881">Zarządzaj ustawieniami multimediów...</translation>
-<translation id="5887341066363321040">Nie zapisano żadnych haseł do <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">Maksymalna liczba pośrednich urzędów certyfikacji: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5895187275912066135">Wystawiony dnia</translation>
@@ -3627,7 +3617,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Twój komputer jest skonfigurowany przy użyciu błędnie sformatowanego identyfikatora sprzętu. Ta sytuacja uniemożliwia zaktualizowanie systemu operacyjnego Chrome za pomocą najnowszych poprawek zabezpieczeń, a komputer <ph name="BEGIN_BOLD" />może być narażony na złośliwe ataki<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Podczas otwierania Twojego profilu coś poszło nie tak. Wyloguj się i ponownie zaloguj.</translation>
-<translation id="6669827579181361875">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zapisać hasło do tej strony?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Chcesz zobaczyć tłumaczenie Google tej strony z języka <ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Podłączono urządzenie wskazujące</translation>
@@ -4986,6 +4975,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8871696467337989339">Użyto nieobsługiwanej flagi wiersza polecenia: <ph name="BAD_FLAG" />. Ma to negatywny wpływ na stabilność i zabezpieczenia.</translation>
 <translation id="8871974300055371298">Ustawienia treści</translation>
 <translation id="8872155268274985541">Odnaleziono nieprawidłowy plik manifestu zewnętrznej aktualizacji aplikacji kiosku. Aplikacja nie została zaktualizowana. Odłącz pamięć USB.</translation>
+<translation id="8872506776304248286">Otwórz w aplikacji</translation>
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Wygeneruj hasło…</translation>
@@ -4999,7 +4989,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="88986195241502842">Strona w dół</translation>
 <translation id="8898786835233784856">Wybierz następną kartę</translation>
 <translation id="8898840733695078011">Siła sygnału</translation>
-<translation id="8899551033019439140">Szukam drukarki…</translation>
 <translation id="8899851313684471736">Otwórz link w nowym &amp;oknie</translation>
 <translation id="8902667442496790482">Otwórz ustawienia funkcji Przeczytaj na głos</translation>
 <translation id="8903921497873541725">Powiększ</translation>
@@ -5121,6 +5110,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9100765901046053179">Ustawienia zaawansowane</translation>
 <translation id="9101691533782776290">Uruchom aplikację</translation>
 <translation id="9102610709270966160">Włącz rozszerzenie</translation>
+<translation id="9103868373786083162">Naciśnij, by wrócić, lub otwórz menu kontekstowe, by wyświetlić historię</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">Aby zwolnić miejsce, usuń pliki z pamięci urządzenia.</translation>
 <translation id="9110990317705400362">Stale szukamy rozwiązań, dzięki którym przeglądanie internetu będzie bezpieczniejsze. Wcześniej każda strona mogła poprosić o dodanie rozszerzenia do przeglądarki. W nowszych wersjach Google Chrome musisz dodać rozszerzenie na stronie Rozszerzenia, by wyraźnie poinformować przeglądarkę, że chcesz je zainstalować. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>

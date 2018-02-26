@@ -1158,7 +1158,6 @@
 
           Pagal numatytuosius nustatymus naudotojai matys įspėjimą, o ne klaidą, jei PIN kodas bus laikomas nesaugiu.</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
-<translation id="4725123658714754485">Valdoma, ar naudojimo metrikos ir diagnostikos duomenų ataskaitos, įskaitant strigčių ataskaitas, teikiamos atgal į sistemą „Google“. Jei nustatyta į „true“, „<ph name="PRODUCT_OS_NAME" />“ teiks naudojimo metrikos ir diagnostikos duomenų ataskaitas. Jei nesukonfigūruota ar nustatyta į „false“, metrikos ir diagnostikos duomenų ataskaitų teikimas bus neleidžiamas.</translation>
 <translation id="4725528134735324213">„Android“ atsarginio kopijavimo paslaugos įgalinimas</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
 <translation id="4744190513568488164">Serveriai, į kuriuos „<ph name="PRODUCT_NAME" />“ gali pervesti.
@@ -1604,17 +1603,6 @@
 
       Jei norite prisegti programas prie paleidimo priemonės, žr. „PinnedLauncherApps“.</translation>
 <translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
-<translation id="6029950823657977211">
-      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
-      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „IsolateOrigins“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų politikų vertes.
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
-      kableliais atskirtų verčių sąrašą, vykdys savo procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
-      taip pat bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
-      https://example.com/ dalis.
-      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
-      Jei politika nesukonfigūruota, prisijungimo ekranui bus naudojami platformos numatytieji svetainės atskyrimo nustatymai.
-      </translation>
 <translation id="603410445099326293">Pasiūlymų URL parametrai, kuriuose naudojama POST</translation>
 <translation id="6036523166753287175">Įgalinkite užkardos apėjimą iš nuotolinės prieigos prieglobos</translation>
 <translation id="6070667616071269965">Įrenginio prisijungimo ekrano klaviatūros išdėstymai</translation>
@@ -2574,11 +2562,5 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="930930237275114205">Nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ naudotojo duomenų katalogą</translation>
 <translation id="934390688529359269">Įgalinamas „<ph name="PRODUCT_NAME" />“ priverstinis prisijungimas</translation>
 <translation id="944817693306670849">Nustatyti disko talpyklos dydį</translation>
-<translation id="9775893229076211">Leidžiama valdyti paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos suaktyvinimą. Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos – tai „Google“ informavimas, kad ši paskyra gali būti užgrobta.
-
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOff“, nesuaktyvinamas joks paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos.
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPasswordReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius bet kurioje svetainėje, kuri neįtraukta į baltąjį sąrašą.
-      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPhishingReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius sukčiavimo svetainėse.
-      Jei ši politika nenustatyta, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojai pakartotinai naudoja „Google“ slaptažodžius sukčiavimo svetainėse, bet naudotojas gali tai pakeisti.</translation>
 <translation id="982497069985795632">Rašybos tikrinimo įgalinimas</translation>
 </translationbundle>

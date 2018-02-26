@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1383876407941801731">搜索</translation>
+<translation id="1510238584712386396">启动器</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">文字编辑</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">切换主显示器</translation>
+<translation id="3105917916468784889">生成屏幕截图</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">将地址栏设为焦点</translation>
+<translation id="3649256019230929621">最小化窗口</translation>
+<translation id="385051799172605136">后退</translation>
+<translation id="5316716239522500219">镜像显示器</translation>
+<translation id="5928303187149237472">更改屏幕分辨率</translation>
+<translation id="5975083100439434680">缩小</translation>
+<translation id="6022924867608035986">清除搜索框文字</translation>
+<translation id="6129953537138746214">空格</translation>
+<translation id="6185696379715117369">向上翻页</translation>
+<translation id="671928215901716392">锁定屏幕</translation>
+<translation id="6727005317916125192">上一个窗格</translation>
+<translation id="6981982820502123353">无障碍</translation>
+<translation id="7020813747703216897">找不到相符的搜索结果</translation>
+<translation id="7025325401470358758">下一窗格</translation>
+<translation id="7272373489634936181">搜索快捷键</translation>
+<translation id="7724603315864178912">剪切</translation>
+<translation id="8004192919599017226">开始搜索…</translation>
+<translation id="88986195241502842">向下翻页</translation>
+<translation id="8903921497873541725">放大</translation>
+<translation id="9179672198516322668">常用快捷键</translation>
 </translationbundle>

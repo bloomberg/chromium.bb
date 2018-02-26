@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1383876407941801731">Haku</translation>
+<translation id="1510238584712386396">Käynnistysohjelma</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">Tekstin muokkaus</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">Vaihda ensisijainen näyttö</translation>
+<translation id="3105917916468784889">Ota kuvakaappaus</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Keskitä osoitepalkkiin</translation>
+<translation id="3649256019230929621">Pienennä ikkuna</translation>
+<translation id="385051799172605136">Edellinen</translation>
+<translation id="5316716239522500219">Peilaa näytöt</translation>
+<translation id="5928303187149237472">Näytön resoluution muuttaminen</translation>
+<translation id="5975083100439434680">Loitonna</translation>
+<translation id="6022924867608035986">Tyhjennä hakukentän teksti</translation>
+<translation id="6129953537138746214">Välilyönti</translation>
+<translation id="6185696379715117369">Sivu ylös</translation>
+<translation id="671928215901716392">Ruudunlukitus</translation>
+<translation id="6727005317916125192">Edellinen ruutu</translation>
+<translation id="6981982820502123353">Esteettömyys</translation>
+<translation id="7020813747703216897">Hakua vastaavia tuloksia ei löytynyt.</translation>
+<translation id="7025325401470358758">Seuraava ruutu</translation>
+<translation id="7272373489634936181">Hae pikanäppäimiä</translation>
+<translation id="7724603315864178912">Leikkaa</translation>
+<translation id="8004192919599017226">Aloita haku…</translation>
+<translation id="88986195241502842">Sivu alas</translation>
+<translation id="8903921497873541725">Lähennä</translation>
+<translation id="9179672198516322668">Suositut pikanäppäimet</translation>
 </translationbundle>

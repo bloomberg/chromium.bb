@@ -608,6 +608,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2893546967669465276">Odosielanie denníkov systému na správcovský server</translation>
 <translation id="2899002520262095963">Aplikácie pre Android môžu používať konfigurácie siete a certifikáty CA nastavené prostredníctvom tohto pravidla, nemajú však prístup k rovnakým možnostiam konfigurácie.</translation>
 <translation id="2906874737073861391">Zoznam rozšírení AppPack</translation>
+<translation id="2907992746861405243">Umožňuje ovládať, ktoré tlačiarne z pravidla <ph name="BULK_PRINTERS_POLICY" /> 
+majú používatelia k dispozícii.
+
+      Označuje, ktoré pravidlo pre prístup sa použije na hromadnú konfiguráciu tlačiarní. Ak vyberiete možnosť <ph name="PRINTERS_ALLOW_ALL" />, zobrazia sa všetky tlačiarne. Ak vyberiete <ph name="PRINTERS_BLACKLIST" />, na obmedzenie prístupu určených tlačiarní sa použije pravidlo <ph name="BULK_PRINTERS_BLACKLIST" />.  Ak vyberiete možnosť <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> označuje iba tie tlačiarne, ktoré sa dajú vybrať.
+
+      Ak toto pravidlo nenastavíte, bude platiť možnosť <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Maximálny počet súčasných pripojení k serveru proxy</translation>
 <translation id="2956777931324644324">Podpora tohto pravidla bola ukončená vo verzii 36 aplikácie <ph name="PRODUCT_NAME" />.
 
@@ -745,6 +752,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak toto pravidlo použijete, používateľ bude mať k dispozícii iba tlačiarne s identifikátormi, ktoré sa zhodujú s hodnotami v tomto pravidle. Identifikátory sa musia zhodovať so zadanými údajmi v súbore určenom v pravidle <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Ak toto pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" />použije predvolenú minimálnu verziu, teda TLS 1.0.
+
+      V opačnom prípade ho môžete nastaviť na jednu z nasledujúcich hodnôt: „tls1“, „tls1.1“ alebo „tls1.2“. Ak túto hodnotu nastavíte, <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS v nižšej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
       Ak je toto pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> nepovolí spustenie relácií hosťa.</translation>
@@ -852,6 +862,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak ho ponecháte nenastavené, klávesnica na obrazovke bude v predvolenom nastavení deaktivovaná, ale používatelia ju budú môcť kedykoľvek aktivovať.</translation>
 <translation id="382476126209906314">Konfigurácia predpony TalkGadget pre hostiteľov vzdialeného prístupu</translation>
+<translation id="3831376478177535007">Keď zapnete toto nastavenie, <ph name="PRODUCT_NAME" /> povolí certifikáty vydané operáciami starej infraštruktúry PKI spoločnosti Symantec Corporation za predpokladu, že sú inak úspešne overené a prepojené s uznávaným certifikátom CA.
+
+      Upozorňujeme, že toto pravidlo závisí od toho, či príslušný operačný systém stále rozpoznáva certifikáty zo starej infraštruktúry spoločnosti Symantec. Ak aktualizácia operačného systému zmení spracovávanie týchto certifikátov operačným systémom, toto pravidlo neplatí. Slúži ako dočasné riešenie, pomocou ktorého získajú podniky viac času na prechod zo starých certifikátov Symantec. Bude odstránené okolo 1. januára 2019.
+
+      Ak toto pravidlo nenastavíte alebo nastavíte na hodnotu False, <ph name="PRODUCT_NAME" /> bude nasledovať zverejnený rozvrh ukončenia podpory.
+
+      Ďalšie podrobnosti o tomto ukončení podpory nájdete na adrese https://g.co/chrome/symantecpkicerts.</translation>
 <translation id="383466854578875212">Umožňuje určiť tých hostiteľov pre odosielanie natívnych správ, na ktorých sa nevzťahuje zoznam zakázaných položiek.
 
           Hodnota * v zozname zakázaných položiek znamená, že všetci hostitelia pre odosielanie natívnych správ sú zakázaní a načítajú sa iba tí, ktorí sú uvedení na bielej listine.
@@ -1143,7 +1160,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak bude kód PIN považovaný za slabý, používatelia predvolene dostanú upozornenie, nie chybové hlásenie.</translation>
 <translation id="4723829699367336876">Povoliť prechod cez bránu firewall v smere od klienta vzdialeného prístupu</translation>
-<translation id="4725123658714754485">Určuje, či sa budú Googlu spätne nahlasovať metriky používania a diagnostické údaje vrátane správ o zlyhaní. Ak je pravidlo nastavené na hodnotu True, systém <ph name="PRODUCT_OS_NAME" /> bude nahlasovať metriky používania a diagnostické údaje. Ak nie je nakonfigurované alebo je nastavené na hodnotu False, nahlasovanie metrík a diagnostických údajov bude zakázané.</translation>
 <translation id="4725528134735324213">Povolenie služby Android Backup Service</translation>
 <translation id="4733471537137819387">Pravidlá týkajúce sa integrovaného overenia pomocou protokolu HTTP</translation>
 <translation id="4744190513568488164">Servery, na ktoré môže <ph name="PRODUCT_NAME" /> delegovať poverenia.
@@ -1587,17 +1603,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak chcete pripnúť aplikácie do spúšťača, pozrite si pravidlo PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Webová adresa dynamického vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
-<translation id="6029950823657977211">
-      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
-      Platí pre prihlasovaciu obrazovku. Pozrite si aj pravidlo IsolateOrigins, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu.
-      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje
-      v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú
-      zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/,
-      izolovaná bude aj adresa https://foo.example.com/ ako súčasť
-      webu https://example.com/.
-      Ak toto pravidlo zakážete, bude platiť logika správy procesov izolácie webov.
-      Ak ho nenakonfigurujete, nastavenia izolácie webov predvolené v rámci platformy sa použijú v prípade prihlasovacej obrazovky.
-      </translation>
 <translation id="603410445099326293">Parametre pre webovú adresu návrhov, ktorá používa metódu POST</translation>
 <translation id="6036523166753287175">Povoliť prechod cez bránu firewall v smere od hostiteľa vzdialeného prístupu</translation>
 <translation id="6070667616071269965">Rozloženie klávesnice na prihlasovacej obrazovke zariadenia</translation>
@@ -2553,11 +2558,5 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="930930237275114205">Nastaviť adresár na údaje používateľov pre aplikáciu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Umožňuje vynútenie prihlásenia v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Nastaviť veľkosť vyrovnávacej pamäte disku</translation>
-<translation id="9775893229076211">Umožňuje ovládať spustenie nahlásenia ohrozeného účtu v rámci ochrany heslom. Nahlásenie ohrozeného účtu v rámci ochrany heslom znamená, že Google bude informovaný, že tomuto účtu hrozí napadnutie.
-
-      Ak toto pravidlo nastavíte na možnosť PasswordProtectionRiskOff, nespustí sa žiadne nahlásenie ohrozeného účtu v rámci ochrany heslom.
-      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPasswordReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používatelia opätovne použijú heslá Googlu na weboch, ktoré neboli pridané na bielu listinu.
-      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPhishingReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používatelia opätovne použijú heslá Googlu na phishingových weboch.
-      Ak toto pravidlo nenastavíte, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používatelia opätovne použijú heslá Google na phishingových weboch, ale môžu to zmeniť.</translation>
 <translation id="982497069985795632">Povoliť kontrolu pravopisu</translation>
 </translationbundle>

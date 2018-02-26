@@ -168,6 +168,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="565744775970812598"><ph name="FILE_NAME" /> có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="573759479754913123">Giới thiệu về Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS được hiển thị bằng ngôn ngữ này</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">Phần mềm đang chạy trên máy tính của bạn không tương thích với Google Chrome.</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
@@ -179,6 +180,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6070348360322141662">Để bảo mật hơn, Google Chrome sẽ mã hóa dữ liệu của bạn</translation>
 <translation id="6113794647360055231">Chrome được cải tiến hơn</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome phiên bản beta</translation>
 <translation id="61852838583753520">Cập nhật &amp;hệ điều hành Chrome</translation>
 <translation id="6235018212288296708">Quy tắc kết nối để Google Chrome cho phép lưu lượng truy cập mDNS.</translation>
 <translation id="6291089322031436445">Ứng dụng Chrome Dev</translation>
@@ -186,6 +188,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6338556085225130112">Đang cập nhật Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung.</translation>
 <translation id="6410540444482791104">Bạn có thể giúp Chrome an toàn và dễ sử dụng hơn bằng cách tự động gửi một số thông tin hệ thống và nội dung trang cho Google để giúp phát hiện các ứng dụng và trang web nguy hiểm.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome dành cho nhà phát triển</translation>
 <translation id="6566149418543181476">Đang cập nhật Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chrome của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chrome mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>

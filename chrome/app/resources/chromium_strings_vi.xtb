@@ -117,6 +117,7 @@
 <translation id="5386450000063123300">Đang cập nhật Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Hiện đã có phiên bản Chromium mới.</translation>
 <translation id="5427571867875391349">Đặt Chromium là trình duyệt mặc định của bạn</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium phiên bản beta</translation>
 <translation id="5466153949126434691">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất. Khi quá trình tải xuống này hoàn tất, Chromium sẽ khởi động lại và bạn có thể tiếp tục sử dụng.</translation>
 <translation id="5479196819031988440">Chromium OS không thể mở trang này.</translation>
 <translation id="5480860683791598150">Chromium cần quyền truy cập vào vị trí của bạn để chia sẻ thông tin vị trí với trang web này</translation>
@@ -191,6 +192,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <ph name="BEGIN_LINK_2" />Tìm hiểu thêm<ph name="END_LINK_2" />
 
 Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được hướng dẫn thêm.</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium dành cho nhà phát triển</translation>
 <translation id="7451052299415159299">Chromium cần có quyền truy cập vào máy ảnh của bạn cho trang web này</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
 <translation id="7549178288319965365">Giới thiệu về Chromium OS</translation>
@@ -204,6 +206,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7756122083761163394">Dữ liệu duyệt web của người này sẽ bị xóa khỏi thiết bị này. Để khôi phục dữ liệu, hãy đăng nhập vào Chrome bằng $2.</translation>
 <translation id="7773960292263897147">Cảnh báo: Chromium không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để vô hiệu hóa tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tiện ích này.</translation>
 <translation id="7774736947049807614">Lỗi chứng chỉ xác thực. Vui lòng đăng nhập lại vào Chromium với tư cách <ph name="USER_NAME" /> hoặc liên hệ với quản trị viên của bạn để biết thêm thông tin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium không thể cập nhật lên phiên bản mới nhất nên bạn đang bỏ lỡ các tính năng và bản vá bảo mật mới.</translation>
 <translation id="7937630085815544518">Bạn đã đăng nhập vào Chromium là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
 <translation id="7962572577636132072">Chromium tự động cập nhật nên bạn luôn có phiên bản mới nhất.</translation>

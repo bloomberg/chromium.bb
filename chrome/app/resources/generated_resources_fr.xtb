@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">Fichier non valide ou corrompu</translation>
 <translation id="1042174272890264476">Votre ordinateur est fourni avec la bibliothèque RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ attribue un tag non unique (et qui n'identifie pas personnellement les internautes) afin de mesurer les recherches et l'utilisation de <ph name="SHORT_PRODUCT_NAME" /> générées par une campagne de promotion spécifique. Ces libellés s'affichent parfois dans les requêtes de recherche Google dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Petit problème... Ce nom est déjà utilisé.</translation>
-<translation id="1046286965898806214">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> enregistre votre compte pour ce site ?</translation>
 <translation id="1047431265488717055">Copier le te&amp;xte du lien</translation>
 <translation id="1047726139967079566">Ajouter cette page aux favoris</translation>
 <translation id="1047956942837015229">Suppression de <ph name="COUNT" /> éléments en cours…</translation>
@@ -423,7 +422,6 @@
 <translation id="1635033183663317347">Installée par votre tuteur</translation>
 <translation id="1637224376458524414">Enregistrer ce favori sur votre iPhone</translation>
 <translation id="1637765355341780467">Une erreur s'est produite lors de l'ouverture de votre profil. Il est possible que certaines fonctionnalités ne soient pas disponibles.</translation>
-<translation id="1638447702436460526">Imprimante introuvable</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 avec chiffrement RSA</translation>
 <translation id="1642494467033190216">La suppression de la protection rootfs et un redémarrage s'avèrent nécessaires avant d'activer d'autres fonctionnalités de débogage.</translation>
@@ -574,6 +572,7 @@
 <translation id="1856813161013948396">Désactivez l'écran de verrouillage en appuyant sur le lecteur d'empreinte digitale. Cliquez pour configurer.</translation>
 <translation id="1858585891038687145">Considérer ce certificat comme fiable pour identifier les développeurs de logiciels</translation>
 <translation id="1859234291848436338">Sens de l'écriture</translation>
+<translation id="1861262398884155592">Ce dossier est vide</translation>
 <translation id="1864111464094315414">Connexion</translation>
 <translation id="1864400682872660285">Plus froid</translation>
 <translation id="1864676585353837027">Modifiez le mode de partage de ces fichiers.</translation>
@@ -588,7 +587,6 @@
 <translation id="1878524442024357078">N'autoriser aucun site à utiliser un plug-in pour accéder à mon ordinateur</translation>
 <translation id="1879449842763884566">Installer dans "Applications"…</translation>
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
-<translation id="188190999506226223">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> enregistre votre mot de passe pour <ph name="ORIGIN" /> ?</translation>
 <translation id="1886996562706621347">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles (recommandé)</translation>
 <translation id="1887442540531652736">Erreur de connexion</translation>
 <translation id="1887850431809612466">Version du matériel</translation>
@@ -1149,7 +1147,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2762441749940182211">Caméra bloquée</translation>
 <translation id="2765217105034171413">Petite</translation>
 <translation id="2766006623206032690">Coller l'URL et y a&amp;ccéder</translation>
-<translation id="2767084307624729667">Mots de passe enregistrés pour <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">Connecté en tant que <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="2770690685823456775">Exportez vos mots de passe dans un autre dossier</translation>
@@ -1222,7 +1219,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2849936225196189499">Essentielle</translation>
 <translation id="2850124913210091882">Sauvegarder</translation>
 <translation id="2850541429955027218">Ajouter un thème</translation>
-<translation id="2853121255651601031">Mot de passe enregistré</translation>
 <translation id="2853916256216444076">Vidéo $1</translation>
 <translation id="2857608528410806398">QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.</translation>
 <translation id="2860150991415616761">très long (4 s)</translation>
@@ -1232,6 +1228,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2867768963760577682">Ouvrir dans un onglet épinglé</translation>
 <translation id="2868746137289129307">Cette extension est obsolète et désactivée par une stratégie d'entreprise. Il se peut qu'elle soit activée automatiquement lors de la publication d'une version plus récente.</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2870909136778269686">Mise à jour en cours…</translation>
 <translation id="2871813825302180988">Ce compte est déjà utilisé sur cet appareil.</translation>
 <translation id="2872353916818027657">Changer de moniteur principal</translation>
 <translation id="287286579981869940">Ajouter <ph name="PROVIDER_NAME" />…</translation>
@@ -1276,7 +1273,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2932483646085333864">Déconnectez-vous, puis reconnectez-vous pour lancer la synchronisation</translation>
 <translation id="2932883381142163287">Signaler un abus</translation>
 <translation id="2938225289965773019">Ouvrir les liens "<ph name="PROTOCOL" />"</translation>
-<translation id="2938335670027321024">Déplacez la télécommande pour repositionner la fenêtre. Cliquez pour terminer l'opération.</translation>
+<translation id="2938335670027321024">Déplacez le contrôleur pour repositionner la fenêtre. Cliquez pour terminer l'opération.</translation>
 <translation id="2939938020978911855">Afficher les appareils Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Faible</translation>
 <translation id="2942560570858569904">En attente…</translation>
@@ -1762,7 +1759,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3665842570601375360">Sécurité :</translation>
 <translation id="3668570675727296296">Paramètres linguistiques</translation>
 <translation id="3668823961463113931">Gestionnaires</translation>
-<translation id="3669030672519623291">Aucun mot de passe enregistré pour ce site</translation>
 <translation id="3670229581627177274">Activer le Bluetooth</translation>
 <translation id="3672681487849735243">Une erreur a été détectée dans la configuration d'usine</translation>
 <translation id="367645871420407123">N'indiquez rien si vous voulez définir le mot de passe racine sur la valeur d'image test par défaut.</translation>
@@ -1799,7 +1795,7 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3727148787322499904">Les modifications apportées à ce paramètre s'appliquent à tous les réseaux partagés</translation>
 <translation id="3727187387656390258">Inspecter le pop-up</translation>
 <translation id="3728067901555601989">Mot de passe à usage unique :</translation>
-<translation id="3732078975418297900">Erreur sur la ligne <ph name="ERROR_LINE" /></translation>
+<translation id="3732078975418297900">Erreur à la ligne <ph name="ERROR_LINE" /></translation>
 <translation id="3733127536501031542">Serveur SSL avec fonction d'optimisation</translation>
 <translation id="3737536731758327622">Vos téléchargements s'affichent ici</translation>
 <translation id="3738924763801731196"><ph name="OID" /> :</translation>
@@ -2298,7 +2294,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4576541033847873020">Associer un appareil Bluetooth</translation>
 <translation id="4579581181964204535">Impossible de caster <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Voulez-vous vraiment supprimer $1 éléments ?</translation>
-<translation id="458150753955139441">Appuyer pour revenir en arrière, menu contextuel pour afficher l'historique</translation>
 <translation id="4582563038311694664">Réinitialiser tous les paramètres</translation>
 <translation id="4585793705637313973">Modifier la page</translation>
 <translation id="4589268276914962177">Nouveau terminal</translation>
@@ -2331,7 +2326,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4632483769545853758">Réactiver le son de l'onglet</translation>
 <translation id="4633003931260532286">L'extension nécessite au minimum la version <ph name="IMPORT_VERSION" /> de <ph name="IMPORT_NAME" />, mais la version installée est la <ph name="INSTALLED_VERSION" /></translation>
 <translation id="4634771451598206121">Nouvelle connexion...</translation>
-<translation id="4636315944522859212">Imprimante détectée</translation>
 <translation id="4640525840053037973">Connexion à l'aide de votre compte Google</translation>
 <translation id="4641539339823703554">Impossible de définir l'heure du système. Veuillez vérifier l'heure ci-dessous et la corriger si nécessaire.</translation>
 <translation id="4643612240819915418">Ou&amp;vrir la vidéo dans un nouvel onglet</translation>
@@ -2463,7 +2457,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4850669014075537160">Défilement</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4853020600495124913">Ouvrir dans une &amp;nouvelle fenêtre</translation>
-<translation id="4853882474657327078">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> mette à jour votre mot de passe pour <ph name="ORIGIN" /> ?</translation>
 <translation id="4856478137399998590">Votre service Internet mobile est activé et prêt à l'emploi.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Tout ouvrir dans une fenêtre de navigation &amp;privée}=1{Ouvrir dans une fenêtre de navigation &amp;privée}one{Tout ouvrir (#) dans une fenêtre de navigation &amp;privée}other{Tout ouvrir (#) dans une fenêtre de navigation &amp;privée}}</translation>
 <translation id="4858913220355269194">Foot</translation>
@@ -2946,7 +2939,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="558170650521898289">Vérification de pilote matériel Microsoft Windows</translation>
 <translation id="5582839680698949063">Menu principal</translation>
 <translation id="5583640892426849032">Retour</translation>
-<translation id="5583726250980167172">Mots de passe enregistrés pour ce site</translation>
 <translation id="5585118885427931890">Impossible de créer le dossier de favoris.</translation>
 <translation id="558563010977877295">Ouvrir une page ou un ensemble de pages spécifiques</translation>
 <translation id="5585912436068747822">Échec du formatage</translation>
@@ -2958,7 +2950,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5596627076506792578">Plus d'options</translation>
 <translation id="5600706100022181951">Le téléchargement de la mise à jour utilisera <ph name="UPDATE_SIZE_MB" /> Mo de données mobiles. Voulez-vous continuer ?</translation>
 <translation id="5601503069213153581">Code d'accès</translation>
-<translation id="5605057818926354551">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> mette à jour votre mot de passe pour ce site ?</translation>
 <translation id="5605623530403479164">Autres moteurs de recherche</translation>
 <translation id="5608580678041221894">Appuyez sur les touches suivantes pour ajuster ou déplacer la zone de recadrage</translation>
 <translation id="5609231933459083978">L'application ne semble pas valide.</translation>
@@ -3144,7 +3135,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5882919346125742463">Réseaux connus</translation>
 <translation id="5884474295213649357">Cet onglet est associé à un périphérique USB.</translation>
 <translation id="5885324376209859881">Gérer les paramètres multimédias…</translation>
-<translation id="5887341066363321040">Aucun mot de passe enregistré pour <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">Le nombre maximal d'autorités de certification intermédiaires a été dépassé : <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5895187275912066135">Émis le</translation>
@@ -3628,7 +3618,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="6664237456442406323">Malheureusement, votre ordinateur est configuré avec un ID matériel incorrect. Cette défaillance empêche l'installation des derniers correctifs de sécurité sur Chrome OS et rend votre ordinateur <ph name="BEGIN_BOLD" />potentiellement vulnérable aux attaques malveillantes<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Une erreur s'est produite lors de l'ouverture de votre profil. Veuillez vous déconnecter, puis vous connecter de nouveau.</translation>
-<translation id="6669827579181361875">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> enregistre votre mot de passe pour ce site ?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Souhaitez-vous que Google traduise cette page de la langue "<ph name="SOURCE_LANGUAGE" />" vers la langue "<ph name="TARGET_LANGUAGE" />" ?</translation>
 <translation id="6675665718701918026">Dispositif de pointage connecté</translation>
@@ -4020,7 +4009,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7297443947353982503">Nom d'utilisateur/mot de passe incorrect ou échec de l'authentification EAP.</translation>
 <translation id="729761647156315797">Sélectionner votre langue et votre clavier</translation>
 <translation id="7299337219131431707">Activer la navigation en tant qu'invité</translation>
-<translation id="7303900363563182677">Ce site ne pourra pas voir le texte et les images copiés dans le presse-papiers</translation>
+<translation id="7303900363563182677">Ce site ne peut pas accéder en lecture au texte ni aux images copiés dans le presse-papiers</translation>
 <translation id="730515362922783851">Échanger des données avec n'importe quel appareil sur le réseau local ou sur Internet</translation>
 <translation id="7308002049209013926">Utilisez le lanceur d'applications pour accéder rapidement à vos nouvelles applications et activités. Pour y accéder depuis le clavier, appuyez sur Alt+Maj+L.</translation>
 <translation id="7309257895202129721">Afficher les &amp;commandes</translation>
@@ -4914,7 +4903,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8736288397686080465">Ce site a été mis à jour en arrière-plan.</translation>
 <translation id="8737685506611670901">Ouvrir les liens "<ph name="PROTOCOL" />" à la place de "<ph name="REPLACED_HANDLER_TITLE" />"</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Picture in Picture</translation>
+<translation id="8741316211671074806">Picture-in-Picture</translation>
 <translation id="8743864605301774756">Mise à jour il y a 1 heure</translation>
 <translation id="8749863574775030885">Accéder à des appareils USB d'un fournisseur inconnu</translation>
 <translation id="8754200782896249056">&lt;p&gt;Lorsque vous exécutez <ph name="PRODUCT_NAME" /> dans un environnement de bureau compatible, les paramètres proxy du système sont utilisés. Cependant, soit votre système n'est pas compatible, soit un problème est survenu lors du lancement de votre configuration système.&lt;/p&gt;
@@ -4993,6 +4982,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8871696467337989339">Vous utilisez un indicateur de ligne de commande non pris en charge : <ph name="BAD_FLAG" />. La stabilité et la sécurité en seront affectées.</translation>
 <translation id="8871974300055371298">Paramètres du contenu</translation>
 <translation id="8872155268274985541">Fichier manifeste de mise à jour externe de kiosque non valide. Échec de la mise à jour de l'application kiosque. Veuillez débrancher la clé USB.</translation>
+<translation id="8872506776304248286">Ouvrir dans l'appli</translation>
 <translation id="8874184842967597500">Non connecté</translation>
 <translation id="8876215549894133151">Format :</translation>
 <translation id="8876309039915144086">Génération d'un mot de passe…</translation>
@@ -5006,7 +4996,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="88986195241502842">Accéder à la page suivante</translation>
 <translation id="8898786835233784856">Sélectionner l'onglet suivant</translation>
 <translation id="8898840733695078011">Intensité du signal</translation>
-<translation id="8899551033019439140">Recherche de l'imprimante…</translation>
 <translation id="8899851313684471736">Ouvrir le lien dans une nouvelle &amp;fenêtre</translation>
 <translation id="8902667442496790482">Ouvrir les paramètres de "Sélectionner pour prononcer"</translation>
 <translation id="8903921497873541725">Zoom avant</translation>
@@ -5128,6 +5117,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9100765901046053179">Paramètres avancés</translation>
 <translation id="9101691533782776290">Lancer l'application</translation>
 <translation id="9102610709270966160">Activer l'extension</translation>
+<translation id="9103868373786083162">Appuyer pour revenir en arrière, menu contextuel pour afficher l'historique</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">Pour libérer de l'espace, supprimez des fichiers de l'espace de stockage de l'appareil.</translation>
 <translation id="9110990317705400362">Nous recherchons constamment à rendre votre navigation plus sûre. Auparavant, vous pouviez être invité à ajouter une extension dans votre navigateur par n'importe quel site Web. Dans les dernières versions de Google Chrome, vous devez explicitement indiquer que vous souhaitez installer une extension en l'ajoutant via la page "Extensions". <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>

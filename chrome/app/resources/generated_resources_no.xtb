@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">Ugyldig eller skadet fil.</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Dette navnet er allerede i bruk!</translation>
-<translation id="1046286965898806214">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal lagre kontoen din for dette nettstedet?</translation>
 <translation id="1047431265488717055">Kopiér linkte&amp;kst</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
 <translation id="1047956942837015229">Sletter <ph name="COUNT" /> elementer ...</translation>
@@ -420,7 +419,6 @@
 <translation id="1635033183663317347">Installert av din foresatte.</translation>
 <translation id="1637224376458524414">Få dette bokmerket på iPhone</translation>
 <translation id="1637765355341780467">Det oppsto en feil ved åpning av profilen din. Det kan hende at enkelte funksjoner ikke er tilgjengelige.</translation>
-<translation id="1638447702436460526">Fant ikke skriveren</translation>
 <translation id="1639239467298939599">Laster inn</translation>
 <translation id="1640283014264083726"> PKCS #1 MD4 med RSA-kryptering</translation>
 <translation id="1642494467033190216">Fjerning av rootfs-beskyttelse og omstart er nødvendig før du slår på andre feilsøkingsfunksjoner.</translation>
@@ -571,6 +569,7 @@
 <translation id="1856813161013948396">Hopp over låseskjermen – bare trykk på fingeravtrykkssensoren i stedet. Klikk for å konfigurere.</translation>
 <translation id="1858585891038687145">Stol på dette sertifikatet for identifisering av programvareprodusenter</translation>
 <translation id="1859234291848436338">Skriveretning</translation>
+<translation id="1861262398884155592">Denne mappen er tom</translation>
 <translation id="1864111464094315414">Pålogging</translation>
 <translation id="1864400682872660285">Kaldere</translation>
 <translation id="1864676585353837027">Endre hvordan disse filene deles</translation>
@@ -585,7 +584,6 @@
 <translation id="1878524442024357078">Ikke la noen nettsteder bruke programtillegg for å få tilgang til datamaskinen din</translation>
 <translation id="1879449842763884566">Installer i Programmer</translation>
 <translation id="1880905663253319515">Vil du slette sertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
-<translation id="188190999506226223">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal lagre passordet ditt for <ph name="ORIGIN" />?</translation>
 <translation id="1886996562706621347">Tillat at nettsteder kan be om å bli standardbehandlere for protokoller (anbefalt)</translation>
 <translation id="1887442540531652736">Påloggingsfeil</translation>
 <translation id="1887850431809612466">Maskinvareversjon</translation>
@@ -1145,7 +1143,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2762441749940182211">Kameraet er blokkert</translation>
 <translation id="2765217105034171413">Liten</translation>
 <translation id="2766006623206032690">&amp;Lim inn og gå til</translation>
-<translation id="2767084307624729667">Lagrede passord for <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">Pålogget som <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="2770690685823456775">Eksportér passordene dine til en annen mappe</translation>
@@ -1218,7 +1215,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2849936225196189499">Kritisk</translation>
 <translation id="2850124913210091882">Sikkerhetskopiér</translation>
 <translation id="2850541429955027218">Legg til temaet</translation>
-<translation id="2853121255651601031">Passordet er lagret</translation>
 <translation id="2853916256216444076">$1-video</translation>
 <translation id="2857608528410806398">Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her.</translation>
 <translation id="2860150991415616761">svært lang (4 s)</translation>
@@ -1228,6 +1224,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2867768963760577682">Åpne som festet fane</translation>
 <translation id="2868746137289129307">Denne utvidelsen er utdatert og avslått av bedriftsretningslinjene. Den kan slås på automatisk når en nyere versjon er tilgjengelig.</translation>
 <translation id="2870560284913253234">Nettsted</translation>
+<translation id="2870909136778269686">Oppdaterer ...</translation>
 <translation id="2871813825302180988">Denne kontoen er allerede i bruk på denne enheten.</translation>
 <translation id="2872353916818027657">Bytt hovedskjerm</translation>
 <translation id="287286579981869940">Legg til <ph name="PROVIDER_NAME" /></translation>
@@ -1757,7 +1754,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3665842570601375360">Sikkerhet:</translation>
 <translation id="3668570675727296296">Språkinnstillinger</translation>
 <translation id="3668823961463113931">Behandlere</translation>
-<translation id="3669030672519623291">Ingen passord er lagret for dette nettstedet</translation>
 <translation id="3670229581627177274">Slå på Bluetooth</translation>
 <translation id="3672681487849735243">En fabrikkfeil har blitt oppdaget</translation>
 <translation id="367645871420407123">la stå tomt hvis du ønsker å sette rot-passordet til standard testbildeverdi</translation>
@@ -2291,7 +2287,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4576541033847873020">Koble til Bluetooth-enhet</translation>
 <translation id="4579581181964204535">Kunne ikke caste <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Er du sikker på at du vil slette $1 elementer?</translation>
-<translation id="458150753955139441">Trykk for å gå tilbake, og bruk den kontekstuelle menyen for å se loggen</translation>
 <translation id="4582563038311694664">Tilbakestill alle innstillingene</translation>
 <translation id="4585793705637313973">Endre siden</translation>
 <translation id="4589268276914962177">Ny terminal</translation>
@@ -2324,7 +2319,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4632483769545853758">Slå på lyden for fanen</translation>
 <translation id="4633003931260532286">Utvidelsen krever «<ph name="IMPORT_NAME" />» med «<ph name="IMPORT_VERSION" />» som minimumsversjon, men bare versjon «<ph name="INSTALLED_VERSION" />» er installert</translation>
 <translation id="4634771451598206121">Logg på igjen</translation>
-<translation id="4636315944522859212">Fant skriveren</translation>
 <translation id="4640525840053037973">Logg på med Google-kontoen din</translation>
 <translation id="4641539339823703554">Chrome kunne ikke angi systemtiden. Sjekk tiden nedenfor, og korriger den om nødvendig.</translation>
 <translation id="4643612240819915418">&amp;Åpne video i ny fane</translation>
@@ -2456,7 +2450,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4850669014075537160">Rulling</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4853020600495124913">Åpne i &amp;nytt vindu</translation>
-<translation id="4853882474657327078">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal lagre passordet ditt for <ph name="ORIGIN" />?</translation>
 <translation id="4856478137399998590">Mobildatatjenesten er aktivert og klar til bruk</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Åpne alle i &amp;inkognitovinduer}=1{Åpne i et &amp;inkognitovindu}other{Åpne alle (#) i &amp;inkognitovinduer}}</translation>
 <translation id="4858913220355269194">Drible</translation>
@@ -2938,7 +2931,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="558170650521898289">Verifisering av maskinvaredriver for Microsoft Windows</translation>
 <translation id="5582839680698949063">Hovedmeny</translation>
 <translation id="5583640892426849032">Tilbake-tasten</translation>
-<translation id="5583726250980167172">Lagrede passord for dette nettstedet</translation>
 <translation id="5585118885427931890">Kan ikke opprette bokmerkemappe.</translation>
 <translation id="558563010977877295">Åpne en bestemt side eller et sett med sider</translation>
 <translation id="5585912436068747822">Formateringen mislyktes</translation>
@@ -2950,7 +2942,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5600706100022181951"><ph name="UPDATE_SIZE_MB" /> MB mobildata blir brukt under nedlastingen av oppdateringen. Vil du fortsette?</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
 <translation id="5605623530403479164">Andre søkemotorer</translation>
 <translation id="5608580678041221894">Trykk på de følgende tastene for å justere eller flytte beskjæringsområdet</translation>
 <translation id="5609231933459083978">Appen ser ut til å være ugyldig.</translation>
@@ -3135,7 +3126,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="5882919346125742463">Kjente nettverk</translation>
 <translation id="5884474295213649357">Denne fanen er koblet til en USB-enhet.</translation>
 <translation id="5885324376209859881">Administrer medieinnstillingene</translation>
-<translation id="5887341066363321040">Ingen passord er lagret for <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">Maksimalt antall mellomliggende sertifiseringsinstanser: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5895187275912066135">Utstedt</translation>
@@ -3587,7 +3577,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6613452264606394692">Kom raskt tilbake hit ved å sette denne siden som bokmerke</translation>
 <translation id="6615455863669487791">Vis meg</translation>
 <translation id="661719348160586794">Dine lagrede passord vises her.</translation>
-<translation id="6618097958368085618">Behold uansett</translation>
+<translation id="6618097958368085618">Behold likevel</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
 <translation id="6619801788773578757">Legg til kioskapp</translation>
 <translation id="6619990499523117484">Bekreft PIN-koden din</translation>
@@ -3618,7 +3608,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Dessverre er datamaskinen konfigurert med en feilformatert maskinvare-ID. Dette hindrer Chrome OS fra å oppdatere til de siste sikkerhetsoppdateringene, og datamaskinen din <ph name="BEGIN_BOLD" />kan utsettes for skadelige angrep<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Det oppsto en feil ved åpning av profilen din. Logg av og på igjen.</translation>
-<translation id="6669827579181361875">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal lagre passordet ditt for dette nettstedet?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Vil du at Google skal oversette denne siden fra <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">En pekeenhet er koblet til</translation>
@@ -4975,6 +4964,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8871696467337989339">Du bruker et kommandolinjeflagg som ikke håndteres: <ph name="BAD_FLAG" />. Dette vil skade stabiliteten og sikkerheten.</translation>
 <translation id="8871974300055371298">Innholdsinnstillinger</translation>
 <translation id="8872155268274985541">Fant ugyldig ekstern manifestfil for Kiosk-oppdatering. Kunne ikke oppdatere Kiosk-appen. Ta ut USB-pinnen.</translation>
+<translation id="8872506776304248286">Åpne i appen</translation>
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Generer passord</translation>
@@ -4988,7 +4978,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="88986195241502842">Ned én side</translation>
 <translation id="8898786835233784856">Velg neste fane</translation>
 <translation id="8898840733695078011">Signalstyrke</translation>
-<translation id="8899551033019439140">Søker etter skriveren …</translation>
 <translation id="8899851313684471736">Å&amp;pne linken i et nytt vindu</translation>
 <translation id="8902667442496790482">Åpne innstillingene for Tekstopplesing</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
@@ -5110,6 +5099,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="9100765901046053179">Avanserte innstillinger</translation>
 <translation id="9101691533782776290">Start appen</translation>
 <translation id="9102610709270966160">Slå på utvidelsen</translation>
+<translation id="9103868373786083162">Trykk for å gå tilbake, eller trykk på kontekstmenyen for å se loggen</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">For å frigjøre plass, slett filer fra enhetslagringen.</translation>
 <translation id="9110990317705400362">Vi jobber kontinuerlig for å gjøre surfingen din tryggere. Tidligere kunne et hvilket som helst nettsted be deg å legge til en utvidelse i nettleseren din. I de nyeste versjonene av Google Chrome må du gi Chrome uttrykkelig beskjed om at du ønsker å installere disse utvidelsene ved å legge dem til via Utvidelser-siden. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
@@ -5179,7 +5169,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="932508678520956232">Kan ikke starte utskrift.</translation>
 <translation id="93393615658292258">Bare passord</translation>
-<translation id="934503638756687833">Elementer som ikke er oppført her, blir også fjernet ved behov. Du kan finne ut mer om &lt;a href="<ph name="URL" />"&gt;beskyttelse mot uønsket programvare&lt;/a&gt; i det åpne infodokumentet om personvern i Chrome.</translation>
+<translation id="934503638756687833">Elementer som ikke er oppført her, blir også fjernet ved behov. Du kan finne ut mer om &lt;a href="<ph name="URL" />"&gt;beskyttelse mot uønsket programvare&lt;/a&gt; i det tekniske dokumentet om personvern i Chrome.</translation>
 <translation id="935490618240037774">Bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir synkronisert med Google-kontoen din, slik at du kan få dem på alle enhetene du bruker.</translation>
 <translation id="936801553271523408">Systemdiagnostikkdata</translation>
 <translation id="93766956588638423">Reparer utvidelsen</translation>

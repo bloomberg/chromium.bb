@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">અમાન્ય અથવા દૂષિત ફાઇલ</translation>
 <translation id="1042174272890264476">તમારા કમ્પ્યુટરની સાથે <ph name="SHORT_PRODUCT_NAME" /> ની RLZ લાઇબ્રેરી બિલ્ટ ઇન પણ આવે છે. RLZ વિશેષ પ્રચારાત્મક ઝુંબેશ દ્વારા ચલાવવામાં આવતી શોધ અને <ph name="SHORT_PRODUCT_NAME" /> ઉપયોગને માપવા માટે બિન-અદ્વિતીય, બિન-વ્યક્તિગત રૂપે ઓળખી શકાય તેવા ટૅગ સોંપે છે. આ લેબલ્સ કેટલીકવાર <ph name="PRODUCT_NAME" /> માં Google શોધ ક્વેરીઝમાં દેખાય છે.</translation>
 <translation id="1046059554679513793">ઓહ, આ નામ પહેલેથી ઉપયોગમાં છે!</translation>
-<translation id="1046286965898806214">શું તમે ઈચ્છો છો કે <ph name="PASSWORD_MANAGER_BRAND" /> આ સાઇટ માટે તમારા એકાઉન્ટને સાચવે?</translation>
 <translation id="1047431265488717055">લિંક ટે&amp;ક્સ્ટને કૉપિ કરો</translation>
 <translation id="1047726139967079566">આ પૃષ્ઠને બુકમાર્ક કરો...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> આઇટમ્સ કાઢી નાખી રહ્યું છે...</translation>
@@ -419,7 +418,6 @@
 <translation id="1635033183663317347">તમારા સંરક્ષક દ્વારા ઇન્સ્ટોલ કરાયું</translation>
 <translation id="1637224376458524414">આ બુકમાર્ક તમારા iPhone પર મેળવો</translation>
 <translation id="1637765355341780467">તમારી પ્રોફાઇલ ખોલતી વખતે કંઈક ખોટું થયું. કેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે.</translation>
-<translation id="1638447702436460526">પ્રિન્ટર મળ્યું નથી</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640283014264083726">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD4</translation>
 <translation id="1642494467033190216">અન્ય ડિબગિંગ સુવિધાઓ સક્ષમ કરતાં પહેલાં rootfs રક્ષણ દૂર કરી અને પુનઃપ્રારંભ કરવું જરૂરી છે.</translation>
@@ -570,6 +568,7 @@
 <translation id="1856813161013948396">ફક્ત ફિંગરપ્રિન્ટ સેન્સર ટૅપ કરીને લૉક સ્ક્રીન છોડો. ગોઠવવા માટે ક્લિક કરો.</translation>
 <translation id="1858585891038687145">સૉફ્ટવેર માર્કર્સને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો</translation>
 <translation id="1859234291848436338">લેખનના દિશાનિર્દેશ</translation>
+<translation id="1861262398884155592">આ ફોલ્ડર ખાલી છે</translation>
 <translation id="1864111464094315414">લૉગિન</translation>
 <translation id="1864400682872660285">કૂલર</translation>
 <translation id="1864676585353837027">આ ફાઇલો જે રીતે શેર કરેલી છે તે બદલો</translation>
@@ -584,7 +583,6 @@
 <translation id="1878524442024357078">તમારા કમ્પ્યુટરને ઍક્સેસ કરવા માટે કોઈપણ સાઇટ્સને પ્લગિનનો ઉપયોગ કરવાની મંજૂરી આપશો નહીં</translation>
 <translation id="1879449842763884566">ઍપ્લિકેશનોમાં ઇન્સ્ટૉલ કરો…</translation>
 <translation id="1880905663253319515">પ્રમાણપત્ર "<ph name="CERTIFICATE_NAME" />" કાઢી નાખીએ?</translation>
-<translation id="188190999506226223">શું તમે ઈચ્છો છો કે <ph name="ORIGIN" />ના માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="1886996562706621347">પ્રોટોકૉલ્સ માટે ડિફૉલ્ટ હેન્ડલર્સ બનવા માટે સાઇટને પૂછવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
 <translation id="1887442540531652736">સાઇન-ઇનમાં ભૂલ</translation>
 <translation id="1887850431809612466">હાર્ડવેર પુનરાવર્તન</translation>
@@ -1145,7 +1143,6 @@
 <translation id="2762441749940182211">કૅમેરા અવરોધિત</translation>
 <translation id="2765217105034171413">નાનું</translation>
 <translation id="2766006623206032690">પે&amp;સ્ટ કરો અને જાઓ</translation>
-<translation id="2767084307624729667"><ph name="ORIGIN" /> માટે સાચવેલા પાસવર્ડ</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="2770465223704140727">સૂચિમાંથી દૂર કરો</translation>
 <translation id="2770690685823456775">એક બીજા ફોલ્ડરમાં તમારા બધા પાસવર્ડની નિકાસ કરો</translation>
@@ -1218,7 +1215,6 @@
 <translation id="2849936225196189499">મહત્વપૂર્ણ</translation>
 <translation id="2850124913210091882">બેક અપ લો</translation>
 <translation id="2850541429955027218">થીમ ઉમેરો</translation>
-<translation id="2853121255651601031">પાસવર્ડ સાચવ્યો</translation>
 <translation id="2853916256216444076">$1 વિડિઓ</translation>
 <translation id="2857608528410806398">QU સુવિધા સૂચનાનો મુખ્ય ભાગ અહીં આવશે. QU સુવિધા સૂચનાનો મુખ્ય ભાગ અહીં આવશે. QU સુવિધા સૂચનાનો મુખ્ય ભાગ અહીં આવશે. QU સુવિધા સૂચનાનો મુખ્ય ભાગ અહીં આવશે. QU સુવિધા સૂચનાનો મુખ્ય ભાગ અહીં આવશે.</translation>
 <translation id="2860150991415616761">ખૂબ લાંબો વિલંબ (4 સે)</translation>
@@ -1228,6 +1224,7 @@
 <translation id="2867768963760577682">પિન કરેલા ટૅબ તરીકે ખોલો</translation>
 <translation id="2868746137289129307">આ એક્સ્ટેન્શન જૂનું થઈ ગયું છે અને એન્ટરપ્રાઇસ નીતિ દ્વારા અક્ષમ થયું છે. જ્યારે એક નવું સંસ્કરણ ઉપલબ્ધ થાય ત્યારે તે આપમેળે સક્ષમ થઈ શકે છે.</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
+<translation id="2870909136778269686">અપડેટ થઈ રહ્યું છે...</translation>
 <translation id="2871813825302180988">આ એકાઉન્ટ પહેલાથી જ આ ઉપકરણ પર ઉપયોગમાં લેવાઈ રહ્યું છે.</translation>
 <translation id="2872353916818027657">પ્રાથમિક મૉનિટર સ્વેપ કરો</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> ઉમેરો...</translation>
@@ -1758,7 +1755,6 @@
 <translation id="3665842570601375360">સુરક્ષા:</translation>
 <translation id="3668570675727296296">ભાષા સેટિંગ્સ</translation>
 <translation id="3668823961463113931">હેન્ડલર્સ</translation>
-<translation id="3669030672519623291">આ સાઇટ માટે કોઈ પાસવર્ડ સાચવેલા નથી</translation>
 <translation id="3670229581627177274">Bluetooth ચાલુ કરો</translation>
 <translation id="3672681487849735243">એક ફેક્ટરી ભૂલ શોધવામાં આવી છે</translation>
 <translation id="367645871420407123">જો તમે રૂટ પાસવર્ડને ડિફૉલ્ટ પરીક્ષણ છબી મૂલ્ય પર સેટ કરવા માંગતા હો તો ખાલી છોડો</translation>
@@ -2294,7 +2290,6 @@
 <translation id="4576541033847873020">Bluetooth ઉપકરણની જોડી કરો</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> કાસ્ટ કરવામાં અસમર્થ.</translation>
 <translation id="4580526846085481512">શું તમે ખરેખર $1 આઇટમ્સને કાઢવા માંગો છો?</translation>
-<translation id="458150753955139441">પાછા જવા માટે દબાવો, ઇતિહાસ જોવા માટે સંદર્ભ મેનૂનો ઉપયોગ કરો</translation>
 <translation id="4582563038311694664">તમામ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="4585793705637313973">પૃષ્ઠ સંપાદિત કરો</translation>
 <translation id="4589268276914962177">નવું ટર્મિનલ</translation>
@@ -2327,7 +2322,6 @@
 <translation id="4632483769545853758">ટૅબને અનમ્યૂટ કરો</translation>
 <translation id="4633003931260532286">એક્સટેંશનને ન્યૂનતમ વર્ઝન "<ph name="IMPORT_VERSION" />" સાથે "<ph name="IMPORT_NAME" />"ની જરૂર પડે છે, પણ ફક્ત વર્ઝન "<ph name="INSTALLED_VERSION" />" જ ઇન્સ્ટૉલ કરેલું છે</translation>
 <translation id="4634771451598206121">ફરીથી સાઇન ઇન કરો....</translation>
-<translation id="4636315944522859212">પ્રિન્ટર મળ્યું</translation>
 <translation id="4640525840053037973">આપના Google એકાઉન્ટથી સાઇન ઇન કરો</translation>
 <translation id="4641539339823703554">Chrome, સિસ્ટમ સમય સેટ કરવામાં અસમર્થ હતું. કૃપા કરીને નીચે સમય તપાસો અને જરૂર પડવા પર તેને ઠીક કરો.</translation>
 <translation id="4643612240819915418">નવા ટૅબમાં વિડિઓ &amp;ખોલો</translation>
@@ -2459,7 +2453,6 @@
 <translation id="4850669014075537160">સ્ક્રોલિંગ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4853020600495124913">&amp;નવી વિંડોમાં ખોલો</translation>
-<translation id="4853882474657327078">શું તમે ઈચ્છો છો કે <ph name="ORIGIN" /> માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="4856478137399998590">તમારી મોબાઇલ ડેટા સેવા સક્રિય થઈ છે અને ઉપયોગ માટે તૈયાર છે</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{તમામ URLને &amp;છુપી વિંડોમાં ખોલો}=1{&amp;છુપી વિંડોમાં ખોલો}one{તમામ (#) URLને &amp;છુપી વિંડોમાં ખોલો}other{તમામ (#) URLને &amp;છુપી વિંડોમાં ખોલો}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
@@ -2942,7 +2935,6 @@
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
 <translation id="5582839680698949063">મુખ્ય મેનૂ</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">આ સાઇટ માટે પાસવર્ડ સાચવેલા છે</translation>
 <translation id="5585118885427931890">બુકમાર્ક ફોલ્ડર બનાવી શકાયું નથી. </translation>
 <translation id="558563010977877295">કોઈ ચોક્કસ પૃષ્ઠ અથવા પૃષ્ઠોનો સેટ ખોલો</translation>
 <translation id="5585912436068747822">ફોર્મેટિંગ નિષ્ફળ થયું</translation>
@@ -2954,7 +2946,6 @@
 <translation id="5596627076506792578">વધુ વિકલ્પો</translation>
 <translation id="5600706100022181951">અપડેટ ડાઉનલોડ કરવામાં <ph name="UPDATE_SIZE_MB" /> MB મોબાઇલ ડેટા વપરાશે. શું તમે ચાલુ રાખવા માગો છો?</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">શું તમે ઈચ્છો છો કે આ સાઇટ માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="5605623530403479164">અન્ય શોધ એંજીન્સ</translation>
 <translation id="5608580678041221894">કાપવા માટેના ક્ષેત્રને સમાયોજિત કરવા અથવા ખસેડવા માટે નીચેની કીને ટૅપ કરો</translation>
 <translation id="5609231933459083978">ઍપ્લિકેશન અમાન્ય હોય તેવું લાગે છે.</translation>
@@ -3140,7 +3131,6 @@
 <translation id="5882919346125742463">જાણીતા નેટવર્ક્સ</translation>
 <translation id="5884474295213649357">આ ટૅબ USB ઉપકરણ સાથે કનેક્ટ થયેલ છે.</translation>
 <translation id="5885324376209859881">મીડિયા સેટિંગ્સ સંચાલિત કરો...</translation>
-<translation id="5887341066363321040"><ph name="ORIGIN" /> માટે કોઈ પાસવર્ડ સાચવેલા નથી</translation>
 <translation id="5889282057229379085">ઇન્ટરમિડિયેટ CA ની મહત્તમ સંખ્યા: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5895187275912066135">ના રોજ રજૂ કરાયું</translation>
@@ -3624,7 +3614,6 @@
 <translation id="6659594942844771486">ટૅબ</translation>
 <translation id="6664237456442406323">દુર્ભાગ્યપણે, તમારું કમ્પ્યુટર દૂષિત હાર્ડવેર ID સાથે ગોઠવવમાં આવેલું છે. આ Chrome OS ને નવીનતમ સુરક્ષા સુધારાથી અપડેટ થવાથી અટકાવે છે અને તમારું કમ્પ્યુટર <ph name="BEGIN_BOLD" />દુર્ભાવનાપૂર્ણ હુમલાઓ માટે ભેદ્ય<ph name="END_BOLD" /> હોઈ શકે છે.</translation>
 <translation id="6664774537677393800">તમારી પ્રોફાઇલ ખોલતી વખતે કંઈક ખોટું થયું. કૃપા કરીને સાઇન આઉટ કરો પછી ફરીથી સાઇન ઇન કરો.</translation>
-<translation id="6669827579181361875">શું તમે ઈચ્છો છો કે <ph name="PASSWORD_MANAGER_BRAND" /> આ સાઇટ માટે તમારો પાસવર્ડ સાચવે?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">શું તમે ઇચ્છો છો કે Google, <ph name="SOURCE_LANGUAGE" /> થી <ph name="TARGET_LANGUAGE" /> માં આ પૃષ્ઠનો અનુવાદ કરે?</translation>
 <translation id="6675665718701918026">પોઇંટિંગ ઉપકરણ કનેક્ટ કર્યું</translation>
@@ -4983,6 +4972,7 @@
 <translation id="8871696467337989339">તમે એક અનસપોર્ટેડ કમાન્ડ-લાઇન ફ્લેગનો ઉપયોગ કરી રહ્યા છો: <ph name="BAD_FLAG" />. સ્થાયિત્વ અને સુરક્ષા જોખમાશે.</translation>
 <translation id="8871974300055371298">સામગ્રી સેટિંગ્સ</translation>
 <translation id="8872155268274985541">અમાન્ય કિઓસ્ક બાહ્ય અપડેટ મેનિફેસ્ટ ફાઇલ મળી. કિઓસ્ક ઍપ્લિકેશન અપડેટ કરવામાં નિષ્ફળ થયાં. કૃપા કરીને USB સ્ટીક દૂર કરો.</translation>
+<translation id="8872506776304248286">ઍપ્લિકેશનમાં ખોલો</translation>
 <translation id="8874184842967597500">કનેક્ટેડ નથી</translation>
 <translation id="8876215549894133151">ફોર્મેટ:</translation>
 <translation id="8876309039915144086">પાસવર્ડ જનરેટ કરો...</translation>
@@ -4996,7 +4986,6 @@
 <translation id="88986195241502842">પૃષ્ઠ નીચે</translation>
 <translation id="8898786835233784856">આગલું ટૅબ પસંદ કરો</translation>
 <translation id="8898840733695078011">સિગ્નલ પ્રબળતા</translation>
-<translation id="8899551033019439140">પ્રિન્ટર શોધી રહ્યાં છે...</translation>
 <translation id="8899851313684471736">નવી &amp;વિંડોમાં લિંક ખોલો</translation>
 <translation id="8902667442496790482">સાંભળવા માટે પસંદ કરોના સેટિંગ ખોલો</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
@@ -5118,6 +5107,7 @@
 <translation id="9100765901046053179">વિગતવાર સેટિંગ્સ</translation>
 <translation id="9101691533782776290">ઍપ્લિકેશન લોન્ચ કરો</translation>
 <translation id="9102610709270966160">એક્સ્ટેન્શન સક્ષમ કરો</translation>
+<translation id="9103868373786083162">પાછા જવા માટે દબાવો, ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ પર જાઓ</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">સ્થાન ખાલી કરવા માટે, ડ્રાઇવ સ્ટોરેજમાંથી ફાઇલો કાઢી નાખો.</translation>
 <translation id="9110990317705400362">અમે સતત તમારા બ્રાઉઝિંગને વધુ સલામત બનાવવાની રીતો શોધી રહ્યાં છીએ. પૂર્વમાં, કોઈપણ વેબસાઇટ તમને તમારા બ્રાઉઝરમાં એક્સ્ટેન્શન ઉમેરવા માટે સંકેત આપી શકતી હતી. Google Chrome ના નવીનતમ સંસ્કરણોમાં, તમે એક્સ્ટેન્શન્સ પૃષ્ઠ દ્વારા આ એક્સ્ટેન્શન્સને ઉમેરીને તમે તેમને ઇન્સ્ટોલ કરવા માગો છો તે, તમારે Chrome ને સ્પષ્ટપણે કહેવું આવશ્યક છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>

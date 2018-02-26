@@ -996,6 +996,13 @@
 <translation id="4347908978527632940">如果設為 true，且使用者是受監管的使用者，其他 Android 應用程式即可透過內容提供者查詢使用者的網路限制。
 
           如果設為 false 或沒有設定，內容提供者將不會傳回任何資訊。</translation>
+<translation id="435461861920493948">清單中的模式可用於控制要在 <ph name="PRODUCT_NAME" /> 中顯示哪些帳戶。
+
+      系統會將裝置上的每個 Google 帳戶與儲存在這項政策中的模式進行比對，藉此判定是否要在 <ph name="PRODUCT_NAME" /> 中顯示帳戶。名稱符合清單中任何模式的帳戶即會顯示；如不符合，則帳戶不會顯示。
+
+      萬用字元「*」可用於比對零或其他任意字元。逸出字元為「\」，因此如要比對確切的「*」或「\」字元，可在這些字元前面加上「\」。
+
+      如果未設定這項政策，裝置上的所有 Google 帳戶都會顯示在 <ph name="PRODUCT_NAME" /> 中。</translation>
 <translation id="436581050240847513">回報裝置網路介面</translation>
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
@@ -1098,7 +1105,6 @@
 
           在預設情況下，當使用者輸入的 PIN 強度不足時，系統會顯示警告訊息 (而非錯誤訊息)。</translation>
 <translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
-<translation id="4725123658714754485">控制是否要將使用指標、診斷資料 (含當機報告) 回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 會回報使用指標和診斷資料。如未設定或設為 False，指標和診斷資料回報功能就會停用。</translation>
 <translation id="4725528134735324213">啟用 Android 備份服務</translation>
 <translation id="4733471537137819387">與整合 HTTP 驗證相關的政策。</translation>
 <translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> 要委派的目標伺服器。
@@ -2180,6 +2186,13 @@
 <translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
 <translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
+<translation id="8459216513698220096">指定是否要處理電腦 GPO 中的使用者政策和處理方式。
+
+      如果將這項政策設為「Default」或不予設定，系統只會讀取使用者 GPO 中的使用者政策 (忽略電腦 GPO)。
+
+      如果將這項政策設為「Merge」，使用者 GPO 中的使用者政策會與電腦 GPO 中的使用者政策合併 (優先採用電腦 GPO)。
+
+      如果將這項政策設為「Replace」，電腦 GPO 中的使用者政策會取代使用者 GPO 中的使用者政策 (忽略使用者 GPO)。</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2316,6 +2329,12 @@
       設定這項政策後，使用者無法予以變更或覆寫。
 
       這項政策不會影響到使用者在個別裝置上設定印表機的權限，其目的是為了讓個別使用者指定的印表機設定更為完善。
+      </translation>
+<translation id="8934944553121392674">控制 <ph name="DEVICE_PRINTERS_POLICY" /> 中哪些印表機可供使用。
+
+      指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="DEVICE_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="DEVICE_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
+
+      如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
       </translation>
 <translation id="8947415621777543415">回報裝置位置</translation>
 <translation id="8951350807133946005">設定磁碟快取目錄</translation>

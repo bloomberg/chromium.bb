@@ -119,7 +119,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5386450000063123300">Chromium updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Er is een nieuwe versie van Chromium beschikbaar.</translation>
 <translation id="5427571867875391349">Chromium instellen als je standaardbrowser</translation>
-<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Bèta</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium bèta</translation>
 <translation id="5466153949126434691">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chromium opnieuw gestart en kun je doorgaan.</translation>
 <translation id="5479196819031988440">Chromium OS kan deze pagina niet openen.</translation>
 <translation id="5480860683791598150">Chromium heeft toegang tot je locatie nodig om je locatie met deze site te delen</translation>
@@ -194,7 +194,7 @@ Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je a
 <ph name="BEGIN_LINK_2" />Meer informatie<ph name="END_LINK_2" />
 
 Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
-<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium voor ontwikkelaars</translation>
 <translation id="7451052299415159299">Chromium heeft toegangsrechten voor je camera nodig voor deze site</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="7549178288319965365">Over Chromium OS</translation>

@@ -245,7 +245,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3236059992281584593">1 Minute übrig</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
-<translation id="3255459706755453214">Lesezugriff auf Zwischenablage wird für eine bestimmte Website blockiert.</translation>
+<translation id="3255459706755453214">Lesezugriff auf Zwischenablage für eine bestimmte Website blockieren.</translation>
 <translation id="3259831549858767975">Gesamten Seiteninhalt verkleinern</translation>
 <translation id="3269093882174072735">Bild laden</translation>
 <translation id="3269956123044984603">Aktivieren Sie "Daten automatisch synchronisieren" in den Android-Kontoeinstellungen, um Tabs von Ihren anderen Geräten abzurufen.</translation>
@@ -257,7 +257,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3341058695485821946">Sie können sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
-<translation id="3358632888246345756">Lesezugriff auf Zwischenablage wird für eine bestimmte Website erlaubt.</translation>
+<translation id="3358632888246345756">Lesezugriff auf Zwischenablage für eine bestimmte Website erlauben.</translation>
 <translation id="3365671512111106261">Nicht verfügbar, wenn der Datensparmodus aktiviert ist</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
@@ -445,7 +445,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="510275257476243843">1 Stunde übrig</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5129038482087801250">Web-App installieren</translation>
-<translation id="5139940364318403933">Informationen dazu, wie Sie Google Drive verwenden</translation>
+<translation id="5139940364318403933">So nutzen Sie Google Drive</translation>
 <translation id="515227803646670480">Gespeich. Daten löschen</translation>
 <translation id="5152843274749979095">Keine unterstützten Apps installiert</translation>
 <translation id="5161254044473106830">Titel erforderlich</translation>
@@ -636,7 +636,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion ähnliche Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
-<translation id="6689700624704789898">Doppeltippen Sie auf die Schaltfläche "Maximieren", um Ihre Dateien und Seiten unter "Downloads" einzusehen</translation>
+<translation id="6689700624704789898">Tippen Sie doppelt auf die Schaltfläche "Maximieren", um Ihre Dateien und Seiten unter "Downloads" einzusehen</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6701279291835318271">Sicherheitsberichte</translation>
@@ -700,7 +700,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7253272406652746122">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
 <translation id="729975465115245577">Auf Ihrem Gerät befindet sich keine App zum Speichern der Passwortdatei.</translation>
-<translation id="7318797029885648322">Tippen Sie auf "Mehr", damit weitere Artikel angezeigt werden</translation>
 <translation id="7333031090786104871">Vorherige Website wird noch hinzugefügt</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>

@@ -21,7 +21,7 @@
 <translation id="1265739287306757398">Weitere Informationen</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1323735185997015385">Löschen</translation>
-<translation id="132683371494960526">Doppeltippen Sie hier, um den übergeordneten Ordner zu ändern.</translation>
+<translation id="132683371494960526">Tippen Sie hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
 <translation id="1377255359165588604">Die Synchronisierung funktioniert nicht mehr.</translation>
@@ -48,7 +48,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1687475363370981210">Alle als gelesen markieren</translation>
 <translation id="1690731385917361335">Keine Elemente</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ausgewählt</translation>
-<translation id="1740468249224277719">Doppeltippen Sie hier, um die Installation zu starten.</translation>
+<translation id="1740468249224277719">Tippen Sie hier doppelt, um die Installation zu starten.</translation>
 <translation id="1752547299766512813">Gespeicherte Passwörter</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
 <translation id="1809939268435598390">Ordner löschen</translation>
@@ -57,7 +57,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1876721852596493031">Nutzungsdaten senden</translation>
 <translation id="1886928167269928266">Für gesamten Zeitraum</translation>
 <translation id="1911619930368729126">Auf Google Drive hochladen</translation>
-<translation id="1941314575388338491">Doppeltippen Sie zum Kopieren hier.</translation>
+<translation id="1941314575388338491">Tippen Sie zum Kopieren hier doppelt.</translation>
 <translation id="1952728750904661634">Mit verwaltetem Konto anmelden</translation>
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1989112275319619282">Durchsuchen</translation>
@@ -155,6 +155,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3771033907050503522">Inkognito-Tabs</translation>
 <translation id="3779810277399252432">Keine Internetverbindung</translation>
 <translation id="3783017676699494206">Bild speichern</translation>
+<translation id="3789841737615482174">Installieren</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
@@ -283,6 +284,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6342069812937806050">Abgeschlossen</translation>
 <translation id="6344783595350022745">Text entfernen</translation>
 <translation id="6362362396625799311">Keine Inkognitotabs</translation>
+<translation id="6374469231428023295">Erneut versuchen</translation>
 <translation id="6380866119319257197">Wenn Sie Ihre Passphrase vergessen oder diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Name auf Karte</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>

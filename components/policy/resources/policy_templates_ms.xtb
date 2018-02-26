@@ -614,6 +614,12 @@
 <translation id="2893546967669465276">Hantar log sistem ke pelayan pengurusan</translation>
 <translation id="2899002520262095963">Apl Android boleh menggunakan konfigurasi rangkaian dan sijil CA yang ditetapkan melalui dasar ini tetapi tiada akses kepada beberapa pilihan konfigurasi.</translation>
 <translation id="2906874737073861391">Senarai sambungan AppPack</translation>
+<translation id="2907992746861405243">Mengawal pencetak daripada <ph name="BULK_PRINTERS_POLICY" /> yang tersedia kepada pengguna.
+
+      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak pukal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua pencetak akan dipaparkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> akan digunakan untuk mengehadkan akses kepada pencetak yang ditetapkan.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> akan menetapkan pencetak yang boleh dipilih sahaja.
+
+      Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_ALLOW_ALL" /> akan digunakan.
+      </translation>
 <translation id="2908277604670530363">Bilangan maksimum sambungan serentak kepada pelayan proksi</translation>
 <translation id="2956777931324644324">Dasar ini telah dihentikan mengikut <ph name="PRODUCT_NAME" /> versi 36.
 
@@ -752,6 +758,9 @@
 
       Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan dengan nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti sepadan dengan masukan dalam fail yang dinyatakan dalam <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> menggunakan versi minimum lalai iaitu TLS 1.0.
+
+      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1", "tls1.1" atau "tls1.2". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> tidak akan membenarkan sesi tetamu dimulakan.</translation>
@@ -864,6 +873,13 @@
 
           Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="382476126209906314">Konfigurasi awalan TalkGadget untuk hos akses jauh</translation>
+<translation id="3831376478177535007">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang dikeluarkan oleh operasi PKI lama Symantec Corporation untuk dipercayai jika sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dicam.
+
+      Sila ambil perhatian bahawa dasar ini bergantung pada sistem pengendalian untuk terus mengecam sijil daripada infrastruktur lama Symantec. Jika kemas kini OS mengubah cara pengendalian OS terhadap sijil tersebut, dasar ini tidak berkuat kuasa lagi.  Selain itu, dasar ini bertujuan digunakan sebagai penyelesaian sementara bagi memberikan pihak syarikat lebih masa untuk beralih daripada sijil Symantec lama.  Dasar ini akan dialih keluar pada atau kira-kira 1 Januari 2019.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan mengikut jadual penamatan yang telah diumumkan.
+
+      Lihat https://g.co/chrome/symantecpkicerts untuk mendapatkan butiran lanjut tentang penamatan ini.</translation>
 <translation id="383466854578875212">Membolehkan anda menentukan hos pemesejan natif yang tidak tertakluk pada senarai hitam.
 
           Nilai senarai hitam * bermaksud semua hos pemesejan natif disenaraihitamkan dan hanya hos pemesejan natif yang disenaraikan dalam senarai putih akan dimuatkan.
@@ -1155,7 +1171,6 @@
 
           Secara lalai, jika PIN dianggap lemah, pengguna akan mendapat amaran dan bukannya ralat.</translation>
 <translation id="4723829699367336876">Dayakan penyusuran tembok api daripada klien akses jauh</translation>
-<translation id="4725123658714754485">Mengawal sama ada metrik penggunaan dan data diagnostik, termasuk laporan ranap dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan dan data diagnostik. Jika tidak dikonfigurasikan atau ditetapkan kepada palsu, pelaporan metrik dan data diagnostik akan dilumpuhkan.</translation>
 <translation id="4725528134735324213">Dayakan Perkhidmatan Sandaran Android</translation>
 <translation id="4733471537137819387">Dasar berkaitan pengesahan HTTP bersepadu.</translation>
 <translation id="4744190513568488164">Pelayan yang mungkin diwakilkan untuk <ph name="PRODUCT_NAME" />.
@@ -1598,17 +1613,6 @@
 
       Untuk menyematkan apl pada pelancar, lihat PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL semerta pembekal carian lalai</translation>
-<translation id="6029950823657977211">
-      NOTA: Dasar ini adalah percubaan dan mungkin keluar daripada fungsi!
-      Dasar ini digunakan pada skrin log masuk. Sila lihat juga dasar 'IsolateOrigins', yang digunakan pada sesi pengguna. Anda disyorkan supaya menetapkan kedua-dua dasar kepada nilai yang sama.
-      Jika dasar ini didayakan, setiap asalan yang dinamakan dalam senarai
-      dipisahkan oleh koma akan dijalankan dalam prosesnya sendiri. Ini
-      juga akan mengasingkan asalan yang dinamakan mengikut subdomain; mis. menyatakan https://example.com/ akan
-      turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan mengikut Tapak akan berkuat kuasa.
-      Jika dasar ini tidak dikonfiguraskan, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
-      </translation>
 <translation id="603410445099326293">Parameter untuk URL cadangan yang menggunakan POST</translation>
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
 <translation id="6070667616071269965">Reka letak papan kekunci skrin log masuk peranti</translation>
@@ -2569,11 +2573,5 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="930930237275114205">Tetapkan direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Mendayakan log masuk paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Tetapkan saiz cache cakera</translation>
-<translation id="9775893229076211">Membolehkan anda mengawal pencetusan pembenderaan akaun berisiko perlindungan kata laluan. Pembenderaan akaun berisiko perlindungan kata laluan bermakna memberitahu Google bahawa akaun ini berisiko untuk dirampas.
-
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOff', pembenderaan akaun berisiko perlindungan kata laluan tidak akan dicetuskan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPasswordReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPhishingReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data tetapi pengguna boleh menukarnya.</translation>
 <translation id="982497069985795632">Dayakan semakan ejaan</translation>
 </translationbundle>

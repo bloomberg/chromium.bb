@@ -1100,7 +1100,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Alapértelmezés szerint gyengének minősülő PIN-kódok esetén csak figyelmeztetjük a felhasználókat, és nem kapnak hibaüzenetet.</translation>
 <translation id="4723829699367336876">Engedélyezze a tűzfalon való átjárást a távoli ügyfelek felől</translation>
-<translation id="4725123658714754485">Beállítja, hogy kapjon-e a Google jelentést a használati statisztikákról és diagnosztikai adatokról (például összeomlási jelentéseket). Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a használati statisztikákat és diagnosztikai adatokat. Ha nincs beállítva, vagy a beállítás hamis, akkor a rendszer letiltja a használati statisztikák és diagnosztikai adatok jelentését.</translation>
 <translation id="4725528134735324213">Az Android Backup Service engedélyezése</translation>
 <translation id="4733471537137819387">Az integrált HTTP-hitelesítéssel kapcsolatos szabályok.</translation>
 <translation id="4744190513568488164">Szerverek, amelyekre a <ph name="PRODUCT_NAME" /> delegálhat.
@@ -1516,17 +1515,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha alkalmazást szeretne rögzíteni az indítóra, keresse meg a PinnedLauncherApps házirendet.</translation>
 <translation id="602728333950205286">Alapértelmezett keresési szolgáltató azonnali URL-je</translation>
-<translation id="6029950823657977211">
-      MEGJEGYZÉS: A házirend kísérleti állapotban van, és akadályozhatja a működést!
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Kérjük, tekintse meg az „IsolateOrigins” házirendet, amely a felhasználói munkamenetre vonatkozik. Javasoljuk, hogy a két házirendet azonos értékre állítsa be.
-      Ha engedélyezi a házirendet, a vesszőkkel tagolt listában
-      minden megjelölt forrás önálló folyamatként fut majd. Ez az aldomainek által 
-      megjelölt forrásokat is elszigeteli; például a https://example.com/ megadásával
-      a https://foo.example.com/ is izolálva lesz, mivel a https://example.com/
-      webhely része.
-      Ha letiltja a házirendet, az előzetes webhely-elszigetelési folyamatkezelési logika lép életbe.
-      Ha nem állítja be a házirendet, a platform alapértelmezett webhely-elszigetelési beállításai lépnek érvénybe a bejelentkezési képernyőnél.
-      </translation>
 <translation id="603410445099326293">Paraméterek POST metódust használó javasolt URL-hez</translation>
 <translation id="6036523166753287175">Engedélyezze a tűzfalon való átjárást a távoli elérésű szerverekről</translation>
 <translation id="6070667616071269965">Billentyűzetelrendezések az eszköz bejelentkezési képernyőjén</translation>
@@ -2428,11 +2416,5 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="930930237275114205">A(z) <ph name="PRODUCT_FRAME_NAME" /> felhasználói adatokat tartalmazó könyvtárának beállítása</translation>
 <translation id="934390688529359269">Engedélyezi a kényszerített bejelentkezést a(z) <ph name="PRODUCT_NAME" /> használatához</translation>
 <translation id="944817693306670849">Lemezgyorsítótár méretének beállítása</translation>
-<translation id="9775893229076211">Lehetővé teszi, hogy Ön kezelje a jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölésének aktiválási szabályait. A jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése jelzi a Google-nak, hogy a fiókot feltörhetik.
-
-      Ha a házirendet „PasswordProtectionRiskOff” módra állítja, a jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése nem aktiválódik.
-      Ha a házirendet „PasswordProtectionRiskOnPasswordReuse” módra állítja, a jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése akkor aktiválódik, ha a felhasználók Google-jelszavakat nem engedélyezőlistás webhelyeken használnak fel újra.
-      Ha a házirendet „PasswordProtectionRiskOnPhishingReuse” módra állítja, a jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése akkor aktiválódik, ha a felhasználók Google-jelszavakat adathalász webhelyeken használnak fel újra.
-      Ha a házirendet nem állítja be, a jelszóvédelemmel rendelkező, veszélyeztetett fiók megjelölése akkor aktiválódik, ha a felhasználók Google-jelszavakat adathalász webhelyeken használnak fel újra, azonban ezt a felhasználó megváltoztathatja.</translation>
 <translation id="982497069985795632">Helyesírás-ellenőrzés engedélyezése</translation>
 </translationbundle>

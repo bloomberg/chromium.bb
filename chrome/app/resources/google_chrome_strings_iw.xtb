@@ -163,6 +163,7 @@
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> עלול להיות מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="573759479754913123">‏מידע על מערכת ההפעלה של Chrome</translation>
 <translation id="5774845247549698882">‏Chrome OS מוצג בשפה זו</translation>
+<translation id="5795887333006832406">‏<ph name="PAGE_TITLE" /> - Google Chrome בגירסת Canary</translation>
 <translation id="5855036575689098185">‏תוכנה שפועלת במחשב שלך אינה תואמת ל-Google Chrome.</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
@@ -174,6 +175,7 @@
 <translation id="6070348360322141662">‏לשיפור האבטחה, Google Chrome יצפין את הנתונים</translation>
 <translation id="6113794647360055231">‏Chrome השתפר</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878">‏<ph name="PAGE_TITLE" /> - Google Chrome בגירסת ביטא</translation>
 <translation id="61852838583753520">‏עדכן את מערכת ההפעלה של Chrome&amp;</translation>
 <translation id="6235018212288296708">‏כלל נכנס עבור Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6291089322031436445">‏אפליקציות לגרסת הפיתוח של Chrome</translation>
@@ -181,6 +183,7 @@
 <translation id="6338556085225130112">‏מעדכן את Google Chrome</translation>
 <translation id="6368958679917195344">‏השימוש במערכת ההפעלה של Chrome מתאפשר באמצעות <ph name="BEGIN_LINK_CROS_OSS" />תוכנת קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספת.</translation>
 <translation id="6410540444482791104">‏תוכל לעזור בשיפור האבטחה וקלות השימוש של Chrome על-ידי שליחה אוטומטית של חלק מפרטי המערכת ותוכן הדף אל Google כדי לעזור בזיהוי של יישומים ואתרים מסוכנים.</translation>
+<translation id="6515495397637126556">‏<ph name="PAGE_TITLE" /> - Google Chrome בגירסת פיתוח</translation>
 <translation id="6566149418543181476">‏מעדכן את Google Chrome‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏אתה משתמש ב-<ph name="PROFILE_EMAIL" /> כדי לסנכרן את הפריטים שלך ב-Chrome. עבור אל '<ph name="SETTINGS_LINK" />' כדי לעדכן את העדפות הסנכרון או להשתמש ב-Chrome ללא חשבון Google.</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>

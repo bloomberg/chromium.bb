@@ -89,16 +89,6 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
-<translation id="1366104148063673624">
-      NOTE: This policy is experimental and may break functionality!
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains, e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, the per-Site Isolation process management logic will take effect.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
@@ -187,16 +177,6 @@
       If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> policies will be ignored.</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
-<translation id="1617923360251336102">
-      NOTE: This policy is experimental and may break functionality!
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites that you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the per-Site Isolation process management logic will take effect.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
       origin of the requesting URL.  If a match is found, access to video
       capture devices will be granted on SAML login pages.  If no match is
@@ -523,17 +503,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
-<translation id="2535309829711666278">
-      NOTE: This policy is experimental and may break functionality!
-      This policy applies to the sign-in screen. Please see also the 'SitePerProcess' policy which applies to the user session. It is recommended to set both policies to the same value.
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites that you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the per-Site Isolation process management logic will take effect.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
@@ -784,12 +753,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="332771718998993005">Determine the name advertised as a <ph name="PRODUCT_NAME" /> destination.
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
-<translation id="3332365412942111108">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
-
-      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
-      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when users reuse Google passwords on any non-whitelisted sites.
-      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when users reuse Google passwords on phishing sites.
-      If this policy is left unset, password protection warning will be triggered when users reuse Google passwords on phishing sites, but the user can change it.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3395348522300156660">Specifies the printers which a user can use.
 
@@ -1211,7 +1174,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           By default, users will get a warning, not error, if the PIN is considered weak.</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
-<translation id="4725123658714754485">Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics and diagnostic data. If not configured or set to false, metrics and diagnostic data reporting will be disabled.</translation>
 <translation id="4725528134735324213">Enable Android Backup Service</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
@@ -1659,17 +1621,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
-<translation id="6029950823657977211">
-      NOTE: This policy is experimental and may break functionality!
-      This policy applies to the sign-in screen. Please see also the 'IsolateOrigins' policy which applies to the user session. It is recommended to set both policies to the same value.
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains, e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, the per-site isolation process management logic will take effect.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
-      </translation>
 <translation id="603410445099326293">Parameters for suggest URL which uses POST</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
@@ -2625,11 +2576,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
 <translation id="934390688529359269">Enables force sign in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Set disk cache size</translation>
-<translation id="9775893229076211">Allows you to control the triggering of password protection at-risk account flagging. Password protection at-risk account flagging means informing Google that this account is at risk of being hijacked.
-
-      If this policy is set to 'PasswordProtectionRiskOff', no password protection at-risk account flagging will be triggered.
-      If this policy is set to 'PasswordProtectionRiskOnPasswordReuse', password protection at-risk account flagging will be triggered when users reuse Google passwords on any non-whitelisted sites.
-      If this policy is set to 'PasswordProtectionRiskOnPhishingReuse', password protection at-risk account flagging will be triggered when users reuse Google passwords on phishing sites.
-      If this policy is left unset, password protection at-risk account flagging will be triggered when users reuse Google passwords on phishing sites but the user can change it.</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>
 </translationbundle>

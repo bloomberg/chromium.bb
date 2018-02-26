@@ -611,6 +611,12 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2893546967669465276">Enviar los registros del sistema al servidor de administración</translation>
 <translation id="2899002520262095963">Las aplicaciones para Android pueden utilizar los ajustes de red y los certificados de CA configurados mediante esta política, pero no tienen acceso a algunas opciones de configuración.</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
+<translation id="2907992746861405243">Controla a qué impresoras de la política <ph name="BULK_PRINTERS_POLICY" /> tienen acceso los usuarios.
+
+      Designa qué política de acceso se utiliza para configurar impresoras en bloque. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se mostrarán todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se utiliza <ph name="BULK_PRINTERS_BLACKLIST" /> para restringir el acceso a impresoras específicas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> designará únicamente las impresoras que se pueden seleccionar.
+
+      Si no se establece esta política, se utilizará <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
 <translation id="2956777931324644324">Esta política no está disponible a partir de la versión 36 de <ph name="PRODUCT_NAME" />.
 
@@ -746,6 +752,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID se correspondan con los valores incluidos en ella. Los ID se deben corresponder con las entradas del archivo especificado en la política <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Si esta política no se configura, <ph name="PRODUCT_NAME" /> usa una versión mínima predeterminada (TLS 1.0).
+
+      En caso contrario, se le asignará uno de estos valores: "tls1", "tls1.1" o "tls1.2". Si se habilita, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS inferiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
 
       Si el valor correspondiente a esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> no permitirá el inicio de sesiones de invitados.</translation>
@@ -859,6 +868,13 @@ Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
 Si no se establece esta política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="382476126209906314">Configurar el prefijo TalkGadget para hosts de acceso remoto</translation>
+<translation id="3831376478177535007">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> permitirá que se confíe en los certificados emitidos por operaciones de la infraestructura de clave pública antigua de Symantec Corporation si se validan correctamente y se vinculan con un certificado de CA reconocido.
+
+      Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo los certificados de la infraestructura antigua de Symantec. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados, esta política dejará de aplicarse. Además, el objetivo de esta política es ofrecer a las empresas una solución temporal que les proporcione más tiempo para dejar de usar los certificados antiguos de Symantec. Esta política se retirará sobre el 1 de enero del 2019.
+
+      Si esta política no se configura o si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> seguirá la programación de desactivación anunciada públicamente.
+
+      Consulta la página https://g.co/chrome/symantecpkicerts para obtener más información sobre esta desactivación.</translation>
 <translation id="383466854578875212">Te permite especificar los hosts de mensajes nativos que no están sujetos a la lista negra.
 
           El valor de lista negra de * indica que todos los hosts de mensajes nativos se incluyen en la lista negra y que solo se cargarán los hosts de mensajes nativos que se incluyan en la lista blanca.
@@ -1149,7 +1165,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           De forma predeterminada, si el PIN no se considera seguro, los usuarios recibirán una advertencia en lugar de un mensaje de error.</translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
-<translation id="4725123658714754485">Permite controlar el envío a Google de datos de diagnóstico y métricas de uso, como los informes sobre fallos. Si se asigna el valor "True", <ph name="PRODUCT_OS_NAME" /> enviará informes sobre métricas de uso y datos de diagnóstico. Si no se configura o se asigna el valor "False", se inhabilitará el envío de informes sobre métricas y datos de diagnóstico.</translation>
 <translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
 <translation id="4744190513568488164">Permite indicar los servidores en los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios.
@@ -1596,17 +1611,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Para fijar aplicaciones en el menú, consulta la política PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
-<translation id="6029950823657977211">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política "IsolateOrigins" que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas.
-      Si se habilita la política, cada uno de los orígenes especificados
-      en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes ;(p. ej., si especificas https://example.com/,
-      también se aislará https://foo.example.com/ como parte del 
-      sitio web https://example.com/).
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
-      Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
-      </translation>
 <translation id="603410445099326293">Parámetros para URL sugerida que utiliza POST</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
@@ -2562,11 +2566,5 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Habilitar el inicio de sesión forzoso de <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Establecer tamaño de caché de disco</translation>
-<translation id="9775893229076211">Permite controlar la activación de la advertencia de protección de contraseña sobre cuenta en riesgo. La advertencia de protección de contraseña sobre cuenta en riesgo informa a Google de que la cuenta corre el riesgo de ser interceptada.
-
-      Si se le asigna el valor "PasswordProtectionRiskOff" a esta política, no se activará la advertencia de protección de contraseña sobre cuenta en riesgo.
-      Si se le asigna el valor "PasswordProtectionRiskOnPasswordReuse", se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en cualquier sitio web que no esté incluido en la lista blanca.
-       Si se le asigna el valor "PasswordProtectionRiskOnPhishingReuse" a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing.
-      Si no se le asigna ningún valor a esta política, se activará la advertencia de protección de contraseña sobre cuenta en riesgo cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing, pero el usuario podrá cambiarlo.</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
 </translationbundle>

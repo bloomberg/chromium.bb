@@ -546,12 +546,12 @@
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
 <translation id="2682225790874070339"><ph name="PRODUCT_OS_NAME" />, Files uygulamasında Drive'ı devre dışı bırakır</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
-<translation id="2726613915126661822">Chrome OS'te sanal makinelerin çalıştırılmasına izin verilip verilmediğini kontrol etmenize olanak tanır.
+<translation id="2726613915126661822">Chrome OS'de sanal makinelerin çalıştırılmasına izin verilip verilmediğini kontrol etmenize olanak tanır.
 
       Politika Doğru (True) değerine ayarlanırsa cihazın sanal makineler çalıştırmasına izin verilir.
       Politika Yanlış (False) değerine ayarlanırsa cihazın sanal makineler çalıştırmasına izin verilmez.
       Bu politika Yanlış (False) olarak değiştirildiğinde, ayar yeni sanal makinelerin başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan sanal makineleri kapatmaz.
-      Yönetilen bir cihazda bu politika ayarlanmadığında, cihazın sanal makineler çalıştırmasına izin verilmez.
+      Yönetilen bir cihazda bu politika ayarlanmadığında, cihazın sanal makine çalıştırmasına izin verilmez.
       Yönetilmeyen cihazların sanal makineler çalıştırmasına izin verilir.</translation>
 <translation id="2731627323327011390">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> sertifikalarının kullanımını devre dışı bırak</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
@@ -1148,7 +1148,6 @@ politikayı geçersiz kılamaz.
 
           Varsayılan olarak, PIN'in zayıf olduğu düşünülürse kullanıcılar hata değil, bir uyarı alırlar.</translation>
 <translation id="4723829699367336876">Uzaktan erişim istemcisinden güvenlik duvarı geçişini etkinleştir</translation>
-<translation id="4725123658714754485">Kilitlenme raporları da dahil olmak üzere kullanım ölçümlerinin ve teşhis verilerinin Google'a bildirilip bildirilmeyeceğini denetler. Doğru (true) değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> kullanım ölçümleri ve teşhis verileri rapor edilir. Hiç ayarlanmazsa veya yanlış (false) değerine ayarlanırsa, ölçüm ve teşhis verilerini raporlama işlevi devre dışı olur.</translation>
 <translation id="4725528134735324213">Android Backup Service'ı etkinleştir</translation>
 <translation id="4733471537137819387">Entegre HTTP kimlik doğrulaması ile ilgili politikalar.</translation>
 <translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> ürününün yetki verebileceği sunucular.
@@ -1610,17 +1609,6 @@ politikayı geçersiz kılamaz.
 
       Uygulamaları Launcher'a sabitlemek için PinnedLauncherApps politikasına bakın.</translation>
 <translation id="602728333950205286">Varsayılan arama sağlayıcı anında arama URL'si</translation>
-<translation id="6029950823657977211">
-      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
-      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan "IsolateOrigins" politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir.
-      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır.
-. Bu politika ayrıca alt alan
-      adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/
-      adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak
-      https://foo.example.com/ sitesinin de izole edilmesine neden olur.
-      Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
-      Bu politikanın yapılandırılmaması halinde oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
-      </translation>
 <translation id="603410445099326293">POST kullanan öneri URL'si parametreleri</translation>
 <translation id="6036523166753287175">Uzaktan erişim ana makinesinden güvenlik duvarı geçişini etkinleştir</translation>
 <translation id="6070667616071269965">Cihaz oturum açma ekranı klavye düzenleri</translation>
@@ -2578,11 +2566,5 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> kullanıcı verileri dizinini ayarla</translation>
 <translation id="934390688529359269"><ph name="PRODUCT_NAME" /> için oturum açmaya zorlamayı etkinleştir</translation>
 <translation id="944817693306670849">Disk önbellek boyutunu ayarla</translation>
-<translation id="9775893229076211">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliğinin tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma hizmetinin risk altındaki hesabı işaretlemesi, Google'ın bu hesabın ele geçirilme riski taşıdığı konusunda bilgilendirilmesi anlamına gelir.
-
-      Bu politika "PasswordProtectionRiskOff" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği tetiklenmez.
-      Bu politika "PasswordProtectionRiskOnPasswordReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcılar Google şifrelerini beyaz listede olmayan sitelerde yeniden kullandıklarında tetiklenir.
-      Bu politika "PasswordProtectionRiskOnPhishingReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcılar Google şifrelerini kimlik avı sitelerinde yeniden kullandıklarında tetiklenir.
-      Bu politika ayarlanmadan bırakılırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcıların Google şifrelerini kimlik avı sitelerinde yeniden kullandıklarında ama bunu değiştirebildiklerinde tetiklenir.</translation>
 <translation id="982497069985795632">Yazım denetimini etkinleştir</translation>
 </translationbundle>

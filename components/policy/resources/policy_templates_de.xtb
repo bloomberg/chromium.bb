@@ -1095,7 +1095,6 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
           Standardmäßig erhalten Nutzer nur eine Warnmeldung – d. h. keine Fehlermeldung – wenn die PIN als schwach eingestuft wird.</translation>
 <translation id="4723829699367336876">Firewallausnahme über Client für Remote-Zugriff aktivieren</translation>
-<translation id="4725123658714754485">Legt fest, ob Nutzungs- und Diagnosedaten, einschließlich Absturzberichten, an Google gesendet werden. Bei Einstellung auf "true" werden Nutzungs- und Diagnosedatenberichte von <ph name="PRODUCT_OS_NAME" /> gesendet. Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, ist das Senden von Datenberichten deaktiviert.</translation>
 <translation id="4725528134735324213">Android Backup Service aktivieren</translation>
 <translation id="4733471537137819387">Strategien im Hinblick auf die integrierte HTTP-Authentifizierung</translation>
 <translation id="4744190513568488164">Server, auf die <ph name="PRODUCT_NAME" /> zur Authentifizierung verweisen darf.
@@ -1512,17 +1511,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Um Apps an die Übersicht anzuheften, siehe "PinnedLauncherApps".</translation>
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
-<translation id="6029950823657977211">
-      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität beeinträchtigen.
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "IsolateOrigins" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen.
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in
-      einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch
-      werden auch durch Subdomains benannte Ursprünge isoliert. Falls Sie z. B.
-      https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der
-      Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam.
-      Wenn die Richtlinie nicht konfiguriert wird, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
-      </translation>
 <translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remote-Zugriff aktivieren</translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
@@ -2417,11 +2405,5 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="930930237275114205">Verzeichnis für <ph name="PRODUCT_FRAME_NAME" />-Nutzerdaten festlegen</translation>
 <translation id="934390688529359269">Aktiviert erzwungene Anmeldung in <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Datenträger-Cache-Größe festlegen</translation>
-<translation id="9775893229076211">Mit dieser Richtlinie können Sie die Auslösung der Kontomeldung "Passwortschutz gefährdet" steuern. Durch diese Kontomeldung wird Google über das Risiko informiert, dass dieses Konto gehackt wird.
-
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOff" festgelegt wird, wird die Kontomeldung "Passwortschutz gefährdet" nicht ausgelöst.
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPasswordReuse" festgelegt wird, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn Nutzer Google-Passwörter auf Websites wiederverwenden, die nicht auf der weißen Liste stehen.
-      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPhishingReuse" festgelegt wird, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn Nutzer Google-Passwörter auf Phishingwebsites wiederverwenden.
-      Wenn diese Richtlinie nicht konfiguriert wird, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn Nutzer Google-Passwörter auf Phishingwebsites wiederverwenden, die Nutzer dies jedoch ändern können.</translation>
 <translation id="982497069985795632">Rechtschreibprüfung aktivieren</translation>
 </translationbundle>

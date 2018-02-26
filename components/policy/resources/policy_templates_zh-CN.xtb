@@ -270,7 +270,7 @@
 <translation id="2067011586099792101">禁止访问非内容包内的网站</translation>
 <translation id="2070270043919235595">通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 以应用尚未应用的更新。
 
-      此政策设置用于启用建议或要求用户重新启动浏览器的通知功能。如果此政策未设置，<ph name="PRODUCT_NAME" /> 会通过菜单的细微变化来提示用户需要重新启动。如果此政策设为“推荐”，系统将会显示建议用户重新启动浏览器的周期性警告。用户可以关闭该警告来推迟重新启动。如果此政策设为“必须”，系统将会显示周期性警告，以便让用户知道系统将于通知期结束后强制重新启动浏览器。该通知期会默认设为 7 天，不过可以通过 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策设置进行配置。
+      此政策设置旨在启用建议或要求用户重新启动浏览器的通知功能。如果此政策未设置，<ph name="PRODUCT_NAME" /> 会通过菜单的细微变化来提示用户需要重新启动。如果此政策设为“推荐”，系统将会显示建议用户重新启动浏览器的周期性警告。用户可以关闭该警告来推迟重新启动。如果此政策设为“必需”，系统将会显示周期性警告，以便让用户知道系统将于通知期结束后强制重新启动浏览器。该通知期会默认设为 7 天，不过可以通过 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策设置进行配置。
 
       浏览器重新启动后，将会恢复用户会话。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
@@ -571,6 +571,12 @@
 <translation id="2893546967669465276">将系统日志发送到管理服务器</translation>
 <translation id="2899002520262095963">Android 应用可以使用通过此政策设置的网络配置和 CA 证书，但无法访问某些配置选项。</translation>
 <translation id="2906874737073861391">AppPack 扩展程序列表</translation>
+<translation id="2907992746861405243">控制用户可以使用 <ph name="BULK_PRINTERS_POLICY" /> 中的哪些打印机。
+
+      指定对批量打印机配置使用哪项访问政策。如果选择 <ph name="PRINTERS_ALLOW_ALL" />，系统即会显示所有打印机。如果选择 <ph name="PRINTERS_BLACKLIST" />，系统便会使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 来限制用户对指定打印机的访问权。如果选择 <ph name="PRINTERS_WHITELIST" />，<ph name="BULK_PRINTERS_WHITELIST" /> 则仅会指定可供用户选择的打印机。
+
+      如果未设置此政策，系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
+      </translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
 <translation id="2956777931324644324">此政策自36版<ph name="PRODUCT_NAME" />起已停止使用。
 
@@ -699,6 +705,9 @@
 
       如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的打印机才可供用户使用。ID 必须与 <ph name="DEVICE_PRINTERS_POLICY" /> 中指定的文件内的条目对应。
       </translation>
+<translation id="3414260318408232239">如果未配置此政策，<ph name="PRODUCT_NAME" /> 将会使用默认的最低版本（即 TLS 1.0）。
+
+      倘若您想配置此政策，则可将其设为下列值之一：“tls1”、“tls1.1”或“tls1.2”。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用低于指定版本的 SSL/TLS 版本。无法识别的值都会被忽略。</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
       如果将此政策设置为 false，<ph name="PRODUCT_OS_NAME" />就不会允许访客会话启动。</translation>
@@ -803,6 +812,13 @@
 
           如果此政策未设置，屏幕键盘最初会处于停用状态，但用户随时可启用它。</translation>
 <translation id="382476126209906314">为远程访问主机配置 TalkGadget 前缀</translation>
+<translation id="3831376478177535007">启用此设置后，只要赛门铁克公司 (Symantec Corporation) 的旧版公钥基础设施 (PKI) 操作签发的证书已以其他方式成功通过验证并关联至一个公认的 CA 证书，<ph name="PRODUCT_NAME" /> 就会允许信任这些证书。
+
+      请注意，此政策有赖于相应操作系统是否仍能识别赛门铁克的旧版基础架构颁发的证书。如果该操作系统的某项更新更改了它对此类证书的处理方式，此政策便不再具有效力。另请注意，此政策只是一种临时解决方法，旨在让企业拥有更多时间来弃用旧版赛门铁克证书。我们将于 2019 年 1 月 1 日当天或前后撤消此政策。
+
+      如果此政策设为 false 或未设置，<ph name="PRODUCT_NAME" /> 则会遵循公开发布的弃用时间表。
+
+      若想获取与本次弃用相关的更多详情，请访问 https://g.co/chrome/symantecpkicerts。</translation>
 <translation id="383466854578875212">允许您指定哪些本地消息传递主机不列入黑名单。
 
           如果黑名单的值为“*”，则意味着所有本地消息传递主机均会列入黑名单，而系统只会加载白名单中所列的本地消息传递主机。
@@ -1076,7 +1092,6 @@
 
           默认情况下，如果系统认为 PIN 码的安全系数偏低，就会向用户显示警告（而不是错误消息）。</translation>
 <translation id="4723829699367336876">支持通过远程访问客户端穿越防火墙</translation>
-<translation id="4725123658714754485">控制是否要将使用情况指标和诊断数据（包括崩溃报告）反馈给 Google。如果此政策设为 true，<ph name="PRODUCT_OS_NAME" /> 将会报告使用情况指标和诊断数据。如果此政策设为 false 或未配置，指标和诊断数据报告功能便会被停用。</translation>
 <translation id="4725528134735324213">启用 Android Backup Service</translation>
 <translation id="4733471537137819387">与集成 HTTP 身份验证相关的政策。</translation>
 <translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> 可委托的服务器。
@@ -1478,13 +1493,6 @@
 
       要将应用固定到启动器上，请参阅 PinnedLauncherApps。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
-<translation id="6029950823657977211">
-      请注意：此政策尚处于实验阶段，可能会导致功能中断！
-      此政策适用于登录屏幕。另请参阅适用于用户会话的“IsolateOrigins”政策。建议您将这两项政策设为相同的值。
-      如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离通过子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 作为 https://example.com/ 的一部分被隔离。
-      如果此政策处于停用状态，则系统将为登录屏幕使用“按网站隔离”进程管理逻辑。
-      如果此政策未配置，则系统将为登录屏幕使用平台默认的网站隔离设置。
-      </translation>
 <translation id="603410445099326293">在使用 POST 的建议网址中所需的参数</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
@@ -2364,11 +2372,5 @@
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME" />用户数据目录</translation>
 <translation id="934390688529359269">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能</translation>
 <translation id="944817693306670849">设置磁盘缓存大小</translation>
-<translation id="9775893229076211">可让您控制“密码保护服务举报面临风险的帐号”功能的触发条件。“密码保护服务举报面临风险的帐号”是指，当相应帐号面临被盗用的风险时，密码保护服务将会通知 Google。
-
-      如果此政策设为“PasswordProtectionRiskOff”，则一律不触发“密码保护服务举报面临风险的帐号”功能。
-      如果此政策设为“PasswordProtectionRiskOnPasswordReuse”，则当用户在任何未列入白名单的网站上重复使用 Google 密码时，都将会触发“密码保护服务举报面临风险的帐号”功能。
-      如果此政策设为“PasswordProtectionRiskOnPhishingReuse”，则当用户在网上诱骗网站上重复使用 Google 密码时，将会触发“密码保护服务举报面临风险的帐号”功能。
-      如果此政策未设置，则当用户在网上诱骗网站上重复使用 Google 密码时，将会触发“密码保护服务举报面临风险的帐号”功能，但用户可以对此进行更改。</translation>
 <translation id="982497069985795632">启用拼写检查</translation>
 </translationbundle>

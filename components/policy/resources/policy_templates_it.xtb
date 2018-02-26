@@ -272,7 +272,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2067011586099792101">Blocca l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="2070270043919235595">Notifica agli utenti che <ph name="PRODUCT_NAME" /> deve essere riavviato per applicare l'aggiornamento in attesa.
 
-      Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Consigliato", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Obbligatorio", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
@@ -506,7 +506,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
       Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
-      Quando questa norma viene modificata in false, quest'ultima ha valore solo sulle nuove macchine virtuali e non arresta le macchine virtuali già in esecuzione.
+      Quando l'impostazione di questa norma viene modificata in false, la norma consente di avviare le nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
       Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non potrà eseguire macchine virtuali.
       I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
@@ -573,6 +573,12 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2893546967669465276">Consente di inviare log di sistema al server di gestione</translation>
 <translation id="2899002520262095963">Le app Android possono utilizzare le configurazioni di rete e i certificati CA impostati tramite questa norma ma non hanno accesso ad alcune opzioni di configurazione.</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
+<translation id="2907992746861405243">Consente di stabilire quali stampanti della norma <ph name="BULK_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
+
+      Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="BULK_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="BULK_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.
+
+      Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Numero massimo di connessioni simultanee al server proxy</translation>
 <translation id="2956777931324644324">Questa norma è stata ritirata a partire dalla versione 36 di <ph name="PRODUCT_NAME" />.
 
@@ -702,6 +708,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza una versione minima predefinita, ossia TLS 1.0.
+
+      In caso contrario, la norma potrebbe essere impostata su uno dei seguenti valori: "tls1", "tls1.1" o "tls1.2". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS precedenti a quella specificata. I valori non riconosciuti verranno ignorati.</translation>
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_OS_NAME" /> non sarà possibile avviare sessioni Ospite.</translation>
@@ -721,7 +730,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata non verrà fornita una pagina Nuova scheda.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="3465852069254497664">Notifica a un utente che è necessario od obbligatorio eseguire un riavvio del browser</translation>
+<translation id="3465852069254497664">Notifica a un utente che è consigliato o necessario eseguire un riavvio del browser</translation>
 <translation id="346731943813722404">Consente di specificare se i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni devono iniziare soltanto dopo il rilevamento dell'attività del primo utente in una sessione.
 
 Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni non iniziano fino al termine del rilevamento dell'attività del primo utente in una sessione.
@@ -807,6 +816,13 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se questa norma non viene impostata, inizialmente la tastiera sullo schermo è disattivata, ma l'utente la può attivare in qualsiasi momento.</translation>
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
+<translation id="3831376478177535007">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> consente di ritenere attendibili i certificati emessi dal team addetto alle operazioni dell'infrastruttura PKI precedente di Symantec Corporation se convalidano e collegano correttamente a un certificato CA riconosciuto.
+
+      Tieni presente che questa norma dipende dal riconoscimento da parte del sistema operativo dei certificati dell'infrastruttura precedente di Symantec. Se un aggiornamento del sistema operativo cambia la modalità di gestione di tali certificati da parte del sistema, questa norma non viene più applicata. Inoltre, questa norma è intesa come soluzione alternativa temporanea per dare alle aziende più tempo per ritirare i certificati Symantec precedenti. Questa norma verrà rimossa il 1° gennaio 2019 o in una data successiva.
+
+      Se questa norma non viene impostata o viene impostata su false, <ph name="PRODUCT_NAME" /> segue il piano di ritiro pubblico.
+
+      Visita la pagina https://g.co/chrome/symantecpkicerts per avere ulteriori informazioni sul ritiro.</translation>
 <translation id="383466854578875212">Consente di specificare gli host di messaggi nativi da escludere dalla lista nera.
 
 Il valore della lista nera * indica che tutti gli host di messaggi nativi non sono autorizzati e che verranno caricati soltanto gli host di messaggi nativi elencati nella whitelist.
@@ -1075,7 +1091,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Per impostazione predefinita, gli utenti riceveranno un avviso, e non un errore, se il PIN è considerato non sicuro.</translation>
 <translation id="4723829699367336876">Abilita attraversamento firewall da client di accesso remoto</translation>
-<translation id="4725123658714754485">Consente di stabilire se riferire o meno le metriche sull'utilizzo e i dati diagnostici, inclusi i rapporti sugli arresti anomali, a Google. Se la norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> riferirà le metriche sull'utilizzo e i dati diagnostici. Se non viene configurata o viene impostata su false, i rapporti sulle metriche e sui dati diagnostici verranno disattivati.</translation>
 <translation id="4725528134735324213">Attiva Android Backup Service</translation>
 <translation id="4733471537137819387">Norme relative all'autenticazione HTTP integrata.</translation>
 <translation id="4744190513568488164">Server a cui <ph name="PRODUCT_NAME" /> potrebbe delegare le credenziali utente.
@@ -1486,13 +1501,6 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 
       Per bloccare le app in Avvio applicazioni, vedi la norma PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
-<translation id="6029950823657977211">
-      NOTA: questa norma è sperimentale e potrebbe interrompere la funzionalità.
-      Questa norma viene applicata alla schermata di accesso. Vedi anche la norma "IsolateOrigins", che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme.
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/, viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito.
-      Se la norma non viene configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
-      </translation>
 <translation id="603410445099326293">Parametri per l'URL del suggerimento che utilizza POST</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
@@ -2369,11 +2377,5 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="930930237275114205">Imposta la directory dei dati utente di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Consente di attivare l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Imposta dimensioni cache su disco</translation>
-<translation id="9775893229076211">Consente di controllare l'attivazione della segnalazione di account a rischio per quanto riguarda la protezione tramite password. Questa segnalazione consente di comunicare a Google che l'account è a rischio di compromissione.
-
-      Se questa norma viene impostata su "PasswordProtectionRiskOff", non viene attivata la segnalazione di account a rischio per quanto riguarda la protezione tramite password.
-      Se questa norma viene impostata su "PasswordProtectionRiskOnPasswordReuse", la segnalazione di account a rischio per quanto riguarda la protezione tramite password viene attivata quando gli utenti riutilizzano le password Google su siti non autorizzati.
-      Se questa norma viene impostata su "PasswordProtectionRiskOnPhishingReuse", la segnalazione di account a rischio per quanto riguarda la protezione tramite password viene attivata quando gli utenti riutilizzano le password Google su siti di phishing.
-      Se questa norma non viene impostata, la segnalazione di account a rischio per quanto riguarda la protezione tramite password viene attivata quando gli utenti riutilizzano le password Google su siti di phishing, ma gli utenti possono cambiare l'impostazione.</translation>
 <translation id="982497069985795632">Attiva il controllo ortografico</translation>
 </translationbundle>

@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1383876407941801731">Търсене</translation>
+<translation id="1510238584712386396">Стартов панел</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">Редактиране на текст</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">Размяна на основния монитор</translation>
+<translation id="3105917916468784889">Създаване на екранна снимка</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Преместване на фокуса върху адресната лента</translation>
+<translation id="3649256019230929621">Намаляване на прозореца</translation>
+<translation id="385051799172605136">Назад</translation>
+<translation id="5316716239522500219">Дублиране на мониторите</translation>
+<translation id="5928303187149237472">Промяна на разделителната способност на екрана</translation>
+<translation id="5975083100439434680">Намаляване на мащаба</translation>
+<translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
+<translation id="6129953537138746214">Интервал</translation>
+<translation id="6185696379715117369">Страница нагоре</translation>
+<translation id="671928215901716392">Заключване на екрана</translation>
+<translation id="6727005317916125192">Предишният панел</translation>
+<translation id="6981982820502123353">Достъпност</translation>
+<translation id="7020813747703216897">Не бяха намерени съответстващи резултати</translation>
+<translation id="7025325401470358758">Следващият панел</translation>
+<translation id="7272373489634936181">Търсене на комбинации</translation>
+<translation id="7724603315864178912">Изрязване</translation>
+<translation id="8004192919599017226">Начало на търсенето...</translation>
+<translation id="88986195241502842">Страница надолу</translation>
+<translation id="8903921497873541725">Увеличаване на мащаба</translation>
+<translation id="9179672198516322668">Популярни комбинации</translation>
 </translationbundle>

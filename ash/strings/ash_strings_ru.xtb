@@ -51,7 +51,7 @@
 <translation id="2122028596993374965">Остановить трансляцию вкладки "<ph name="TAB_NAME" />" на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2144487987174258011">Перезагрузите, чтобы обновить Adobe Flash Player</translation>
-<translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
+<translation id="2208323208084708176">Единый рабочий стол</translation>
 <translation id="2220572644011485463">PIN-код или пароль</translation>
 <translation id="225680501294068881">Поиск устройств…</translation>
 <translation id="2268130516524549846">Bluetooth отключен</translation>
@@ -111,7 +111,6 @@
 <translation id="3413817803639110246">Уведомлений нет.</translation>
 <translation id="3445925074670675829">Устройство USB-C</translation>
 <translation id="3465566417615315331">Нажмите на свое фото</translation>
-<translation id="3473479545200714844">Лупа</translation>
 <translation id="3477079411857374384">Ctrl + Shift + Пробел</translation>
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>

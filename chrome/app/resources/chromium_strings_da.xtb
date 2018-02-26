@@ -117,7 +117,7 @@
 <translation id="5386450000063123300">Opdaterer Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Der er en ny version af Chromium til rådighed.</translation>
 <translation id="5427571867875391349">Angiv Chromium som din standardbrowser</translation>
-<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – betaversion af Chromium</translation>
+<translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium beta</translation>
 <translation id="5466153949126434691">Chromium opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chromium, og så er du godt på vej.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åbne denne side.</translation>
 <translation id="5480860683791598150">Chromium skal have adgang til din placering for at dele din placering med dette website</translation>
@@ -192,7 +192,7 @@ Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ve
 <ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
 
 Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
-<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – udviklerversion af Chromium</translation>
+<translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium for udviklere</translation>
 <translation id="7451052299415159299">Chromium skal have tilladelse til at bruge dit kamera på dette website</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
@@ -206,7 +206,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7756122083761163394">Denne brugers browserdata slettes fra denne enhed. Log ind på Chrome som $2 for at gendanne dataene.</translation>
 <translation id="7773960292263897147">Advarsel! Chromium kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen i afkrydsningsfeltet for at deaktivere denne udvidelse i inkognitotilstand.</translation>
 <translation id="7774736947049807614">Godkendelsescertifikatet slog fejl. Log ind på Chromium igen som <ph name="USER_NAME" />, eller kontakt din administrator for at få flere oplysninger. <ph name="ADDITIONAL_EXPLANATION" /></translation>
-<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – canary-version af Chromium</translation>
+<translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium kunne ikke opdatere til den nyeste version, så du går glip af nye funktioner og sikkerhedsrettelser.</translation>
 <translation id="7937630085815544518">Du loggede ind på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="7962572577636132072">Chromium opdateres automatisk, så du altid har den nyeste version.</translation>
