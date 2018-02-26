@@ -40,7 +40,8 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
     mojom::PeerConnectionTrackerHostAssociatedPtr
         peer_connection_tracker_host_ptr_;
     binding_.Bind(mojo::MakeRequestAssociatedWithDedicatedPipe(
-        &peer_connection_tracker_host_ptr_));
+                      &peer_connection_tracker_host_ptr_),
+                  blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     return peer_connection_tracker_host_ptr_;
   }
   mojo::AssociatedBinding<mojom::PeerConnectionTrackerHost> binding_;
