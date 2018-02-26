@@ -323,6 +323,8 @@ HTMLElement* CreateDefaultParagraphElement(Document&);
 HTMLSpanElement* CreateTabSpanElement(Document&);
 HTMLSpanElement* CreateTabSpanElement(Document&, const String& tab_text);
 
+Element* FindEventTargetFrom(LocalFrame&, const VisibleSelection&);
+
 // Boolean functions on Element
 
 CORE_EXPORT bool ElementCannotHaveEndTag(const Node&);

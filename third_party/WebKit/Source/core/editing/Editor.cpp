@@ -549,15 +549,6 @@ void Editor::RegisterCommandGroup(CompositeEditCommand* command_group_wrapper) {
   last_edit_command_ = command_group_wrapper;
 }
 
-Element* Editor::FindEventTargetFrom(const VisibleSelection& selection) const {
-  Element* const target = AssociatedElementOf(selection.Start());
-  if (!target)
-    return GetFrame().GetDocument()->body();
-  if (target->IsInUserAgentShadowRoot())
-    return target->OwnerShadowHost();
-  return target;
-}
-
 Element* Editor::FindEventTargetForClipboardEvent(
     EditorCommandSource source) const {
   // https://www.w3.org/TR/clipboard-apis/#fire-a-clipboard-event says:
@@ -568,7 +559,7 @@ Element* Editor::FindEventTargetForClipboardEvent(
     return GetFrameSelection().GetDocument().body();
 
   return FindEventTargetFrom(
-      GetFrameSelection().ComputeVisibleSelectionInDOMTree());
+      GetFrame(), GetFrameSelection().ComputeVisibleSelectionInDOMTree());
 }
 
 void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,

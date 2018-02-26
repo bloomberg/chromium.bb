@@ -1799,4 +1799,14 @@ void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
   pasteboard->WriteImage(image.get(), url_string, title);
 }
 
+Element* FindEventTargetFrom(LocalFrame& frame,
+                             const VisibleSelection& selection) {
+  Element* const target = AssociatedElementOf(selection.Start());
+  if (!target)
+    return frame.GetDocument()->body();
+  if (target->IsInUserAgentShadowRoot())
+    return target->OwnerShadowHost();
+  return target;
+}
+
 }  // namespace blink
