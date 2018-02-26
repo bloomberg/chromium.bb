@@ -180,8 +180,7 @@ void GenerateTestFiles(content::MockBlobURLRequestContext* url_request_context,
   content::RunAllTasksUntilIdle();
 }
 
-void VerifyFileContents(base::File file,
-                        const base::Closure& on_close_callback) {
+void VerifyFileContents(base::File file, base::OnceClosure on_close_callback) {
   ASSERT_EQ(14, file.GetLength());
   std::unique_ptr<char[]> buffer(new char[15]);
 
@@ -194,7 +193,7 @@ void VerifyFileContents(base::File file,
 
   file.Close();
   if (!on_close_callback.is_null())
-    on_close_callback.Run();
+    std::move(on_close_callback).Run();
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 

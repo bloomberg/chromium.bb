@@ -53,7 +53,7 @@ void GetCancelStatus(bool* operation_done,
   *status_out = status;
 }
 
-void DidOpenFile(base::File file, const base::Closure& on_close_callback) {}
+void DidOpenFile(base::File file, base::OnceClosure on_close_callback) {}
 
 }  // namespace
 

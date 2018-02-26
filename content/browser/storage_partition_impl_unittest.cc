@@ -455,7 +455,7 @@ class RemovePluginPrivateDataTester {
   void OnFileOpened(base::File* file_result,
                     AwaitCompletionHelper* await_completion,
                     base::File file,
-                    const base::Closure& on_close_callback) {
+                    base::OnceClosure on_close_callback) {
     *file_result = std::move(file);
     await_completion->Notify();
   }

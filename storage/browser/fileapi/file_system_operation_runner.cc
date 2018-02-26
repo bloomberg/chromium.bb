@@ -625,16 +625,16 @@ void FileSystemOperationRunner::DidOpenFile(
     const OperationHandle& handle,
     const OpenFileCallback& callback,
     base::File file,
-    const base::Closure& on_close_callback) {
+    base::OnceClosure on_close_callback) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FileSystemOperationRunner::DidOpenFile, AsWeakPtr(),
-                       handle, callback, Passed(&file), on_close_callback));
+        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidOpenFile,
+                                  AsWeakPtr(), handle, callback, Passed(&file),
+                                  std::move(on_close_callback)));
     return;
   }
-  callback.Run(std::move(file), on_close_callback);
+  callback.Run(std::move(file), std::move(on_close_callback));
   FinishOperation(handle.id);
 }
 

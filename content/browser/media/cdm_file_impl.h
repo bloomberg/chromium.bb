@@ -72,9 +72,9 @@ class CdmFileImpl final : public media::mojom::CdmFile {
                 CreateOrOpenCallback callback);
 
   void OnFileOpenedForReading(base::File file,
-                              const base::Closure& on_close_callback);
+                              base::OnceClosure on_close_callback);
   void OnTempFileOpenedForWriting(base::File file,
-                                  const base::Closure& on_close_callback);
+                                  base::OnceClosure on_close_callback);
   void OnFileRenamed(base::File::Error move_result);
 
   // Returns the FileSystemURL for the specified |file_name|.
@@ -109,8 +109,8 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   // storage::AsyncFileUtil::CreateOrOpen() returns this callback on a
   // successful open along with the base::File object, which should be
   // called when the file is closed.
-  base::Closure on_close_callback_;
-  base::Closure temporary_file_on_close_callback_;
+  base::OnceClosure on_close_callback_;
+  base::OnceClosure temporary_file_on_close_callback_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<CdmFileImpl> weak_factory_;

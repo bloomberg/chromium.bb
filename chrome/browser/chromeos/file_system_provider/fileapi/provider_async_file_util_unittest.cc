@@ -53,8 +53,7 @@ class EventLogger {
     result_.reset(new base::File::Error(error));
   }
 
-  void OnCreateOrOpen(base::File file,
-                      const base::Closure& on_close_callback) {
+  void OnCreateOrOpen(base::File file, base::OnceClosure on_close_callback) {
     if (file.IsValid())
       result_.reset(new base::File::Error(base::File::FILE_OK));
 
