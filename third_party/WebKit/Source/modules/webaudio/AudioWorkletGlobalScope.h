@@ -72,7 +72,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   // for some reason.
   AudioWorkletProcessor* CreateProcessor(
       const String& name,
-      float sample_rate,
       MessagePortChannel,
       scoped_refptr<SerializedScriptValue> node_options);
 
@@ -95,6 +94,8 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   // Gets |processor_creation_params_| for the processor construction. If there
   // is no on-going processor construction, this MUST return nullptr.
   ProcessorCreationParams* GetProcessorCreationParams();
+
+  void SetSampleRate(float sample_rate);
 
   // IDL
   double currentTime() const { return current_time_; }

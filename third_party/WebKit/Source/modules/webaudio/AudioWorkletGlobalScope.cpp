@@ -125,14 +125,9 @@ void AudioWorkletGlobalScope::registerProcessor(
 
 AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
     const String& name,
-    float sample_rate,
     MessagePortChannel message_port_channel,
     scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(IsContextThread());
-
-  // TODO(hongchan): do this only once when the association between
-  // BaseAudioContext and AudioWorkletGlobalScope is established.
-  sample_rate_ = sample_rate;
 
   // The registered definition is already checked by AudioWorkletNode
   // construction process, so the |definition| here must be valid.
@@ -379,6 +374,10 @@ AudioWorkletGlobalScope::WorkletProcessorInfoListForSynchronization() {
 
 ProcessorCreationParams* AudioWorkletGlobalScope::GetProcessorCreationParams() {
   return processor_creation_params_.get();
+}
+
+void AudioWorkletGlobalScope::SetSampleRate(float sample_rate) {
+  sample_rate_ = sample_rate;
 }
 
 void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {

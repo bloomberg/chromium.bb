@@ -15,14 +15,17 @@ namespace blink {
 
 AudioWorkletObjectProxy::AudioWorkletObjectProxy(
     AudioWorkletMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners)
+    ParentFrameTaskRunners* parent_frame_task_runners,
+    float context_sample_rate)
     : ThreadedWorkletObjectProxy(
           static_cast<ThreadedWorkletMessagingProxy*>(messaging_proxy_weak_ptr),
-          parent_frame_task_runners) {}
+          parent_frame_task_runners),
+      context_sample_rate_(context_sample_rate) {}
 
 void AudioWorkletObjectProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* global_scope) {
   global_scope_ = ToAudioWorkletGlobalScope(global_scope);
+  global_scope_->SetSampleRate(context_sample_rate_);
 }
 
 void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {

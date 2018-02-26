@@ -48,6 +48,11 @@ WebThread* AudioWorklet::GetBackingThread() {
   return GetMessagingProxy()->GetWorkletBackingThread();
 }
 
+BaseAudioContext* AudioWorklet::GetBaseAudioContext() const {
+  DCHECK(IsMainThread());
+  return context_.Get();
+}
+
 const Vector<CrossThreadAudioParamInfo>
     AudioWorklet::GetParamInfoListForProcessor(
     const String& name) {

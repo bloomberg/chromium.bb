@@ -48,9 +48,6 @@ namespace {
 
 static const size_t kRenderQuantumFrames = 128;
 
-// This is a typical sample rate.
-static const float kTestingSampleRate = 44100;
-
 }  // namespace
 
 class AudioWorkletGlobalScopeTest : public PageTestBase {
@@ -187,7 +184,6 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
     AudioWorkletProcessor* processor =
         global_scope->CreateProcessor("testProcessor",
-                                      kTestingSampleRate,
                                       dummy_port_channel,
                                       SerializedScriptValue::NullValue());
     EXPECT_TRUE(processor);
@@ -288,7 +284,6 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
     AudioWorkletProcessor* processor =
         global_scope->CreateProcessor("testProcessor",
-                                      kTestingSampleRate,
                                       dummy_port_channel,
                                       SerializedScriptValue::NullValue());
     EXPECT_TRUE(processor);

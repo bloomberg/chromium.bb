@@ -42,6 +42,8 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   WebThread* GetBackingThread();
 
+  BaseAudioContext* GetBaseAudioContext() const;
+
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
       const String& name);
 
