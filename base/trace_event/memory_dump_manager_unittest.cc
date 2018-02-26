@@ -202,7 +202,7 @@ class MemoryDumpManagerTest : public testing::Test {
     // Tear down the MemoryDumpManager while single-threaded to mirror logic in
     // SetUp().
     mdm_.reset();
-    TraceLog::DeleteForTesting();
+    TraceLog::ResetForTesting();
   }
 
  protected:

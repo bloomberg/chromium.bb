@@ -159,7 +159,7 @@ class MemoryTracingIntegrationTest : public testing::Test {
     client_process_.reset();
     coordinator_.reset();
     message_loop_.reset();
-    TraceLog::DeleteForTesting();
+    TraceLog::ResetForTesting();
   }
 
   // Blocks the current thread (spinning a nested message loop) until the

@@ -24,10 +24,11 @@
 
 namespace base {
 
-template <typename Type>
-struct DefaultSingletonTraits;
 class MessageLoop;
 class RefCountedString;
+
+template <typename T>
+class NoDestructor;
 
 namespace trace_event {
 
@@ -293,8 +294,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
     filter_factory_for_testing_ = factory;
   }
 
-  // Allows deleting our singleton instance.
-  static void DeleteForTesting();
+  // Allows clearing up our singleton instance.
+  static void ResetForTesting();
 
   // Allow tests to inspect TraceEvents.
   TraceEvent* GetEventByHandle(TraceEventHandle handle);
@@ -360,9 +361,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceRecordAsMuchAsPossibleMode);
 
-  // This allows constructor and destructor to be private and usable only
-  // by the Singleton class.
-  friend struct DefaultSingletonTraits<TraceLog>;
+  friend class base::NoDestructor<TraceLog>;
 
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const MemoryDumpArgs& args,

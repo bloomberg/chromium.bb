@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/no_destructor.h"
 #include "base/process/process_info.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
@@ -49,18 +49,6 @@
 #endif
 
 namespace base {
-namespace internal {
-
-class DeleteTraceLogForTesting {
- public:
-  static void Delete() {
-    Singleton<trace_event::TraceLog,
-              LeakySingletonTraits<trace_event::TraceLog>>::OnExit(nullptr);
-  }
-};
-
-}  // namespace internal
-
 namespace trace_event {
 
 namespace {
@@ -85,6 +73,8 @@ const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 
 const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 const int kThreadFlushTimeoutMs = 3000;
+
+TraceLog* g_instance_for_testing = nullptr;
 
 #define MAX_TRACE_EVENT_FILTERS 32
 
@@ -339,7 +329,17 @@ TraceLogStatus::~TraceLogStatus() = default;
 
 // static
 TraceLog* TraceLog::GetInstance() {
-  return Singleton<TraceLog, LeakySingletonTraits<TraceLog>>::get();
+  static base::NoDestructor<TraceLog> instance;
+  return instance.get();
+}
+
+// static
+void TraceLog::ResetForTesting() {
+  if (!g_instance_for_testing)
+    return;
+  CategoryRegistry::ResetForTesting();
+  g_instance_for_testing->~TraceLog();
+  new (g_instance_for_testing) TraceLog;
 }
 
 TraceLog::TraceLog()
@@ -376,6 +376,7 @@ TraceLog::TraceLog()
 
   MemoryDumpManager::GetInstance()->RegisterDumpProvider(this, "TraceLog",
                                                          nullptr);
+  g_instance_for_testing = this;
 }
 
 TraceLog::~TraceLog() = default;
@@ -1533,11 +1534,6 @@ void TraceLog::AddMetadataEventsWhileLocked() {
         current_thread_id, "trace_buffer_overflowed", "overflowed_at_ts",
         buffer_limit_reached_timestamp_);
   }
-}
-
-void TraceLog::DeleteForTesting() {
-  base::internal::DeleteTraceLogForTesting::Delete();
-  CategoryRegistry::ResetForTesting();
 }
 
 TraceEvent* TraceLog::GetEventByHandle(TraceEventHandle handle) {

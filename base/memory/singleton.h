@@ -37,10 +37,6 @@
 
 namespace base {
 
-namespace internal {
-class DeleteTraceLogForTesting;
-}  // namespace internal
-
 // Default traits for Singleton<Type>. Calls operator new and operator delete on
 // the object. Registers automatic deletion at process exit.
 // Overload if you need arguments or another memory allocation function.
@@ -226,9 +222,6 @@ class Singleton {
   // Classes using the Singleton<T> pattern should declare a GetInstance()
   // method and call Singleton::get() from within that.
   friend Type* Type::GetInstance();
-
-  // Allow TraceLog tests to test tracing after OnExit.
-  friend class internal::DeleteTraceLogForTesting;
 
   // This class is safe to be constructed and copy-constructed since it has no
   // member.
