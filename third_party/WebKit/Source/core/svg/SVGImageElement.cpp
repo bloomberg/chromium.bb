@@ -199,14 +199,6 @@ Node::InsertionNotificationRequest SVGImageElement::InsertedInto(
   return SVGGraphicsElement::InsertedInto(root_parent);
 }
 
-FloatSize SVGImageElement::SourceDefaultObjectSize() {
-  if (GetLayoutObject())
-    return ToLayoutSVGImage(GetLayoutObject())->ObjectBoundingBox().Size();
-  SVGLengthContext length_context(this);
-  return FloatSize(width_->CurrentValue()->Value(length_context),
-                   height_->CurrentValue()->Value(length_context));
-}
-
 const AtomicString SVGImageElement::ImageSourceURL() const {
   return AtomicString(HrefString());
 }

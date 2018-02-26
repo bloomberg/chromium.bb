@@ -121,7 +121,6 @@ class CORE_EXPORT HTMLImageElement final
   bool IsCollapsed() const;
 
   // CanvasImageSource interface implementation.
-  FloatSize SourceDefaultObjectSize() override;
   FloatSize DefaultDestinationSize(const FloatSize&) const override;
 
   // public so that HTMLPictureElement can call this as well.

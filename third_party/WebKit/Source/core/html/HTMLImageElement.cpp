@@ -818,8 +818,4 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
   }
 };
 
-FloatSize HTMLImageElement::SourceDefaultObjectSize() {
-  return FloatSize(width(), height());
-}
-
 }  // namespace blink
