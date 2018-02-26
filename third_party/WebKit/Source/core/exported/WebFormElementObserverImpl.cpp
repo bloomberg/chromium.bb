@@ -47,7 +47,7 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
   {
     MutationObserverInit init;
     init.setAttributes(true);
-    init.setAttributeFilter({"action", "class", "style"});
+    init.setAttributeFilter({"class", "style"});
     mutation_observer_->observe(element_, init, ASSERT_NO_EXCEPTION);
   }
   for (Node* node = element_; node->parentElement();
@@ -83,16 +83,8 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
         return;
       }
     } else {
+      // Either "style" or "class" was modified. Check the computed style.
       HTMLElement& element = *ToHTMLElement(record->target());
-      if (record->attributeName() == "action") {
-        // If the action was modified, we just assume that the form as
-        // submitted.
-        callback_->ElementWasHiddenOrRemoved();
-        Disconnect();
-        return;
-      }
-      // Otherwise, either "style" or "class" was modified. Check the
-      // computed style.
       CSSComputedStyleDeclaration* style =
           CSSComputedStyleDeclaration::Create(&element);
       if (style->GetPropertyValue(CSSPropertyDisplay) == "none") {
