@@ -201,7 +201,10 @@ bool IsSigninToAdd() {
          user_manager::UserManager::Get()->IsUserLoggedIn();
 }
 
-bool CanRemoveUser(bool is_single_user, const user_manager::User* user) {
+bool CanRemoveUser(const user_manager::User* user) {
+  const bool is_single_user =
+      user_manager::UserManager::Get()->GetUsers().size() == 1;
+
   // Single user check here is necessary because owner info might not be
   // available when running into login screen on first boot.
   // See http://crosbug.com/12723
@@ -499,6 +502,7 @@ void UserSelectionScreen::FillUserMojoStruct(
   user_info->auth_type = auth_type;
   user_info->is_signed_in = user->is_logged_in();
   user_info->is_device_owner = is_owner;
+  user_info->can_remove = CanRemoveUser(user);
   user_info->allow_fingerprint_unlock = AllowFingerprintForUser(user);
 
   // Fill multi-profile data.
@@ -781,7 +785,6 @@ UserSelectionScreen::UpdateAndReturnUserListForWebUI() {
 
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
-  const bool single_user = users_.size() == 1;
   const AccountId owner = GetOwnerAccountId();
   const bool is_signin_to_add = IsSigninToAdd();
 
@@ -811,7 +814,7 @@ UserSelectionScreen::UpdateAndReturnUserListForWebUI() {
             : &public_session_recommended_locales_[account_id];
     FillUserDictionary(*it, is_owner, is_signin_to_add, initial_auth_type,
                        public_session_recommended_locales, user_dict.get());
-    user_dict->SetBoolean(kKeyCanRemove, CanRemoveUser(single_user, *it));
+    user_dict->SetBoolean(kKeyCanRemove, CanRemoveUser(*it));
     users_list->Append(std::move(user_dict));
   }
 
@@ -822,7 +825,6 @@ std::vector<ash::mojom::LoginUserInfoPtr>
 UserSelectionScreen::UpdateAndReturnUserListForMojo() {
   std::vector<ash::mojom::LoginUserInfoPtr> user_info_list;
 
-  const bool single_user = users_.size() == 1;
   const AccountId owner = GetOwnerAccountId();
   const bool is_signin_to_add = IsSigninToAdd();
   users_to_send_ = PrepareUserListForSending(users_, owner, is_signin_to_add);
@@ -853,7 +855,7 @@ UserSelectionScreen::UpdateAndReturnUserListForMojo() {
     FillUserMojoStruct(*it, is_owner, is_signin_to_add, initial_auth_type,
                        public_session_recommended_locales,
                        login_user_info.get());
-    login_user_info->can_remove = CanRemoveUser(single_user, *it);
+    login_user_info->can_remove = CanRemoveUser(*it);
     user_info_list.push_back(std::move(login_user_info));
   }
 
