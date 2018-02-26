@@ -1135,11 +1135,10 @@ void FeatureInfo::InitializeFeatures() {
         !have_arb_occlusion_query2;
   }
 
-  if (!workarounds_.disable_angle_instanced_arrays &&
-      (gl::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
-       (gl::HasExtension(extensions, "GL_ARB_instanced_arrays") &&
-        gl::HasExtension(extensions, "GL_ARB_draw_instanced")) ||
-       gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile)) {
+  if (gl::HasExtension(extensions, "GL_ANGLE_instanced_arrays") ||
+      (gl::HasExtension(extensions, "GL_ARB_instanced_arrays") &&
+       gl::HasExtension(extensions, "GL_ARB_draw_instanced")) ||
+      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile) {
     AddExtensionString("GL_ANGLE_instanced_arrays");
     feature_flags_.angle_instanced_arrays = true;
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);

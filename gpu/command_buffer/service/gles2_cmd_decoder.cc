@@ -3824,10 +3824,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 
   supports_dc_layers_ = !offscreen && surface->SupportsDCLayers();
 
-  if (workarounds().reverse_point_sprite_coord_origin) {
-    api()->glPointParameteriFn(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
-  }
-
   if (workarounds().unbind_fbo_on_context_switch) {
     context_->SetUnbindFboOnMakeCurrent();
   }
@@ -6601,17 +6597,6 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   }
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glGenerateMipmap");
-  // Workaround for Mac driver bug. In the large scheme of things setting
-  // glTexParamter twice for glGenerateMipmap is probably not a lage performance
-  // hit so there's probably no need to make this conditional. The bug appears
-  // to be that if the filtering mode is set to something that doesn't require
-  // mipmaps for rendering, or is never set to something other than the default,
-  // then glGenerateMipmap misbehaves.
-  if (workarounds().set_texture_filter_before_generating_mipmap) {
-    api()->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER,
-                             GL_NEAREST_MIPMAP_NEAREST);
-  }
-
   // Workaround for Mac driver bug. If the base level is non-zero but the zero
   // level of a texture has not been set glGenerateMipmaps sets the entire mip
   // chain to opaque black. If the zero level is set at all, however, the mip
@@ -6667,10 +6652,6 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
                           nullptr);
   }
 
-  if (workarounds().set_texture_filter_before_generating_mipmap) {
-    api()->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER,
-                             texture_ref->texture()->min_filter());
-  }
   GLenum error = LOCAL_PEEK_GL_ERROR("glGenerateMipmap");
   if (error == GL_NO_ERROR) {
     texture_manager()->MarkMipmapsGenerated(texture_ref);
@@ -11828,53 +11809,6 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
 
   if (result != NULL) {
     result->success = 1;
-  }
-
-  uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
-  if ((channels_exist & 0x0008) == 0 &&
-      workarounds().clear_alpha_in_readpixels) {
-    // Set the alpha to 255 because some drivers are buggy in this regard.
-    uint32_t temp_size;
-
-    uint32_t unpadded_row_size;
-    uint32_t padded_row_size;
-    if (!GLES2Util::ComputeImageDataSizes(
-            width, 2, 1, format, type, pack_alignment, &temp_size,
-            &unpadded_row_size, &padded_row_size)) {
-      return;
-    }
-
-    uint32_t channel_count = 0;
-    uint32_t alpha_channel = 0;
-    switch (format) {
-      case GL_RGBA:
-      case GL_BGRA_EXT:
-        channel_count = 4;
-        alpha_channel = 3;
-        break;
-      case GL_ALPHA:
-        channel_count = 1;
-        alpha_channel = 0;
-        break;
-    }
-
-    if (channel_count > 0) {
-      switch (type) {
-        case GL_UNSIGNED_BYTE:
-          WriteAlphaData<uint8_t>(pixels, height, channel_count, alpha_channel,
-                                  unpadded_row_size, padded_row_size, 0xFF);
-          break;
-        case GL_FLOAT:
-          WriteAlphaData<float>(
-              pixels, height, channel_count, alpha_channel, unpadded_row_size,
-              padded_row_size, 1.0f);
-          break;
-        case GL_HALF_FLOAT:
-          WriteAlphaData<uint16_t>(pixels, height, channel_count, alpha_channel,
-                                   unpadded_row_size, padded_row_size, 0x3C00);
-          break;
-      }
-    }
   }
 }
 
