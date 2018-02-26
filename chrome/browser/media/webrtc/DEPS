@@ -1,6 +1,7 @@
 include_rules = [
   # TODO(mash): Remove. http://crbug.com/723880
   "+ash/shell.h",
+  "+services/audio/public/cpp",
   "+third_party/libyuv",
   "+third_party/webrtc",
 ]

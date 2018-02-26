@@ -4152,6 +4152,7 @@ jumbo_split_static_library("browser") {
     deps += [
       "//components/webrtc_logging/browser",
       "//components/webrtc_logging/common",
+      "//services/audio/public/cpp",
       "//third_party/webrtc_overrides",
       "//third_party/webrtc_overrides:init_webrtc",
     ]

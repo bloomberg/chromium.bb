@@ -23,6 +23,7 @@
 #include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
 #include "media/media_features.h"
+#include "services/audio/public/cpp/debug_recording_session_factory.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -518,8 +519,11 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
 void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!audio_debug_recording_session_);
-  audio_debug_recording_session_ = media::AudioDebugRecordingSession::Create(
-      audio_debug_recordings_file_path_);
+  audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
+      audio_debug_recordings_file_path_,
+      content::ServiceManagerConnection::GetForProcess()
+          ->GetConnector()
+          ->Clone());
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());

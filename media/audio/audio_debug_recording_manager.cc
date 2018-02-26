@@ -42,7 +42,7 @@ AudioDebugRecordingManager::AudioDebugRecordingManager(
 AudioDebugRecordingManager::~AudioDebugRecordingManager() = default;
 
 void AudioDebugRecordingManager::EnableDebugRecording(
-    CreateFileCallback create_file_callback) {
+    CreateWavFileCallback create_file_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!create_file_callback.is_null());
   create_file_callback_ = std::move(create_file_callback);

@@ -10,11 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
+#include "media/audio/audio_debug_recording_test.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
-#include "media/audio/test_audio_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
@@ -22,10 +21,11 @@ namespace {
 
 const base::FilePath::CharType kBaseFileName[] =
     FILE_PATH_LITERAL("debug_recording");
+const base::FilePath::CharType kWavExtension[] = FILE_PATH_LITERAL("wav");
 const base::FilePath::CharType kInputFileNameSuffix[] =
-    FILE_PATH_LITERAL("input.1.wav");
+    FILE_PATH_LITERAL("input.1");
 const base::FilePath::CharType kOutputFileNameSuffix[] =
-    FILE_PATH_LITERAL("output.1.wav");
+    FILE_PATH_LITERAL("output.1");
 
 void OnFileCreated(base::File debug_file) {}
 
@@ -33,8 +33,7 @@ void OnFileCreated(base::File debug_file) {}
 // MockAudioDebugRecordingManager::EnableDebugRecording mocked method to test
 // |create_file_callback| behavior.
 void CreateInputOutputDebugRecordingFiles(
-    const base::RepeatingCallback<void(const base::FilePath&,
-                                       base::OnceCallback<void(base::File)>)>&
+    const AudioDebugRecordingManager::CreateWavFileCallback&
         create_file_callback) {
   create_file_callback.Run(base::FilePath(kInputFileNameSuffix),
                            base::BindOnce(&OnFileCreated));
@@ -44,29 +43,11 @@ void CreateInputOutputDebugRecordingFiles(
 
 }  // namespace
 
-class AudioDebugRecordingSessionImplTest : public testing::Test {
+class AudioDebugRecordingSessionImplTest : public AudioDebugRecordingTest {
  public:
   AudioDebugRecordingSessionImplTest() { SetBaseFilePath(); }
 
  protected:
-  void CreateAudioManager() {
-    mock_audio_manager_ =
-        std::make_unique<MockAudioManager>(std::make_unique<TestAudioThread>());
-    ASSERT_NE(nullptr, AudioManager::Get());
-    ASSERT_EQ(static_cast<AudioManager*>(mock_audio_manager_.get()),
-              AudioManager::Get());
-  }
-
-  void ShutdownAudioManager() { ASSERT_TRUE(mock_audio_manager_->Shutdown()); }
-
-  void InitializeAudioDebugRecordingManager() {
-    mock_audio_manager_->InitializeDebugRecording();
-    mock_debug_recording_manager_ =
-        static_cast<MockAudioDebugRecordingManager*>(
-            mock_audio_manager_->GetAudioDebugRecordingManager());
-    ASSERT_NE(nullptr, mock_debug_recording_manager_);
-  }
-
   void CreateDebugRecordingSession() {
     audio_debug_recording_session_impl_ =
         std::make_unique<media::AudioDebugRecordingSessionImpl>(
@@ -77,11 +58,6 @@ class AudioDebugRecordingSessionImplTest : public testing::Test {
     audio_debug_recording_session_impl_.reset();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<MockAudioManager> mock_audio_manager_;
-  MockAudioDebugRecordingManager* mock_debug_recording_manager_;
-  std::unique_ptr<AudioDebugRecordingSessionImpl>
-      audio_debug_recording_session_impl_;
   base::FilePath base_file_path_;
 
  private:
@@ -91,6 +67,8 @@ class AudioDebugRecordingSessionImplTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<AudioDebugRecordingSessionImpl>
+      audio_debug_recording_session_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingSessionImplTest);
 };
@@ -125,9 +103,9 @@ TEST_F(AudioDebugRecordingSessionImplTest,
   ShutdownAudioManager();
 }
 
-// Tests the CreateFile method from AudioDebugRecordingSessionImpl unnamed
+// Tests the CreateWavFile method from AudioDebugRecordingSessionImpl unnamed
 // namespace.
-TEST_F(AudioDebugRecordingSessionImplTest, CreateFileCreatesExpectedFiles) {
+TEST_F(AudioDebugRecordingSessionImplTest, CreateWavFileCreatesExpectedFiles) {
   CreateAudioManager();
   InitializeAudioDebugRecordingManager();
   EXPECT_CALL(*mock_debug_recording_manager_, EnableDebugRecording(testing::_))
@@ -139,9 +117,11 @@ TEST_F(AudioDebugRecordingSessionImplTest, CreateFileCreatesExpectedFiles) {
 
   // Check that expected files were created.
   base::FilePath input_recording_filename(
-      base_file_path_.AddExtension(kInputFileNameSuffix));
+      base_file_path_.AddExtension(kInputFileNameSuffix)
+          .AddExtension(kWavExtension));
   base::FilePath output_recording_filename(
-      base_file_path_.AddExtension(kOutputFileNameSuffix));
+      base_file_path_.AddExtension(kOutputFileNameSuffix)
+          .AddExtension(kWavExtension));
   EXPECT_TRUE(base::PathExists(output_recording_filename));
   EXPECT_TRUE(base::PathExists(input_recording_filename));
 

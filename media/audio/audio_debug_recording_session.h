@@ -5,24 +5,16 @@
 #ifndef MEDIA_AUDIO_AUDIO_DEBUG_RECORDING_SESSION_H_
 #define MEDIA_AUDIO_AUDIO_DEBUG_RECORDING_SESSION_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "media/base/media_export.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace media {
 
-// Creating/Destroying an AudioDebugRecordingSession object enables/disables
-// audio debug recording.
+// Enables/disables audio debug recording on construction/destruction. Objects
+// are created using audio::CreateAudioDebugRecordingSession.
 class MEDIA_EXPORT AudioDebugRecordingSession {
  public:
-  virtual ~AudioDebugRecordingSession();
-  static std::unique_ptr<AudioDebugRecordingSession> Create(
-      const base::FilePath& debug_recording_file_path);
+  virtual ~AudioDebugRecordingSession() = default;
 
  protected:
   AudioDebugRecordingSession() = default;

@@ -17,7 +17,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_debug_recording_session.h"
+#include "services/audio/public/cpp/debug_recording_session_factory.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -106,8 +109,10 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
       log_directory, ++current_audio_debug_recordings_id_);
   host->EnableAudioDebugRecordings(prefix_path);
 
-  audio_debug_recording_session_ =
-      media::AudioDebugRecordingSession::Create(prefix_path);
+  audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
+      prefix_path, content::ServiceManagerConnection::GetForProcess()
+                       ->GetConnector()
+                       ->Clone());
 
   if (delay.is_zero()) {
     const bool is_stopped = false, is_manual_stop = false;

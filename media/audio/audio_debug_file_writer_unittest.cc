@@ -242,12 +242,6 @@ TEST_P(AudioDebugFileWriterTest, WaveRecordingTest) {
   RecordAndVerifyOnce();
 }
 
-TEST_P(AudioDebugFileWriterTest, GetFileExtension) {
-  debug_writer_.reset(new AudioDebugFileWriter(params_));
-  EXPECT_EQ(FILE_PATH_LITERAL("wav"),
-            base::FilePath::StringType(debug_writer_->GetFileExtension()));
-}
-
 TEST_P(AudioDebugFileWriterSingleThreadTest,
        DeletedBeforeRecordingFinishedOnFileThread) {
   debug_writer_.reset(new AudioDebugFileWriter(params_));
