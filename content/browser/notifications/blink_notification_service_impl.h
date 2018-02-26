@@ -60,6 +60,14 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const content::NotificationResources& notification_resources,
       blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info);
 
+  void DisplayPersistentNotificationWithId(
+      int64_t service_worker_registration_id,
+      const PlatformNotificationData& platform_notification_data,
+      const NotificationResources& notification_resources,
+      DisplayPersistentNotificationCallback callback,
+      bool success,
+      const std::string& notification_id);
+
   void CloseNonPersistentNotificationOnUIThread(
       const std::string& notification_id);
 
