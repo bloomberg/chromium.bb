@@ -1555,11 +1555,12 @@ static void read_tile_info(AV1Decoder *const pbi,
           ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
 #endif  // CONFIG_MAX_TILE
-  } else {
+    return;
+  }
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MAX_TILE
-    read_tile_info_max_tile(cm, rb);
+  read_tile_info_max_tile(cm, rb);
 #else
   int min_log2_tile_cols, max_log2_tile_cols, max_ones;
   av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
@@ -1584,38 +1585,33 @@ static void read_tile_info(AV1Decoder *const pbi,
 
 #endif  // CONFIG_MAX_TILE
 #if CONFIG_DEPENDENT_HORZTILES
-    if (cm->tile_rows > 1)
-      cm->dependent_horz_tiles = aom_rb_read_bit(rb);
-    else
-      cm->dependent_horz_tiles = 0;
+  if (cm->tile_rows > 1)
+    cm->dependent_horz_tiles = aom_rb_read_bit(rb);
+  else
+    cm->dependent_horz_tiles = 0;
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-    if (cm->tile_cols > 1) {
-      cm->loop_filter_across_tiles_v_enabled = aom_rb_read_bit(rb);
-    } else {
-      cm->loop_filter_across_tiles_v_enabled = 1;
-    }
-    if (cm->tile_rows > 1) {
-      cm->loop_filter_across_tiles_h_enabled = aom_rb_read_bit(rb);
-    } else {
-      cm->loop_filter_across_tiles_h_enabled = 1;
-    }
+  if (cm->tile_cols > 1) {
+    cm->loop_filter_across_tiles_v_enabled = aom_rb_read_bit(rb);
+  } else {
+    cm->loop_filter_across_tiles_v_enabled = 1;
+  }
+  if (cm->tile_rows > 1) {
+    cm->loop_filter_across_tiles_h_enabled = aom_rb_read_bit(rb);
+  } else {
+    cm->loop_filter_across_tiles_h_enabled = 1;
+  }
 #else
-    if (cm->tile_cols * cm->tile_rows > 1)
-      cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
-    else
-      cm->loop_filter_across_tiles_enabled = 1;
+  if (cm->tile_cols * cm->tile_rows > 1)
+    cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+  else
+    cm->loop_filter_across_tiles_enabled = 1;
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
-    // tile size magnitude
-    pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
-#if CONFIG_EXT_TILE
-  }
-#endif  // CONFIG_EXT_TILE
-
-  // each tile group header is in its own tile group OBU
+  // tile size magnitude
+  pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
 }
 
 static int mem_get_varsize(const uint8_t *src, int sz) {
