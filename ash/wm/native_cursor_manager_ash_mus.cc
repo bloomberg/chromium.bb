@@ -22,42 +22,6 @@
 namespace ash {
 namespace {
 
-// We want to forward these things to the window tree client.
-
-void SetCursorOnAllRootWindows(gfx::NativeCursor cursor,
-                               bool native_cursor_enabled) {
-  ui::CursorData mojo_cursor;
-
-  // Only send a real mojo cursor to the window server when native cursors are
-  // enabled. Otherwise send a kNone cursor as the global override cursor. If
-  // you need to debug window manager side cursor window positioning, setting
-  // |native_cursor_enabled| to always be true will display both.
-  if (native_cursor_enabled) {
-    if (cursor.platform())
-      mojo_cursor =
-          ui::CursorDataFactoryOzone::GetCursorData(cursor.platform());
-    else
-      mojo_cursor = ui::CursorData(cursor.native_type());
-  } else {
-    mojo_cursor = ui::CursorData(ui::CursorType::kNone);
-  }
-
-  // As the window manager, tell mus to use |mojo_cursor| everywhere. We do
-  // this instead of trying to set per-window because otherwise we run into the
-  // event targeting issue.
-  Shell::window_manager_client()->SetGlobalOverrideCursor(mojo_cursor);
-
-  // Make sure the local state is set properly, so that local queries show that
-  // we set the cursor.
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows())
-    root->GetHost()->SetCursor(cursor);
-
-  Shell::Get()
-      ->window_tree_host_manager()
-      ->cursor_window_controller()
-      ->SetCursor(cursor);
-}
-
 void NotifyCursorVisibilityChange(bool visible) {
   // Communicate the cursor visibility state to the mus server.
   Shell::window_manager_client()->SetCursorVisible(visible);
@@ -158,7 +122,7 @@ void NativeCursorManagerAshMus::SetCursor(
   delegate->CommitCursor(cursor);
 
   if (delegate->IsCursorVisible())
-    SetCursorOnAllRootWindows(cursor, native_cursor_enabled_);
+    SetCursorOnAllRootWindows(cursor);
 }
 
 void NativeCursorManagerAshMus::SetVisibility(
@@ -171,7 +135,7 @@ void NativeCursorManagerAshMus::SetVisibility(
   } else {
     gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
-    SetCursorOnAllRootWindows(invisible_cursor, native_cursor_enabled_);
+    SetCursorOnAllRootWindows(invisible_cursor);
   }
 
   NotifyCursorVisibilityChange(visible);
@@ -205,6 +169,44 @@ void NativeCursorManagerAshMus::SetMouseEventsEnabled(
   SetVisibility(delegate->IsCursorVisible(), delegate);
 
   NotifyMouseEventsEnableStateChange(enabled);
+}
+
+void NativeCursorManagerAshMus::SetCursorOnAllRootWindows(
+    gfx::NativeCursor cursor) {
+  ui::CursorData mojo_cursor;
+
+  // Only send a real mojo cursor to the window server when native cursors are
+  // enabled. Otherwise send a kNone cursor as the global override cursor. If
+  // you need to debug window manager side cursor window positioning, setting
+  // |native_cursor_enabled| to always be true will display both.
+  if (native_cursor_enabled_) {
+    if (cursor.platform()) {
+      mojo_cursor =
+          ui::CursorDataFactoryOzone::GetCursorData(cursor.platform());
+    } else {
+      mojo_cursor = ui::CursorData(cursor.native_type());
+    }
+  } else {
+    mojo_cursor = ui::CursorData(ui::CursorType::kNone);
+  }
+
+  if (!mojo_cursor.IsSameAs(last_cursor_sent_to_window_server_)) {
+    // As the window manager, tell mus to use |mojo_cursor| everywhere. We do
+    // this instead of trying to set per-window because otherwise we run into
+    // the event targeting issue.
+    last_cursor_sent_to_window_server_ = mojo_cursor;
+    Shell::window_manager_client()->SetGlobalOverrideCursor(mojo_cursor);
+  }
+
+  // Make sure the local state is set properly, so that local queries show that
+  // we set the cursor.
+  for (aura::Window* root : Shell::Get()->GetAllRootWindows())
+    root->GetHost()->SetCursor(cursor);
+
+  Shell::Get()
+      ->window_tree_host_manager()
+      ->cursor_window_controller()
+      ->SetCursor(cursor);
 }
 
 }  // namespace ash
