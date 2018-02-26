@@ -78,16 +78,39 @@ TEST(UnguessableTokenTest, VerifyValueSerialization) {
   EXPECT_EQ(token, deserialized);
 }
 
-TEST(UnguessableTokenTest, VerifyToString) {
-  UnguessableToken token = UnguessableToken::Deserialize(0x123, 0xABC);
-  std::string expected = "0000012300000ABC";
+// Common case (~88% of the time) - no leading zeroes in high_ nor low_.
+TEST(UnguessableTokenTest, VerifyToString1) {
+  UnguessableToken token =
+      UnguessableToken::Deserialize(0x1234567890ABCDEF, 0xFEDCBA0987654321);
+  std::string expected = "1234567890ABCDEFFEDCBA0987654321";
 
   EXPECT_EQ(expected, token.ToString());
 
-  std::string expected_stream = "(0000012300000ABC)";
+  std::string expected_stream = "(1234567890ABCDEFFEDCBA0987654321)";
   std::stringstream stream;
   stream << token;
   EXPECT_EQ(expected_stream, stream.str());
+}
+
+// Less common case - leading zeroes in high_ or low_ (testing with both).
+TEST(UnguessableTokenTest, VerifyToString2) {
+  UnguessableToken token = UnguessableToken::Deserialize(0x123, 0xABC);
+  std::string expected = "00000000000001230000000000000ABC";
+
+  EXPECT_EQ(expected, token.ToString());
+
+  std::string expected_stream = "(00000000000001230000000000000ABC)";
+  std::stringstream stream;
+  stream << token;
+  EXPECT_EQ(expected_stream, stream.str());
+}
+
+TEST(UnguessableTokenTest, VerifyToStringUniqueness) {
+  const UnguessableToken token1 =
+      UnguessableToken::Deserialize(0x0000000012345678, 0x0000000123456789);
+  const UnguessableToken token2 =
+      UnguessableToken::Deserialize(0x0000000123456781, 0x0000000023456789);
+  EXPECT_NE(token1.ToString(), token2.ToString());
 }
 
 TEST(UnguessableTokenTest, VerifySmallerThanOperator) {

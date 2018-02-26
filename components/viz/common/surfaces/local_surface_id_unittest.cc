@@ -22,16 +22,19 @@ TEST(LocalSurfaceIdTest, VerifyToString) {
   const viz::LocalSurfaceId small_local_surface_id(11, 22, small_token);
 
   const std::string verbose_expected =
-      "LocalSurfaceId(11, 22, 0011111100000000)";
-  const std::string brief_expected = "LocalSurfaceId(11, 22, 0011...)";
+      "LocalSurfaceId(11, 22, " + token.ToString() + ")";
+  const std::string brief_expected =
+      "LocalSurfaceId(11, 22, " + token.ToString().substr(0, 4) + "...)";
 
   const std::string big_verbose_expected =
-      "LocalSurfaceId(11, 22, 123456789ABCABCABC)";
-  const std::string big_brief_expected = "LocalSurfaceId(11, 22, 1234...)";
+      "LocalSurfaceId(11, 22, " + big_token.ToString() + ")";
+  const std::string big_brief_expected =
+      "LocalSurfaceId(11, 22, " + big_token.ToString().substr(0, 4) + "...)";
 
   const std::string small_verbose_expected =
-      "LocalSurfaceId(11, 22, 0000000000000001)";
-  const std::string small_brief_expected = "LocalSurfaceId(11, 22, 0000...)";
+      "LocalSurfaceId(11, 22, " + small_token.ToString() + ")";
+  const std::string small_brief_expected =
+      "LocalSurfaceId(11, 22, " + small_token.ToString().substr(0, 4) + "...)";
 
   int previous_log_lvl = logging::GetMinLogLevel();
 
