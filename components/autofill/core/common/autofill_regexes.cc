@@ -8,18 +8,23 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_local.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace {
 
-// A singleton class that serves as a cache of compiled regex patterns.
+// A thread-local class that serves as a cache of compiled regex patterns.
+//
+// The regexp state can be accessed from multiple threads in single process
+// mode, and this class offers per-thread instance instead of per-process
+// singleton instance (https://crbug.com/812182).
 class AutofillRegexes {
  public:
-  static AutofillRegexes* GetInstance();
+  static AutofillRegexes* ThreadSpecificInstance();
 
   // Returns the compiled regex matcher corresponding to |pattern|.
   icu::RegexMatcher* GetMatcher(const base::string16& pattern);
@@ -27,7 +32,6 @@ class AutofillRegexes {
  private:
   AutofillRegexes();
   ~AutofillRegexes();
-  friend struct base::DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
   std::unordered_map<base::string16, std::unique_ptr<icu::RegexMatcher>>
@@ -36,15 +40,22 @@ class AutofillRegexes {
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };
 
+base::LazyInstance<base::ThreadLocalPointer<AutofillRegexes>>::Leaky
+    g_autofill_regexes_tls = LAZY_INSTANCE_INITIALIZER;
+
 // static
-AutofillRegexes* AutofillRegexes::GetInstance() {
-  return base::Singleton<AutofillRegexes>::get();
+AutofillRegexes* AutofillRegexes::ThreadSpecificInstance() {
+  if (g_autofill_regexes_tls.Pointer()->Get())
+    return g_autofill_regexes_tls.Pointer()->Get();
+  return new AutofillRegexes;
 }
 
 AutofillRegexes::AutofillRegexes() {
+  g_autofill_regexes_tls.Pointer()->Set(this);
 }
 
 AutofillRegexes::~AutofillRegexes() {
+  g_autofill_regexes_tls.Pointer()->Set(nullptr);
 }
 
 icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
@@ -72,7 +83,7 @@ namespace autofill {
 bool MatchesPattern(const base::string16& input,
                     const base::string16& pattern) {
   icu::RegexMatcher* matcher =
-      AutofillRegexes::GetInstance()->GetMatcher(pattern);
+      AutofillRegexes::ThreadSpecificInstance()->GetMatcher(pattern);
   icu::UnicodeString icu_input(FALSE, input.data(), input.length());
   matcher->reset(icu_input);
 
