@@ -122,6 +122,10 @@ cr.define('downloadInternals', function() {
     cr.addWebUIListener('service-download-failed', onServiceDownloadFailed);
     cr.addWebUIListener('service-request-made', onServiceRequestMade);
 
+    $('start-download').onclick = function() {
+      browserProxy.startDownload($('download-url').value);
+    };
+
     // Kick off requests for the current system state.
     browserProxy.getServiceStatus().then(onServiceStatusChanged);
     browserProxy.getServiceDownloads().then(onServiceDownloadsAvailable);

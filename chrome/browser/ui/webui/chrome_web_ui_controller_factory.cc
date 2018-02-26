@@ -330,10 +330,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::DeviceLogUI>;
   if (url.host_piece() == chrome::kChromeUIDomainReliabilityInternalsHost)
     return &NewWebUI<DomainReliabilityInternalsUI>;
-  // TODO(dtrainor): Remove the OffTheRecord check once crbug.com/766363 is
-  // fixed.
-  if (url.host_piece() == chrome::kChromeUIDownloadInternalsHost &&
-      !profile->IsOffTheRecord())
+  if (url.host_piece() == chrome::kChromeUIDownloadInternalsHost)
     return &NewWebUI<DownloadInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;

@@ -39,6 +39,9 @@ class DownloadInternalsUIMessageHandler : public content::WebUIMessageHandler,
   void HandleGetServiceStatus(const base::ListValue* args);
   void HandleGetServiceDownloads(const base::ListValue* args);
 
+  // Starts a background download.
+  void HandleStartDownload(const base::ListValue* args);
+
   download::DownloadService* download_service_;
 
   base::WeakPtrFactory<DownloadInternalsUIMessageHandler> weak_ptr_factory_;
