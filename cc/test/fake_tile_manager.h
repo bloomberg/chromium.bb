@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef  CC_TEST_FAKE_TILE_MANAGER_H_
-#define  CC_TEST_FAKE_TILE_MANAGER_H_
+#ifndef CC_TEST_FAKE_TILE_MANAGER_H_
+#define CC_TEST_FAKE_TILE_MANAGER_H_
 
 #include <set>
 #include <vector>

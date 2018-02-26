@@ -29,6 +29,6 @@ class MockRenderText : public RenderTextWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockRenderText);
 };
 
-#endif  // CHROME_BROWSER_VR_TEST_MOCK_RENDER_TEXT_H_
-
 }  // namespace vr
+
+#endif  // CHROME_BROWSER_VR_TEST_MOCK_RENDER_TEXT_H_

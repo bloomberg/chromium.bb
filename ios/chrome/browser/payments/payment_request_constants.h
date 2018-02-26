@@ -5,13 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_CONSTANTS_H_
 
-#endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_CONSTANTS_H_
-
 namespace payments {
 
-// These constants are for Univesral Link query parameters when receiving
+// These constants are for Universal Link query parameters when receiving
 // payment response data from an external application.
 extern const char kPaymentRequestIDExternal[];
 extern const char kPaymentRequestDataExternal[];
 
 }  // namespace payments
+
+#endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_CONSTANTS_H_

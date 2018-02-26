@@ -58,6 +58,6 @@ class WebViewIntTest : public PlatformTest {
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
-
 NS_ASSUME_NONNULL_END
+
+#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
