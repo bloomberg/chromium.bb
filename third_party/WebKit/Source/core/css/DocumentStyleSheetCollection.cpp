@@ -32,6 +32,7 @@
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetCandidate.h"
+#include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
@@ -83,6 +84,25 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
       continue;
 
     CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    collector.AppendActiveStyleSheet(
+        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+  }
+
+  if (!GetTreeScope().HasMoreStyleSheets())
+    return;
+
+  StyleSheetList& more_style_sheets = GetTreeScope().MoreStyleSheets();
+  unsigned length = more_style_sheets.length();
+  for (unsigned index = 0; index < length; ++index) {
+    StyleSheet* sheet = more_style_sheets.item(index);
+    if (!sheet)
+      continue;
+    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+    if (!css_sheet ||
+        !css_sheet->CanBeActivated(
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
+      continue;
+    collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
         std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
   }

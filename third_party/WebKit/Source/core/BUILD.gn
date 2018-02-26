@@ -1697,6 +1697,7 @@ jumbo_source_set("unit_tests") {
     "css/StyleElementTest.cpp",
     "css/StyleEngineTest.cpp",
     "css/StyleSheetContentsTest.cpp",
+    "css/StyleSheetListTest.cpp",
     "css/cssom/CSSMathInvertTest.cpp",
     "css/cssom/CSSMathNegateTest.cpp",
     "css/cssom/CSSNumericValueTypeTest.cpp",

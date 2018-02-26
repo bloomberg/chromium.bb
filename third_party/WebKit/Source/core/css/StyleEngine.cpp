@@ -277,6 +277,17 @@ void StyleEngine::ModifiedStyleSheetCandidateNode(Node& node) {
     SetNeedsActiveStyleUpdate(node.GetTreeScope());
 }
 
+void StyleEngine::MoreStyleSheetsChangedInScope(TreeScope& tree_scope) {
+  if (GetDocument().IsDetached())
+    return;
+  if (tree_scope.MoreStyleSheets().length() > 0) {
+    EnsureStyleSheetCollectionFor(tree_scope);
+    if (tree_scope != document_)
+      active_tree_scopes_.insert(&tree_scope);
+  }
+  SetNeedsActiveStyleUpdate(tree_scope);
+}
+
 void StyleEngine::MediaQueriesChangedInScope(TreeScope& tree_scope) {
   if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver())
     resolver->SetNeedsAppendAllSheets();
@@ -352,7 +363,8 @@ void StyleEngine::UpdateActiveStyleSheetsInShadow(
       ToShadowTreeStyleSheetCollection(StyleSheetCollectionFor(*tree_scope));
   DCHECK(collection);
   collection->UpdateActiveStyleSheets(*this);
-  if (!collection->HasStyleSheetCandidateNodes()) {
+  if (!collection->HasStyleSheetCandidateNodes() &&
+      !tree_scope->HasMoreStyleSheets()) {
     tree_scopes_removed.insert(tree_scope);
     // When removing TreeScope from ActiveTreeScopes,
     // its resolver should be destroyed by invoking resetAuthorStyle.

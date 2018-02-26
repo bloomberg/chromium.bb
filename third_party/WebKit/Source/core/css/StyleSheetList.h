@@ -37,6 +37,9 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static StyleSheetList* Create(const HeapVector<Member<CSSStyleSheet>>&,
+                                ExceptionState&);
+
   static StyleSheetList* Create(TreeScope* tree_scope) {
     return new StyleSheetList(tree_scope);
   }
@@ -55,10 +58,12 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   void Trace(blink::Visitor*);
 
  private:
+  explicit StyleSheetList(const HeapVector<Member<CSSStyleSheet>>&);
   explicit StyleSheetList(TreeScope*);
   const HeapVector<TraceWrapperMember<StyleSheet>>& StyleSheets() const;
 
   Member<TreeScope> tree_scope_;
+  HeapVector<Member<CSSStyleSheet>> style_sheet_vector_;
 };
 
 }  // namespace blink

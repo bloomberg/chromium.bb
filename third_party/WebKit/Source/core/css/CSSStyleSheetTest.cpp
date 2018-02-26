@@ -41,7 +41,7 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->ownerRule(), nullptr);
   EXPECT_EQ(sheet->media()->length(), 0U);
   EXPECT_EQ(sheet->title(), StringImpl::empty_);
-  EXPECT_FALSE(sheet->Alternate());
+  EXPECT_FALSE(sheet->AlternateFromConstructor());
   EXPECT_FALSE(sheet->disabled());
   EXPECT_EQ(sheet->cssRules(exception_state)->length(), 0U);
   ASSERT_FALSE(exception_state.HadException());
@@ -67,7 +67,7 @@ TEST_F(CSSStyleSheetTest,
   EXPECT_EQ(sheet->media()->length(), 2U);
   EXPECT_EQ(sheet->media()->mediaText(), init.media().GetAsString());
   EXPECT_EQ(sheet->title(), init.title());
-  EXPECT_TRUE(sheet->Alternate());
+  EXPECT_TRUE(sheet->AlternateFromConstructor());
   EXPECT_TRUE(sheet->disabled());
   EXPECT_EQ(sheet->cssRules(exception_state)->length(), 2U);
   EXPECT_EQ(sheet->cssRules(exception_state)->item(0)->cssText(), styleText[0]);

@@ -153,8 +153,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void StartLoadingDynamicSheet();
   void SetText(const String&);
   void SetMedia(MediaList*);
-  void SetAlternate(bool);
-  bool Alternate() const { return alternate_; }
+  void SetAlternateFromConstructor(bool);
+  bool IsAlternate() const;
+  bool CanBeActivated(const String& current_preferrable_name) const;
 
   virtual void Trace(blink::Visitor*);
 
@@ -174,13 +175,21 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   void SetLoadCompleted(bool);
 
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      CSSStyleSheetConstructionWithEmptyCSSStyleSheetInitAndText);
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      CSSStyleSheetConstructionWithoutEmptyCSSStyleSheetInitAndText);
+  bool AlternateFromConstructor() const { return alternate_from_constructor_; }
+
   Member<StyleSheetContents> contents_;
   bool is_inline_stylesheet_ = false;
   bool is_disabled_ = false;
   bool load_completed_ = false;
   // This alternate variable is only used for constructed CSSStyleSheet.
   // For other CSSStyleSheet, consult the alternate attribute.
-  bool alternate_ = false;
+  bool alternate_from_constructor_ = false;
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
