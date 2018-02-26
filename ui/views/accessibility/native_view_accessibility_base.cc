@@ -24,7 +24,7 @@ bool IsAccessibilityFocusableWhenEnabled(View* view) {
 // Used to determine if a View should be ignored by accessibility clients by
 // being a non-keyboard-focusable child of a keyboard-focusable ancestor. E.g.,
 // LabelButtons contain Labels, but a11y should just show that there's a button.
-bool IsViewUnfocusableChildOfFocusableAncestor(View* view) {
+bool IsViewUnfocusableDescendantOfFocusableAncestor(View* view) {
   if (IsAccessibilityFocusableWhenEnabled(view))
     return false;
 
@@ -105,7 +105,7 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   // because we needed a way to mark a View as a leaf node in the
   // accessibility tree. We need to replace this with a cross-platform
   // solution that works for ChromeVox, too, and move it to ViewAccessibility.
-  if (IsViewUnfocusableChildOfFocusableAncestor(view()))
+  if (IsViewUnfocusableDescendantOfFocusableAncestor(view()))
     data_.role = ax::mojom::Role::kIgnored;
 
   return data_;
@@ -117,6 +117,8 @@ const ui::AXTreeData& NativeViewAccessibilityBase::GetTreeData() const {
 }
 
 int NativeViewAccessibilityBase::GetChildCount() {
+  if (IsLeaf())
+    return 0;
   int child_count = view()->child_count();
 
   std::vector<Widget*> child_widgets;
@@ -127,6 +129,9 @@ int NativeViewAccessibilityBase::GetChildCount() {
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::ChildAtIndex(int index) {
+  if (IsLeaf())
+    return nullptr;
+
   // If this is a root view, our widget might have child widgets. Include
   std::vector<Widget*> child_widgets;
   PopulateChildWidgetVector(&child_widgets);
@@ -169,6 +174,9 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
                                                                    int y) {
   if (!view() || !view()->GetWidget())
     return nullptr;
+
+  if (IsLeaf())
+    return GetNativeObject();
 
   // Search child widgets first, since they're on top in the z-order.
   std::vector<Widget*> child_widgets;

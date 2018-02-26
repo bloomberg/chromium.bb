@@ -17,9 +17,11 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -62,6 +64,11 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
       CreateLabel(font_list, text_color, background_color);
 
   SetFocusBehavior(FocusBehavior::NEVER);
+
+  // Use leaf alert role so that name is spoken by screen reader, but redundant
+  // child label text is not also spoken.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+  GetViewAccessibility().OverrideIsLeaf();
 }
 
 KeywordHintView::~KeywordHintView() {}
@@ -118,6 +125,7 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
                       trailing_label_->text());
   }
 
+  // Fire an accessibility alert event, causing the hint to be spoken.
   NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
