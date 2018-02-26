@@ -1150,15 +1150,25 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         clip_rect_excluding_overlay_scrollbars = clip_rect;
       }
 
-      OnUpdateClip(properties_->UpdateOverflowClip(
-          context_.current.clip, context_.current.transform, clip_rect,
-          &clip_rect_excluding_overlay_scrollbars));
+      bool should_create_overflow_clip = true;
+      if (auto* border_radius_clip = properties_->InnerBorderRadiusClip()) {
+        if (border_radius_clip->ClipRect().Rect() == clip_rect.Rect() &&
+            clip_rect == clip_rect_excluding_overlay_scrollbars)
+          should_create_overflow_clip = false;
+      }
+      if (should_create_overflow_clip) {
+        OnUpdateClip(properties_->UpdateOverflowClip(
+            context_.current.clip, context_.current.transform, clip_rect,
+            &clip_rect_excluding_overlay_scrollbars));
+      } else {
+        OnClearClip(properties_->ClearOverflowClip());
+      }
     } else {
       OnClearClip(properties_->ClearOverflowClip());
     }
   }
 
-  if (auto* overflow_clip = properties_->OverflowClip())
+  if (auto* overflow_clip = OverflowClip(*properties_))
     context_.current.clip = overflow_clip;
 }
 
