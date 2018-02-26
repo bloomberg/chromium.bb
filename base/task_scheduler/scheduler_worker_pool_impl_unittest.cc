@@ -1536,9 +1536,16 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   task_tracker_.FlushForTesting();
 }
 
+// Test appears to live-lock with hundreds of worker threads actively being
+// created and destroyed, under Fuchsia (see https://crbug.com/816575).
+#if defined(OS_FUCHSIA)
+#define MAYBE_RacyCleanup DISABLED_RacyCleanup
+#else
+#define MAYBE_RacyCleanup RacyCleanup
+#endif
 // Verify that worker detachement doesn't race with worker cleanup, regression
 // test for https://crbug.com/810464.
-TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
+TEST(TaskSchedulerWorkerPoolTest, MAYBE_RacyCleanup) {
   constexpr size_t kWorkerCapacity = 256;
   constexpr TimeDelta kReclaimTimeForRacyCleanupTest =
       TimeDelta::FromMilliseconds(10);
