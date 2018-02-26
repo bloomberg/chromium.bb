@@ -148,45 +148,6 @@ TEST_P(GLES3DecoderTest, GenerateMipmapBaseLevel) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-// Same as GenerateMipmapClearsUnclearedTexture, but with workaround
-// |set_texture_filters_before_generating_mipmap|.
-TEST_P(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
-  gpu::GpuDriverBugWorkarounds workarounds;
-  workarounds.set_texture_filter_before_generating_mipmap = true;
-  InitState init;
-  init.bind_generates_resource = true;
-  InitDecoderWithWorkarounds(init, workarounds);
-
-  EXPECT_CALL(*gl_, GenerateMipmapEXT(_)).Times(0);
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-  DoTexImage2D(
-      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
-  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
-                                GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
-                                GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
-  EXPECT_CALL(
-      *gl_,
-      TexParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GenerateMipmapEXT(GL_TEXTURE_2D));
-  EXPECT_CALL(
-      *gl_,
-      TexParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  GenerateMipmap cmd;
-  cmd.Init(GL_TEXTURE_2D);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest, ActiveTextureValidArgs) {
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1));
   SpecializedSetup<ActiveTexture, 0>(true);

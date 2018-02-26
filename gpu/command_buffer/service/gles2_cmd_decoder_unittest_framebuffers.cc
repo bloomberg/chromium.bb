@@ -1079,11 +1079,6 @@ TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
   const GLsizei kHeight = 3;
   const GLint kBytesPerPixel = 4;
   const GLint kPackAlignment = 4;
-  static const uint8_t kExpectedPixels[kWidth * kHeight * kBytesPerPixel] = {
-      12, 13, 14, 255, 19, 18, 19, 255, 13, 14, 18, 255,
-      29, 28, 23, 255, 21, 22, 21, 255, 28, 23, 22, 255,
-      31, 34, 39, 255, 32, 37, 32, 255, 34, 39, 37, 255,
-  };
   static const uint8_t kSrcPixels[kWidth * kHeight * kBytesPerPixel] = {
       12, 13, 14, 18, 19, 18, 19, 12, 13, 14, 18, 19, 29, 28, 23, 22, 21, 22,
       21, 29, 28, 23, 22, 21, 31, 34, 39, 37, 32, 37, 32, 31, 34, 39, 37, 32,
@@ -1091,12 +1086,8 @@ TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
 
   surface_->SetSize(gfx::Size(INT_MAX, INT_MAX));
 
-  ReadPixelsEmulator emu(kWidth,
-                         kHeight,
-                         kBytesPerPixel,
-                         kSrcPixels,
-                         kExpectedPixels,
-                         kPackAlignment);
+  ReadPixelsEmulator emu(kWidth, kHeight, kBytesPerPixel, kSrcPixels,
+                         kSrcPixels, kPackAlignment);
   typedef ReadPixels::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = shared_memory_id_;

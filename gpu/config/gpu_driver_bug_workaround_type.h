@@ -25,8 +25,6 @@
          avoid_stencil_buffers)                              \
   GPU_OP(BROKEN_EGL_IMAGE_REF_COUNTING,                      \
          broken_egl_image_ref_counting)                      \
-  GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
-         clear_alpha_in_readpixels)                          \
   GPU_OP(CLEAR_TO_ZERO_OR_ONE_BROKEN,                        \
          clear_to_zero_or_one_broken)                        \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE,            \
@@ -39,8 +37,6 @@
          depth_stencil_renderbuffer_resize_emulation)        \
   GPU_OP(DISABLE_ACCELERATED_VPX_DECODE,                     \
          disable_accelerated_vpx_decode)                     \
-  GPU_OP(DISABLE_ANGLE_INSTANCED_ARRAYS,                     \
-         disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
   GPU_OP(DISABLE_AV_SAMPLE_BUFFER_DISPLAY_LAYER,             \
@@ -183,8 +179,6 @@
          reset_teximage2d_base_level)                        \
   GPU_OP(RESTORE_SCISSOR_ON_FBO_CHANGE,                      \
          restore_scissor_on_fbo_change)                      \
-  GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
-         reverse_point_sprite_coord_origin)                  \
   GPU_OP(REWRITE_DO_WHILE_LOOPS,                             \
          rewrite_do_while_loops)                             \
   GPU_OP(REWRITE_FLOAT_UNARY_MINUS_OPERATOR,                 \
@@ -193,8 +187,6 @@
          rewrite_texelfetchoffset_to_texelfetch)             \
   GPU_OP(SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS,             \
          scalarize_vec_and_mat_constructor_args)             \
-  GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP,        \
-         set_texture_filter_before_generating_mipmap)        \
   GPU_OP(SET_ZERO_LEVEL_BEFORE_GENERATING_MIPMAP,            \
          set_zero_level_before_generating_mipmap)            \
   GPU_OP(SIMULATE_OUT_OF_MEMORY_ON_LARGE_TEXTURES,           \
