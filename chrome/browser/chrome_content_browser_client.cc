@@ -2721,6 +2721,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->embedded_media_experience_enabled =
           tab_android->ShouldEnableEmbeddedMediaExperience();
 
+      web_prefs->picture_in_picture_enabled =
+          tab_android->IsPictureInPictureEnabled();
+
       if (base::FeatureList::IsEnabled(
               features::kAllowAutoplayUnmutedInWebappManifestScope)) {
         web_prefs->media_playback_gesture_whitelist_scope =

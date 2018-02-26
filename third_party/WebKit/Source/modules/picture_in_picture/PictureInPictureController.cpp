@@ -5,6 +5,7 @@
 #include "modules/picture_in_picture/PictureInPictureController.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/Settings.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "modules/picture_in_picture/PictureInPictureWindow.h"
 #include "platform/feature_policy/FeaturePolicy.h"
@@ -45,9 +46,10 @@ PictureInPictureController::IsDocumentAllowed() const {
   if (!frame)
     return Status::kFrameDetached;
 
-  // `picture_in_picture_enabled_` is set to false by the embedder when it
-  // or the system forbids the page from using Picture-in-Picture.
-  if (!picture_in_picture_enabled_)
+  // `GetPictureInPictureEnabled()` returns false when the embedder or the
+  // system forbids the page from using Picture-in-Picture.
+  DCHECK(GetSupplementable()->GetSettings());
+  if (!GetSupplementable()->GetSettings()->GetPictureInPictureEnabled())
     return Status::kDisabledBySystem;
 
   // If document is not allowed to use the policy-controlled feature named
@@ -72,11 +74,6 @@ PictureInPictureController::Status PictureInPictureController::IsElementAllowed(
     return Status::kDisabledByAttribute;
 
   return Status::kEnabled;
-}
-
-void PictureInPictureController::SetPictureInPictureEnabledForTesting(
-    bool value) {
-  picture_in_picture_enabled_ = value;
 }
 
 void PictureInPictureController::SetPictureInPictureElement(

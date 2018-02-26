@@ -6,7 +6,6 @@
 #define PictureInPictureController_h
 
 #include "core/frame/LocalFrame.h"
-#include "modules/ModulesExport.h"
 
 namespace blink {
 
@@ -20,7 +19,7 @@ class PictureInPictureWindow;
 // PictureInPictureController instance is associated to a Document. It is
 // supplement and therefore can be lazy-initiated. Callers should consider
 // whether they want to instantiate an object when they make a call.
-class MODULES_EXPORT PictureInPictureController
+class PictureInPictureController
     : public GarbageCollectedFinalized<PictureInPictureController>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureController);
@@ -36,8 +35,6 @@ class MODULES_EXPORT PictureInPictureController
   // Returns whether system allows Picture-in-Picture feature or not for
   // the associated document.
   bool PictureInPictureEnabled() const;
-
-  void SetPictureInPictureEnabledForTesting(bool);
 
   // List of Picture-in-Picture support statuses. If status is kEnabled,
   // Picture-in-Picture is enabled for a document or element, otherwise it is
@@ -81,10 +78,6 @@ class MODULES_EXPORT PictureInPictureController
 
  private:
   explicit PictureInPictureController(Document&);
-
-  // Whether system allows Picture-in-Picture feature for the associated
-  // document.
-  bool picture_in_picture_enabled_ = true;
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;

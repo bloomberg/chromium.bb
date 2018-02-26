@@ -289,7 +289,6 @@ jumbo_source_set("unit_tests") {
     "payments/PaymentsValidatorsTest.cpp",
     "peerconnection/RTCDataChannelTest.cpp",
     "peerconnection/RTCPeerConnectionTest.cpp",
-    "picture_in_picture/PictureInPictureTest.cpp",
     "presentation/MockPresentationService.h",
     "presentation/MockWebPresentationClient.h",
     "presentation/PresentationAvailabilityStateTest.cpp",

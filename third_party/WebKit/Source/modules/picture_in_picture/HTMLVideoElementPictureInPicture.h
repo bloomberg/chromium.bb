@@ -7,7 +7,6 @@
 
 #include "core/dom/QualifiedName.h"
 #include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -16,7 +15,7 @@ class HTMLVideoElement;
 class ScriptPromise;
 class ScriptState;
 
-class MODULES_EXPORT HTMLVideoElementPictureInPicture {
+class HTMLVideoElementPictureInPicture {
   STATIC_ONLY(HTMLVideoElementPictureInPicture);
 
  public:

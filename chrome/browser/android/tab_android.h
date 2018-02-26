@@ -253,6 +253,13 @@ class TabAndroid : public CoreTabHelperDelegate,
     return webapp_manifest_scope_;
   }
 
+  void SetPictureInPictureEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
+
+  bool IsPictureInPictureEnabled() const;
+
   void EnableEmbeddedMediaExperience(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -316,6 +323,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
   std::string webapp_manifest_scope_;
+  bool picture_in_picture_enabled_;
   bool embedded_media_experience_enabled_;
 
   std::unique_ptr<MediaDownloadInProductHelp> media_in_product_help_;
