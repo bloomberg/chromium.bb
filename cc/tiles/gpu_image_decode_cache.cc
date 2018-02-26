@@ -1514,10 +1514,17 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   }
 
   size_t data_size = image_info.computeMinByteSize();
-  return base::WrapRefCounted(
-      new ImageData(mode, data_size, draw_image.target_color_space(),
-                    CalculateDesiredFilterQuality(draw_image), mip_level,
-                    !draw_image.paint_image().IsLazyGenerated()));
+  // |is_bitmap_backed| specifies whether the image has pixel data which can
+  // directly be used for the upload. This will be the case for non-lazy images
+  // used at the original scale. In these cases, we don't internally cache any
+  // cpu component for the image.
+  // However, if the image will be scaled, we consider it a lazy image and cache
+  // the scaled result in discardable memory.
+  const bool is_bitmap_backed =
+      !draw_image.paint_image().IsLazyGenerated() && mip_level == 0;
+  return base::WrapRefCounted(new ImageData(
+      mode, data_size, draw_image.target_color_space(),
+      CalculateDesiredFilterQuality(draw_image), mip_level, is_bitmap_backed));
 }
 
 void GpuImageDecodeCache::DeleteImage(ImageData* image_data) {
