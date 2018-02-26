@@ -248,13 +248,13 @@ component("gpu") {
 
   if (is_win) {
     sources += [
-      "dxva_picture_buffer_win.cc",
-      "dxva_picture_buffer_win.h",
-      "dxva_video_decode_accelerator_win.cc",
-      "dxva_video_decode_accelerator_win.h",
-      "media_foundation_video_encode_accelerator_win.cc",
-      "media_foundation_video_encode_accelerator_win.h",
+      "windows/dxva_picture_buffer_win.cc",
+      "windows/dxva_picture_buffer_win.h",
+      "windows/dxva_video_decode_accelerator_win.cc",
+      "windows/dxva_video_decode_accelerator_win.h",
       "windows/init_guid.cc",
+      "windows/media_foundation_video_encode_accelerator_win.cc",
+      "windows/media_foundation_video_encode_accelerator_win.h",
     ]
     configs += [
       # TODO(https://crbug.com/167187): Fix size_t to int truncations.
@@ -297,8 +297,8 @@ component("gpu") {
     }
     if (enable_library_cdms) {
       sources += [
-        "d3d11_cdm_proxy.cc",
-        "d3d11_cdm_proxy.h",
+        "windows/d3d11_cdm_proxy.cc",
+        "windows/d3d11_cdm_proxy.h",
       ]
     }
   }
@@ -563,9 +563,9 @@ source_set("unit_tests") {
   }
   if (is_win && enable_library_cdms) {
     sources += [
-      "d3d11_mocks.cc",
-      "d3d11_mocks.h",
-      "d3d11_proxy_unittest.cc",
+      "windows/d3d11_mocks.cc",
+      "windows/d3d11_mocks.h",
+      "windows/d3d11_proxy_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
   }

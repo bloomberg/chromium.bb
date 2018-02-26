@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/d3d11_cdm_proxy.h"
+#include "media/gpu/windows/d3d11_cdm_proxy.h"
 
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <initguid.h>
 
 #include "base/bind.h"
-#include "media/gpu/d3d11_mocks.h"
+#include "media/gpu/windows/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AllOf;

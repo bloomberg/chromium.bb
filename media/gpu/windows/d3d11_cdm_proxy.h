@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_D3D11_CDM_PROXY_H_
-#define MEDIA_GPU_D3D11_CDM_PROXY_H_
+#ifndef MEDIA_GPU_WINDOWS_D3D11_CDM_PROXY_H_
+#define MEDIA_GPU_WINDOWS_D3D11_CDM_PROXY_H_
 
 #include "media/cdm/cdm_proxy.h"
 
@@ -132,4 +132,4 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_D3D11_CDM_PROXY_H_
+#endif  // MEDIA_GPU_WINDOWS_D3D11_CDM_PROXY_H_

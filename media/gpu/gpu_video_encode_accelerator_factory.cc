@@ -22,7 +22,7 @@
 #if defined(OS_WIN)
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
+#include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_encode_accelerator.h"
