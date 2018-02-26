@@ -339,20 +339,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("clickable-ancestor.html"));
 }
 
-#if defined(THREAD_SANITIZER)
-// See (crbug.com/708759).
-#define MAYBE_AccessibilityAomBusy DISABLED_AccessibilityAomBusy
-#define MAYBE_AccessibilityAomChecked DISABLED_AccessibilityAomChecked
-#else
-#define MAYBE_AccessibilityAomBusy AccessibilityAomBusy
-#define MAYBE_AccessibilityAomChecked AccessibilityAomChecked
-#endif
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityAomBusy) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAomBusy) {
   RunAomTest(FILE_PATH_LITERAL("aom-busy.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityAomChecked) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAomChecked) {
   RunAomTest(FILE_PATH_LITERAL("aom-checked.html"));
 }
 
