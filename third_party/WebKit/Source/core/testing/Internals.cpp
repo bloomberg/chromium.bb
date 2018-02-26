@@ -132,6 +132,7 @@
 #include "core/testing/OriginTrialsTest.h"
 #include "core/testing/RecordTest.h"
 #include "core/testing/SequenceTest.h"
+#include "core/testing/StaticSelection.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
@@ -2877,6 +2878,19 @@ void Internals::forceReload(bool bypass_cache) {
   GetFrame()->Reload(
       bypass_cache ? kFrameLoadTypeReloadBypassingCache : kFrameLoadTypeReload,
       ClientRedirectPolicy::kNotClientRedirect);
+}
+
+StaticSelection* Internals::getSelectionInFlatTree(
+    DOMWindow* window,
+    ExceptionState& exception_state) {
+  Frame* const frame = window->GetFrame();
+  if (!frame || !frame->IsLocalFrame()) {
+    exception_state.ThrowDOMException(kInvalidAccessError,
+                                      "Must supply local window");
+    return nullptr;
+  }
+  return StaticSelection::FromSelectionInFlatTree(ConvertToSelectionInFlatTree(
+      ToLocalFrame(frame)->Selection().GetSelectionInDOMTree()));
 }
 
 Node* Internals::visibleSelectionAnchorNode() {

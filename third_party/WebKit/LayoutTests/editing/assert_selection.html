@@ -208,6 +208,56 @@ selection_test(
     {dumpAs: 'flattree'}, 'dump flat tree for shadow DOM V1');
 
 selection_test(
+    [
+        '<style>* { font-family: monospace; }</style>',
+        '<div>',
+          '<span id="start">ABC</span>',
+          '<p><a slot="a">111</a><b slot="b">222</b></p>',
+          'DEF',
+        '</div>',
+    ],
+    selection => {
+      if (!window.eventSender)
+        throw 'This test requires eventSender.';
+      const document = selection.document;
+      const host = document.querySelector('p');
+      const shadowRoot = host.attachShadow({mode: 'open'});
+      shadowRoot.innerHTML = [
+        'ghi',
+        '<slot name="b"></slot>',
+        '<span id="end">jkl</span>',
+        '<slot name="a"></slot>',
+        'mno',
+      ].join('');
+      const start = document.getElementById('start');
+      const end = shadowRoot.getElementById('end');
+      eventSender.mouseMoveTo(
+        selection.computeLeft(start),
+        selection.computeTop(start) + start.offsetHeight / 2);
+      eventSender.mouseDown();
+      eventSender.leapForward(300);
+      eventSender.mouseMoveTo(
+        selection.computeLeft(end) + end.offsetWidth - 1,
+        selection.computeTop(end) + end.offsetHeight / 2);
+      eventSender.mouseUp();
+    },
+    [
+        '<style>* { font-family: monospace; }</style>',
+        '<div>',
+          '<span id="start">^ABC</span>',
+          '<p>',
+            'ghi',
+            '<slot name="b"><b slot="b">222</b></slot>',
+            '<span id="end">jkl|</span>',
+            '<slot name="a"><a slot="a">111</a></slot>',
+            'mno',
+          '</p>',
+          'DEF',
+        '</div>',
+    ],
+    {dumpAs: 'flattree'}, 'selection crossing shadow boundary');
+
+selection_test(
     '<br>',
     selection => {
         selection.document.documentElement.prepend('Pre-HEAD');

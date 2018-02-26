@@ -294,6 +294,9 @@ enum EffectiveConnectionType {
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);
     void resetTypeAheadSession(HTMLSelectElement select);
 
+    [RaisesException] StaticSelection getSelectionInFlatTree(Window window);
+    // TODO(editing-dev): We should change |visibleSelection*| to
+    // |StaticSelection|.
     readonly attribute Node? visibleSelectionAnchorNode;
     readonly attribute unsigned long visibleSelectionAnchorOffset;
     readonly attribute Node? visibleSelectionFocusNode;

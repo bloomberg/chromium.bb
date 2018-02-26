@@ -666,6 +666,7 @@ webcore_testing_idl_files =
                     "testing/OriginTrialsTest.idl",
                     "testing/RecordTest.idl",
                     "testing/SequenceTest.idl",
+                    "testing/StaticSelection.idl",
                     "testing/TypeConversions.idl",
                     "testing/UnionTypesTest.idl",
                     "testing/WorkerInternals.idl",
