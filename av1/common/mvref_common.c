@@ -716,12 +716,14 @@ static void setup_ref_mv_list(
   }
 
   uint8_t ref_match_count[MODE_CTX_REF_FRAMES] = { 0 };
+  uint8_t col_match_count[MODE_CTX_REF_FRAMES] = { 0 };
+  uint8_t row_match_count[MODE_CTX_REF_FRAMES] = { 0 };
   uint8_t newmv_count[MODE_CTX_REF_FRAMES] = { 0 };
 
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
     scan_row_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, refmv_count,
-                  ref_match_count, newmv_count,
+                  row_match_count, newmv_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -729,7 +731,7 @@ static void setup_ref_mv_list(
   // Scan the first left column mode info. col_offset = -1;
   if (abs(max_col_offset) >= 1)
     scan_col_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, refmv_count,
-                  ref_match_count, newmv_count,
+                  col_match_count, newmv_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -737,7 +739,7 @@ static void setup_ref_mv_list(
   // Check top-right boundary
   if (has_tr)
     scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, xd->n8_w, ref_mv_stack,
-                  ref_match_count, newmv_count,
+                  row_match_count, newmv_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -746,7 +748,8 @@ static void setup_ref_mv_list(
   uint8_t nearest_match[MODE_CTX_REF_FRAMES];
   uint8_t nearest_refmv_count[MODE_CTX_REF_FRAMES];
 
-  nearest_match[ref_frame] = ref_match_count[ref_frame];
+  nearest_match[ref_frame] =
+      row_match_count[ref_frame] + col_match_count[ref_frame];
   nearest_refmv_count[ref_frame] = refmv_count[ref_frame];
 
   // TODO(yunqing): for comp_search, do it for all 3 cases.
@@ -846,7 +849,7 @@ static void setup_ref_mv_list(
 
   // Scan the second outer area.
   scan_blk_mbmi(cm, xd, mi_row, mi_col, rf, -1, -1, ref_mv_stack,
-                ref_match_count, dummy_newmv_count,
+                row_match_count, dummy_newmv_count,
 #if USE_CUR_GM_REFMV
                 gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -859,7 +862,7 @@ static void setup_ref_mv_list(
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
       scan_row_mbmi(cm, xd, mi_row, mi_col, rf, row_offset, ref_mv_stack,
-                    refmv_count, ref_match_count, dummy_newmv_count,
+                    refmv_count, row_match_count, dummy_newmv_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -868,7 +871,7 @@ static void setup_ref_mv_list(
     if (abs(col_offset) <= abs(max_col_offset) &&
         abs(col_offset) > processed_cols)
       scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
-                    refmv_count, ref_match_count, dummy_newmv_count,
+                    refmv_count, col_match_count, dummy_newmv_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -879,11 +882,14 @@ static void setup_ref_mv_list(
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
     scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
-                  refmv_count, ref_match_count, dummy_newmv_count,
+                  refmv_count, col_match_count, dummy_newmv_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                   max_col_offset, &processed_cols);
+
+  ref_match_count[ref_frame] =
+      row_match_count[ref_frame] + col_match_count[ref_frame];
 
 #if CONFIG_OPT_REF_MV
   switch (nearest_match[ref_frame])
