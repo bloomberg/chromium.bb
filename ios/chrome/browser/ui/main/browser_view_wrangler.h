@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 
 @protocol ApplicationCommands;
-@class BrowsingDataRemovalController;
 @class DeviceSharingManager;
 @protocol TabModelObserver;
 
@@ -58,10 +57,8 @@ class ChromeBrowserState;
 // tab model. This class creates and manages the state of the sharing manager.
 - (void)updateDeviceSharingManager;
 
-// Delete any incognito tab model state, using |removalController| to handle
-// the storage removal.
-- (void)deleteIncognitoTabModelState:
-    (BrowsingDataRemovalController*)removalController;
+// Delete the incognito tab model state.
+- (void)deleteIncognitoTabModelState;
 
 // Called before the instance is deallocated.
 - (void)shutdown;

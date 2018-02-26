@@ -11,8 +11,11 @@ source_set("browsing_data_remove_mask") {
 
 source_set("browsing_data") {
   sources = [
-    "ios_chrome_browsing_data_remover.h",
-    "ios_chrome_browsing_data_remover.mm",
+    "browsing_data_remover.h",
+    "browsing_data_remover_factory.cc",
+    "browsing_data_remover_factory.h",
+    "browsing_data_remover_impl.h",
+    "browsing_data_remover_impl.mm",
   ]
   deps = [
     "//base",
@@ -21,6 +24,7 @@ source_set("browsing_data") {
     "//components/browsing_data/core",
     "//components/history/core/browser",
     "//components/keyed_service/core",
+    "//components/keyed_service/ios",
     "//components/language/core/browser",
     "//components/omnibox/browser",
     "//components/open_from_clipboard",

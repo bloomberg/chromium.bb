@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_impl.h"
 
 #import <WebKit/WebKit.h>
 
@@ -153,22 +153,21 @@ void ClearChannelIDs(
 
 }  // namespace
 
-IOSChromeBrowsingDataRemover::RemovalTask::RemovalTask(
-    base::Time delete_begin,
-    base::Time delete_end,
-    BrowsingDataRemoveMask mask,
-    base::OnceClosure callback)
+BrowsingDataRemoverImpl::RemovalTask::RemovalTask(base::Time delete_begin,
+                                                  base::Time delete_end,
+                                                  BrowsingDataRemoveMask mask,
+                                                  base::OnceClosure callback)
     : delete_begin(delete_begin),
       delete_end(delete_end),
       mask(mask),
       callback(std::move(callback)) {}
 
-IOSChromeBrowsingDataRemover::RemovalTask::RemovalTask(
+BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
     RemovalTask&& other) noexcept = default;
 
-IOSChromeBrowsingDataRemover::RemovalTask::~RemovalTask() = default;
+BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() = default;
 
-IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
+BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
     ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       context_getter_(browser_state->GetRequestContext()),
@@ -177,10 +176,10 @@ IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
   DCHECK(browser_state);
 }
 
-IOSChromeBrowsingDataRemover::~IOSChromeBrowsingDataRemover() {
+BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_removing()) {
-    VLOG(1) << "IOSChromeBrowsingDataRemover shuts down with "
+  if (is_removing_) {
+    VLOG(1) << "BrowsingDataRemoverImpl shuts down with "
             << removal_queue_.size() << " pending tasks"
             << (pending_tasks_count_ ? " (including one in progress)" : "");
   }
@@ -204,15 +203,26 @@ IOSChromeBrowsingDataRemover::~IOSChromeBrowsingDataRemover() {
   }
 }
 
-void IOSChromeBrowsingDataRemover::SetRemoving(bool is_removing) {
+void BrowsingDataRemoverImpl::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  browser_state_ = nullptr;
+}
+
+bool BrowsingDataRemoverImpl::IsRemoving() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_removing_;
+}
+
+void BrowsingDataRemoverImpl::SetRemoving(bool is_removing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(is_removing_ != is_removing);
   is_removing_ = is_removing;
 }
 
-void IOSChromeBrowsingDataRemover::Remove(browsing_data::TimePeriod time_period,
-                                          BrowsingDataRemoveMask mask,
-                                          base::OnceClosure callback) {
+void BrowsingDataRemoverImpl::Remove(browsing_data::TimePeriod time_period,
+                                     BrowsingDataRemoveMask mask,
+                                     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Should always remove something.
@@ -254,7 +264,7 @@ void IOSChromeBrowsingDataRemover::Remove(browsing_data::TimePeriod time_period,
   }
 }
 
-void IOSChromeBrowsingDataRemover::RunNextTask() {
+void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!removal_queue_.empty());
   const RemovalTask& removal_task = removal_queue_.front();
@@ -262,9 +272,9 @@ void IOSChromeBrowsingDataRemover::RunNextTask() {
              removal_task.mask);
 }
 
-void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
-                                              base::Time delete_end,
-                                              BrowsingDataRemoveMask mask) {
+void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
+                                         base::Time delete_end,
+                                         BrowsingDataRemoveMask mask) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedClosureRunner synchronous_clear_operations(
       CreatePendingTaskCompletionClosure());
@@ -357,7 +367,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
       if (keywords_model && !keywords_model->loaded()) {
         template_url_subscription_ =
             keywords_model->RegisterOnLoadedCallback(AdaptCallbackForRepeating(
-                base::BindOnce(&IOSChromeBrowsingDataRemover::OnKeywordsLoaded,
+                base::BindOnce(&BrowsingDataRemoverImpl::OnKeywordsLoaded,
                                GetWeakPtr(), delete_begin, delete_end,
                                CreatePendingTaskCompletionClosure())));
         keywords_model->Load();
@@ -542,7 +552,7 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(base::Time delete_begin,
 // TODO(crbug.com/619783): removing data from WkWebsiteDataStore should be
 // implemented by //ios/web. Once this is available remove this and use the
 // new API.
-void IOSChromeBrowsingDataRemover::RemoveDataFromWKWebsiteDataStore(
+void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
     base::Time delete_end,
     BrowsingDataRemoveMask mask) {
@@ -587,7 +597,7 @@ void IOSChromeBrowsingDataRemover::RemoveDataFromWKWebsiteDataStore(
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
     ProceduralBlock previous_completion_block = completion_block;
-    base::WeakPtr<IOSChromeBrowsingDataRemover> weak_ptr = GetWeakPtr();
+    base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr = GetWeakPtr();
 
     // TODO(crbug.com/557963): Purging the WKProcessPool is a workaround for
     // the fact that there is no public API to clear visited links in
@@ -597,7 +607,7 @@ void IOSChromeBrowsingDataRemover::RemoveDataFromWKWebsiteDataStore(
     // it is not a problem in practice since there is no UI to only have
     // visited links be removed but not cookies.
     completion_block = ^{
-      if (IOSChromeBrowsingDataRemover* strong_ptr = weak_ptr.get()) {
+      if (BrowsingDataRemoverImpl* strong_ptr = weak_ptr.get()) {
         web::WKWebViewConfigurationProvider::FromBrowserState(
             strong_ptr->browser_state_)
             .Purge();
@@ -633,13 +643,12 @@ void IOSChromeBrowsingDataRemover::RemoveDataFromWKWebsiteDataStore(
   }
 }
 
-void IOSChromeBrowsingDataRemover::OnKeywordsLoaded(
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::OnceClosure callback) {
+void BrowsingDataRemoverImpl::OnKeywordsLoaded(base::Time delete_begin,
+                                               base::Time delete_end,
+                                               base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Deletes the entries from the model, and if we're not waiting on anything
-  // else notifies observers and deletes this IOSChromeBrowsingDataRemover.
+  // else notifies observers and deletes this BrowsingDataRemoverImpl.
   TemplateURLService* model =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state_);
   model->RemoveAutoGeneratedBetween(delete_begin, delete_end);
@@ -647,7 +656,7 @@ void IOSChromeBrowsingDataRemover::OnKeywordsLoaded(
   std::move(callback).Run();
 }
 
-void IOSChromeBrowsingDataRemover::NotifyRemovalComplete() {
+void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!removal_queue_.empty());
 
@@ -679,10 +688,10 @@ void IOSChromeBrowsingDataRemover::NotifyRemovalComplete() {
   // RunNextTask() is not called before the callback has been invoked.
   current_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&IOSChromeBrowsingDataRemover::RunNextTask, GetWeakPtr()));
+      base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }
 
-void IOSChromeBrowsingDataRemover::OnTaskComplete() {
+void BrowsingDataRemoverImpl::OnTaskComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(crbug.com/305259): This should also observe session clearing (what
@@ -697,17 +706,15 @@ void IOSChromeBrowsingDataRemover::OnTaskComplete() {
 }
 
 base::OnceClosure
-IOSChromeBrowsingDataRemover::CreatePendingTaskCompletionClosure() {
+BrowsingDataRemoverImpl::CreatePendingTaskCompletionClosure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ++pending_tasks_count_;
-  return base::BindOnce(&IOSChromeBrowsingDataRemover::OnTaskComplete,
-                        GetWeakPtr());
+  return base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr());
 }
 
-base::WeakPtr<IOSChromeBrowsingDataRemover>
-IOSChromeBrowsingDataRemover::GetWeakPtr() {
+base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::WeakPtr<IOSChromeBrowsingDataRemover> weak_ptr =
+  base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr =
       weak_ptr_factory_.GetWeakPtr();
 
   // Immediately bind the weak pointer to the current sequence. This makes it

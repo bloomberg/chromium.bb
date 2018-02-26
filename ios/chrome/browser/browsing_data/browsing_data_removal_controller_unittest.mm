@@ -71,7 +71,6 @@ TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
                        }];
 
   // Destroy the BrowserState immediately.
-  [removal_controller browserStateDestroyed:browser_state_.get()];
   browser_state_.reset();
 
   run_loop.RunUntilIdle();

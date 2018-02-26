@@ -28,9 +28,6 @@ class ChromeBrowserState;
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler;
 
-// Called when |browserState| is destroyed.
-- (void)browserStateDestroyed:(ios::ChromeBrowserState*)browserState;
-
 // Returns YES if browsing data for |browserState| is still being cleared.
 - (BOOL)hasPendingRemovalOperations:(ios::ChromeBrowserState*)browserState;
 

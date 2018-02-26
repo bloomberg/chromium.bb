@@ -1,6 +1,6 @@
 specific_include_rules = {
   # TODO(crbug.com/619783): Remove this exception.
-  "^ios_chrome_browsing_data_remover\.mm$": [
+  "^browsing_data_remover_impl\.mm$": [
     "+ios/web/web_state/ui/wk_web_view_configuration_provider.h",
   ],
 }
