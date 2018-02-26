@@ -47,7 +47,7 @@ test(function() {
 
     assert_not_equals(element.animate(validKeyframes1), undefined);
     assert_not_equals(element.animate(validKeyframes2), undefined);
-}, 'Calling element.animate() with no offset specified for the first keyframe should create and animation.');
+}, 'Calling element.animate() with no offset specified for the first keyframe should create an animation.');
 
 test(function() {
     var partialKeyframes1 = [
@@ -128,4 +128,12 @@ test(function() {
     assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(partialKeyframes2); });
 }, 'Calling element.animate() with a keyframe that has no offset specified, is preceded by other keyframes, ' +
     'and is the first keyframe for a property, should throw a NotSupportedError.');
+
+test(function() {
+  var partialKeyframes = [
+    {width: '0px', offset: 0},
+  ];
+
+  assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(partialKeyframes); });
+}, 'Calling element.animate() with a single keyframe should throw a NotSupportedError.');
 </script>

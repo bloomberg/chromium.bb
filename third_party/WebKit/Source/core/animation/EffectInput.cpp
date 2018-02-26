@@ -135,9 +135,59 @@ void SetKeyframeValue(Element& element,
     keyframe.SetSVGAttributeValue(*svg_attribute, value);
 }
 
+bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
+  // CSSAdditiveAnimationsEnabled guards both additive animations and allowing
+  // partial (implicit) keyframes.
+  if (RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled())
+    return true;
+
+  // An implicit keyframe is inserted in the below cases. Note that the 'first'
+  // keyframe is actually all keyframes with offset 0.0, and the 'last' keyframe
+  // is actually all keyframes with offset 1.0.
+  //
+  //   1. A given property is present somewhere in the full set of keyframes,
+  //      but is either not present in the first keyframe (requiring an implicit
+  //      start value for that property) or last keyframe (requiring an implicit
+  //      end value for that property).
+  //
+  //   2. There is no first keyframe (requiring an implicit start keyframe), or
+  //      no last keyframe (requiring an implicit end keyframe).
+  //
+  // We only care about CSS properties here; animating SVG elements is protected
+  // by a different runtime flag.
+
+  Vector<double> computed_offsets =
+      KeyframeEffectModelBase::GetComputedOffsets(keyframes);
+
+  PropertyHandleSet properties_with_offset_0;
+  PropertyHandleSet properties_with_offset_1;
+  for (size_t i = 0; i < keyframes.size(); i++) {
+    for (const PropertyHandle& property : keyframes[i]->Properties()) {
+      if (!property.IsCSSProperty())
+        continue;
+
+      if (computed_offsets[i] == 0.0) {
+        properties_with_offset_0.insert(property);
+      } else {
+        if (!properties_with_offset_0.Contains(property))
+          return false;
+        if (computed_offsets[i] == 1.0) {
+          properties_with_offset_1.insert(property);
+        }
+      }
+    }
+  }
+
+  // At this point we have compared all keyframes with offset > 0 against the
+  // properties contained in the first keyframe, and found that they match. Now
+  // we just need to make sure that there aren't any properties in the first
+  // keyframe that aren't in the last keyframe.
+  return properties_with_offset_0.size() == properties_with_offset_1.size();
+}
+
 // Ensures that a CompositeOperation is of an allowed value for a given
 // StringKeyframe and the current runtime flags.
-EffectModel::CompositeOperation ResolveCompositeOperation(
+EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
     EffectModel::CompositeOperation composite,
     const scoped_refptr<StringKeyframe>& keyframe) {
   if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
@@ -147,107 +197,16 @@ EffectModel::CompositeOperation ResolveCompositeOperation(
   return composite;
 }
 
-// Ensures that a CompositeOperation is of an allowed value for a set of
-// StringKeyframes and the current runtime flags.
-EffectModel::CompositeOperation ResolveCompositeOperation(
-    EffectModel::CompositeOperation composite,
-    const StringKeyframeVector& keyframes) {
-  EffectModel::CompositeOperation result = composite;
-  for (const scoped_refptr<StringKeyframe>& keyframe : keyframes) {
-    // Replace is always supported, so we can early-exit if and when we have
-    // that as our composite value.
-    if (result == EffectModel::kCompositeReplace)
-      break;
-    result = ResolveCompositeOperation(result, keyframe);
-  }
-  return result;
-}
-
-KeyframeEffectModelBase* CreateEmptyEffectModel(
-    EffectModel::CompositeOperation composite) {
-  return StringKeyframeEffectModel::Create(StringKeyframeVector(), composite);
-}
-
-KeyframeEffectModelBase* CreateEffectModel(
-    Element& element,
-    const StringKeyframeVector& keyframes,
-    EffectModel::CompositeOperation composite,
-    ExceptionState& exception_state) {
-  composite = ResolveCompositeOperation(composite, keyframes);
-
-  StringKeyframeEffectModel* keyframe_effect_model =
-      StringKeyframeEffectModel::Create(keyframes, composite,
-                                        LinearTimingFunction::Shared());
-  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
-    for (const auto& keyframe_group :
-         keyframe_effect_model->GetPropertySpecificKeyframeGroups()) {
-      PropertyHandle property = keyframe_group.key;
-      if (!property.IsCSSProperty())
-        continue;
-
-      for (const auto& keyframe : keyframe_group.value->Keyframes()) {
-        if (keyframe->IsNeutral()) {
-          exception_state.ThrowDOMException(
-              kNotSupportedError, "Partial keyframes are not supported.");
-          return nullptr;
-        }
-        // This should be enforced by the parsing code.
-        DCHECK(keyframe->Composite() != EffectModel::kCompositeAdd);
-      }
-    }
-  }
-
-  DCHECK(!exception_state.HadException());
-  return keyframe_effect_model;
-}
-}  // namespace
-
-// Implements "Processing a keyframes argument" from the web-animations spec.
-// https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
-KeyframeEffectModelBase* EffectInput::Convert(
-    Element* element,
-    const ScriptValue& keyframes,
-    EffectModel::CompositeOperation effect_composite,
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
-  // Per the spec, a null keyframes object maps to a valid but empty sequence.
-  // TODO(crbug.com/772014): The element is allowed to be null; remove check.
-  if (keyframes.IsNull() || !element)
-    return CreateEmptyEffectModel(effect_composite);
-
-  v8::Isolate* isolate = script_state->GetIsolate();
-  Dictionary dictionary(isolate, keyframes.V8Value(), exception_state);
-  if (exception_state.HadException())
-    return nullptr;
-
-  KeyframeEffectModelBase* model;
-  DictionaryIterator iterator =
-      dictionary.GetIterator(ExecutionContext::From(script_state));
-  if (iterator.IsNull()) {
-    model = ConvertObjectForm(*element, dictionary, effect_composite,
-                              script_state, exception_state);
-  } else {
-    model = ConvertArrayForm(*element, iterator, effect_composite, script_state,
-                             exception_state);
-  }
-
-  DCHECK(model || exception_state.HadException());
-  return model;
-}
-
-namespace {
+// Temporary storage struct used when converting array-form keyframes.
 struct KeyframeOutput {
   BaseKeyframe base_keyframe;
   Vector<std::pair<String, String>> property_value_pairs;
 };
-}  // namespace
 
-KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
-    Element& element,
-    DictionaryIterator iterator,
-    EffectModel::CompositeOperation effect_composite,
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
+StringKeyframeVector ConvertArrayForm(Element& element,
+                                      DictionaryIterator iterator,
+                                      ScriptState* script_state,
+                                      ExceptionState& exception_state) {
   // This loop captures step 5 of the procedure to process a keyframes argument,
   // in the case where the argument is iterable.
   Vector<KeyframeOutput> processed_keyframes;
@@ -259,7 +218,7 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
     Dictionary keyframe_dictionary;
     if (!iterator.ValueAsDictionary(keyframe_dictionary, exception_state)) {
       exception_state.ThrowTypeError("Keyframes must be objects.");
-      return nullptr;
+      return {};
     }
 
     // Extract the offset, easing, and composite as per step 1 of the 'procedure
@@ -268,12 +227,12 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
                            keyframe_dictionary.V8Value(),
                            keyframe_output.base_keyframe, exception_state);
     if (exception_state.HadException())
-      return nullptr;
+      return {};
 
     const Vector<String>& keyframe_properties =
         keyframe_dictionary.GetPropertyNames(exception_state);
     if (exception_state.HadException())
-      return nullptr;
+      return {};
 
     for (const auto& property : keyframe_properties) {
       if (property == "offset" || property == "composite" ||
@@ -287,26 +246,26 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
       v8::Local<v8::Value> v8_value;
       if (!keyframe_dictionary.Get(property, v8_value)) {
         // TODO(crbug.com/666661): Propagate exceptions from Dictionary::Get.
-        return CreateEmptyEffectModel(effect_composite);
+        return {};
       }
 
       if (v8_value->IsArray()) {
         exception_state.ThrowTypeError(
             "Lists of values not permitted in array-form list of keyframes");
-        return nullptr;
+        return {};
       }
 
       String string_value = NativeValueTraits<IDLString>::NativeValue(
           isolate, v8_value, exception_state);
       if (exception_state.HadException())
-        return nullptr;
+        return {};
       keyframe_output.property_value_pairs.push_back(
           std::make_pair(property, string_value));
     }
     processed_keyframes.push_back(keyframe_output);
   }
   if (exception_state.HadException())
-    return nullptr;
+    return {};
 
   // 6. If processed keyframes is not loosely sorted by offset, throw a
   // TypeError and abort these steps.
@@ -317,7 +276,7 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
       if (offset < previous_offset) {
         exception_state.ThrowTypeError(
             "Offsets must be montonically non-decreasing.");
-        return nullptr;
+        return {};
       }
       previous_offset = offset;
     }
@@ -332,7 +291,7 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
       if (offset < 0 || offset > 1) {
         exception_state.ThrowTypeError(
             "Offsets must be null or in the range [0,1].");
-        return nullptr;
+        return {};
       }
     }
   }
@@ -356,7 +315,7 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
     }
 
     if (processed_keyframe.base_keyframe.hasComposite()) {
-      keyframe->SetComposite(ResolveCompositeOperation(
+      keyframe->SetComposite(ResolveCompositeOperationForKeyframe(
           EffectModel::StringToCompositeOperation(
               processed_keyframe.base_keyframe.composite()),
           keyframe));
@@ -373,16 +332,14 @@ KeyframeEffectModelBase* EffectInput::ConvertArrayForm(
             processed_keyframe.base_keyframe.easing(), &element.GetDocument(),
             exception_state);
     if (!timing_function)
-      return nullptr;
+      return {};
     keyframe->SetEasing(timing_function);
 
     keyframes.push_back(keyframe);
   }
 
   DCHECK(!exception_state.HadException());
-
-  return CreateEffectModel(element, keyframes, effect_composite,
-                           exception_state);
+  return keyframes;
 }
 
 // Extracts the values for a given property in the input keyframes. As per the
@@ -399,8 +356,10 @@ static bool GetPropertyIndexedKeyframeValues(
   // By spec, we are only allowed to access a given (property, value) pair once.
   // This is observable by the web client, so we take care to adhere to that.
   v8::Local<v8::Value> v8_value;
-  if (!keyframe_dictionary.Get(property, v8_value))
+  if (!keyframe_dictionary.Get(property, v8_value)) {
+    // TODO(crbug.com/666661): Get() should rethrow internal exceptions.
     return false;
+  }
 
   StringOrStringSequence string_or_string_sequence;
   V8StringOrStringSequence::ToImpl(
@@ -421,12 +380,10 @@ static bool GetPropertyIndexedKeyframeValues(
 // web-animations spec for an object form keyframes argument.
 //
 // See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
-KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
-    Element& element,
-    const Dictionary& dictionary,
-    EffectModel::CompositeOperation effect_composite,
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
+StringKeyframeVector ConvertObjectForm(Element& element,
+                                       const Dictionary& dictionary,
+                                       ScriptState* script_state,
+                                       ExceptionState& exception_state) {
   // We implement much of this procedure out of order from the way the spec is
   // written, to avoid repeatedly going over the list of keyframes.
   // The web-observable behavior should be the same as the spec.
@@ -438,7 +395,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
       dictionary.GetIsolate(), dictionary.V8Value(), property_indexed_keyframe,
       exception_state);
   if (exception_state.HadException())
-    return nullptr;
+    return {};
 
   Vector<WTF::Optional<double>> offsets;
   if (property_indexed_keyframe.offset().IsNull())
@@ -467,7 +424,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
   const Vector<String>& keyframe_properties =
       dictionary.GetPropertyNames(exception_state);
   if (exception_state.HadException())
-    return nullptr;
+    return {};
 
   // Steps 5.2 - 5.4 state that the user agent is to:
   //
@@ -488,10 +445,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
     Vector<String> values;
     if (!GetPropertyIndexedKeyframeValues(dictionary, property, script_state,
                                           exception_state, values)) {
-      // TODO(crbug.com/666661): Propagate exceptions from Dictionary::Get.
-      if (exception_state.HadException())
-        return nullptr;
-      return CreateEmptyEffectModel(effect_composite);
+      return {};
     }
 
     // Now create a keyframe (or retrieve and augment an existing one) for each
@@ -548,7 +502,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
         if (offset.value() < previous_offset) {
           exception_state.ThrowTypeError(
               "Offsets must be montonically non-decreasing.");
-          return nullptr;
+          return {};
         }
         previous_offset = offset.value();
       }
@@ -559,7 +513,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
       if (offset.has_value() && (offset.value() < 0 || offset.value() > 1)) {
         exception_state.ThrowTypeError(
             "Offsets must be null or in the range [0,1].");
-        return nullptr;
+        return {};
       }
 
       keyframe->SetOffset(offset);
@@ -584,7 +538,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
           AnimationInputHelpers::ParseTimingFunction(
               easing, &element.GetDocument(), exception_state);
       if (!timing_function)
-        return nullptr;
+        return {};
 
       keyframe->SetEasing(timing_function);
     }
@@ -598,7 +552,7 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
           composite_operations[i % composite_operations.size()];
       if (composite) {
         keyframe->SetComposite(
-            ResolveCompositeOperation(composite.value(), keyframe));
+            ResolveCompositeOperationForKeyframe(composite.value(), keyframe));
       }
     }
 
@@ -619,12 +573,103 @@ KeyframeEffectModelBase* EffectInput::ConvertObjectForm(
         AnimationInputHelpers::ParseTimingFunction(
             easings[i], &element.GetDocument(), exception_state);
     if (!timing_function)
-      return nullptr;
+      return {};
   }
 
   DCHECK(!exception_state.HadException());
-
-  return CreateEffectModel(element, results, effect_composite, exception_state);
+  return results;
 }
 
+bool HasAdditiveCompositeCSSKeyframe(
+    const KeyframeEffectModelBase::KeyframeGroupMap& keyframe_groups) {
+  for (const auto& keyframe_group : keyframe_groups) {
+    PropertyHandle property = keyframe_group.key;
+    if (!property.IsCSSProperty())
+      continue;
+    for (const auto& keyframe : keyframe_group.value->Keyframes()) {
+      if (keyframe->Composite() == EffectModel::kCompositeAdd)
+        return true;
+    }
+  }
+  return false;
+}
+}  // namespace
+
+KeyframeEffectModelBase* EffectInput::Convert(
+    Element* element,
+    const ScriptValue& keyframes,
+    EffectModel::CompositeOperation composite,
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  // TODO(crbug.com/772014): The element is allowed to be null; remove check.
+  if (!element)
+    return StringKeyframeEffectModel::Create(StringKeyframeVector(), composite);
+
+  StringKeyframeVector parsed_keyframes =
+      ParseKeyframesArgument(element, keyframes, script_state, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  composite = ResolveCompositeOperation(composite, parsed_keyframes);
+
+  StringKeyframeEffectModel* keyframe_effect_model =
+      StringKeyframeEffectModel::Create(parsed_keyframes, composite,
+                                        LinearTimingFunction::Shared());
+
+  if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled()) {
+    // This should be enforced by the parsing code.
+    DCHECK(!HasAdditiveCompositeCSSKeyframe(
+        keyframe_effect_model->GetPropertySpecificKeyframeGroups()));
+  }
+
+  DCHECK(!exception_state.HadException());
+  return keyframe_effect_model;
+}
+
+StringKeyframeVector EffectInput::ParseKeyframesArgument(
+    Element* element,
+    const ScriptValue& keyframes,
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  // Per the spec, a null keyframes object maps to a valid but empty sequence.
+  if (keyframes.IsNull())
+    return {};
+
+  v8::Isolate* isolate = script_state->GetIsolate();
+  Dictionary dictionary(isolate, keyframes.V8Value(), exception_state);
+  if (exception_state.HadException())
+    return {};
+
+  StringKeyframeVector parsed_keyframes;
+  DictionaryIterator iterator =
+      dictionary.GetIterator(ExecutionContext::From(script_state));
+  if (iterator.IsNull()) {
+    parsed_keyframes =
+        ConvertObjectForm(*element, dictionary, script_state, exception_state);
+  } else {
+    parsed_keyframes =
+        ConvertArrayForm(*element, iterator, script_state, exception_state);
+  }
+
+  if (!ValidatePartialKeyframes(parsed_keyframes)) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Partial keyframes are not supported.");
+    return {};
+  }
+  return parsed_keyframes;
+}
+
+EffectModel::CompositeOperation EffectInput::ResolveCompositeOperation(
+    EffectModel::CompositeOperation composite,
+    const StringKeyframeVector& keyframes) {
+  EffectModel::CompositeOperation result = composite;
+  for (const scoped_refptr<StringKeyframe>& keyframe : keyframes) {
+    // Replace is always supported, so we can early-exit if and when we have
+    // that as our composite value.
+    if (result == EffectModel::kCompositeReplace)
+      break;
+    result = ResolveCompositeOperationForKeyframe(result, keyframe);
+  }
+  return result;
+}
 }  // namespace blink

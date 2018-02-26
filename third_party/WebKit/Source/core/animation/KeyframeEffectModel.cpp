@@ -54,13 +54,20 @@ PropertyHandleSet KeyframeEffectModelBase::Properties() const {
   return result;
 }
 
-void KeyframeEffectModelBase::SetFrames(KeyframeVector& keyframes) {
+template <class K>
+void KeyframeEffectModelBase::SetFrames(Vector<K>& keyframes) {
   // TODO(samli): Should also notify/invalidate the animation
-  keyframes_ = keyframes;
+  keyframes_.clear();
   keyframe_groups_ = nullptr;
   interpolation_effect_.Clear();
   last_fraction_ = std::numeric_limits<double>::quiet_NaN();
+  keyframes_.AppendVector(keyframes);
 }
+
+template CORE_EXPORT void KeyframeEffectModelBase::SetFrames(
+    Vector<scoped_refptr<Keyframe>>& keyframes);
+template CORE_EXPORT void KeyframeEffectModelBase::SetFrames(
+    Vector<scoped_refptr<StringKeyframe>>& keyframes);
 
 bool KeyframeEffectModelBase::Sample(
     int iteration,
@@ -152,8 +159,9 @@ bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframes(
   return updated;
 }
 
+template <class K>
 Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
-    const KeyframeVector& keyframes) {
+    const Vector<K>& keyframes) {
   // To avoid having to create two vectors when converting from the nullable
   // offsets to the non-nullable computed offsets, we keep the convention in
   // this function that std::numeric_limits::quiet_NaN() represents null.
@@ -198,6 +206,11 @@ Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
 
   return result;
 }
+
+template CORE_EXPORT Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
+    const Vector<scoped_refptr<Keyframe>>& keyframes);
+template CORE_EXPORT Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
+    const Vector<scoped_refptr<StringKeyframe>>& keyframes);
 
 bool KeyframeEffectModelBase::IsTransformRelatedEffect() const {
   return Affects(PropertyHandle(GetCSSPropertyTransform())) ||
