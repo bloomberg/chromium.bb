@@ -89,6 +89,14 @@ class TestImporter(object):
         credentials = read_credentials(self.host, options.credentials_json)
         gh_user = credentials.get('GH_USER')
         gh_token = credentials.get('GH_TOKEN')
+        if not gh_user or not gh_token:
+            _log.warning('You have not set your GitHub credentials. This '
+                         'script may fail with a network error when making '
+                         'an API request to GitHub.')
+            _log.warning('See https://chromium.googlesource.com/chromium/src'
+                         '/+/master/docs/testing/web_platform_tests.md'
+                         '#GitHub-credentials for instructions on how to set '
+                         'your credentials up.')
         self.wpt_github = self.wpt_github or WPTGitHub(self.host, gh_user, gh_token)
         self.git_cl = GitCL(self.host, auth_refresh_token_json=options.auth_refresh_token_json)
 

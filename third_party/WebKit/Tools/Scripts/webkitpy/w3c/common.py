@@ -24,9 +24,22 @@ _log = logging.getLogger(__name__)
 
 
 def read_credentials(host, credentials_json):
-    """Extracts credentials from a JSON file."""
+    """Extracts GitHub and Gerrit credentials.
+
+    The data is read from the environment and (optionally) a JSON file. When a
+    JSON file is specified, any variables from the environment are discarded
+    and the values are all expected to be present in the file.
+
+    Args:
+        credentials_json: Path to a JSON file containing an object with the
+            keys we want to read, or None.
+    """
+    env_credentials = {}
+    for key in ('GH_USER', 'GH_TOKEN', 'GERRIT_USER', 'GERRIT_TOKEN'):
+        if key in host.environ:
+            env_credentials[key] = host.environ[key]
     if not credentials_json:
-        return {}
+        return env_credentials
     if not host.filesystem.exists(credentials_json):
         _log.warning('Credentials JSON file not found at %s.', credentials_json)
         return {}

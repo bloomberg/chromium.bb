@@ -120,9 +120,14 @@ unauthenticated requests, so it is recommended that you let `wpt-export` and
 `wpt-import` use your GitHub credentials when sending requests:
 
  1. Generate a new [personal access token](https://github.com/settings/tokens)
- 1. Create a JSON file with two keys: `GH_USER`, your GitHub user name, and
-    `GH_TOKEN`, the access token you have just generated.
- 1. Pass `--credentials-json <path-to-json>` to `wpt-export` and `wpt-import`.
+ 1. Set up your credentials by either:
+     * Setting the `GH_USER` environment variable to your GitHub user name
+       and the `GH_TOKEN` environment variable to the access token you have
+       just created **or**
+     * Creating a JSON file with two keys: `GH_USER`, your GitHub user name,
+       and `GH_TOKEN`, the access token you have just generated. After that,
+       pass `--credentials-json <path-to-json>` to `wpt-export` and
+       `wpt-import`.
 
 ### Manual import
 

@@ -48,8 +48,13 @@ class TestExporter(object):
             self.host.executive.error_output_limit = None
 
         credentials = read_credentials(self.host, options.credentials_json)
-        if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
-            _log.error('Must provide both user and token for GitHub.')
+        if not (credentials.get('GH_USER') and credentials.get('GH_TOKEN')):
+            _log.error('You must provide your GitHub credentials for this '
+                       'script to work.')
+            _log.error('See https://chromium.googlesource.com/chromium/src'
+                       '/+/master/docs/testing/web_platform_tests.md'
+                       '#GitHub-credentials for instructions on how to set '
+                       'your credentials up.')
             return False
 
         self.wpt_github = self.wpt_github or WPTGitHub(self.host, credentials['GH_USER'], credentials['GH_TOKEN'])
