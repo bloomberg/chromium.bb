@@ -418,6 +418,8 @@ TEST_P(GLES2DecoderRestoreStateTest, ES3NullPreviousStateWithSampler) {
   AddExpectationsForActiveTexture(GL_TEXTURE0);
   AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
   AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+  AddExpectationsForBindTexture(GL_TEXTURE_3D, 0);
   // Expect to restore sampler binding for unit GL_TEXTURE0.
   AddExpectationsForBindSampler(0, kServiceSamplerId);
 
@@ -426,6 +428,8 @@ TEST_P(GLES2DecoderRestoreStateTest, ES3NullPreviousStateWithSampler) {
     AddExpectationsForActiveTexture(GL_TEXTURE0 + i);
     AddExpectationsForBindTexture(GL_TEXTURE_2D, 0);
     AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    AddExpectationsForBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    AddExpectationsForBindTexture(GL_TEXTURE_3D, 0);
     AddExpectationsForBindSampler(i, 0);
   }
 
