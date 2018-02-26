@@ -148,6 +148,7 @@ class CONTENT_EXPORT UserMediaProcessor
                          const MediaStreamDevices& video_devices);
 
   void GotAllVideoInputFormatsForDevice(
+      const blink::WebUserMediaRequest& web_request,
       const std::string& label,
       const std::string& device_id,
       const media::VideoCaptureFormats& formats);

@@ -686,16 +686,24 @@ void UserMediaProcessor::OnStreamGenerated(
     GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
         video_device.id,
         base::BindOnce(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
-                       weak_factory_.GetWeakPtr(), label, video_device.id));
+                       weak_factory_.GetWeakPtr(),
+                       current_request_info_->web_request(), label,
+                       video_device.id));
   }
 }
 
 void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
+    const blink::WebUserMediaRequest& web_request,
     const std::string& label,
     const std::string& device_id,
     const media::VideoCaptureFormats& formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(current_request_info_);
+  // The frame might reload or |web_request| might be cancelled while video
+  // formats are queried. Do nothing if a different request is being processed
+  // at this point.
+  if (!IsCurrentRequestInfo(web_request))
+    return;
+
   current_request_info_->AddVideoFormats(device_id, formats);
   if (current_request_info_->CanStartTracks())
     StartTracks(label);
