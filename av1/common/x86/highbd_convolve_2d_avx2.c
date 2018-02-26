@@ -50,8 +50,10 @@ void av1_highbd_convolve_2d_sr_avx2(const uint16_t *src, int src_stride,
       (1 << (bd + 2 * FILTER_BITS - conv_params->round_0 - 1)));
   const __m128i round_shift_y = _mm_cvtsi32_si128(conv_params->round_1);
 
-  const __m128i bits = _mm_cvtsi32_si128(
-      FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1);
+  const int bits =
+      FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
+  const __m128i round_shift_bits = _mm_cvtsi32_si128(bits);
+  const __m256i round_const_bits = _mm256_set1_epi32((1 << bits) >> 1);
   const __m256i clip_pixel =
       _mm256_set1_epi16(bd == 10 ? 1023 : (bd == 12 ? 4095 : 255));
   const __m256i zero = _mm256_setzero_si256();
@@ -132,33 +134,40 @@ void av1_highbd_convolve_2d_sr_avx2(const uint16_t *src, int src_stride,
         const __m256i res_a = convolve(s, coeffs_y);
         __m256i res_a_round = _mm256_sra_epi32(
             _mm256_add_epi32(res_a, round_const_y), round_shift_y);
-        res_a_round = _mm256_sra_epi32(res_a_round, bits);
-        res_a_round = _mm256_min_epi16(res_a_round, clip_pixel);
-        res_a_round = _mm256_max_epi16(res_a_round, zero);
+
+        res_a_round = _mm256_sra_epi32(
+            _mm256_add_epi32(res_a_round, round_const_bits), round_shift_bits);
 
         if (w - j > 4) {
           const __m256i res_b = convolve(s + 4, coeffs_y);
           __m256i res_b_round = _mm256_sra_epi32(
               _mm256_add_epi32(res_b, round_const_y), round_shift_y);
-          res_b_round = _mm256_sra_epi32(res_b_round, bits);
-          res_b_round = _mm256_min_epi16(res_b_round, clip_pixel);
-          res_b_round = _mm256_max_epi16(res_b_round, zero);
+          res_b_round =
+              _mm256_sra_epi32(_mm256_add_epi32(res_b_round, round_const_bits),
+                               round_shift_bits);
 
-          const __m256i res_16bit =
-              _mm256_packs_epi32(res_a_round, res_b_round);
+          __m256i res_16bit = _mm256_packs_epi32(res_a_round, res_b_round);
+          res_16bit = _mm256_min_epi16(res_16bit, clip_pixel);
+          res_16bit = _mm256_max_epi16(res_16bit, zero);
 
-          _mm_store_si128((__m128i *)&dst[i * dst_stride + j],
-                          _mm256_castsi256_si128(res_16bit));
-          _mm_store_si128((__m128i *)&dst[i * dst_stride + j + dst_stride],
-                          _mm256_extracti128_si256(res_16bit, 1));
+          _mm_storeu_si128((__m128i *)&dst[i * dst_stride + j],
+                           _mm256_castsi256_si128(res_16bit));
+          _mm_storeu_si128((__m128i *)&dst[i * dst_stride + j + dst_stride],
+                           _mm256_extracti128_si256(res_16bit, 1));
         } else if (w == 4) {
           res_a_round = _mm256_packs_epi32(res_a_round, res_a_round);
+          res_a_round = _mm256_min_epi16(res_a_round, clip_pixel);
+          res_a_round = _mm256_max_epi16(res_a_round, zero);
+
           _mm_storel_epi64((__m128i *)&dst[i * dst_stride + j],
                            _mm256_castsi256_si128(res_a_round));
           _mm_storel_epi64((__m128i *)&dst[i * dst_stride + j + dst_stride],
                            _mm256_extracti128_si256(res_a_round, 1));
         } else {
           res_a_round = _mm256_packs_epi32(res_a_round, res_a_round);
+          res_a_round = _mm256_min_epi16(res_a_round, clip_pixel);
+          res_a_round = _mm256_max_epi16(res_a_round, zero);
+
           xx_storel_32((__m128i *)&dst[i * dst_stride + j],
                        _mm256_castsi256_si128(res_a_round));
           xx_storel_32((__m128i *)&dst[i * dst_stride + j + dst_stride],
