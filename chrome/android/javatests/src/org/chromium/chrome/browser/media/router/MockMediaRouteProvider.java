@@ -176,4 +176,9 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
             mManager.onMessage(routeId, "Pong: " + message);
         }
     }
+
+    @Override
+    public MediaController getMediaController(String routeId) {
+        return null;
+    }
 }
