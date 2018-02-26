@@ -581,7 +581,6 @@ def convert_to_old_format(result):
   result.setdefault('deduped_from', None)
   result.setdefault('name', None)
   result.setdefault('outputs_ref', None)
-  result.setdefault('properties_hash', None)
   result.setdefault('server_versions', None)
   result.setdefault('started_ts', None)
   result.setdefault('tags', None)
@@ -596,7 +595,6 @@ def convert_to_old_format(result):
   result['isolated_out'] = result.get('outputs_ref', None)
   output = result.pop('output', None)
   result['outputs'] = [output] if output else []
-  # properties_hash
   # server_version
   # Endpoints result 'state' as string. For compatibility with old code, convert
   # to int.
