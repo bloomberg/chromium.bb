@@ -9270,11 +9270,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_OBMC_HIGH_PREC_BLENDING
   args.above_pred_hp_buf[0] = x->above_pred_hp_buf;
-  args.above_pred_hp_buf[1] = x->above_pred_hp_buf + MAX_SB_SQUARE;
-  args.above_pred_hp_buf[2] = x->above_pred_hp_buf + 2 * MAX_SB_SQUARE;
+  args.above_pred_hp_buf[1] = x->above_pred_hp_buf + (MAX_SB_SQUARE >> 1);
+  args.above_pred_hp_buf[2] = x->above_pred_hp_buf + MAX_SB_SQUARE;
   args.left_pred_hp_buf[0] = x->left_pred_hp_buf;
-  args.left_pred_hp_buf[1] = x->left_pred_hp_buf + MAX_SB_SQUARE;
-  args.left_pred_hp_buf[2] = x->left_pred_hp_buf + 2 * MAX_SB_SQUARE;
+  args.left_pred_hp_buf[1] = x->left_pred_hp_buf + (MAX_SB_SQUARE >> 1);
+  args.left_pred_hp_buf[2] = x->left_pred_hp_buf + MAX_SB_SQUARE;
 #else
   int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_width2[MAX_MB_PLANE] = { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
@@ -9287,21 +9287,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int len = sizeof(uint16_t);
     args.above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
     args.above_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(x->above_pred_buf + MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->above_pred_buf + (MAX_SB_SQUARE >> 1) * len);
     args.above_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(x->above_pred_buf + 2 * MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->above_pred_buf + MAX_SB_SQUARE * len);
     args.left_pred_buf[0] = CONVERT_TO_BYTEPTR(x->left_pred_buf);
     args.left_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(x->left_pred_buf + MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->left_pred_buf + (MAX_SB_SQUARE >> 1) * len);
     args.left_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(x->left_pred_buf + 2 * MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(x->left_pred_buf + MAX_SB_SQUARE * len);
   } else {
     args.above_pred_buf[0] = x->above_pred_buf;
-    args.above_pred_buf[1] = x->above_pred_buf + MAX_SB_SQUARE;
-    args.above_pred_buf[2] = x->above_pred_buf + 2 * MAX_SB_SQUARE;
+    args.above_pred_buf[1] = x->above_pred_buf + (MAX_SB_SQUARE >> 1);
+    args.above_pred_buf[2] = x->above_pred_buf + MAX_SB_SQUARE;
     args.left_pred_buf[0] = x->left_pred_buf;
-    args.left_pred_buf[1] = x->left_pred_buf + MAX_SB_SQUARE;
-    args.left_pred_buf[2] = x->left_pred_buf + 2 * MAX_SB_SQUARE;
+    args.left_pred_buf[1] = x->left_pred_buf + (MAX_SB_SQUARE >> 1);
+    args.left_pred_buf[2] = x->left_pred_buf + MAX_SB_SQUARE;
   }
 #endif
 
