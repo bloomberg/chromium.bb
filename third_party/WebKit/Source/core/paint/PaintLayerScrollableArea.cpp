@@ -298,10 +298,12 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForScrollCorner() const {
 }
 
 bool PaintLayerScrollableArea::ShouldUseIntegerScrollOffset() const {
-  Frame* frame = GetLayoutBox()->GetFrame();
-  if (frame->GetSettings() &&
-      !frame->GetSettings()->GetPreferCompositingToLCDTextEnabled())
-    return true;
+  if (!HasBeenDisposed()) {
+    Frame* frame = GetLayoutBox()->GetFrame();
+    if (frame->GetSettings() &&
+        !frame->GetSettings()->GetPreferCompositingToLCDTextEnabled())
+      return true;
+  }
 
   return ScrollableArea::ShouldUseIntegerScrollOffset();
 }
@@ -430,7 +432,7 @@ int PaintLayerScrollableArea::ScrollSize(
 void PaintLayerScrollableArea::UpdateScrollOffset(
     const ScrollOffset& new_offset,
     ScrollType scroll_type) {
-  if (GetScrollOffset() == new_offset)
+  if (HasBeenDisposed() || GetScrollOffset() == new_offset)
     return;
 
   bool offset_was_zero = scroll_offset_.IsZero();
