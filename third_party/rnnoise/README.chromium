@@ -1,0 +1,17 @@
+Name: Recurrent neural network for audio noise reduction
+Short Name: rnnoise
+URL: https://github.com/xiph/rnnoise
+Version: 91ef401
+Date: Oct 10, 2017
+Revision:
+License: BSD 3-Clause
+License File: COPYING
+Security Critical: no
+License Android Compatible:
+
+Description:
+RNNoise is a noise suppression library based on a recurrent neural network.
+The library is used for speech processing in WebRTC.
+
+Local Modifications:
+Only retaining rnn.c, rnn_data.c, tansig_table.h from src/ and COPYING.
