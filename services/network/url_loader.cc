@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -267,6 +268,15 @@ URLLoader::URLLoader(
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
       weak_ptr_factory_(this) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+    CHECK(!url_loader_client_.internal_state()
+                    ->handle()
+                    .QuerySignalsState()
+                    .peer_remote())
+        << "URLLoader must not be used by the renderer when network service is "
+        << "disabled, as that skips security checks in ResourceDispatcherHost. "
+        << "The only acceptable usage is the browser using SimpleURLLoader.";
+  }
   url_request_context_getter_->AddObserver(this);
   binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
