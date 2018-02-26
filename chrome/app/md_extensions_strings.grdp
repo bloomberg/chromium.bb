@@ -228,6 +228,9 @@
   <message name="IDS_MD_EXTENSIONS_TOOLBAR_UPDATE_DONE" desc="Text used to announce when extensions have been updated. This is for accessibility.">
     Extensions updated
   </message>
+  <message name="IDS_MD_EXTENSIONS_TOOLBAR_UPDATING_TOAST" desc="Text displayed in a toast popup message while extensions are updating.">
+    Updating...
+  </message>
   <message name="IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT" desc="The prompt to the user to enter a keyboard shortcut in order to assign it to an extension.">
     Type a shortcut
   </message>

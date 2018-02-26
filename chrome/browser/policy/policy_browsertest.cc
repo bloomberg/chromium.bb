@@ -1439,11 +1439,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledExtensionsDevMode_MD) {
          }
 
          function getToggle() {
-           return getToolbar().$$('#dev-mode');
+           return getToolbar().$.devMode;
          }
 
          function getControls() {
-           return getToolbar().$$('#devDrawer');
+           return getToolbar().$.devDrawer;
          }
         )";
 
