@@ -10,6 +10,7 @@ import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.RemoteMediaPlayer;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.chromium.chrome.browser.media.router.MediaController;
 import org.chromium.chrome.browser.media.router.cast.CastSessionUtil;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
@@ -19,7 +20,8 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
  * the complexities of the GMS cast calls.
  */
 public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpdatedListener,
-                                                 RemoteMediaPlayer.OnStatusUpdatedListener {
+                                                 RemoteMediaPlayer.OnStatusUpdatedListener,
+                                                 MediaController {
     private final CastDevice mCastDevice;
 
     private GoogleApiClient mApiClient;
@@ -97,6 +99,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
      * Starts playback. No-op if are not in a valid state.
      * Doesn't verify the command's success/failure.
      */
+    @Override
     public void play() {
         if (!canSendCommand()) return;
 
@@ -107,6 +110,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
      * Pauses playback. No-op if are not in a valid state.
      * Doesn't verify the command's success/failure.
      */
+    @Override
     public void pause() {
         if (!canSendCommand()) return;
 
@@ -117,6 +121,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
      * Sets the mute state. Does not affect the stream volume.
      * No-op if are not in a valid state. Doesn't verify the command's success/failure.
      */
+    @Override
     public void setMute(boolean mute) {
         if (!canSendCommand()) return;
 
@@ -127,6 +132,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
      * Sets the stream volume. Does not affect the mute state.
      * No-op if are not in a valid state. Doesn't verify the command's success/failure.
      */
+    @Override
     public void setVolume(double volume) {
         if (!canSendCommand()) return;
 
@@ -137,6 +143,7 @@ public class RemoteMediaPlayerWrapper implements RemoteMediaPlayer.OnMetadataUpd
      * Seeks to the given position (in milliseconds).
      * No-op if are not in a valid state. Doesn't verify the command's success/failure.
      */
+    @Override
     public void seek(long position) {
         if (!canSendCommand()) return;
 

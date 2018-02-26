@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteMediaPlayerWrapper;
+import org.chromium.chrome.browser.media.router.MediaController;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler;
 import org.chromium.chrome.browser.media.router.cast.CastSession;
 import org.chromium.chrome.browser.media.router.cast.CastSessionInfo;
@@ -183,4 +184,9 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
 
     @Override
     public void onMediaSessionAction(int action) {}
+
+    @Override
+    public MediaController getMediaController() {
+        return mMediaPlayerWrapper;
+    }
 }
