@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -334,8 +335,9 @@ NSString* GetSizeString(long long size_in_bytes) {
     [_installDriveButton addTarget:self
                             action:@selector(didTapInstallDriveButton)
                   forControlEvents:UIControlEventTouchUpInside];
-    // TODO(crbug.com/805533): Localize this string.
-    [_installDriveButton setTitle:@"Install" forState:UIControlStateNormal];
+    [_installDriveButton
+        setTitle:l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_INSTALL)
+        forState:UIControlStateNormal];
   }
   return _installDriveButton;
 }
@@ -423,11 +425,11 @@ NSString* GetSizeString(long long size_in_bytes) {
                                         _countOfBytesExpectedToReceive)];
       }
       break;
-    case kDownloadManagerStateInProgress:
-      // TODO(crbug.com/805533): Localize this string.
-      statusText =
-          [NSString stringWithFormat:@"Downloading... %@",
-                                     GetSizeString(_countOfBytesReceived)];
+    case kDownloadManagerStateInProgress: {
+      base::string16 size =
+          base::SysNSStringToUTF16(GetSizeString(_countOfBytesReceived));
+      statusText = l10n_util::GetNSStringF(
+          IDS_IOS_DOWNLOAD_MANAGER_DOWNLOADING_ELIPSIS, size);
       if (_countOfBytesExpectedToReceive != -1) {
         statusText = [statusText
             stringByAppendingFormat:@"/%@",
@@ -435,12 +437,13 @@ NSString* GetSizeString(long long size_in_bytes) {
                                         _countOfBytesExpectedToReceive)];
       }
       break;
+    }
     case kDownloadManagerStateSuceeded:
       statusText = _fileName;
       break;
     case kDownloadManagerStateFailed:
-      // TODO(crbug.com/805533): Localize this string.
-      statusText = @"Couldn't Download";
+      statusText =
+          l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_COULDNT_DOWNLOAD);
       break;
   }
 
@@ -453,18 +456,15 @@ NSString* GetSizeString(long long size_in_bytes) {
   NSString* title = nil;
   switch (_state) {
     case kDownloadManagerStateNotStarted:
-      // TODO(crbug.com/805533): Localize this string.
-      title = @"Download";
+      title = l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD);
       break;
     case kDownloadManagerStateInProgress:
       break;
     case kDownloadManagerStateSuceeded:
-      // TODO(crbug.com/805533): Localize this string.
-      title = @"Open In...";
+      title = l10n_util::GetNSString(IDS_IOS_OPEN_IN);
       break;
     case kDownloadManagerStateFailed:
-      // TODO(crbug.com/805533): Localize this string.
-      title = @"Try Again";
+      title = l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_TRY_AGAIN);
       break;
   }
 

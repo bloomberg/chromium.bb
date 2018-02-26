@@ -54,8 +54,7 @@ TEST_F(DownloadManagerViewControllerTest, InProgressWithLongFileName) {
   view_controller_.fileName = @"longfilenamesolongthatitbarelyfitwidthlimit";
   view_controller_.countOfBytesExpectedToReceive = 10 * 1024;
 
-  EXPECT_NSEQ(@"Downloading... Zero KB/10 KB",
-              view_controller_.statusLabel.text);
+  EXPECT_NSEQ(@"Downloading… Zero KB/10 KB", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
 }
 
@@ -68,7 +67,7 @@ TEST_F(DownloadManagerViewControllerTest,
   view_controller_.countOfBytesReceived = 900;
   view_controller_.countOfBytesExpectedToReceive = -1;
 
-  EXPECT_NSEQ(@"Downloading... 900 bytes", view_controller_.statusLabel.text);
+  EXPECT_NSEQ(@"Downloading… 900 bytes", view_controller_.statusLabel.text);
   EXPECT_TRUE(view_controller_.actionButton.hidden);
 }
 
@@ -79,8 +78,8 @@ TEST_F(DownloadManagerViewControllerTest, SuceededWithWithLongFileName) {
   view_controller_.countOfBytesReceived = 1024;
 
   EXPECT_NSEQ(@"file.txt", view_controller_.statusLabel.text);
-  EXPECT_NSEQ(@"Open In...", [view_controller_.actionButton
-                                 titleForState:UIControlStateNormal]);
+  EXPECT_NSEQ(@"Open in…", [view_controller_.actionButton
+                               titleForState:UIControlStateNormal]);
 }
 
 // Tests label and button titles with kDownloadManagerStateFailed state.

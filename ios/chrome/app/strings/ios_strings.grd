@@ -579,8 +579,26 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_DOWNLOAD_MANAGER_DOWNLOAD_FAILED" desc="Label displaying that downloading a file was unsuccessful. [Length: 25em] [iOS only]">
         Download failed.
       </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_COULDNT_DOWNLOAD" desc="Label displaying that downloading a file was unsuccessful. [Length: 25em] [iOS only]">
+        Couldn't Download
+      </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_INSTALL_GOOGLE_DRIVE" desc="Button to install the Google Drive app. [Length: 25em] [iOS only]">
         Install Google Drive
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_INSTALL" desc="Button to install the Google Drive app. [Length: 25em] [iOS only]">
+        Install
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION" desc="Alert title to confirm download cancellation [Length: 30em] [iOS only]">
+        Cancel Download?
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION" desc="Alert title to confirm download old download replacement [Length: 30em] [iOS only]">
+        Start New Download?
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE" desc="Alert message to confirm download old download replacement [Length: 100em] [iOS only]">
+        This will stop all progress for your current download.
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_DOWNLOADING_ELIPSIS" desc="Label for the file being downloaded. [Length: 25em] [iOS only]">
+        Downloading… <ph name="FILE_SIZE">$1<ex>456KB</ex></ph>
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_NO_APP_MESSAGE" desc="Message displayed in dialog informing user that no application on the phone can open the downloaded file. [Length: 50em] [iOS only]">
         No application on this device can open the file.
@@ -590,6 +608,9 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_RETRY_DOWNLOAD" desc="Button to retry downloading a file once a previous attempt to download the file failed. [Length: 25em] [iOS only]">
         Retry Download
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_TRY_AGAIN" desc="Button to retry downloading a file once a previous attempt to download the file failed. [Length: 25em] [iOS only]">
+        Try Again
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_TIME_LEFT" desc="Label displaying the number of minutes remaining for the download. [Length: 7em] [iOS only]">
         <ph name="MINUTES">$1<ex>3</ex></ph> min
