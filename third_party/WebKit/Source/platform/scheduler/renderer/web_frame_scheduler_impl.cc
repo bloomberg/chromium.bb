@@ -10,7 +10,9 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
+#include "platform/scheduler/child/default_params.h"
 #include "platform/scheduler/child/task_runner_impl.h"
+#include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -30,6 +32,17 @@ const char* VisibilityStateToString(bool is_visible) {
   } else {
     return "hidden";
   }
+}
+
+const char* PageVisibilityStateToString(PageVisibilityState visibility) {
+  switch (visibility) {
+    case PageVisibilityState::kVisible:
+      return "visible";
+    case PageVisibilityState::kHidden:
+      return "hidden";
+  }
+  // Keep MSVC happy.
+  return nullptr;
 }
 
 const char* PausedStateToString(bool is_paused) {
@@ -64,7 +77,7 @@ bool StopNonTimersInBackgroundEnabled() {
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
     WebFrameSchedulerImpl* frame_scheduler)
-    : frame_scheduler_(frame_scheduler->AsWeakPtr()) {
+    : frame_scheduler_(frame_scheduler->GetWeakPtr()) {
   frame_scheduler->DidOpenActiveConnection();
 }
 
@@ -77,7 +90,7 @@ WebFrameSchedulerImpl::ActiveConnectionHandleImpl::
 WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
     ThrottlingObserverHandleImpl(WebFrameSchedulerImpl* frame_scheduler,
                                  Observer* observer)
-    : frame_scheduler_(frame_scheduler->AsWeakPtr()), observer_(observer) {}
+    : frame_scheduler_(frame_scheduler->GetWeakPtr()), observer_(observer) {}
 
 WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
     ~ThrottlingObserverHandleImpl() {
@@ -99,11 +112,11 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
                      this,
                      &tracing_controller_,
                      VisibilityStateToString),
-      page_visible_(true,
-                    "WebFrameScheduler.PageVisible",
-                    this,
-                    &tracing_controller_,
-                    VisibilityStateToString),
+      page_visibility_(kDefaultPageVisibility,
+                       "WebFrameScheduler.PageVisible",
+                       this,
+                       &tracing_controller_,
+                       PageVisibilityStateToString),
       page_frozen_(false,
                    "WebFrameScheduler.PageFrozen",
                    this,
@@ -185,7 +198,6 @@ void WebFrameSchedulerImpl::
 std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
 WebFrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
                                              Observer* observer) {
-  DCHECK_EQ(ObserverType::kLoader, type);
   DCHECK(observer);
   observer->OnThrottlingStateChanged(CalculateThrottlingState());
   loader_observers_.insert(observer);
@@ -396,6 +408,11 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
   return unpausable_task_queue_;
 }
 
+scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ControlTaskQueue() {
+  DCHECK(parent_web_view_scheduler_);
+  return renderer_scheduler_->ControlTaskQueue();
+}
+
 blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() const {
   return parent_web_view_scheduler_;
 }
@@ -434,7 +451,8 @@ void WebFrameSchedulerImpl::DidCloseActiveConnection() {
 void WebFrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
-  state->SetBoolean("page_visible", page_visible_);
+  state->SetBoolean("page_visible",
+                    page_visibility_ == PageVisibilityState::kVisible);
   state->SetBoolean("cross_origin", cross_origin_);
   state->SetString("frame_type",
                    frame_type_ == WebFrameScheduler::FrameType::kMainFrame
@@ -475,18 +493,21 @@ void WebFrameSchedulerImpl::AsValueInto(
 
 void WebFrameSchedulerImpl::SetPageVisible(bool page_visible) {
   DCHECK(parent_web_view_scheduler_);
-  if (page_visible_ == page_visible)
+  PageVisibilityState page_visibility = page_visible
+                                            ? PageVisibilityState::kVisible
+                                            : PageVisibilityState::kHidden;
+  if (page_visibility_ == page_visibility)
     return;
   bool was_throttled = ShouldThrottleTimers();
-  page_visible_ = page_visible;
-  if (page_visible_)
+  page_visibility_ = page_visibility;
+  if (page_visibility_ == PageVisibilityState::kVisible)
     page_frozen_ = false;  // visible page must not be frozen.
   UpdateThrottling(was_throttled);
   UpdateThrottlingState();
 }
 
 bool WebFrameSchedulerImpl::IsPageVisible() const {
-  return page_visible_;
+  return page_visibility_ == PageVisibilityState::kVisible;
 }
 
 void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
@@ -510,7 +531,7 @@ void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
 void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
   if (frozen == page_frozen_)
     return;
-  DCHECK(!page_visible_);
+  DCHECK(page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
   UpdateThrottlingState();
 }
@@ -529,10 +550,10 @@ WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       page_frozen_) {
-    DCHECK(!page_visible_);
+    DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return WebFrameScheduler::ThrottlingState::kStopped;
   }
-  if (!page_visible_)
+  if (page_visibility_ == PageVisibilityState::kHidden)
     return WebFrameScheduler::ThrottlingState::kThrottled;
   return WebFrameScheduler::ThrottlingState::kNotThrottled;
 }
@@ -548,7 +569,7 @@ WebFrameSchedulerImpl::OnActiveConnectionCreated() {
 }
 
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
-  if (!page_visible_)
+  if (page_visibility_ == PageVisibilityState::kHidden)
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
          !frame_visible_ && cross_origin_;
@@ -567,7 +588,7 @@ void WebFrameSchedulerImpl::UpdateThrottling(bool was_throttled) {
   }
 }
 
-base::WeakPtr<WebFrameSchedulerImpl> WebFrameSchedulerImpl::AsWeakPtr() {
+base::WeakPtr<WebFrameSchedulerImpl> WebFrameSchedulerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
