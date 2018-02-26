@@ -1415,6 +1415,7 @@ static void ExternalSubsetHandler(void* closure,
                                   const xmlChar*,
                                   const xmlChar* external_id,
                                   const xmlChar*) {
+  // https://html.spec.whatwg.org/multipage/xhtml.html#parsing-xhtml-documents:named-character-references
   String ext_id = ToString(external_id);
   if (ext_id == "-//W3C//DTD XHTML 1.0 Transitional//EN" ||
       ext_id == "-//W3C//DTD XHTML 1.1//EN" ||
@@ -1423,6 +1424,7 @@ static void ExternalSubsetHandler(void* closure,
       ext_id == "-//W3C//DTD XHTML Basic 1.0//EN" ||
       ext_id == "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN" ||
       ext_id == "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" ||
+      ext_id == "-//W3C//DTD MathML 2.0//EN" ||
       ext_id == "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" ||
       ext_id == "-//WAPFORUM//DTD XHTML Mobile 1.1//EN" ||
       ext_id == "-//WAPFORUM//DTD XHTML Mobile 1.2//EN") {
