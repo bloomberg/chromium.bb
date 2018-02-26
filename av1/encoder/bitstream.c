@@ -2826,7 +2826,6 @@ static void write_bitdepth_colorspace_sampling(
     aom_wb_write_bit(wb, is_monochrome);
   else
     assert(!is_monochrome);
-#if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
       cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
       cm->matrix_coefficients == AOM_CICP_MC_UNSPECIFIED) {
@@ -2837,20 +2836,12 @@ static void write_bitdepth_colorspace_sampling(
     aom_wb_write_literal(wb, cm->transfer_characteristics, 8);
     aom_wb_write_literal(wb, cm->matrix_coefficients, 8);
   }
-#else
-  if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 5);
-  aom_wb_write_literal(wb, cm->transfer_function, 5);
-#endif  // CONFIG_CICP
   if (is_monochrome) return;
-#if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
       cm->matrix_coefficients ==
           AOM_CICP_MC_IDENTITY) {  // it would be better to remove this
                                    // dependency too
-#else
-  if (cm->color_space == AOM_CS_SRGB) {
-#endif  // CONFIG_CICP
     assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
     assert(cm->profile == PROFILE_1 ||
            (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12));

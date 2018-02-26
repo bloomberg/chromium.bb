@@ -532,7 +532,6 @@ static const arg_def_t max_gf_interval = ARG_DEF(
     NULL, "max-gf-interval", 1,
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
 
-#if CONFIG_CICP
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
   { "unspecified", AOM_CICP_CP_UNSPECIFIED },
@@ -601,32 +600,6 @@ static const arg_def_t input_matrix_coefficients = ARG_DEF_ENUM(
     NULL, "matrix-coefficients", 1,
     "Matrix coefficients (CICP) of input content:", matrix_coefficients_enum);
 
-#else
-static const struct arg_enum_list color_space_enum[] = {
-  { "unspecified", AOM_CS_UNKNOWN }, { "bt601", AOM_CS_BT_601 },
-  { "bt709", AOM_CS_BT_709 },        { "smpte170", AOM_CS_SMPTE_170 },
-  { "smpte240", AOM_CS_SMPTE_240 },  { "bt2020ncl", AOM_CS_BT_2020_NCL },
-  { "bt2020cl", AOM_CS_BT_2020_CL }, { "sRGB", AOM_CS_SRGB },
-  { "ictcp", AOM_CS_ICTCP },         { NULL, 0 }
-};
-
-static const arg_def_t input_color_space =
-    ARG_DEF_ENUM(NULL, "color-space", 1,
-                 "The color space of input content:", color_space_enum);
-
-static const struct arg_enum_list transfer_function_enum[] = {
-  { "unknown", AOM_TF_UNKNOWN },
-  { "bt709", AOM_TF_BT_709 },
-  { "pq", AOM_TF_PQ },
-  { "hlg", AOM_TF_HLG },
-  { NULL, 0 }
-};
-
-static const arg_def_t input_transfer_function = ARG_DEF_ENUM(
-    NULL, "transfer-function", 1,
-    "The transfer function of input content:", transfer_function_enum);
-
-#endif
 static const struct arg_enum_list chroma_sample_position_enum[] = {
   { "unknown", AOM_CSP_UNKNOWN },
   { "vertical", AOM_CSP_VERTICAL },
@@ -716,14 +689,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #if CONFIG_CDF_UPDATE_MODE
                                        &cdf_update_mode,
 #endif  // CONFIG_CDF_UPDATE_MODE
-#if CONFIG_CICP
                                        &input_color_primaries,
                                        &input_transfer_characteristics,
                                        &input_matrix_coefficients,
-#else
-                                       &input_color_space,
-                                       &input_transfer_function,
-#endif
                                        &input_chroma_sample_position,
                                        &min_gf_interval,
                                        &max_gf_interval,
@@ -790,14 +758,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_CDF_UPDATE_MODE
                                         AV1E_SET_CDF_UPDATE_MODE,
 #endif  // CONFIG_CDF_UPDATE_MODE
-#if CONFIG_CICP
                                         AV1E_SET_COLOR_PRIMARIES,
                                         AV1E_SET_TRANSFER_CHARACTERISTICS,
                                         AV1E_SET_MATRIX_COEFFICIENTS,
-#else
-                                        AV1E_SET_COLOR_SPACE,
-                                        AV1E_SET_TRANSFER_FUNCTION,
-#endif
                                         AV1E_SET_CHROMA_SAMPLE_POSITION,
                                         AV1E_SET_MIN_GF_INTERVAL,
                                         AV1E_SET_MAX_GF_INTERVAL,

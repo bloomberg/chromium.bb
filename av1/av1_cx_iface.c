@@ -90,14 +90,9 @@ struct av1_extracfg {
   unsigned int frame_periodic_boost;
   aom_bit_depth_t bit_depth;
   aom_tune_content content;
-#if CONFIG_CICP
   aom_color_primaries_t color_primaries;
   aom_transfer_characteristics_t transfer_characteristics;
   aom_matrix_coefficients_t matrix_coefficients;
-#else
-  aom_color_space_t color_space;
-  aom_transfer_function_t transfer_function;
-#endif
   aom_chroma_sample_position_t chroma_sample_position;
   int color_range;
   int render_width;
@@ -175,17 +170,12 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_EXT_DELTA_Q
   NO_DELTA_Q,  // deltaq_mode
 #endif
-  0,                    // frame_periodic_delta_q
-  AOM_BITS_8,           // Bit depth
-  AOM_CONTENT_DEFAULT,  // content
-#if CONFIG_CICP
-  AOM_CICP_CP_UNSPECIFIED,  // CICP color space
-  AOM_CICP_TC_UNSPECIFIED,  // CICP transfer characteristics
-  AOM_CICP_MC_UNSPECIFIED,  // CICP matrix coefficients
-#else
-  AOM_CS_UNKNOWN,  // color space
-  AOM_TF_UNKNOWN,  // transfer function
-#endif
+  0,                            // frame_periodic_delta_q
+  AOM_BITS_8,                   // Bit depth
+  AOM_CONTENT_DEFAULT,          // content
+  AOM_CICP_CP_UNSPECIFIED,      // CICP color space
+  AOM_CICP_TC_UNSPECIFIED,      // CICP transfer characteristics
+  AOM_CICP_MC_UNSPECIFIED,      // CICP matrix coefficients
   AOM_CSP_UNKNOWN,              // chroma sample position
   0,                            // color range
   0,                            // render width
@@ -436,7 +426,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     ERROR("Source bit-depth 12 not supported in profile < 2");
   }
 
-#if CONFIG_CICP
   RANGE_CHECK(extra_cfg, color_primaries, AOM_CICP_CP_BT_709,
               AOM_CICP_CP_EBU_3213);  // Need to check range more precisely to
                                       // check for reserved values?
@@ -444,12 +433,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               AOM_CICP_TC_HLG);
   RANGE_CHECK(extra_cfg, matrix_coefficients, AOM_CICP_MC_BT_709,
               AOM_CICP_MC_ICTCP);
-#else
-  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_ICTCP);
-  RANGE_CHECK(extra_cfg, transfer_function, AOM_TF_UNKNOWN, AOM_TF_HLG);
-  RANGE_CHECK(extra_cfg, chroma_sample_position, AOM_CSP_UNKNOWN,
-              AOM_CSP_COLOCATED);
-#endif  // CONFIG_CICP
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
 #if CONFIG_DIST_8X8
@@ -667,16 +650,9 @@ static aom_codec_err_t set_encoder_config(
   oxcf->firstpass_mb_stats_in = cfg->rc_firstpass_mb_stats_in;
 #endif
 
-#if CONFIG_CICP
   oxcf->color_primaries = extra_cfg->color_primaries;
   oxcf->transfer_characteristics = extra_cfg->transfer_characteristics;
   oxcf->matrix_coefficients = extra_cfg->matrix_coefficients;
-#else
-  oxcf->color_space = extra_cfg->color_space;
-#endif  // CONFIG_CICP
-#if !CONFIG_CICP
-  oxcf->transfer_function = extra_cfg->transfer_function;
-#endif
   oxcf->chroma_sample_position = extra_cfg->chroma_sample_position;
 
   oxcf->color_range = extra_cfg->color_range;
@@ -1647,7 +1623,6 @@ static aom_codec_err_t ctrl_set_cdf_update_mode(aom_codec_alg_priv_t *ctx,
 }
 #endif  // CONFIG_CDF_UPDATE_MODE
 
-#if CONFIG_CICP
 static aom_codec_err_t ctrl_set_color_primaries(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1669,22 +1644,6 @@ static aom_codec_err_t ctrl_set_matrix_coefficients(aom_codec_alg_priv_t *ctx,
   extra_cfg.matrix_coefficients = CAST(AV1E_SET_MATRIX_COEFFICIENTS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#else
-
-static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
-                                            va_list args) {
-  struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.color_space = CAST(AV1E_SET_COLOR_SPACE, args);
-  return update_extra_cfg(ctx, &extra_cfg);
-}
-
-static aom_codec_err_t ctrl_set_transfer_function(aom_codec_alg_priv_t *ctx,
-                                                  va_list args) {
-  struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.transfer_function = CAST(AV1E_SET_TRANSFER_FUNCTION, args);
-  return update_extra_cfg(ctx, &extra_cfg);
-}
-#endif
 
 static aom_codec_err_t ctrl_set_chroma_sample_position(
     aom_codec_alg_priv_t *ctx, va_list args) {
@@ -1789,14 +1748,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #if CONFIG_CDF_UPDATE_MODE
   { AV1E_SET_CDF_UPDATE_MODE, ctrl_set_cdf_update_mode },
 #endif  // CONFIG_CDF_UPDATE_MODE
-#if CONFIG_CICP
   { AV1E_SET_COLOR_PRIMARIES, ctrl_set_color_primaries },
   { AV1E_SET_TRANSFER_CHARACTERISTICS, ctrl_set_transfer_characteristics },
   { AV1E_SET_MATRIX_COEFFICIENTS, ctrl_set_matrix_coefficients },
-#else
-  { AV1E_SET_COLOR_SPACE, ctrl_set_color_space },
-  { AV1E_SET_TRANSFER_FUNCTION, ctrl_set_transfer_function },
-#endif
   { AV1E_SET_CHROMA_SAMPLE_POSITION, ctrl_set_chroma_sample_position },
   { AV1E_SET_COLOR_RANGE, ctrl_set_color_range },
   { AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },

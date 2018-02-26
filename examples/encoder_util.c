@@ -99,13 +99,9 @@ void aom_find_mismatch(const aom_image_t *const img1,
 
 int aom_compare_img(const aom_image_t *const img1,
                     const aom_image_t *const img2) {
-#if CONFIG_CICP
   assert(img1->cp == img2->cp);
   assert(img1->tc == img2->tc);
   assert(img1->mc == img2->mc);
-#else
-  assert(img1->cs == img2->cs);
-#endif
   assert(img1->monochrome == img2->monochrome);
 
   int num_planes = img1->monochrome ? 1 : 3;

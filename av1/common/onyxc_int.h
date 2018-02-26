@@ -241,14 +241,9 @@ typedef struct SequenceHeader {
 
 typedef struct AV1Common {
   struct aom_internal_error_info error;
-#if CONFIG_CICP
   aom_color_primaries_t color_primaries;
   aom_transfer_characteristics_t transfer_characteristics;
   aom_matrix_coefficients_t matrix_coefficients;
-#else
-  aom_color_space_t color_space;
-  aom_transfer_function_t transfer_function;
-#endif
   aom_chroma_sample_position_t chroma_sample_position;
   int color_range;
   int width;

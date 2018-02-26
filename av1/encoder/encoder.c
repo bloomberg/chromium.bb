@@ -1083,17 +1083,10 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->profile = oxcf->profile;
   cm->bit_depth = oxcf->bit_depth;
   cm->use_highbitdepth = oxcf->use_highbitdepth;
-#if CONFIG_CICP
   cm->color_primaries = oxcf->color_primaries;
   cm->transfer_characteristics = oxcf->transfer_characteristics;
   cm->matrix_coefficients = oxcf->matrix_coefficients;
-#else
-  cm->color_space = oxcf->color_space;
-#endif  // CONFIG_CICP
   cm->seq_params.monochrome = oxcf->monochrome;
-#if !CONFIG_CICP
-  cm->transfer_function = oxcf->transfer_function;
-#endif
   cm->chroma_sample_position = oxcf->chroma_sample_position;
   cm->color_range = oxcf->color_range;
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
@@ -3127,17 +3120,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   if (cm->profile != oxcf->profile) cm->profile = oxcf->profile;
   cm->bit_depth = oxcf->bit_depth;
-#if CONFIG_CICP
   cm->color_primaries = oxcf->color_primaries;
   cm->transfer_characteristics = oxcf->transfer_characteristics;
   cm->matrix_coefficients = oxcf->matrix_coefficients;
-#else
-  cm->color_space = oxcf->color_space;
-#endif
   cm->seq_params.monochrome = oxcf->monochrome;
-#if !CONFIG_CICP
-  cm->transfer_function = oxcf->transfer_function;
-#endif
   cm->chroma_sample_position = oxcf->chroma_sample_position;
   cm->color_range = oxcf->color_range;
 
@@ -6073,17 +6059,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   }
 
   cm->frame_to_show = get_frame_new_buffer(cm);
-#if CONFIG_CICP
   cm->frame_to_show->color_primaries = cm->color_primaries;
   cm->frame_to_show->transfer_characteristics = cm->transfer_characteristics;
   cm->frame_to_show->matrix_coefficients = cm->matrix_coefficients;
-#else
-  cm->frame_to_show->color_space = cm->color_space;
-#endif
   cm->frame_to_show->monochrome = cm->seq_params.monochrome;
-#if !CONFIG_CICP
-  cm->frame_to_show->transfer_function = cm->transfer_function;
-#endif
   cm->frame_to_show->chroma_sample_position = cm->chroma_sample_position;
   cm->frame_to_show->color_range = cm->color_range;
   cm->frame_to_show->render_width = cm->render_width;
