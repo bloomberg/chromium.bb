@@ -66,7 +66,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   // Delegation methods for the VideoCaptureDevice interface.
   void AllocateAndStart(const VideoCaptureParams& params,
                         CameraDeviceContext* device_context);
-  void StopAndDeAllocate(base::Closure device_close_callback);
+  void StopAndDeAllocate(base::OnceClosure device_close_callback);
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback);
   void GetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
   void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
@@ -162,7 +162,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   // Where all the Mojo IPC calls takes place.
   const scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
-  base::Closure device_close_callback_;
+  base::OnceClosure device_close_callback_;
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_;
 

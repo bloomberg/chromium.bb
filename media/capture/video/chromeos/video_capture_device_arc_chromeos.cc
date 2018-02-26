@@ -138,6 +138,9 @@ void VideoCaptureDeviceArcChromeOS::SuspendDone(
 void VideoCaptureDeviceArcChromeOS::OpenDevice() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
+  if (!camera_device_delegate_) {
+    return;
+  }
   // It's safe to pass unretained |device_context_| here since
   // VideoCaptureDeviceArcChromeOS owns |camera_device_delegate_| and makes
   // sure |device_context_| outlives |camera_device_delegate_|.
