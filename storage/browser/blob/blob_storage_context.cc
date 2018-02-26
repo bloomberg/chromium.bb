@@ -87,6 +87,32 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
   return BuildBlob(std::move(external_builder), TransportAllowedCallback());
 }
 
+std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
+    const std::string& uuid,
+    const std::string& content_type,
+    const std::string& content_disposition,
+    std::vector<scoped_refptr<ShareableBlobDataItem>> items) {
+  TRACE_EVENT0("Blob", "Context::AddFinishedBlobFromItems");
+  BlobEntry* entry =
+      registry_.CreateEntry(uuid, content_type, content_disposition);
+  uint64_t total_memory_size = 0;
+  for (const auto& item : items) {
+    if (item->item()->type() == BlobDataItem::Type::kBytes)
+      total_memory_size += item->item()->length();
+    DCHECK_EQ(item->state(), ShareableBlobDataItem::POPULATED_WITH_QUOTA);
+    DCHECK_NE(BlobDataItem::Type::kBytesDescription, item->item()->type());
+    DCHECK(!item->item()->IsFutureFileItem());
+  }
+
+  entry->SetSharedBlobItems(std::move(items));
+  std::unique_ptr<BlobDataHandle> handle = CreateHandle(uuid, entry);
+  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
+  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize", total_memory_size / 1024);
+  entry->set_status(BlobStatus::DONE);
+  memory_controller_.NotifyMemoryItemsUsed(entry->items());
+  return handle;
+}
+
 std::unique_ptr<BlobDataHandle> BlobStorageContext::AddBrokenBlob(
     const std::string& uuid,
     const std::string& content_type,

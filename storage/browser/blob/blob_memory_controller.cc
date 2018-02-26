@@ -287,11 +287,11 @@ MemoryAllocation::MemoryAllocation(
     base::WeakPtr<BlobMemoryController> controller,
     uint64_t item_id,
     size_t length)
-    : controller(controller), item_id(item_id), length(length) {}
+    : controller_(std::move(controller)), item_id_(item_id), length_(length) {}
 
 MemoryAllocation::~MemoryAllocation() {
-  if (controller)
-    controller->RevokeMemoryAllocation(item_id, length);
+  if (controller_)
+    controller_->RevokeMemoryAllocation(item_id_, length_);
 }
 
 BlobMemoryController::QuotaAllocationTask::~QuotaAllocationTask() = default;
@@ -637,6 +637,34 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveFileQuota(
   pending_file_quota_tasks_.back()->set_my_list_position(
       --pending_file_quota_tasks_.end());
   return pending_file_quota_tasks_.back()->GetWeakPtr();
+}
+
+void BlobMemoryController::ShrinkMemoryAllocation(ShareableBlobDataItem* item) {
+  DCHECK(item->HasGrantedQuota());
+  DCHECK_EQ(item->item()->type(), BlobDataItem::Type::kBytes);
+  DCHECK_GE(item->memory_allocation_->length(), item->item()->length());
+  DCHECK_EQ(item->memory_allocation_->controller_.get(), this);
+
+  // Setting a new MemoryAllocation will delete and free the existing memory
+  // allocation, so here we only have to account for the new allocation.
+  blob_memory_used_ += item->item()->length();
+  item->set_memory_allocation(std::make_unique<MemoryAllocation>(
+      weak_factory_.GetWeakPtr(), item->item_id(),
+      base::checked_cast<size_t>(item->item()->length())));
+  MaybeGrantPendingMemoryRequests();
+}
+
+void BlobMemoryController::ShrinkFileAllocation(
+    ShareableFileReference* file_reference,
+    uint64_t old_length,
+    uint64_t new_length) {
+  DCHECK_GE(old_length, new_length);
+
+  DCHECK_GE(disk_used_, old_length - new_length);
+  disk_used_ -= old_length - new_length;
+  file_reference->AddFinalReleaseCallback(
+      base::BindRepeating(&BlobMemoryController::OnShrunkenBlobFileDelete,
+                          weak_factory_.GetWeakPtr(), old_length - new_length));
 }
 
 void BlobMemoryController::NotifyMemoryItemsUsed(
@@ -1040,6 +1068,11 @@ void BlobMemoryController::OnBlobFileDelete(uint64_t size,
                                             const FilePath& path) {
   DCHECK_LE(size, disk_used_);
   disk_used_ -= size;
+}
+
+void BlobMemoryController::OnShrunkenBlobFileDelete(uint64_t shrink_delta,
+                                                    const FilePath& path) {
+  disk_used_ += shrink_delta;
 }
 
 }  // namespace storage

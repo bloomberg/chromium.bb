@@ -57,6 +57,8 @@ class STORAGE_EXPORT ScopedFile {
   // of this instance is released.
   // If release policy is DELETE_ON_SCOPE_OUT the
   // callback task(s) is/are posted before the deletion is scheduled.
+  // The callbacks are posted in reverse of the order they were added, as LIFO
+  // generally makes most sense for cleanup work.
   void AddScopeOutCallback(ScopeOutCallback callback,
                            base::TaskRunner* callback_runner);
 

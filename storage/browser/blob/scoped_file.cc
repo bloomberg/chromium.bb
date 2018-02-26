@@ -56,8 +56,8 @@ void ScopedFile::Reset() {
   if (path_.empty())
     return;
 
-  for (ScopeOutCallbackList::iterator iter = scope_out_callbacks_.begin();
-       iter != scope_out_callbacks_.end(); ++iter) {
+  for (auto iter = scope_out_callbacks_.rbegin();
+       iter != scope_out_callbacks_.rend(); ++iter) {
     iter->second->PostTask(FROM_HERE,
                            base::BindOnce(std::move(iter->first), path_));
   }

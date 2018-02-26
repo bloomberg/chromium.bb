@@ -11,8 +11,10 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
+#include "mojo/common/data_pipe_utils.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -984,6 +986,34 @@ TEST_F(BlobRegistryImplTest,
   scoped_task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
+}
+
+TEST_F(BlobRegistryImplTest, RegisterFromStream) {
+  const std::string kData = "hello world, this is a blob";
+  const std::string kContentType = "content/type";
+  const std::string kContentDisposition = "disposition";
+
+  mojo::DataPipe pipe;
+  blink::mojom::SerializedBlobPtr blob;
+  base::RunLoop loop;
+  registry_->RegisterFromStream(
+      kContentType, kContentDisposition, kData.length(),
+      std::move(pipe.consumer_handle),
+      base::BindLambdaForTesting([&](blink::mojom::SerializedBlobPtr result) {
+        blob = std::move(result);
+        loop.Quit();
+      }));
+  mojo::common::BlockingCopyFromString(kData, pipe.producer_handle);
+  pipe.producer_handle.reset();
+  loop.Run();
+
+  ASSERT_TRUE(blob);
+  EXPECT_FALSE(blob->uuid.empty());
+  EXPECT_EQ(kContentType, blob->content_type);
+  EXPECT_EQ(kData.length(), blob->size);
+  ASSERT_TRUE(blob->blob);
+  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+  EXPECT_EQ(blob->uuid, UUIDFromBlob(blob_ptr.get()));
 }
 
 }  // namespace storage

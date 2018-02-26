@@ -41,9 +41,14 @@
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/WTFString.h"
 #include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/blob/data_element.mojom-blink.h"
 
 namespace blink {
+namespace mojom {
+namespace blink {
+class BlobRegistry;
+}
+}  // namespace mojom
 
 class BlobBytesProvider;
 class BlobDataHandle;

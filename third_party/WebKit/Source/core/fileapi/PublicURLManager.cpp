@@ -37,6 +37,7 @@
 #include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
+#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 

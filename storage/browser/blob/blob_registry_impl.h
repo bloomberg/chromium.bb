@@ -6,6 +6,8 @@
 #define STORAGE_BROWSER_BLOB_BLOB_REGISTRY_IMPL_H_
 
 #include <memory>
+#include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -14,6 +16,8 @@
 
 namespace storage {
 
+class BlobBuilderFromStream;
+class BlobDataHandle;
 class BlobStorageContext;
 class FileSystemURL;
 
@@ -42,6 +46,11 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
                 const std::string& content_disposition,
                 std::vector<blink::mojom::DataElementPtr> elements,
                 RegisterCallback callback) override;
+  void RegisterFromStream(const std::string& content_type,
+                          const std::string& content_disposition,
+                          uint64_t expected_length,
+                          mojo::ScopedDataPipeConsumerHandle data,
+                          RegisterFromStreamCallback callback) override;
   void GetBlobFromUUID(blink::mojom::BlobRequest blob,
                        const std::string& uuid,
                        GetBlobFromUUIDCallback callback) override;
@@ -61,6 +70,10 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
  private:
   class BlobUnderConstruction;
 
+  void StreamingBlobDone(RegisterFromStreamCallback callback,
+                         BlobBuilderFromStream* builder,
+                         std::unique_ptr<BlobDataHandle> result);
+
   base::WeakPtr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
@@ -69,6 +82,9 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
 
   std::map<std::string, std::unique_ptr<BlobUnderConstruction>>
       blobs_under_construction_;
+  base::flat_set<std::unique_ptr<BlobBuilderFromStream>,
+                 base::UniquePtrComparator>
+      blobs_being_streamed_;
 
   base::WeakPtrFactory<BlobRegistryImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BlobRegistryImpl);

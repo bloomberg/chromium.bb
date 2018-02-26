@@ -32,6 +32,7 @@ class BlobDispatcherHost;
 class BlobDispatcherHostTest;
 class BlobTransportHostTest;
 class ChromeBlobStorageContext;
+class ShareableBlobDataItem;
 }
 
 namespace storage {
@@ -61,6 +62,12 @@ class STORAGE_EXPORT BlobStorageContext {
   // completion and possible errors.
   std::unique_ptr<BlobDataHandle> AddFinishedBlob(
       std::unique_ptr<BlobDataBuilder> builder);
+
+  std::unique_ptr<BlobDataHandle> AddFinishedBlob(
+      const std::string& uuid,
+      const std::string& content_type,
+      const std::string& content_disposition,
+      std::vector<scoped_refptr<ShareableBlobDataItem>> items);
 
   std::unique_ptr<BlobDataHandle> AddBrokenBlob(
       const std::string& uuid,
@@ -138,11 +145,16 @@ class STORAGE_EXPORT BlobStorageContext {
     mutable_memory_controller()->set_limits_for_testing(limits);
   }
 
+  void DisableFilePagingForTesting() {
+    mutable_memory_controller()->DisableFilePaging(base::File::FILE_OK);
+  }
+
  protected:
   friend class content::BlobDispatcherHost;
   friend class content::BlobDispatcherHostTest;
   friend class content::BlobTransportHostTest;
   friend class content::ChromeBlobStorageContext;
+  friend class BlobBuilderFromStream;
   friend class BlobTransportHost;
   friend class BlobDataHandle;
   friend class BlobDataHandle::BlobDataHandleShared;

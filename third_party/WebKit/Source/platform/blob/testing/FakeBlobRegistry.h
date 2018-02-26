@@ -21,6 +21,12 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                 Vector<mojom::blink::DataElementPtr> elements,
                 RegisterCallback) override;
 
+  void RegisterFromStream(const String& content_type,
+                          const String& content_disposition,
+                          uint64_t expected_length,
+                          mojo::ScopedDataPipeConsumerHandle,
+                          RegisterFromStreamCallback) override;
+
   void GetBlobFromUUID(mojom::blink::BlobRequest,
                        const String& uuid,
                        GetBlobFromUUIDCallback) override;

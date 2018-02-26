@@ -133,6 +133,7 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
   uint64_t GetFutureFileID() const;
 
  private:
+  friend class BlobBuilderFromStream;
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
   friend class base::RefCounted<BlobDataItem>;
@@ -148,9 +149,12 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
 
   void AllocateBytes();
   void PopulateBytes(base::span<const char> data);
+  void ShrinkBytes(size_t new_length);
+
   void PopulateFile(base::FilePath path,
                     base::Time expected_modification_time,
                     scoped_refptr<DataHandle> data_handle);
+  void ShrinkFile(uint64_t new_length);
 
   static void SetFileModificationTimes(
       std::vector<scoped_refptr<BlobDataItem>> items,
