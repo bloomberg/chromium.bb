@@ -260,11 +260,59 @@ IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabDeletion) {
   EXPECT_EQ(1U, tab_service->entries().size());
   auto* tab = static_cast<sessions::TabRestoreService::Tab*>(
       tab_service->entries().front().get());
-  EXPECT_EQ(url_d_, tab->navigations.back().virtual_url());
+  EXPECT_EQ(url_d_, tab->navigations.front().virtual_url());
   EXPECT_TRUE(tab_service->IsLoaded());
 
   browsing_data::RemoveNavigationEntries(
       browser()->profile(), history::DeletionTimeRange::Invalid(),
       {history::URLResult(url_d_, base::Time())});
   EXPECT_EQ(0U, tab_service->entries().size());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEntryRemoverTest, RecentTabWindowDeletion) {
+  AddBrowser(browser(), {url_a_});
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+  AddTab(new_browser, {url_b_, url_c_});
+  AddTab(new_browser, {url_d_});
+  chrome::CloseWindow(new_browser);
+
+  sessions::TabRestoreService* tab_service =
+      TabRestoreServiceFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(1U, tab_service->entries().size());
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW,
+            tab_service->entries().front()->type);
+  auto* window = static_cast<sessions::TabRestoreService::Window*>(
+      tab_service->entries().front().get());
+  EXPECT_EQ(3U, window->tabs.size());
+
+  // Delete b and d.
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_b_, base::Time()),
+       history::URLResult(url_d_, base::Time())});
+  content::RunAllTasksUntilIdle();
+  EXPECT_EQ(1U, tab_service->entries().size());
+  ASSERT_EQ(sessions::TabRestoreService::WINDOW,
+            tab_service->entries().front()->type);
+  window = static_cast<sessions::TabRestoreService::Window*>(
+      tab_service->entries().front().get());
+  EXPECT_EQ(2U, window->tabs.size());
+  EXPECT_EQ(2U, window->tabs.size());
+  EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_EQ(0, window->tabs[0]->tabstrip_index);
+  EXPECT_EQ(1, window->tabs[1]->tabstrip_index);
+  EXPECT_EQ(url_a_, window->tabs[0]->navigations.front().virtual_url());
+  EXPECT_EQ(url_c_, window->tabs[1]->navigations.front().virtual_url());
+
+  // Delete a. The Window should be converted to a Tab.
+  browsing_data::RemoveNavigationEntries(
+      browser()->profile(), history::DeletionTimeRange::Invalid(),
+      {history::URLResult(url_a_, base::Time())});
+  EXPECT_EQ(1U, tab_service->entries().size());
+  ASSERT_EQ(sessions::TabRestoreService::TAB,
+            tab_service->entries().front()->type);
+  auto* tab = static_cast<sessions::TabRestoreService::Tab*>(
+      tab_service->entries().front().get());
+  EXPECT_EQ(url_c_, tab->navigations.front().virtual_url());
+  EXPECT_EQ(0, tab->tabstrip_index);
 }
