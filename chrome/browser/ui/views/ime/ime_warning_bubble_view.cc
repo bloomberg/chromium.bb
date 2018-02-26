@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -139,7 +139,7 @@ void ImeWarningBubbleView::InitAnchorView() {
   }
   if (!reference_view || !reference_view->visible()) {
     // Anchors the bubble to the app menu.
-    reference_view = browser_view_->toolbar()->app_menu_button();
+    reference_view = browser_view_->button_provider()->GetAppMenuButton();
   }
   SetAnchorView(reference_view);
   set_arrow(views::BubbleBorder::TOP_RIGHT);

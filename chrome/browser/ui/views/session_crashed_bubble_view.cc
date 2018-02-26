@@ -23,9 +23,9 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/chromium_strings.h"
@@ -37,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
@@ -152,8 +153,8 @@ void SessionCrashedBubbleView::ShowForReal(
   }
 
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
-                                 ->toolbar()
-                                 ->app_menu_button();
+                                 ->button_provider()
+                                 ->GetAppMenuButton();
   SessionCrashedBubbleView* crash_bubble =
       new SessionCrashedBubbleView(anchor_view, browser, offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
