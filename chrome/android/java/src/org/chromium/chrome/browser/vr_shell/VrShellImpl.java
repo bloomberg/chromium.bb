@@ -296,7 +296,9 @@ public class VrShellImpl
         parent.addView(child);
         // Ensure the omnibox doesn't get initial focus (as it would when re-attaching the views
         // to a window), and immediately bring up the keyboard.
-        mActivity.getCompositorViewHolder().requestFocus();
+        if (mActivity.getCompositorViewHolder() != null) {
+            mActivity.getCompositorViewHolder().requestFocus();
+        }
     }
 
     @Override
