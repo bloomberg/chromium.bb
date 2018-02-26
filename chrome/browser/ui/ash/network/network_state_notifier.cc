@@ -89,6 +89,7 @@ void ShowErrorNotification(const std::string& service_path,
           new message_center::HandleNotificationClickDelegate(callback),
           GetErrorNotificationVectorIcon(network_type),
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
