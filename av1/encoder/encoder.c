@@ -161,7 +161,6 @@ static void apply_active_map(AV1_COMP *cpi) {
         if (seg_map[i] == AM_SEGMENT_ID_ACTIVE) seg_map[i] = active_map[i];
       av1_enable_segmentation(seg);
       av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_SKIP);
-#if CONFIG_LOOPFILTER_LEVEL
       av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_Y_H);
       av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_Y_V);
       av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_U);
@@ -175,23 +174,12 @@ static void apply_active_map(AV1_COMP *cpi) {
                       -MAX_LOOP_FILTER);
       av1_set_segdata(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_V,
                       -MAX_LOOP_FILTER);
-#else
-      av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF);
-      // Setting the data to -MAX_LOOP_FILTER will result in the computed loop
-      // filter level being zero.
-      av1_set_segdata(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF,
-                      -MAX_LOOP_FILTER);
-#endif  // CONFIG_LOOPFILTER_LEVEL
     } else {
       av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_SKIP);
-#if CONFIG_LOOPFILTER_LEVEL
       av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_Y_H);
       av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_Y_V);
       av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_U);
       av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF_V);
-#else
-      av1_disable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_ALT_LF);
-#endif  // CONFIG_LOOPFILTER_LEVEL
       if (seg->enabled) {
         seg->update_data = 1;
         seg->update_map = 1;
@@ -660,7 +648,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
       qi_delta =
           av1_compute_qdelta(rc, rc->avg_q, rc->avg_q * 0.875, cm->bit_depth);
       av1_set_segdata(seg, 1, SEG_LVL_ALT_Q, qi_delta - 2);
-#if CONFIG_LOOPFILTER_LEVEL
       av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_Y_H, -2);
       av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_Y_V, -2);
       av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_U, -2);
@@ -670,10 +657,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
       av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_Y_V);
       av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_U);
       av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_V);
-#else
-      av1_set_segdata(seg, 1, SEG_LVL_ALT_LF, -2);
-      av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
       av1_enable_segfeature(seg, 1, SEG_LVL_ALT_Q);
     }
@@ -692,7 +675,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
         av1_set_segdata(seg, 1, SEG_LVL_ALT_Q, qi_delta + 2);
         av1_enable_segfeature(seg, 1, SEG_LVL_ALT_Q);
 
-#if CONFIG_LOOPFILTER_LEVEL
         av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_Y_H, -2);
         av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_Y_V, -2);
         av1_set_segdata(seg, 1, SEG_LVL_ALT_LF_U, -2);
@@ -702,10 +684,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
         av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_Y_V);
         av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_U);
         av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_V);
-#else
-        av1_set_segdata(seg, 1, SEG_LVL_ALT_LF, -2);
-        av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
         // Segment coding disabled for compred testing
         if (high_q || (cpi->static_mb_pct == 100)) {
@@ -5187,12 +5165,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 
   if (no_loopfilter) {
-#if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;
-#else
-    lf->filter_level = 0;
-#endif
   } else {
     struct aom_usec_timer timer;
 
@@ -5206,13 +5180,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
   }
 
-#if CONFIG_LOOPFILTER_LEVEL
-  if (lf->filter_level[0] || lf->filter_level[1])
-#else
-  if (lf->filter_level > 0)
-#endif
-  {
-#if CONFIG_LOOPFILTER_LEVEL
+  if (lf->filter_level[0] || lf->filter_level[1]) {
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level[0],
                           lf->filter_level[1], 0, 0);
     if (num_planes > 1) {
@@ -5221,10 +5189,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v,
                             lf->filter_level_v, 2, 0);
     }
-
-#else
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   }
 
 #if CONFIG_LOOP_RESTORATION
@@ -6076,12 +6040,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
     loopfilter_frame(cpi, cm);
   } else {
-#if CONFIG_LOOPFILTER_LEVEL
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
-#else
-    cm->lf.filter_level = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;

@@ -78,12 +78,10 @@ extern "C" {
 #define FRAME_OFFSET_BITS 5
 #define MAX_FRAME_DISTANCE ((1 << FRAME_OFFSET_BITS) - 1)
 
-#if CONFIG_LOOPFILTER_LEVEL
 // 4 frame filter levels: y plane vertical, y plane horizontal,
 // u plane, and v plane
 #define FRAME_LF_COUNT 4
 #define DEFAULT_DELTA_LF_MULTI 0
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
 #if CONFIG_JNT_COMP
 typedef enum COMPOUND_DIST_WEIGHT_MODE {

@@ -105,10 +105,7 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 }
 #if CONFIG_EXT_DELTA_Q
 static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
-#if CONFIG_LOOPFILTER_LEVEL
-                              int lf_id,
-#endif
-                              MB_MODE_INFO *const mbmi, int mi_col,
+                              int lf_id, MB_MODE_INFO *const mbmi, int mi_col,
                               int mi_row) {
   int sign, abs, reduced_delta_lflevel = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
@@ -119,7 +116,6 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 
   if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
       read_delta_lf_flag) {
-#if CONFIG_LOOPFILTER_LEVEL
     if (cm->delta_lf_multi) {
       assert(lf_id >= 0 &&
              lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
@@ -130,10 +126,6 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
       abs = aom_read_symbol(r, ec_ctx->delta_lf_cdf, DELTA_LF_PROBS + 1,
                             ACCT_STR);
     }
-#else
-    abs =
-        aom_read_symbol(r, ec_ctx->delta_lf_cdf, DELTA_LF_PROBS + 1, ACCT_STR);
-#endif  // CONFIG_LOOPFILTER_LEVEL
     const int smallval = (abs < DELTA_LF_SMALL);
     if (!smallval) {
       const int rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
@@ -985,7 +977,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     xd->prev_qindex = xd->current_qindex;
 #if CONFIG_EXT_DELTA_Q
     if (cm->delta_lf_present_flag) {
-#if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
@@ -1007,15 +998,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
             clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
-#else
-      const int current_delta_lf_from_base =
-          xd->prev_delta_lf_from_base +
-          read_delta_lflevel(cm, xd, r, mbmi, mi_col, mi_row) *
-              cm->delta_lf_res;
-      mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
-          clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-      xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
-#endif  // CONFIG_LOOPFILTER_LEVEL
     }
 #endif
   }
@@ -2073,7 +2055,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     xd->prev_qindex = xd->current_qindex;
 #if CONFIG_EXT_DELTA_Q
     if (cm->delta_lf_present_flag) {
-#if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
@@ -2095,15 +2076,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
             clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
-#else
-      const int current_delta_lf_from_base =
-          xd->prev_delta_lf_from_base +
-          read_delta_lflevel(cm, xd, r, mbmi, mi_col, mi_row) *
-              cm->delta_lf_res;
-      mbmi->current_delta_lf_from_base = xd->current_delta_lf_from_base =
-          clamp(current_delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
-      xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
-#endif  // CONFIG_LOOPFILTER_LEVEL
     }
 #endif  // CONFIG_EXT_DELTA_Q
   }

@@ -1016,7 +1016,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   struct loopfilter *lf = &cm->lf;
-#if CONFIG_LOOPFILTER_LEVEL
   lf->filter_level[0] = aom_rb_read_literal(rb, 6);
   lf->filter_level[1] = aom_rb_read_literal(rb, 6);
   if (num_planes > 1) {
@@ -1025,9 +1024,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
       lf->filter_level_v = aom_rb_read_literal(rb, 6);
     }
   }
-#else
-  lf->filter_level = aom_rb_read_literal(rb, 6);
-#endif
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
   // Read in loop filter deltas applied at the MB level based on mode or ref
@@ -1490,12 +1486,8 @@ static void read_tile_info(AV1Decoder *const pbi,
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
 
-// Figure out single_tile_decoding by loopfilter_level.
-#if CONFIG_LOOPFILTER_LEVEL
+    // Figure out single_tile_decoding by loopfilter_level.
     const int no_loopfilter = !(lf->filter_level[0] || lf->filter_level[1]);
-#else
-    const int no_loopfilter = !lf->filter_level;
-#endif
     const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
                         cm->cdef_uv_strengths[0] == 0;
 #if CONFIG_LOOP_RESTORATION
@@ -1888,9 +1880,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    int endTile) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
-#if !CONFIG_LOOPFILTER_LEVEL
-  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
-#endif
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
   const int n_tiles = tile_cols * tile_rows;
@@ -1931,27 +1920,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-
-#if !CONFIG_LOOPFILTER_LEVEL
-  if (cm->lf.filter_level && !cm->skip_loop_filter &&
-      pbi->lf_worker.data1 == NULL) {
-    CHECK_MEM_ERROR(cm, pbi->lf_worker.data1,
-                    aom_memalign(32, sizeof(LFWorkerData)));
-    pbi->lf_worker.hook = (AVxWorkerHook)av1_loop_filter_worker;
-    if (pbi->max_threads > 1 && !winterface->reset(&pbi->lf_worker)) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Loop filter thread creation failed");
-    }
-  }
-
-  if (cm->lf.filter_level && !cm->skip_loop_filter) {
-    LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
-    // Be sure to sync as we might be resuming after a failed frame decode.
-    winterface->sync(&pbi->lf_worker);
-    av1_loop_filter_data_reset(lf_data, get_frame_new_buffer(cm), cm,
-                               pbi->mb.plane);
-  }
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
@@ -2080,7 +2048,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   {
     // Loopfilter the whole frame.
     if (endTile == cm->tile_rows * cm->tile_cols - 1)
-#if CONFIG_LOOPFILTER_LEVEL
       if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
         av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                               cm->lf.filter_level[0], cm->lf.filter_level[1], 0,
@@ -2094,10 +2061,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                 0);
         }
       }
-#else
-      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                            cm->lf.filter_level, 0, 0);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   }
   if (cm->frame_parallel_decode)
     av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
@@ -2657,12 +2620,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_FWD_KF
     unlock_buffer_pool(pool);
 
-#if CONFIG_LOOPFILTER_LEVEL
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
-#else
-    cm->lf.filter_level = 0;
-#endif
     cm->show_frame = 1;
 
 #if CONFIG_FILM_GRAIN
@@ -3083,12 +3042,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
     // Set parameters corresponding to no filtering.
     struct loopfilter *lf = &cm->lf;
-#if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;
-#else
-    lf->filter_level = 0;
-#endif
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
@@ -3133,9 +3088,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_EXT_DELTA_Q
     cm->delta_lf_res = 1;
     cm->delta_lf_present_flag = 0;
-#if CONFIG_LOOPFILTER_LEVEL
     cm->delta_lf_multi = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
     if (delta_q_allowed == 1 && cm->base_qindex > 0) {
       cm->delta_q_present_flag = aom_rb_read_bit(rb);
@@ -3153,13 +3106,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (cm->delta_lf_present_flag) {
         xd->prev_delta_lf_from_base = 0;
         cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
-#if CONFIG_LOOPFILTER_LEVEL
         cm->delta_lf_multi = aom_rb_read_bit(rb);
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
           xd->prev_delta_lf[lf_id] = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
       }
 #endif  // CONFIG_EXT_DELTA_Q
     }
@@ -3433,12 +3384,6 @@ static void setup_frame_info(AV1Decoder *pbi) {
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
-  }
-#endif
-
-#if !CONFIG_LOOPFILTER_LEVEL
-  if (cm->lf.filter_level && !cm->skip_loop_filter) {
-    av1_loop_filter_frame_init(cm, cm->lf.filter_level, cm->lf.filter_level);
   }
 #endif
 

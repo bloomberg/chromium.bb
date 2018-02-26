@@ -48,16 +48,10 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
 
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
-                                int partial_frame
-#if CONFIG_LOOPFILTER_LEVEL
-                                ,
-                                int plane, int dir
-#endif
-) {
+                                int partial_frame, int plane, int dir) {
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
-#if CONFIG_LOOPFILTER_LEVEL
   assert(plane >= 0 && plane <= 2);
   int filter_level[2] = { filt_level, filt_level };
   if (plane == 0 && dir == 0) filter_level[1] = cm->lf.filter_level[1];
@@ -65,36 +59,21 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd,
                         filter_level[0], filter_level[1], plane, partial_frame);
-#else
-  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level, 1,
-                        partial_frame);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
   int highbd = 0;
   highbd = cm->use_highbitdepth;
 
-#if CONFIG_LOOPFILTER_LEVEL
   filt_err = aom_get_sse_plane(sd, cm->frame_to_show, plane, highbd);
 
   // Re-instate the unfiltered frame
   yv12_copy_plane(&cpi->last_frame_uf, cm->frame_to_show, plane);
-#else
-  filt_err = aom_get_sse_plane(sd, cm->frame_to_show, 0, highbd);
-
-  // Re-instate the unfiltered frame
-  yv12_copy_plane(&cpi->last_frame_uf, cm->frame_to_show, 0);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
   return filt_err;
 }
 
 static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
-                               int partial_frame, double *best_cost_ret
-#if CONFIG_LOOPFILTER_LEVEL
-                               ,
-                               int plane, int dir
-#endif
-) {
+                               int partial_frame, double *best_cost_ret,
+                               int plane, int dir) {
   const AV1_COMMON *const cm = &cpi->common;
   const struct loopfilter *const lf = &cm->lf;
   const int min_filter_level = 0;
@@ -104,9 +83,8 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   int filt_best;
   MACROBLOCK *x = &cpi->td.mb;
 
-// Start the search at the previous frame filter level unless it is now out of
-// range.
-#if CONFIG_LOOPFILTER_LEVEL
+  // Start the search at the previous frame filter level unless it is now out of
+  // range.
   int lvl;
   switch (plane) {
     case 0: lvl = (dir == 1) ? lf->filter_level[1] : lf->filter_level[0]; break;
@@ -115,28 +93,14 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     default: assert(plane >= 0 && plane <= 2); return 0;
   }
   int filt_mid = clamp(lvl, min_filter_level, max_filter_level);
-#else
-  int filt_mid = clamp(lf->filter_level, min_filter_level, max_filter_level);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   int filter_step = filt_mid < 16 ? 4 : filt_mid / 4;
   // Sum squared error at each filter level
   int64_t ss_err[MAX_LOOP_FILTER + 1];
 
   // Set each entry to -1
   memset(ss_err, 0xFF, sizeof(ss_err));
-
-#if CONFIG_LOOPFILTER_LEVEL
   yv12_copy_plane(cm->frame_to_show, &cpi->last_frame_uf, plane);
-#else
-  //  Make a copy of the unfiltered / processed recon buffer
-  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
-#endif  // CONFIG_LOOPFILTER_LEVEL
-
-#if CONFIG_LOOPFILTER_LEVEL
   best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame, plane, dir);
-#else
-  best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   filt_best = filt_mid;
   ss_err[filt_mid] = best_err;
 
@@ -156,12 +120,8 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     if (filt_direction <= 0 && filt_low != filt_mid) {
       // Get Low filter error score
       if (ss_err[filt_low] < 0) {
-#if CONFIG_LOOPFILTER_LEVEL
         ss_err[filt_low] =
             try_filter_frame(sd, cpi, filt_low, partial_frame, plane, dir);
-#else
-        ss_err[filt_low] = try_filter_frame(sd, cpi, filt_low, partial_frame);
-#endif  // CONFIG_LOOPFILTER_LEVEL
       }
       // If value is close to the best so far then bias towards a lower loop
       // filter value.
@@ -177,12 +137,8 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     // Now look at filt_high
     if (filt_direction >= 0 && filt_high != filt_mid) {
       if (ss_err[filt_high] < 0) {
-#if CONFIG_LOOPFILTER_LEVEL
         ss_err[filt_high] =
             try_filter_frame(sd, cpi, filt_high, partial_frame, plane, dir);
-#else
-        ss_err[filt_high] = try_filter_frame(sd, cpi, filt_high, partial_frame);
-#endif  // CONFIG_LOOPFILTER_LEVEL
       }
       // If value is significantly better than previous best, bias added against
       // raising filter value
@@ -219,12 +175,8 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   lf->sharpness_level = cm->frame_type == KEY_FRAME ? 0 : cpi->oxcf.sharpness;
 
   if (method == LPF_PICK_MINIMAL_LPF) {
-#if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;
-#else
-    lf->filter_level = 0;
-#endif
   } else if (method >= LPF_PICK_FROM_Q) {
     const int min_filter_level = 0;
     const int max_filter_level = av1_get_max_filter_level(cpi);
@@ -257,17 +209,12 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     }
     if (cm->bit_depth != AOM_BITS_8 && cm->frame_type == KEY_FRAME)
       filt_guess -= 4;
-#if CONFIG_LOOPFILTER_LEVEL
     // TODO(chengchen): retrain the model for Y, U, V filter levels
     lf->filter_level[0] = clamp(filt_guess, min_filter_level, max_filter_level);
     lf->filter_level[1] = clamp(filt_guess, min_filter_level, max_filter_level);
     lf->filter_level_u = clamp(filt_guess, min_filter_level, max_filter_level);
     lf->filter_level_v = clamp(filt_guess, min_filter_level, max_filter_level);
-#else
-    lf->filter_level = clamp(filt_guess, min_filter_level, max_filter_level);
-#endif
   } else {
-#if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
     lf->filter_level[0] = search_filter_level(
@@ -281,9 +228,5 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
       lf->filter_level_v = search_filter_level(
           sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2, 0);
     }
-#else
-    lf->filter_level =
-        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   }
 }

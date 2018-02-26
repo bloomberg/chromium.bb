@@ -36,13 +36,9 @@ enum lf_path {
 };
 
 struct loopfilter {
-#if CONFIG_LOOPFILTER_LEVEL
   int filter_level[2];
   int filter_level_u;
   int filter_level_v;
-#else
-  int filter_level;
-#endif
 
   int sharpness_level;
   int last_sharpness_level;
@@ -70,11 +66,7 @@ typedef struct {
 
 typedef struct {
   loop_filter_thresh lfthr[MAX_LOOP_FILTER + 1];
-#if CONFIG_LOOPFILTER_LEVEL
   uint8_t lvl[MAX_SEGMENTS][2][TOTAL_REFS_PER_FRAME][MAX_MODE_LF_DELTAS];
-#else
-  uint8_t lvl[MAX_SEGMENTS][TOTAL_REFS_PER_FRAME][MAX_MODE_LF_DELTAS];
-#endif
 } loop_filter_info_n;
 
 // This structure holds bit masks for all 8x8 blocks in a 64x64 region.
@@ -138,19 +130,11 @@ void av1_loop_filter_init(struct AV1Common *cm);
 // av1_loop_filter_frame()
 // calls this function directly.
 void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
-                                int default_filt_lvl_r
-#if CONFIG_LOOPFILTER_LEVEL
-                                ,
-                                int plane
-#endif
-);
+                                int default_filt_lvl_r, int plane);
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,
-#if CONFIG_LOOPFILTER_LEVEL
-                           int filter_level_r,
-#endif
-                           int y_only, int partial_frame);
+                           int filter_level_r, int y_only, int partial_frame);
 
 // Apply the loop filter to [start, stop) macro block rows in frame_buffer.
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer,

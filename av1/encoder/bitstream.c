@@ -318,10 +318,7 @@ static void write_delta_qindex(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_EXT_DELTA_Q
 static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-#if CONFIG_LOOPFILTER_LEVEL
-                                int lf_id,
-#endif
-                                int delta_lflevel, aom_writer *w) {
+                                int lf_id, int delta_lflevel, aom_writer *w) {
   int sign = delta_lflevel < 0;
   int abs = sign ? -delta_lflevel : delta_lflevel;
   int rem_bits, thr;
@@ -329,7 +326,6 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
-#if CONFIG_LOOPFILTER_LEVEL
   if (cm->delta_lf_multi) {
     assert(lf_id >= 0 && lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
                                                          : FRAME_LF_COUNT - 2));
@@ -339,10 +335,6 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     aom_write_symbol(w, AOMMIN(abs, DELTA_LF_SMALL), ec_ctx->delta_lf_cdf,
                      DELTA_LF_PROBS + 1);
   }
-#else
-  aom_write_symbol(w, AOMMIN(abs, DELTA_LF_SMALL), ec_ctx->delta_lf_cdf,
-                   DELTA_LF_PROBS + 1);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 
   if (!smallval) {
     rem_bits = OD_ILOG_NZ(abs - 1) - 1;
@@ -1110,7 +1102,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       write_delta_qindex(cm, xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
 #if CONFIG_EXT_DELTA_Q
-#if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
@@ -1130,15 +1121,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
         }
       }
-#else
-      if (cm->delta_lf_present_flag) {
-        int reduced_delta_lflevel =
-            (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
-            cm->delta_lf_res;
-        write_delta_lflevel(cm, xd, reduced_delta_lflevel, w);
-        xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
-      }
-#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_EXT_DELTA_Q
     }
   }
@@ -1448,7 +1430,6 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
       write_delta_qindex(cm, xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
 #if CONFIG_EXT_DELTA_Q
-#if CONFIG_LOOPFILTER_LEVEL
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
@@ -1468,15 +1449,6 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
           xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
         }
       }
-#else
-      if (cm->delta_lf_present_flag) {
-        int reduced_delta_lflevel =
-            (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
-            cm->delta_lf_res;
-        write_delta_lflevel(cm, xd, reduced_delta_lflevel, w);
-        xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
-      }
-#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_EXT_DELTA_Q
     }
   }
@@ -2008,12 +1980,10 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
     xd->prev_qindex = cpi->common.base_qindex;
 #if CONFIG_EXT_DELTA_Q
     if (cpi->common.delta_lf_present_flag) {
-#if CONFIG_LOOPFILTER_LEVEL
       const int frame_lf_count =
           av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
       for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
         xd->prev_delta_lf[lf_id] = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
       xd->prev_delta_lf_from_base = 0;
     }
 #endif  // CONFIG_EXT_DELTA_Q
@@ -2249,8 +2219,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   int i;
   struct loopfilter *lf = &cm->lf;
 
-// Encode the loop filter level and type
-#if CONFIG_LOOPFILTER_LEVEL
+  // Encode the loop filter level and type
   aom_wb_write_literal(wb, lf->filter_level[0], 6);
   aom_wb_write_literal(wb, lf->filter_level[1], 6);
   if (num_planes > 1) {
@@ -2259,9 +2228,6 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
       aom_wb_write_literal(wb, lf->filter_level_v, 6);
     }
   }
-#else
-  aom_wb_write_literal(wb, lf->filter_level, 6);
-#endif  // CONFIG_LOOPFILTER_LEVEL
   aom_wb_write_literal(wb, lf->sharpness_level, 3);
 
   // Write out loop filter deltas applied at the MB level based on mode or
@@ -3523,13 +3489,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
           xd->prev_delta_lf_from_base = 0;
-#if CONFIG_LOOPFILTER_LEVEL
           aom_wb_write_bit(wb, cm->delta_lf_multi);
           const int frame_lf_count =
               av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
           for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
             xd->prev_delta_lf[lf_id] = 0;
-#endif  // CONFIG_LOOPFILTER_LEVEL
         }
 #endif  // CONFIG_EXT_DELTA_Q
       }
