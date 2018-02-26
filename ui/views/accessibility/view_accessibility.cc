@@ -39,7 +39,8 @@ std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
 }
 #endif
 
-ViewAccessibility::ViewAccessibility(View* view) : owner_view_(view) {}
+ViewAccessibility::ViewAccessibility(View* view)
+    : owner_view_(view), is_leaf_(false) {}
 
 ViewAccessibility::~ViewAccessibility() {}
 
@@ -103,6 +104,10 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     data->AddAction(ax::mojom::Action::kShowContextMenu);
 }
 
+bool ViewAccessibility::IsLeaf() const {
+  return is_leaf_;
+}
+
 void ViewAccessibility::OverrideRole(ax::mojom::Role role) {
   DCHECK(IsValidRoleForViews(role));
 
@@ -122,6 +127,10 @@ void ViewAccessibility::OverrideDescription(const std::string& description) {
       ax::mojom::StringAttribute::kDescription));
   custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                                   description);
+}
+
+void ViewAccessibility::OverrideIsLeaf() {
+  is_leaf_ = true;
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {

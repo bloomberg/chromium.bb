@@ -40,7 +40,8 @@ class VIEWS_EXPORT ViewAccessibility {
   virtual void GetAccessibleNodeData(ui::AXNodeData* node_data) const;
 
   //
-  // These override anything returned from View::GetAccessibleNodeData().
+  // These override accessibility information, including properties returned
+  // from View::GetAccessibleNodeData().
   // Note that string attributes are only used if non-empty, so you can't
   // override a string with the empty string.
   //
@@ -48,11 +49,14 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideName(const std::string& name);
   void OverrideName(const base::string16& name);
   void OverrideDescription(const std::string& description);
+  void OverrideIsLeaf();  // Force this node to be treated as a leaf node.
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
+
+  bool IsLeaf() const;
 
  protected:
   explicit ViewAccessibility(View* view);
@@ -68,6 +72,8 @@ class VIEWS_EXPORT ViewAccessibility {
   // Contains data set explicitly via SetRole, SetName, etc. that overrides
   // anything provided by GetAccessibleNodeData().
   ui::AXNodeData custom_data_;
+
+  bool is_leaf_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };

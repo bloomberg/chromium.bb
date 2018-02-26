@@ -9,6 +9,7 @@
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/views/accessibility/native_view_accessibility_base.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -296,6 +297,67 @@ TEST_F(NativeViewAccessibilityWinTest, WindowHasRoleApplication) {
   EXPECT_EQ(S_OK, accessible->get_accRole(childid_self, role.Receive()));
   EXPECT_EQ(VT_I4, role.type());
   EXPECT_EQ(ROLE_SYSTEM_PANE, V_I4(role.ptr()));
+}
+
+TEST_F(NativeViewAccessibilityWinTest, Overrides) {
+  // We expect that our internal window object does not expose
+  // ROLE_SYSTEM_WINDOW, but ROLE_SYSTEM_PANE instead.
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+
+  View* contents_view = new View;
+  widget.SetContentsView(contents_view);
+
+  View* alert_view = new ScrollView;
+  alert_view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+  alert_view->GetViewAccessibility().OverrideName(L"Name");
+  alert_view->GetViewAccessibility().OverrideDescription("Description");
+  alert_view->GetViewAccessibility().OverrideIsLeaf();
+  contents_view->AddChildView(alert_view);
+
+  // Descendant should be ignored because the parent uses OverrideIsLeaf().
+  View* ignored_descendant = new View;
+  alert_view->AddChildView(ignored_descendant);
+
+  ComPtr<IAccessible> content_accessible(
+      contents_view->GetNativeViewAccessible());
+  ScopedVariant child_index(1);
+
+  // Role.
+  ScopedVariant role;
+  EXPECT_EQ(S_OK, content_accessible->get_accRole(child_index, role.Receive()));
+  EXPECT_EQ(VT_I4, role.type());
+  EXPECT_EQ(ROLE_SYSTEM_ALERT, V_I4(role.ptr()));
+
+  // Name.
+  ScopedBstr name;
+  ASSERT_EQ(S_OK, content_accessible->get_accName(child_index, name.Receive()));
+  ASSERT_STREQ(L"Name", name);
+
+  // Description.
+  ScopedBstr description;
+  ASSERT_EQ(S_OK, content_accessible->get_accDescription(
+                      child_index, description.Receive()));
+  ASSERT_STREQ(L"Description", description);
+
+  // Get the child accessible.
+  ComPtr<IDispatch> alert_dispatch;
+  ComPtr<IAccessible> alert_accessible;
+  ASSERT_EQ(S_OK, content_accessible->get_accChild(
+                      child_index, alert_dispatch.GetAddressOf()));
+  ASSERT_EQ(S_OK, alert_dispatch.CopyTo(alert_accessible.GetAddressOf()));
+
+  // Child accessible is a leaf.
+  LONG child_count = 0;
+  ASSERT_EQ(S_OK, alert_accessible->get_accChildCount(&child_count));
+  ASSERT_EQ(0, child_count);
+
+  ComPtr<IDispatch> child_dispatch;
+  ASSERT_EQ(E_INVALIDARG, alert_accessible->get_accChild(
+                              child_index, child_dispatch.GetAddressOf()));
+  ASSERT_EQ(child_dispatch.Get(), nullptr);
 }
 }  // namespace test
 }  // namespace views
