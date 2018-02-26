@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
@@ -123,6 +124,17 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     session_manager_client_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Helper routine to set device wallpaper setting in policy.
+  void SetWallpaperSettings(const std::string& wallpaper_settings) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceWallpaperImageProto* proto =
+        device_policy_.payload().mutable_device_wallpaper_image();
+    proto->set_device_wallpaper_image(wallpaper_settings);
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
   }
 
   enum MetricsOption { DISABLE_METRICS, ENABLE_METRICS, REMOVE_METRICS_POLICY };
@@ -603,6 +615,20 @@ TEST_F(DeviceSettingsProviderTest, DecodeLogUploadSettings) {
 
   SetLogUploadSettings(false);
   VerifyLogUploadSettings(false);
+}
+
+TEST_F(DeviceSettingsProviderTest, SetWallpaperSettings) {
+  // Invalid format should be ignored.
+  const std::string invalid_format = "\\\\invalid\\format";
+  SetWallpaperSettings(invalid_format);
+  EXPECT_EQ(nullptr, provider_->Get(kDeviceWallpaperImage));
+
+  // Set with valid json format.
+  const std::string valid_format("{\"type\":\"object\"}");
+  SetWallpaperSettings(valid_format);
+  std::unique_ptr<base::DictionaryValue> expected_value =
+      base::DictionaryValue::From(base::JSONReader::Read(valid_format));
+  EXPECT_EQ(*expected_value, *provider_->Get(kDeviceWallpaperImage));
 }
 
 }  // namespace chromeos

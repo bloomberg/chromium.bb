@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/syslog_logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -897,9 +898,14 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       std::unique_ptr<base::DictionaryValue> dict_val =
           base::DictionaryValue::From(
               base::JSONReader::Read(container.device_wallpaper_image()));
-      policies->Set(key::kDeviceWallpaperImage, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    std::move(dict_val), nullptr);
+      if (dict_val) {
+        policies->Set(key::kDeviceWallpaperImage, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(dict_val), nullptr);
+      } else {
+        SYSLOG(ERROR) << "Value of wallpaper policy has invalid format: "
+                      << container.device_wallpaper_image();
+      }
     }
   }
 
