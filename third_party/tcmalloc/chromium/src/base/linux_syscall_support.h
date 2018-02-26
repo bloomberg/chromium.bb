@@ -1512,6 +1512,7 @@ typedef unsigned long int ulong;
                           type5 arg5) {                                       \
         LSS_REG(4, arg1); LSS_REG(5, arg2); LSS_REG(6, arg3);                 \
         LSS_REG(7, arg4);                                                     \
+        unsigned long _arg5 = (unsigned long)arg5;                            \
         register unsigned long __v0 __asm__("$2");                            \
         __asm__ __volatile__ (".set noreorder\n"                              \
                               "lw    $2, %6\n"                                \
@@ -1523,7 +1524,7 @@ typedef unsigned long int ulong;
                               ".set reorder\n"                                \
                               : "=&r"(__v0), "+r" (__r7)                      \
                               : "i" (__NR_##name), "r"(__r4), "r"(__r5),      \
-                                "r"(__r6), "m" ((unsigned long)arg5)          \
+                                "r"(__r6), "m" (_arg5)                        \
                               : MIPS_SYSCALL_CLOBBERS);                       \
         LSS_RETURN(type, __v0, __r7);                                         \
       }
