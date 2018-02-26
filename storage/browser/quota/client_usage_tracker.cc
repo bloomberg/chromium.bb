@@ -16,15 +16,15 @@ namespace storage {
 
 namespace {
 
-typedef ClientUsageTracker::OriginUsageAccumulator OriginUsageAccumulator;
-typedef ClientUsageTracker::OriginSetByHost OriginSetByHost;
+using OriginUsageAccumulator = ClientUsageTracker::OriginUsageAccumulator;
+using OriginSetByHost = ClientUsageTracker::OriginSetByHost;
 
-void DidGetHostUsage(const UsageCallback& callback,
+void DidGetHostUsage(UsageCallback callback,
                      int64_t limited_usage,
                      int64_t unlimited_usage) {
   DCHECK_GE(limited_usage, 0);
   DCHECK_GE(unlimited_usage, 0);
-  callback.Run(limited_usage + unlimited_usage);
+  std::move(callback).Run(limited_usage + unlimited_usage);
 }
 
 bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
@@ -49,10 +49,10 @@ bool OriginSetContainsOrigin(const OriginSetByHost& origins,
   return itr != origins.end() && base::ContainsKey(itr->second, origin);
 }
 
-void DidGetGlobalUsageForLimitedGlobalUsage(const UsageCallback& callback,
+void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
                                             int64_t total_global_usage,
                                             int64_t global_unlimited_usage) {
-  callback.Run(total_global_usage - global_unlimited_usage);
+  std::move(callback).Run(total_global_usage - global_unlimited_usage);
 }
 
 }  // namespace
@@ -83,23 +83,23 @@ ClientUsageTracker::~ClientUsageTracker() {
     special_storage_policy_->RemoveObserver(this);
 }
 
-void ClientUsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
+void ClientUsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
   if (!global_usage_retrieved_) {
-    GetGlobalUsage(base::Bind(&DidGetGlobalUsageForLimitedGlobalUsage,
-                              callback));
+    GetGlobalUsage(base::BindOnce(&DidGetGlobalUsageForLimitedGlobalUsage,
+                                  std::move(callback)));
     return;
   }
 
   if (non_cached_limited_origins_by_host_.empty()) {
-    callback.Run(global_limited_usage_);
+    std::move(callback).Run(global_limited_usage_);
     return;
   }
 
   AccumulateInfo* info = new AccumulateInfo;
   info->pending_jobs = non_cached_limited_origins_by_host_.size() + 1;
-  UsageCallback accumulator = base::Bind(
+  UsageAccumulator accumulator = base::BindRepeating(
       &ClientUsageTracker::AccumulateLimitedOriginUsage, AsWeakPtr(),
-      base::Owned(info), callback);
+      base::Owned(info), AdaptCallbackForRepeating(std::move(callback)));
 
   for (const auto& host_and_origins : non_cached_limited_origins_by_host_) {
     for (const auto& origin : host_and_origins.second)
@@ -109,35 +109,37 @@ void ClientUsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
   accumulator.Run(global_limited_usage_);
 }
 
-void ClientUsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
+void ClientUsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
   if (global_usage_retrieved_ &&
       non_cached_limited_origins_by_host_.empty() &&
       non_cached_unlimited_origins_by_host_.empty()) {
-    callback.Run(global_limited_usage_ + global_unlimited_usage_,
-                 global_unlimited_usage_);
+    std::move(callback).Run(global_limited_usage_ + global_unlimited_usage_,
+                            global_unlimited_usage_);
     return;
   }
 
-  client_->GetOriginsForType(type_, base::Bind(
-      &ClientUsageTracker::DidGetOriginsForGlobalUsage, AsWeakPtr(),
-      callback));
+  client_->GetOriginsForType(
+      type_, base::BindOnce(&ClientUsageTracker::DidGetOriginsForGlobalUsage,
+                            AsWeakPtr(), std::move(callback)));
 }
 
-void ClientUsageTracker::GetHostUsage(
-    const std::string& host, const UsageCallback& callback) {
+void ClientUsageTracker::GetHostUsage(const std::string& host,
+                                      UsageCallback callback) {
   if (base::ContainsKey(cached_hosts_, host) &&
       !base::ContainsKey(non_cached_limited_origins_by_host_, host) &&
       !base::ContainsKey(non_cached_unlimited_origins_by_host_, host)) {
     // TODO(kinuko): Drop host_usage_map_ cache periodically.
-    callback.Run(GetCachedHostUsage(host));
+    std::move(callback).Run(GetCachedHostUsage(host));
     return;
   }
 
   if (!host_usage_accumulators_.Add(
-          host, base::Bind(&DidGetHostUsage, callback)))
+          host, base::BindOnce(&DidGetHostUsage, std::move(callback))))
     return;
-  client_->GetOriginsForHost(type_, host, base::Bind(
-      &ClientUsageTracker::DidGetOriginsForHostUsage, AsWeakPtr(), host));
+  client_->GetOriginsForHost(
+      type_, host,
+      base::BindOnce(&ClientUsageTracker::DidGetOriginsForHostUsage,
+                     AsWeakPtr(), host));
 }
 
 void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
@@ -164,8 +166,9 @@ void ClientUsageTracker::UpdateUsageCache(const GURL& origin, int64_t delta) {
   }
 
   // We don't know about this host yet, so populate our cache for it.
-  GetHostUsage(host, base::Bind(&ClientUsageTracker::DidGetHostUsageAfterUpdate,
-                                AsWeakPtr(), origin));
+  GetHostUsage(host,
+               base::BindOnce(&ClientUsageTracker::DidGetHostUsageAfterUpdate,
+                              AsWeakPtr(), origin));
 }
 
 int64_t ClientUsageTracker::GetCachedUsage() const {
@@ -241,19 +244,18 @@ void ClientUsageTracker::SetUsageCacheEnabled(const GURL& origin,
   }
 }
 
-void ClientUsageTracker::AccumulateLimitedOriginUsage(
-    AccumulateInfo* info,
-    const UsageCallback& callback,
-    int64_t usage) {
+void ClientUsageTracker::AccumulateLimitedOriginUsage(AccumulateInfo* info,
+                                                      UsageCallback callback,
+                                                      int64_t usage) {
   info->limited_usage += usage;
   if (--info->pending_jobs)
     return;
 
-  callback.Run(info->limited_usage);
+  std::move(callback).Run(info->limited_usage);
 }
 
 void ClientUsageTracker::DidGetOriginsForGlobalUsage(
-    const GlobalUsageCallback& callback,
+    GlobalUsageCallback callback,
     const std::set<url::Origin>& origins) {
   OriginSetByHost origins_by_host;
   for (const auto& origin : origins) {
@@ -268,9 +270,9 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
   // loop).  To avoid this, we add one more pending host as a sentinel and
   // fire the sentinel callback at the end.
   info->pending_jobs = origins_by_host.size() + 1;
-  HostUsageAccumulator accumulator =
-      base::Bind(&ClientUsageTracker::AccumulateHostUsage, AsWeakPtr(),
-                 base::Owned(info), callback);
+  HostUsageAccumulator accumulator = base::BindRepeating(
+      &ClientUsageTracker::AccumulateHostUsage, AsWeakPtr(), base::Owned(info),
+      base::AdaptCallbackForRepeating(std::move(callback)));
 
   for (const auto& host_and_origins : origins_by_host) {
     const std::string& host = host_and_origins.first;
@@ -286,11 +288,10 @@ void ClientUsageTracker::DidGetOriginsForGlobalUsage(
   accumulator.Run(0, 0);
 }
 
-void ClientUsageTracker::AccumulateHostUsage(
-    AccumulateInfo* info,
-    const GlobalUsageCallback& callback,
-    int64_t limited_usage,
-    int64_t unlimited_usage) {
+void ClientUsageTracker::AccumulateHostUsage(AccumulateInfo* info,
+                                             GlobalUsageCallback callback,
+                                             int64_t limited_usage,
+                                             int64_t unlimited_usage) {
   info->limited_usage += limited_usage;
   info->unlimited_usage += unlimited_usage;
   if (--info->pending_jobs)
@@ -300,8 +301,8 @@ void ClientUsageTracker::AccumulateHostUsage(
   DCHECK_GE(info->unlimited_usage, 0);
 
   global_usage_retrieved_ = true;
-  callback.Run(info->limited_usage + info->unlimited_usage,
-               info->unlimited_usage);
+  std::move(callback).Run(info->limited_usage + info->unlimited_usage,
+                          info->unlimited_usage);
 }
 
 void ClientUsageTracker::DidGetOriginsForHostUsage(
@@ -321,8 +322,8 @@ void ClientUsageTracker::GetUsageForOrigins(
   // fire the sentinel callback at the end.
   info->pending_jobs = origins.size() + 1;
   OriginUsageAccumulator accumulator =
-      base::Bind(&ClientUsageTracker::AccumulateOriginUsage, AsWeakPtr(),
-                 base::Owned(info), host);
+      base::BindRepeating(&ClientUsageTracker::AccumulateOriginUsage,
+                          AsWeakPtr(), base::Owned(info), host);
 
   for (const auto& origin : origins) {
     GURL origin_url = origin.GetURL();
@@ -333,7 +334,7 @@ void ClientUsageTracker::GetUsageForOrigins(
       accumulator.Run(origin_url, origin_usage);
     } else {
       client_->GetOriginUsage(origin, type_,
-                              base::Bind(accumulator, origin_url));
+                              base::BindOnce(accumulator, origin_url));
     }
   }
 

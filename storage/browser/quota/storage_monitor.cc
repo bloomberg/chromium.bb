@@ -207,11 +207,9 @@ void HostStorageObservers::StartInitialization(
 
   initializing_ = true;
   quota_manager_->GetUsageAndQuotaForWebApps(
-      filter.origin,
-      filter.storage_type,
-      base::Bind(&HostStorageObservers::GotHostUsageAndQuota,
-                 weak_factory_.GetWeakPtr(),
-                 filter));
+      filter.origin, filter.storage_type,
+      base::BindOnce(&HostStorageObservers::GotHostUsageAndQuota,
+                     weak_factory_.GetWeakPtr(), filter));
 }
 
 void HostStorageObservers::GotHostUsageAndQuota(

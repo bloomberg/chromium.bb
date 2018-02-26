@@ -55,10 +55,9 @@ void StorageInfoFetcher::ClearStorage(const std::string& host,
                             this)));
 }
 
-void StorageInfoFetcher::GetUsageInfo(
-    const storage::GetUsageInfoCallback& callback) {
+void StorageInfoFetcher::GetUsageInfo(storage::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  quota_manager_->GetUsageInfo(callback);
+  quota_manager_->GetUsageInfo(std::move(callback));
 }
 
 void StorageInfoFetcher::OnGetUsageInfoInternal(

@@ -688,8 +688,8 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
   if (current_version == 2) {
     QuotaTableImporter importer;
     typedef std::vector<QuotaTableEntry> QuotaTableEntries;
-    if (!DumpQuotaTable(base::Bind(&QuotaTableImporter::Append,
-                                   base::Unretained(&importer)))) {
+    if (!DumpQuotaTable(base::BindRepeating(&QuotaTableImporter::Append,
+                                            base::Unretained(&importer)))) {
       return false;
     }
     ResetSchema();

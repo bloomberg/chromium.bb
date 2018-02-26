@@ -82,17 +82,18 @@ class UsageMockQuotaManager : public QuotaManager {
   }
 
   void InvokeCallback() {
-    delayed_callback_.Run(callback_status_, callback_usage_, callback_quota_);
+    std::move(delayed_callback_)
+        .Run(callback_status_, callback_usage_, callback_quota_);
   }
 
-  void GetUsageAndQuotaForWebApps(
-      const GURL& origin,
-      StorageType type,
-      const UsageAndQuotaCallback& callback) override {
+  void GetUsageAndQuotaForWebApps(const GURL& origin,
+                                  StorageType type,
+                                  UsageAndQuotaCallback callback) override {
     if (initialized_)
-      callback.Run(callback_status_, callback_usage_, callback_quota_);
+      std::move(callback).Run(callback_status_, callback_usage_,
+                              callback_quota_);
     else
-      delayed_callback_ = callback;
+      delayed_callback_ = std::move(callback);
   }
 
  protected:

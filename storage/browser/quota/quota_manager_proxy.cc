@@ -19,23 +19,22 @@ namespace storage {
 
 namespace {
 
-void DidGetUsageAndQuota(
-    base::SequencedTaskRunner* original_task_runner,
-    const QuotaManagerProxy::UsageAndQuotaCallback& callback,
-    blink::mojom::QuotaStatusCode status,
-    int64_t usage,
-    int64_t quota) {
+void DidGetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
+                         QuotaManagerProxy::UsageAndQuotaCallback callback,
+                         blink::mojom::QuotaStatusCode status,
+                         int64_t usage,
+                         int64_t quota) {
   if (!original_task_runner->RunsTasksInCurrentSequence()) {
     original_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&DidGetUsageAndQuota,
                                   base::RetainedRef(original_task_runner),
-                                  callback, status, usage, quota));
+                                  std::move(callback), status, usage, quota));
     return;
   }
 
   // crbug.com/349708
   TRACE_EVENT0("io", "QuotaManagerProxy DidGetUsageAndQuota");
-  callback.Run(status, usage, quota);
+  std::move(callback).Run(status, usage, quota);
 }
 
 }  // namespace
@@ -124,16 +123,16 @@ void QuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const url::Origin& origin,
     blink::mojom::StorageType type,
-    const UsageAndQuotaCallback& callback) {
+    UsageAndQuotaCallback callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE, base::BindOnce(&QuotaManagerProxy::GetUsageAndQuota, this,
                                   base::RetainedRef(original_task_runner),
-                                  origin, type, callback));
+                                  origin, type, std::move(callback)));
     return;
   }
   if (!manager_) {
-    DidGetUsageAndQuota(original_task_runner, callback,
+    DidGetUsageAndQuota(original_task_runner, std::move(callback),
                         blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
     return;
   }
@@ -143,8 +142,9 @@ void QuotaManagerProxy::GetUsageAndQuota(
 
   manager_->GetUsageAndQuota(
       origin.GetURL(), type,
-      base::Bind(&DidGetUsageAndQuota, base::RetainedRef(original_task_runner),
-                 callback));
+      base::BindOnce(&DidGetUsageAndQuota,
+                     base::RetainedRef(original_task_runner),
+                     std::move(callback)));
 }
 
 QuotaManager* QuotaManagerProxy::quota_manager() const {

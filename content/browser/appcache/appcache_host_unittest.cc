@@ -108,7 +108,7 @@ class AppCacheHostTest : public testing::Test {
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const url::Origin& origin,
                           blink::mojom::StorageType type,
-                          const UsageAndQuotaCallback& callback) override {}
+                          UsageAndQuotaCallback callback) override {}
 
     void NotifyOriginInUse(const url::Origin& origin) override {
       inuse_[origin] += 1;

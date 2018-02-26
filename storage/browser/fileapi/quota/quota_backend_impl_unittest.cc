@@ -71,8 +71,8 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        const UsageAndQuotaCallback& callback) override {
-    callback.Run(blink::mojom::QuotaStatusCode::kOk, usage_, quota_);
+                        UsageAndQuotaCallback callback) override {
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, usage_, quota_);
   }
 
   int storage_modified_count() { return storage_modified_count_; }

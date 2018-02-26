@@ -54,14 +54,14 @@ class MockQuotaManager : public QuotaManager {
   // a helper method MockQuotaManagerProxy::SetQuota().
   void GetUsageAndQuota(const GURL& origin,
                         StorageType type,
-                        const UsageAndQuotaCallback& callback) override;
+                        UsageAndQuotaCallback callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This
   // method will only search through the origins added explicitly via AddOrigin.
   void GetOriginsModifiedSince(StorageType type,
                                base::Time modified_since,
-                               const GetOriginsCallback& callback) override;
+                               GetOriginsCallback callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
   // anything on disk. The caller must provide |quota_client_mask| which
@@ -72,7 +72,7 @@ class MockQuotaManager : public QuotaManager {
   void DeleteOriginData(const GURL& origin,
                         StorageType type,
                         int quota_client_mask,
-                        const StatusCallback& callback) override;
+                        StatusCallback callback) override;
 
   // Helper method for updating internal quota info.
   void SetQuota(const GURL& origin, StorageType type, int64_t quota);
@@ -133,10 +133,10 @@ class MockQuotaManager : public QuotaManager {
 
   // This must be called via MockQuotaManagerProxy.
   void UpdateUsage(const GURL& origin, StorageType type, int64_t delta);
-  void DidGetModifiedSince(const GetOriginsCallback& callback,
+  void DidGetModifiedSince(GetOriginsCallback callback,
                            std::set<GURL>* origins,
                            StorageType storage_type);
-  void DidDeleteOriginData(const StatusCallback& callback,
+  void DidDeleteOriginData(StatusCallback callback,
                            blink::mojom::QuotaStatusCode status);
 
   // The list of stored origins that have been added via AddOrigin.

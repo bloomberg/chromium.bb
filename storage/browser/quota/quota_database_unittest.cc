@@ -42,10 +42,9 @@ static const blink::mojom::StorageType kPersistent =
 
 class QuotaDatabaseTest : public testing::Test {
  protected:
-  typedef QuotaDatabase::QuotaTableEntry QuotaTableEntry;
-  typedef QuotaDatabase::QuotaTableCallback QuotaTableCallback;
-  typedef QuotaDatabase::OriginInfoTableCallback
-      OriginInfoTableCallback;
+  using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
+  using QuotaTableCallback = QuotaDatabase::QuotaTableCallback;
+  using OriginInfoTableCallback = QuotaDatabase::OriginInfoTableCallback;
 
   void LazyOpen(const base::FilePath& kDbFile) {
     QuotaDatabase db(kDbFile);
@@ -78,7 +77,7 @@ class QuotaDatabaseTest : public testing::Test {
     typedef EntryVerifier<QuotaTableEntry> Verifier;
     Verifier verifier(entries, entries + arraysize(entries));
     EXPECT_TRUE(db.DumpQuotaTable(
-        base::Bind(&Verifier::Run, base::Unretained(&verifier))));
+        base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
 
     EXPECT_TRUE(db.db_->DoesTableExist("EvictionInfoTable"));
@@ -403,7 +402,7 @@ class QuotaDatabaseTest : public testing::Test {
     typedef EntryVerifier<QuotaTableEntry> Verifier;
     Verifier verifier(begin, end);
     EXPECT_TRUE(db.DumpQuotaTable(
-        base::Bind(&Verifier::Run, base::Unretained(&verifier))));
+        base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
   }
 
@@ -426,7 +425,7 @@ class QuotaDatabaseTest : public testing::Test {
     typedef EntryVerifier<Entry> Verifier;
     Verifier verifier(begin, end);
     EXPECT_TRUE(db.DumpOriginInfoTable(
-        base::Bind(&Verifier::Run, base::Unretained(&verifier))));
+        base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
     EXPECT_TRUE(verifier.table.empty());
   }
 
