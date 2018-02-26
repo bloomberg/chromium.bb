@@ -84,7 +84,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
     // The connection should be healthy while the listener is waiting
     // message.  An error can occur after that because the peer
     // process dies.
-    DCHECK(received_ok_);
+    CHECK(received_ok_);
   }
 
   static void SendOK(IPC::Sender* sender) { SendString(sender, "OK"); }
@@ -544,9 +544,7 @@ class ListenerWithSimpleAssociatedInterface
     return true;
   }
 
-  void OnChannelError() override {
-    DCHECK(received_quit_);
-  }
+  void OnChannelError() override { CHECK(received_quit_); }
 
   void RegisterInterfaceFactory(IPC::Channel* channel) {
     channel->GetAssociatedInterfaceSupport()->AddAssociatedInterface(
@@ -729,9 +727,7 @@ class ListenerWithSimpleProxyAssociatedInterface
     return true;
   }
 
-  void OnChannelError() override {
-    DCHECK(received_quit_);
-  }
+  void OnChannelError() override { CHECK(received_quit_); }
 
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
