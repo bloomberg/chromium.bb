@@ -4,21 +4,19 @@
 
 #include "chrome/child/pdf_child_init.h"
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_paths.h"
-#include "content/public/child/child_thread.h"
 
 #if defined(OS_WIN)
 #include "base/win/current_module.h"
 #include "base/win/iat_patch_function.h"
+#include "content/public/child/child_thread.h"
 #endif
 
 namespace {
+
 #if defined(OS_WIN)
-static base::win::IATPatchFunction g_iat_patch_createdca;
+base::win::IATPatchFunction g_iat_patch_createdca;
+
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
                           LPCSTR device_name,
                           LPCSTR output,
@@ -37,8 +35,10 @@ typedef DWORD (WINAPI* GetFontDataPtr) (HDC hdc,
                                         DWORD offset,
                                         LPVOID buffer,
                                         DWORD length);
-GetFontDataPtr g_original_get_font_data = NULL;
-static base::win::IATPatchFunction g_iat_patch_get_font_data;
+GetFontDataPtr g_original_get_font_data = nullptr;
+
+base::win::IATPatchFunction g_iat_patch_get_font_data;
+
 DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD table,
                               DWORD offset,
@@ -50,7 +50,6 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 
     LOGFONT logfont;
     if (GetObject(font, sizeof(LOGFONT), &logfont)) {
-      std::vector<char> font_data;
       if (content::ChildThread::Get())
         content::ChildThread::Get()->PreCacheFont(logfont);
       rv = g_original_get_font_data(hdc, table, offset, buffer, length);
@@ -60,7 +59,7 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
   }
   return rv;
 }
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -75,6 +74,5 @@ void InitializePDF() {
                                             "GetFontData", GetFontDataPatch);
   g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
       g_iat_patch_get_font_data.original_function());
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 }
-
