@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 
-static int32_t next_id;
+static int32_t g_next_indexed_db_connection_id;
 
 }  // namespace
 
@@ -25,7 +25,7 @@ IndexedDBConnection::IndexedDBConnection(
     int child_process_id,
     scoped_refptr<IndexedDBDatabase> database,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
-    : id_(next_id++),
+    : id_(g_next_indexed_db_connection_id++),
       child_process_id_(child_process_id),
       database_(database),
       callbacks_(callbacks),
