@@ -2608,6 +2608,30 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 
+// Copied from av1/encoder/random.h
+static INLINE unsigned int lcg_rand16(unsigned int *state) {
+  *state = (unsigned int)(*state * 1103515245ULL + 12345);
+  return *state / 65536 % 32768;
+}
+
+// Wrap around to make sure current_video_frame won't surpass a limit
+// Such that distance computation could remain correct
+static void wrap_around_current_video_frame(AV1Decoder *pbi) {
+  AV1_COMMON *const cm = &pbi->common;
+
+  if (cm->current_video_frame >= FRAME_NUM_LIMIT) {
+    // Wrap to a random number in range (MAX_FRAME_DISTANCE, 32768)
+    static unsigned int seed = 54321;
+    int new_frame_offset = lcg_rand16(&seed);
+    new_frame_offset += (MAX_FRAME_DISTANCE + 1);
+
+    // Wrap around for current frame
+    cm->current_video_frame = new_frame_offset;
+    cm->frame_offset = new_frame_offset;
+    cm->cur_frame->cur_frame_offset = cm->frame_offset;
+  }
+}
+
 #if CONFIG_FWD_KF
 static void show_existing_frame_reset(AV1Decoder *const pbi) {
   AV1_COMMON *const cm = &pbi->common;
@@ -2616,6 +2640,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
 
   assert(cm->show_existing_frame);
 
+  wrap_around_current_video_frame(pbi);
   cm->frame_type = KEY_FRAME;
   cm->frame_offset = cm->current_video_frame;
 
@@ -2834,6 +2859,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
   if (cm->frame_type == KEY_FRAME) {
+    wrap_around_current_video_frame(pbi);
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {

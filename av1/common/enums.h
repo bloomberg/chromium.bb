@@ -93,6 +93,8 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 #define DIST_PRECISION (1 << DIST_PRECISION_BITS)  // 16
 #endif                                             // CONFIG_JNT_COMP
 
+#define FRAME_NUM_LIMIT (INT_MAX - MAX_FRAME_DISTANCE - 1)
+
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.
 // 10: Profile 1.  8-bit 4:4:4, 4:2:2, and 4:4:0.
