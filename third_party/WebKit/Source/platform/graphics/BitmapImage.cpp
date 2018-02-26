@@ -144,12 +144,21 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   auto completion_state = all_data_received_
                               ? PaintImage::CompletionState::DONE
                               : PaintImage::CompletionState::PARTIALLY_DONE;
+
+  // When requesting more than a single loop, repetition count is one less than
+  // the actual number of loops requested.
+  // TODO(khushalsagar): Fix this in RepetitionCount itself when removing code
+  // here for animations.
+  int repetition_count = RepetitionCount();
+  if (repetition_count > 0)
+    repetition_count++;
+
   auto builder =
       CreatePaintImageBuilder()
           .set_paint_image_generator(std::move(generator))
           .set_frame_index(index)
           .set_repetition_count(GetRepetitionCountWithPolicyOverride(
-              repetition_count_, animation_policy_))
+              repetition_count, animation_policy_))
           .set_completion_state(completion_state)
           .set_reset_animation_sequence_id(reset_animation_sequence_id_);
 

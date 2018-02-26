@@ -543,6 +543,13 @@ TEST_F(BitmapImageTest, APNGDecoderDisposePrevious) {
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
+TEST_F(BitmapImageTest, GIFRepetitionCount) {
+  LoadImage("/LayoutTests/images/resources/three-frames_loop-three-times.gif");
+  auto paint_image = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(paint_image.repetition_count(), 3);
+  EXPECT_EQ(paint_image.FrameCount(), 3u);
+}
+
 class BitmapImageTestWithMockDecoder : public BitmapImageTest,
                                        public MockImageDecoderClient {
  public:
