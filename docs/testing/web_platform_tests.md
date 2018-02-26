@@ -110,6 +110,20 @@ for Windows. To check what files are skipped in import, check the recent logs
 for [wpt-importer
 builder](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-importer).
 
+### GitHub credentials
+
+When manually running the `wpt-import` and `wpt-export` scripts, several
+requests are made to GitHub to query the status of pull requests, look for
+existing exported commits etc. GitHub has a [fairly
+low](https://developer.github.com/v3/#rate-limiting) request limit for
+unauthenticated requests, so it is recommended that you let `wpt-export` and
+`wpt-import` use your GitHub credentials when sending requests:
+
+ 1. Generate a new [personal access token](https://github.com/settings/tokens)
+ 1. Create a JSON file with two keys: `GH_USER`, your GitHub user name, and
+    `GH_TOKEN`, the access token you have just generated.
+ 1. Pass `--credentials-json <path-to-json>` to `wpt-export` and `wpt-import`.
+
 ### Manual import
 
 To pull the latest versions of the tests that are currently being imported, you
@@ -120,6 +134,10 @@ That script will pull the latest version of the tests from our mirrors of the
 upstream repositories. If any new versions of tests are found, they will be
 committed locally to your local repository. You may then upload the changes.
 
+Remember your import might fail due to GitHub's limit for unauthenticated
+requests, so consider [passing your GitHub credentials](#GitHub-credentials) to
+the script.
+
 ### Enabling import for a new directory
 
 If you wish to add more tests (by un-skipping some of the directories currently
@@ -127,7 +145,11 @@ skipped in `W3CImportExpectations`), you can modify that file locally and commit
 it, and on the next auto-import, the new tests should be imported.
 
 If you want to import immediately (in order to try the tests out locally, etc)
-you can also run `wpt-import --allow-local-commits`, but this is not required.
+you can also run `wpt-import`, but this is not required.
+
+Remember your import might fail due to GitHub's limit for unauthenticated
+requests, so consider [passing your GitHub credentials](#GitHub-credentials) to
+the script.
 
 ## Writing tests
 
