@@ -86,20 +86,23 @@ void CameraDeviceDelegate::AllocateAndStart(
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
-    base::Closure device_close_callback) {
+    base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  // StopAndDeAllocate may be called at any state except
-  // CameraDeviceContext::State::kStopping.
-  DCHECK_NE(device_context_->GetState(), CameraDeviceContext::State::kStopping);
 
-  if (device_context_->GetState() == CameraDeviceContext::State::kStopped ||
-      !stream_buffer_manager_) {
+  if (!device_context_ ||
+      device_context_->GetState() == CameraDeviceContext::State::kStopped ||
+      (device_context_->GetState() == CameraDeviceContext::State::kError &&
+       !stream_buffer_manager_)) {
     // In case of Mojo connection error the device may be stopped before
     // StopAndDeAllocate is called; in case of device open failure, the state
     // is set to kError and |stream_buffer_manager_| is uninitialized.
     std::move(device_close_callback).Run();
     return;
   }
+
+  // StopAndDeAllocate may be called at any state except
+  // CameraDeviceContext::State::kStopping.
+  DCHECK_NE(device_context_->GetState(), CameraDeviceContext::State::kStopping);
 
   device_close_callback_ = std::move(device_close_callback);
   device_context_->SetState(CameraDeviceContext::State::kStopping);

@@ -576,4 +576,46 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
   ResetDevice();
 }
 
+// Test that the class handles it correctly when StopAndDeAllocate is called
+// multiple times.
+TEST_F(CameraDeviceDelegateTest, DoubleStopAndDeAllocate) {
+  AllocateDeviceWithDescriptor(kDefaultDescriptor);
+
+  VideoCaptureParams params;
+  params.requested_format = kDefaultCaptureFormat;
+
+  auto* mock_client = ResetDeviceContext();
+  mock_client->SetFrameCb(BindToCurrentLoop(base::BindOnce(
+      &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
+  mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
+      &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
+  SetUpExpectationUntilCapturing(mock_client);
+  SetUpExpectationForCaptureLoop();
+
+  device_delegate_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&CameraDeviceDelegate::AllocateAndStart,
+                                camera_device_delegate_->GetWeakPtr(), params,
+                                base::Unretained(device_context_.get())));
+
+  // Wait until a frame is received.  MockVideoCaptureClient calls QuitRunLoop()
+  // to stop the run loop.
+  DoLoop();
+
+  EXPECT_EQ(CameraDeviceContext::State::kCapturing, GetState());
+
+  SetUpExpectationForClose();
+
+  WaitForDeviceToClose();
+
+  device_delegate_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&CameraDeviceDelegate::StopAndDeAllocate,
+                                camera_device_delegate_->GetWeakPtr(),
+                                BindToCurrentLoop(base::BindOnce(
+                                    &CameraDeviceDelegateTest::QuitRunLoop,
+                                    base::Unretained(this)))));
+  DoLoop();
+
+  ResetDevice();
+}
+
 }  // namespace media
