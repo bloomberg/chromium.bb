@@ -1202,14 +1202,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityIframeCoordinatesCrossProcess) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates-cross-process.html"));
 }
-// Flaky on Win7 and Win10. http://crbug.com/805998
-#ifdef OS_WIN
-#define MAYBE_AccessibilityIframePadding DISABLED_AccessibilityIframePadding
-#else
-#define MAYBE_AccessibilityIframePadding AccessibilityIframePadding
-#endif
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityIframePadding) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityIframePadding) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-padding.html"));
 }
 
