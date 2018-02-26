@@ -64,6 +64,12 @@ struct weston_transform {
 	struct wl_list link;
 };
 
+/** 2D device coordinates normalized to [0, 1] range */
+struct weston_point2d_device_normalized {
+	double x;
+	double y;
+};
+
 struct weston_surface;
 struct weston_buffer;
 struct shell_surface;
@@ -1543,8 +1549,24 @@ void
 notify_keyboard_focus_out(struct weston_seat *seat);
 
 void
+notify_touch_normalized(struct weston_touch_device *device,
+			const struct timespec *time,
+			int touch_id,
+			double x, double y,
+			const struct weston_point2d_device_normalized *norm,
+			int touch_type);
+
+/** Feed in touch down, motion, and up events, non-calibratable device.
+ *
+ * @sa notify_touch_cal
+ */
+static inline void
 notify_touch(struct weston_touch_device *device, const struct timespec *time,
-	     int touch_id, double x, double y, int touch_type);
+	     int touch_id, double x, double y, int touch_type)
+{
+	notify_touch_normalized(device, time, touch_id, x, y, NULL, touch_type);
+}
+
 void
 notify_touch_frame(struct weston_touch_device *device);
 

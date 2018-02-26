@@ -419,6 +419,7 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 		libinput_device_get_user_data(libinput_device);
 	double x;
 	double y;
+	struct weston_point2d_device_normalized norm;
 	uint32_t width, height;
 	struct timespec time;
 	int32_t slot;
@@ -438,7 +439,14 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 	weston_output_transform_coordinate(device->output,
 					   x, y, &x, &y);
 
-	notify_touch(device->touch_device, &time, slot, x, y, touch_type);
+	if (weston_touch_device_can_calibrate(device->touch_device)) {
+		norm.x = libinput_event_touch_get_x_transformed(touch_event, 1);
+		norm.y = libinput_event_touch_get_y_transformed(touch_event, 1);
+		notify_touch_normalized(device->touch_device, &time, slot,
+					x, y, &norm, touch_type);
+	} else {
+		notify_touch(device->touch_device, &time, slot, x, y, touch_type);
+	}
 }
 
 static void

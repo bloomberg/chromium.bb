@@ -2338,17 +2338,10 @@ weston_touch_set_focus(struct weston_touch *touch, struct weston_view *view)
 	touch->focus = view;
 }
 
-/**
- * notify_touch - emulates button touches and notifies surfaces accordingly.
- *
- * It assumes always the correct cycle sequence until it gets here: touch_down
- * → touch_update → ... → touch_update → touch_end. The driver is responsible
- * for sending along such order.
- *
- */
-WL_EXPORT void
-notify_touch(struct weston_touch_device *device, const struct timespec *time,
-	     int touch_id, double double_x, double double_y, int touch_type)
+static void
+process_touch_normal(struct weston_touch_device *device,
+		     const struct timespec *time, int touch_id,
+		     double double_x, double double_y, int touch_type)
 {
 	struct weston_touch *touch = device->aggregate;
 	struct weston_touch_grab *grab = device->aggregate->grab;
@@ -2423,6 +2416,48 @@ notify_touch(struct weston_touch_device *device, const struct timespec *time,
 			weston_touch_set_focus(touch, NULL);
 		break;
 	}
+}
+
+/** Feed in touch down, motion, and up events, calibratable device.
+ *
+ * It assumes always the correct cycle sequence until it gets here: touch_down
+ * → touch_update → ... → touch_update → touch_end. The driver is responsible
+ * for sending along such order.
+ *
+ * \param device The physical device that generated the event.
+ * \param time The event timestamp.
+ * \param touch_id ID for the touch point of this event (multi-touch).
+ * \param double_x X coordinate in compositor global space.
+ * \param double_y Y coordinate in compositor global space.
+ * \param norm Normalized device X, Y coordinates in calibration space, or NULL.
+ * \param touch_type Either WL_TOUCH_DOWN, WL_TOUCH_UP, or WL_TOUCH_MOTION.
+ *
+ * Coordinates double_x and double_y are used for normal operation.
+ *
+ * Coordinates norm are only used for touch device calibration. If and only if
+ * the weston_touch_device does not support calibrating, norm must be NULL.
+ *
+ * The calibration space is the normalized coordinate space
+ * [0.0, 1.0]×[0.0, 1.0] of the weston_touch_device. This is assumed to
+ * map to the similar normalized coordinate space of the associated
+ * weston_output.
+ */
+WL_EXPORT void
+notify_touch_normalized(struct weston_touch_device *device,
+			const struct timespec *time,
+			int touch_id,
+			double x, double y,
+			const struct weston_point2d_device_normalized *norm,
+			int touch_type)
+{
+	if (touch_type != WL_TOUCH_UP) {
+		if (weston_touch_device_can_calibrate(device))
+			assert(norm != NULL);
+		else
+			assert(norm == NULL);
+	}
+
+	process_touch_normal(device, time, touch_id, x, y, touch_type);
 }
 
 WL_EXPORT void
