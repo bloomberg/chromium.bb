@@ -137,6 +137,9 @@ component("events") {
     "events_stub.cc",
     "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_types.h",
+    "keyboard_hook.h",
+    "keyboard_hook_base.cc",
+    "keyboard_hook_base.h",
     "keycodes/platform_key_map_win.cc",
     "keycodes/platform_key_map_win.h",
     "null_event_targeter.cc",
@@ -146,8 +149,10 @@ component("events") {
     "system_input_injector.cc",
     "system_input_injector.h",
     "win/events_win.cc",
+    "win/keyboard_hook_win.cc",
     "win/system_event_state_lookup.cc",
     "win/system_event_state_lookup.h",
+    "x/keyboard_hook_posix.cc",
   ]
 
   defines = [ "EVENTS_IMPLEMENTATION" ]

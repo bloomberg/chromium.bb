@@ -14,8 +14,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
@@ -53,6 +55,7 @@ enum class EventTargetingPolicy;
 namespace aura {
 
 class LayoutManager;
+class ScopedKeyboardHook;
 class WindowDelegate;
 class WindowObserver;
 class WindowPort;
@@ -334,6 +337,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Returns true if this window has capture.
   bool HasCapture();
+
+  // Requests that |keys| be intercepted at the platform level and routed
+  // directly to the web content.  If |keys| has no value, all keys will be
+  // intercepted.  Returns a ScopedKeyboardHook instance which stops capturing
+  // system key events when destroyed.
+  std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
+      base::Optional<base::flat_set<int>> keys);
 
   // Suppresses painting window content by disgarding damaged rect and ignoring
   // new paint requests. This is a one way operation and there is no way to

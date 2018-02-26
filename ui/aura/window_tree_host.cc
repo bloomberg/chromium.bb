@@ -12,6 +12,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_port.h"
@@ -242,6 +243,13 @@ void WindowTreeHost::Hide() {
     compositor()->SetVisible(false);
 }
 
+std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
+    base::Optional<base::flat_set<int>> keys) {
+  if (CaptureSystemKeyEventsImpl(std::move(keys)))
+    return std::make_unique<ScopedKeyboardHook>(weak_factory_.GetWeakPtr());
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 
@@ -252,7 +260,8 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<WindowPort> window_port)
     : window_(new Window(nullptr, std::move(window_port))),
       last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
-      owned_input_method_(false) {
+      owned_input_method_(false),
+      weak_factory_(this) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 

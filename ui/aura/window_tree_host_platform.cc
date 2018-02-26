@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -112,6 +113,14 @@ void WindowTreeHostPlatform::SetCapture() {
 void WindowTreeHostPlatform::ReleaseCapture() {
   platform_window_->ReleaseCapture();
 }
+
+bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
+    base::Optional<base::flat_set<int>> native_key_codes) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WindowTreeHostPlatform::ReleaseSystemKeyEventCapture() {}
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)

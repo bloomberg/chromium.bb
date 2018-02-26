@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/event_types.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
@@ -39,6 +41,8 @@ class ViewProp;
 }
 
 namespace aura {
+class ScopedKeyboardHook;
+
 namespace test {
 class WindowTreeHostTestApi;
 }
@@ -197,7 +201,15 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Releases OS capture of the root window.
   virtual void ReleaseCapture() = 0;
 
+  // Requests that |keys| be intercepted at the platform level and routed
+  // directly to the web content.  If |keys| is empty, all keys will be
+  // intercepted.  Returns a ScopedKeyboardHook instance which stops capturing
+  // system key events when destroyed.
+  std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
+      base::Optional<base::flat_set<int>> keys);
+
  protected:
+  friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
   WindowTreeHost();
@@ -251,6 +263,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // Begins capturing system key events.  Returns true if successful.
+  virtual bool CaptureSystemKeyEventsImpl(
+      base::Optional<base::flat_set<int>> keys) = 0;
+
+  // Stops capturing system keyboard events.
+  virtual void ReleaseSystemKeyEventCapture() = 0;
 
  protected:
   const base::ObserverList<WindowTreeHostObserver>& observers() const {
@@ -307,6 +326,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;
+
+  base::WeakPtrFactory<WindowTreeHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

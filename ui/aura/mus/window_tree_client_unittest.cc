@@ -1393,7 +1393,7 @@ TEST_F(WindowTreeClientClientTest, InputMouseEventNoWindow) {
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.press_count());
   EXPECT_TRUE(env->IsMouseButtonDown());
-  EXPECT_EQ(1024, env->mouse_button_flags());  // ui::EF_LEFT_MOUSE_BUTTON
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, env->mouse_button_flags());
   EXPECT_EQ(event_location, env->last_mouse_location());
   window_delegate.reset();
 
