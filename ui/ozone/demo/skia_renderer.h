@@ -54,7 +54,6 @@ class SkiaRenderer : public RendererBase,
 
   sk_sp<GrContext> gr_context_;
   const bool use_ddl_;
-  const bool draw_text_;
 
  private:
   // base::DelegateSimpleThread::Delegate:
@@ -63,6 +62,8 @@ class SkiaRenderer : public RendererBase,
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   sk_sp<SkSurface> sk_surface_;
+
+  float rotation_angle_ = 0.f;
 
   std::unique_ptr<base::SimpleThread> ddl_render_thread_;
 

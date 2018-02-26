@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -29,7 +29,6 @@ const GrGLInterface* GrGLCreateNativeInterface() {
   });
 }
 
-const char kDrawText[] = "draw-text";
 const char kUseDDL[] = "use-ddl";
 
 }  // namespace
@@ -40,7 +39,6 @@ SkiaRenderer::SkiaRenderer(gfx::AcceleratedWidget widget,
     : RendererBase(widget, size),
       gl_surface_(surface),
       use_ddl_(base::CommandLine::ForCurrentProcess()->HasSwitch(kUseDDL)),
-      draw_text_(base::CommandLine::ForCurrentProcess()->HasSwitch(kDrawText)),
       condition_variable_(&lock_),
       weak_ptr_factory_(this) {}
 
@@ -126,27 +124,52 @@ void SkiaRenderer::PostRenderFrameTask(gfx::SwapResult result) {
 
 void SkiaRenderer::Draw(SkCanvas* canvas, float fraction) {
   TRACE_EVENT0("ozone", "SkiaRenderer::Draw");
-  canvas->clear(SkColorSetARGB(255, 255 * (1 - fraction), 255 * fraction, 0));
-  if (draw_text_) {
-    SkPaint paint;
-    paint.setTextSize(48.f);
-    paint.setColor(
-        SkColorSetARGB(255, 255 * fraction, 255 * (1 - fraction), 0));
-    paint.setTypeface(
-        SkTypeface::MakeFromName("monospace", SkFontStyle::Bold()));
-    canvas->setMatrix(SkMatrix::MakeScale(1 + fraction / 2, 1 - fraction / 2));
+  // Clear background
+  canvas->clear(SkColorSetARGB(255, 255 * fraction, 255 * (1 - fraction), 0));
 
-    std::string text = use_ddl_ ? "Ozone Demo with DDL" : "Ozone Demo";
-    canvas->drawText(text.c_str(), text.length(), 150, 150, paint);
-    canvas->resetMatrix();
-  } else {
-    SkPaint paint;
-    paint.setColor(
-        SkColorSetARGB(255, 255 * fraction, 255 * (1 - fraction), 0));
-    canvas->setMatrix(SkMatrix::MakeScale(1 + fraction / 2, 1 - fraction / 2));
-    canvas->drawCircle(200, 200, 50, paint);
-    canvas->resetMatrix();
+  SkPaint paint;
+  paint.setColor(SK_ColorRED);
+
+  // Draw a rectangle with red paint
+  SkRect rect = SkRect::MakeXYWH(10, 10, 128, 128);
+  canvas->drawRect(rect, paint);
+
+  // Set up a linear gradient and draw a circle
+  {
+    SkPoint linearPoints[] = {{0, 0}, {300, 300}};
+    SkColor linearColors[] = {SK_ColorGREEN, SK_ColorBLACK};
+    paint.setShader(SkGradientShader::MakeLinear(
+        linearPoints, linearColors, nullptr, 2, SkShader::kMirror_TileMode));
+    paint.setAntiAlias(true);
+
+    canvas->drawCircle(200, 200, 64, paint);
+
+    // Detach shader
+    paint.setShader(nullptr);
   }
+
+  // Draw a message with a nice black paint
+  paint.setSubpixelText(true);
+  paint.setColor(SK_ColorBLACK);
+  paint.setTextSize(32);
+
+  canvas->save();
+  static const char message[] = "Hello Ozone";
+  static const char message_ddl[] = "Hello Ozone + DDL";
+
+  // Translate and rotate
+  canvas->translate(300, 300);
+  rotation_angle_ += 0.2f;
+  if (rotation_angle_ > 360) {
+    rotation_angle_ -= 360;
+  }
+  canvas->rotate(rotation_angle_);
+
+  const char* text = use_ddl_ ? message_ddl : message;
+  // Draw the text
+  canvas->drawText(text, strlen(text), 0, 0, paint);
+
+  canvas->restore();
 }
 
 void SkiaRenderer::StartDDLRenderThreadIfNecessary(SkSurface* sk_surface) {
