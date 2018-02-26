@@ -419,7 +419,7 @@ static TX_SIZE read_selected_tx_size(MACROBLOCKD *xd, int is_inter,
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
   const int max_depths = bsize_to_max_depth(bsize, 0);
-  const int ctx = get_tx_size_context(xd, is_inter);
+  const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     max_depths + 1, ACCT_STR);
@@ -439,11 +439,11 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
       const TX_SIZE coded_tx_size = read_selected_tx_size(xd, is_inter, r);
       return coded_tx_size;
     } else {
-      return tx_size_from_tx_mode(bsize, tx_mode, is_inter);
+      return tx_size_from_tx_mode(bsize, tx_mode);
     }
   } else {
     assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
-    return get_max_rect_tx_size(bsize, is_inter);
+    return get_max_rect_tx_size(bsize);
   }
 }
 
@@ -790,8 +790,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
 #if !CONFIG_TXK_SEL
-  const TX_SIZE mtx_size =
-      get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type, inter_block);
+  const TX_SIZE mtx_size = get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type);
   const TX_SIZE tx_size =
       inter_block ? AOMMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
                   : mbmi->tx_size;
@@ -885,7 +884,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const int height = block_size_high[bsize] >> tx_size_high_log2[0];
     if ((cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
          !xd->lossless[mbmi->segment_id] && !mbmi->skip)) {
-      const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, 0);
+      const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       mbmi->min_tx_size = TX_SIZES_LARGEST;
@@ -2094,7 +2093,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
-    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, inter_block);
+    const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];

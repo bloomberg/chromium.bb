@@ -2322,7 +2322,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int is_inter = is_inter_block(mbmi);
     const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
     const int depth = tx_size_to_depth(tx_size, bsize, is_inter);
-    const int tx_size_ctx = get_tx_size_context(xd, is_inter);
+    const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
     return r_tx_size;
   } else {
@@ -2483,7 +2483,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int is_inter = is_inter_block(mbmi);
   av1_invalid_rd_stats(rd_stats);
 
-  mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
+  mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
   mbmi->min_tx_size = mbmi->tx_size;
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
@@ -2595,8 +2595,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int start_tx;
   int depth;
   int64_t best_rd = INT64_MAX, last_rd = INT64_MAX;
-  const int is_inter = is_inter_block(mbmi);
-  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bs, is_inter);
+  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bs);
   TX_SIZE best_tx_size = max_rect_tx_size;
   TX_TYPE best_tx_type = DCT_DCT;
 #if CONFIG_TXK_SEL
@@ -2612,8 +2611,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     start_tx = max_rect_tx_size;
     depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs], &cpi->sf);
   } else {
-    const TX_SIZE chosen_tx_size =
-        tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
+    const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
     start_tx = chosen_tx_size;
     depth = MAX_TX_DEPTH;
   }
@@ -2855,7 +2853,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   RD_STATS this_rd_stats;
   int row, col;
   int64_t temp_sse, this_rd;
-  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 0);
+  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
 #if CONFIG_FILTER_INTRA
   if (mbmi->filter_intra_mode_info.use_filter_intra) {
     tx_size = av1_max_tx_size_for_filter_intra(bsize, cm->tx_mode);
@@ -4246,7 +4244,7 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = mi_size_wide[plane_bsize];
     const int mi_height = mi_size_high[plane_bsize];
-    const TX_SIZE max_tx_size = get_max_rect_tx_size(plane_bsize, 1);
+    const TX_SIZE max_tx_size = get_max_rect_tx_size(plane_bsize);
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;
@@ -4789,8 +4787,7 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 // The sse value is stored in dist.
 static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
                              int reduced_tx_set) {
-  int max_tx_size =
-      get_max_rect_tx_size(bsize, is_inter_block(&x->e_mbd.mi[0]->mbmi));
+  int max_tx_size = get_max_rect_tx_size(bsize);
   if (tx_size_high[max_tx_size] > 16 || tx_size_wide[max_tx_size] > 16)
     max_tx_size = AOMMIN(max_txsize_lookup[bsize], TX_16X16);
   const int tx_h = tx_size_high[max_tx_size];
@@ -4852,7 +4849,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int n4 = bsize_to_num_blk(bsize);
-  const TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
+  const TX_SIZE tx_size = get_max_rect_tx_size(bsize);
   mbmi->tx_type = DCT_DCT;
 #if CONFIG_TXK_SEL
   memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
@@ -7956,7 +7953,7 @@ static int64_t motion_mode_rd(
     } else {
       x->skip = 1;
       *disable_skip = 1;
-      mbmi->tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 1);
+      mbmi->tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
 
       // The cost of skip bit needs to be added.
       mbmi->skip = 0;
@@ -10558,7 +10555,7 @@ PALETTE_EXIT:
 
       // Set up tx_size related variables for skip-specific loop filtering.
       best_mbmode.tx_size = block_signals_txsize(bsize)
-                                ? tx_size_from_tx_mode(bsize, cm->tx_mode, 1)
+                                ? tx_size_from_tx_mode(bsize, cm->tx_mode)
                                 : max_txsize_rect_lookup[bsize];
       memset(best_mbmode.inter_tx_size, best_mbmode.tx_size,
              sizeof(best_mbmode.inter_tx_size));

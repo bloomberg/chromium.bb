@@ -319,9 +319,8 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p6(
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real blocks.
 // The prediction flags in these dummy entries are initialized to 0.
-static INLINE int get_tx_size_context(const MACROBLOCKD *xd, int is_inter) {
+static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  (void)is_inter;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const TX_SIZE max_tx_size = max_txsize_rect_lookup[mbmi->sb_type];

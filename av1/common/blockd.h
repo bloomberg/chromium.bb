@@ -774,15 +774,13 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
 #define TXSIZEMAX(t1, t2) (tx_size_2d[(t1)] >= tx_size_2d[(t2)] ? (t1) : (t2))
 #define TXSIZEMIN(t1, t2) (tx_size_2d[(t1)] <= tx_size_2d[(t2)] ? (t1) : (t2))
 
-static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
-  (void)is_inter;
+static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize) {
   return max_txsize_rect_lookup[bsize];
 }
 
-static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
-                                           int is_inter) {
+static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bsize, is_inter);
+  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bsize);
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
   if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
@@ -805,7 +803,7 @@ static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
 
 static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
                                                        TX_MODE tx_mode) {
-  const TX_SIZE max_tx_size = tx_size_from_tx_mode(bsize, tx_mode, 0);
+  const TX_SIZE max_tx_size = tx_size_from_tx_mode(bsize, tx_mode);
 
   if (tx_mode != TX_MODE_SELECT) return max_tx_size;
 
@@ -956,7 +954,7 @@ void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
                             const int num_planes);
 
 static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize, int is_inter) {
-  TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter);
+  TX_SIZE tx_size = get_max_rect_tx_size(bsize);
   int depth = 0;
   while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
     depth++;
@@ -966,7 +964,7 @@ static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize, int is_inter) {
 }
 
 static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize, int is_inter) {
-  TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter);
+  TX_SIZE tx_size = get_max_rect_tx_size(bsize);
   assert(tx_size != TX_4X4);
   int depth = 0;
   while (tx_size != TX_4X4) {
@@ -980,17 +978,16 @@ static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize, int is_inter) {
 
 static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize,
                                        int is_inter) {
-  TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, is_inter);
+  TX_SIZE max_tx_size = get_max_rect_tx_size(bsize);
   TX_SIZE tx_size = max_tx_size;
   for (int d = 0; d < depth; ++d) tx_size = sub_tx_size_map[is_inter][tx_size];
   return tx_size;
 }
 
-static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
-                                            int ss_x, int ss_y) {
+static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int ss_x,
+                                            int ss_y) {
   const BLOCK_SIZE plane_bsize = ss_size_lookup[bsize][ss_x][ss_y];
   assert(plane_bsize < BLOCK_SIZES_ALL);
-  (void)is_inter;
   TX_SIZE uv_tx = max_txsize_rect_lookup[plane_bsize];
   switch (uv_tx) {
     case TX_64X64:
@@ -1005,7 +1002,7 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
 
 static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi, int ss_x,
                                          int ss_y) {
-  return av1_get_max_uv_txsize(mbmi->sb_type, is_inter_block(mbmi), ss_x, ss_y);
+  return av1_get_max_uv_txsize(mbmi->sb_type, ss_x, ss_y);
 }
 
 static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
@@ -1078,10 +1075,9 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 
 static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                        int subsampled) {
-  TX_SIZE max_txsize =
-      xd->lossless[xd->mi[0]->mbmi.segment_id]
-          ? TX_4X4
-          : get_max_rect_tx_size(bsize, is_inter_block(&xd->mi[0]->mbmi));
+  TX_SIZE max_txsize = xd->lossless[xd->mi[0]->mbmi.segment_id]
+                           ? TX_4X4
+                           : get_max_rect_tx_size(bsize);
 
 #if CONFIG_EXT_PARTITION
   // The decoder is designed so that it can process 64x64 luma pixels at a

@@ -209,7 +209,7 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   (void)cm;
   if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
-    const int tx_size_ctx = get_tx_size_context(xd, 0);
+    const int tx_size_ctx = get_tx_size_context(xd);
     const int depth = tx_size_to_depth(tx_size, bsize, 0);
     const int max_depths = bsize_to_max_depth(bsize, 0);
     const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
@@ -857,8 +857,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
 #if !CONFIG_TXK_SEL
-  const TX_SIZE mtx_size =
-      get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type, is_inter);
+  const TX_SIZE mtx_size = get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type);
   const TX_SIZE tx_size =
       is_inter ? TXSIZEMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
                : mbmi->tx_size;

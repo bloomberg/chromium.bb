@@ -378,8 +378,7 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   if (xd->lossless[mbmi->segment_id]) {
     mbmi->tx_size = TX_4X4;
   } else if (tx_mode != TX_MODE_SELECT) {
-    mbmi->tx_size =
-        tx_size_from_tx_mode(mbmi->sb_type, tx_mode, is_inter_block(mbmi));
+    mbmi->tx_size = tx_size_from_tx_mode(mbmi->sb_type, tx_mode);
   } else {
     BLOCK_SIZE bsize = mbmi->sb_type;
     TX_SIZE min_tx_size =
@@ -4970,7 +4969,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts,
                                   tile_data->allow_update_cdf);
       } else {
-        if (tx_size != get_max_rect_tx_size(bsize, 0)) ++x->txb_split_count;
+        if (tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
       }
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
     } else {
@@ -4981,13 +4980,13 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (xd->lossless[mbmi->segment_id]) {
           intra_tx_size = TX_4X4;
         } else {
-          intra_tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 1);
+          intra_tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
         }
       } else {
         intra_tx_size = tx_size;
         if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
             tile_data->allow_update_cdf) {
-          const int tx_size_ctx = get_tx_size_context(xd, 0);
+          const int tx_size_ctx = get_tx_size_context(xd);
           const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
           const int depth = tx_size_to_depth(tx_size, bsize, 0);
           const int max_depths = bsize_to_max_depth(bsize, 0);
@@ -5002,8 +5001,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
             mi_8x8[mis * j + i]->mbmi.tx_size = intra_tx_size;
 
       mbmi->min_tx_size = intra_tx_size;
-      if (intra_tx_size != get_max_rect_tx_size(bsize, is_inter))
-        ++x->txb_split_count;
+      if (intra_tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
     }
 
 #if !CONFIG_TXK_SEL
@@ -5023,7 +5021,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       if (xd->lossless[mbmi->segment_id]) {
         tx_size = TX_4X4;
       } else {
-        tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, is_inter);
+        tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
       }
     } else {
       tx_size = (bsize > BLOCK_4X4) ? tx_size : TX_4X4;
