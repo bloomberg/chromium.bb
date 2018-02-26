@@ -49,7 +49,8 @@ void LayoutSVGResourceGradient::RemoveClientFromCache(
 }
 
 SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
-    const LayoutObject& object) {
+    const LayoutObject& object,
+    const FloatRect& object_bounding_box) {
   ClearInvalidationMask();
 
   // Validate gradient DOM state before building the actual
@@ -65,7 +66,6 @@ SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
   // Spec: When the geometry of the applicable element has no width or height
   // and objectBoundingBox is specified, then the given effect (e.g. a gradient
   // or a filter) will be ignored.
-  FloatRect object_bounding_box = object.ObjectBoundingBox();
   if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
       object_bounding_box.IsEmpty())
     return SVGPaintServer::Invalid();

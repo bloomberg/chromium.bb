@@ -45,16 +45,20 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
   void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) override;
 
-  SVGPaintServer PreparePaintServer(const LayoutObject&) override;
+  SVGPaintServer PreparePaintServer(
+      const LayoutObject&,
+      const FloatRect& object_bounding_box) override;
 
   static const LayoutSVGResourceType kResourceType = kPatternResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
  private:
-  std::unique_ptr<PatternData> BuildPatternData(const LayoutObject&);
+  std::unique_ptr<PatternData> BuildPatternData(
+      const FloatRect& object_bounding_box);
   sk_sp<PaintRecord> AsPaintRecord(const FloatSize&,
                                    const AffineTransform&) const;
-  PatternData* PatternForLayoutObject(const LayoutObject&);
+  PatternData* PatternForClient(const LayoutObject&,
+                                const FloatRect& object_bounding_box);
 
   const LayoutSVGResourceContainer* ResolveContentElement() const;
 
