@@ -60,9 +60,10 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
       // TODO(crbug.com/814815): The condition should be a DCHECK, but for now
       // we may paint the object for filters during PrePaint before the
       // properties are ready.
-      if (properties && properties->OverflowClip()) {
+      if (properties && properties->OverflowOrInnerBorderRadiusClip()) {
         scoped_paint_chunk_properties.emplace(
-            paint_info.context.GetPaintController(), properties->OverflowClip(),
+            paint_info.context.GetPaintController(),
+            properties->OverflowOrInnerBorderRadiusClip(),
             layout_svg_foreign_object_,
             paint_info.DisplayItemTypeForClipping());
       }

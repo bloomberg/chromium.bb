@@ -465,14 +465,14 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* clip_properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 7, 0), clip_properties->ClipRect().Rect());
 
   // Width changes should update the overflow clip.
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   clip_properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 7, 0), clip_properties->ClipRect().Rect());
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:9px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -484,7 +484,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
                     "display:inline-block; width:7px; padding-right:3px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   clip_properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 10, 0), clip_properties->ClipRect().Rect());
   div->setAttribute(HTMLNames::styleAttr,
                     "display:inline-block; width:8px; padding-right:2px;");
@@ -500,7 +500,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
   div->setAttribute(HTMLNames::styleAttr, "border-right:3px solid red;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   clip_properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 797, 0), clip_properties->ClipRect().Rect());
   div->setAttribute(HTMLNames::styleAttr, "border-right:5px solid red;");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -510,15 +510,13 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
   div->setAttribute(HTMLNames::styleAttr, "overflow:hidden;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   clip_properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 800, 0), clip_properties->ClipRect().Rect());
   div->setAttribute(HTMLNames::styleAttr, "overflow:visible;");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_TRUE(!div->GetLayoutObject()->FirstFragment().PaintProperties() ||
-              !div->GetLayoutObject()
-                   ->FirstFragment()
-                   .PaintProperties()
-                   ->OverflowClip());
+              !OverflowClip(
+                  *div->GetLayoutObject()->FirstFragment().PaintProperties()));
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
@@ -532,16 +530,14 @@ TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* div = GetDocument().getElementById("div");
   auto* properties =
-      div->GetLayoutObject()->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*div->GetLayoutObject()->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatRect(0, 0, 7, 6), properties->ClipRect().Rect());
 
   div->setAttribute(HTMLNames::styleAttr, "");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_TRUE(!div->GetLayoutObject()->FirstFragment().PaintProperties() ||
-              !div->GetLayoutObject()
-                   ->FirstFragment()
-                   .PaintProperties()
-                   ->OverflowClip());
+              !OverflowClip(
+                  *div->GetLayoutObject()->FirstFragment().PaintProperties()));
 }
 
 // A basic sanity check for over-invalidation of paint properties.
@@ -787,7 +783,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
 
   auto* container = GetLayoutObjectByElementId("container");
   auto* overflow_clip =
-      container->FirstFragment().PaintProperties()->OverflowClip();
+      OverflowClip(*container->FirstFragment().PaintProperties());
   EXPECT_EQ(FloatSize(80, 80), overflow_clip->ClipRect().Rect().Size());
 
   auto* new_style = GetDocument().CreateRawElement(HTMLNames::styleTag);
@@ -796,7 +792,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(overflow_clip,
-            container->FirstFragment().PaintProperties()->OverflowClip());
+            OverflowClip(*container->FirstFragment().PaintProperties()));
   EXPECT_EQ(FloatSize(60, 60), overflow_clip->ClipRect().Rect().Size());
 }
 
@@ -827,12 +823,12 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
   )HTML");
 
   auto* select = GetLayoutObjectByElementId("select");
-  EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
+  EXPECT_NE(nullptr, OverflowClip(*select->FirstFragment().PaintProperties()));
 
   // Should not assert in FindPropertiesNeedingUpdate.
   ToHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
+  EXPECT_NE(nullptr, OverflowClip(*select->FirstFragment().PaintProperties()));
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, BoxAddRemoveMask) {
@@ -1078,7 +1074,7 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {
   const auto* properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
   EXPECT_EQ(FloatRect(0, 0, 30, 40),
-            properties->OverflowClip()->ClipRect().Rect());
+            OverflowClip(*properties)->ClipRect().Rect());
 
   GetDocument().getElementById("target")->setAttribute("overflow", "visible");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -1089,7 +1085,7 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGViewportContainerOverflowChange) {
   properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
   EXPECT_EQ(FloatRect(0, 0, 30, 40),
-            properties->OverflowClip()->ClipRect().Rect());
+            OverflowClip(*properties)->ClipRect().Rect());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
@@ -1104,7 +1100,7 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
   const auto* properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
   EXPECT_EQ(FloatRect(10, 20, 30, 40),
-            properties->OverflowClip()->ClipRect().Rect());
+            OverflowClip(*properties)->ClipRect().Rect());
 
   GetDocument().getElementById("target")->setAttribute("overflow", "visible");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -1115,7 +1111,7 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
   properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
   EXPECT_EQ(FloatRect(10, 20, 30, 40),
-            properties->OverflowClip()->ClipRect().Rect());
+            OverflowClip(*properties)->ClipRect().Rect());
 }
 
 }  // namespace blink

@@ -71,10 +71,8 @@ const ClipPaintPropertyNode* FragmentData::PreCssClip() const {
 
 const ClipPaintPropertyNode* FragmentData::PostOverflowClip() const {
   if (const auto* properties = PaintProperties()) {
-    if (properties->OverflowClip())
-      return properties->OverflowClip();
-    if (properties->InnerBorderRadiusClip())
-      return properties->InnerBorderRadiusClip();
+    if (const auto* clip = properties->OverflowOrInnerBorderRadiusClip())
+      return clip;
   }
   return LocalBorderBoxProperties().Clip();
 }
