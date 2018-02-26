@@ -351,7 +351,8 @@ CanvasResourceProvider::CanvasResourceProvider(
     : weak_ptr_factory_(this),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       size_(size),
-      color_params_(color_params) {
+      color_params_(color_params),
+      snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);
 }
@@ -416,9 +417,30 @@ void CanvasResourceProvider::ReleaseLockedImages() {
 scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
   if (!IsValid())
     return nullptr;
-  scoped_refptr<StaticBitmapImage> image = StaticBitmapImage::Create(
-      GetSkSurface()->makeImageSnapshot(), ContextProviderWrapper());
-  return image;
+
+  auto sk_image = GetSkSurface()->makeImageSnapshot();
+  auto last_snapshot_sk_image_id = snapshot_sk_image_id_;
+  snapshot_sk_image_id_ = sk_image->uniqueID();
+
+  if (ContextProviderWrapper()) {
+    return StaticBitmapImage::Create(std::move(sk_image),
+                                     ContextProviderWrapper());
+  }
+
+  // Ensure that a new PaintImage::ContentId is used only when the underlying
+  // SkImage changes. This is necessary to ensure that the same image results
+  // in a cache hit in cc's ImageDecodeCache.
+  if (snapshot_paint_image_content_id_ == PaintImage::kInvalidContentId ||
+      last_snapshot_sk_image_id != snapshot_sk_image_id_) {
+    snapshot_paint_image_content_id_ = PaintImage::GetNextContentId();
+  }
+
+  auto paint_image =
+      PaintImageBuilder::WithDefault()
+          .set_id(snapshot_paint_image_id_)
+          .set_image(std::move(sk_image), snapshot_paint_image_content_id_)
+          .TakePaintImage();
+  return StaticBitmapImage::Create(std::move(paint_image));
 }
 
 gpu::gles2::GLES2Interface* CanvasResourceProvider::ContextGL() const {

@@ -22,6 +22,7 @@ base::AtomicSequenceNumber g_next_content_id_;
 const PaintImage::Id PaintImage::kNonLazyStableId = -1;
 const size_t PaintImage::kDefaultFrameIndex = 0u;
 const PaintImage::Id PaintImage::kInvalidId = -2;
+const PaintImage::ContentId PaintImage::kInvalidContentId = -1;
 
 PaintImage::PaintImage() = default;
 PaintImage::PaintImage(const PaintImage& other) = default;
