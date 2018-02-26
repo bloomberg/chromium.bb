@@ -139,7 +139,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
 
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
 
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);

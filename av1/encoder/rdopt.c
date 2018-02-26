@@ -1936,7 +1936,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       continue;
     }
 
-    const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+    const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
     if (cpi->sf.optimize_coefficients != FULL_TRELLIS_OPT) {
@@ -2055,7 +2055,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
-  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
   int rate_cost = 0;
 
   // full forward transform and quantization
@@ -3756,8 +3756,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   BLOCK_SIZE txm_bsize = txsize_to_bsize[tx_size];
   int bh = block_size_high[txm_bsize];
   int bw = block_size_wide[txm_bsize];

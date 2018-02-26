@@ -246,7 +246,6 @@ static INLINE int get_interinter_wedge_bits(BLOCK_SIZE sb_type) {
 }
 
 static INLINE int is_interintra_wedge_used(BLOCK_SIZE sb_type) {
-  (void)sb_type;
   return wedge_params_lookup[sb_type].bits > 0;
 }
 
@@ -391,7 +390,6 @@ static INLINE void set_default_interp_filters(
 }
 
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
-  (void)xd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_EXT_SKIP
   if (mbmi->skip_mode) return 0;

@@ -47,18 +47,12 @@ static INLINE int get_coef_context(const int16_t *neighbors,
 }
 
 static INLINE const SCAN_ORDER *get_default_scan(TX_SIZE tx_size,
-                                                 TX_TYPE tx_type,
-                                                 int is_inter) {
-  (void)is_inter;
+                                                 TX_TYPE tx_type) {
   return &av1_scan_orders[tx_size][tx_type];
 }
 
-static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
-                                         TX_TYPE tx_type,
-                                         const MB_MODE_INFO *mbmi) {
-  const int is_inter = is_inter_block(mbmi);
-  (void)cm;
-  return get_default_scan(tx_size, tx_type, is_inter);
+static INLINE const SCAN_ORDER *get_scan(TX_SIZE tx_size, TX_TYPE tx_type) {
+  return get_default_scan(tx_size, tx_type);
 }
 
 #ifdef __cplusplus

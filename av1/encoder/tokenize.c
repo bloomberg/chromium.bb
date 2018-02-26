@@ -234,13 +234,12 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
   ThreadData *const td = args->td;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   const PLANE_TYPE type = pd->plane_type;
   const TX_TYPE tx_type = av1_get_tx_type(type, xd, blk_row, blk_col, tx_size,
                                           cm->reduced_tx_set_used);
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int rate = av1_cost_coeffs(
       cpi, x, plane, blk_row, blk_col, block, tx_size, scan_order,
       pd->above_context + blk_col, pd->left_context + blk_row, 0);
@@ -396,7 +395,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int16_t *scan, *nb;
   const TX_TYPE tx_type = av1_get_tx_type(type, xd, blk_row, blk_col, tx_size,
                                           cm->reduced_tx_set_used);
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int ref = is_inter_block(mbmi);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   aom_cdf_prob(

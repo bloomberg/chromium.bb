@@ -124,9 +124,8 @@ TEST(Av1ScanTest, Dependency) {
         assert(tx_class == TX_CLASS_HORIZ);
         scan_mode = SCAN_MODE_COL_1D;
       }
-      int is_inter = 0;
       const SCAN_ORDER *scan_order =
-          get_default_scan((TX_SIZE)tx_size, (TX_TYPE)tx_type, is_inter);
+          get_default_scan((TX_SIZE)tx_size, (TX_TYPE)tx_type);
       ASSERT_EQ(scan_order_test(scan_order, cols, rows, scan_mode), 0)
           << "scan mismatch tx_class " << tx_class << " tx_type " << tx_type
           << " tx_w " << org_cols << " tx_h " << org_rows << " scan_mode "

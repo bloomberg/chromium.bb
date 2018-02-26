@@ -165,7 +165,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-  const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int16_t *const scan = scan_order->scan;
   int dummy;
   const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
