@@ -86,10 +86,10 @@ class Traversal {
   }
 
   /**
-   * @param {!Selection} selection
+   * @param {!Window} window
    * @return !SampleSelection
    */
-  fromDOMSelection(selection) {
+  fromDOMSelection(window) {
     throw new Error('You should implement fromDOMSelection');
   }
 
@@ -109,11 +109,11 @@ class DOMTreeTraversal extends Traversal {
   firstChildOf(node) { return node.firstChild; }
 
   /**
-   * @param {!Selection} selection
+   * @param {!Window} window
    * @return !SampleSelection
    */
-  fromDOMSelection(selection) {
-    return SampleSelection.fromDOMSelection(selection);
+  fromDOMSelection(window) {
+    return SampleSelection.fromDOMSelection(window.getSelection());
   }
 
   /**
@@ -132,13 +132,12 @@ class FlatTreeTraversal extends Traversal {
   firstChildOf(node) { return window.internals.firstChildInFlatTree(node); }
 
   /**
-   * @param {!Selection} selection
+   * @param {!Window} window
    * @return !SampleSelection
    */
-  fromDOMSelection(selection) {
-    // TODO(yosin): We should return non-scoped selection rather than selection
-    // scoped in main tree.
-    return SampleSelection.fromDOMSelection(selection);
+  fromDOMSelection(window) {
+    return SampleSelection.fromDOMSelection(
+        internals.getSelectionInFlatTree(window));
   }
 
   /**
@@ -823,7 +822,7 @@ class Sample {
    */
   serialize(traversal, dumpFromRoot) {
     /** @type {!SampleSelection} */
-    const selection = traversal.fromDOMSelection(this.selection_);
+    const selection = traversal.fromDOMSelection(this.document_.defaultView);
     /** @type {!Serializer} */
     const serializer = new Serializer(selection, traversal);
     return serializer.serialize(this.document_, dumpFromRoot);

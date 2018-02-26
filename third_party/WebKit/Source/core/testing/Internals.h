@@ -75,6 +75,7 @@ class RecordTest;
 class SequenceTest;
 class SerializedScriptValue;
 class ShadowRoot;
+class StaticSelection;
 class TypeConversions;
 class UnionTypesTest;
 class ScrollState;
@@ -452,6 +453,7 @@ class Internals final : public ScriptWrappable {
   int selectPopupItemStyleFontHeight(Node*, int);
   void resetTypeAheadSession(HTMLSelectElement*);
 
+  StaticSelection* getSelectionInFlatTree(DOMWindow*, ExceptionState&);
   Node* visibleSelectionAnchorNode();
   unsigned visibleSelectionAnchorOffset();
   Node* visibleSelectionFocusNode();
