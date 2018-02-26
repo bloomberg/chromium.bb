@@ -172,7 +172,7 @@ bool TabRestoreServiceHelper::DeleteFromWindow(
   int deleted_tabs = 0;
   for (auto& tab : window->tabs) {
     if (DeleteFromTab(predicate, tab.get())) {
-      if (window->selected_tab_index == tab->tabstrip_index)
+      if (window->tabs[window->selected_tab_index] == tab)
         window->selected_tab_index = 0;
       deleted_tabs++;
     } else {
@@ -202,8 +202,13 @@ void TabRestoreServiceHelper::DeleteNavigationEntries(
       }
       case TabRestoreService::WINDOW: {
         Window* window = static_cast<Window*>(entry.get());
-        if (!DeleteFromWindow(predicate, window))
-          new_entries.push_back(std::move(entry));
+        if (!DeleteFromWindow(predicate, window)) {
+          // If only a single tab is left, just keep the tab.
+          if (window->tabs.size() == 1U)
+            new_entries.push_back(std::move(window->tabs.front()));
+          else
+            new_entries.push_back(std::move(entry));
+        }
         break;
       }
     }
