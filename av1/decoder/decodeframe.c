@@ -2035,6 +2035,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_CDF_UPDATE_MODE
+  allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
+#endif  // CONFIG_CDF_UPDATE_MODE
+
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
 
@@ -2785,6 +2789,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->disable_intra_edge_filter = aom_rb_read_bit(rb);
 #endif  // CONFIG_INTRA_EDGE2
 
+#if CONFIG_CDF_UPDATE_MODE
+  cm->disable_cdf_update = aom_rb_read_bit(rb);
+#endif  // CONFIG_CDF_UPDATE_MODE
+
   if (cm->seq_params.force_screen_content_tools == 2) {
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
   } else {
@@ -2876,9 +2884,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->allow_screen_content_tools &&
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       cm->allow_intrabc = aom_rb_read_bit(rb);
-#if CONFIG_CDF_UPDATE_MODE
-    cm->cdf_update_mode = aom_rb_read_literal(rb, 2);
-#endif  // CONFIG_CDF_UPDATE_MODE
     cm->use_prev_frame_mvs = 0;
   } else {
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
@@ -2919,9 +2924,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (cm->allow_screen_content_tools &&
           (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
         cm->allow_intrabc = aom_rb_read_bit(rb);
-#if CONFIG_CDF_UPDATE_MODE
-      cm->cdf_update_mode = aom_rb_read_literal(rb, 2);
-#endif                                  // CONFIG_CDF_UPDATE_MODE
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
       pbi->refresh_frame_flags = (cm->frame_type == S_FRAME)
                                      ? 0xFF

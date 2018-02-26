@@ -310,8 +310,9 @@ typedef struct AV1Common {
   // Flag signaling that the frame is encoded using only INTRA modes.
   uint8_t intra_only;
   uint8_t last_intra_only;
+
 #if CONFIG_CDF_UPDATE_MODE
-  uint8_t cdf_update_mode;
+  uint8_t disable_cdf_update;
 #endif  // CONFIG_CDF_UPDATE_MODE
 
   int allow_high_precision_mv;

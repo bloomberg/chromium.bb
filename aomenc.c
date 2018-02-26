@@ -620,10 +620,9 @@ static const arg_def_t tune_content = ARG_DEF_ENUM(
 #if CONFIG_CDF_UPDATE_MODE
 static const arg_def_t cdf_update_mode =
     ARG_DEF(NULL, "cdf-update-mode", 1,
-            "CDF update rate for entropy coding "
-            "(0: off; 1: update all the time(default); "
-            "2: update half the time; "
-            "3: update quarter of the time)");
+            "CDF update mode for entropy coding "
+            "(0: no CDF update; 1: update CDF on all frames(default); "
+            "2: selectively update CDF on some frames");
 #endif  // CONFIG_CDF_UPDATE_MODE
 
 #if CONFIG_EXT_PARTITION

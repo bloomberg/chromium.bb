@@ -3157,6 +3157,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->disable_intra_edge_filter);
 #endif  // CONFIG_INTRA_EDGE2
 
+#if CONFIG_CDF_UPDATE_MODE
+  aom_wb_write_bit(wb, cm->disable_cdf_update);
+#endif  // CONFIG_CDF_UPDATE_MODE
+
   if (cm->seq_params.force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
   } else {
@@ -3209,9 +3213,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (cm->allow_screen_content_tools &&
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       aom_wb_write_bit(wb, cm->allow_intrabc);
-#if CONFIG_CDF_UPDATE_MODE
-    aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
-#endif  // CONFIG_CDF_UPDATE_MODE
   } else if (cm->frame_type == INTRA_ONLY_FRAME) {
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (!cm->error_resilient_mode) {
@@ -3235,9 +3236,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (cm->allow_screen_content_tools &&
           (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
         aom_wb_write_bit(wb, cm->allow_intrabc);
-#if CONFIG_CDF_UPDATE_MODE
-      aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
-#endif  // CONFIG_CDF_UPDATE_MODE
     }
   } else if (cm->frame_type == INTER_FRAME || cm->frame_type == S_FRAME) {
     MV_REFERENCE_FRAME ref_frame;
@@ -3804,6 +3802,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
+#if CONFIG_CDF_UPDATE_MODE
+        mode_bc.allow_update_cdf =
+            mode_bc.allow_update_cdf && !cm->disable_cdf_update;
+#endif  // CONFIG_CDF_UPDATE_MODE
         aom_start_encode(&mode_bc, buf->data + data_offset);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
         assert(tok == tok_end);
@@ -3938,6 +3940,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       mode_bc.allow_update_cdf = 1;
+#if CONFIG_CDF_UPDATE_MODE
+      mode_bc.allow_update_cdf =
+          mode_bc.allow_update_cdf && !cm->disable_cdf_update;
+#endif  // CONFIG_CDF_UPDATE_MODE
       const int num_planes = av1_num_planes(cm);
       av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 

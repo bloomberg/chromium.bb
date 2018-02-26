@@ -3833,6 +3833,10 @@ void av1_init_tile_data(AV1_COMP *cpi) {
 #else
       tile_data->allow_update_cdf = 1;
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_CDF_UPDATE_MODE
+      tile_data->allow_update_cdf =
+          tile_data->allow_update_cdf && !cm->disable_cdf_update;
+#endif  // CONFIG_CDF_UPDATE_MODE
     }
   }
 }
@@ -4206,9 +4210,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       cm->allow_screen_content_tools =
           cm->seq_params.force_screen_content_tools;
     }
-#if CONFIG_CDF_UPDATE_MODE
-    cm->cdf_update_mode = cpi->oxcf.cdf_update_mode;
-#endif  // CONFIG_CDF_UPDATE_MODE
   }
 
   // Allow intrabc when screen content tools are enabled.
