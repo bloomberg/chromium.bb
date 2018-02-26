@@ -36,7 +36,7 @@ namespace storage {
 class STORAGE_EXPORT QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
-  typedef QuotaManager::UsageAndQuotaCallback UsageAndQuotaCallback;
+  using UsageAndQuotaCallback = QuotaManager::UsageAndQuotaCallback;
 
   virtual void RegisterClient(QuotaClient* client);
   virtual void NotifyStorageAccessed(QuotaClient::ID client_id,
@@ -56,7 +56,7 @@ class STORAGE_EXPORT QuotaManagerProxy
   virtual void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                                 const url::Origin& origin,
                                 blink::mojom::StorageType type,
-                                const UsageAndQuotaCallback& callback);
+                                UsageAndQuotaCallback callback);
 
   // This method may only be called on the IO thread.
   // It may return NULL if the manager has already been deleted.

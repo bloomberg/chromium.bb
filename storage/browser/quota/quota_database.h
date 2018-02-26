@@ -161,9 +161,10 @@ class STORAGE_EXPORT QuotaDatabase {
     bool unique;
   };
 
-  typedef base::Callback<bool (const QuotaTableEntry&)> QuotaTableCallback;
-  typedef base::Callback<bool (const OriginInfoTableEntry&)>
-      OriginInfoTableCallback;
+  using QuotaTableCallback =
+      base::RepeatingCallback<bool(const QuotaTableEntry&)>;
+  using OriginInfoTableCallback =
+      base::RepeatingCallback<bool(const OriginInfoTableEntry&)>;
 
   struct QuotaTableImporter;
 

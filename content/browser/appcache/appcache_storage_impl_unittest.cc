@@ -256,19 +256,21 @@ class AppCacheStorageImplTest : public testing::Test {
 
     void GetUsageAndQuota(const GURL& origin,
                           StorageType type,
-                          const UsageAndQuotaCallback& callback) override {
+                          UsageAndQuotaCallback callback) override {
       EXPECT_EQ(StorageType::kTemporary, type);
       if (async_) {
         base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(&MockQuotaManager::CallCallback,
-                                      base::Unretained(this), callback));
+            FROM_HERE,
+            base::BindOnce(&MockQuotaManager::CallCallback,
+                           base::Unretained(this), std::move(callback)));
         return;
       }
-      CallCallback(callback);
+      CallCallback(std::move(callback));
     }
 
-    void CallCallback(const UsageAndQuotaCallback& callback) {
-      callback.Run(blink::mojom::QuotaStatusCode::kOk, 0, kMockQuota);
+    void CallCallback(UsageAndQuotaCallback callback) {
+      std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0,
+                              kMockQuota);
     }
 
     bool async_;
@@ -319,7 +321,7 @@ class AppCacheStorageImplTest : public testing::Test {
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const url::Origin& origin,
                           StorageType type,
-                          const UsageAndQuotaCallback& callback) override {}
+                          UsageAndQuotaCallback callback) override {}
 
     int notify_storage_accessed_count_;
     int notify_storage_modified_count_;

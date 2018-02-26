@@ -133,7 +133,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        const UsageAndQuotaCallback& callback) override {}
+                        UsageAndQuotaCallback callback) override {}
 
   void SimulateQuotaManagerDestroyed() {
     if (registered_client_) {

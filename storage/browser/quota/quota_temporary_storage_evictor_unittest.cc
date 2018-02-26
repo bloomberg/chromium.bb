@@ -38,38 +38,39 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
 
   void EvictOriginData(const GURL& origin,
                        StorageType type,
-                       const storage::StatusCallback& callback) override {
+                       storage::StatusCallback callback) override {
     if (error_on_evict_origin_data_) {
-      callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
+      std::move(callback).Run(
+          blink::mojom::QuotaStatusCode::kErrorInvalidModification);
       return;
     }
     int64_t origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
-    callback.Run(blink::mojom::QuotaStatusCode::kOk);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
   }
 
-  void GetEvictionRoundInfo(
-      const EvictionRoundInfoCallback& callback) override {
+  void GetEvictionRoundInfo(EvictionRoundInfoCallback callback) override {
     if (error_on_get_usage_and_quota_) {
-      callback.Run(blink::mojom::QuotaStatusCode::kErrorAbort,
-                   storage::QuotaSettings(), 0, 0, 0, false);
+      std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort,
+                              storage::QuotaSettings(), 0, 0, 0, false);
       return;
     }
     if (!task_for_get_usage_and_quota_.is_null())
       task_for_get_usage_and_quota_.Run();
-    callback.Run(blink::mojom::QuotaStatusCode::kOk, settings_,
-                 available_space_, available_space_ * 2, GetUsage(), true);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, settings_,
+                            available_space_, available_space_ * 2, GetUsage(),
+                            true);
   }
 
   void GetEvictionOrigin(StorageType type,
                          const std::set<GURL>& exceptions,
                          int64_t global_quota,
-                         const storage::GetOriginCallback& callback) override {
+                         storage::GetOriginCallback callback) override {
     if (origin_order_.empty())
-      callback.Run(GURL());
+      std::move(callback).Run(GURL());
     else
-      callback.Run(GURL(origin_order_.front()));
+      std::move(callback).Run(GURL(origin_order_.front()));
   }
 
   int64_t GetUsage() const {
@@ -91,8 +92,8 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   void set_available_space(int64_t available_space) {
     available_space_ = available_space;
   }
-  void set_task_for_get_usage_and_quota(const base::Closure& task) {
-    task_for_get_usage_and_quota_= task;
+  void set_task_for_get_usage_and_quota(base::RepeatingClosure task) {
+    task_for_get_usage_and_quota_ = std::move(task);
   }
   void set_error_on_evict_origin_data(bool error_on_evict_origin_data) {
     error_on_evict_origin_data_ = error_on_evict_origin_data;
@@ -272,11 +273,12 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionTest) {
   quota_eviction_handler()->SetPoolSize(1000);
   quota_eviction_handler()->set_available_space(1000000000);
   quota_eviction_handler()->set_task_for_get_usage_and_quota(
-      base::Bind(&QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
-                 weak_factory_.GetWeakPtr(),
-                 std::make_pair(GURL("http://www.e.com"), e_size), GURL(),
-                 initial_total_size - d_size,
-                 initial_total_size - d_size + e_size - c_size));
+      base::BindRepeating(
+          &QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
+          weak_factory_.GetWeakPtr(),
+          std::make_pair(GURL("http://www.e.com"), e_size), GURL(),
+          initial_total_size - d_size,
+          initial_total_size - d_size + e_size - c_size));
   EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
   temporary_storage_evictor()->Start();
   base::RunLoop().RunUntilIdle();
@@ -305,9 +307,10 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionSkippedTest) {
   quota_eviction_handler()->SetPoolSize(1000);
   quota_eviction_handler()->set_available_space(1000000000);
   quota_eviction_handler()->set_task_for_get_usage_and_quota(
-      base::Bind(&QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
-                 weak_factory_.GetWeakPtr(), std::make_pair(GURL(), 0), GURL(),
-                 initial_total_size - d_size, initial_total_size - d_size));
+      base::BindRepeating(
+          &QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
+          weak_factory_.GetWeakPtr(), std::make_pair(GURL(), 0), GURL(),
+          initial_total_size - d_size, initial_total_size - d_size));
   EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
   // disable_timer_for_testing();
   temporary_storage_evictor()->Start();
@@ -337,12 +340,12 @@ TEST_F(QuotaTemporaryStorageEvictorTest, RepeatedEvictionWithAccessOriginTest) {
   quota_eviction_handler()->SetPoolSize(1000);
   quota_eviction_handler()->set_available_space(1000000000);
   quota_eviction_handler()->set_task_for_get_usage_and_quota(
-      base::Bind(&QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
-                 weak_factory_.GetWeakPtr(),
-                 std::make_pair(GURL("http://www.e.com"), e_size),
-                 GURL("http://www.c.com"),
-                 initial_total_size - d_size,
-                 initial_total_size - d_size + e_size - b_size));
+      base::BindRepeating(
+          &QuotaTemporaryStorageEvictorTest::TaskForRepeatedEvictionTest,
+          weak_factory_.GetWeakPtr(),
+          std::make_pair(GURL("http://www.e.com"), e_size),
+          GURL("http://www.c.com"), initial_total_size - d_size,
+          initial_total_size - d_size + e_size - b_size));
   EXPECT_EQ(initial_total_size, quota_eviction_handler()->GetUsage());
   temporary_storage_evictor()->Start();
   base::RunLoop().RunUntilIdle();

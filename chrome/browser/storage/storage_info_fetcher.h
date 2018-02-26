@@ -40,7 +40,7 @@ class StorageInfoFetcher :
   friend class base::RefCountedThreadSafe<StorageInfoFetcher>;
 
   // Fetches the usage information.
-  void GetUsageInfo(const storage::GetUsageInfoCallback& callback);
+  void GetUsageInfo(storage::GetUsageInfoCallback callback);
 
   // Called when usage information is available.
   void OnGetUsageInfoInternal(const storage::UsageInfoEntries& entries);

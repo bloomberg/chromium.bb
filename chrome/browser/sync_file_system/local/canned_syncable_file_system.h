@@ -213,7 +213,7 @@ class CannedSyncableFileSystem
                      const WriteCallback& callback);
   void DoGetUsageAndQuota(int64_t* usage,
                           int64_t* quota,
-                          const storage::StatusCallback& callback);
+                          storage::StatusCallback callback);
 
  private:
   typedef base::ObserverListThreadSafe<LocalFileSyncStatus::Observer>

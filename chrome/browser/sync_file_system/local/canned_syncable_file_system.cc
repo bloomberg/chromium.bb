@@ -193,7 +193,7 @@ class WriteHelper {
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
 
-void DidGetUsageAndQuota(const storage::StatusCallback& callback,
+void DidGetUsageAndQuota(storage::StatusCallback callback,
                          int64_t* usage_out,
                          int64_t* quota_out,
                          blink::mojom::QuotaStatusCode status,
@@ -201,7 +201,7 @@ void DidGetUsageAndQuota(const storage::StatusCallback& callback,
                          int64_t quota) {
   *usage_out = usage;
   *quota_out = quota;
-  callback.Run(status);
+  std::move(callback).Run(status);
 }
 
 void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
@@ -668,7 +668,7 @@ void CannedSyncableFileSystem::DoWriteString(
 void CannedSyncableFileSystem::DoGetUsageAndQuota(
     int64_t* usage,
     int64_t* quota,
-    const storage::StatusCallback& callback) {
+    storage::StatusCallback callback) {
   // crbug.com/349708
   TRACE_EVENT0("io", "CannedSyncableFileSystem::DoGetUsageAndQuota");
 
@@ -677,7 +677,7 @@ void CannedSyncableFileSystem::DoGetUsageAndQuota(
   DCHECK(quota_manager_.get());
   quota_manager_->GetUsageAndQuota(
       origin_, storage_type(),
-      base::Bind(&DidGetUsageAndQuota, callback, usage, quota));
+      base::BindOnce(&DidGetUsageAndQuota, std::move(callback), usage, quota));
 }
 
 void CannedSyncableFileSystem::DidOpenFileSystem(

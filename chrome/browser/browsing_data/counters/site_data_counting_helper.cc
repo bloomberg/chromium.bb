@@ -56,9 +56,9 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   if (quota_manager) {
     // Count origins with filesystem, websql, appcache, indexeddb,
     // serviceworkers and cachestorage using quota manager.
-    storage::GetOriginsCallback origins_callback =
-        base::Bind(&SiteDataCountingHelper::GetQuotaOriginsCallback,
-                   base::Unretained(this));
+    auto origins_callback =
+        base::BindRepeating(&SiteDataCountingHelper::GetQuotaOriginsCallback,
+                            base::Unretained(this));
     const blink::mojom::StorageType types[] = {
         blink::mojom::StorageType::kTemporary,
         blink::mojom::StorageType::kPersistent,

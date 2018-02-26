@@ -165,8 +165,8 @@ class UsageTrackerTest : public testing::Test {
 
   void GetGlobalLimitedUsage(int64_t* limited_usage) {
     bool done = false;
-    usage_tracker_.GetGlobalLimitedUsage(base::Bind(
-        &DidGetUsage, &done, limited_usage));
+    usage_tracker_.GetGlobalLimitedUsage(
+        base::BindOnce(&DidGetUsage, &done, limited_usage));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
@@ -174,9 +174,8 @@ class UsageTrackerTest : public testing::Test {
 
   void GetGlobalUsage(int64_t* usage, int64_t* unlimited_usage) {
     bool done = false;
-    usage_tracker_.GetGlobalUsage(base::Bind(
-        &DidGetGlobalUsage,
-        &done, usage, unlimited_usage));
+    usage_tracker_.GetGlobalUsage(
+        base::BindOnce(&DidGetGlobalUsage, &done, usage, unlimited_usage));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
@@ -184,7 +183,8 @@ class UsageTrackerTest : public testing::Test {
 
   void GetHostUsage(const std::string& host, int64_t* usage) {
     bool done = false;
-    usage_tracker_.GetHostUsage(host, base::Bind(&DidGetUsage, &done, usage));
+    usage_tracker_.GetHostUsage(host,
+                                base::BindOnce(&DidGetUsage, &done, usage));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
@@ -196,7 +196,8 @@ class UsageTrackerTest : public testing::Test {
       base::flat_map<QuotaClient::ID, int64_t>* usage_breakdown) {
     bool done = false;
     usage_tracker_.GetHostUsageWithBreakdown(
-        host, base::Bind(&DidGetUsageBreakdown, &done, usage, usage_breakdown));
+        host,
+        base::BindOnce(&DidGetUsageBreakdown, &done, usage, usage_breakdown));
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(done);
