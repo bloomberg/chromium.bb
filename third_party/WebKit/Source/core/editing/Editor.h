@@ -210,10 +210,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void AddToKillRing(const EphemeralRange&);
 
-  void PasteAsFragment(DocumentFragment*,
-                       bool smart_replace,
-                       bool match_style,
-                       EditorCommandSource);
   void PasteAsPlainText(const String&, bool smart_replace, EditorCommandSource);
 
   Element* FindEventTargetFrom(const VisibleSelection&) const;
