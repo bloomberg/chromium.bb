@@ -83,6 +83,7 @@ class ScriptState;
 class SecurityOrigin;
 class StereoPannerNode;
 class WaveShaperNode;
+class WorkerThread;
 
 // BaseAudioContext is the cornerstone of the web audio API and all AudioNodes
 // are created from it.  For thread safety between the audio thread and the main
@@ -340,6 +341,11 @@ class MODULES_EXPORT BaseAudioContext
   // the first script evaluation.
   void NotifyWorkletIsReady();
 
+  // Update the information in AudioWorkletGlobalScope if necessary. Must be
+  // called from the rendering thread. Does nothing when the global scope
+  // does not exist.
+  void UpdateWorkletGlobalScopeOnRenderingThread();
+
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -511,6 +517,10 @@ class MODULES_EXPORT BaseAudioContext
   AudioIOPosition output_position_;
 
   Member<AudioWorklet> audio_worklet_;
+
+  // Only for the access to AudioWorkletGlobalScope from the render thread.
+  // Use the WebThread in the destination nodes for the task scheduling.
+  WorkerThread* worklet_backing_worker_thread_ = nullptr;
 };
 
 }  // namespace blink

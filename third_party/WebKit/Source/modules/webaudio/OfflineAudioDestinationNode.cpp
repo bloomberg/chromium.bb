@@ -354,6 +354,8 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
   size_t new_sample_frame = current_sample_frame_ + number_of_frames;
   ReleaseStore(&current_sample_frame_, new_sample_frame);
 
+  Context()->UpdateWorkletGlobalScopeOnRenderingThread();
+
   return false;
 }
 

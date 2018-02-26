@@ -43,8 +43,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   bool Process(
       Vector<AudioBus*>* input_buses,
       Vector<AudioBus*>* output_buses,
-      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map,
-      double current_time);
+      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
 
   const String& Name() const { return name_; }
 

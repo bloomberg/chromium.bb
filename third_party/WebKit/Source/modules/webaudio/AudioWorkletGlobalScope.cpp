@@ -190,17 +190,9 @@ bool AudioWorkletGlobalScope::Process(
     AudioWorkletProcessor* processor,
     Vector<AudioBus*>* input_buses,
     Vector<AudioBus*>* output_buses,
-    HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map,
-    double current_time) {
+    HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map) {
   CHECK_GE(input_buses->size(), 0u);
   CHECK_GE(output_buses->size(), 0u);
-
-  // Note that all AudioWorkletProcessors share this method for the processing.
-  // AudioWorkletGlobalScope's |current_time_| must be updated only once per
-  // render quantum.
-  if (current_time_ < current_time) {
-    current_time_ = current_time;
-  }
 
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
@@ -376,8 +368,18 @@ ProcessorCreationParams* AudioWorkletGlobalScope::GetProcessorCreationParams() {
   return processor_creation_params_.get();
 }
 
+void AudioWorkletGlobalScope::SetCurrentFrame(size_t current_frame) {
+  current_frame_ = current_frame;
+}
+
 void AudioWorkletGlobalScope::SetSampleRate(float sample_rate) {
   sample_rate_ = sample_rate;
+}
+
+double AudioWorkletGlobalScope::currentTime() const {
+  return sample_rate_ > 0.0
+        ? current_frame_ / static_cast<double>(sample_rate_)
+        : 0.0;
 }
 
 void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {

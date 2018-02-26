@@ -35,12 +35,11 @@ AudioWorkletProcessor::AudioWorkletProcessor(
 bool AudioWorkletProcessor::Process(
     Vector<AudioBus*>* input_buses,
     Vector<AudioBus*>* output_buses,
-    HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map,
-    double current_time) {
+    HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map) {
   DCHECK(global_scope_->IsContextThread());
   DCHECK(IsRunnable());
   return global_scope_->Process(this, input_buses, output_buses,
-                                param_value_map, current_time);
+                                param_value_map);
 }
 
 MessagePort* AudioWorkletProcessor::port() const {

@@ -38,6 +38,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "core/origin_trials/origin_trials.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -47,6 +48,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioWorklet.h"
+#include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "modules/webaudio/BiquadFilterNode.h"
 #include "modules/webaudio/ChannelMergerNode.h"
@@ -1000,13 +1002,31 @@ AudioWorklet* BaseAudioContext::audioWorklet() const {
 }
 
 void BaseAudioContext::NotifyWorkletIsReady() {
+  DCHECK(IsMainThread());
   DCHECK(audioWorklet()->IsReady());
+
+  worklet_backing_worker_thread_ =
+      audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
 
   // If the context is running or suspended, restart the destination to switch
   // the render thread with the worklet thread. Note that restarting can happen
   // right after the context construction.
   if (ContextState() != kClosed) {
     destination()->GetAudioDestinationHandler().RestartRendering();
+  }
+}
+
+void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
+  DCHECK(!IsMainThread());
+
+  // Only if the worklet is properly initialized and ready.
+  if (worklet_backing_worker_thread_) {
+    AudioWorkletGlobalScope* global_scope =
+        ToAudioWorkletGlobalScope(
+              worklet_backing_worker_thread_->GlobalScope());
+    DCHECK(global_scope);
+
+    global_scope->SetCurrentFrame(CurrentSampleFrame());
   }
 }
 
