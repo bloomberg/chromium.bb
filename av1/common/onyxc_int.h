@@ -1319,8 +1319,9 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
       get_sqr_tx_size(AOMMAX(block_size_wide[bsize], block_size_high[bsize]));
 
   if (max_tx_size >= TX_8X8) {
-    category = (tx_size != max_tx_size && max_tx_size > TX_8X8) +
-               (TX_SIZES - 1 - max_tx_size) * 2;
+    category =
+        (txsize_sqr_up_map[tx_size] != max_tx_size && max_tx_size > TX_8X8) +
+        (TX_SIZES - 1 - max_tx_size) * 2;
   }
   if (category == TXFM_PARTITION_CONTEXTS - 1) return category;
   return category * 3 + above + left;
