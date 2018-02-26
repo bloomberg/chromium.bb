@@ -415,7 +415,7 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
     switch (result.action()) {
       case content::NavigationThrottle::DEFER:
         open_in_app_result =
-            ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents;
+            ProcessNavigationResult::kDeferMovingContentsToNewAppWindow;
         break;
       case content::NavigationThrottle::CANCEL_AND_IGNORE:
         open_in_app_result = ProcessNavigationResult::kCancelOpenedApp;
@@ -423,7 +423,7 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
       default:
         NOTREACHED();
         open_in_app_result =
-            ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents;
+            ProcessNavigationResult::kDeferMovingContentsToNewAppWindow;
     }
 
     RecordProcessNavigationResult(open_in_app_result);
@@ -454,26 +454,16 @@ BookmarkAppNavigationThrottle::OpenInAppWindowAndCloseTabIfNecessary(
     scoped_refptr<const Extension> target_app) {
   content::WebContents* source = navigation_handle()->GetWebContents();
   if (source->GetController().IsInitialNavigation()) {
-    // When a new WebContents has no opener, the first navigation will happen
-    // synchronously. This could result in us opening the app and then focusing
-    // the original WebContents. To avoid this we open the app asynchronously.
-    if (!source->HasOpener()) {
-      DVLOG(1) << "Deferring opening app.";
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&BookmarkAppNavigationThrottle::OpenBookmarkApp,
-                         weak_ptr_factory_.GetWeakPtr(), target_app));
-    } else {
-      OpenBookmarkApp(target_app);
-    }
-
-    // According to NavigationThrottle::WillStartRequest's documentation closing
-    // a WebContents should be done asynchronously to avoid UAFs. Closing the
-    // WebContents will cancel the navigation.
+    // The first navigation might happen synchronously. This could result in us
+    // trying to reparent a WebContents that hasn't been attached to a browser
+    // yet. To avoid this we post a task to wait for the WebContents to be
+    // attached to a browser window.
+    DVLOG(1) << "Defer reparenting WebContents into app window.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&BookmarkAppNavigationThrottle::CloseWebContents,
-                       weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &BookmarkAppNavigationThrottle::ReparentWebContentsAndResume,
+            weak_ptr_factory_.GetWeakPtr(), target_app));
     return content::NavigationThrottle::DEFER;
   }
 
@@ -522,6 +512,13 @@ void BookmarkAppNavigationThrottle::OpenInNewTab() {
 
   source->OpenURL(url_params);
   CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
+}
+
+void BookmarkAppNavigationThrottle::ReparentWebContentsAndResume(
+    scoped_refptr<const Extension> target_app) {
+  ReparentWebContentsIntoAppBrowser(navigation_handle()->GetWebContents(),
+                                    target_app.get());
+  Resume();
 }
 
 scoped_refptr<const Extension>

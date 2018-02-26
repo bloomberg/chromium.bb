@@ -3264,7 +3264,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="15" label="From tab to same context: Same scope navigation"/>
   <int value="16" label="In app or tab, cancel prerender link navigation"/>
   <int value="17"
-      label="From app or tab to new app context, close previous context"/>
+      label="From app or tab to new app context; moved newly created context
+             to app window"/>
   <int value="18" label="From app or tab to new app context"/>
   <int value="19" label="From app to new tab: Out of scope navigation"/>
   <int value="20" label="From app or tab to new or existing singleton tab."/>
