@@ -1051,8 +1051,8 @@ by a child template that "extends" this file.
             {% if (sandboxed_service_exported|default(false)) == 'true' %}
             android:externalService="true"
             tools:ignore="ExportedService"
-            {% endif %}
-            {{sandboxed_service_extra_flags|default('')}} />
+            android:visibleToInstantApps="true"
+            {% endif %} />
         {% endfor %}
 
         {% set num_privileged_services = 3 %}

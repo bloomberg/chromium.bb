@@ -71,7 +71,7 @@
                      android:exported="true"
                      android:externalService="true"
                      tools:ignore="ExportedService"
-                     {{sandboxed_service_extra_flags|default('')}} />
+                     android:visibleToInstantApps="true" />
         {% endfor %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>
