@@ -4,6 +4,7 @@
 
 #include "net/http/mock_http_cache.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -174,6 +175,13 @@ int MockDiskEntry::WriteData(int index,
 
   if (MockHttpCache::GetTestMode(test_mode_) & TEST_MODE_SYNC_CACHE_WRITE)
     return buf_len;
+
+  if (defer_op_ == DEFER_WRITE) {
+    defer_op_ = DEFER_NONE;
+    resume_callback_ = callback;
+    resume_return_code_ = buf_len;
+    return ERR_IO_PENDING;
+  }
 
   CallbackLater(callback, buf_len);
   return ERR_IO_PENDING;

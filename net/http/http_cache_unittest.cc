@@ -195,7 +195,7 @@ void ReadAndVerifyTransaction(HttpTransaction* trans,
 }
 
 void ReadRemainingAndVerifyTransaction(HttpTransaction* trans,
-                                       std::string& already_read,
+                                       const std::string& already_read,
                                        const MockTransaction& trans_info) {
   std::string content;
   int rv = ReadTransaction(trans, &content);
@@ -2602,6 +2602,47 @@ TEST(HttpCache, SimpleGET_ParallelValidationCancelReader) {
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
+// Tests that when the only writer goes away, it immediately cleans up rather
+// than wait for the network request to finish. See https://crbug.com/804868.
+TEST(HttpCache, SimpleGET_HangingCacheWriteCleanup) {
+  MockHttpCache mock_cache;
+  MockHttpRequest request(kSimpleGET_Transaction);
+
+  std::unique_ptr<HttpTransaction> transaction;
+  mock_cache.CreateTransaction(&transaction);
+  TestCompletionCallback callback;
+  int result =
+      transaction->Start(&request, callback.callback(), NetLogWithSource());
+
+  // Get the transaction ready to read.
+  result = callback.GetResult(result);
+
+  // Read the first byte.
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(1));
+  ReleaseBufferCompletionCallback buffer_callback(buffer.get());
+  result = transaction->Read(buffer.get(), 1, buffer_callback.callback());
+  EXPECT_EQ(1, buffer_callback.GetResult(result));
+
+  // Read the second byte, but leave the cache write hanging.
+  scoped_refptr<MockDiskEntry> entry =
+      mock_cache.disk_cache()->GetDiskEntryRef(kSimpleGET_Transaction.url);
+  entry->SetDefer(MockDiskEntry::DEFER_WRITE);
+
+  buffer = new IOBuffer(1);
+  ReleaseBufferCompletionCallback buffer_callback2(buffer.get());
+  result = transaction->Read(buffer.get(), 1, buffer_callback2.callback());
+  EXPECT_EQ(ERR_IO_PENDING, result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_cache.IsWriterPresent(kSimpleGET_Transaction.url));
+
+  // At this point the next byte should have been read from the network but is
+  // waiting to be written to the cache. Destroy the transaction and make sure
+  // that everything has been cleaned up.
+  transaction = nullptr;
+  EXPECT_FALSE(mock_cache.IsWriterPresent(kSimpleGET_Transaction.url));
+  EXPECT_FALSE(mock_cache.network_layer()->last_transaction());
 }
 
 // Tests that a transaction writer can be destroyed mid-read.

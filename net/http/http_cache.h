@@ -463,7 +463,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
   // Invoked when current transactions in writers have completed writing to the
   // cache. It may be successful completion of the response or failure as given
-  // by |success|.
+  // by |success|. Must delete the writers object.
   // |entry| is the owner of writers.
   // |should_keep_entry| indicates if the entry should be doomed/destroyed.
   // Virtual so that it can be extended in tests.
