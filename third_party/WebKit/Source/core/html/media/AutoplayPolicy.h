@@ -34,6 +34,13 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   };
 
   CORE_EXPORT static Type GetAutoplayPolicyForDocument(const Document&);
+
+  // Return true if the given |document| is allowed to play.
+  // This method may check parent frames if allow=autoplay (Feature Policy) was
+  // used, in which case, the frame will be allowed to play if its parents are,
+  // and so on.
+  // Otherwise, frames are allowed to play if they have been activated or, for
+  // the main frame, if it has a high MEI.
   CORE_EXPORT static bool IsDocumentAllowedToPlay(const Document&);
 
   explicit AutoplayPolicy(HTMLMediaElement*);

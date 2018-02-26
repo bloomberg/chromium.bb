@@ -72,29 +72,6 @@ bool ComputeLockPendingUserGestureRequired(const Document& document) {
   return true;
 }
 
-// Return true if any frame between |frame| and the root has been activated in
-// either the current or previous navigation. If the
-// FeaturePolicyAutoplayFeature flag is disabled then it will stop at the
-// current frame.
-bool HasBeenActivated(const Frame& frame) {
-  // Check if the current frame has received a user activation.
-  if (frame.HasBeenActivated() ||
-      frame.HasReceivedUserGestureBeforeNavigation()) {
-    return true;
-  }
-
-  // Check feature policy before traversing the tree.
-  if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() ||
-      !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
-    return false;
-  }
-
-  // If there is a parent check if the parent has received a
-  // user gesture.
-  const Frame* parent = frame.Tree().Parent();
-  return parent && HasBeenActivated(*parent);
-}
-
 }  // anonymous namespace
 
 // static
@@ -106,11 +83,6 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   if (IsDocumentWhitelisted(document))
     return Type::kNoUserGestureRequired;
 
-  if (RuntimeEnabledFeatures::MediaEngagementBypassAutoplayPoliciesEnabled() &&
-      document.HasHighMediaEngagement()) {
-    return Type::kNoUserGestureRequired;
-  }
-
   return document.GetSettings()->GetAutoplayPolicy();
 }
 
@@ -119,7 +91,29 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (!document.GetFrame())
     return false;
 
-  return HasBeenActivated(*document.GetFrame());
+  for (Frame* frame = document.GetFrame(); frame;
+       frame = frame->Tree().Parent()) {
+    if (frame->HasBeenActivated() ||
+        frame->HasReceivedUserGestureBeforeNavigation()) {
+      return true;
+    }
+
+    // TODO(mlamouri): checking HasHighMediaEngagement from the document as all
+    // documents are in this state if the main frame has a high media
+    // engagement. This allows OOPIF to work but a follow-up fix is in progress.
+    if (RuntimeEnabledFeatures::
+            MediaEngagementBypassAutoplayPoliciesEnabled() &&
+        frame->IsMainFrame() && document.HasHighMediaEngagement()) {
+      return true;
+    }
+
+    if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() ||
+        !frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
+      return false;
+    }
+  }
+
+  return false;
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
