@@ -521,8 +521,8 @@ void WebMediaPlayerImpl::BecameDominantVisibleContent(bool isDominant) {
 }
 
 void WebMediaPlayerImpl::SetIsEffectivelyFullscreen(
-    bool isEffectivelyFullscreen) {
-  delegate_->SetIsEffectivelyFullscreen(delegate_id_, isEffectivelyFullscreen);
+    blink::WebFullscreenVideoStatus fullscreen_video_status) {
+  delegate_->SetIsEffectivelyFullscreen(delegate_id_, fullscreen_video_status);
 }
 
 void WebMediaPlayerImpl::OnHasNativeControlsChanged(bool has_native_controls) {

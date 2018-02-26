@@ -24,6 +24,10 @@
 #include "base/time/time.h"
 #endif  // OS_ANDROID
 
+namespace blink {
+enum class WebFullscreenVideoStatus;
+}
+
 namespace media {
 
 enum class MediaContentType;
@@ -56,7 +60,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   bool IsIdle(int player_id) override;
   void ClearStaleFlag(int player_id) override;
   bool IsStale(int player_id) override;
-  void SetIsEffectivelyFullscreen(int player_id, bool is_fullscreen) override;
+  void SetIsEffectivelyFullscreen(
+      int player_id,
+      blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
 

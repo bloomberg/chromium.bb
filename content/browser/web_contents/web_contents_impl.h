@@ -905,6 +905,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |IsFullscreen| must return |true| when this method is called.
   bool HasActiveEffectivelyFullscreenVideo() const;
 
+  // Whether the WebContents effectively fullscreen active player allows
+  // Picture-in-Picture.
+  // |IsFullscreen| must return |true| when this method is called.
+  bool IsPictureInPictureAllowedForFullscreenVideo() const;
+
   // When inner or outer WebContents are present, become the focused
   // WebContentsImpl. This will activate this content's main frame RenderWidget
   // and indirectly all its subframe widgets.  GetFocusedRenderWidgetHost will

@@ -16,6 +16,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
 
 namespace blink {
 
@@ -23,7 +24,8 @@ namespace {
 
 class MockWebMediaPlayer final : public EmptyWebMediaPlayer {
  public:
-  MOCK_METHOD1(SetIsEffectivelyFullscreen, void(bool));
+  MOCK_METHOD1(SetIsEffectivelyFullscreen,
+               void(blink::WebFullscreenVideoStatus));
 };
 
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
@@ -159,12 +161,13 @@ TEST_F(HTMLMediaElementEventListenersTest,
   Persistent<MediaCustomControlsFullscreenDetector> detector =
       FullscreenDetector();
 
-  std::vector<bool> observed_results;
+  std::vector<blink::WebFullscreenVideoStatus> observed_results;
 
   ON_CALL(*WebMediaPlayer(), SetIsEffectivelyFullscreen(_))
-      .WillByDefault(Invoke([&](bool is_fullscreen) {
-        observed_results.push_back(is_fullscreen);
-      }));
+      .WillByDefault(
+          Invoke([&](blink::WebFullscreenVideoStatus fullscreen_video_status) {
+            observed_results.push_back(fullscreen_video_status);
+          }));
 
   DestroyDocument();
 
@@ -174,9 +177,11 @@ TEST_F(HTMLMediaElementEventListenersTest,
   EXPECT_FALSE(persistent_document->HasEventListeners());
   // The timer should be cancelled when the ExecutionContext is destroyed.
   EXPECT_FALSE(IsCheckViewportIntersectionTimerActive(detector));
-  // Should only notify the false value when ExecutionContext is destroyed.
+  // Should only notify the kNotEffectivelyFullscreen value when
+  // ExecutionContext is destroyed.
   EXPECT_EQ(1u, observed_results.size());
-  EXPECT_FALSE(observed_results[0]);
+  EXPECT_EQ(blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen,
+            observed_results[0]);
 }
 
 }  // namespace blink

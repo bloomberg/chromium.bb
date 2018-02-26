@@ -251,6 +251,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public boolean isPictureInPictureAllowedForFullscreenVideo() {
+        return false;
+    }
+
+    @Override
     public Rect getFullscreenVideoSize() {
         return null;
     }

@@ -451,6 +451,14 @@ public interface WebContents extends Parcelable {
     boolean hasActiveEffectivelyFullscreenVideo();
 
     /**
+     * Whether the WebContents is allowed to enter Picture-in-Picture when it has an active
+     * fullscreen video with native or custom controls.
+     * This should only be called if AppHooks.shouldDetectVideoFullscreen()
+     * returns true.
+     */
+    boolean isPictureInPictureAllowedForFullscreenVideo();
+
+    /**
      * Gets a Rect containing the size of the currently playing fullscreen video. The position of
      * the rectangle is meaningless. Will return null if there is no such video. Fullscreen videos
      * may take a moment to register. This should only be called if
