@@ -219,6 +219,7 @@ void SchedulerWorkerPoolImpl::Start(
 
   worker_capacity_ = params.max_threads();
   initial_worker_capacity_ = worker_capacity_;
+  DCHECK_LE(initial_worker_capacity_, kMaxNumberOfWorkers);
   suggested_reclaim_time_ = params.suggested_reclaim_time();
   backward_compatibility_ = params.backward_compatibility();
   worker_environment_ = worker_environment;
@@ -306,6 +307,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   {
     AutoSchedulerLock auto_lock(lock_);
 
+    DCHECK_GT(workers_.size(), size_t(0)) << "Joined an unstarted worker pool.";
+
     DCHECK(!CanWorkerCleanupForTestingLockRequired() ||
            suggested_reclaim_time_.is_max())
         << "Workers can cleanup during join.";
@@ -319,9 +322,19 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
     worker->JoinForTesting();
 
 #if DCHECK_IS_ON()
-  AutoSchedulerLock auto_lock(lock_);
-  DCHECK(workers_ == workers_copy);
+  {
+    AutoSchedulerLock auto_lock(lock_);
+    DCHECK(workers_ == workers_copy);
+  }
 #endif
+
+  // Make sure recently cleaned up workers (ref.
+  // SchedulerWorkerDelegateImpl::CleanupLockRequired()) had time to exit as
+  // they have a raw reference to |this| (and to TaskTracker) which can
+  // otherwise result in racy use-after-frees per no longer being part of
+  // |workers_| and hence not being explicitly joined above :
+  // https://crbug.com/810464.
+  no_workers_remaining_for_testing_.Wait();
 
   DCHECK(!join_for_testing_returned_.IsSignaled());
   join_for_testing_returned_.Signal();
@@ -356,6 +369,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     : outer_(outer) {
   // Bound in OnMainEntry().
   DETACH_FROM_THREAD(worker_thread_checker_);
+
+  outer_->live_workers_count_for_testing_.Increment();
 }
 
 // OnMainExit() handles the thread-affine cleanup; SchedulerWorkerDelegateImpl
@@ -544,22 +559,29 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainExit(
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
 #if DCHECK_IS_ON()
-  bool shutdown_complete = outer_->task_tracker_->IsShutdownComplete();
-  AutoSchedulerLock auto_lock(outer_->lock_);
+  {
+    bool shutdown_complete = outer_->task_tracker_->IsShutdownComplete();
+    AutoSchedulerLock auto_lock(outer_->lock_);
 
-  // |worker| should already have been removed from the idle workers stack and
-  // |workers_| by the time the thread is about to exit. (except in the cases
-  // where the pool is no longer going to be used - in which case, it's fine for
-  // there to be invalid workers in the pool.
-  if (!shutdown_complete && !outer_->join_for_testing_started_.IsSet()) {
-    DCHECK(!outer_->idle_workers_stack_.Contains(worker));
-    DCHECK(!ContainsWorker(outer_->workers_, worker));
+    // |worker| should already have been removed from the idle workers stack and
+    // |workers_| by the time the thread is about to exit. (except in the cases
+    // where the pool is no longer going to be used - in which case, it's fine
+    // for there to be invalid workers in the pool.
+    if (!shutdown_complete && !outer_->join_for_testing_started_.IsSet()) {
+      DCHECK(!outer_->idle_workers_stack_.Contains(worker));
+      DCHECK(!ContainsWorker(outer_->workers_, worker));
+    }
   }
 #endif
 
 #if defined(OS_WIN)
   win_thread_environment_.reset();
 #endif  // defined(OS_WIN)
+
+  if (!outer_->live_workers_count_for_testing_.Decrement()) {
+    DCHECK(!outer_->no_workers_remaining_for_testing_.IsSignaled());
+    outer_->no_workers_remaining_for_testing_.Signal();
+  }
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::

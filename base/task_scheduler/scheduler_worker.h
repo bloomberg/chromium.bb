@@ -76,7 +76,10 @@ class BASE_EXPORT SchedulerWorker
     // SchedulerWorker::WakeUp()
     virtual void WaitForWork(WaitableEvent* wake_up_event);
 
-    // Called by |worker|'s thread right before the main function exits.
+    // Called by |worker|'s thread right before the main function exits. The
+    // Delegate is free to release any associated resources in this call. It is
+    // guaranteed that SchedulerWorker won't access the Delegate or the
+    // TaskTracker after calling OnMainExit() on the Delegate.
     virtual void OnMainExit(SchedulerWorker* worker) {}
   };
 

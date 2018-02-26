@@ -1536,5 +1536,62 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   task_tracker_.FlushForTesting();
 }
 
+// Verify that worker detachement doesn't race with worker cleanup, regression
+// test for https://crbug.com/810464.
+TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
+  constexpr size_t kWorkerCapacity = 256;
+  constexpr TimeDelta kReclaimTimeForRacyCleanupTest =
+      TimeDelta::FromMilliseconds(10);
+
+  TaskTracker task_tracker("Test");
+  DelayedTaskManager delayed_task_manager;
+  scoped_refptr<TaskRunner> service_thread_task_runner =
+      MakeRefCounted<TestSimpleTaskRunner>();
+  delayed_task_manager.Start(service_thread_task_runner);
+  SchedulerWorkerPoolImpl worker_pool("RacyCleanupTestWorkerPool", "A",
+                                      ThreadPriority::NORMAL, &task_tracker,
+                                      &delayed_task_manager);
+  worker_pool.Start(SchedulerWorkerPoolParams(kWorkerCapacity,
+                                              kReclaimTimeForRacyCleanupTest),
+                    service_thread_task_runner,
+                    SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
+
+  scoped_refptr<TaskRunner> task_runner =
+      worker_pool.CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+
+  WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent unblock_threads(WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure threads_running_barrier = BarrierClosure(
+      kWorkerCapacity,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
+
+  for (size_t i = 0; i < kWorkerCapacity; ++i) {
+    task_runner->PostTask(
+        FROM_HERE,
+        BindOnce(
+            [](OnceClosure on_running, WaitableEvent* unblock_threads) {
+              std::move(on_running).Run();
+              unblock_threads->Wait();
+            },
+            threads_running_barrier, Unretained(&unblock_threads)));
+  }
+
+  // Wait for all workers to be ready and release them all at once.
+  threads_running.Wait();
+  unblock_threads.Signal();
+
+  // Sleep to wakeup precisely when all workers are going to try to cleanup per
+  // being idle.
+  PlatformThread::Sleep(kReclaimTimeForRacyCleanupTest);
+
+  worker_pool.DisallowWorkerCleanupForTesting();
+  worker_pool.JoinForTesting();
+
+  // Unwinding this test will be racy if worker cleanup can race with
+  // SchedulerWorkerPoolImpl destruction : https://crbug.com/810464.
+}
+
 }  // namespace internal
 }  // namespace base

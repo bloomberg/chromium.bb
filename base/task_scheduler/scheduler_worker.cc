@@ -99,6 +99,9 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
       wake_up_event_.Reset();
     }
 
+    // Important: It is unsafe to access unowned state (e.g. |task_tracker_|)
+    // after invoking OnMainExit().
+
     outer_->delegate_->OnMainExit(outer_.get());
 
     // Break the ownership circle between SchedulerWorker and Thread.
