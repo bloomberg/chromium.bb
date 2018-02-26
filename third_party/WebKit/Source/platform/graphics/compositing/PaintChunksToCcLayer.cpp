@@ -19,13 +19,6 @@ namespace blink {
 
 namespace {
 
-void AppendRestore(cc::DisplayItemList& list, size_t n) {
-  list.StartPaint();
-  while (n--)
-    list.push<cc::RestoreOp>();
-  list.EndPaintOfPairedEnd();
-}
-
 class ConversionContext {
  public:
   ConversionContext(const PropertyTreeState& layer_state,
@@ -115,6 +108,25 @@ class ConversionContext {
   // The current effect will change to the target effect.
   void SwitchToEffect(const EffectPaintPropertyNode*);
 
+  // Applies combined transform from current_transform_ to the target
+  // transform.
+  void ApplyTransform(const TransformPaintPropertyNode* target_transform) {
+    if (target_transform == current_transform_)
+      return;
+
+    cc_list_.push<cc::ConcatOp>(
+        static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
+            GeometryMapper::SourceToDestinationProjection(
+                target_transform, current_transform_))));
+  }
+
+  void AppendRestore(size_t n) {
+    cc_list_.StartPaint();
+    while (n--)
+      cc_list_.push<cc::RestoreOp>();
+    cc_list_.EndPaintOfPairedEnd();
+  }
+
   const PropertyTreeState& layer_state_;
   gfx::Vector2dF layer_offset_;
 
@@ -129,8 +141,8 @@ class ConversionContext {
   // applying the last paired begin.
   struct StateEntry {
     // Remembers the type of paired begin that caused a state to be saved.
-    // This is useful for emitting corresponding paired end.
-    enum class PairedType { kClip, kEffect } type;
+    // This is for checking integrity of the algorithm.
+    enum PairedType { kClip, kEffect } type;
     int saved_count;
 
     const TransformPaintPropertyNode* transform;
@@ -144,7 +156,7 @@ class ConversionContext {
 
 ConversionContext::~ConversionContext() {
   for (auto& entry : state_stack_)
-    AppendRestore(cc_list_, entry.saved_count);
+    AppendRestore(entry.saved_count);
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
@@ -156,23 +168,31 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
       &LowestCommonAncestor(*target_clip, *current_clip_);
   while (current_clip_ != lca_clip) {
 #if DCHECK_IS_ON()
-    DCHECK(state_stack_.size() &&
-           state_stack_.back().type == StateEntry::PairedType::kClip)
+    DCHECK(state_stack_.size() && state_stack_.back().type == StateEntry::kClip)
         << "Error: Chunk has a clip that escaped its layer's or effect's clip."
         << "\ntarget_clip:\n"
         << target_clip->ToTreeString().Utf8().data() << "current_clip_:\n"
         << current_clip_->ToTreeString().Utf8().data();
 #endif
-    if (!state_stack_.size() ||
-        state_stack_.back().type != StateEntry::PairedType::kClip)
+    if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip)
       break;
+    current_clip_ = current_clip_->Parent();
     StateEntry& previous_state = state_stack_.back();
-    AppendRestore(cc_list_, previous_state.saved_count);
-    current_transform_ = previous_state.transform;
-    current_clip_ = previous_state.clip;
-    DCHECK_EQ(previous_state.effect, current_effect_);
-    state_stack_.pop_back();
+    if (current_clip_ == lca_clip) {
+      // |lca_clip| is an intermediate clip in a series of combined clips.
+      // Jump to the first of the combined clips.
+      current_clip_ = lca_clip = previous_state.clip;
+    }
+    if (current_clip_ == previous_state.clip) {
+      AppendRestore(previous_state.saved_count);
+      current_transform_ = previous_state.transform;
+      DCHECK_EQ(previous_state.effect, current_effect_);
+      state_stack_.pop_back();
+    }
   }
+
+  if (target_clip == current_clip_)
+    return;
 
   // Step 2: Collect all clips between the target clip and the current clip.
   // At this point the current clip must be an ancestor of the target.
@@ -186,21 +206,54 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
   }
 
   // Step 3: Now apply the list of clips in top-down order.
-  for (size_t i = pending_clips.size(); i--;) {
-    const ClipPaintPropertyNode* sub_clip = pending_clips[i];
-    DCHECK_EQ(current_clip_, sub_clip->Parent());
-
-    // Step 3a: Switch CTM to the clip's local space then apply clip.
+  Optional<FloatRect> pending_combined_clip_rect;
+  const ClipPaintPropertyNode* last_pending_combined_clip;
+  auto apply_pending_combined_clip_rect = [this, &pending_combined_clip_rect,
+                                           &last_pending_combined_clip]() {
+    if (!pending_combined_clip_rect)
+      return;
+    DCHECK(last_pending_combined_clip);
     cc_list_.StartPaint();
     cc_list_.push<cc::SaveOp>();
-    const TransformPaintPropertyNode* target_transform =
-        sub_clip->LocalTransformSpace();
-    if (current_transform_ != target_transform) {
-      cc_list_.push<cc::ConcatOp>(
-          static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
-              GeometryMapper::SourceToDestinationProjection(
-                  target_transform, current_transform_))));
+    ApplyTransform(last_pending_combined_clip->LocalTransformSpace());
+    cc_list_.push<cc::ClipRectOp>(
+        static_cast<SkRect>(*pending_combined_clip_rect), SkClipOp::kIntersect,
+        false);
+
+    cc_list_.EndPaintOfPairedBegin();
+    state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1,
+                                         current_transform_, current_clip_,
+                                         current_effect_});
+    current_clip_ = last_pending_combined_clip;
+    current_transform_ = last_pending_combined_clip->LocalTransformSpace();
+    last_pending_combined_clip = nullptr;
+    pending_combined_clip_rect.reset();
+  };
+
+  for (size_t i = pending_clips.size(); i--;) {
+    const auto* sub_clip = pending_clips[i];
+    bool has_rounded_clip_or_clip_path =
+        sub_clip->ClipRect().IsRounded() || sub_clip->ClipPath();
+    if (!has_rounded_clip_or_clip_path && pending_combined_clip_rect &&
+        sub_clip->Parent()->LocalTransformSpace() ==
+            sub_clip->LocalTransformSpace()) {
+      // Continue to combine rectangular clips in the same transform space.
+      pending_combined_clip_rect->Intersect(sub_clip->ClipRect().Rect());
+      last_pending_combined_clip = sub_clip;
+      continue;
     }
+
+    apply_pending_combined_clip_rect();
+
+    if (!has_rounded_clip_or_clip_path) {
+      pending_combined_clip_rect = sub_clip->ClipRect().Rect();
+      last_pending_combined_clip = sub_clip;
+      continue;
+    }
+
+    cc_list_.StartPaint();
+    cc_list_.push<cc::SaveOp>();
+    ApplyTransform(sub_clip->LocalTransformSpace());
     cc_list_.push<cc::ClipRectOp>(
         static_cast<SkRect>(sub_clip->ClipRect().Rect()), SkClipOp::kIntersect,
         false);
@@ -213,14 +266,15 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
                                     SkClipOp::kIntersect, true);
     }
     cc_list_.EndPaintOfPairedBegin();
-
-    // Step 3b: Adjust state and push previous state onto clip stack.
-    state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kClip, 1,
+    state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1,
                                          current_transform_, current_clip_,
                                          current_effect_});
-    current_transform_ = target_transform;
     current_clip_ = sub_clip;
+    current_transform_ = sub_clip->LocalTransformSpace();
   }
+
+  apply_pending_combined_clip_rect();
+  DCHECK_EQ(current_clip_, target_clip);
 }
 
 void ConversionContext::SwitchToEffect(
@@ -243,7 +297,7 @@ void ConversionContext::SwitchToEffect(
       break;
 
     StateEntry& previous_state = state_stack_.back();
-    AppendRestore(cc_list_, previous_state.saved_count);
+    AppendRestore(previous_state.saved_count);
     current_transform_ = previous_state.transform;
     current_clip_ = previous_state.clip;
     current_effect_ = previous_state.effect;
@@ -272,13 +326,13 @@ void ConversionContext::SwitchToEffect(
       SwitchToClip(sub_effect->OutputClip());
     } else {
       while (state_stack_.size() &&
-             state_stack_.back().type == StateEntry::PairedType::kClip) {
+             state_stack_.back().type == StateEntry::kClip) {
         StateEntry& previous_state = state_stack_.back();
+        AppendRestore(previous_state.saved_count);
         current_transform_ = previous_state.transform;
         current_clip_ = previous_state.clip;
         DCHECK_EQ(previous_state.effect, current_effect_);
         state_stack_.pop_back();
-        AppendRestore(cc_list_, 1);
       }
     }
 
@@ -313,10 +367,7 @@ void ConversionContext::SwitchToEffect(
         sub_effect->LocalTransformSpace();
     if (current_transform_ != target_transform) {
       save_layer_once();
-      cc_list_.push<cc::ConcatOp>(
-          static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
-              GeometryMapper::SourceToDestinationProjection(
-                  target_transform, current_transform_))));
+      ApplyTransform(target_transform);
     }
 
     if (sub_effect->Filter().IsEmpty()) {
@@ -391,10 +442,7 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
         transformed = true;
         cc_list_.StartPaint();
         cc_list_.push<cc::SaveOp>();
-        cc_list_.push<cc::ConcatOp>(
-            static_cast<SkMatrix>(TransformationMatrix::ToSkMatrix44(
-                GeometryMapper::SourceToDestinationProjection(
-                    chunk_state.Transform(), current_transform_))));
+        ApplyTransform(chunk_state.Transform());
         cc_list_.EndPaintOfPairedBegin();
       }
       properties_adjusted = true;
@@ -423,10 +471,10 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
           FloatRect(item.VisualRect()), chunk, layer_state_, layer_offset_));
     }
     if (transformed)
-      AppendRestore(cc_list_, 1);
+      AppendRestore(1);
   }
   if (translated)
-    AppendRestore(cc_list_, 1);
+    AppendRestore(1);
 }
 
 }  // unnamed namespace

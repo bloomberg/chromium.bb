@@ -8,6 +8,7 @@
 
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
@@ -19,6 +20,13 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace cc {
+std::ostream& operator<<(std::ostream& os, const PaintRecord& record) {
+  return os << "PaintRecord("
+            << blink::RecordAsDebugString(record).Utf8().data() << ")";
+}
+}  // namespace cc
 
 namespace blink {
 namespace {
@@ -54,6 +62,7 @@ class PaintRecordMatcher
       switch (op) {
         case cc::PaintOpType::ClipPath:
         case cc::PaintOpType::ClipRect:
+        case cc::PaintOpType::ClipRRect:
         case cc::PaintOpType::Concat:
         case cc::PaintOpType::DrawRecord:
         case cc::PaintOpType::Save:
@@ -173,12 +182,11 @@ TEST_F(PaintChunksToCcLayerTest, EffectGroupingSimple) {
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(
-      output,
-      Pointee(PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,    // <e1>
-                                        cc::PaintOpType::DrawRecord,   // <p0/>
-                                        cc::PaintOpType::DrawRecord,   // <p1/>
-                                        cc::PaintOpType::Restore})));  // </e1>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e1>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::DrawRecord,  // <p1/>
+                                        cc::PaintOpType::Restore}));  // </e1>
 }
 
 TEST_F(PaintChunksToCcLayerTest, EffectGroupingNested) {
@@ -199,16 +207,15 @@ TEST_F(PaintChunksToCcLayerTest, EffectGroupingNested) {
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(
-      output,
-      Pointee(PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,    // <e1>
-                                        cc::PaintOpType::SaveLayer,    // <e2>
-                                        cc::PaintOpType::DrawRecord,   // <p0/>
-                                        cc::PaintOpType::Restore,      // </e2>
-                                        cc::PaintOpType::SaveLayer,    // <e3>
-                                        cc::PaintOpType::DrawRecord,   // <p1/>
-                                        cc::PaintOpType::Restore,      // </e3>
-                                        cc::PaintOpType::Restore})));  // </e1>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e1>
+                                        cc::PaintOpType::SaveLayer,   // <e2>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::Restore,     // </e2>
+                                        cc::PaintOpType::SaveLayer,   // <e3>
+                                        cc::PaintOpType::DrawRecord,  // <p1/>
+                                        cc::PaintOpType::Restore,     // </e3>
+                                        cc::PaintOpType::Restore}));  // </e1>
 }
 
 TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
@@ -232,6 +239,7 @@ TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
       e1.get(), t0(), c4.get(), ColorFilter(), CompositorFilterOperations(),
       0.5f, SkBlendMode::kSrcOver);
   TestChunks chunks;
+  chunks.AddChunk(t0(), c2.get(), e0());
   chunks.AddChunk(t0(), c3.get(), e0());
   chunks.AddChunk(t0(), c4.get(), e2.get());
   chunks.AddChunk(t0(), c3.get(), e1.get());
@@ -244,30 +252,27 @@ TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
   EXPECT_THAT(
-      output,
-      Pointee(PaintRecordMatcher::Make(
-          {cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c1>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c2>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3>
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c1+c2>
            cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3>
+           cc::PaintOpType::DrawRecord,                             // <p1/>
            cc::PaintOpType::Restore,                                // </c3>
            cc::PaintOpType::SaveLayer,                              // <e1>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c4>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3+c4>
            cc::PaintOpType::SaveLayer,                              // <e2>
-           cc::PaintOpType::DrawRecord,                             // <p1/>
-           cc::PaintOpType::Restore,                                // </e2>
-           cc::PaintOpType::Restore,                                // </c4>
            cc::PaintOpType::DrawRecord,                             // <p2/>
+           cc::PaintOpType::Restore,                                // </e2>
+           cc::PaintOpType::Restore,                                // </c3+c4>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3>
+           cc::PaintOpType::DrawRecord,                             // <p3/>
            cc::PaintOpType::Restore,                                // </c3>
            cc::PaintOpType::Restore,                                // </e1>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3>
-           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c4>
-           cc::PaintOpType::DrawRecord,                             // <p3/>
-           cc::PaintOpType::Restore,                                // </c4>
-           cc::PaintOpType::Restore,                                // </c3>
-           cc::PaintOpType::Restore,                                // </c2>
-           cc::PaintOpType::Restore})));                            // </c1>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c3+c4>
+           cc::PaintOpType::DrawRecord,                             // <p4/>
+           cc::PaintOpType::Restore,                                // </c3+c4>
+           cc::PaintOpType::Restore}));                             // </c1+c2>
 }
 
 TEST_F(PaintChunksToCcLayerTest, ClipSpaceInversion) {
@@ -290,14 +295,14 @@ TEST_F(PaintChunksToCcLayerTest, ClipSpaceInversion) {
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make(
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
                   {cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1
                    cc::PaintOpType::ClipRect,                       //  c1>
                    cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
                    cc::PaintOpType::DrawRecord,                     // <p0/>
                    cc::PaintOpType::Restore,                        // </t1^-1>
-                   cc::PaintOpType::Restore})));                    // </c1 t1>
+                   cc::PaintOpType::Restore}));                     // </c1 t1>
 }
 
 TEST_F(PaintChunksToCcLayerTest, EffectSpaceInversion) {
@@ -325,13 +330,13 @@ TEST_F(PaintChunksToCcLayerTest, EffectSpaceInversion) {
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
   EXPECT_THAT(
-      output,
-      Pointee(PaintRecordMatcher::Make(
+      *output,
+      PaintRecordMatcher::Make(
           {cc::PaintOpType::SaveLayer, cc::PaintOpType::Concat,  // <t1 e1>
            cc::PaintOpType::Save, cc::PaintOpType::Concat,       // <t1^-1>
            cc::PaintOpType::DrawRecord,                          // <p0/>
            cc::PaintOpType::Restore,                             // </t1^-1>
-           cc::PaintOpType::Restore})));                         // </e1 t1>
+           cc::PaintOpType::Restore}));                          // </e1 t1>
 }
 
 TEST_F(PaintChunksToCcLayerTest, NonRootLayerSimple) {
@@ -353,8 +358,7 @@ TEST_F(PaintChunksToCcLayerTest, NonRootLayerSimple) {
           PropertyTreeState(t1.get(), c1.get(), e1.get()), gfx::Vector2dF(),
           chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord})));
+  EXPECT_THAT(*output, PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord}));
 }
 
 TEST_F(PaintChunksToCcLayerTest, NonRootLayerTransformEscape) {
@@ -376,11 +380,11 @@ TEST_F(PaintChunksToCcLayerTest, NonRootLayerTransformEscape) {
           PropertyTreeState(t1.get(), c1.get(), e1.get()), gfx::Vector2dF(),
           chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make(
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
                   {cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
                    cc::PaintOpType::DrawRecord,                     // <p0/>
-                   cc::PaintOpType::Restore})));                    // </t1^-1>
+                   cc::PaintOpType::Restore}));                     // </t1^-1>
 }
 
 TEST_F(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
@@ -402,13 +406,13 @@ TEST_F(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make(
-                  {cc::PaintOpType::SaveLayer,                        // <e1>
-                   cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c2>
-                   cc::PaintOpType::DrawRecord,                       // <p0/>
-                   cc::PaintOpType::Restore,                          // </c2>
-                   cc::PaintOpType::Restore})));                      // </e1>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,  // <e1>
+                                        cc::PaintOpType::Save,
+                                        cc::PaintOpType::ClipRect,    // <c2>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::Restore,     // </c2>
+                                        cc::PaintOpType::Restore}));  // </e1>
 }
 
 TEST_F(PaintChunksToCcLayerTest,
@@ -431,15 +435,15 @@ TEST_F(PaintChunksToCcLayerTest,
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make(
-                  {cc::PaintOpType::SaveLayer,                        // <e1>
-                   cc::PaintOpType::SaveLayer,                        // <e2>
-                   cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1>
-                   cc::PaintOpType::DrawRecord,                       // <p0/>
-                   cc::PaintOpType::Restore,                          // </c1>
-                   cc::PaintOpType::Restore,                          // </e2>
-                   cc::PaintOpType::Restore})));                      // </e1>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,  // <e1>
+                                        cc::PaintOpType::SaveLayer,  // <e2>
+                                        cc::PaintOpType::Save,
+                                        cc::PaintOpType::ClipRect,    // <c1>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::Restore,     // </c1>
+                                        cc::PaintOpType::Restore,     // </e2>
+                                        cc::PaintOpType::Restore}));  // </e1>
 }
 
 TEST_F(PaintChunksToCcLayerTest,
@@ -462,13 +466,13 @@ TEST_F(PaintChunksToCcLayerTest,
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(output,
-              Pointee(PaintRecordMatcher::Make(
-                  {cc::PaintOpType::SaveLayer,                        // <e2>
-                   cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1>
-                   cc::PaintOpType::DrawRecord,                       // <p0/>
-                   cc::PaintOpType::Restore,                          // </c1>
-                   cc::PaintOpType::Restore})));                      // </e2>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,  // <e2>
+                                        cc::PaintOpType::Save,
+                                        cc::PaintOpType::ClipRect,    // <c1>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::Restore,     // </c1>
+                                        cc::PaintOpType::Restore}));  // </e2>
 }
 
 TEST_F(PaintChunksToCcLayerTest,
@@ -491,11 +495,10 @@ TEST_F(PaintChunksToCcLayerTest,
           gfx::Vector2dF(), chunks.items,
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
-  EXPECT_THAT(
-      output,
-      Pointee(PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,    // <e2>
-                                        cc::PaintOpType::DrawRecord,   // <p0/>
-                                        cc::PaintOpType::Restore})));  // </e2>
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e2>
+                                        cc::PaintOpType::DrawRecord,  // <p0/>
+                                        cc::PaintOpType::Restore}));  // </e2>
 }
 
 TEST_F(PaintChunksToCcLayerTest, VisualRect) {
@@ -516,15 +519,15 @@ TEST_F(PaintChunksToCcLayerTest, VisualRect) {
       gfx::Vector2dF(100, 200), chunks.items, *cc_list);
   EXPECT_EQ(gfx::Rect(-50, -100, 100, 100), cc_list->VisualRectForTesting(4));
 
-  EXPECT_THAT(cc_list->ReleaseAsRecord(),
-              Pointee(PaintRecordMatcher::Make(
-                  {cc::PaintOpType::Save,         //
-                   cc::PaintOpType::Translate,    // <layer_offset>
-                   cc::PaintOpType::Save,         //
-                   cc::PaintOpType::Concat,       // <layer_transform>
-                   cc::PaintOpType::DrawRecord,   // <p0/>
-                   cc::PaintOpType::Restore,      // </layer_transform>
-                   cc::PaintOpType::Restore})));  // </layer_offset>
+  EXPECT_THAT(
+      *cc_list->ReleaseAsRecord(),
+      PaintRecordMatcher::Make({cc::PaintOpType::Save,       //
+                                cc::PaintOpType::Translate,  // <layer_offset>
+                                cc::PaintOpType::Save,       //
+                                cc::PaintOpType::Concat,  // <layer_transform>
+                                cc::PaintOpType::DrawRecord,  // <p0/>
+                                cc::PaintOpType::Restore,  // </layer_transform>
+                                cc::PaintOpType::Restore}));  // </layer_offset>
 }
 
 TEST_F(PaintChunksToCcLayerTest, NoncompositedClipPath) {
@@ -542,13 +545,13 @@ TEST_F(PaintChunksToCcLayerTest, NoncompositedClipPath) {
                                     PropertyTreeState(t0(), c0(), e0()),
                                     gfx::Vector2dF(), chunks.items, *cc_list);
 
-  EXPECT_THAT(cc_list->ReleaseAsRecord(),
-              Pointee(PaintRecordMatcher::Make(
-                  {cc::PaintOpType::Save,         //
-                   cc::PaintOpType::ClipRect,     //
-                   cc::PaintOpType::ClipPath,     // <clip_path>
-                   cc::PaintOpType::DrawRecord,   // <p0/>
-                   cc::PaintOpType::Restore})));  // </clip_path>
+  EXPECT_THAT(
+      *cc_list->ReleaseAsRecord(),
+      PaintRecordMatcher::Make({cc::PaintOpType::Save,        //
+                                cc::PaintOpType::ClipRect,    //
+                                cc::PaintOpType::ClipPath,    // <clip_path>
+                                cc::PaintOpType::DrawRecord,  // <p0/>
+                                cc::PaintOpType::Restore}));  // </clip_path>
 }
 
 TEST_F(PaintChunksToCcLayerTest, EmptyClipsAreElided) {
@@ -576,12 +579,12 @@ TEST_F(PaintChunksToCcLayerTest, EmptyClipsAreElided) {
           ->ReleaseAsRecord();
 
   // Note that c1 and c1c2 are elided.
-  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
-                          cc::PaintOpType::Save,        //
-                          cc::PaintOpType::ClipRect,    // <c2>
-                          cc::PaintOpType::DrawRecord,  // D1
-                          cc::PaintOpType::Restore,     // </c2>
-                      })));
+  EXPECT_THAT(*output, PaintRecordMatcher::Make({
+                           cc::PaintOpType::Save,        //
+                           cc::PaintOpType::ClipRect,    // <c2>
+                           cc::PaintOpType::DrawRecord,  // D1
+                           cc::PaintOpType::Restore,     // </c2>
+                       }));
 }
 
 TEST_F(PaintChunksToCcLayerTest, NonEmptyClipsAreStored) {
@@ -609,19 +612,15 @@ TEST_F(PaintChunksToCcLayerTest, NonEmptyClipsAreStored) {
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
 
-  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
-                          cc::PaintOpType::Save,        //
-                          cc::PaintOpType::ClipRect,    // <c1>
-                          cc::PaintOpType::Save,        //
-                          cc::PaintOpType::ClipRect,    // <c2>
-                          cc::PaintOpType::DrawRecord,  // D1
-                          cc::PaintOpType::Restore,     // </c2>
-                          cc::PaintOpType::Restore,     // </c1>
-                          cc::PaintOpType::Save,        //
-                          cc::PaintOpType::ClipRect,    // <c2>
-                          cc::PaintOpType::DrawRecord,  // D2
-                          cc::PaintOpType::Restore,     // </c2>
-                      })));
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({
+                  cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1+c2>
+                  cc::PaintOpType::DrawRecord,                       // D1
+                  cc::PaintOpType::Restore,                          // </c1+c2>
+                  cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c2>
+                  cc::PaintOpType::DrawRecord,                       // D2
+                  cc::PaintOpType::Restore,                          // </c2>
+              }));
 }
 
 TEST_F(PaintChunksToCcLayerTest, EmptyEffectsAreStored) {
@@ -640,10 +639,56 @@ TEST_F(PaintChunksToCcLayerTest, EmptyEffectsAreStored) {
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
           ->ReleaseAsRecord();
 
-  EXPECT_THAT(output, Pointee(PaintRecordMatcher::Make({
-                          cc::PaintOpType::SaveLayer,  // <e1>
-                          cc::PaintOpType::Restore,    // </e1>
-                      })));
+  EXPECT_THAT(*output, PaintRecordMatcher::Make({
+                           cc::PaintOpType::SaveLayer,  // <e1>
+                           cc::PaintOpType::Restore,    // </e1>
+                       }));
+}
+
+TEST_F(PaintChunksToCcLayerTest, CombineClips) {
+  FloatRoundedRect clip_rect(0, 0, 100, 100);
+  FloatSize corner(5, 5);
+  FloatRoundedRect rounded_clip_rect(clip_rect.Rect(), corner, corner, corner,
+                                     corner);
+  auto t1 = TransformPaintPropertyNode::Create(
+      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  auto c1 = ClipPaintPropertyNode::Create(c0(), t0(), clip_rect);
+  auto c2 = ClipPaintPropertyNode::Create(c1.get(), t0(), clip_rect);
+  auto c3 = ClipPaintPropertyNode::Create(c2.get(), t1.get(), clip_rect);
+  auto c4 = ClipPaintPropertyNode::Create(c3.get(), t1.get(), clip_rect);
+  auto c5 =
+      ClipPaintPropertyNode::Create(c4.get(), t1.get(), rounded_clip_rect);
+  auto c6 = ClipPaintPropertyNode::Create(c5.get(), t1.get(), clip_rect);
+
+  TestChunks chunks;
+  chunks.AddChunk(t1.get(), c6.get(), e0());
+  chunks.AddChunk(t1.get(), c3.get(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c1+c2>
+           cc::PaintOpType::Save,       cc::PaintOpType::Concat,    // <t1
+           cc::PaintOpType::ClipRect,                               //  c3+c4>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,
+           cc::PaintOpType::ClipRRect,                              // <c5>
+           cc::PaintOpType::Save,       cc::PaintOpType::ClipRect,  // <c6>
+           cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Restore,                                // </c6>
+           cc::PaintOpType::Restore,                                // </c5>
+           cc::PaintOpType::Restore,                              // </c3+c4 t1>
+           cc::PaintOpType::Save,       cc::PaintOpType::Concat,  // <t1
+           cc::PaintOpType::ClipRect,                             // c3>
+           cc::PaintOpType::DrawRecord,                           // <p1/>
+           cc::PaintOpType::Restore,                              // </c3 t1>
+           cc::PaintOpType::Restore}));                           // </c1+c2>
 }
 
 }  // namespace
