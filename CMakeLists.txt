@@ -43,6 +43,7 @@ option(ENABLE_SSE2 "Enables SSE2 optimizations on x86/x86_64 targets." ON)
 option(ENABLE_SSE3 "Enables SSE3 optimizations on x86/x86_64 targets." ON)
 option(ENABLE_SSSE3 "Enables SSSE3 optimizations on x86/x86_64 targets." ON)
 option(ENABLE_SSE4_1 "Enables SSE4_1 optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSE4_2 "Enables SSE4_2 optimizations on x86/x86_64 targets." ON)
 option(ENABLE_AVX "Enables AVX optimizations on x86/x86_64 targets." ON)
 option(ENABLE_AVX2 "Enables AVX2 optimizations on x86/x86_64 targets." ON)
 

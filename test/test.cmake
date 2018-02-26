@@ -263,6 +263,12 @@ if (CONFIG_AV1_ENCODER)
           "${AOM_ROOT}/test/av1_horz_only_frame_superres_test.cc")
     endif ()
 
+    if (HAVE_SSE4_2)
+      set(AOM_UNIT_TEST_ENCODER_SOURCES
+          ${AOM_UNIT_TEST_ENCODER_SOURCES}
+          "${AOM_ROOT}/test/hash_test.cc")
+    endif ()
+
     set(AOM_UNIT_TEST_ENCODER_SOURCES
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/av1_fht16x32_test.cc"

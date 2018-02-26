@@ -76,7 +76,7 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "^x86")
     set(RTCD_ARCH_X86_64 "yes")
   endif ()
 
-  set(X86_FLAVORS "MMX;SSE;SSE2;SSE3;SSSE3;SSE4_1;AVX;AVX2")
+  set(X86_FLAVORS "MMX;SSE;SSE2;SSE3;SSSE3;SSE4_1;SSE4_2;AVX;AVX2")
   foreach (flavor ${X86_FLAVORS})
     if (ENABLE_${flavor} AND NOT disable_remaining_flavors)
       set(HAVE_${flavor} 1)

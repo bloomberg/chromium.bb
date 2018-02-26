@@ -39,6 +39,7 @@ set(HAVE_SSE 0 CACHE NUMBER "Enables SSE optimizations.")
 set(HAVE_SSE2 0 CACHE NUMBER "Enables SSE2 optimizations.")
 set(HAVE_SSE3 0 CACHE NUMBER "Enables SSE3 optimizations.")
 set(HAVE_SSE4_1 0 CACHE NUMBER "Enables SSE 4.1 optimizations.")
+set(HAVE_SSE4_2 0 CACHE NUMBER "Enables SSE 4.2 optimizations.")
 set(HAVE_SSSE3 0 CACHE NUMBER "Enables SSSE3 optimizations.")
 
 # Flags describing the build environment.

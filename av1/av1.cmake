@@ -332,6 +332,10 @@ set(AOM_AV1_ENCODER_INTRIN_SSE4_1
     ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
     "${AOM_ROOT}/av1/encoder/x86/corner_match_sse4.c")
 
+set(AOM_AV1_ENCODER_INTRIN_SSE4_2
+    ${AOM_AV1_ENCODER_INTRIN_SSE4_2}
+    "${AOM_ROOT}/av1/encoder/x86/hash_sse42.c")
+
 if (CONFIG_INSPECTION)
   set(AOM_AV1_DECODER_SOURCES
       ${AOM_AV1_DECODER_SOURCES}
@@ -521,6 +525,16 @@ function (setup_av1_targets)
       if (AOM_AV1_ENCODER_INTRIN_SSE4_1)
         add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_encoder"
                                       "AOM_AV1_ENCODER_INTRIN_SSE4_1" "aom")
+      endif ()
+    endif ()
+  endif ()
+
+  if (HAVE_SSE4_2)
+    require_compiler_flag_nomsvc("-msse4.2" NO)
+    if (CONFIG_AV1_ENCODER)
+      if (AOM_AV1_ENCODER_INTRIN_SSE4_2)
+        add_intrinsics_object_library("-msse4.2" "sse42" "aom_av1_encoder"
+                                      "AOM_AV1_ENCODER_INTRIN_SSE4_2" "aom")
       endif ()
     endif ()
   endif ()
