@@ -208,6 +208,14 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   if (layer->EnclosingPaginationLayer())
     return SquashingDisallowedReason::kFragmentedContent;
 
+  if (layer->GetLayoutObject().HasClipPath() ||
+      layer->ClipPathAncestor() != squashing_layer.ClipPathAncestor())
+    return SquashingDisallowedReason::kClipPathMismatch;
+
+  if (layer->GetLayoutObject().HasMask() ||
+      layer->MaskAncestor() != squashing_layer.MaskAncestor())
+    return SquashingDisallowedReason::kMaskMismatch;
+
   return SquashingDisallowedReason::kNone;
 }
 

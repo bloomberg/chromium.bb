@@ -161,7 +161,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       previous_paint_phase_descendant_block_backgrounds_was_empty_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
-      has_ancestor_with_clip_path_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
       layout_object_(layout_object),
@@ -1086,11 +1085,9 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
 }
 
 void PaintLayer::UpdateAncestorDependentCompositingInputs(
-    const AncestorDependentCompositingInputs& compositing_inputs,
-    bool has_ancestor_with_clip_path) {
+    const AncestorDependentCompositingInputs& compositing_inputs) {
   ancestor_dependent_compositing_inputs_ =
       std::make_unique<AncestorDependentCompositingInputs>(compositing_inputs);
-  has_ancestor_with_clip_path_ = has_ancestor_with_clip_path;
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
 

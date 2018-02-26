@@ -702,6 +702,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
         : opacity_ancestor(nullptr),
           transform_ancestor(nullptr),
           filter_ancestor(nullptr),
+          clip_path_ancestor(nullptr),
+          mask_ancestor(nullptr),
           ancestor_scrolling_layer(nullptr),
           nearest_fixed_position_layer(nullptr),
           scroll_parent(nullptr),
@@ -711,6 +713,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     const PaintLayer* opacity_ancestor;
     const PaintLayer* transform_ancestor;
     const PaintLayer* filter_ancestor;
+    const PaintLayer* clip_path_ancestor;
+    const PaintLayer* mask_ancestor;
 
     // The fist ancestor which can scroll. This is a subset of the
     // ancestorOverflowLayer chain where the scrolling layer is visible and
@@ -750,8 +754,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     ancestor_overflow_layer_ = ancestor_overflow_layer;
   }
   void UpdateAncestorDependentCompositingInputs(
-      const AncestorDependentCompositingInputs&,
-      bool has_ancestor_with_clip_path);
+      const AncestorDependentCompositingInputs&);
   void DidUpdateCompositingInputs();
 
   const IntRect& ClippedAbsoluteBoundingBox() const {
@@ -815,9 +818,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                ? ancestor_dependent_compositing_inputs_->clip_parent
                : nullptr;
   }
-  bool HasAncestorWithClipPath() const {
+  const PaintLayer* ClipPathAncestor() const {
     DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return has_ancestor_with_clip_path_;
+    return ancestor_dependent_compositing_inputs_
+               ? ancestor_dependent_compositing_inputs_->clip_path_ancestor
+               : nullptr;
+  }
+  const PaintLayer* MaskAncestor() const {
+    DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
+    return ancestor_dependent_compositing_inputs_
+               ? ancestor_dependent_compositing_inputs_->mask_ancestor
+               : nullptr;
   }
   bool HasDescendantWithClipPath() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
@@ -1245,7 +1256,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // inputs.
   unsigned has_descendant_with_clip_path_ : 1;
   unsigned has_non_isolated_descendant_with_blend_mode_ : 1;
-  unsigned has_ancestor_with_clip_path_ : 1;
 
   unsigned self_painting_status_changed_ : 1;
 

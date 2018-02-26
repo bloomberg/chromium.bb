@@ -2208,7 +2208,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   }
 
   if (layer->GetLayoutObject().HasClip() ||
-      layer->HasDescendantWithClipPath() || layer->HasAncestorWithClipPath()) {
+      layer->HasDescendantWithClipPath() || !!layer->ClipPathAncestor()) {
     non_composited_main_thread_scrolling_reasons_ |=
         MainThreadScrollingReason::kHasClipRelatedProperty;
     needs_composited_scrolling = false;

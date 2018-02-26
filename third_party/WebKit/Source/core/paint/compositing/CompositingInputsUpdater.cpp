@@ -183,6 +183,12 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
       properties.filter_ancestor = parent->HasFilterInducingProperty()
                                        ? parent
                                        : parent->FilterAncestor();
+      properties.clip_path_ancestor = parent->GetLayoutObject().HasClipPath()
+                                          ? parent
+                                          : parent->ClipPathAncestor();
+      properties.mask_ancestor =
+          parent->GetLayoutObject().HasMask() ? parent : parent->MaskAncestor();
+
       bool layer_is_fixed_position =
           layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed;
 
@@ -248,8 +254,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
       }
     }
 
-    layer->UpdateAncestorDependentCompositingInputs(
-        properties, info.has_ancestor_with_clip_path);
+    layer->UpdateAncestorDependentCompositingInputs(properties);
   }
 
   if (layer->StackingNode()->IsStackingContext())
@@ -263,9 +268,6 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
 
   if (layer->GetLayoutObject().HasClipRelatedProperty())
     info.has_ancestor_with_clip_related_property = true;
-
-  if (layer->GetLayoutObject().HasClipPath())
-    info.has_ancestor_with_clip_path = true;
 
   for (PaintLayer* child = layer->FirstChild(); child;
        child = child->NextSibling())
