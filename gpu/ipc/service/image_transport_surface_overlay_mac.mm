@@ -4,24 +4,7 @@
 
 #include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 
-#include <CoreGraphics/CoreGraphics.h>
-#include <IOSurface/IOSurface.h>
-#include <OpenGL/CGLRenderers.h>
-#include <OpenGL/CGLTypes.h>
-#include <OpenGL/gl.h>
-#include <stddef.h>
-
-#include <algorithm>
-
-// This type consistently causes problem on Mac, and needs to be dealt with
-// in a systemic way.
-// http://crbug.com/517208
-#ifndef GL_OES_EGL_image
-typedef void* GLeglImageOES;
-#endif
-
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,12 +15,8 @@ typedef void* GLeglImageOES;
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
-#include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/swap_result.h"
-#include "ui/gfx/transform.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"

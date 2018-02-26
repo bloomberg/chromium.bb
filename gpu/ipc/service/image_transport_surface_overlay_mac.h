@@ -5,15 +5,12 @@
 #ifndef GPU_IPC_SERVICE_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 #define GPU_IPC_SERVICE_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 
-#include <list>
-#include <memory>
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
-#include "base/timer/timer.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/image_transport_surface.h"
-#include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
 
