@@ -11,8 +11,8 @@ class WebFormElementObserverCallback {
  public:
   virtual ~WebFormElementObserverCallback() = default;
 
-  // Invoked when the observed element was either removed from the DOM, it's
-  // action attribute changed, or it's computed style changed to display: none.
+  // Invoked when the observed element was either removed from the DOM or it's
+  // computed style changed to display: none.
   virtual void ElementWasHiddenOrRemoved() = 0;
 };
 
