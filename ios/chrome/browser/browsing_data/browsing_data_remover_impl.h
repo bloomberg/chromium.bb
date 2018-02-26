@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
-#define IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
+#ifndef IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
+#define IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
 
 #include <memory>
 
@@ -18,6 +18,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -27,24 +28,23 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-// IOSChromeBrowsingDataRemover is responsible for removing data related to
-// browsing: visits in url database, downloads, cookies ...
-class IOSChromeBrowsingDataRemover {
+// BrowsingDataRemoverImpl is the concrete implementation of the
+// BrowsingDataRemover abstract interface.
+class BrowsingDataRemoverImpl : public BrowsingDataRemover {
  public:
-  // Creates a IOSChromeBrowsingDataRemover to remove browser data from the
+  // Creates a BrowsingDataRemoverImpl to remove browser data from the
   // specified ChromeBrowserstate. Use Remove to initiate the removal.
-  explicit IOSChromeBrowsingDataRemover(ios::ChromeBrowserState* browser_state);
-  ~IOSChromeBrowsingDataRemover();
+  explicit BrowsingDataRemoverImpl(ios::ChromeBrowserState* browser_state);
+  ~BrowsingDataRemoverImpl() override;
 
-  // Is the object currently in the process of removing data?
-  bool is_removing() { return is_removing_; }
+  // KeyedService implementation.
+  void Shutdown() override;
 
-  // Removes browsing data for the given |time_range| with data types specified
-  // by |remove_mask|. The |callback| is invoked asynchronously when the data
-  // has been removed.
+  // BrowsingDataRemover implementation.
+  bool IsRemoving() const override;
   void Remove(browsing_data::TimePeriod time_period,
               BrowsingDataRemoveMask remove_mask,
-              base::OnceClosure callback);
+              base::OnceClosure callback) override;
 
  private:
   // Represents a single removal task. Contains all parameters to execute it.
@@ -98,9 +98,9 @@ class IOSChromeBrowsingDataRemover {
   // created by this method have been invoked.
   base::OnceClosure CreatePendingTaskCompletionClosure();
 
-  // Returns a weak pointer to IOSChromeBrowsingDataRemover for internal
+  // Returns a weak pointer to BrowsingDataRemoverImpl for internal
   // purposes.
-  base::WeakPtr<IOSChromeBrowsingDataRemover> GetWeakPtr();
+  base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();
 
   // This object is sequence affine.
   SEQUENCE_CHECKER(sequence_checker_);
@@ -125,9 +125,9 @@ class IOSChromeBrowsingDataRemover {
 
   std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
-  base::WeakPtrFactory<IOSChromeBrowsingDataRemover> weak_ptr_factory_;
+  base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeBrowsingDataRemover);
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImpl);
 };
 
-#endif  // IOS_CHROME_BROWSER_BROWSING_DATA_IOS_CHROME_BROWSING_DATA_REMOVER_H_
+#endif  // IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_

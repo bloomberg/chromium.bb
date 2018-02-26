@@ -65,7 +65,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_removal_controller.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-#include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
@@ -864,8 +863,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (IsIPadIdiom() || _tabSwitcherIsActive)
     [_tabSwitcher setOtrTabModel:nil];
 
-  [_browserViewWrangler
-      deleteIncognitoTabModelState:self.browsingDataRemovalController];
+  [_browserViewWrangler deleteIncognitoTabModelState];
 
   if (otrBVCIsCurrent) {
     [self activateBVCAndMakeCurrentBVCPrimary];

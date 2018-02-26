@@ -8,7 +8,7 @@
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/testing/wait_util.h"
 
