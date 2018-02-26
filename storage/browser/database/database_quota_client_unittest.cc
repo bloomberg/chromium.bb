@@ -48,9 +48,8 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   bool GetOriginInfo(const std::string& origin_identifier,
                      OriginInfo* info) override {
-    std::map<GURL, MockOriginInfo>::const_iterator found =
-        mock_origin_infos_.find(
-            storage::GetOriginFromIdentifier(origin_identifier));
+    auto found = mock_origin_infos_.find(
+        storage::GetOriginFromIdentifier(origin_identifier));
     if (found == mock_origin_infos_.end())
       return false;
     *info = OriginInfo(found->second);
@@ -59,20 +58,14 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   bool GetAllOriginIdentifiers(
       std::vector<std::string>* origins_identifiers) override {
-    std::map<GURL, MockOriginInfo>::const_iterator iter;
-    for (iter = mock_origin_infos_.begin(); iter != mock_origin_infos_.end();
-         ++iter) {
-      origins_identifiers->push_back(iter->second.GetOriginIdentifier());
-    }
+    for (auto& iter : mock_origin_infos_)
+      origins_identifiers->push_back(iter.second.GetOriginIdentifier());
     return true;
   }
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) override {
-    std::map<GURL, MockOriginInfo>::const_iterator iter;
-    for (iter = mock_origin_infos_.begin(); iter != mock_origin_infos_.end();
-         ++iter) {
-      origins_info->push_back(OriginInfo(iter->second));
-    }
+    for (auto& iter : mock_origin_infos_)
+      origins_info->push_back(OriginInfo(iter.second));
     return true;
   }
 
@@ -94,9 +87,8 @@ class MockDatabaseTracker : public DatabaseTracker {
   }
 
   void AddMockDatabase(const url::Origin& origin, const char* name, int size) {
-    GURL origin_url = origin.GetURL();
-    MockOriginInfo& info = mock_origin_infos_[origin_url];
-    info.set_origin(storage::GetIdentifierFromOrigin(origin_url));
+    MockOriginInfo& info = mock_origin_infos_[origin];
+    info.set_origin(storage::GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(base::ASCIIToUTF16(name), size);
   }
 
@@ -123,7 +115,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   int delete_called_count_;
   bool async_delete_;
-  std::map<GURL, MockOriginInfo> mock_origin_infos_;
+  std::map<url::Origin, MockOriginInfo> mock_origin_infos_;
 };
 
 // Base class for our test fixtures.

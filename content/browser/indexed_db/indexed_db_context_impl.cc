@@ -76,8 +76,7 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
         file_path.RemoveExtension().Extension() == kIndexedDBExtension) {
       std::string origin_id = file_path.BaseName().RemoveExtension()
           .RemoveExtension().MaybeAsASCII();
-      origins->push_back(
-          Origin::Create(storage::GetOriginFromIdentifier(origin_id)));
+      origins->push_back(storage::GetOriginFromIdentifier(origin_id));
       if (file_paths)
         file_paths->push_back(file_path);
     }
@@ -528,7 +527,7 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
 // static
 base::FilePath IndexedDBContextImpl::GetBlobStoreFileName(
     const Origin& origin) {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin.GetURL());
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
   return base::FilePath()
       .AppendASCII(origin_id)
       .AddExtension(kIndexedDBExtension)
@@ -537,7 +536,7 @@ base::FilePath IndexedDBContextImpl::GetBlobStoreFileName(
 
 // static
 base::FilePath IndexedDBContextImpl::GetLevelDBFileName(const Origin& origin) {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin.GetURL());
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin);
   return base::FilePath()
       .AppendASCII(origin_id)
       .AddExtension(kIndexedDBExtension)

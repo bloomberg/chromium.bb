@@ -87,7 +87,7 @@ const base::FilePath::CharType DOMStorageArea::kDatabaseFileExtension[] =
 // static
 base::FilePath DOMStorageArea::DatabaseFileNameFromOrigin(
     const url::Origin& origin) {
-  std::string filename = storage::GetIdentifierFromOrigin(origin.GetURL());
+  std::string filename = storage::GetIdentifierFromOrigin(origin);
   // There is no base::FilePath.AppendExtension() method, so start with just the
   // extension as the filename, and then InsertBeforeExtension the desired
   // name.
@@ -101,7 +101,7 @@ url::Origin DOMStorageArea::OriginFromDatabaseFileName(
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
   std::string origin_id =
       name.BaseName().RemoveExtension().MaybeAsASCII();
-  return url::Origin::Create(storage::GetOriginFromIdentifier(origin_id));
+  return storage::GetOriginFromIdentifier(origin_id);
 }
 
 void DOMStorageArea::EnableAggressiveCommitDelay() {

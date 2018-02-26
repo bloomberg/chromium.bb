@@ -33,8 +33,8 @@ namespace {
 int64_t GetOriginUsageOnDBThread(DatabaseTracker* db_tracker,
                                  const url::Origin& origin) {
   OriginInfo info;
-  if (db_tracker->GetOriginInfo(
-          storage::GetIdentifierFromOrigin(origin.GetURL()), &info))
+  if (db_tracker->GetOriginInfo(storage::GetIdentifierFromOrigin(origin),
+                                &info))
     return info.TotalSize();
   return 0;
 }
@@ -46,8 +46,7 @@ void GetOriginsOnDBThread(DatabaseTracker* db_tracker,
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = storage::GetOriginFromIdentifier(*iter);
-      origins_ptr->insert(url::Origin::Create(origin));
+      origins_ptr->insert(storage::GetOriginFromIdentifier(*iter));
     }
   }
 }
@@ -60,9 +59,9 @@ void GetOriginsForHostOnDBThread(DatabaseTracker* db_tracker,
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = storage::GetOriginFromIdentifier(*iter);
-      if (host == net::GetHostOrSpecFromURL(origin))
-        origins_ptr->insert(url::Origin::Create(origin));
+      if (host ==
+          net::GetHostOrSpecFromURL(storage::GetOriginURLFromIdentifier(*iter)))
+        origins_ptr->insert(storage::GetOriginFromIdentifier(*iter));
     }
   }
 }
@@ -200,8 +199,7 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
   base::PostTaskAndReplyWithResult(
       db_tracker_->task_runner(), FROM_HERE,
       base::BindOnce(&DatabaseTracker::DeleteDataForOrigin, db_tracker_,
-                     storage::GetIdentifierFromOrigin(origin.GetURL()),
-                     delete_callback),
+                     storage::GetIdentifierFromOrigin(origin), delete_callback),
       net::CompletionOnceCallback(delete_callback));
 }
 

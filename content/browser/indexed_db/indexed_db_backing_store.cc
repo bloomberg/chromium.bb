@@ -114,7 +114,7 @@ bool MakeIDBBlobDirectory(const FilePath& path_base,
 }
 
 std::string ComputeOriginIdentifier(const Origin& origin) {
-  return storage::GetIdentifierFromOrigin(origin.GetURL()) + "@1";
+  return storage::GetIdentifierFromOrigin(origin) + "@1";
 }
 
 FilePath ComputeCorruptionFileName(const Origin& origin) {
