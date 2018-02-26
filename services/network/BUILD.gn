@@ -12,6 +12,8 @@ component("network_service") {
   sources = [
     "cookie_manager.cc",
     "cookie_manager.h",
+    "cors/preflight_controller.cc",
+    "cors/preflight_controller.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
     "http_server_properties_pref_delegate.cc",
@@ -114,7 +116,8 @@ source_set("tests") {
 
   sources = [
     "cookie_manager_unittest.cc",
-    "cors_url_loader_unittest.cc",
+    "cors/cors_url_loader_unittest.cc",
+    "cors/preflight_controller_unittest.cc",
     "data_pipe_element_reader_unittest.cc",
     "ignore_errors_cert_verifier_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",

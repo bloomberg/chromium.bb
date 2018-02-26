@@ -51,6 +51,9 @@ namespace header_names {
 const char kAccessControlAllowCredentials[] =
     "Access-Control-Allow-Credentials";
 const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
+const char kAccessControlRequestExternal[] = "Access-Control-Request-External";
+const char kAccessControlRequestHeaders[] = "Access-Control-Request-Headers";
+const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
 
 }  // namespace header_names
 

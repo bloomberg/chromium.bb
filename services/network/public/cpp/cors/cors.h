@@ -27,6 +27,12 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowCredentials[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowOrigin[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kAccessControlRequestExternal[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kAccessControlRequestHeaders[];
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const char kAccessControlRequestMethod[];
 
 }  // namespace header_names
 
