@@ -19,11 +19,8 @@ namespace content {
 
 namespace {
 
-// The maximum size, in bytes, of a cert message :
-//   The size of "request context size" [1] +
-//   the size of "certificate list size" [3] +
-//   the maximum size of the certificate list [(1u << 24) - 1].
-const size_t kMaxCertSizeForSignedExchange = (1u << 24) + 3;
+// Limit certificate messages to 100k, matching BoringSSL's default limit.
+const size_t kMaxCertSizeForSignedExchange = 100 * 1024;
 static size_t g_max_cert_size_for_signed_exchange =
     kMaxCertSizeForSignedExchange;
 
