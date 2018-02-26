@@ -2276,24 +2276,6 @@ TEST_F(BrowserAccessibilityTest, TestInheritedStringAttributes) {
             child2_child2_accessible->GetInheritedString16Attribute(
                 ax::mojom::StringAttribute::kLanguage));
 
-  // Test GetInheritedString16Attribute(attribute, out_value).
-  base::string16 value16;
-  EXPECT_TRUE(root_accessible->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage, &value16));
-  EXPECT_EQ(base::UTF8ToUTF16("en-US"), value16);
-  EXPECT_TRUE(child1_accessible->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage, &value16));
-  EXPECT_EQ(base::UTF8ToUTF16("en-US"), value16);
-  EXPECT_TRUE(child2_accessible->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage, &value16));
-  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
-  EXPECT_TRUE(child2_child1_accessible->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage, &value16));
-  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
-  EXPECT_TRUE(child2_child2_accessible->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage, &value16));
-  EXPECT_EQ(base::UTF8ToUTF16("fr"), value16);
-
   // Test GetInheritedStringAttribute(attribute).
   EXPECT_EQ("Helvetica", root_accessible->GetInheritedStringAttribute(
                              ax::mojom::StringAttribute::kFontFamily));
@@ -2305,24 +2287,6 @@ TEST_F(BrowserAccessibilityTest, TestInheritedStringAttributes) {
                          ax::mojom::StringAttribute::kFontFamily));
   EXPECT_EQ("Arial", child2_child2_accessible->GetInheritedStringAttribute(
                          ax::mojom::StringAttribute::kFontFamily));
-
-  // Test GetInheritedStringAttribute(attribute, out_value).
-  std::string value;
-  EXPECT_TRUE(root_accessible->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, &value));
-  EXPECT_EQ("Helvetica", value);
-  EXPECT_TRUE(child1_accessible->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, &value));
-  EXPECT_EQ("Helvetica", value);
-  EXPECT_TRUE(child2_accessible->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, &value));
-  EXPECT_EQ("Arial", value);
-  EXPECT_TRUE(child2_child1_accessible->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, &value));
-  EXPECT_EQ("Arial", value);
-  EXPECT_TRUE(child2_child2_accessible->GetInheritedStringAttribute(
-      ax::mojom::StringAttribute::kFontFamily, &value));
-  EXPECT_EQ("Arial", value);
 }
 
 TEST_F(BrowserAccessibilityTest, TestSanitizeStringAttributeForIA2) {

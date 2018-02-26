@@ -591,58 +591,12 @@ bool BrowserAccessibility::HasInheritedStringAttribute(
 
 const std::string& BrowserAccessibility::GetInheritedStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  if (!instance_active())
-    return base::EmptyString();
-
-  const BrowserAccessibility* current_object = this;
-  do {
-    if (current_object->GetData().HasStringAttribute(attribute))
-      return current_object->GetData().GetStringAttribute(attribute);
-    current_object = current_object->PlatformGetParent();
-  } while (current_object);
-  return base::EmptyString();
-}
-
-bool BrowserAccessibility::GetInheritedStringAttribute(
-    ax::mojom::StringAttribute attribute,
-    std::string* value) const {
-  if (!instance_active()) {
-    *value = std::string();
-    return false;
-  }
-
-  if (GetData().GetStringAttribute(attribute, value))
-    return true;
-  return PlatformGetParent() &&
-         PlatformGetParent()->GetData().GetStringAttribute(attribute, value);
+  return node_->GetInheritedStringAttribute(attribute);
 }
 
 base::string16 BrowserAccessibility::GetInheritedString16Attribute(
     ax::mojom::StringAttribute attribute) const {
-  if (!instance_active())
-    return base::string16();
-
-  const BrowserAccessibility* current_object = this;
-  do {
-    if (current_object->GetData().HasStringAttribute(attribute))
-      return current_object->GetData().GetString16Attribute(attribute);
-    current_object = current_object->PlatformGetParent();
-  } while (current_object);
-  return base::string16();
-}
-
-bool BrowserAccessibility::GetInheritedString16Attribute(
-    ax::mojom::StringAttribute attribute,
-    base::string16* value) const {
-  if (!instance_active()) {
-    *value = base::string16();
-    return false;
-  }
-
-  if (GetData().GetString16Attribute(attribute, value))
-    return true;
-  return PlatformGetParent() &&
-         PlatformGetParent()->GetData().GetString16Attribute(attribute, value);
+  return node_->GetInheritedString16Attribute(attribute);
 }
 
 bool BrowserAccessibility::HasIntAttribute(

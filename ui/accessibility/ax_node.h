@@ -72,6 +72,11 @@ class AX_EXPORT AXNode {
   // by computing them and caching the result.
   std::vector<int> GetOrComputeLineStartOffsets();
 
+  const std::string& GetInheritedStringAttribute(
+      ax::mojom::StringAttribute attribute) const;
+  base::string16 GetInheritedString16Attribute(
+      ax::mojom::StringAttribute attribute) const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.

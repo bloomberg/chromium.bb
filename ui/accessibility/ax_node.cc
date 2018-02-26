@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/transform.h"
 
@@ -99,6 +100,22 @@ void AXNode::ComputeLineStartOffsets(std::vector<int>* line_offsets,
         child->data().GetString16Attribute(ax::mojom::StringAttribute::kName);
     *start_offset += static_cast<int>(text.length());
   }
+}
+
+const std::string& AXNode::GetInheritedStringAttribute(
+    ax::mojom::StringAttribute attribute) const {
+  const AXNode* current_node = this;
+  do {
+    if (current_node->data().HasStringAttribute(attribute))
+      return current_node->data().GetStringAttribute(attribute);
+    current_node = current_node->parent();
+  } while (current_node);
+  return base::EmptyString();
+}
+
+base::string16 AXNode::GetInheritedString16Attribute(
+    ax::mojom::StringAttribute attribute) const {
+  return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
 }
 
 }  // namespace ui
