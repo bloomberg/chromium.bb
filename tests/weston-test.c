@@ -80,6 +80,9 @@ test_client_sigchld(struct weston_process *process, int status)
 static int
 test_seat_init(struct weston_test *test)
 {
+	assert(!test->is_seat_initialized &&
+	       "Trying to add already added test seat");
+
 	/* create our own seat */
 	weston_seat_init(&test->seat, test->compositor, "test-seat");
 	test->is_seat_initialized = true;
@@ -91,6 +94,16 @@ test_seat_init(struct weston_test *test)
 	weston_seat_init_touch(&test->seat);
 
 	return 0;
+}
+
+static void
+test_seat_release(struct weston_test *test)
+{
+	assert(test->is_seat_initialized &&
+	       "Trying to release already released test seat");
+	test->is_seat_initialized = false;
+	weston_seat_release(&test->seat);
+	memset(&test->seat, 0, sizeof test->seat);
 }
 
 static struct weston_seat *
@@ -270,10 +283,7 @@ device_release(struct wl_client *client,
 	} else if (strcmp(device, "touch") == 0) {
 		weston_seat_release_touch(seat);
 	} else if (strcmp(device, "seat") == 0) {
-		assert(test->is_seat_initialized &&
-		       "Trying to release already released test seat");
-		weston_seat_release(seat);
-		test->is_seat_initialized = false;
+		test_seat_release(test);
 	} else {
 		assert(0 && "Unsupported device");
 	}
@@ -293,8 +303,6 @@ device_add(struct wl_client *client,
 	} else if (strcmp(device, "touch") == 0) {
 		weston_seat_init_touch(seat);
 	} else if (strcmp(device, "seat") == 0) {
-		assert(!test->is_seat_initialized &&
-		       "Trying to add already added test seat");
 		test_seat_init(test);
 	} else {
 		assert(0 && "Unsupported device");
