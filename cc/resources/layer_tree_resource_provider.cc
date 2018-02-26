@@ -996,21 +996,6 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
   texture_info.fFormat = TextureStorageFormat(format);
   GrBackendTexture backend_texture(size.width(), size.height(),
                                    GrMipMapped::kNo, texture_info);
-  SkSurfaceProps surface_props =
-      ComputeSurfaceProps(use_distance_field_text, can_use_lcd_text);
-  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      ResourceFormatToClosestSkColorType(format), nullptr, &surface_props);
-}
-
-LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
-  if (surface_)
-    surface_->prepareForExternalIO();
-}
-
-SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
-    bool use_distance_field_text,
-    bool can_use_lcd_text) {
   uint32_t flags =
       use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
   // Use unknown pixel geometry to disable LCD text.
@@ -1020,7 +1005,14 @@ SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
     surface_props =
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
-  return surface_props;
+  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
+      ResourceFormatToClosestSkColorType(format), nullptr, &surface_props);
+}
+
+LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
+  if (surface_)
+    surface_->prepareForExternalIO();
 }
 
 void LayerTreeResourceProvider::ValidateResource(viz::ResourceId id) const {

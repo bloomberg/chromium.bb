@@ -82,7 +82,6 @@ class VIZ_SERVICE_EXPORT ProgramKey {
                          SamplerType sampler,
                          AAMode aa_mode,
                          SwizzleMode swizzle_mode,
-                         PremultipliedAlphaMode premultiplied_alpha,
                          bool is_opaque,
                          bool has_tex_clamp_rect,
                          bool tint_color);
