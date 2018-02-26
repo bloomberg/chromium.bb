@@ -17871,6 +17871,7 @@ Called by update_net_error_codes.py.-->
   <int value="2371" label="AsyncClipboardAPIReadText"/>
   <int value="2372" label="AsyncClipboardAPIWriteText"/>
   <int value="2373" label="OpenerNavigationWithoutGesture"/>
+  <int value="2374" label="GetComputedStyleWebkitAppearance"/>
 </enum>
 
 <enum name="FeedbackSource">
