@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 117x19
           text run at (0,0) width 117: "Rendering test for "
-        LayoutInline {I} at (0,0) size 1303x39
+        LayoutInline {I} at (0,0) size 780x39
           LayoutInline {A} at (0,0) size 407x19 [color=#0000EE]
             LayoutText {#text} at (117,0) size 407x19
               text run at (117,0) width 407: "https://bugs.chromium.org/p/chromium/issues/detail?id=626278"

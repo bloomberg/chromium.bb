@@ -54,7 +54,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 73x19
           text run at (0,0) width 73: "Single span"
       LayoutNGBlockFlow (anonymous) at (0,485.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 26x24 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 26x23 [border: (1.39px solid #000000)]
           LayoutText {#text} at (2,0) size 23x19
             text run at (2,0) width 23: "abc"
         LayoutText {#text} at (0,0) size 0x0
@@ -62,10 +62,10 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 417x19
           text run at (0,0) width 417: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutNGBlockFlow (anonymous) at (0,557.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 73x24 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 52x23 [border: (1.39px solid #000000)]
           LayoutText {#text} at (24,0) size 27x19
             text run at (24,0) width 27: "abc "
-          LayoutInline {SPAN} at (0,0) size 23x20
+          LayoutInline {SPAN} at (0,0) size 23x19
             LayoutText {#text} at (2,0) size 23x19
               text run at (2,0) width 23: "abc"
         LayoutText {#text} at (0,0) size 0x0
@@ -73,8 +73,8 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 417x19
           text run at (0,0) width 417: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutNGBlockFlow (anonymous) at (0,629.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 73x24 [border: (1.39px solid #000000)]
-          LayoutInline {SPAN} at (0,0) size 27x20
+        LayoutInline {SPAN} at (0,0) size 52x23 [border: (1.39px solid #000000)]
+          LayoutInline {SPAN} at (0,0) size 27x19
             LayoutText {#text} at (24,0) size 27x19
               text run at (24,0) width 27: "abc "
           LayoutText {#text} at (2,0) size 23x19
@@ -84,7 +84,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 417x19
           text run at (0,0) width 417: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutNGBlockFlow (anonymous) at (0,701.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 24x24 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 24x23 [border: (1.39px solid #000000)]
           LayoutText {#text} at (0,0) size 22x19
             text run at (0,0) width 22: "abc"
       LayoutNGBlockFlow (anonymous) at (0,721.91) size 769x20
@@ -92,19 +92,19 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutText {#text} at (747,0) size 22x19
             text run at (747,0) width 22: "cba"
       LayoutNGBlockFlow (anonymous) at (0,741.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 3x22 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 2x23 [border: (1.39px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {P} at (0,777.91) size 769x20
         LayoutText {#text} at (0,0) size 417x19
           text run at (0,0) width 417: "The following 2 textes should be identical, ignorning whitespaces:"
       LayoutNGBlockFlow (anonymous) at (0,813.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 2x22 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 2x23 [border: (1.39px solid #000000)]
       LayoutNGBlockFlow (anonymous) at (0,833.91) size 769x20
         LayoutNGBlockFlow {DIV} at (0,0) size 769x20
           LayoutText {#text} at (747,0) size 22x19
             text run at (747,0) width 22: "cba"
       LayoutNGBlockFlow (anonymous) at (0,853.91) size 769x20
-        LayoutInline {SPAN} at (0,0) size 25x24 [border: (1.39px solid #000000)]
+        LayoutInline {SPAN} at (0,0) size 24x23 [border: (1.39px solid #000000)]
           LayoutText {#text} at (2,0) size 23x19
             text run at (2,0) width 23: "abc"
         LayoutText {#text} at (0,0) size 0x0
@@ -112,7 +112,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 29x19
           text run at (0,0) width 29: "ruby"
       LayoutNGBlockFlow {DIV} at (0,925.91) size 769x22.78 [border: (1.39px solid #000000)]
-        LayoutRuby (inline) {RUBY} at (0,0) size 187x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (165.47,1.39) size 22x20
             LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
@@ -122,7 +122,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,0) width 22 RTL override: "abc"
         LayoutText {#text} at (160,1) size 5x20
           text run at (160,1) width 5: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 158x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (136.69,1.39) size 22x20
             LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
@@ -132,7 +132,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,0) width 22 RTL override: "abc"
         LayoutText {#text} at (131,1) size 5x20
           text run at (131,1) width 5: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 130x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (107.91,1.39) size 22x20
             LayoutRubyBase (anonymous) at (0,0) size 22x20
               LayoutText {#text} at (0,0) size 22x19
@@ -146,7 +146,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 text run at (0,0) width 12: "def"
         LayoutText {#text} at (83,1) size 5x20
           text run at (83,1) width 5: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 82x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (60.34,1.39) size 22x20
             LayoutRubyBase (anonymous) at (0,0) size 22x20
               LayoutInline {RB} at (0,0) size 22x19
@@ -154,7 +154,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 22 RTL override: "abc"
         LayoutText {#text} at (54,1) size 5x20
           text run at (54,1) width 5: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 53x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (31.56,1.39) size 22x20
             LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12
@@ -165,7 +165,7 @@ layer at (0,0) size 785x1295 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 22 RTL override: "abc"
         LayoutText {#text} at (26,1) size 5x20
           text run at (26,1) width 5: " "
-        LayoutRuby (inline) {RUBY} at (0,0) size 25x21
+        LayoutRuby (inline) {RUBY} at (0,0) size 23x21
           LayoutRubyRun (anonymous) at (2.78,1.39) size 22x20
             LayoutRubyText {RT} at (0,-12) size 22x12
               LayoutText {#text} at (5,0) size 12x12

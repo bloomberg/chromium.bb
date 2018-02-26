@@ -159,7 +159,7 @@ layer at (0,0) size 785x1673 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (114,54) width 264: "border-left"
                 LayoutText {#text} at (378,49) size 53x46
                   text run at (378,49) width 53: " of "
-                LayoutInline {CODE} at (0,0) size 1042x90
+                LayoutInline {CODE} at (0,0) size 629x90
                   LayoutText {#text} at (431,54) size 629x90
                     text run at (431,54) width 216: "1ex solid"
                     text run at (18,102) width 144: "purple"

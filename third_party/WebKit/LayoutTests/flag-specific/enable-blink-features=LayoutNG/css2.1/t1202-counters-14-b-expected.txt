@@ -13,8 +13,8 @@ layer at (0,0) size 800x100
               text run at (0,0) width 28: "A.A"
         LayoutText {#text} at (27,0) size 4x19
           text run at (27,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 27x19
-          LayoutInline {<pseudo:before>} at (0,0) size 27x19
+        LayoutInline {SPAN} at (0,0) size 28x19
+          LayoutInline {<pseudo:before>} at (0,0) size 28x19
             LayoutCounter (anonymous) at (30,0) size 28x19
               text run at (30,0) width 28: "A.B"
         LayoutText {#text} at (57,0) size 4x19
@@ -43,26 +43,26 @@ layer at (0,0) size 800x100
               text run at (151,0) width 25: "A.F"
         LayoutText {#text} at (175,0) size 5x19
           text run at (175,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 29x19
-          LayoutInline {<pseudo:before>} at (0,0) size 29x19
+        LayoutInline {SPAN} at (0,0) size 28x19
+          LayoutInline {<pseudo:before>} at (0,0) size 28x19
             LayoutCounter (anonymous) at (179,0) size 28x19
               text run at (179,0) width 28: "A.G"
         LayoutText {#text} at (206,0) size 5x19
           text run at (206,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 29x19
-          LayoutInline {<pseudo:before>} at (0,0) size 29x19
+        LayoutInline {SPAN} at (0,0) size 28x19
+          LayoutInline {<pseudo:before>} at (0,0) size 28x19
             LayoutCounter (anonymous) at (210,0) size 28x19
               text run at (210,0) width 28: "A.H"
         LayoutText {#text} at (238,0) size 4x19
           text run at (238,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 21x19
-          LayoutInline {<pseudo:before>} at (0,0) size 21x19
+        LayoutInline {SPAN} at (0,0) size 22x19
+          LayoutInline {<pseudo:before>} at (0,0) size 22x19
             LayoutCounter (anonymous) at (241,0) size 22x19
               text run at (241,0) width 22: "A.I"
         LayoutText {#text} at (262,0) size 4x19
           text run at (262,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 22x19
-          LayoutInline {<pseudo:before>} at (0,0) size 22x19
+        LayoutInline {SPAN} at (0,0) size 23x19
+          LayoutInline {<pseudo:before>} at (0,0) size 23x19
             LayoutCounter (anonymous) at (265,0) size 23x19
               text run at (265,0) width 23: "A.J"
         LayoutText {#text} at (287,0) size 4x19
