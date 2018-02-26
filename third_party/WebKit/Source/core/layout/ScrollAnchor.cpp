@@ -4,7 +4,6 @@
 
 #include "core/layout/ScrollAnchor.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSMarkup.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NthIndexCache.h"
@@ -24,7 +23,6 @@ namespace blink {
 // With 100 unique strings, a 2^12 slot table has a false positive rate of ~2%.
 using ClassnameFilter = BloomFilter<12>;
 using Corner = ScrollAnchor::Corner;
-using SerializedAnchor = ScrollAnchor::SerializedAnchor;
 
 ScrollAnchor::ScrollAnchor()
     : anchor_object_(nullptr),
@@ -306,8 +304,11 @@ void ScrollAnchor::FindAnchor() {
   TRACE_EVENT0("blink", "ScrollAnchor::findAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToFindAnchor");
   FindAnchorRecursive(ScrollerLayoutBox(scroller_));
-  if (anchor_object_)
+  if (anchor_object_) {
     anchor_object_->SetIsScrollAnchorObject();
+    saved_relative_offset_ =
+        ComputeRelativeOffset(anchor_object_, scroller_, corner_);
+  }
 }
 
 bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {
@@ -391,9 +392,6 @@ void ScrollAnchor::NotifyBeforeLayout() {
     FindAnchor();
     if (!anchor_object_)
       return;
-
-    saved_relative_offset_ =
-        ComputeRelativeOffset(anchor_object_, scroller_, corner_);
   }
 
   scroll_anchor_disabling_style_changed_ =
@@ -473,10 +471,16 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
                       ("Layout.ScrollAnchor.RestorationStatus", kStatusCount));
 
   Document* document = &(ScrollerLayoutBox(scroller_)->GetDocument());
-  v8::Isolate* isolate =
-      ToScriptStateForMainWorld(document->GetFrame())->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kQueryContext,
-                                 "ScrollAnchor", "RestoreAnchor");
+
+  // This is a considered and deliberate usage of DummyExceptionStateForTesting.
+  // We really do want to always swallow it. Here's why:
+  // 1) We have no one to propagate an exception to.
+  // 2) We don't want to rely on having an isolate(which normal ExceptionState
+  // does), as this requires setting up and using javascript/v8. This is
+  // undesirable since it needlessly prevents us from running when javascript is
+  // disabled, and causes proxy objects to be prematurely
+  // initialized(crbug.com/810897).
+  DummyExceptionStateForTesting exception_state;
   StaticElementList* found_elements = document->QuerySelectorAll(
       AtomicString(serialized_anchor.selector), exception_state);
 
@@ -524,11 +528,7 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
       continue;
     }
 
-    corner_ = CornerToAnchor(scroller_);
-    saved_relative_offset_ =
-        ComputeRelativeOffset(anchor_object_, scroller_, corner_);
     saved_selector_ = serialized_anchor.selector;
-
     restoration_status_histogram.Count(kSuccess);
     return true;
   }

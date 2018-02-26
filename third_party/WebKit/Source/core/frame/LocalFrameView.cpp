@@ -977,7 +977,7 @@ void LocalFrameView::PerformPreLayoutTasks() {
 bool LocalFrameView::ShouldPerformScrollAnchoring() const {
   return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
          !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-         scroll_anchor_.HasScroller() &&
+         scroll_anchor_.HasScroller() && GetLayoutBox() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !frame_->GetDocument()->FinishingOrIsPrinting();
 }
@@ -1850,7 +1850,7 @@ void LocalFrameView::RestoreScrollbar() {
 }
 
 bool LocalFrameView::RestoreScrollAnchor(
-    const ScrollAnchor::SerializedAnchor& serialized_anchor) {
+    const SerializedAnchor& serialized_anchor) {
   return ShouldPerformScrollAnchoring() &&
          scroll_anchor_.RestoreAnchor(serialized_anchor);
 }

@@ -432,6 +432,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   bool ScheduleAnimation() override;
   bool ShouldPerformScrollAnchoring() const override;
+  bool RestoreScrollAnchor(const SerializedAnchor&) override;
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   bool IsPaintLayerScrollableArea() const override { return true; }
 

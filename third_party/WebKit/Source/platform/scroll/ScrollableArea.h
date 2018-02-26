@@ -51,6 +51,7 @@ class PlatformChromeClient;
 class ProgrammaticScrollAnimator;
 class ScrollAnchor;
 class ScrollAnimatorBase;
+struct SerializedAnchor;
 class SmoothScrollSequencer;
 class CompositorAnimationTimeline;
 struct WebScrollIntoViewParams;
@@ -374,6 +375,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual void ClearScrollableArea();
 
+  virtual bool RestoreScrollAnchor(const SerializedAnchor&) { return false; }
   virtual ScrollAnchor* GetScrollAnchor() { return nullptr; }
 
   virtual void DidScrollWithScrollbar(ScrollbarPart, ScrollbarOrientation) {}

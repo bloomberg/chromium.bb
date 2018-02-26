@@ -286,7 +286,6 @@ class CORE_EXPORT LocalFrameView final
   void DidAttachDocument();
 
   void RestoreScrollbar();
-  bool RestoreScrollAnchor(const ScrollAnchor::SerializedAnchor&);
 
   void PostLayoutTimerFired(TimerBase*);
 
@@ -851,6 +850,7 @@ class CORE_EXPORT LocalFrameView final
   // queries.
   FloatSize ViewportSizeForMediaQueries() const;
 
+  bool RestoreScrollAnchor(const SerializedAnchor&) override;
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   void ClearScrollAnchor();
   bool ShouldPerformScrollAnchoring() const override;
