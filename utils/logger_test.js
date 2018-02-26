@@ -5,6 +5,7 @@
 goog.module('mr.LoggerTest');
 goog.setTestOnly('mr.LoggerTest');
 
+const Config = goog.require('mr.Config');
 const Logger = goog.require('mr.Logger');
 
 describe('Test mr.Logger', function() {
@@ -66,13 +67,20 @@ describe('Test mr.Logger', function() {
 
   describe('Personally-identifying info scrubbbing tests', () => {
     let loggedMessages;
+    let isDebugChannelDefault = Config.isDebugChannel;
+
     beforeEach(() => {
+      Config.isDebugChannel = false;
       loggedMessages = [];
       Logger.level = Logger.Level.FINE;
       Logger.addHandler(record => {
         expect(typeof record.message).toBe('string');
         loggedMessages.push(record.message);
       });
+    });
+
+    afterEach(() => {
+      Config.isDebugChannel = isDebugChannelDefault;
     });
 
     it('does not scrub non-PII from messages', () => {

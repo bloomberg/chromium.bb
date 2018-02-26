@@ -10,15 +10,17 @@ goog.provide('mr.Config');
 
 
 /**
- * Compiler flag used to enable debug/testing only components.
+ * Compiler flag used to enable debug/testing only components.  The default
+ * value defined here is only used in open-source builds.
  * @define {boolean} True if this extension was released through debug channel.
  */
-mr.Config.isDebugChannel = false;
+mr.Config.isDebugChannel = true;
 
 
 /**
  * Compiler flag used to set logging level and other privacy sensitive config
- * for public release.
+ * for public release.  The default value defined here is only used in
+ * open-source builds.
  * @define {boolean} True if this extension was released through public channel.
  */
-mr.Config.isPublicChannel = true;
+mr.Config.isPublicChannel = false;
