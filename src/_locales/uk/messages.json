@@ -8,7 +8,7 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "Енді",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -20,11 +20,11 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Додати кольори",
+    "message": "Кольори",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Неординарний",
+    "message": "Нестандарт",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Зсув і нахил",
+    "message": "Світ іграшок",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -100,24 +100,30 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "Перевірте, чи ви правильно під’єднали камеру.",
+    "message": "Перевірте, чи правильно під’єднано камеру.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Не вдається зберегти знімок у галереї.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Не вдається завантажити галерею.",
+    "message": "Не вдалося завантажити галерею.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Не вдається видалити вибраний знімок.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Не вдалося додати в галерею.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Не вдається зберегти вибраний знімок.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Не вдалося зберегти файл $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Нічого не записано.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Апаратне прискорення недоступне.",
@@ -164,19 +170,43 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Зробити знімок",
+    "message": "Сфотографувати",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Записати відео",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Увімкнути або вимкнути таймер",
+    "message": "Увімкнути/вимкнути таймер",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Увімкнути або вимкнути серійну зйомку",
+    "message": "Увімкнути/вимкнути серійну зйомку",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Перемкнути камеру",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Увімкнути режим запису відео",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Увімкнути режим фотографування",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Режим запису відео ввімкнено",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Режим фотографування ввімкнено",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "Увімкнути або вимкнути дзеркальне відображення",
+    "message": "Увімкнути/вимкнути дзеркальне відображення",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -212,19 +242,27 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "ОК",
+    "message": "OK",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Видалити цей елемент?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Видалити файл $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Видалити ці елементи?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Перемкнути камеру",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Видалити елементи ($count$)?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

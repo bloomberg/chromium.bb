@@ -44,7 +44,7 @@
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "دهان بزرگ",
+    "message": "فک بزرگ",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
@@ -68,7 +68,7 @@
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "عکسخانه‌ای",
+    "message": "عکاسخانه‌ای",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
@@ -84,7 +84,7 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "سینمایی",
+    "message": "سالن سینما",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
@@ -100,27 +100,33 @@
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
-    "message": "ببینید دوربین درست وصل شده باشد.",
+    "message": "مطمئن شوید دوربین درست وصل شده باشد.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGallerySaveFailed": {
-    "message": "عکس در گالری ذخیره نشد.",
-    "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
     "message": "بارگیری گالری انجام نشد.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "عکس انتخابی حذف نشد.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "گالری اضافه نشد.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "عکس انتخابی ذخیره نشد.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ ذخیره نشد.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "چیزی ضبط نشد.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "شتاب سخت‌افزاری در دسترس نیست.",
+    "message": "شتاب سخت‌افزاری دردسترس نیست.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -164,19 +170,43 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "گرفتن عکس",
+    "message": "عکس گرفتن",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "فیلم‌برداری",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "فعال یا غیرفعال کردن تایمر",
+    "message": "روشن/خاموش کردن تایمر",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "روشن یا خاموش کردن ویژگی چند عکس",
+    "message": "روشن/خاموش کردن ویژگی چند عکس",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "جابه‌جا شدن بین دوربین‌ها",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "جابه‌جا شدن به فیلم‌برداری",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "جابه‌جا شدن به عکس گرفتن",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "فیلم‌بردای فعال است",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "عکس گرفتن فعال است",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "روشن یا خاموش کردن نمایش صفحه نمایش روی دستگاه دیگر",
+    "message": "روشن/خاموش کردن نمایش صفحه‌نمایش روی دستگاه دیگر",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "واقعاً می‌خواهید این مورد را پاک کنید؟",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "آیا واقعاً می‌خواهید $file$ را حذف کنید؟",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "واقعاً می‌خواهید این موارد را پاک کنید؟",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "جابه‌جایی بین دوربین‌ها",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "آیا واقعاً می‌خواهید $count$ مورد را حذف کنید؟",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

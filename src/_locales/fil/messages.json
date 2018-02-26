@@ -103,24 +103,30 @@
     "message": "Tingnan kung maayos na nakakonekta ang camera.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Hindi ma-save ang larawan sa gallery.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Hindi ma-load ang gallery.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Hindi matanggal ang napiling larawan.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Hindi maidagdag sa gallery.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Hindi ma-save ang napiling larawan.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Hindi ma-save ang $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Walang na-record.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Hindi available ang pagpapabilis ng hardware.",
+    "message": "Hindi available ang hardware acceleration.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -167,16 +173,40 @@
     "message": "Kumuha ng larawan",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Mag-record ng video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "I-toggle ang orasan",
+    "message": "I-toggle ang timer",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "I-toggle ang multi-shot",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "I-toggle ang Kamera",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Lumipat sa pag-record ng video",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Lumipat sa pagkuha ng larawan",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Aktibo ang pag-record ng video",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Aktibo ang pagkuha ng larawan",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "I-toggle ang pagmi-mirror",
+    "message": "I-toggle ang pag-mirror",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Gusto mo ba talagang alisin ang item na ito?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Gusto mo ba talagang alisin ang $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Gusto mo ba talagang alisin ang mga item na ito?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "I-toggle ang camera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Gusto mo ba talagang mag-alis ng $count$ (na) item?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

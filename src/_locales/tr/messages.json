@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Minyatürleştirme",
+    "message": "Tilt-shift",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -103,21 +103,27 @@
     "message": "Kameranın doğru bir şekilde bağlanmış olup olmadığını kontrol edin.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Resim, galeriye kaydedilemiyor.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Galeri yüklenemiyor.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Seçilen resim silinemiyor.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Galeriye eklenemiyor.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Seçilen resim kaydedilemiyor.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ kaydedilemiyor.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Hiçbir şey kaydedilemedi.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Donanım hızlandırma özelliği kullanılamıyor.",
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Fotoğraf çek",
+    "message": "Resim çek",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "Video kaydet",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "Zamanlayıcıyı aç/kapat",
@@ -175,8 +185,28 @@
     "message": "Çoklu çekimi aç/kapat",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Kamerayı değiştir",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Video kaydetmeye geç",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Resim çekmeye geç",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Video kaydı etkin",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Resim çekme etkin",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "Ayna görüntüyü aç/kapat",
+    "message": "Yansıtmayı aç/kapat",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Bu öğeyi gerçekten kaldırmak istiyor musunuz?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "$file$ adlı dosyayı gerçekten kaldırmak istiyor musunuz?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Bu öğeleri gerçekten kaldırmak istiyor musunuz?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Kamerayı değiştir",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "$count$ öğeyi gerçekten kaldırmak istiyor musunuz?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

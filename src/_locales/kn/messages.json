@@ -12,7 +12,7 @@
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "ದೊಡ್ಡ ಕಣ್ಣುಗಳು",
+    "message": "ದೊಡ್ಡ ಕಣ್ಣುಗಳು",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "ಬಣ್ಣ ಹಾಕು",
+    "message": "ಬಣ್ಣ ಹಾಕಿ",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "ವೃತ್ತಪತ್ರಿಕೆ",
+    "message": "ದಿನಪತ್ರಿಕೆ",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -88,7 +88,7 @@
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "ವಿಂಟೇಜ್.",
+    "message": "ವಿಂಟೇಜ್",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
@@ -103,21 +103,27 @@
     "message": "ಕ್ಯಾಮರಾ ಸರಿಯಾಗಿ ಸಂಪರ್ಕಗೊಂಡಿದೆಯೇ ಎಂಬುದನ್ನು ಪರೀಕ್ಷಿಸಿ.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "ಚಿತ್ರವನ್ನು ಗ್ಯಾಲರಿಯಲ್ಲಿ ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "ಗ್ಯಾಲರಿ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "ಆಯ್ಕೆ ಮಾಡಿದ ಚಿತ್ರವನ್ನು ಅಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "ಗ್ಯಾಲರಿಗೆ ಸೇರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "ಆಯ್ಕೆ ಮಾಡಿದ ಚಿತ್ರವನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ ಫೈಲ್ ಉಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "ಹಾರ್ಡ್‌ವೇರ್ ವೇಗವರ್ಧನೆ ಲಭ್ಯವಿಲ್ಲ.",
@@ -128,7 +134,7 @@
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "ಗ್ಯಾಲರಿಗೆ ಹೋಗು",
+    "message": "ಗ್ಯಾಲರಿಗೆ ಹೋಗಿ",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
@@ -136,27 +142,27 @@
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "ಅಳಿಸು",
+    "message": "ಅಳಿಸಿ",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಉಳಿಸು",
+    "message": "ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಉಳಿಸಿ",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "ಮುದ್ರಿಸು",
+    "message": "ಮುದ್ರಿಸಿ",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "ಹಿಂತಿರುಗು",
+    "message": "ಹಿಂತಿರುಗಿ",
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "ಗರಿಷ್ಠಗೊಳಿಸು",
+    "message": "ಗರಿಷ್ಠಗೊಳಿಸಿ",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "ಮುಚ್ಚು",
+    "message": "ಮುಚ್ಚಿ",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
@@ -164,8 +170,12 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "ಚಿತ್ರ ತೆಗೆಯಿರಿ",
+    "message": "ಚಿತ್ರ ತೆಗೆದುಕೊಳ್ಳಿ",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "ವೀಡಿಯೋ ರೆಕಾರ್ಡ್ ಮಾಡಿ",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "ಟೈಮರ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "ಬಹು ಶಾಟ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "ಕ್ಯಾಮರಾ ಟಾಗಲ್ ಮಾಡಿ",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡಲು ಬದಲಿಸಿ",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "ಚಿತ್ರ ತೆಗೆದುಕೊಳ್ಳಲು ಬದಲಿಸಿ",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "ಚಿತ್ರ ತೆಗೆಯುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "ಟಾಗಲ್ ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಐಟಂ ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "ನೀವು ನಿಜವಾಗಿಯೂ $file$ ಅನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "ನೀವು ನಿಜವಾಗಿಯೂ ಈ ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "ಕ್ಯಾಮರಾ ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "ನೀವು ನಿಜವಾಗಿಯೂ $count$ ಐಟಂಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಬಯಸುತ್ತೀರಾ?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

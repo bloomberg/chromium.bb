@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Colorizare",
+    "message": "Colorare",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -103,21 +103,27 @@
     "message": "Verificați dacă ați conectat corect camera foto.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Fotografia nu poate fi salvată în galerie.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Galeria nu poate fi încărcată.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Fotografia selectată nu poate fi ștearsă.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Nu se poate adăuga la galerie.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Fotografia selectată nu poate fi salvată.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ nu poate fi salvat.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Nu există nicio înregistrare.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Accelerarea hardware nu este disponibilă.",
@@ -167,13 +173,37 @@
     "message": "Fotografiați",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Înregistrați un videoclip",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Activați/dezactivați cronometrul",
+    "message": "Activați/dezactivați temporizatorul",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Activați/dezactivați fotografierea multiplă",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Comutați între camerele foto",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Comutați pentru a înregistra un videoclip",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Comutați pentru a fotografia",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Înregistrarea video este activă",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Fotografierea este activă",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Activați/dezactivați oglindirea",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Sigur doriți să eliminați această fotografie?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Sigur doriți să eliminați $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Sigur doriți să eliminați aceste fotografii?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Comutați între camerele foto",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Sigur doriți să eliminați $count$ elemente?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

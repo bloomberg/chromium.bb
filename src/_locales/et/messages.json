@@ -103,24 +103,30 @@
     "message": "Kontrollige, kas kaamera on korralikult ühendatud.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Pilti ei saa galeriisse salvestada.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Galeriid ei saa laadida.",
+    "message": "Galerii laadimine ebaõnnestus.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Valitud pilti ei saa kustutada.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Galeriisse lisamine ebaõnnestus.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Valitud pilti ei saa salvestada.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Faili $file$ salvestamine ebaõnnestus.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Midagi pole salvestatud.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Riistvarakiirendus pole saadaval.",
+    "message": "Riistvaraline kiirendus pole saadaval.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -164,16 +170,40 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Pildista",
+    "message": "Pildistage",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Salvesta video",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
-    "message": "Taimer sisse/välja",
+    "message": "Lülita taimer sisse/välja",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
     "message": "Lülita mitme pildi funktsioon sisse/välja",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Vaheta kaamerat",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Lülita video salvestamiseks",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Lülita pildistamiseks",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Video salvestamise funktsioon on aktiivne",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Pildistamise funktsioon on aktiivne",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Lülita peegeldamine sisse/välja",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Kas soovite kindlasti selle üksuse eemaldada?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Kas soovite kindlasti eemaldada faili $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Kas soovite kindlasti need üksused eemaldada?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Vaheta kaamerat",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Kas soovite kindlasti eemaldada need $count$ üksust?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

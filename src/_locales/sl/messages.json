@@ -103,21 +103,27 @@
     "message": "Preverite, ali je fotoaparat ustrezno povezan.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Slike ni mogoče shraniti v galerijo.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Galerije ni mogoče naložiti.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Izbrane slike ni mogoče izbrisati.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "V galerijo ni mogoče dodajati.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Izbrane slike ni mogoče shraniti.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Datoteke $file$ ni bilo mogoče shraniti.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Nič ni posneto.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Strojno pospeševanje ni na voljo.",
@@ -167,6 +173,10 @@
     "message": "Fotografiranje",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "Snemanje videa",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "Preklop merilnika časa",
     "description": "Label for the button to toggle the countdown timer."
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "Preklop načina za več posnetkov",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Preklop fotoaparata",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Preklop na snemanje videa",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Preklop na fotografiranje",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "Snemanje videa je dejavno",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "Fotografiranje je dejavno",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Preklop zrcaljenja",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Ali res želite odstraniti ta element?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Ali res želite odstraniti datoteko $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Ali res želite odstraniti te elemente?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Preklop fotoaparata",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Ali res želite odstraniti toliko elementov: $count$?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

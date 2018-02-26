@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "摄像头",
+    "message": "相机",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用您的网络摄像头拍摄绝佳的照片。",
+    "message": "使用您的摄像头拍摄绝佳的照片。",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "魅影",
+    "message": "鬼",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -103,24 +103,30 @@
     "message": "请检查此摄像头是否连接正确。",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "无法将该照片保存到图库中。",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "无法加载图库。",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "无法删除所选照片。",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "无法添加到图库。",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "无法保存所选照片。",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "无法保存“$file$”。",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "未记录任何数据。",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "硬件加速不可用。",
+    "message": "无法使用硬件加速。",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -167,6 +173,10 @@
     "message": "拍照",
     "description": "Label for the red picture taking button."
   },
+  "recordVideoButton": {
+    "message": "录制视频",
+    "description": "Label for the red video recording button."
+  },
   "toggleTimerButton": {
     "message": "切换计时器",
     "description": "Label for the button to toggle the countdown timer."
@@ -174,6 +184,26 @@
   "toggleMultiButton": {
     "message": "切换连拍功能",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "切换摄像头",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "切换到录制视频模式",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "切换到拍照模式",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "录制视频功能已启用",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "拍照功能已启用",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "切换镜像",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "确定要移除这张照片吗？",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "确定要移除“$file$”吗？",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "确定要移除这些照片吗？",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "切换摄像头",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "确定要移除这 $count$ 个文件吗？",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

@@ -92,7 +92,7 @@
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Szellem",
+    "message": "Kísértet",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
@@ -103,24 +103,30 @@
     "message": "Ellenőrizze, hogy a kamera megfelelően van-e csatlakoztatva.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Nem lehet menteni a képet a galériába.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "Nem lehet betölteni a galériát.",
+    "message": "Nem sikerült betölteni a galériát.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Nem lehet törölni a kiválasztott képet.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Nem sikerült hozzáadni a galériához.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Nem lehet menteni a kiválasztott képet.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "A(z) $file$ mentése nem sikerült.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "A rendszer semmit nem rögzített.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "Hardvergyorsítás nem érhető el.",
+    "message": "A hardveres gyorsítás nem áll rendelkezésre.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
@@ -164,16 +170,40 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Képkészítés",
+    "message": "Kép készítése",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "Videó rögzítése",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "Időzítő állítása",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "„Több felvétel készítése” funkció be-/kikapcsolása",
+    "message": "Több felvétel készítésének be-/kikapcsolása",
     "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleCameraButton": {
+    "message": "Kamerák közötti váltás",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "Váltás videófelvételre",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "Váltás fotókészítésre",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "A videófelvétel aktív",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "A fotókészítés aktív",
+    "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
     "message": "Tükrözés be-/kikapcsolása",
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Biztosan eltávolítja ezt az elemet?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "Biztosan eltávolítja a(z) $file$ fájlt?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "Biztosan eltávolítja ezeket az elemeket?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "Kamerák közötti váltás",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "Biztosan eltávolít $count$ elemet?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }

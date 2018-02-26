@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "अपने वेब कैमरे से आकर्षक फ़ोटो लें.",
+    "message": "अपने वेब कैमरे से आकर्षक तस्वीरें लें.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -16,11 +16,11 @@
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "सौंदर्य",
+    "message": "खूबसूरती",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "कलराइज़",
+    "message": "रंगीन",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "अख़बार",
+    "message": "अखबार",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -52,7 +52,7 @@
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "सीपीया",
+    "message": "सेपिया",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
@@ -80,7 +80,7 @@
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "टिल्टशिफ़्ट",
+    "message": "टिल्ट शिफ़्ट",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -96,35 +96,41 @@
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "वर्तमान में आपका कैमरा उपलब्ध नहीं है.",
+    "message": "फ़िलहाल आपका कैमरा उपलब्ध नहीं है.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgNoCameraHint": {
     "message": "देखें कि कैमरा ठीक तरह से कनेक्ट है या नहीं.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "चित्र को गैलरी में सहेजने में असमर्थ.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
-    "message": "गैलरी लोड करने में असमर्थ.",
+    "message": "गैलरी लोड नहीं कर सके.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "चयनित फ़ोटो हटाने में असमर्थ.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "गैलरी नहीं जोड़ सके.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "चयनित फ़ोटो सहेजने में असमर्थ.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "$file$ सेव नहीं कर सके.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "कुछ भी रिकॉर्ड नहीं हुआ.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
-    "message": "हार्डवेयर त्वरण उपलब्ध नहीं है.",
+    "message": "हार्डवेयर से तेज़ी लाने की सुविधा उपलब्ध नहीं है.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "आपके कंप्यूटर का ग्राफ़िक्स कार्ड असंगत हो सकता है, या उसमें पुराने ड्राइवर हो सकते हैं.",
+    "message": "शायद आपके कंप्यूटर का ग्राफ़िक्स कार्ड असंगत है या उसमें पुराने ड्राइवर हैं.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -136,11 +142,11 @@
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "हटाएं",
+    "message": "मिटाएं",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "डिस्क पर सहेजें",
+    "message": "डिस्क पर सेव करें",
     "description": "Label for the exporting button."
   },
   "printButton": {
@@ -152,7 +158,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "विस्‍तृत करें",
+    "message": "बड़ा करें",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -160,12 +166,16 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "गैलरी के चित्र",
+    "message": "गैलरी की इमेज",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "कोई चित्र लें",
+    "message": "तस्वीर खींचें",
     "description": "Label for the red picture taking button."
+  },
+  "recordVideoButton": {
+    "message": "वीडियो रिकॉर्ड करें",
+    "description": "Label for the red video recording button."
   },
   "toggleTimerButton": {
     "message": "टाइमर टॉगल करें",
@@ -175,32 +185,52 @@
     "message": "मल्टी-शॉट टॉगल करें",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "कैमरा टॉगल करें",
+    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "toggleRecordOnButton": {
+    "message": "वीडियो रिकॉर्ड करने के लिए स्विच करें",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "toggleRecordOffButton": {
+    "message": "तस्वीर लेने के लिए स्विच करें",
+    "description": "Label for the button to switch to take picture mode."
+  },
+  "recordVideoActiveMessage": {
+    "message": "वीडियो रिकॉर्ड करने की सुविधा चालू है",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "takePictureActiveMessage": {
+    "message": "तस्वीर खींचने की सुविधा चालू है",
+    "description": "Message shown when activating the photo taking feature."
+  },
   "toggleMirrorButton": {
-    "message": "मिररिंग टॉगल करें",
+    "message": "डुप्लीकेट सामग्री बनाना (मिररिंग) टॉगल करें",
     "description": "Label for the button to toggle the preview mirroring."
   },
   "toggleTimerActiveMessage": {
-    "message": "टाइमर सक्रिय",
+    "message": "टाइमर चालू है",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "टाइमर निष्क्रिय",
+    "message": "टाइमर बंद है",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "मल्टी-शॉट सक्रिय",
+    "message": "मल्टी-शॉट चालू है",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "मल्टी-शॉट निष्क्रिय",
+    "message": "मल्टी-शॉट बंद है",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "toggleMirrorActiveMessage": {
-    "message": "मिररिंग सक्रिय",
+    "message": "डुप्लीकेट सामग्री बनाना (मिररिंग) चालू है",
     "description": "Message shown when activating the preview mirroring."
   },
   "toggleMirrorInactiveMessage": {
-    "message": "मिररिंग निष्क्रिय",
+    "message": "डुप्लीकेट सामग्री बनाना (मिररिंग) बंद है",
     "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
@@ -216,15 +246,23 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "क्या आप वाकई इस आइटम को निकालना चाहते हैं?",
-    "description": "Confirmation message before removing a selected item from the gallery."
+    "message": "क्या आप वाकई $file$ को हटाना चाहते हैं?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "क्या आप वाकई इन आइटम को निकालना चाहते हैं?",
-    "description": "Confirmation message before removing multiple selected items from the gallery."
-  },
-  "toggleCameraButton": {
-    "message": "कैमरा टॉगल करें",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+    "message": "क्या आप वाकई $count$ आइटम हटाना चाहते हैं?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
   }
 }
