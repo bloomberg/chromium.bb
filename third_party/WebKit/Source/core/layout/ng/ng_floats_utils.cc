@@ -143,8 +143,11 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
 
   // If the float has the same writing mode as the block formatting context we
   // shouldn't perform a full layout just yet. Our position may determine where
-  // we fragment.
-  if (is_same_writing_mode) {
+  // we fragment. If we cannot use NG for layout of the node, though, we do have
+  // to lay out (and just read out the inline size and then discard the result),
+  // because NG cannot figure out the size of such objects on its own,
+  // especially not for tables.
+  if (is_same_writing_mode && unpositioned_float->node.CanUseNewLayout()) {
     WTF::Optional<MinMaxSize> min_max_size;
     if (NeedMinMaxSize(*space.get(), style)) {
       MinMaxSizeInput zero_input;  // Floats do not intrude into floats.
@@ -153,18 +156,22 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
     return ComputeInlineSizeForFragment(*space.get(), style, min_max_size);
   }
 
-  // If we are performing layout on a float to determine its inline size it
-  // should never have fragmented.
-  DCHECK(!unpositioned_float->token);
-
   // A float which has a different writing mode can't fragment, and we
   // (probably) need to perform a full layout in order to correctly determine
-  // its inline size. We are able to cache this result on the
-  // unpositioned_float at this stage.
-  unpositioned_float->layout_result = unpositioned_float->node.Layout(*space);
+  // its inline size. We are able to cache this result on the unpositioned_float
+  // at this stage. If the writing mode is the same, on the other hand, we
+  // cannot keep the result around, since the node may fragment (and we need to
+  // find its final block position before we can do so).
+  auto result = unpositioned_float->node.Layout(*space);
+  if (!is_same_writing_mode) {
+    // If we are performing layout on a float to determine its inline size it
+    // should never have fragmented.
+    DCHECK(!unpositioned_float->token);
+    unpositioned_float->layout_result = result;
+  }
 
-  DCHECK(unpositioned_float->layout_result->PhysicalFragment());
-  const auto& fragment = *unpositioned_float->layout_result->PhysicalFragment();
+  DCHECK(result->PhysicalFragment());
+  const auto& fragment = *result->PhysicalFragment();
 
   DCHECK(fragment.BreakToken()->IsFinished());
 
