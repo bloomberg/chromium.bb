@@ -42,6 +42,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/token_binding.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
@@ -1047,14 +1048,8 @@ bool QuicChromiumClientSession::WasConnectionEverUsed() {
 
 QuicChromiumClientStream*
 QuicChromiumClientSession::CreateOutgoingDynamicStream() {
-  if (!ShouldCreateOutgoingDynamicStream()) {
-    return nullptr;
-  }
-
-  // TODO(https://crbug.com/656607): Add proper annotation.
-  QuicChromiumClientStream* stream =
-      CreateOutgoingReliableStreamImpl(NO_TRAFFIC_ANNOTATION_BUG_656607);
-  return stream;
+  NOTREACHED() << "CreateOutgoingReliableStreamImpl should be called directly";
+  return nullptr;
 }
 
 QuicChromiumClientStream*

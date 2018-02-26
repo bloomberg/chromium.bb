@@ -5,6 +5,7 @@
 #include "net/quic/chromium/quic_chromium_client_session_peer.h"
 
 #include "net/quic/chromium/quic_chromium_client_session.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {
 namespace test {
@@ -37,5 +38,16 @@ uint64_t QuicChromiumClientSessionPeer::GetPushedAndUnclaimedBytesCount(
     QuicChromiumClientSession* session) {
   return session->bytes_pushed_and_unclaimed_count_;
 }
+
+// static
+QuicChromiumClientStream*
+QuicChromiumClientSessionPeer::CreateOutgoingDynamicStream(
+    QuicChromiumClientSession* session) {
+  return session->ShouldCreateOutgoingDynamicStream()
+             ? session->CreateOutgoingReliableStreamImpl(
+                   TRAFFIC_ANNOTATION_FOR_TESTS)
+             : nullptr;
+}
+
 }  // namespace test
 }  // namespace net

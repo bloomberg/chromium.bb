@@ -15,6 +15,7 @@
 namespace net {
 
 class QuicChromiumClientSession;
+class QuicChromiumClientStream;
 
 namespace test {
 
@@ -30,6 +31,9 @@ class QuicChromiumClientSessionPeer {
   static uint64_t GetPushedBytesCount(QuicChromiumClientSession* session);
 
   static uint64_t GetPushedAndUnclaimedBytesCount(
+      QuicChromiumClientSession* session);
+
+  static QuicChromiumClientStream* CreateOutgoingDynamicStream(
       QuicChromiumClientSession* session);
 
  private:
