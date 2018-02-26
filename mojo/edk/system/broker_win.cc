@@ -131,7 +131,7 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
                             &bytes_written, nullptr);
   if (!result ||
       static_cast<size_t>(bytes_written) != out_message->data_num_bytes()) {
-    LOG(ERROR) << "Error sending sync broker message";
+    PLOG(ERROR) << "Error sending sync broker message";
     return nullptr;
   }
 
