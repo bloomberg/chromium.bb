@@ -383,8 +383,6 @@ class MetaBuildWrapper(object):
       return []
 
     # This code is naive and just picks reasonable defaults per platform.
-    # TODO(thakis): This assumes that host platform is the same as
-    # target platform.
     if self.platform == 'darwin':
       os_dim = ('os', 'Mac-10.12')
     elif self.platform.startswith('linux'):
