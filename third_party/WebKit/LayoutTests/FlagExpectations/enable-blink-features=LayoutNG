@@ -2169,7 +2169,6 @@ crbug.com/810370 fast/block/float/overhanging-float-remove-from-fixed-position-b
 crbug.com/591099 fast/block/float/overlapping-floats-paint-hittest-order-1.html [ Failure ]
 crbug.com/591099 fast/block/line-layout/floats-do-not-fit-on-line.html [ Failure ]
 crbug.com/591099 fast/block/line-layout/line-break-removal-near-textarea-crash.html [ Failure ]
-crbug.com/591099 fast/block/margin-collapse/clear-nested-float-more-than-one-previous-sibling-away.html [ Failure ]
 crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-container.html [ Failure ]
 crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Failure ]
 crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Failure ]
