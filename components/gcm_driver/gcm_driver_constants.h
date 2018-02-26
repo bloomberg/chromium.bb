@@ -6,6 +6,7 @@
 // Messaging) Driver.
 
 #ifndef COMPONENTS_GCM_DRIVER_GCM_DRIVER_CONSTANTS_H_
+#define COMPONENTS_GCM_DRIVER_GCM_DRIVER_CONSTANTS_H_
 
 #include "base/files/file_path.h"
 
