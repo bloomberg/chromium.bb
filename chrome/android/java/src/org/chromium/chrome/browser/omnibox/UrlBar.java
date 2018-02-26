@@ -171,6 +171,11 @@ public class UrlBar extends AutocompleteEditText {
          * Called to notify that back key has been pressed while the URL bar has focus.
          */
         void backKeyPressed();
+
+        /**
+         * @return Whether or not we should force LTR text on the URL bar when unfocused.
+         */
+        boolean shouldForceLTR();
     }
 
     public UrlBar(Context context, AttributeSet attrs) {
@@ -346,7 +351,7 @@ public class UrlBar extends AutocompleteEditText {
         // normally (to allow users to make non-URL searches and to avoid showing Android's split
         // insertion point when an RTL user enters RTL text). Also render text normally when the
         // text field is empty (because then it displays an instruction that is not a URL).
-        if (mFocused || length() == 0) {
+        if (mFocused || length() == 0 || !mUrlBarDelegate.shouldForceLTR()) {
             ApiCompatibilityUtils.setTextDirection(this, TEXT_DIRECTION_INHERIT);
         } else {
             ApiCompatibilityUtils.setTextDirection(this, TEXT_DIRECTION_LTR);
