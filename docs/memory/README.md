@@ -34,6 +34,11 @@ instead.
 | crbug [Stability=Memory](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=Stability%3DMemory) label | Tracks mostly OOM crashes. |
 
 
+## I have memory problem, what do I do?
+
+Follow [these instructions](/docs/memory/filing_memory_bugs.md) to file a high
+quality bug.
+
 ## I have a reproducible memory problem, what do I do?
 
 Yay! Please file a [memory
