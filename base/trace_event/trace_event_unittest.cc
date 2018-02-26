@@ -149,7 +149,7 @@ class TraceEventTestFixture : public testing::Test {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : nullptr;
 
-    TraceLog::DeleteForTesting();
+    TraceLog::ResetForTesting();
     TraceLog* tracelog = TraceLog::GetInstance();
     ASSERT_TRUE(tracelog);
     ASSERT_FALSE(tracelog->IsEnabled());
@@ -163,7 +163,7 @@ class TraceEventTestFixture : public testing::Test {
     free(old_thread_name_);
     old_thread_name_ = nullptr;
     // We want our singleton torn down after each test.
-    TraceLog::DeleteForTesting();
+    TraceLog::ResetForTesting();
   }
 
   char* old_thread_name_;

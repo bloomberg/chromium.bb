@@ -21,6 +21,11 @@ class GURL;
 template <class T>
 class scoped_refptr;
 
+namespace base {
+template <typename Type>
+struct DefaultSingletonTraits;
+}  // namespace base
+
 namespace content {
 class WebContents;
 }  // namespace content
