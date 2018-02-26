@@ -131,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  ASSERT_TRUE(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0, true));
+  ASSERT_TRUE(shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(
+      0, false));
   crash_observer.Wait();
 
   // The frame tree should be cleared.

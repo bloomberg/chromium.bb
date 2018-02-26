@@ -15,10 +15,10 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/process/process.h"
 #include "chromeos/process_proxy/process_output_watcher.h"
 
 namespace base {
-class Process;
 class SingleThreadTaskRunner;
 class TaskRunner;
 }  // namespace base
@@ -112,7 +112,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
 
   std::unique_ptr<ProcessOutputWatcher> output_watcher_;
 
-  std::unique_ptr<base::Process> process_;
+  base::Process process_;
 
   int pt_pair_[2];
 

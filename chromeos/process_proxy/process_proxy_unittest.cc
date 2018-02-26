@@ -155,6 +155,7 @@ class RegistryNotifiedOnProcessExitTestRunner : public TestRunner {
                   const std::string& output) override {
     EXPECT_EQ(terminal_id_, terminal_id);
     if (!output_received_) {
+      base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
       output_received_ = true;
       EXPECT_EQ(type, "stdout");
       EXPECT_EQ(output, "p");
@@ -213,6 +214,7 @@ class ProcessProxyTest : public testing::Test {
         base::GetTerminationStatus(terminal_id_, &unused_exit_code);
     EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
     if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+      base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
       base::Process process =
           base::Process::DeprecatedGetProcessFromHandle(terminal_id_);
       process.Terminate(0, true);

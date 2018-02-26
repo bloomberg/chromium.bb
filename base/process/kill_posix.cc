@@ -136,23 +136,6 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
 
 namespace {
 
-// Return true if the given child is dead. This will also reap the process.
-// Doesn't block.
-static bool IsChildDead(pid_t child) {
-  int status;
-  const pid_t result = HANDLE_EINTR(waitpid(child, &status, WNOHANG));
-  if (result == -1) {
-    DPLOG(ERROR) << "waitpid(" << child << ")";
-    NOTREACHED();
-  } else if (result > 0) {
-    // The child has died.
-    Process(child).Exited(WIFEXITED(status) ? WEXITSTATUS(status) : -1);
-    return true;
-  }
-
-  return false;
-}
-
 // A thread class which waits for the given child to exit and reaps it.
 // If the child doesn't exit within a couple of seconds, kill it.
 class BackgroundReaper : public PlatformThread::Delegate {
@@ -185,15 +168,14 @@ class BackgroundReaper : public PlatformThread::Delegate {
     // Wait for 2 * timeout_ 500 milliseconds intervals.
     for (unsigned i = 0; i < 2 * timeout_; ++i) {
       PlatformThread::Sleep(TimeDelta::FromMilliseconds(500));
-      if (IsChildDead(child_))
+      if (Process(child_).WaitForExitWithTimeout(TimeDelta(), nullptr))
         return;
     }
 
     if (kill(child_, SIGKILL) == 0) {
       // SIGKILL is uncatchable. Since the signal was delivered, we can
       // just wait for the process to die now in a blocking manner.
-      if (HANDLE_EINTR(waitpid(child_, nullptr, 0)) < 0)
-        DPLOG(WARNING) << "waitpid";
+      Process(child_).WaitForExit(nullptr);
     } else {
       DLOG(ERROR) << "While waiting for " << child_ << " to terminate we"
                   << " failed to deliver a SIGKILL signal (" << errno << ").";
@@ -213,7 +195,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
 void EnsureProcessTerminated(Process process) {
   // If the child is already dead, then there's nothing to do.
-  if (IsChildDead(process.Pid()))
+  if (process.WaitForExitWithTimeout(TimeDelta(), nullptr))
     return;
 
   const unsigned timeout = 2;  // seconds
@@ -223,7 +205,7 @@ void EnsureProcessTerminated(Process process) {
 
 void EnsureProcessGetsReaped(ProcessId pid) {
   // If the child is already dead, then there's nothing to do.
-  if (IsChildDead(pid))
+  if (Process(pid).WaitForExitWithTimeout(TimeDelta(), nullptr))
     return;
 
   BackgroundReaper* reaper = new BackgroundReaper(pid, 0);

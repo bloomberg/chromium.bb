@@ -410,8 +410,11 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     threads_options.wait = true;
     LaunchProcess(threads_cmdline, threads_options);
 #endif  // OS_FUCHSIA
-    // Ensure that the process terminates.
-    process.Terminate(-1, true);
+    {
+      base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+      // Ensure that the process terminates.
+      process.Terminate(-1, true);
+    }
   }
 
   {
