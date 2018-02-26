@@ -54,6 +54,10 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   // Timer used to limit the frequency of NetworkStateChanged updates.
   base::OneShotTimer timer_;
 
+  // The previous state of the wifi network, used to immediately send
+  // NetworkStateChanged update when wifi changed from enabled->disabled.
+  bool wifi_enabled_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
 };
 
