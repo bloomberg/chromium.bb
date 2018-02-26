@@ -26,7 +26,7 @@ might be useful too.
 
 Another useful command, if the SDK was pulled by `cipd` (which it is
 Chromium-related projects like Crashpad, instead of directly pulling the
-.tar.gz, is:
+.tar.gz), is:
 
 ```
 cipd describe fuchsia/sdk/linux-amd64 -version CIPD_HASH_HERE
