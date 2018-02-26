@@ -493,27 +493,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       NoPromptForActionMutation) {
-  NavigateToFile("/password/password_form_action_mutation.html");
-
-  // Need to pay attention for a message that XHR has finished since there
-  // is no navigation to wait for.
-  content::DOMMessageQueue message_queue;
-  BubbleObserver prompt_observer(WebContents());
-  std::string fill_and_submit =
-      "document.getElementById('username_action_mutation').value = 'temp';"
-      "document.getElementById('password_action_mutation').value = 'random';"
-      "document.getElementById('submit_action_mutation').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  std::string message;
-  while (message_queue.WaitForMessage(&message)) {
-    if (message == "\"XHR_FINISHED\"")
-      break;
-  }
-  EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        NoPromptForFormWithEnteredUsername) {
   // Log in, see a form on the landing page. That form is not related to the
   // login form but has the same username as was entered previously, so we
