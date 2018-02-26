@@ -11,7 +11,8 @@
     </style>
     <select on-change="onChange_" disabled$="[[disabled]]">
       <template is="dom-repeat" items="[[capability.option]]">
-        <option selected="[[item.is_default]]" value="[[getValue_(item)]]">
+        <option selected="[[isSelected_(item, selectedValue_)]]"
+            value="[[getValue_(item)]]">
           [[getDisplayName_(item)]]
         </option>
       </template>

@@ -80,6 +80,8 @@ cr.define('restore_state_test', function() {
       previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
       document.body.appendChild(page);
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        return nativeLayer.whenCalled('getPrinterCapabilities');
+      }).then(function() {
         verifyStickySettingsApplied(stickySettings);
       });
     }
@@ -227,28 +229,29 @@ cr.define('restore_state_test', function() {
       previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
       document.body.appendChild(page);
 
-      return nativeLayer.whenCalled('getInitialSettings')
-          .then(function() {
-            // Set all the settings sections.
-            testData.forEach((testValue, index) => {
-              if (index == testData.length - 1)
-                nativeLayer.resetResolver('saveAppState');
-              page.$$(testValue.section)
-                  .setSetting(testValue.settingName, testValue.value);
-            });
-            // Wait on only the last call to saveAppState, which should
-            // contain all the update settings values.
-            return nativeLayer.whenCalled('saveAppState');
-          })
-          .then(function(serializedSettingsStr) {
-            const serializedSettings = JSON.parse(serializedSettingsStr);
-            // Validate serialized state.
-            testData.forEach(testValue => {
-              expectEquals(
-                  JSON.stringify(testValue.value),
-                  JSON.stringify(serializedSettings[testValue.key]));
-            });
-          });
+      return nativeLayer.whenCalled('getInitialSettings').then(function() {
+        return nativeLayer.whenCalled('getPrinterCapabilities');
+      }).then(function() {
+        // Set all the settings sections.
+        testData.forEach((testValue, index) => {
+          if (index == testData.length - 1)
+            nativeLayer.resetResolver('saveAppState');
+          page.$$(testValue.section)
+              .setSetting(testValue.settingName, testValue.value);
+        });
+        // Wait on only the last call to saveAppState, which should
+        // contain all the update settings values.
+        return nativeLayer.whenCalled('saveAppState');
+      })
+      .then(function(serializedSettingsStr) {
+        const serializedSettings = JSON.parse(serializedSettingsStr);
+        // Validate serialized state.
+        testData.forEach(testValue => {
+          expectEquals(
+              JSON.stringify(testValue.value),
+              JSON.stringify(serializedSettings[testValue.key]));
+        });
+      });
     });
   });
 

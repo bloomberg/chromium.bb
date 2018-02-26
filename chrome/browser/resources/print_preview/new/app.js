@@ -141,7 +141,7 @@ Polymer({
     this.notifyPath('documentInfo_.hasSelection');
     this.notifyPath('documentInfo_.title');
     this.notifyPath('documentInfo_.pageCount');
-    this.$.model.updateFromStickySettings(settings.serializedAppStateStr);
+    this.$.model.setStickySettings(settings.serializedAppStateStr);
     this.measurementSystem_.setSystem(
         settings.thousandsDelimeter, settings.decimalDelimeter,
         settings.unitType);
@@ -197,6 +197,8 @@ Polymer({
         this.destinationStore_.selectedDestination.capabilities);
     if (this.state != print_preview_new.State.READY)
       this.$.state.transitTo(print_preview_new.State.READY);
+    if (!this.$.model.initialized())
+      this.$.model.applyStickySettings();
   },
 
   /**
