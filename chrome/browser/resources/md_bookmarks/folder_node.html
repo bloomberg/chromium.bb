@@ -76,7 +76,7 @@
 
     <div id="container"
         class="v-centered"
-        on-tap="selectFolder_"
+        on-click="selectFolder_"
         on-dblclick="toggleFolder_"
         on-contextmenu="onContextMenu_"
         tabindex$="[[getTabIndex_(selectedFolder_, itemId)]]"
@@ -85,7 +85,7 @@
       <template is="dom-if" if="[[hasChildFolder_]]">
         <button is="paper-icon-button-light"
             id="arrow"
-            on-tap="toggleFolder_"
+            on-click="toggleFolder_"
             on-mousedown="preventDefault_"
             tabindex="-1"
             aria-label$="[[getButtonAriaLabel_(isOpen, item_)]]">
