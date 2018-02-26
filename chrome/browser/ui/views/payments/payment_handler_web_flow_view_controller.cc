@@ -9,14 +9,22 @@
 #include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -24,20 +32,33 @@
 
 namespace payments {
 
+constexpr int kFirstTagValue = static_cast<int>(
+    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
+
+// Tags for the buttons in the payment sheet
+enum class PaymentHandlerWebFlowTags {
+  SITE_SETTINGS_TAG = kFirstTagValue,
+  MAX_TAG,  // Always keep last.
+};
+
 class ReadOnlyOriginView : public views::View {
  public:
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
-                     SkColor background_color) {
+                     SkColor background_color,
+                     views::ButtonListener* site_settings_listener) {
+    std::unique_ptr<views::View> title_origin_container =
+        std::make_unique<views::View>();
     SkColor foreground = GetForegroundColorForBackground(background_color);
-    views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+    views::GridLayout* title_origin_layout =
+        title_origin_container->SetLayoutManager(
+            std::make_unique<views::GridLayout>(title_origin_container.get()));
 
-    views::ColumnSet* columns = layout->AddColumnSet(0);
+    views::ColumnSet* columns = title_origin_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                        views::GridLayout::USE_PREF, 0, 0);
 
-    layout->StartRow(0, 0);
+    title_origin_layout->StartRow(0, 0);
     std::unique_ptr<views::Label> title_label = std::make_unique<views::Label>(
         page_title, views::style::CONTEXT_DIALOG_TITLE);
     title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
@@ -47,9 +68,9 @@ class ReadOnlyOriginView : public views::View {
     title_label->SetAutoColorReadabilityEnabled(false);
     title_label->SetEnabledColor(foreground);
 
-    layout->AddView(title_label.release());
+    title_origin_layout->AddView(title_label.release());
 
-    layout->StartRow(0, 0);
+    title_origin_layout->StartRow(0, 0);
     views::Label* origin_label =
         new views::Label(base::UTF8ToUTF16(origin.spec()));
     // Turn off autoreadability because the computed |foreground| color takes
@@ -58,7 +79,44 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetEnabledColor(foreground);
 
     origin_label->SetBackgroundColor(background_color);
-    layout->AddView(origin_label);
+    title_origin_layout->AddView(origin_label);
+
+    views::GridLayout* top_level_layout =
+        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+    views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
+    top_level_columns->AddColumn(views::GridLayout::LEADING,
+                                 views::GridLayout::FILL, 1,
+                                 views::GridLayout::USE_PREF, 0, 0);
+    constexpr int kSiteSettingsSize = 16;
+    top_level_columns->AddColumn(
+        views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+        views::GridLayout::FIXED, kSiteSettingsSize, kSiteSettingsSize);
+
+    top_level_layout->StartRow(0, 0);
+    top_level_layout->AddView(title_origin_container.release());
+
+    views::ImageButton* site_settings_button =
+        views::CreateVectorImageButton(site_settings_listener);
+
+    // Inline the contents of views::SetImageFromVectorIcon to be able to
+    // properly set the icon size.
+    const SkColor icon_color = color_utils::DeriveDefaultIconColor(
+        GetForegroundColorForBackground(background_color));
+    site_settings_button->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon, kSiteSettingsSize,
+                              icon_color));
+    site_settings_button->set_ink_drop_base_color(icon_color);
+
+    site_settings_button->SetSize(
+        gfx::Size(kSiteSettingsSize, kSiteSettingsSize));
+    // This icon should be focusable in both regular and accessibility mode.
+    site_settings_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+    site_settings_button->set_tag(
+        static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG));
+    site_settings_button->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS));
+    top_level_layout->AddView(site_settings_button);
   }
   ~ReadOnlyOriginView() override {}
 
@@ -117,7 +175,7 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
                           : GURL();
   std::unique_ptr<views::Background> background = GetHeaderBackground();
   return std::make_unique<ReadOnlyOriginView>(GetSheetTitle(), origin,
-                                              background->get_color());
+                                              background->get_color(), this);
 }
 
 std::unique_ptr<views::Background>
@@ -125,6 +183,17 @@ PaymentHandlerWebFlowViewController::GetHeaderBackground() {
   if (!web_contents())
     return PaymentRequestSheetController::GetHeaderBackground();
   return views::CreateSolidBackground(web_contents()->GetThemeColor());
+}
+
+void PaymentHandlerWebFlowViewController::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  if (web_contents() &&
+      sender->tag() ==
+          static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG)) {
+    chrome::ShowSiteSettings(dialog()->GetProfile(),
+                             web_contents()->GetLastCommittedURL());
+  }
 }
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
