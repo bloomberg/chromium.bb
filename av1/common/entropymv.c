@@ -121,7 +121,5 @@ void av1_init_mv_probs(AV1_COMMON *cm) {
     // NB: this sets CDFs too
     cm->fc->nmvc[i] = default_nmv_context;
   }
-#if CONFIG_INTRABC
   cm->fc->ndvc = default_nmv_context;
-#endif  // CONFIG_INTRABC
 }

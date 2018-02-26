@@ -440,10 +440,8 @@ const aom_cdf_prob default_palette_uv_color_index_cdf
       }
     };
 
-#if CONFIG_INTRABC
 static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)] = { AOM_CDF2(192 *
                                                                         128) };
-#endif  // CONFIG_INTRABC
 
 #define MAX_COLOR_CONTEXT_HASH 8
 // Negative values are invalid
@@ -1307,9 +1305,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->cfl_sign_cdf, default_cfl_sign_cdf);
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
 #endif
-#if CONFIG_INTRABC
   av1_copy(fc->intrabc_cdf, default_intrabc_cdf);
-#endif
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {

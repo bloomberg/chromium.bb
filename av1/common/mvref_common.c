@@ -103,9 +103,7 @@ static void add_ref_mv_candidate(
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
 #endif  // USE_CUR_GM_REFMV
     int col, int weight) {
-#if CONFIG_INTRABC
-  if (!is_inter_block(candidate)) return;
-#endif  // CONFIG_INTRABC
+  if (!is_inter_block(candidate)) return;  // for intrabc
   int index = 0, ref;
   assert(weight % 2 == 0);
 
@@ -1228,9 +1226,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_TMV
 #endif  // CONFIG_MFMV
 
-#if CONFIG_INTRABC
   assert(IMPLIES(ref_frame == INTRA_FRAME, cm->use_prev_frame_mvs == 0));
-#endif
   const TileInfo *const tile = &xd->tile;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   const int bw = block_size_wide[AOMMAX(bsize, BLOCK_8X8)];
@@ -1285,9 +1281,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MODE_INFO *const candidate_mi =
           xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-#if CONFIG_INTRABC
       if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
-#endif  // CONFIG_INTRABC
       // Keep counts for entropy encoding.
       context_counter += mode_2_counter[candidate->mode];
     }
@@ -1323,12 +1317,10 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 #endif  // !CONFIG_MFMV
 
-// Since we couldn't find 2 mvs from the same reference frame
-// go back through the neighbors and find motion vectors from
-// different reference frames.
-#if CONFIG_INTRABC
+  // Since we couldn't find 2 mvs from the same reference frame
+  // go back through the neighbors and find motion vectors from
+  // different reference frames.
   if (ref_frame != INTRA_FRAME) {
-#endif  // CONFIG_INTRABC
     for (i = 0; i < MVREF_NEIGHBOURS; ++i) {
       const POSITION *mv_ref = &mv_ref_search[i];
       if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_ref)) {
@@ -1346,9 +1338,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                  refmv_count, mv_ref_list, bw, bh, xd, Done);
       }
     }
-#if CONFIG_INTRABC
   }
-#endif  // CONFIG_INTRABC
 
 #if !CONFIG_MFMV
   // Since we still don't have a candidate we'll try the last frame.
@@ -1396,7 +1386,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   BLOCK_SIZE bsize = mi->mbmi.sb_type;
   MV_REFERENCE_FRAME rf[2];
   av1_set_ref_frame(rf, ref_frame);
-  if (!CONFIG_INTRABC || ref_frame != INTRA_FRAME) {
+  if (ref_frame != INTRA_FRAME) {
     zeromv[0].as_int =
         gm_get_motion_vector(&cm->global_motion[rf[0]],
                              cm->allow_high_precision_mv, bsize, mi_col, mi_row

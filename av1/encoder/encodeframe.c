@@ -977,7 +977,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       update_palette_cdf(xd, mi);
   }
 
-#if CONFIG_INTRABC
   if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
     if (allow_update_cdf)
       update_cdf(fc->intrabc_cdf, is_intrabc_block(mbmi), 2);
@@ -985,7 +984,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     ++td->counts->intrabc[is_intrabc_block(mbmi)];
 #endif  // CONFIG_ENTROPY_STATS
   }
-#endif  // CONFIG_INTRABC
 
   if (!frame_is_intra_only(cm)) {
     RD_COUNTS *rdc = &td->rd_counts;
@@ -3884,9 +3882,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_crc_calculator_init(&td->mb.tx_rd_record.crc_calculator, 24, 0x5D6DCB);
 
-#if CONFIG_INTRABC
   td->intrabc_used_this_tile = 0;
-#endif  // CONFIG_INTRABC
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params.mib_size) {
@@ -3910,9 +3906,7 @@ static void encode_tiles(AV1_COMP *cpi) {
   for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
       av1_encode_tile(cpi, &cpi->td, tile_row, tile_col);
-#if CONFIG_INTRABC
       cpi->intrabc_used |= cpi->td.intrabc_used_this_tile;
-#endif  // CONFIG_INTRABC
     }
   }
 }
@@ -4219,7 +4213,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_CDF_UPDATE_MODE
   }
 
-#if CONFIG_INTRABC
   // Allow intrabc when screen content tools are enabled.
   cm->allow_intrabc = cm->allow_screen_content_tools;
   // Reset the flag.
@@ -4230,7 +4223,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->allow_intrabc = 0;
   }
 #endif
-#endif  // CONFIG_INTRABC
 
 #if CONFIG_HASH_ME
   if (cpi->oxcf.pass != 1 && av1_use_hash_me(cm)) {
@@ -4514,13 +4506,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cpi->time_encode_sb_row += aom_usec_timer_elapsed(&emr_timer);
   }
 
-#if CONFIG_INTRABC
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
   if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
 #if CONFIG_EXT_DELTA_Q
   if (cm->allow_intrabc) cm->delta_lf_present_flag = 0;
 #endif  // CONFIG_EXT_DELTA_Q
-#endif  // CONFIG_INTRABC
 }
 
 static void make_consistent_compound_tools(AV1_COMMON *cm) {
@@ -4909,11 +4899,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[ref]);
-#if CONFIG_INTRABC
       assert(IMPLIES(!is_intrabc_block(mbmi), cfg));
-#else
-      assert(cfg != NULL);
-#endif  // !CONFIG_INTRABC
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf, num_planes);
     }
@@ -4957,10 +4943,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   }
 
   if (!dry_run) {
-#if CONFIG_INTRABC
-    if (av1_allow_intrabc(cm))
-      if (is_intrabc_block(mbmi)) td->intrabc_used_this_tile = 1;
-#endif  // CONFIG_INTRABC
+    if (av1_allow_intrabc(cm) && is_intrabc_block(mbmi))
+      td->intrabc_used_this_tile = 1;
     TX_SIZE tx_size =
         is_inter && !mbmi->skip ? mbmi->min_tx_size : mbmi->tx_size;
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&

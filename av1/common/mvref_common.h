@@ -344,11 +344,7 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
   } else {
     rf[0] = ref_frame_type;
     rf[1] = NONE_FRAME;
-#if CONFIG_INTRABC
     assert(ref_frame_type > NONE_FRAME);
-#else
-    assert(ref_frame_type > INTRA_FRAME);
-#endif
   }
 }
 
@@ -503,7 +499,6 @@ int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize);
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
                 int *pts, int *pts_inref);
 
-#if CONFIG_INTRABC
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
 #define USE_WAVE_FRONT 1  // Use only top left area of frame for reference.
@@ -572,7 +567,6 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
 
   return 1;
 }
-#endif  // CONFIG_INTRABC
 
 #ifdef __cplusplus
 }  // extern "C"

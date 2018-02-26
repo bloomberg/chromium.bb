@@ -46,11 +46,8 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
     for (i = 0; i < n; ++i)
       aom_write_symbol(w, (d >> i) & 1, mvcomp->bits_cdf[i], 2);
   }
-// Fractional bits
-#if CONFIG_INTRABC || CONFIG_AMVR
-  if (precision > MV_SUBPEL_NONE)
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
-  {
+  // Fractional bits
+  if (precision > MV_SUBPEL_NONE) {
     aom_write_symbol(
         w, fr,
         mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
@@ -103,10 +100,7 @@ static void build_nmv_component_cost_table(int *mvcost,
       const int b = c + CLASS0_BITS - 1; /* number of bits */
       for (i = 0; i < b; ++i) cost += bits_cost[i][((d >> i) & 1)];
     }
-#if CONFIG_INTRABC || CONFIG_AMVR
-    if (precision > MV_SUBPEL_NONE)
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
-    {
+    if (precision > MV_SUBPEL_NONE) {
       if (c == MV_CLASS_0) {
         cost += class0_fp_cost[d][f];
       } else {
@@ -149,7 +143,6 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   }
 }
 
-#if CONFIG_INTRABC
 void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx) {
   // DV and ref DV should not have sub-pel.
@@ -167,7 +160,6 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
   if (mv_joint_horizontal(j))
     encode_mv_component(w, diff.col, &mvctx->comps[1], MV_SUBPEL_NONE);
 }
-#endif  // CONFIG_INTRABC
 
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
                               const nmv_context *ctx,

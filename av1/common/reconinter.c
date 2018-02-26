@@ -922,10 +922,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   int is_compound = has_second_ref(&mi->mbmi);
   int ref;
-#if CONFIG_INTRABC
   const int is_intrabc = is_intrabc_block(&mi->mbmi);
   assert(IMPLIES(is_intrabc, !is_compound));
-#endif  // CONFIG_INTRABC
   int is_global[2] = { 0, 0 };
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     const WarpedMotionParams *const wm =
@@ -941,11 +939,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
                      (block_size_high[bsize] < 8 && ss_y);
 
-#if CONFIG_INTRABC
-  if (is_intrabc) {
-    sub8x8_inter = 0;
-  }
-#endif
+  if (is_intrabc) sub8x8_inter = 0;
 
   sub8x8_inter = sub8x8_inter && !build_for_obmc;
   const int row_start = (block_size_high[bsize] == 4) && ss_y ? -1 : 0;
@@ -957,9 +951,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const MB_MODE_INFO *this_mbmi =
             &xd->mi[row * xd->mi_stride + col]->mbmi;
         if (!is_inter_block(this_mbmi)) sub8x8_inter = 0;
-#if CONFIG_INTRABC
         if (is_intrabc_block(this_mbmi)) sub8x8_inter = 0;
-#endif  // CONFIG_INTRABC
       }
     }
   }
@@ -1016,17 +1008,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           pd->pre[ref].height = ref_buf->buf->uv_crop_height;
           pd->pre[ref].stride = ref_buf->buf->uv_stride;
 
-#if CONFIG_INTRABC
           const struct scale_factors *const sf =
               is_intrabc ? &cm->sf_identity : &ref_buf->sf;
           struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
-#else
-          const struct scale_factors *const sf = &ref_buf->sf;
-          struct buf_2d *const pre_buf = &pd->pre[ref];
-#endif  // CONFIG_INTRABC
-
           const MV mv = this_mbmi->mv[ref].as_mv;
-
           uint8_t *pre;
           int xs, ys, subpel_x, subpel_y;
           const int is_scaled = av1_is_scaled(sf);
@@ -1123,14 +1108,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     DECLARE_ALIGNED(32, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
-#if CONFIG_INTRABC
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
-#else
-      const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
-      struct buf_2d *const pre_buf = &pd->pre[ref];
-#endif  // CONFIG_INTRABC
       const MV mv = mi->mbmi.mv[ref].as_mv;
 
       const int is_scaled = av1_is_scaled(sf);
@@ -1194,14 +1174,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_JNT_COMP
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
-#if CONFIG_INTRABC
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
-#else
-      const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
-      struct buf_2d *const pre_buf = &pd->pre[ref];
-#endif  // CONFIG_INTRABC
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->mbmi.motion_mode == WARPED_CAUSAL;
@@ -2329,9 +2304,7 @@ void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
 #if CONFIG_FILTER_INTRA
   xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
-#if CONFIG_INTRABC
   xd->mi[0]->mbmi.use_intrabc = 0;
-#endif
 
   av1_predict_intra_block(
       cm, xd, pd->width, pd->height, get_max_rect_tx_size(plane_bsize), mode,

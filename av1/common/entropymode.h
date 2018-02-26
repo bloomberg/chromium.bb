@@ -143,10 +143,8 @@ typedef struct frame_contexts {
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
   nmv_context nmvc[NMV_CONTEXTS];
-#if CONFIG_INTRABC
   nmv_context ndvc;
   aom_cdf_prob intrabc_cdf[CDF_SIZE(2)];
-#endif
   int initialized;
   struct segmentation_probs seg;
 #if CONFIG_FILTER_INTRA
@@ -270,9 +268,7 @@ typedef struct FRAME_COUNTS {
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
-#if CONFIG_INTRABC
   unsigned int intrabc[2];
-#endif  // CONFIG_INTRABC
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
 #if CONFIG_EXT_SKIP

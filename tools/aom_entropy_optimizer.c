@@ -501,13 +501,11 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)]");
 
-/* intrabc experiment */
-#if CONFIG_INTRABC
+  /* intrabc */
   cts_each_dim[0] = 2;
   optimize_cdf_table(
       &fc.intrabc[0], probsfile, 1, cts_each_dim,
       "static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)]");
-#endif
 
 /* filter_intra experiment */
 #if CONFIG_FILTER_INTRA

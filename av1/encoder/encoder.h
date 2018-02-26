@@ -366,9 +366,7 @@ typedef struct ThreadData {
   uint8_t *left_pred_buf;
 #endif
   PALETTE_BUFFER *palette_buffer;
-#if CONFIG_INTRABC
   int intrabc_used_this_tile;
-#endif  // CONFIG_INTRABC
 } ThreadData;
 
 struct EncWorkerData;
@@ -608,17 +606,13 @@ typedef struct AV1_COMP {
   int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
   int global_motion_search_done;
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
-
   int extra_arf_allowed;
   int bwd_ref_allowed;
-
-#if CONFIG_INTRABC
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
   int dv_cost[2][MV_VALS];
   // TODO(huisu@google.com): we can update dv_joint_cost per SB.
   int dv_joint_cost[MV_JOINTS];
-#endif  // CONFIG_INTRABC
 } AV1_COMP;
 
 void av1_initialize_enc(void);

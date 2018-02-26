@@ -37,8 +37,7 @@ static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
   50, 50, 25, 15, 5, 1
 };
 
-#if CONFIG_INTRABC
-// TODO(aconverse@google.com): These settings are pretty relaxed, tune them for
+// TODO(huisu@google.com): These settings are pretty relaxed, tune them for
 // each speed setting
 static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
   { { 256, 1 }, { 256, 1 }, { 0, 0 }, { 0, 0 } },
@@ -50,7 +49,6 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
 };
 static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
                                                             25,  25,  10 };
-#endif
 
 // Intra only frames, golden frames (except alt ref overlays) and
 // alt ref frames tend to be coded at a higher than ambient quality
@@ -545,7 +543,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     sf->mesh_patterns[i].interval =
         good_quality_mesh_patterns[speed][i].interval;
   }
-#if CONFIG_INTRABC
   if ((frame_is_intra_only(cm) && cm->allow_screen_content_tools) &&
       (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
        cpi->oxcf.content == AOM_CONTENT_SCREEN)) {
@@ -555,7 +552,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     }
     sf->max_exaustive_pct = intrabc_max_mesh_pct[speed];
   }
-#endif  // CONFIG_INTRABC
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.

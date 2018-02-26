@@ -237,9 +237,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   av1_cost_tokens_from_cdf(x->sgrproj_restore_cost, fc->sgrproj_restore_cdf,
                            NULL);
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_INTRABC
   av1_cost_tokens_from_cdf(x->intrabc_cost, fc->intrabc_cdf, NULL);
-#endif  // CONFIG_INTRABC
 
   if (!frame_is_intra_only(cm)) {
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i) {
@@ -603,14 +601,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];
 
-#if CONFIG_INTRABC
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       cpi->oxcf.pass != 1) {
     int *dvcost[2] = { &cpi->dv_cost[0][MV_MAX], &cpi->dv_cost[1][MV_MAX] };
     av1_build_nmv_cost_table(cpi->dv_joint_cost, dvcost, &cm->fc->ndvc,
                              MV_SUBPEL_NONE);
   }
-#endif
 
   if (cpi->oxcf.pass != 1) {
     for (int i = 0; i < TRANS_TYPES; ++i)

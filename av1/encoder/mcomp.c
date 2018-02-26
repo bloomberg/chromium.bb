@@ -2665,7 +2665,6 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         for (int i = 0; i < count; i++, iterator_increment(&iterator)) {
           block_hash ref_block_hash = *(block_hash *)(iterator_get(&iterator));
           if (hash_value2 == ref_block_hash.hash_value2) {
-#if CONFIG_INTRABC
             // For intra, make sure the prediction is from valid area.
             if (intra) {
               const TileInfo *tile = &x->e_mbd.tile;
@@ -2677,7 +2676,6 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                                    cpi->common.seq_params.mib_size_log2))
                 continue;
             }
-#endif  // CONFIG_INTRABC
             MV hash_mv;
             hash_mv.col = ref_block_hash.x - x_pos;
             hash_mv.row = ref_block_hash.y - y_pos;

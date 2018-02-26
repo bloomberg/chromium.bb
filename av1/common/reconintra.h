@@ -60,11 +60,9 @@ static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {
 #endif
 }
 
-#if CONFIG_INTRABC
 static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
   return cm->allow_screen_content_tools && cm->allow_intrabc;
 }
-#endif  // CONFIG_INTRABC
 
 #if CONFIG_FILTER_INTRA
 extern const int8_t av1_filter_intra_taps[FILTER_INTRA_MODES][8][8];

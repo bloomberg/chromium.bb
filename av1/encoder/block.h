@@ -344,9 +344,7 @@ struct macroblock {
   int wiener_restore_cost[2];
   int sgrproj_restore_cost[2];
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_INTRABC
   int intrabc_cost[2];
-#endif  // CONFIG_INTRABC
 
   int optimize;
 

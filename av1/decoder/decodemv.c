@@ -848,7 +848,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_INTRABC
 static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                            nmv_context *ctx, MvSubpelPrecision precision);
 
@@ -869,9 +868,7 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
                               cm->seq_params.mib_size_log2);
   return valid;
 }
-#endif  // CONFIG_INTRABC
 
-#if CONFIG_INTRABC
 static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                               int mi_row, int mi_col, aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
@@ -936,7 +933,6 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // !CONFIG_TXK_SEL
   }
 }
-#endif  // CONFIG_INTRABC
 
 static void read_intra_frame_mode_info(AV1_COMMON *const cm,
                                        MACROBLOCKD *const xd, int mi_row,
@@ -1016,12 +1012,10 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
-#if CONFIG_INTRABC
   if (av1_allow_intrabc(cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
     if (is_intrabc_block(mbmi)) return;
   }
-#endif  // CONFIG_INTRABC
 
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
   set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
@@ -1081,10 +1075,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
-#if CONFIG_INTRABC || CONFIG_AMVR
-                             int use_subpel,
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
-                             int usehp) {
+                             int use_subpel, int usehp) {
   int mag, d, fr, hp;
   const int sign = aom_read_symbol(r, mvcomp->sign_cdf, 2, ACCT_STR);
   const int mv_class =
@@ -1103,10 +1094,8 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
-#if CONFIG_INTRABC || CONFIG_AMVR
   if (use_subpel) {
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
-        // Fractional part
+    // Fractional part
     fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                          MV_FP_SIZE, ACCT_STR);
 
@@ -1115,12 +1104,10 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
                      r, class0 ? mvcomp->class0_hp_cdf : mvcomp->hp_cdf, 2,
                      ACCT_STR)
                : 1;
-#if CONFIG_INTRABC || CONFIG_AMVR
   } else {
     fr = 3;
     hp = 1;
   }
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
 
   // Result
   mag += ((d << 3) | (fr << 1) | hp) + 1;
@@ -1134,17 +1121,11 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
       (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joints_cdf, MV_JOINTS, ACCT_STR);
 
   if (mv_joint_vertical(joint_type))
-    diff.row = read_mv_component(r, &ctx->comps[0],
-#if CONFIG_INTRABC || CONFIG_AMVR
-                                 precision > MV_SUBPEL_NONE,
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
+    diff.row = read_mv_component(r, &ctx->comps[0], precision > MV_SUBPEL_NONE,
                                  precision > MV_SUBPEL_LOW_PRECISION);
 
   if (mv_joint_horizontal(joint_type))
-    diff.col = read_mv_component(r, &ctx->comps[1],
-#if CONFIG_INTRABC || CONFIG_AMVR
-                                 precision > MV_SUBPEL_NONE,
-#endif  // CONFIG_INTRABC || CONFIG_AMVR
+    diff.col = read_mv_component(r, &ctx->comps[1], precision > MV_SUBPEL_NONE,
                                  precision > MV_SUBPEL_LOW_PRECISION);
 
   mv->row = ref->row + diff.row;
@@ -2160,9 +2141,7 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, int mi_row,
                         int mi_col, aom_reader *r, int x_mis, int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
-#if CONFIG_INTRABC
   mi->mbmi.use_intrabc = 0;
-#endif  // CONFIG_INTRABC
 
   if (frame_is_intra_only(cm)) {
     read_intra_frame_mode_info(cm, xd, mi_row, mi_col, r);

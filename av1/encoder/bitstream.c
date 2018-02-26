@@ -73,9 +73,7 @@ static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
                                 const MODE_INFO *above_mi,
                                 const MODE_INFO *left_mi, PREDICTION_MODE mode,
                                 aom_writer *w) {
-#if CONFIG_INTRABC
   assert(!is_intrabc_block(&mi->mbmi));
-#endif  // CONFIG_INTRABC
   (void)mi;
   aom_write_symbol(w, mode, get_y_mode_cdf(frame_ctx, above_mi, left_mi),
                    INTRA_MODES);
@@ -1352,7 +1350,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // !CONFIG_TXK_SEL
 }
 
-#if CONFIG_INTRABC
 static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
                                const MB_MODE_INFO_EXT *mbmi_ext,
                                int enable_tx_size, aom_writer *w) {
@@ -1386,12 +1383,9 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // !CONFIG_TXK_SEL
   }
 }
-#endif  // CONFIG_INTRABC
 
 static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
-#if CONFIG_INTRABC
                               const MB_MODE_INFO_EXT *mbmi_ext,
-#endif  // CONFIG_INTRABC
                               const int mi_row, const int mi_col,
                               aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
@@ -1460,12 +1454,10 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
                        block_signals_txsize(bsize) &&
                        !xd->lossless[mbmi->segment_id];
 
-#if CONFIG_INTRABC
   if (av1_allow_intrabc(cm)) {
     write_intrabc_info(cm, xd, mbmi_ext, enable_tx_size, w);
     if (is_intrabc_block(mbmi)) return;
   }
-#endif  // CONFIG_INTRABC
 
   if (enable_tx_size) write_selected_tx_size(cm, xd, w);
 
@@ -1642,11 +1634,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
   if (frame_is_intra_only(cm)) {
-    write_mb_modes_kf(cpi, xd,
-#if CONFIG_INTRABC
-                      cpi->td.mb.mbmi_ext,
-#endif  // CONFIG_INTRABC
-                      mi_row, mi_col, w);
+    write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext, mi_row, mi_col, w);
   } else {
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
@@ -1744,9 +1732,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     assert(!mbmi->skip_mode || !palette_size_plane);
 #endif  // CONFIG_EXT_SKIP
     if (palette_size_plane > 0) {
-#if CONFIG_INTRABC
       assert(mbmi->use_intrabc == 0);
-#endif
       assert(av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type));
       int rows, cols;
       av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,
@@ -2007,11 +1993,8 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
-  const int num_planes = av1_num_planes(cm);
-#if CONFIG_INTRABC
-
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
-#endif  // CONFIG_INTRABC
+  const int num_planes = av1_num_planes(cm);
   int all_none = 1, chroma_none = 1;
   for (int p = 0; p < num_planes; ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
@@ -2215,10 +2198,8 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  const int num_planes = av1_num_planes(cm);
-#if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
-#endif  // CONFIG_INTRABC
+  const int num_planes = av1_num_planes(cm);
   int i;
   struct loopfilter *lf = &cm->lf;
 
@@ -2264,10 +2245,8 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 }
 
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  const int num_planes = av1_num_planes(cm);
-#if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
-#endif  // CONFIG_INTRABC
+  const int num_planes = av1_num_planes(cm);
   int i;
   aom_wb_write_literal(wb, cm->cdef_pri_damping - 3, 2);
   assert(cm->cdef_pri_damping == cm->cdef_sec_damping);
@@ -3271,7 +3250,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
     write_frame_size(cm, wb);
 #endif
-#if CONFIG_INTRABC
 #if CONFIG_HORZONLY_FRAME_SUPERRES
     assert(av1_superres_unscaled(cm) ||
            !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
@@ -3281,7 +3259,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (cm->allow_screen_content_tools)
 #endif
       aom_wb_write_bit(wb, cm->allow_intrabc);
-#endif  // CONFIG_INTRABC
 #if CONFIG_CDF_UPDATE_MODE
     aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
 #endif  // CONFIG_CDF_UPDATE_MODE
@@ -3303,7 +3280,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
-#if CONFIG_INTRABC
 #if CONFIG_HORZONLY_FRAME_SUPERRES
       assert(av1_superres_unscaled(cm) ||
              !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
@@ -3313,7 +3289,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (cm->allow_screen_content_tools)
 #endif
         aom_wb_write_bit(wb, cm->allow_intrabc);
-#endif  // CONFIG_INTRABC
 #if CONFIG_CDF_UPDATE_MODE
       aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
 #endif  // CONFIG_CDF_UPDATE_MODE
@@ -3474,11 +3449,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-#if CONFIG_INTRABC
         if (cm->allow_intrabc && NO_FILTER_FOR_IBC)
           assert(cm->delta_lf_present_flag == 0);
         else
-#endif  // CONFIG_INTRABC
           aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);

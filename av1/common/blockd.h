@@ -247,9 +247,7 @@ typedef struct MB_MODE_INFO {
   UV_PREDICTION_MODE uv_mode;
 
   PALETTE_MODE_INFO palette_mode_info;
-#if CONFIG_INTRABC
   uint8_t use_intrabc;
-#endif  // CONFIG_INTRABC
 
   // Only for INTER blocks
   InterpFilters interp_filters;
@@ -316,13 +314,11 @@ typedef struct MODE_INFO {
   MB_MODE_INFO mbmi;
 } MODE_INFO;
 
-#if CONFIG_INTRABC
 #define NO_FILTER_FOR_IBC 1  // Disable in-loop filters for frame with intrabc
 
 static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
   return mbmi->use_intrabc;
 }
-#endif
 
 static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
   assert(mode < UV_INTRA_MODES);
@@ -350,10 +346,7 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
 }
 
 static INLINE int is_inter_block(const MB_MODE_INFO *mbmi) {
-#if CONFIG_INTRABC
-  if (is_intrabc_block(mbmi)) return 1;
-#endif
-  return mbmi->ref_frame[0] > INTRA_FRAME;
+  return is_intrabc_block(mbmi) || mbmi->ref_frame[0] > INTRA_FRAME;
 }
 
 static INLINE int has_second_ref(const MB_MODE_INFO *mbmi) {
