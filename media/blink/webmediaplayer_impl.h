@@ -221,7 +221,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void EnteredFullscreen() override;
   void ExitedFullscreen() override;
   void BecameDominantVisibleContent(bool isDominant) override;
-  void SetIsEffectivelyFullscreen(bool isEffectivelyFullscreen) override;
+  void SetIsEffectivelyFullscreen(
+      blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void OnHasNativeControlsChanged(bool) override;
   void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
 

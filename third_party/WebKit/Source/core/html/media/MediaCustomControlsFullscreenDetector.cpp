@@ -8,7 +8,9 @@
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/IntersectionGeometry.h"
+#include "platform/runtime_enabled_features.h"
 #include "public/platform/TaskType.h"
+#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
 
 namespace blink {
 
@@ -55,8 +57,10 @@ void MediaCustomControlsFullscreenDetector::Detach() {
       EventTypeNames::fullscreenchange, this, true);
   check_viewport_intersection_timer_.Stop();
 
-  if (VideoElement().GetWebMediaPlayer())
-    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(false);
+  if (VideoElement().GetWebMediaPlayer()) {
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(
+        blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
+  }
 }
 
 bool MediaCustomControlsFullscreenDetector::ComputeIsDominantVideoForTests(
@@ -109,8 +113,10 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
   if (!VideoElement().isConnected() || !IsVideoOrParentFullscreen()) {
     check_viewport_intersection_timer_.Stop();
 
-    if (VideoElement().GetWebMediaPlayer())
-      VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(false);
+    if (VideoElement().GetWebMediaPlayer()) {
+      VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(
+          blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
+    }
 
     return;
   }
@@ -122,8 +128,8 @@ void MediaCustomControlsFullscreenDetector::handleEvent(
 void MediaCustomControlsFullscreenDetector::ContextDestroyed() {
   // This method is called by HTMLVideoElement when it observes context destroy.
   // The reason is that when HTMLMediaElement observes context destroy, it will
-  // destroy webMediaPlayer() thus the final setIsEffectivelyFullscreen(false)
-  // is not called.
+  // destroy webMediaPlayer() thus the final
+  // setIsEffectivelyFullscreen(kNotEffectivelyFullscreen) is not called.
   Detach();
 }
 
@@ -138,8 +144,27 @@ void MediaCustomControlsFullscreenDetector::
       geometry.TargetIntRect(), geometry.RootIntRect(),
       geometry.IntersectionIntRect());
 
-  if (VideoElement().GetWebMediaPlayer())
-    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(is_dominant);
+  if (!VideoElement().GetWebMediaPlayer())
+    return;
+
+  if (!is_dominant) {
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(
+        blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
+    return;
+  }
+
+  // Picture-in-Picture can be disabled by the website when the API is enabled.
+  bool picture_in_picture_allowed =
+      !RuntimeEnabledFeatures::PictureInPictureEnabled() &&
+      !VideoElement().FastHasAttribute(HTMLNames::disablepictureinpictureAttr);
+  if (picture_in_picture_allowed) {
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(
+        blink::WebFullscreenVideoStatus::kFullscreenAndPictureInPictureEnabled);
+  } else {
+    VideoElement().GetWebMediaPlayer()->SetIsEffectivelyFullscreen(
+        blink::WebFullscreenVideoStatus::
+            kFullscreenAndPictureInPictureDisabled);
+  }
 }
 
 bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {

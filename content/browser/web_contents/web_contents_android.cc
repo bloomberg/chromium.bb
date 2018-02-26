@@ -658,6 +658,12 @@ bool WebContentsAndroid::HasActiveEffectivelyFullscreenVideo(
   return web_contents_->HasActiveEffectivelyFullscreenVideo();
 }
 
+bool WebContentsAndroid::IsPictureInPictureAllowedForFullscreenVideo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return web_contents_->IsPictureInPictureAllowedForFullscreenVideo();
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsAndroid::GetFullscreenVideoSize(
     JNIEnv* env,

@@ -54,6 +54,7 @@ class WebMediaPlayerSource;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
+enum class WebFullscreenVideoStatus;
 struct WebRect;
 struct WebSize;
 
@@ -302,7 +303,7 @@ class WebMediaPlayer {
   //
   // TODO(zqzhang): merge with BecameDominantVisibleContent(). See
   // https://crbug.com/696211
-  virtual void SetIsEffectivelyFullscreen(bool) {}
+  virtual void SetIsEffectivelyFullscreen(WebFullscreenVideoStatus) {}
 
   virtual void EnabledAudioTracksChanged(
       const WebVector<TrackId>& enabled_track_ids) {}

@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
+#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
@@ -106,8 +107,9 @@ class FakeWebMediaPlayerDelegate
     return false;
   }
 
-  void SetIsEffectivelyFullscreen(int delegate_id,
-                                  bool is_fullscreen) override {
+  void SetIsEffectivelyFullscreen(
+      int delegate_id,
+      blink::WebFullscreenVideoStatus fullscreen_video_status) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 

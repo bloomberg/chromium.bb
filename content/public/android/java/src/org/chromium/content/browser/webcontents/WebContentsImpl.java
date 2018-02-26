@@ -644,6 +644,11 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @Override
+    public boolean isPictureInPictureAllowedForFullscreenVideo() {
+        return nativeIsPictureInPictureAllowedForFullscreenVideo(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public @Nullable Rect getFullscreenVideoSize() {
         return nativeGetFullscreenVideoSize(mNativeWebContentsAndroid);
     }
@@ -807,6 +812,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
             long nativeWebContentsAndroid, int x, int y);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
+    private native boolean nativeIsPictureInPictureAllowedForFullscreenVideo(
+            long nativeWebContentsAndroid);
     private native Rect nativeGetFullscreenVideoSize(long nativeWebContentsAndroid);
     private native void nativeSetSize(long nativeWebContentsAndroid, int width, int height);
     private native int nativeGetWidth(long nativeWebContentsAndroid);

@@ -15,7 +15,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -186,9 +186,9 @@ bool RendererWebMediaPlayerDelegate::IsStale(int player_id) {
 
 void RendererWebMediaPlayerDelegate::SetIsEffectivelyFullscreen(
     int player_id,
-    bool is_fullscreen) {
+    blink::WebFullscreenVideoStatus fullscreen_video_status) {
   Send(new MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged(
-      routing_id(), player_id, is_fullscreen));
+      routing_id(), player_id, fullscreen_video_status));
 }
 
 void RendererWebMediaPlayerDelegate::DidPlayerSizeChange(
