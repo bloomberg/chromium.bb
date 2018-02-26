@@ -45,6 +45,6 @@ bool WaitForWebViewLoadCompletionOrTimeout(CWVWebView* web_view)
 }  // namespace test
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_
-
 NS_ASSUME_NONNULL_END
+
+#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_

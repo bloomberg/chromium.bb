@@ -94,7 +94,7 @@ class CandidateWindowControllerImpl
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowControllerImpl);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_IMPL_H_
-
 }  // namespace input_method
 }  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONTROLLER_IMPL_H_
