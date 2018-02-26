@@ -507,8 +507,10 @@ void ExtensionDownloader::CreateManifestFetcher() {
             "An update timer indicates that it's time to update extensions, or "
             "a user triggers an extension update flow."
           data:
-            "The extension id, the user's chromium version, and a flag stating "
-            "if the request originated in the foreground or the background."
+            "The extension id, version and install source (the cause of the "
+            "update flow). The client's OS, architecture, language, Chromium "
+            "version, channel and a flag stating whether the request originated"
+            "in the foreground or the background."
           destination: WEBSITE
         }
         policy {
