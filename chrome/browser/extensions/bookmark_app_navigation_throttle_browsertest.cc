@@ -119,6 +119,22 @@ class BookmarkAppNavigationObserver : public content::TestNavigationObserver {
   scoped_refptr<network::ResourceRequestBody> last_resource_request_body_;
 };
 
+bool HasOpenedWindowAndOpener(content::WebContents* opener_contents,
+                              content::WebContents* opened_contents) {
+  bool has_opener;
+  CHECK(content::ExecuteScriptAndExtractBool(
+      opened_contents, "window.domAutomationController.send(!!window.opener);",
+      &has_opener));
+
+  bool has_openedWindow;
+  CHECK(content::ExecuteScriptAndExtractBool(
+      opener_contents,
+      "window.domAutomationController.send(!!window.openedWindow.window)",
+      &has_openedWindow));
+
+  return has_opener && has_openedWindow;
+}
+
 void ExpectNavigationResultHistogramEquals(
     const base::HistogramTester& histogram_tester,
     const std::vector<std::pair<ProcessNavigationResult,
@@ -204,7 +220,7 @@ void WindowOpenAndWait(content::WebContents* web_contents,
   auto observer = GetTestNavigationObserver(target_url);
   const std::string script = base::StringPrintf(
       "(() => {"
-      "  window.open('%s');"
+      "  window.openedWindow = window.open('%s');"
       "})();",
       target_url.spec().c_str());
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
@@ -610,14 +626,13 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
                                              base::OnceClosure action) {
     TestTabActionOpensAppWindow(target_url, std::move(action));
 
+    content::WebContents* initial_web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     content::WebContents* app_web_contents =
         chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
 
-    bool has_opener;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        app_web_contents,
-        "window.domAutomationController.send(!!window.opener);", &has_opener));
-    EXPECT_TRUE(has_opener);
+    EXPECT_TRUE(
+        HasOpenedWindowAndOpener(initial_web_contents, app_web_contents));
   }
 
   // Checks that no new windows are opened after running |action| and that the
@@ -712,11 +727,8 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
         new_app_browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(target_url, new_app_web_contents->GetLastCommittedURL());
 
-    bool has_opener;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        new_app_web_contents,
-        "window.domAutomationController.send(!!window.opener);", &has_opener));
-    EXPECT_TRUE(has_opener);
+    EXPECT_TRUE(
+        HasOpenedWindowAndOpener(app_web_contents, new_app_web_contents));
   }
 
   // Checks that no new windows are opened after running |action| and that the
@@ -1045,8 +1057,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
-       GetAppLaunchedEntry()});
+      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
 }
 
 // Tests that Ctrl + Clicking a link to the app's app_url opens a new background
@@ -1107,8 +1118,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
-       GetAppLaunchedEntry()});
+      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
 }
 
 // Tests that clicking a link with target="_self" and for which the client
@@ -1555,9 +1565,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   ExpectNavigationResultHistogramEquals(global_histogram(), {});
 }
 
-// Tests that clicking a target=_self link with from a URL out of the Web App's
-// scope but with the same origin to an in-scope URL results in a new App
-// window.
+// Tests that clicking a target=_self link from a URL out of the Web App's scope
+// but with the same origin to an in-scope URL results in a new App window.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                        FromOutOfScopeUrlToInScopeUrlSelf) {
   InstallTestBookmarkApp();
@@ -1582,7 +1591,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       {{ProcessNavigationResult::kCancelOpenedApp, 1}, GetAppLaunchedEntry()});
 }
 
-// Tests that clicking a target=_blank link with from a URL out of the Web App's
+// Tests that clicking a target=_blank link from a URL out of the Web App's
 // scope but with the same origin to an in-scope URL results in a new App
 // window.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
@@ -1606,8 +1615,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
   ExpectNavigationResultHistogramEquals(
       global_histogram(),
-      {{ProcessNavigationResult::kDeferOpenAppCloseEmptyWebContents, 1},
-       GetAppLaunchedEntry()});
+      {{ProcessNavigationResult::kDeferMovingContentsToNewAppWindow, 1}});
 }
 
 // Tests that clicking links inside a website for an installed app doesn't open
@@ -1827,6 +1835,6 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleLinkBrowserTest,
-    testing::Values("noopener", "noreferrer", "nofollow"));
+    testing::Values("", "noopener", "noreferrer", "nofollow"));
 
 }  // namespace extensions

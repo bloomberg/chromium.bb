@@ -43,7 +43,7 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
     kProceedInBrowserFormSubmission,
     kProceedInBrowserSameScope,
     kCancelPrerenderContents,
-    kDeferOpenAppCloseEmptyWebContents,
+    kDeferMovingContentsToNewAppWindow,
     kCancelOpenedApp,
     kDeferOpenNewTabInAppOutOfScope,
     kProceedDispositionSingletonTab,
@@ -84,6 +84,7 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   void OpenBookmarkApp(scoped_refptr<const Extension> bookmark_app);
   void CloseWebContents();
   void OpenInNewTab();
+  void ReparentWebContentsAndResume(scoped_refptr<const Extension> target_app);
 
   // Retrieves the Bookmark App corresponding to the current window only
   // if the app is for an installable website.
