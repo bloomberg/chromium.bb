@@ -63,14 +63,13 @@ class WritePostmortemDumpTest : public testing::Test {
       global_data[kStabilityVersion].set_string_value(kVersion);
     }
 
-    base::win::ScopedHandle file_handle(::CreateFile(
-        minidump_path_.value().c_str(), GENERIC_READ | GENERIC_WRITE,
-        FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, CREATE_NEW,
-        FILE_ATTRIBUTE_NORMAL, nullptr));
-    if (!file_handle.IsValid())
+    crashpad::FileWriter writer;
+    if (!writer.Open(minidump_path_, crashpad::FileWriteMode::kCreateOrFail,
+                     crashpad::FilePermissions::kWorldReadable)) {
       return false;
+    }
 
-    return WritePostmortemDump(file_handle.Get(), expected_client_id_,
+    return WritePostmortemDump(&writer, expected_client_id_,
                                expected_report_id_, &report);
   }
 

@@ -263,7 +263,8 @@ bool PostmortemReportCollector::WriteReportToMinidump(
     base::PlatformFile minidump_file) {
   DCHECK(report);
 
-  return WritePostmortemDump(minidump_file, client_id, report_id, report);
+  crashpad::WeakFileHandleFileWriter writer(minidump_file);
+  return WritePostmortemDump(&writer, client_id, report_id, report);
 }
 
 }  // namespace browser_watcher
