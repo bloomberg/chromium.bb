@@ -629,41 +629,6 @@ void VrShell::ResumeContentRendering(JNIEnv* env,
                                            gl_thread_->GetVrShellGl()));
 }
 
-// Note that the following code is obsolete and is here as reference for the
-// actions that need to be implemented natively.
-void VrShell::DoUiAction(const UiAction action,
-                         const base::DictionaryValue* arguments) {
-  // Actions that can be handled natively.
-  switch (action) {
-    default:
-      break;
-  }
-  // Actions that are handled in java.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  switch (action) {
-    case SHOW_TAB: {
-      int id;
-      CHECK(arguments->GetInteger("id", &id));
-      Java_VrShellImpl_showTab(env, j_vr_shell_, id);
-      return;
-    }
-    case OPEN_NEW_TAB: {
-      bool incognito;
-      CHECK(arguments->GetBoolean("incognito", &incognito));
-      Java_VrShellImpl_openNewTab(env, j_vr_shell_, incognito);
-      return;
-    }
-    case HISTORY_FORWARD:
-      Java_VrShellImpl_navigateForward(env, j_vr_shell_);
-      break;
-    case RELOAD:
-      Java_VrShellImpl_reload(env, j_vr_shell_);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void VrShell::ContentWebContentsDestroyed() {
   web_contents_ = nullptr;
 }

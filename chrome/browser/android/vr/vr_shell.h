@@ -58,15 +58,6 @@ class VrShellDelegate;
 class VrWebContentsObserver;
 struct AutocompleteRequest;
 
-enum UiAction {
-  HISTORY_BACK = 0,
-  HISTORY_FORWARD,
-  RELOAD,
-  SHOW_TAB,
-  OPEN_NEW_TAB,
-  EXIT_PRESENT,
-};
-
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
 class VrShell : device::GvrGamepadDataProvider,
@@ -180,10 +171,6 @@ class VrShell : device::GvrGamepadDataProvider,
                            jint content_height,
                            jint overlay_width,
                            jint overlay_height);
-
-  // Perform a UI action triggered by the javascript API.
-  void DoUiAction(const UiAction action,
-                  const base::DictionaryValue* arguments);
 
   void SetHighAccuracyLocation(bool high_accuracy_location);
 

@@ -289,8 +289,8 @@ void VrController::UpdateTouchInfo() {
 }
 
 std::unique_ptr<GestureList> VrController::DetectGestures() {
-  std::unique_ptr<GestureList> gesture_list = std::make_unique<GestureList>();
-  std::unique_ptr<blink::WebGestureEvent> gesture(new blink::WebGestureEvent());
+  auto gesture_list = std::make_unique<GestureList>();
+  auto gesture = std::make_unique<blink::WebGestureEvent>();
 
   if (controller_state_->GetConnectionState() != gvr::kControllerConnected) {
     gesture_list->push_back(std::move(gesture));
