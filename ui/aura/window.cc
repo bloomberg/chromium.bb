@@ -32,6 +32,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
+#include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -641,6 +642,19 @@ bool Window::HasCapture() {
     return false;
   client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
   return capture_client && capture_client->GetCaptureWindow() == this;
+}
+
+std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
+    base::Optional<base::flat_set<int>> keys) {
+  Window* root_window = GetRootWindow();
+  if (!root_window)
+    return nullptr;
+
+  WindowTreeHost* host = root_window->GetHost();
+  if (!host)
+    return nullptr;
+
+  return host->CaptureSystemKeyEvents(std::move(keys));
 }
 
 void Window::SuppressPaint() {

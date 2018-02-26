@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -35,6 +36,7 @@
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keyboard_hook.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -1289,6 +1291,23 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
 
     OnHostLostWindowCapture();
   }
+}
+
+bool DesktopWindowTreeHostX11::CaptureSystemKeyEventsImpl(
+    base::Optional<base::flat_set<int>> key_codes) {
+  // Only one KeyboardHook should be active at a time, otherwise there will be
+  // problems with event routing (i.e. which Hook takes precedence) and
+  // destruction ordering.
+  DCHECK(!keyboard_hook_);
+  keyboard_hook_ = ui::KeyboardHook::Create(
+      std::move(key_codes),
+      base::BindRepeating(&DesktopWindowTreeHostX11::DispatchKeyEvent,
+                          base::Unretained(this)));
+  return keyboard_hook_ != nullptr;
+}
+
+void DesktopWindowTreeHostX11::ReleaseSystemKeyEventCapture() {
+  keyboard_hook_.reset();
 }
 
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {

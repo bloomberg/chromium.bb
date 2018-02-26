@@ -63,6 +63,9 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
                                     float device_pixel_ratio) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
+  bool CaptureSystemKeyEventsImpl(
+      base::Optional<base::flat_set<int>> native_key_codes) override;
+  void ReleaseSystemKeyEventCapture() override;
 
  private:
   gfx::AcceleratedWidget widget_;

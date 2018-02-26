@@ -103,7 +103,7 @@ enum EventFlags {
   EF_ALTGR_DOWN           = 1 << 5,
   EF_MOD3_DOWN            = 1 << 6,
 
-  // Other keyboard state.
+  // Other keyboard states.
   EF_NUM_LOCK_ON          = 1 << 7,
   EF_CAPS_LOCK_ON         = 1 << 8,
   EF_SCROLL_LOCK_ON       = 1 << 9,
@@ -116,7 +116,7 @@ enum EventFlags {
   EF_FORWARD_MOUSE_BUTTON = 1 << 14,
 };
 
-// Flags specific to key events
+// Flags specific to key events.
 enum KeyEventFlags {
   EF_IME_FABRICATED_KEY = 1 << 15,  // Key event fabricated by the underlying
                                     // IME without a user action.
@@ -127,7 +127,7 @@ enum KeyEventFlags {
   EF_IS_EXTENDED_KEY    = 1 << 18,  // Windows extended key (see WM_KEYDOWN doc)
 };
 
-// Flags specific to mouse events
+// Flags specific to mouse events.
 enum MouseEventFlags {
   EF_IS_DOUBLE_CLICK = 1 << 15,
   EF_IS_TRIPLE_CLICK = 1 << 16,

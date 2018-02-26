@@ -5,6 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/views_export.h"
@@ -21,6 +24,7 @@ class FocusClient;
 
 namespace ui {
 class InputMethod;
+class KeyboardHook;
 }  // namespace ui
 
 namespace wm {
@@ -127,6 +131,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
+  bool CaptureSystemKeyEventsImpl(
+      base::Optional<base::flat_set<int>> keys_codes) override;
+  void ReleaseSystemKeyEventCapture() override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void OnCursorVisibilityChangedNative(bool show) override;
   void MoveCursorToScreenLocationInPixels(
@@ -279,6 +286,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // member static ensures that ::ShowCursor() is always called exactly once
   // whenever the cursor visibility state changes.
   static bool is_cursor_visible_;
+
+  // Captures system key events when keyboard lock is requested.
+  std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 

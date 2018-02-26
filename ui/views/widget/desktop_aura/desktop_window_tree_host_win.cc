@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -18,6 +19,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
+#include "ui/events/keyboard_hook.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -556,6 +558,23 @@ void DesktopWindowTreeHostWin::SetCapture() {
 
 void DesktopWindowTreeHostWin::ReleaseCapture() {
   message_handler_->ReleaseCapture();
+}
+
+bool DesktopWindowTreeHostWin::CaptureSystemKeyEventsImpl(
+    base::Optional<base::flat_set<int>> key_codes) {
+  // Only one KeyboardHook should be active at a time, otherwise there will be
+  // problems with event routing (i.e. which Hook takes precedence) and
+  // destruction ordering.
+  DCHECK(!keyboard_hook_);
+  keyboard_hook_ = ui::KeyboardHook::Create(
+      std::move(key_codes),
+      base::BindRepeating(&DesktopWindowTreeHostWin::HandleKeyEvent,
+                          base::Unretained(this)));
+  return keyboard_hook_ != nullptr;
+}
+
+void DesktopWindowTreeHostWin::ReleaseSystemKeyEventCapture() {
+  keyboard_hook_.reset();
 }
 
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
