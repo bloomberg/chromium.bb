@@ -1383,8 +1383,8 @@ public class LocationBarLayout extends FrameLayout
         updateVerboseStatusVisibility();
 
         boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
-        if (mSecurityIconResource == id
-                && mIsEmphasizingHttpsScheme == shouldEmphasizeHttpsScheme) {
+        if (mSecurityIconResource == id && mIsEmphasizingHttpsScheme == shouldEmphasizeHttpsScheme
+                && mLocationBarButtonType == getLocationBarButtonToShow()) {
             return;
         }
         mSecurityIconResource = id;
