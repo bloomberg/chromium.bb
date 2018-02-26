@@ -3370,6 +3370,15 @@ public class Tab
     }
 
     /**
+     * Configures web preferences for enabling Picture-in-Picture.
+     * @param enabled Whether Picture-in-Picture should be enabled.
+     */
+    public void setPictureInPictureEnabled(boolean enabled) {
+        if (mNativeTabAndroid == 0) return;
+        nativeSetPictureInPictureEnabled(mNativeTabAndroid, enabled);
+    }
+
+    /**
      * Configures web preferences for viewing downloaded media.
      * @param enabled Whether embedded media experience should be enabled.
      */
@@ -3505,6 +3514,7 @@ public class Tab
     private native void nativeClearThumbnailPlaceholder(long nativeTabAndroid);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
     private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
+    private native void nativeSetPictureInPictureEnabled(long nativeTabAndroid, boolean enabled);
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native void nativeMediaDownloadInProductHelpDismissed(long nativeTabAndroid);

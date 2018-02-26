@@ -617,6 +617,10 @@ void WebSettingsImpl::SetShouldRespectImageOrientation(bool enabled) {
   settings_->SetShouldRespectImageOrientation(enabled);
 }
 
+void WebSettingsImpl::SetPictureInPictureEnabled(bool enabled) {
+  settings_->SetPictureInPictureEnabled(enabled);
+}
+
 void WebSettingsImpl::SetMediaPlaybackGestureWhitelistScope(
     const WebString& scope) {
   settings_->SetMediaPlaybackGestureWhitelistScope(scope);

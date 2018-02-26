@@ -166,6 +166,7 @@ TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(NULL),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)),
+      picture_in_picture_enabled_(false),
       embedded_media_experience_enabled_(false),
       weak_factory_(this) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
@@ -795,6 +796,22 @@ void TabAndroid::EnableEmbeddedMediaExperience(
 
 bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
   return embedded_media_experience_enabled_;
+}
+
+void TabAndroid::SetPictureInPictureEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  picture_in_picture_enabled_ = enabled;
+
+  if (!web_contents() || !web_contents()->GetRenderViewHost())
+    return;
+
+  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+}
+
+bool TabAndroid::IsPictureInPictureEnabled() const {
+  return picture_in_picture_enabled_;
 }
 
 void TabAndroid::AttachDetachedTab(

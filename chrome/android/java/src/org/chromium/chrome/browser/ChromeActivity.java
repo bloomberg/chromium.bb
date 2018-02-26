@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -854,6 +855,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
+
+        if (getActivityTab() != null) {
+            getActivityTab().setPictureInPictureEnabled(
+                    PictureInPicture.isEnabled(getApplicationContext()));
+        }
 
         if (mPictureInPictureController != null) {
             mPictureInPictureController.cleanup(this);

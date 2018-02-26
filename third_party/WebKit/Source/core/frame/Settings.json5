@@ -216,6 +216,11 @@
     },
 
     {
+      name: "pictureInPictureEnabled",
+      initial: true,
+    },
+
+    {
       name: "mediaPlaybackGestureWhitelistScope",
       type: "String",
     },
