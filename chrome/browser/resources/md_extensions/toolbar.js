@@ -53,6 +53,12 @@ cr.define('extensions', function() {
 
       /** @private */
       expanded_: Boolean,
+
+      /**
+       * Text to display in update toast
+       * @private
+       */
+      toastLabel_: String,
     },
 
     behaviors: [I18nBehavior],
@@ -130,12 +136,24 @@ cr.define('extensions', function() {
 
     /** @private */
     onUpdateNowTap_: function() {
-      this.delegate.updateAllExtensions().then(() => {
-        Polymer.IronA11yAnnouncer.requestAvailability();
-        this.fire('iron-announce', {
-          text: this.i18n('toolbarUpdateDone'),
-        });
-      });
+      const updateButton = this.$.updateNow;
+      assert(!updateButton.disabled);
+      updateButton.disabled = true;
+      const toastElement = this.$$('cr-toast');
+      this.toastLabel_ = this.i18n('toolbarUpdatingToast');
+      toastElement.show();
+      this.delegate.updateAllExtensions()
+          .then(() => {
+            Polymer.IronA11yAnnouncer.requestAvailability();
+            const doneText = this.i18n('toolbarUpdateDone');
+            this.fire('iron-announce', {text: doneText});
+            this.toastLabel_ = doneText;
+            toastElement.show();
+            updateButton.disabled = false;
+          })
+          .catch(function() {
+            updateButton.disabled = false;
+          });
     },
   });
 

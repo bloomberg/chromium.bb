@@ -31,32 +31,32 @@ cr.define('extension_toolbar_tests', function() {
       extension_test_util.testIcons(toolbar);
 
       var testVisible = extension_test_util.testVisible.bind(null, toolbar);
-      testVisible('#dev-mode', true);
-      assertEquals(toolbar.$$('#dev-mode').disabled, false);
-      testVisible('#load-unpacked', false);
-      testVisible('#pack-extensions', false);
-      testVisible('#update-now', false);
+      testVisible('#devMode', true);
+      assertEquals(toolbar.$.devMode.disabled, false);
+      testVisible('#loadUnpacked', false);
+      testVisible('#packExtensions', false);
+      testVisible('#updateNow', false);
 
       toolbar.set('inDevMode', true);
       Polymer.dom.flush();
 
-      testVisible('#dev-mode', true);
-      assertEquals(toolbar.$$('#dev-mode').disabled, false);
-      testVisible('#load-unpacked', true);
-      testVisible('#pack-extensions', true);
-      testVisible('#update-now', true);
+      testVisible('#devMode', true);
+      assertEquals(toolbar.$.devMode.disabled, false);
+      testVisible('#loadUnpacked', true);
+      testVisible('#packExtensions', true);
+      testVisible('#updateNow', true);
 
       toolbar.set('canLoadUnpacked', false);
       Polymer.dom.flush();
 
-      testVisible('#dev-mode', true);
-      testVisible('#load-unpacked', false);
-      testVisible('#pack-extensions', true);
-      testVisible('#update-now', true);
+      testVisible('#devMode', true);
+      testVisible('#loadUnpacked', false);
+      testVisible('#packExtensions', true);
+      testVisible('#updateNow', true);
     });
 
     test(assert(TestNames.DevModeToggle), function() {
-      const toggle = toolbar.$$('#dev-mode');
+      const toggle = toolbar.$.devMode;
       assertFalse(toggle.disabled);
 
       // Test that the dev-mode toggle is disabled when a policy exists.
@@ -78,29 +78,43 @@ cr.define('extension_toolbar_tests', function() {
       toolbar.set('inDevMode', true);
       Polymer.dom.flush();
 
-      MockInteractions.tap(toolbar.$['dev-mode']);
-      return mockDelegate.whenCalled('setProfileInDevMode').then(function(arg) {
-        assertFalse(arg);
-        mockDelegate.reset();
-        MockInteractions.tap(toolbar.$['dev-mode']);
-        return mockDelegate.whenCalled('setProfileInDevMode');
-      }).then(function(arg) {
-        assertTrue(arg);
-        MockInteractions.tap(toolbar.$$('#load-unpacked'));
-        return mockDelegate.whenCalled('loadUnpacked');
-      }).then(function() {
-        MockInteractions.tap(toolbar.$$('#update-now'));
-        return mockDelegate.whenCalled('updateAllExtensions');
-      }).then(function() {
-        const whenTapped = test_util.eventToPromise('pack-tap', toolbar);
-        MockInteractions.tap(toolbar.$$('#pack-extensions'));
-        return whenTapped;
-      });
+      MockInteractions.tap(toolbar.$.devMode);
+      return mockDelegate.whenCalled('setProfileInDevMode')
+          .then(function(arg) {
+            assertFalse(arg);
+            mockDelegate.reset();
+            MockInteractions.tap(toolbar.$.devMode);
+            return mockDelegate.whenCalled('setProfileInDevMode');
+          })
+          .then(function(arg) {
+            assertTrue(arg);
+            MockInteractions.tap(toolbar.$.loadUnpacked);
+            return mockDelegate.whenCalled('loadUnpacked');
+          })
+          .then(function() {
+            assertFalse(toolbar.$$('cr-toast').open);
+            assertFalse(toolbar.$.updateNow.disabled);
+            toolbar.$.updateNow.disabled = true;
+            MockInteractions.tap(toolbar.$.updateNow);
+            assertTrue(toolbar.$.updateNow.disabled);
+            toolbar.$.updateNow.disabled = false;
+            assertFalse(toolbar.$$('cr-toast').open);
+            MockInteractions.tap(toolbar.$.updateNow);
+            assertTrue(toolbar.$.updateNow.disabled);
+            assertTrue(toolbar.$$('cr-toast').open);
+            return mockDelegate.whenCalled('updateAllExtensions');
+          })
+          .then(function() {
+            assertFalse(toolbar.$.updateNow.disabled);
+            const whenTapped = test_util.eventToPromise('pack-tap', toolbar);
+            MockInteractions.tap(toolbar.$.packExtensions);
+            return whenTapped;
+          });
     });
 
     if (cr.isChromeOS) {
       test(assert(TestNames.KioskMode), function() {
-        const button = toolbar.$$('#kiosk-extensions');
+        const button = toolbar.$.kioskExtensions;
         expectTrue(button.hidden);
         toolbar.kioskEnabled = true;
         expectFalse(button.hidden);

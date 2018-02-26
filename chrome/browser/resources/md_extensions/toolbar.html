@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
@@ -40,7 +41,7 @@
         -webkit-margin-end: 20px;
       }
 
-      #devDrawer[expanded] #button-strip {
+      #devDrawer[expanded] #buttonStrip {
         top: 0;
       }
 
@@ -55,7 +56,7 @@
         height: var(--button-row-height);
       }
 
-      #button-strip {
+      #buttonStrip {
         -webkit-margin-end: auto;
         -webkit-margin-start: auto;
         background: var(--toolbar-color);
@@ -69,7 +70,7 @@
         width: 100%;
       }
 
-      #button-strip paper-button {
+      #buttonStrip paper-button {
         -webkit-margin-end: 16px;
         color: white;
         /* Increase contrast compared to default values. */
@@ -87,6 +88,15 @@
       .more-actions span {
         -webkit-margin-end: 16px;
       }
+
+      cr-toast > div {
+        color: #fff;
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     </style>
     <cr-toolbar page-name="$i18n{toolbarTitle}"
         search-prompt="$i18n{search}"
@@ -101,7 +111,7 @@
             icon-class="cr20:domain"
             icon-aria-label="$i18n{controlledSettingPolicy}">
         </cr-tooltip-icon>
-        <cr-toggle id="dev-mode" on-change="onDevModeToggleChange_"
+        <cr-toggle id="devMode" on-change="onDevModeToggleChange_"
             disabled="[[shouldDisableDevMode_(
                 devModeControlledByPolicy, isSupervised)]]"
             checked="[[inDevMode]]" aria-labelledby="devModeLabel">
@@ -109,20 +119,23 @@
       </div>
     </cr-toolbar>
     <div id="devDrawer" expanded$="[[expanded_]]">
-      <div id="button-strip">
-        <paper-button hidden$="[[!canLoadUnpacked]]" id="load-unpacked"
+      <div id="buttonStrip">
+        <paper-button hidden$="[[!canLoadUnpacked]]" id="loadUnpacked"
             on-click="onLoadUnpackedTap_">
           $i18n{toolbarLoadUnpacked}
         </paper-button>
-        <paper-button id="pack-extensions" on-click="onPackTap_">
+        <paper-button id="packExtensions" on-click="onPackTap_">
           $i18n{toolbarPack}
         </paper-button>
-        <paper-button id="update-now" on-click="onUpdateNowTap_"
+        <paper-button id="updateNow" on-click="onUpdateNowTap_"
             title="$i18n{toolbarUpdateNowTooltip}">
           $i18n{toolbarUpdateNow}
         </paper-button>
+        <cr-toast duration="3000">
+          <div>[[toastLabel_]]</div>
+        </cr-toast>
 <if expr="chromeos">
-        <paper-button id="kiosk-extensions" on-click="onKioskTap_"
+        <paper-button id="kioskExtensions" on-click="onKioskTap_"
             hidden$="[[!kioskEnabled]]">
           $i18n{manageKioskApp}
         </paper-button>
