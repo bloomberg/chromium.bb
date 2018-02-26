@@ -192,7 +192,16 @@ void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
     return;
 
   // Navigation to a new page or a page refresh.
-  element_.Reset();
+
+  // Do Finch testing to see how much regressions are caused by this leak fix
+  // (crbug/753071).
+  std::string group_name =
+      base::FieldTrialList::FindFullName("FixDocumentLeakInAutofillAgent");
+  if (base::StartsWith(group_name, "enabled",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    element_.Reset();
+  }
+
   form_cache_.Reset();
   ResetLastInteractedElements();
   OnFormNoLongerSubmittable();
