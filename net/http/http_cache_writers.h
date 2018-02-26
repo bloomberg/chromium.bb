@@ -6,6 +6,7 @@
 #define NET_HTTP_HTTP_CACHE_WRITERS_H_
 
 #include <list>
+#include <map>
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
@@ -23,9 +24,12 @@ class PartialData;
 // reading the response body from the network ensuring a slow consumer does not
 // starve other consumers of the same resource.
 //
-// Writers represents the set of all HttpCache::Transactions that are
-// reading from the network using the same network transaction and writing to
-// the same cache entry. It is owned by the ActiveEntry.
+// Writers represents the set of all HttpCache::Transactions that are reading
+// from the network using the same network transaction and writing to the same
+// cache entry. It is owned by the ActiveEntry. The writers object must be
+// deleted when HttpCache::WritersDoneWritingToEntry is called as it doesn't
+// expect any of its ongoing IO transactions (e.g., network reads or cache
+// writers) to complete after that point and won't know what to do with them.
 class NET_EXPORT_PRIVATE HttpCache::Writers {
  public:
   // This is the information maintained by Writers in the context of each
@@ -151,14 +155,6 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
     NETWORK_READ_COMPLETE,
     CACHE_WRITE_DATA,
     CACHE_WRITE_DATA_COMPLETE,
-    // This state is used when an attempt to truncate races with an ongoing
-    // network read/cache write. In this case we transition from
-    // NETWORK_READ_COMPLETE or CACHE_WRITE_DATA_COMPLETE to
-    // ASYNC_OP_COMPLETE_PRE_TRUNCATE. We will then process the truncation
-    // after the ongoing operation completes.
-    ASYNC_OP_COMPLETE_PRE_TRUNCATE,
-    CACHE_WRITE_TRUNCATED_RESPONSE,
-    CACHE_WRITE_TRUNCATED_RESPONSE_COMPLETE,
   };
 
   // These transactions are waiting on Read. After the active transaction
@@ -175,9 +171,9 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
     ~WaitingForRead();
     WaitingForRead(const WaitingForRead&);
   };
-  using WaitingForReadMap = std::unordered_map<Transaction*, WaitingForRead>;
+  using WaitingForReadMap = std::map<Transaction*, WaitingForRead>;
 
-  using TransactionMap = std::unordered_map<Transaction*, TransactionInfo>;
+  using TransactionMap = std::map<Transaction*, TransactionInfo>;
 
   // Runs the state transition loop. Resets and calls |callback_| on exit,
   // unless the return value is ERR_IO_PENDING.
@@ -188,9 +184,6 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   int DoNetworkReadComplete(int result);
   int DoCacheWriteData(int num_bytes);
   int DoCacheWriteDataComplete(int result);
-  int DoAsyncOpCompletePreTruncate(int result);
-  int DoCacheWriteTruncatedResponse();
-  int DoCacheWriteTruncatedResponseComplete(int result);
 
   // Helper functions for callback.
   void OnNetworkReadFailure(int result);
@@ -217,21 +210,8 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   // TODO(shivanisha): Refactor this so that it could be const.
   bool ShouldTruncate();
 
-  // Invoked for truncating the entry either internally within DoLoop or through
-  // the API RemoveTransaction.
-  // Sets |should_keep_entry_| as true if either the entry is marked as
-  // truncated or the entry is already completely written and false if the entry
-  // cannot be resumed later so no need to mark truncated.
-  // Returns true if the function initiated truncation of the entry by changing
-  // the next state to transition to CACHE_WRITE_TRUNCATED_RESPONSE or
-  // ASYNC_OP_COMPLETE_PRE_TRUNCATE.
-  // If a network read/cache write operation is still going on, this will not
-  // initiate truncation but it will be done after the ongoing operation is
-  // complete.
-  // Note that if this function returns a true, its possible that |this| may
-  // have been deleted and thus no members should be touched after calling this
-  // function.
-  bool InitiateTruncateEntry();
+  // Enqueues a truncation operation to the entry. Ignores the response.
+  void TruncateEntry();
 
   // Remove the transaction.
   void EraseTransaction(Transaction* transaction, int result);
@@ -295,14 +275,6 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   // True if the entry should be kept, even if the response was not completely
   // written.
   bool should_keep_entry_ = true;
-
-  // If truncation happens after a current network read/cache write then the
-  // result returned to the consumer should be the one returned by the network
-  // read/cache write operation.
-  int post_truncate_result_ = OK;
-
-  // True if currently processing the DoLoop.
-  bool in_do_loop_ = false;
 
   CompletionCallback callback_;  // Callback for active_transaction_.
 

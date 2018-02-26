@@ -12,7 +12,10 @@
 
 #include <stdint.h>
 
-#include <unordered_map>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/strings/string_split.h"
 #include "net/disk_cache/disk_cache.h"
@@ -31,6 +34,7 @@ class MockDiskEntry : public disk_cache::Entry,
     DEFER_NONE,
     DEFER_CREATE,
     DEFER_READ,
+    DEFER_WRITE,
   };
 
   explicit MockDiskEntry(const std::string& key);
@@ -208,7 +212,7 @@ class MockDiskCache : public disk_cache::Backend {
   scoped_refptr<MockDiskEntry> GetDiskEntryRef(const std::string& key);
 
  private:
-  using EntryMap = std::unordered_map<std::string, MockDiskEntry*>;
+  using EntryMap = std::map<std::string, MockDiskEntry*>;
   class NotImplementedIterator;
 
   void CallbackLater(const CompletionCallback& callback, int result);
