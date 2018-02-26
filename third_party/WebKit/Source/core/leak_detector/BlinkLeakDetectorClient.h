@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #ifndef BlinkLeakDetectorClient_h
-
 #define BlinkLeakDetectorClient_h
 
 namespace blink {
