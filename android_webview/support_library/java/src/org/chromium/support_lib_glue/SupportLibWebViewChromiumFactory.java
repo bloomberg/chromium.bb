@@ -17,12 +17,23 @@ import java.lang.reflect.InvocationHandler;
  * Support library glue version of WebViewChromiumFactoryProvider.
  */
 class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundaryInterface {
-    public SupportLibWebViewChromiumFactory() {}
+    // SupportLibWebkitToCompatConverterAdapter
+    private final InvocationHandler mCompatConverterAdapter;
+
+    public SupportLibWebViewChromiumFactory() {
+        mCompatConverterAdapter = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibWebkitToCompatConverterAdapter());
+    }
 
     @Override
     public InvocationHandler createWebView(WebView webview) {
         return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
                 new SupportLibWebViewChromium(
                         WebkitToSharedGlueConverter.getSharedWebViewChromium(webview)));
+    }
+
+    @Override
+    public InvocationHandler getWebkitToCompatConverter() {
+        return mCompatConverterAdapter;
     }
 }

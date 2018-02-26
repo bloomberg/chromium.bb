@@ -9,8 +9,15 @@ package org.chromium.support_lib_boundary;
 // app-facing classes should have a boundary-interface that the WebView glue layer can build
 // against.
 /**
+ * Boundary interface for WebSettingsCompat.
  */
 public interface WebSettingsBoundaryInterface {
+    void setOffscreenPreRaster(boolean enabled);
+    boolean getOffscreenPreRaster();
+
     void setSafeBrowsingEnabled(boolean enabled);
     boolean getSafeBrowsingEnabled();
+
+    void setDisabledActionModeMenuItems(int menuItems);
+    int getDisabledActionModeMenuItems();
 }
