@@ -124,17 +124,17 @@
     [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
 
     [SecureContext] void secureContextMethod();
-    [SecureContext] attribute bool secureContextAttribute;
+    [SecureContext] attribute boolean secureContextAttribute;
     [SecureContext,RuntimeEnabled=SecureFeature] void secureContextRuntimeEnabledMethod();
-    [SecureContext,RuntimeEnabled=SecureFeature] attribute bool secureContextRuntimeEnabledAttribute;
+    [SecureContext,RuntimeEnabled=SecureFeature] attribute boolean secureContextRuntimeEnabledAttribute;
     [SecureContext,Exposed=Window] void secureContextWindowExposedMethod();
-    [SecureContext,Exposed=Window] attribute bool secureContextWindowExposedAttribute;
+    [SecureContext,Exposed=Window] attribute boolean secureContextWindowExposedAttribute;
     [SecureContext,Exposed=Worker] void secureContextWorkerExposedMethod();
-    [SecureContext,Exposed=Worker] attribute bool secureContextWorkerExposedAttribute;
+    [SecureContext,Exposed=Worker] attribute boolean secureContextWorkerExposedAttribute;
     [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] void secureContextWindowExposedRuntimeEnabledMethod();
-    [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] attribute bool secureContextWindowExposedRuntimeEnabledAttribute;
+    [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] attribute boolean secureContextWindowExposedRuntimeEnabledAttribute;
     [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] void secureContextWorkerExposedRuntimeEnabledMethod();
-    [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] attribute bool secureContextWorkerExposedRuntimeEnabledAttribute;
+    [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] attribute boolean secureContextWorkerExposedRuntimeEnabledAttribute;
 
     // Arguments that are sequences or records of nullable types.
     void methodWithNullableSequences(sequence<double?> numbers, sequence<DOMString?> strings, sequence<Element?> elements, sequence<(double or DOMString)?> unions);

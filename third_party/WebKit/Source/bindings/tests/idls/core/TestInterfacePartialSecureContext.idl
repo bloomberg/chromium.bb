@@ -8,15 +8,15 @@
     ImplementedAs=TestInterfacePartialSecureContext // Conflicts with default partial interface class name
 ] partial interface TestInterface {
     void partialSecureContextMethod();
-    attribute bool partialSecureContextAttribute;
+    attribute boolean partialSecureContextAttribute;
     [RuntimeEnabled=SecureFeature] void partialSecureContextRuntimeEnabledMethod();
-    [RuntimeEnabled=SecureFeature] attribute bool partialSecureContextRuntimeEnabledAttribute;
+    [RuntimeEnabled=SecureFeature] attribute boolean partialSecureContextRuntimeEnabledAttribute;
     [Exposed=Window] void partialSecureContextWindowExposedMethod();
-    [Exposed=Window] attribute bool partialSecureContextWindowExposedAttribute;
+    [Exposed=Window] attribute boolean partialSecureContextWindowExposedAttribute;
     [Exposed=Worker] void partialSecureContextWorkerExposedMethod();
-    [Exposed=Worker] attribute bool partialSecureContextWorkerExposedAttribute;
+    [Exposed=Worker] attribute boolean partialSecureContextWorkerExposedAttribute;
     [Exposed=Window,RuntimeEnabled=SecureFeature] void partialSecureContextWindowExposedRuntimeEnabledMethod();
-    [Exposed=Window,RuntimeEnabled=SecureFeature] attribute bool partialSecureContextWindowExposedRuntimeEnabledAttribute;
+    [Exposed=Window,RuntimeEnabled=SecureFeature] attribute boolean partialSecureContextWindowExposedRuntimeEnabledAttribute;
     [Exposed=Worker,RuntimeEnabled=SecureFeature] void partialSecureContextWorkerExposedRuntimeEnabledMethod();
-    [Exposed=Worker,RuntimeEnabled=SecureFeature] attribute bool partialSecureContextWorkerExposedRuntimeEnabledAttribute;
+    [Exposed=Worker,RuntimeEnabled=SecureFeature] attribute boolean partialSecureContextWorkerExposedRuntimeEnabledAttribute;
 };
