@@ -20,8 +20,8 @@
 
 #include "core/svg/SVGLineElement.h"
 
-#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/svg/SVGLength.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -71,15 +71,9 @@ Path SVGLineElement::AsPath() const {
 void SVGLineElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::x1Attr || attr_name == SVGNames::y1Attr ||
       attr_name == SVGNames::x2Attr || attr_name == SVGNames::y2Attr) {
-    UpdateRelativeLengthsInformation();
-
-    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
-    if (!layout_object)
-      return;
-
     SVGElement::InvalidationGuard invalidation_guard(this);
-    layout_object->SetNeedsShapeUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+    UpdateRelativeLengthsInformation();
+    GeometryAttributeChanged();
     return;
   }
 

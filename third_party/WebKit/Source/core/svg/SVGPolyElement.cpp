@@ -20,9 +20,8 @@
 
 #include "core/svg/SVGPolyElement.h"
 
-#include "core/layout/svg/LayoutSVGShape.h"
 #include "core/svg/SVGAnimatedPointList.h"
-#include "core/svg/SVGParserUtilities.h"
+#include "platform/graphics/Path.h"
 
 namespace blink {
 
@@ -62,13 +61,7 @@ Path SVGPolyElement::AsPathFromPoints() const {
 void SVGPolyElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::pointsAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
-    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
-    if (!layout_object)
-      return;
-
-    layout_object->SetNeedsShapeUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+    GeometryAttributeChanged();
     return;
   }
 

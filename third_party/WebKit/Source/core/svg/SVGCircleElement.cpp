@@ -97,18 +97,11 @@ void SVGCircleElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::rAttr || attr_name == SVGNames::cxAttr ||
       attr_name == SVGNames::cyAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
     InvalidateSVGPresentationAttributeStyle();
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::FromAttribute(attr_name));
     UpdateRelativeLengthsInformation();
-
-    LayoutSVGShape* layout_object = ToLayoutSVGShape(this->GetLayoutObject());
-    if (!layout_object)
-      return;
-
-    layout_object->SetNeedsShapeUpdate();
-    MarkForLayoutAndParentResourceInvalidation(layout_object);
+    GeometryAttributeChanged();
     return;
   }
 

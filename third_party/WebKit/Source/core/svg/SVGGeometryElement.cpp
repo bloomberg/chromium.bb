@@ -175,6 +175,13 @@ float SVGGeometryElement::PathLengthScaleFactor(float computed_path_length,
   return clampTo<float>(computed_path_length / author_path_length);
 }
 
+void SVGGeometryElement::GeometryAttributeChanged() {
+  if (LayoutSVGShape* layout_object = ToLayoutSVGShape(GetLayoutObject())) {
+    layout_object->SetNeedsShapeUpdate();
+    MarkForLayoutAndParentResourceInvalidation(layout_object);
+  }
+}
+
 LayoutObject* SVGGeometryElement::CreateLayoutObject(const ComputedStyle&) {
   // By default, any subclass is expected to do path-based drawing.
   return new LayoutSVGPath(this);
