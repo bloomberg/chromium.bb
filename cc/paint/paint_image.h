@@ -42,6 +42,7 @@ class CC_PAINT_EXPORT PaintImage {
   static const size_t kDefaultFrameIndex;
 
   static const Id kInvalidId;
+  static const ContentId kInvalidContentId;
 
   class CC_PAINT_EXPORT FrameKey {
    public:
@@ -159,7 +160,6 @@ class CC_PAINT_EXPORT PaintImage {
   std::string ToString() const;
 
  private:
-  static const ContentId kInvalidContentId = -1;
   friend class PaintImageBuilder;
   FRIEND_TEST_ALL_PREFIXES(PaintImageTest, Subsetting);
 
