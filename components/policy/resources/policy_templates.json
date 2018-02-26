@@ -10893,6 +10893,7 @@
       https://example.com/ site.
       If the policy is disabled, the per-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME">DeviceLoginScreenIsolateOrigins</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       ''',
     },
     {
@@ -10918,6 +10919,7 @@
       If the policy is enabled, each site will run in its own process.
       If the policy is disabled, the per-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       ''',
     },
     {
@@ -10936,7 +10938,7 @@
       'tags': ['system-security'],
       'desc': '''
       NOTE: This policy is experimental and may break functionality!
-      This policy applies to the sign-in screen. Please see also the 'IsolateOrigins' policy which applies to the user session. It is recommended to set both policies to the same value.
+      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       If the policy is enabled, each of the named origins in a
       comma-separated list will run in its own process. This will also isolate
       origins named by subdomains; e.g. specifying https://example.com/ will
@@ -10962,7 +10964,7 @@
       'tags': ['system-security'],
       'desc': '''
       NOTE: This policy is experimental and may break functionality!
-      This policy applies to the sign-in screen. Please see also the 'SitePerProcess' policy which applies to the user session. It is recommended to set both policies to the same value.
+      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       You might want to look at the IsolateOrigins policy setting to get the
       best of both worlds, isolation and limited impact for users, by using
       IsolateOrigins with a list of the sites you want to isolate. This setting,
