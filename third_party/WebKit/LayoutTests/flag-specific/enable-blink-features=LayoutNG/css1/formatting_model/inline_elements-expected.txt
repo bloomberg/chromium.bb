@@ -24,7 +24,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutNGBlockFlow {P} at (0,179) size 769x192
         LayoutText {#text} at (0,6) size 187x19
           text run at (0,6) width 187: "This is a paragraph that has a "
-        LayoutInline {SPAN} at (0,0) size 989x180 [border: (10px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 762x173 [border: (10px solid #FF0000)]
           LayoutText {#text} at (239,6) size 762x147
             text run at (239,6) width 523: "very long span in it, and the span has a 10px red border separated from the span by"
             text run at (0,38) width 727: "2pt, and a margin of 30pt. The padding and border should be present on all sides of the span (although vertical lines"
@@ -37,7 +37,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutNGBlockFlow {P} at (0,387) size 769x64
         LayoutText {#text} at (0,0) size 159x15
           text run at (0,0) width 159: "This is a paragraph that has a "
-        LayoutInline {SPAN} at (0,0) size 885x108 [border: (12px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 764x93 [border: (12px solid #FF0000)]
           LayoutText {#text} at (173,0) size 764x63
             text run at (173,0) width 553: "very long span in it, and the span has a 12px red border separated from the span by 2pt of padding (the"
             text run at (0,16) width 764: "difference between the line-height and the font-size), which should overlap with the lines of text above and below the span, since the padding"
@@ -60,7 +60,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutNGBlockFlow {P} at (4,4) size 747x192
                 LayoutText {#text} at (0,6) size 187x19
                   text run at (0,6) width 187: "This is a paragraph that has a "
-                LayoutInline {SPAN} at (0,0) size 969x180 [border: (10px solid #FF0000)]
+                LayoutInline {SPAN} at (0,0) size 747x173 [border: (10px solid #FF0000)]
                   LayoutText {#text} at (239,6) size 747x147
                     text run at (239,6) width 503: "very long span in it, and the span has a 10px red border separated from the span"
                     text run at (0,38) width 747: "by 2pt, and a margin of 30pt. The padding and border should be present on all sides of the span (although vertical lines"
@@ -73,7 +73,7 @@ layer at (0,0) size 785x790 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutNGBlockFlow {P} at (4,212) size 747x64
                 LayoutText {#text} at (0,0) size 159x15
                   text run at (0,0) width 159: "This is a paragraph that has a "
-                LayoutInline {SPAN} at (0,0) size 885x108 [border: (12px solid #FF0000)]
+                LayoutInline {SPAN} at (0,0) size 726x93 [border: (12px solid #FF0000)]
                   LayoutText {#text} at (173,0) size 726x63
                     text run at (173,0) width 553: "very long span in it, and the span has a 12px red border separated from the span by 2pt of padding (the"
                     text run at (0,16) width 716: "difference between the line-height and the font-size), which should overlap with the lines of text above and below the span, since the"

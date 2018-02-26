@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 104x19
           text run at (0,0) width 104: "This is a test for "
-        LayoutInline {I} at (0,0) size 1227x39
+        LayoutInline {I} at (0,0) size 776x39
           LayoutInline {A} at (0,0) size 348x19 [color=#0000EE]
             LayoutText {#text} at (104,0) size 348x19
               text run at (104,0) width 348: "http://bugzilla.opendarwin.org/show_bug.cgi?id=9978"

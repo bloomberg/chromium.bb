@@ -1004,12 +1004,8 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
     LayoutRect result;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& child : children) {
-      NGPhysicalOffset left_top =
-          child.fragment->Offset() + child.offset_to_container_box;
-      result.Unite(LayoutRect(LayoutPoint(left_top.left, left_top.top),
-                              child.fragment->Size().ToLayoutSize()));
-    }
+    for (const auto& child : children)
+      result.Unite(child.RectInContainerBox().ToLayoutRect());
     return result;
   }
 

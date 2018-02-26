@@ -31,8 +31,8 @@ layer at (0,0) size 800x100
               text run at (42,0) width 17: "IV"
         LayoutText {#text} at (58,0) size 5x19
           text run at (58,0) width 5: " "
-        LayoutInline {SPAN} at (0,0) size 12x19
-          LayoutInline {<pseudo:before>} at (0,0) size 12x19
+        LayoutInline {SPAN} at (0,0) size 13x19
+          LayoutInline {<pseudo:before>} at (0,0) size 13x19
             LayoutCounter (anonymous) at (62,0) size 13x19
               text run at (62,0) width 13: "V"
         LayoutText {#text} at (74,0) size 5x19
