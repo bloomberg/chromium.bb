@@ -1583,18 +1583,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!window_->GetRootWindow())
     return;
 
-  if (delegated_frame_host_) {
-    delegated_frame_host_->WasResized(window_->GetLocalSurfaceId(),
-                                      window_->bounds().size(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  // Note that |host_| will retrieve resize parameters from
-  // |delegated_frame_host_|, so it must have WasResized called after.
-  host_->WasResized();
-  if (host_->auto_resize_enabled()) {
-    host_->DidAllocateLocalSurfaceIdForAutoResize(
-        host_->last_auto_resize_request_number());
-  }
+  SyncSurfaceProperties(cc::DeadlinePolicy::UseDefaultDeadline());
 
   device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
@@ -2046,15 +2035,7 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 void RenderWidgetHostViewAura::WasResized(
     const cc::DeadlinePolicy& deadline_policy) {
   window_->AllocateLocalSurfaceId();
-  if (delegated_frame_host_) {
-    delegated_frame_host_->WasResized(window_->GetLocalSurfaceId(),
-                                      window_->bounds().size(),
-                                      deadline_policy);
-  }
-  if (host_->auto_resize_enabled()) {
-    host_->DidAllocateLocalSurfaceIdForAutoResize(
-        host_->last_auto_resize_request_number());
-  }
+  SyncSurfaceProperties(deadline_policy);
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
@@ -2191,10 +2172,23 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // a Window::SetBoundsInternal call.
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
+
+  SyncSurfaceProperties(cc::DeadlinePolicy::UseDefaultDeadline());
+
+#if defined(OS_WIN)
+  UpdateLegacyWin();
+
+  if (mouse_locked_)
+    UpdateMouseLockRegion();
+#endif
+}
+
+void RenderWidgetHostViewAura::SyncSurfaceProperties(
+    const cc::DeadlinePolicy& deadline_policy) {
   if (delegated_frame_host_) {
     delegated_frame_host_->WasResized(window_->GetLocalSurfaceId(),
                                       window_->bounds().size(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
+                                      deadline_policy);
   }
   // Note that |host_| will retrieve resize parameters from
   // |delegated_frame_host_|, so it must have WasResized called after.
@@ -2203,12 +2197,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
     host_->DidAllocateLocalSurfaceIdForAutoResize(
         host_->last_auto_resize_request_number());
   }
-#if defined(OS_WIN)
-  UpdateLegacyWin();
-
-  if (mouse_locked_)
-    UpdateMouseLockRegion();
-#endif
 }
 
 #if defined(OS_WIN)
