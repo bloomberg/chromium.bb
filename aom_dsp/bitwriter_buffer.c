@@ -15,6 +15,12 @@
 #include "./aom_config.h"
 #include "./bitwriter_buffer.h"
 
+#if CONFIG_TRAILING_BITS
+int aom_wb_is_byte_aligned(const struct aom_write_bit_buffer *wb) {
+  return (wb->bit_offset % CHAR_BIT == 0);
+}
+#endif
+
 uint32_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb) {
   return wb->bit_offset / CHAR_BIT + (wb->bit_offset % CHAR_BIT > 0);
 }

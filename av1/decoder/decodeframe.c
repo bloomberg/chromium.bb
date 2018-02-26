@@ -3329,8 +3329,14 @@ static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
   }
 }
 
-int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
+int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
+#if CONFIG_TRAILING_BITS
+                                       struct aom_read_bit_buffer *rb,
+#endif
+                                       const uint8_t *data,
+#if !CONFIG_TRAILING_BITS
                                        const uint8_t *data_end,
+#endif
                                        const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
@@ -3349,9 +3355,15 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   }
   xd->global_motion = cm->global_motion;
 
+#if !CONFIG_TRAILING_BITS
   struct aom_read_bit_buffer rb;
+#endif
   read_uncompressed_header(pbi,
+#if CONFIG_TRAILING_BITS
+                           rb);
+#else
                            av1_init_read_bit_buffer(pbi, &rb, data, data_end));
+#endif
 
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
   // or a section of a frame is not allowed.
@@ -3361,7 +3373,11 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
     pbi->dec_tile_col = -1;
   }
 
+#if CONFIG_TRAILING_BITS
+  pbi->uncomp_hdr_size = aom_rb_bytes_read(rb);
+#else
   pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
+#endif
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
   if (av1_allow_intrabc(cm)) {
@@ -3371,8 +3387,12 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   }
 
   if (cm->show_existing_frame) {
-    // showing a frame directly
+  // showing a frame directly
+#if CONFIG_TRAILING_BITS
+    *p_data_end = data + aom_rb_bytes_read(rb);
+#else
     *p_data_end = data + aom_rb_bytes_read(&rb);
+#endif
 #if CONFIG_FWD_KF
     if (cm->reset_decoder_state) {
       // Use the default frame context values.

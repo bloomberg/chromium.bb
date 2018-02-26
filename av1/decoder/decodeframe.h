@@ -30,8 +30,13 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 void av1_decode_frame(struct AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end);
 int av1_decode_frame_headers_and_setup(struct AV1Decoder *pbi,
+#if CONFIG_TRAILING_BITS
+                                       struct aom_read_bit_buffer *rb,
+#endif
                                        const uint8_t *data,
+#if !CONFIG_TRAILING_BITS
                                        const uint8_t *data_end,
+#endif
                                        const uint8_t **p_data_end);
 
 void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,

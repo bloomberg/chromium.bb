@@ -3529,6 +3529,17 @@ static size_t obu_memmove(uint32_t obu_header_size, uint32_t obu_payload_size,
   return length_field_size;
 }
 
+#if CONFIG_TRAILING_BITS
+static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
+  if (aom_wb_is_byte_aligned(wb)) {
+    aom_wb_write_literal(wb, 0x80, 8);
+  } else {
+    // assumes that the other bits are already 0s
+    aom_wb_write_bit(wb, 1);
+  }
+}
+#endif
+
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
 #if CONFIG_SCALABILITY
                                           ,
@@ -3563,6 +3574,10 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
 #endif
 
+#if CONFIG_TRAILING_BITS
+  add_trailing_bits(&wb);
+#endif
+
   size = aom_wb_bytes_written(&wb);
   return size;
 }
@@ -3581,6 +3596,10 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi,
     total_size = aom_wb_bytes_written(&wb);
     return total_size;
   }
+
+#if CONFIG_TRAILING_BITS
+  add_trailing_bits(&wb);
+#endif
 
   uncompressed_hdr_size = aom_wb_bytes_written(&wb);
   total_size = uncompressed_hdr_size;
@@ -3799,6 +3818,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       const int is_last_col = (tile_col == tile_cols - 1);
       const int is_last_tile = is_last_col && is_last_row;
       int is_last_tile_in_tg = 0;
+#if CONFIG_TRAILING_BITS
+      int nb_bits = 0;
+#endif
 
       if (new_tg) {
         data = dst + total_size;
@@ -3857,9 +3879,30 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       aom_start_encode(&mode_bc, dst + total_size);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
+#if CONFIG_TRAILING_BITS
+      nb_bits = aom_stop_encode(&mode_bc);
+#else
       aom_stop_encode(&mode_bc);
+#endif
       tile_size = mode_bc.pos;
       assert(tile_size > 0);
+
+#if CONFIG_TRAILING_BITS
+      // similar to add_trailing_bits, but specific to end of last tile
+      if (is_last_tile) {
+        if (nb_bits % 8 == 0) {
+          // the arithmetic encoder ended on a byte boundary
+          // adding a 0b10000000 byte
+          *(dst + total_size + tile_size) = 0x80;
+          tile_size += 1;
+        } else {
+          // arithmetic encoder left several 0 bits
+          // changing the first 0 bit to 1
+          int bit_offset = 7 - nb_bits % 8;
+          *(dst + total_size + tile_size) |= 1 << bit_offset;
+        }
+      }
+#endif
 
       curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));
       buf->size = tile_size;

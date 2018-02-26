@@ -52,8 +52,8 @@ static INLINE void aom_start_encode(aom_writer *bc, uint8_t *buffer) {
   aom_daala_start_encode(bc, buffer);
 }
 
-static INLINE void aom_stop_encode(aom_writer *bc) {
-  aom_daala_stop_encode(bc);
+static INLINE int aom_stop_encode(aom_writer *bc) {
+  return aom_daala_stop_encode(bc);
 }
 
 static INLINE void aom_write(aom_writer *br, int bit, int probability) {

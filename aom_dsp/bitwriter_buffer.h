@@ -23,6 +23,10 @@ struct aom_write_bit_buffer {
   uint32_t bit_offset;
 };
 
+#if CONFIG_TRAILING_BITS
+int aom_wb_is_byte_aligned(const struct aom_write_bit_buffer *wb);
+#endif
+
 uint32_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb);
 
 void aom_wb_write_bit(struct aom_write_bit_buffer *wb, int bit);

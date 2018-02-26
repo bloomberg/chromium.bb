@@ -127,6 +127,23 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
   return AOM_CODEC_OK;
 }
 
+#if CONFIG_TRAILING_BITS
+// Checks that the remaining bits start with a 1 and ends with 0s.
+// May consume an additional byte, if already byte aligned before the check.
+static int check_trailing_bits(AV1Decoder *pbi,
+                               struct aom_read_bit_buffer *rb) {
+  AV1_COMMON *const cm = &pbi->common;
+  // bit_offset is set to 0 (mod 8) when the reader is already byte aligned
+  int bits_before_alignment = 8 - rb->bit_offset % 8;
+  int trailing = aom_rb_read_literal(rb, bits_before_alignment);
+  if (trailing != (1 << (bits_before_alignment - 1))) {
+    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    return 1;
+  }
+  return 0;
+}
+#endif
+
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
 static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
@@ -162,10 +179,24 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
 
-static uint32_t read_frame_header_obu(AV1Decoder *pbi, const uint8_t *data,
+static uint32_t read_frame_header_obu(AV1Decoder *pbi,
+#if CONFIG_TRAILING_BITS
+                                      struct aom_read_bit_buffer *rb,
+#endif
+                                      const uint8_t *data,
+#if !CONFIG_TRAILING_BITS
                                       const uint8_t *data_end,
+#endif
                                       const uint8_t **p_data_end) {
-  av1_decode_frame_headers_and_setup(pbi, data, data_end, p_data_end);
+  av1_decode_frame_headers_and_setup(pbi,
+#if CONFIG_TRAILING_BITS
+                                     rb,
+#endif
+                                     data,
+#if !CONFIG_TRAILING_BITS
+                                     data_end,
+#endif
+                                     p_data_end);
   return (uint32_t)(pbi->uncomp_hdr_size);
 }
 
@@ -428,8 +459,18 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_OBU_FRAME
         // Only decode first frame header received
         if (!frame_header_received) {
-          frame_header_size =
-              read_frame_header_obu(pbi, data, data_end, p_data_end);
+#if CONFIG_TRAILING_BITS
+          av1_init_read_bit_buffer(pbi, &rb, data, data_end);
+#endif
+          frame_header_size = read_frame_header_obu(pbi,
+#if CONFIG_TRAILING_BITS
+                                                    &rb,
+#endif
+                                                    data,
+#if !CONFIG_TRAILING_BITS
+                                                    data_end,
+#endif
+                                                    p_data_end);
           frame_header_received = 1;
         }
         decoded_payload_size = frame_header_size;
@@ -468,6 +509,18 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         decoded_payload_size = payload_size;
         break;
     }
+
+#if CONFIG_TRAILING_BITS
+    // Cannot check bit pattern at the end of frame, redundant frame headers,
+    // tile group, metadata, padding or unrecognized OBUs
+    // because the current code consumes or skips all bytes
+    if (payload_size > 0 &&
+        (obu_header.type == OBU_SEQUENCE_HEADER ||
+         obu_header.type == OBU_FRAME_HEADER) &&
+        check_trailing_bits(pbi, &rb)) {
+      return;
+    }
+#endif
 
     // Check that the signalled OBU size matches the actual amount of data read
     if (decoded_payload_size != payload_size) {
