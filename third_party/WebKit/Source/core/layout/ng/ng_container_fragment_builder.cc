@@ -16,7 +16,8 @@ NGContainerFragmentBuilder::NGContainerFragmentBuilder(
     scoped_refptr<const ComputedStyle> style,
     WritingMode writing_mode,
     TextDirection direction)
-    : NGBaseFragmentBuilder(std::move(style), writing_mode, direction) {}
+    : NGBaseFragmentBuilder(std::move(style), writing_mode, direction),
+      unpositioned_list_marker_(nullptr) {}
 
 NGContainerFragmentBuilder::~NGContainerFragmentBuilder() = default;
 
@@ -48,6 +49,13 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SwapUnpositionedFloats(
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats) {
   unpositioned_floats_.swap(*unpositioned_floats);
+  return *this;
+}
+
+NGContainerFragmentBuilder&
+NGContainerFragmentBuilder::SetUnpositionedListMarker(const NGBlockNode& node) {
+  DCHECK(!unpositioned_list_marker_ || !node);
+  unpositioned_list_marker_ = node;
   return *this;
 }
 

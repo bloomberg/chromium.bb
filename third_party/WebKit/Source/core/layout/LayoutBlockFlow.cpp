@@ -3113,7 +3113,9 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
       return;
     }
 
-    if (new_child->IsInline()) {
+    // LayoutNGListMarker is out-of-flow for the tree building purpose, and that
+    // is not inline level, but IsInline().
+    if (new_child->IsInline() && !new_child->IsLayoutNGListMarker()) {
       // No suitable existing anonymous box - create a new one.
       LayoutBlockFlow* new_block = ToLayoutBlockFlow(CreateAnonymousBlock());
       LayoutBox::AddChild(new_block, before_child);
@@ -3444,6 +3446,12 @@ static void GetInlineRun(LayoutObject* start,
 
   // Start by skipping as many non-inlines as we can.
   LayoutObject* curr = start;
+
+  // LayoutNGListMarker is out-of-flow for the tree building purpose. Skip here
+  // because it's the first child.
+  if (curr && curr->IsLayoutNGListMarker())
+    curr = curr->NextSibling();
+
   bool saw_inline;
   do {
     while (curr &&
@@ -3505,7 +3513,7 @@ void LayoutBlockFlow::MakeChildrenNonInline(LayoutObject* insertion_point) {
 
 #if DCHECK_IS_ON()
   for (LayoutObject* c = FirstChild(); c; c = c->NextSibling())
-    DCHECK(!c->IsInline());
+    DCHECK(!c->IsInline() || c->IsLayoutNGListMarker());
 #endif
 
   SetShouldDoFullPaintInvalidation();

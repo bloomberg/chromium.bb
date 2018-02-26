@@ -31,7 +31,7 @@ class CORE_EXPORT NGListLayoutAlgorithm final {
   // Add a fragment for an outside list marker for a block content.
   static void AddListMarkerForBlockContent(NGBlockNode,
                                            const NGConstraintSpace&,
-                                           const NGPhysicalBoxFragment&,
+                                           const NGPhysicalFragment&,
                                            NGLogicalOffset,
                                            NGFragmentBuilder*);
 };

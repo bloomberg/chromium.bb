@@ -95,6 +95,7 @@ class CORE_EXPORT NGPhysicalFragment
     return IsFloating() || IsOutOfFlowPositioned();
   }
   bool IsBlockFlow() const;
+  bool IsListMarker() const;
 
   // A block sub-layout starts on this fragment. Inline blocks, floats, out of
   // flow positioned objects are such examples. This is also true on NG/legacy

@@ -450,7 +450,8 @@ void NGBlockNode::CopyChildFragmentPosition(
       (layout_box->ContainingBlock()->IsLayoutFlowThread() &&
        box_ == layout_box->ContainingBlock()->ContainingBlock()) ||
       (layout_box->ContainingBlock()->IsInline() &&  // anonymous wrapper case
-       box_->Parent() == layout_box->ContainingBlock()));
+       box_->Parent() == layout_box->ContainingBlock()) ||
+      (box_->IsLayoutNGListItem() && layout_box->IsLayoutNGListMarker()));
 
   // LegacyLayout flips vertical-rl horizontal coordinates before paint.
   // NGLayout flips X location for LegacyLayout compatibility.
