@@ -40,9 +40,7 @@
 #endif
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/picklpf.h"
-#if CONFIG_LOOP_RESTORATION
 #include "av1/encoder/pickrst.h"
-#endif  // CONFIG_LOOP_RESTORATION
 #include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
@@ -543,10 +541,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_context_buffers(cm);
 
   aom_free_frame_buffer(&cpi->last_frame_uf);
-#if CONFIG_LOOP_RESTORATION
   av1_free_restoration_buffers(cm);
   aom_free_frame_buffer(&cpi->trial_frame_rst);
-#endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
   aom_free_frame_buffer(&cpi->alt_ref_buffer);
@@ -784,7 +780,6 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
-#if CONFIG_LOOP_RESTORATION
   if (aom_realloc_frame_buffer(
           &cpi->trial_frame_rst,
 #if CONFIG_HORZONLY_FRAME_SUPERRES
@@ -796,7 +791,6 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
           AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
-#endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
@@ -3801,9 +3795,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cm->superres_upscaled_width = oxcf->width;
   cm->superres_upscaled_height = oxcf->height;
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-#if CONFIG_LOOP_RESTORATION
   av1_loop_restoration_precal();
-#endif  // CONFIG_LOOP_RESTORATION
 
   cm->error.setjmp = 0;
 
@@ -4760,7 +4752,6 @@ static void init_motion_estimation(AV1_COMP *cpi) {
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 #define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0
 static void set_restoration_unit_size(int width, int height, int sx, int sy,
                                       RestorationInfo *rst) {
@@ -4781,7 +4772,6 @@ static void set_restoration_unit_size(int width, int height, int sx, int sy,
   rst[1].restoration_unit_size = rst[0].restoration_unit_size >> s;
   rst[2].restoration_unit_size = rst[1].restoration_unit_size;
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 static void init_ref_frame_bufs(AV1_COMMON *cm) {
   int i;
@@ -4874,7 +4864,6 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
-#if CONFIG_LOOP_RESTORATION
 #if CONFIG_HORZONLY_FRAME_SUPERRES
   const int frame_width = cm->superres_upscaled_width;
   const int frame_height = cm->superres_upscaled_height;
@@ -4888,7 +4877,6 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
 
   av1_alloc_restoration_buffers(cm);
-#endif                            // CONFIG_LOOP_RESTORATION
   alloc_util_frame_buffers(cpi);  // TODO(afergs): Remove? Gets called anyways.
   init_motion_estimation(cpi);
 
@@ -5138,9 +5126,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
   struct loopfilter *lf = &cm->lf;
   int no_loopfilter = 0;
-#if CONFIG_LOOP_RESTORATION
   int no_restoration = !cpi->oxcf.using_restoration;
-#endif  // CONFIG_LOOP_RESTORATION
 
   if (is_lossless_requested(&cpi->oxcf)
 #if CONFIG_EXT_TILE
@@ -5148,9 +5134,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_EXT_TILE
   ) {
     no_loopfilter = 1;
-#if CONFIG_LOOP_RESTORATION
     no_restoration = 1;
-#endif  // CONFIG_LOOP_RESTORATION
   }
 
   int no_cdef = 0;
@@ -5189,10 +5173,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     }
   }
 
-#if CONFIG_LOOP_RESTORATION
   if (!no_restoration)
     av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
-#endif  // CONFIG_LOOP_RESTORATION
 
   if (no_cdef) {
     cm->cdef_bits = 0;
@@ -5212,7 +5194,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   superres_post_encode(cpi);
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-#if CONFIG_LOOP_RESTORATION
   if (no_restoration) {
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
@@ -5226,7 +5207,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       av1_loop_restoration_filter_frame(cm->frame_to_show, cm);
     }
   }
-#endif  // CONFIG_LOOP_RESTORATION
 }
 
 static void encode_without_recode_loop(AV1_COMP *cpi) {
@@ -6039,11 +6019,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
     cm->cdef_uv_strengths[0] = 0;
-#if CONFIG_LOOP_RESTORATION
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
-#endif  // CONFIG_LOOP_RESTORATION
   }
 
   // TODO(debargha): Fix mv search range on encoder side

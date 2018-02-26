@@ -339,11 +339,9 @@ struct macroblock {
 #if CONFIG_EXT_INTRA_MOD
   int angle_delta_cost[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
 #endif  // CONFIG_EXT_INTRA_MOD
-#if CONFIG_LOOP_RESTORATION
   int switchable_restore_cost[RESTORE_SWITCHABLE_TYPES];
   int wiener_restore_cost[2];
   int sgrproj_restore_cost[2];
-#endif  // CONFIG_LOOP_RESTORATION
   int intrabc_cost[2];
 
   int optimize;

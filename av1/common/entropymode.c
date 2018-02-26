@@ -449,7 +449,6 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
                                                     1] = { -1, -1, 0, -1, -1,
                                                            4,  3,  2, 1 };
 
-#if CONFIG_LOOP_RESTORATION
 static const aom_cdf_prob default_switchable_restore_cdf[CDF_SIZE(
     RESTORE_SWITCHABLE_TYPES)] = { AOM_CDF3(32 * 128, 144 * 128) };
 
@@ -458,7 +457,6 @@ static const aom_cdf_prob default_wiener_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(
 
 static const aom_cdf_prob default_sgrproj_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(
     64 * 128) };
-#endif  // CONFIG_LOOP_RESTORATION
 
 #define NUM_PALETTE_NEIGHBORS 3  // left, top-left and top.
 int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
@@ -1274,11 +1272,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->filter_intra_cdfs, default_filter_intra_cdfs);
   av1_copy(fc->filter_intra_mode_cdf, default_filter_intra_mode_cdf);
 #endif  // CONFIG_FILTER_INTRA
-#if CONFIG_LOOP_RESTORATION
   av1_copy(fc->switchable_restore_cdf, default_switchable_restore_cdf);
   av1_copy(fc->wiener_restore_cdf, default_wiener_restore_cdf);
   av1_copy(fc->sgrproj_restore_cdf, default_sgrproj_restore_cdf);
-#endif  // CONFIG_LOOP_RESTORATION
   av1_copy(fc->y_mode_cdf, default_if_y_mode_cdf);
   av1_copy(fc->uv_mode_cdf, default_uv_mode_cdf);
   av1_copy(fc->switchable_interp_cdf, default_switchable_interp_cdf);

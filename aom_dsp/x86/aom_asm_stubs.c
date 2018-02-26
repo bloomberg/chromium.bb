@@ -160,7 +160,6 @@ HIGH_FUN_CONV_1D(avg_vert, y_step_q4, filter_y, v, src - src_stride * 3, avg_,
 HIGH_FUN_CONV_2D(, sse2);
 HIGH_FUN_CONV_2D(avg_, sse2);
 
-#if CONFIG_LOOP_RESTORATION
 // The SSE2 highbd convolve functions can deal with coefficients up to 32767.
 // So redirect highbd_convolve8_add_src to regular highbd_convolve8.
 void aom_highbd_convolve8_add_src_sse2(const uint8_t *src, ptrdiff_t src_stride,
@@ -177,6 +176,5 @@ void aom_highbd_convolve8_add_src_sse2(const uint8_t *src, ptrdiff_t src_stride,
   ((int16_t *)filter_x)[3] -= 128;
   ((int16_t *)filter_y)[3] -= 128;
 }
-#endif  // CONFIG_LOOP_RESTORATION
 #endif  // ARCH_X86_64
 #endif  // HAVE_SSE2

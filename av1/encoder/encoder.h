@@ -454,9 +454,7 @@ typedef struct AV1_COMP {
   int ext_refresh_frame_context;
 
   YV12_BUFFER_CONFIG last_frame_uf;
-#if CONFIG_LOOP_RESTORATION
   YV12_BUFFER_CONFIG trial_frame_rst;
-#endif
 
   // Ambient reconstruction err target for force key frames
   int64_t ambient_err;

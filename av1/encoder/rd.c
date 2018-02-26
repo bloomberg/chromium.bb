@@ -229,14 +229,12 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              NULL);
   }
 #endif  // CONFIG_EXT_INTRA_MOD
-#if CONFIG_LOOP_RESTORATION
   av1_cost_tokens_from_cdf(x->switchable_restore_cost,
                            fc->switchable_restore_cdf, NULL);
   av1_cost_tokens_from_cdf(x->wiener_restore_cost, fc->wiener_restore_cdf,
                            NULL);
   av1_cost_tokens_from_cdf(x->sgrproj_restore_cost, fc->sgrproj_restore_cdf,
                            NULL);
-#endif  // CONFIG_LOOP_RESTORATION
   av1_cost_tokens_from_cdf(x->intrabc_cost, fc->intrabc_cdf, NULL);
 
   if (!frame_is_intra_only(cm)) {

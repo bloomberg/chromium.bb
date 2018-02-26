@@ -638,7 +638,6 @@ typedef enum ATTRIBUTE_PACKED {
 //       possible to have a reference pair not listed for explicit signaling.
 #define MODE_CTX_REF_FRAMES (TOTAL_REFS_PER_FRAME + TOTAL_COMP_REFS)
 
-#if CONFIG_LOOP_RESTORATION
 typedef enum ATTRIBUTE_PACKED {
   RESTORE_NONE,
   RESTORE_WIENER,
@@ -647,7 +646,6 @@ typedef enum ATTRIBUTE_PACKED {
   RESTORE_SWITCHABLE_TYPES = RESTORE_SWITCHABLE,
   RESTORE_TYPES = 4,
 } RestorationType;
-#endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_HORZONLY_FRAME_SUPERRES
 #define SUPERRES_SCALE_BITS 3

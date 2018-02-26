@@ -36,7 +36,7 @@ extern "C" {
 #define MAX_EXT_SIZE 135
 #endif  // CONFIG_AV1 && CONFIG_EXT_PARTITION
 
-#if CONFIG_AV1 && CONFIG_LOOP_RESTORATION
+#if CONFIG_AV1
 #define EXTRAPREC_BITS 2
 #define EXTRAPREC_CLAMP_LIMIT(bd) (1 << ((bd) + 1 + EXTRAPREC_BITS))
 #endif

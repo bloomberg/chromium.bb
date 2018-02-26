@@ -67,12 +67,10 @@
 #include "av1/common/cfl.h"
 #endif
 
-#if CONFIG_LOOP_RESTORATION
 static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
                                             aom_reader *const r, int plane,
                                             int rtile_idx);
-#endif
 
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_fwd_ref[0] = LAST_FRAME;
@@ -578,7 +576,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-#if CONFIG_LOOP_RESTORATION
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
@@ -594,7 +591,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     }
   }
-#endif
 
   partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
                                   : read_partition(xd, mi_row, mi_col, r,
@@ -787,7 +783,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
@@ -1002,7 +997,6 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
     }
   }
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
@@ -1480,17 +1474,11 @@ static void read_tile_info(AV1Decoder *const pbi,
     const int no_loopfilter = !(lf->filter_level[0] || lf->filter_level[1]);
     const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
                         cm->cdef_uv_strengths[0] == 0;
-#if CONFIG_LOOP_RESTORATION
     const int no_restoration =
         cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
-#endif
-    cm->single_tile_decoding = no_loopfilter && no_cdef
-#if CONFIG_LOOP_RESTORATION
-                               && no_restoration
-#endif
-        ;
+    cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
     if (cm->seq_params.sb_size == BLOCK_128X128) {
@@ -1997,9 +1985,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #else
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
-#if CONFIG_LOOP_RESTORATION
       av1_reset_loop_restoration(&td->xd, num_planes);
-#endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
       dec_setup_across_tile_boundary_info(cm, &tile_info);
@@ -3012,11 +2998,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
     cm->cdef_uv_strengths[0] = 0;
-#if CONFIG_LOOP_RESTORATION
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
-#endif  // CONFIG_LOOP_RESTORATION
   }
 
 #if CONFIG_TILE_INFO_FIRST
@@ -3094,9 +3078,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (!cm->all_lossless) {
     setup_cdef(cm, rb);
   }
-#if CONFIG_LOOP_RESTORATION
   decode_restoration_mode(cm, rb);
-#endif  // CONFIG_LOOP_RESTORATION
   cm->tx_mode = read_tx_mode(cm, rb);
   cm->reference_mode = read_frame_reference_mode(cm, rb);
   if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
@@ -3338,13 +3320,11 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 static void setup_frame_info(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
 
-#if CONFIG_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
   }
-#endif
 
   // If encoded in frame parallel mode, frame context is ready after decoding
   // the frame header.
@@ -3409,13 +3389,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 
   if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
-#if CONFIG_LOOP_RESTORATION
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
       av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
     }
-#endif  // CONFIG_LOOP_RESTORATION
 
     if (!cm->skip_loop_filter && !cm->all_lossless &&
         (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0])) {
@@ -3426,14 +3404,12 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     superres_post_decode(pbi);
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-#if CONFIG_LOOP_RESTORATION
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
       av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 1);
       av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm);
     }
-#endif  // CONFIG_LOOP_RESTORATION
   }
 
   if (!xd->corrupted) {

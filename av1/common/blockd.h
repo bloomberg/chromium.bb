@@ -477,7 +477,6 @@ typedef struct RefBuffer {
   struct scale_factors sf;
 } RefBuffer;
 
-#if CONFIG_LOOP_RESTORATION
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);
   DECLARE_ALIGNED(16, InterpKernel, hfilter);
@@ -487,7 +486,6 @@ typedef struct {
   int ep;
   int xqd[2];
 } SgrprojInfo;
-#endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_CFL
 #if CONFIG_DEBUG
@@ -591,10 +589,8 @@ typedef struct macroblockd {
   TXFM_CONTEXT *left_txfm_context;
   TXFM_CONTEXT left_txfm_context_buffer[2 * MAX_MIB_SIZE];
 
-#if CONFIG_LOOP_RESTORATION
   WienerInfo wiener_info[MAX_MB_PLANE];
   SgrprojInfo sgrproj_info[MAX_MB_PLANE];
-#endif  // CONFIG_LOOP_RESTORATION
 
   // block dimension in the unit of mode_info.
   uint8_t n8_w, n8_h;
@@ -1009,9 +1005,7 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
                             BLOCK_SIZE bsize, const int num_planes);
 
-#if CONFIG_LOOP_RESTORATION
 void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes);
-#endif  // CONFIG_LOOP_RESTORATION
 
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   int blk_row, int blk_col,

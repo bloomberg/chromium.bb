@@ -23,10 +23,7 @@ print <<EOF
 #include "av1/common/convolve.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/odintrin.h"
-
-#if CONFIG_LOOP_RESTORATION
 #include "av1/common/restoration.h"
-#endif
 
 struct macroblockd;
 
@@ -461,15 +458,14 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
 # LOOP_RESTORATION functions
 
-if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
-  add_proto qw/void apply_selfguided_restoration/, "const uint8_t *dat, int width, int height, int stride, int eps, const int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf, int bit_depth, int highbd";
-  specialize qw/apply_selfguided_restoration sse4_1 avx2/;
+add_proto qw/void apply_selfguided_restoration/, "const uint8_t *dat, int width, int height, int stride, int eps, const int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf, int bit_depth, int highbd";
+specialize qw/apply_selfguided_restoration sse4_1 avx2/;
 
-  add_proto qw/void av1_selfguided_restoration/, "const uint8_t *dgd, int width, int height, int stride, int32_t *flt0, int32_t *flt1, int flt_stride, const sgr_params_type *params, int bit_depth, int highbd";
-  specialize qw/av1_selfguided_restoration sse4_1 avx2/;
-}
+add_proto qw/void av1_selfguided_restoration/, "const uint8_t *dgd, int width, int height, int stride, int32_t *flt0, int32_t *flt1, int flt_stride, const sgr_params_type *params, int bit_depth, int highbd";
+specialize qw/av1_selfguided_restoration sse4_1 avx2/;
 
 # CONVOLVE_ROUND/COMPOUND_ROUND functions
+
 add_proto qw/void av1_convolve_2d/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_2d sse2 avx2/;
 add_proto qw/void av1_convolve_2d_sr/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";

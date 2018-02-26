@@ -156,18 +156,16 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/cfl_test.cc")
     endif ()
 
-    if (CONFIG_LOOP_RESTORATION)
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/selfguided_filter_test.cc")
+
+    if (HAVE_SSE2)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/selfguided_filter_test.cc")
-
-      if (HAVE_SSE2)
-        set(AOM_UNIT_TEST_COMMON_SOURCES
-            ${AOM_UNIT_TEST_COMMON_SOURCES}
-            "${AOM_ROOT}/test/hiprec_convolve_test.cc"
-            "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
-            "${AOM_ROOT}/test/hiprec_convolve_test_util.h")
-      endif ()
+          "${AOM_ROOT}/test/hiprec_convolve_test.cc"
+          "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
+          "${AOM_ROOT}/test/hiprec_convolve_test_util.h")
     endif ()
 
     set(AOM_UNIT_TEST_COMMON_SOURCES

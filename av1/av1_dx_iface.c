@@ -141,9 +141,7 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
       frame_worker_data->pbi->common.tpl_mvs = NULL;
 #endif
       av1_remove_common(&frame_worker_data->pbi->common);
-#if CONFIG_LOOP_RESTORATION
       av1_free_restoration_buffers(&frame_worker_data->pbi->common);
-#endif  // CONFIG_LOOP_RESTORATION
       av1_decoder_remove(frame_worker_data->pbi);
       aom_free(frame_worker_data->scratch_buffer);
 #if CONFIG_MULTITHREAD

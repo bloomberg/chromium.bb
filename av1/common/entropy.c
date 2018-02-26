@@ -667,11 +667,9 @@ void av1_average_tile_loopfilter_cdfs(FRAME_CONTEXT *fc,
   (void)cdf_size;
   (void)fc_cdf_ptr;
 
-#if CONFIG_LOOP_RESTORATION
   AVERAGE_TILE_CDFS(switchable_restore_cdf)
   AVERAGE_TILE_CDFS(wiener_restore_cdf)
   AVERAGE_TILE_CDFS(sgrproj_restore_cdf)
-#endif  // CONFIG_LOOP_RESTORATION
 }
 
 void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],

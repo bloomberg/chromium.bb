@@ -62,12 +62,10 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
                                              const RestorationUnitInfo *rui,
                                              aom_writer *const w, int plane);
-#endif  // CONFIG_LOOP_RESTORATION
 
 static void write_intra_mode_kf(FRAME_CONTEXT *frame_ctx, const MODE_INFO *mi,
                                 const MODE_INFO *above_mi,
@@ -1857,7 +1855,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-#if CONFIG_LOOP_RESTORATION
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
@@ -1875,7 +1872,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       }
     }
   }
-#endif
 
   write_partition(cm, xd, hbs, mi_row, mi_col, partition, bsize, w);
   switch (partition) {
@@ -1994,7 +1990,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
@@ -2199,7 +2194,6 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
     }
   }
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
@@ -3473,9 +3467,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (!cm->all_lossless) {
     encode_cdef(cm, wb);
   }
-#if CONFIG_LOOP_RESTORATION
   encode_restoration_mode(cm, wb);
-#endif  // CONFIG_LOOP_RESTORATION
   write_tx_mode(cm, &cm->tx_mode, wb);
 
   if (cpi->allow_comp_inter_inter) {
@@ -3997,10 +3989,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       mode_bc.allow_update_cdf = 1;
-#if CONFIG_LOOP_RESTORATION
       const int num_planes = av1_num_planes(cm);
       av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
-#endif  // CONFIG_LOOP_RESTORATION
 
       aom_start_encode(&mode_bc, dst + total_size);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);

@@ -557,7 +557,6 @@ static INLINE int highbd_vert_scalar_product(const uint16_t *a,
 }
 
 // TODO(afergs): Make sure this works too
-#if CONFIG_LOOP_RESTORATION
 static void convolve_add_src_horiz(const uint8_t *src, ptrdiff_t src_stride,
                                    uint8_t *dst, ptrdiff_t dst_stride,
                                    const InterpKernel *x_filters, int x0_q4,
@@ -786,7 +785,6 @@ void aom_convolve8_add_src_hip_c(const uint8_t *src, ptrdiff_t src_stride,
   convolve_add_src_hip(src, src_stride, dst, dst_stride, filters_x, x0_q4,
                        x_step_q4, filters_y, y0_q4, y_step_q4, w, h);
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 static INLINE int highbd_horz_scalar_product(const uint16_t *a,
                                              const int16_t *b) {
@@ -1049,7 +1047,6 @@ void aom_highbd_convolve_avg_c(const uint8_t *src8, ptrdiff_t src_stride,
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 static void highbd_convolve_add_src_horiz(const uint8_t *src8,
                                           ptrdiff_t src_stride, uint8_t *dst8,
                                           ptrdiff_t dst_stride,
@@ -1253,4 +1250,3 @@ void aom_highbd_convolve8_add_src_hip_c(const uint8_t *src,
                               x0_q4, x_step_q4, filters_y, y0_q4, y_step_q4, w,
                               h, bd);
 }
-#endif  // CONFIG_LOOP_RESTORATION

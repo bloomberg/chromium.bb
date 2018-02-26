@@ -24,9 +24,7 @@
 #include "av1/common/frame_buffers.h"
 #include "av1/common/mv.h"
 #include "av1/common/quant_common.h"
-#if CONFIG_LOOP_RESTORATION
 #include "av1/common/restoration.h"
-#endif  // CONFIG_LOOP_RESTORATION
 #include "av1/common/tile_common.h"
 #include "av1/common/odintrin.h"
 #if CONFIG_HASH_ME
@@ -434,7 +432,6 @@ typedef struct AV1Common {
   int superres_upscaled_width;
   int superres_upscaled_height;
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-#if CONFIG_LOOP_RESTORATION
   RestorationInfo rst_info[MAX_MB_PLANE];
 
   // rst_end_stripe[i] is one more than the index of the bottom stripe
@@ -443,7 +440,6 @@ typedef struct AV1Common {
 
   // Pointer to a scratch buffer used by self-guided restoration
   int32_t *rst_tmpbuf;
-#endif  // CONFIG_LOOP_RESTORATION
 
   // Flag signaling how frame contexts should be updated at the end of
   // a frame decode

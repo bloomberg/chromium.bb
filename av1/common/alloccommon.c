@@ -106,7 +106,6 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 // Assumes cm->rst_info[p].restoration_unit_size is already initialized
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
@@ -191,7 +190,6 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
     boundaries->stripe_boundary_below = NULL;
   }
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);

@@ -385,7 +385,6 @@ if (CONFIG_CFL)
     "${AOM_ROOT}/av1/common/x86/cfl_avx2.c")
 endif ()
 
-if (CONFIG_LOOP_RESTORATION)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/restoration.c"
@@ -403,7 +402,6 @@ if (CONFIG_LOOP_RESTORATION)
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/pickrst.c"
       "${AOM_ROOT}/av1/encoder/pickrst.h")
-endif ()
 
 if (CONFIG_INTRA_EDGE)
   set(AOM_AV1_COMMON_INTRIN_SSE4_1

@@ -381,11 +381,9 @@ SUBPIX_HFILTER8  h8_avg
 SUBPIX_HFILTER4  h8
 SUBPIX_HFILTER4  h8_avg
 
-%if CONFIG_LOOP_RESTORATION
 SUBPIX_HFILTER16 h8_add_src
 SUBPIX_HFILTER8  h8_add_src
 SUBPIX_HFILTER4  h8_add_src
-%endif
 
 ;-------------------------------------------------------------------------------
 
@@ -881,8 +879,7 @@ SUBPIX_VFILTER   v8_avg, 8
 SUBPIX_VFILTER       v8, 4
 SUBPIX_VFILTER   v8_avg, 4
 
-%if (ARCH_X86 || X86_SUBPIX_VFILTER_PREFER_SLOW_CELERON) && \
-    CONFIG_LOOP_RESTORATION
+%if (ARCH_X86 || X86_SUBPIX_VFILTER_PREFER_SLOW_CELERON)
 SUBPIX_VFILTER16 v8_add_src
 SUBPIX_VFILTER   v8_add_src, 8
 SUBPIX_VFILTER   v8_add_src, 4

@@ -142,14 +142,12 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   }
 }
 
-#if CONFIG_LOOP_RESTORATION
 void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes) {
   for (int p = 0; p < num_planes; ++p) {
     set_default_wiener(xd->wiener_info + p);
     set_default_sgrproj(xd->sgrproj_info + p);
   }
 }
-#endif  // CONFIG_LOOP_RESTORATION
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,
                             const int num_planes) {
