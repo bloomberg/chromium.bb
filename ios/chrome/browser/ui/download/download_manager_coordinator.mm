@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -87,10 +88,12 @@
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
          decidePolicyForDownload:(nonnull web::DownloadTask*)download
                completionHandler:(nonnull void (^)(NewDownloadPolicy))handler {
-  // TODO(crbug.com/805533): Localize those strings.
-  NSString* message = @"This will stop all progress for your current download.";
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION);
+  NSString* message = l10n_util::GetNSString(
+      IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE);
   __weak DownloadManagerCoordinator* weakSelf = self;
-  [self runConfirmationDialogWithTitle:@"Start New Download?"
+  [self runConfirmationDialogWithTitle:title
                                message:message
                      completionHandler:^(BOOL confirmed) {
                        DownloadManagerCoordinator* strongSelf = weakSelf;
@@ -137,8 +140,9 @@
   }
 
   __weak DownloadManagerCoordinator* weakSelf = self;
-  // TODO(crbug.com/805533): Localize this string.
-  [self runConfirmationDialogWithTitle:@"Cancel Download?"
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION);
+  [self runConfirmationDialogWithTitle:title
                                message:nil
                      completionHandler:^(BOOL confirmed) {
                        if (confirmed) {
