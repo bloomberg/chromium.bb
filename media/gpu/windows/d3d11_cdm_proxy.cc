@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(crbug.com/787657): Handle hardware key reset and notify the client.
-#include "media/gpu/d3d11_cdm_proxy.h"
+#include "media/gpu/windows/d3d11_cdm_proxy.h"
 
 #include <initguid.h>
 

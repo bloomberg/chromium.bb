@@ -18,7 +18,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "media/base/win/mf_initializer.h"
-#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
+#include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #include "remoting/host/win/evaluate_d3d.h"
 #endif
 

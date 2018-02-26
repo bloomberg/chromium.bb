@@ -17,7 +17,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "media/gpu/dxva_video_decode_accelerator_win.h"
+#include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #endif
 #if defined(OS_MACOSX)
 #include "media/gpu/vt_video_decode_accelerator_mac.h"

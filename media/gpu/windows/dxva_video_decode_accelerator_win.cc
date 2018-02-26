@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/dxva_video_decode_accelerator_win.h"
+#include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 
 #include <memory>
 
@@ -48,7 +48,7 @@
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/filters/vp9_parser.h"
-#include "media/gpu/dxva_picture_buffer_win.h"
+#include "media/gpu/windows/dxva_picture_buffer_win.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
