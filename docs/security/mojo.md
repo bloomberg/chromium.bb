@@ -266,9 +266,9 @@ class View : public mojom::View {
 };
 ```
 
-The `EnableIf` annotation can be applied to almost anything: interfaces,
-methods, arguments, constants, structs, struct members, enums, enumerator
-values, et cetera.
+The `EnableIf` annotation can be applied to almost anything: imports,
+interfaces, methods, arguments, constants, structs, struct members, enums,
+enumerator values, et cetera.
 
 
 #### Do not define unimplemented methods
