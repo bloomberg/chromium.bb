@@ -192,7 +192,6 @@ typedef struct AV1EncoderConfig {
 #endif
   int using_cdef;
   int using_restoration;
-#if CONFIG_AOM_QM
   int using_qm;
 #if CONFIG_AOM_QM_EXT
   int qm_y;
@@ -201,7 +200,6 @@ typedef struct AV1EncoderConfig {
 #endif
   int qm_minlevel;
   int qm_maxlevel;
-#endif
 #if CONFIG_DIST_8X8
   int using_dist_8x8;
 #endif

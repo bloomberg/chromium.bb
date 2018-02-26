@@ -88,7 +88,6 @@ set(CONFIG_SPATIAL_RESAMPLING 1 CACHE NUMBER "Spatial resampling.")
 
 # AV1 experiment flags.
 set(CONFIG_AMVR 0 CACHE NUMBER "AV1 experiment flag.")
-set(CONFIG_AOM_QM 1 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_AOM_QM_EXT 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_CDF_UPDATE_MODE 0 CACHE NUMBER "AV1 experiment flag.")
 set(CONFIG_CFL 1 CACHE NUMBER "AV1 experiment flag.")

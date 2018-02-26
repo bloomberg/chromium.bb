@@ -146,7 +146,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint16_t *const eob = &p->eobs[block];
   const int diff_stride = block_size_wide[plane_bsize];
-#if CONFIG_AOM_QM
   int seg_id = mbmi->segment_id;
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
@@ -157,7 +156,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[seg_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-#endif  // CONFIG_AOM_QM
 
   TxfmParam txfm_param;
   QUANT_PARAM qparam;
@@ -167,10 +165,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   qparam.log_scale = av1_get_tx_scale(tx_size);
   qparam.tx_size = tx_size;
-#if CONFIG_AOM_QM
   qparam.qmatrix = qmatrix;
   qparam.iqmatrix = iqmatrix;
-#endif  // CONFIG_AOM_QM
 
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;

@@ -24,10 +24,8 @@ extern "C" {
 typedef struct QUANT_PARAM {
   int log_scale;
   TX_SIZE tx_size;
-#if CONFIG_AOM_QM
   const qm_val_t *qmatrix;
   const qm_val_t *iqmatrix;
-#endif  // CONFIG_AOM_QM
 } QUANT_PARAM;
 
 typedef void (*AV1_QUANT_FACADE)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,

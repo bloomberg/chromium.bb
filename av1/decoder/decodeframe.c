@@ -1087,7 +1087,6 @@ static void setup_quantization(AV1_COMMON *const cm,
     }
   }
   cm->dequant_bit_depth = cm->bit_depth;
-#if CONFIG_AOM_QM
   cm->using_qmatrix = aom_rb_read_bit(rb);
   if (cm->using_qmatrix) {
 #if CONFIG_AOM_QM_EXT
@@ -1111,18 +1110,15 @@ static void setup_quantization(AV1_COMMON *const cm,
     cm->max_qmlevel = 0;
 #endif
   }
-#endif
 }
 
 // Build y/uv dequant values based on segmentation.
 static void setup_segmentation_dequant(AV1_COMMON *const cm) {
-#if CONFIG_AOM_QM
   const int using_qm = cm->using_qmatrix;
 #if !CONFIG_AOM_QM_EXT
   const int minqm = cm->min_qmlevel;
   const int maxqm = cm->max_qmlevel;
 #endif  // !CONFIG_AOM_QM_EXT
-#endif
   // When segmentation is disabled, only the first value is used.  The
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
@@ -1139,7 +1135,6 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
         av1_dc_quant_QTX(qindex, cm->v_dc_delta_q, cm->bit_depth);
     cm->v_dequant_QTX[i][1] =
         av1_ac_quant_QTX(qindex, cm->v_ac_delta_q, cm->bit_depth);
-#if CONFIG_AOM_QM
     const int lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
                          cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
                          cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
@@ -1167,7 +1162,6 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
     }
-#endif  // CONFIG_AOM_QM
   }
 }
 

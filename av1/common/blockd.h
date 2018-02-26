@@ -460,10 +460,8 @@ typedef struct macroblockd_plane {
   // block size in pixels
   uint8_t width, height;
 
-#if CONFIG_AOM_QM
   qm_val_t *seg_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-#endif
 
   // the 'dequantizers' below are not literal dequantizer values.
   // They're used by encoder RDO to generate ad-hoc lambda values.

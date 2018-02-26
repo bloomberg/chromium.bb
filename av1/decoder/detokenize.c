@@ -60,17 +60,13 @@ static int token_to_value(aom_reader *const r, int token, TX_SIZE tx_size,
 
 static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
-#if CONFIG_AOM_QM
-                        qm_val_t *iqm[TX_SIZES_ALL],
-#endif  // CONFIG_AOM_QM
-                        int ctx, const int16_t *scan, const int16_t *nb,
+                        qm_val_t *iqm[TX_SIZES_ALL], int ctx,
+                        const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const int max_eob = av1_get_max_eob(tx_size);
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-#if CONFIG_AOM_QM
   const qm_val_t *iqmatrix = iqm[tx_size];
-#endif  // CONFIG_AOM_QM
   (void)tx_type;
   int band, c = 0;
   const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
@@ -131,12 +127,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     token_cache[scan[c]] = av1_pt_energy_class[token];
 
     val = token_to_value(r, token, tx_size, xd->bd);
-#if CONFIG_AOM_QM
     // Apply quant matrix only for 2D transforms
     if (IS_2D_TRANSFORM(tx_type) && iqmatrix != NULL)
       dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
             AOM_QM_BITS;
-#endif
     v = (int)(((int64_t)val * dqv) >> dq_shift);
 
     v = (int)check_range(aom_read_bit(r, ACCT_STR) ? -v : v, xd->bd);
@@ -242,12 +236,9 @@ int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
   const int ctx =
       get_entropy_context(tx_size, pd->above_context + x, pd->left_context + y);
 
-  const int eob =
-      decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size, tx_type, dequant,
-#if CONFIG_AOM_QM
-                   pd->seg_iqmatrix[seg_id],
-#endif  // CONFIG_AOM_QM
-                   ctx, sc->scan, sc->neighbors, max_scan_line, r);
+  const int eob = decode_coefs(xd, pd->plane_type, pd->dqcoeff, tx_size,
+                               tx_type, dequant, pd->seg_iqmatrix[seg_id], ctx,
+                               sc->scan, sc->neighbors, max_scan_line, r);
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
   return eob;
 }

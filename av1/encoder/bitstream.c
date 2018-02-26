@@ -2348,7 +2348,6 @@ static void encode_quantization(const AV1_COMMON *const cm,
       write_delta_q(wb, cm->v_ac_delta_q);
     }
   }
-#if CONFIG_AOM_QM
   aom_wb_write_bit(wb, cm->using_qmatrix);
   if (cm->using_qmatrix) {
 #if CONFIG_AOM_QM_EXT
@@ -2363,7 +2362,6 @@ static void encode_quantization(const AV1_COMMON *const cm,
     aom_wb_write_literal(wb, cm->max_qmlevel, QM_LEVEL_BITS);
 #endif
   }
-#endif
 }
 
 static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,

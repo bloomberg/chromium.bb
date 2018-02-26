@@ -2067,15 +2067,11 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
       2;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-#if CONFIG_AOM_QM
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   const qm_val_t *iqmatrix =
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
-#else
-  const qm_val_t *iqmatrix = NULL;
-#endif
   assert(width == (1 << bwl));
   TxbInfo txb_info = {
     qcoeff,   levels,  dqcoeff,    tcoeff,  dequant, shift,

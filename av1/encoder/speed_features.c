@@ -578,10 +578,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   }
 
   x->optimize = oxcf->pass != 1 ? sf->optimize_coefficients : NO_TRELLIS_OPT;
-#if CONFIG_AOM_QM
   // FIXME: trellis not very efficient for quantisation matrices
   if (cm->using_qmatrix) x->optimize = 0;
-#endif
 
   x->min_partition_size = sf->default_min_partition_size;
   x->max_partition_size = sf->default_max_partition_size;

@@ -3839,9 +3839,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
    * av1_init_quantizer() for every frame.
    */
   av1_init_quantizer(cpi);
-#if CONFIG_AOM_QM
   av1_qm_init(cm);
-#endif
 
   av1_loop_filter_init(cm);
 #if CONFIG_HORZONLY_FRAME_SUPERRES
@@ -7014,11 +7012,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       cpi->scaled_ref_idx[i] = INVALID_IDX;
   }
 
-#if CONFIG_AOM_QM
   cm->using_qmatrix = cpi->oxcf.using_qm;
   cm->min_qmlevel = cpi->oxcf.qm_minlevel;
   cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-#endif
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {

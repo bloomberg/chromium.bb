@@ -64,7 +64,6 @@ struct av1_extracfg {
   unsigned int lossless;
   unsigned int enable_cdef;
   unsigned int enable_restoration;
-#if CONFIG_AOM_QM
   unsigned int enable_qm;
 #if CONFIG_AOM_QM_EXT
   unsigned int qm_y;
@@ -73,7 +72,6 @@ struct av1_extracfg {
 #endif  // CONFIG_AOM_QM_EXT
   unsigned int qm_min;
   unsigned int qm_max;
-#endif  // CONFIG_AOM_QM
 #if CONFIG_DIST_8X8
   unsigned int enable_dist_8x8;
 #endif
@@ -154,8 +152,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,              // lossless
   1,              // enable_cdef
   1,              // enable_restoration
-#if CONFIG_AOM_QM
-  0,  // enable_qm
+  0,              // enable_qm
 #if CONFIG_AOM_QM_EXT
   DEFAULT_QM_Y,      // qm_y
   DEFAULT_QM_U,      // qm_u
@@ -163,7 +160,6 @@ static struct av1_extracfg default_extra_cfg = {
 #endif               // CONFIG_AOM_QM_EXT
   DEFAULT_QM_FIRST,  // qm_min
   DEFAULT_QM_LAST,   // qm_max
-#endif
 #if CONFIG_DIST_8X8
   0,
 #endif
@@ -595,7 +591,6 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->using_cdef = extra_cfg->enable_cdef;
   oxcf->using_restoration = extra_cfg->enable_restoration;
-#if CONFIG_AOM_QM
   oxcf->using_qm = extra_cfg->enable_qm;
 #if CONFIG_AOM_QM_EXT
   oxcf->qm_y = extra_cfg->qm_y;
@@ -604,7 +599,6 @@ static aom_codec_err_t set_encoder_config(
 #endif  // CONFIG_AOM_QM_EXT
   oxcf->qm_minlevel = extra_cfg->qm_min;
   oxcf->qm_maxlevel = extra_cfg->qm_max;
-#endif
 #if CONFIG_DIST_8X8
   oxcf->using_dist_8x8 = extra_cfg->enable_dist_8x8;
   if (extra_cfg->tuning == AOM_TUNE_CDEF_DIST ||
@@ -1037,7 +1031,6 @@ static aom_codec_err_t ctrl_set_enable_restoration(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_AOM_QM
 static aom_codec_err_t ctrl_set_enable_qm(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1075,7 +1068,6 @@ static aom_codec_err_t ctrl_set_qm_max(aom_codec_alg_priv_t *ctx,
   extra_cfg.qm_max = CAST(AV1E_SET_QM_MAX, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif
 #if CONFIG_DIST_8X8
 static aom_codec_err_t ctrl_set_enable_dist_8x8(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
@@ -1795,7 +1787,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_LOSSLESS, ctrl_set_lossless },
   { AV1E_SET_ENABLE_CDEF, ctrl_set_enable_cdef },
   { AV1E_SET_ENABLE_RESTORATION, ctrl_set_enable_restoration },
-#if CONFIG_AOM_QM
   { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
 #if CONFIG_AOM_QM_EXT
   { AV1E_SET_QM_Y, ctrl_set_qm_y },
@@ -1804,8 +1795,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 #endif  // CONFIG_AOM_QM_EXT
   { AV1E_SET_QM_MIN, ctrl_set_qm_min },
   { AV1E_SET_QM_MAX, ctrl_set_qm_max },
-
-#endif
 #if CONFIG_DIST_8X8
   { AV1E_SET_ENABLE_DIST_8X8, ctrl_set_enable_dist_8x8 },
 #endif

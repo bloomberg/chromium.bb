@@ -462,7 +462,6 @@ static const arg_def_t enable_restoration =
     ARG_DEF(NULL, "enable-restoration", 1,
             "Enable the loop restoration filter (0: false, "
             "1: true (default))");
-#if CONFIG_AOM_QM
 static const arg_def_t enable_qm =
     ARG_DEF(NULL, "enable-qm", 1,
             "Enable quantisation matrices (0: false (default), 1: true)");
@@ -470,7 +469,6 @@ static const arg_def_t qm_min = ARG_DEF(
     NULL, "qm-min", 1, "Min quant matrix flatness (0..15), default is 8");
 static const arg_def_t qm_max = ARG_DEF(
     NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 15");
-#endif
 #if CONFIG_DIST_8X8
 static const arg_def_t enable_dist_8x8 =
     ARG_DEF(NULL, "enable-dist-8x8", 1,
@@ -701,11 +699,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &lossless,
                                        &enable_cdef,
                                        &enable_restoration,
-#if CONFIG_AOM_QM
                                        &enable_qm,
                                        &qm_min,
                                        &qm_max,
-#endif
 #if CONFIG_DIST_8X8
                                        &enable_dist_8x8,
 #endif
@@ -777,11 +773,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_LOSSLESS,
                                         AV1E_SET_ENABLE_CDEF,
                                         AV1E_SET_ENABLE_RESTORATION,
-#if CONFIG_AOM_QM
                                         AV1E_SET_ENABLE_QM,
                                         AV1E_SET_QM_MIN,
                                         AV1E_SET_QM_MAX,
-#endif
 #if CONFIG_DIST_8X8
                                         AV1E_SET_ENABLE_DIST_8X8,
 #endif

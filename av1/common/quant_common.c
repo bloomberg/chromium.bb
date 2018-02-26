@@ -257,7 +257,6 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
   }
 }
 
-#if CONFIG_AOM_QM
 const qm_val_t *av1_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
                              TX_SIZE tx_size) {
   return &cm->giqmatrix[qmlevel][plane][tx_size][0];
@@ -13698,4 +13697,3 @@ static const qm_val_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32 },
   },
 };
-#endif
