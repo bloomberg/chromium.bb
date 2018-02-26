@@ -25,6 +25,24 @@ class CommonTest(unittest.TestCase):
     def test_get_credentials_none(self):
         self.assertEqual(read_credentials(MockHost(), None), {})
 
+    def test_get_credentials_gets_values_from_environment(self):
+        host = MockHost()
+        host.environ.update({
+            'GH_USER': 'user-github',
+            'GH_TOKEN': 'pass-github',
+            'GERRIT_USER': 'user-gerrit',
+            'GERRIT_TOKEN': 'pass-gerrit',
+            'UNUSED_VALUE': 'foo',
+        })
+        self.assertEqual(
+            read_credentials(host, None),
+            {
+                'GH_USER': 'user-github',
+                'GH_TOKEN': 'pass-github',
+                'GERRIT_USER': 'user-gerrit',
+                'GERRIT_TOKEN': 'pass-gerrit',
+            })
+
     def test_get_credentials_gets_values_from_file(self):
         host = MockHost()
         host.filesystem.write_text_file(
@@ -42,6 +60,27 @@ class CommonTest(unittest.TestCase):
                 'GH_TOKEN': 'pass-github',
                 'GERRIT_USER': 'user-gerrit',
                 'GERRIT_TOKEN': 'pass-gerrit',
+            })
+
+    def test_get_credentials_choose_file_over_environment(self):
+        host = MockHost()
+        host.environ.update({
+            'GH_USER': 'user-github-from-env',
+            'GH_TOKEN': 'pass-github-from-env',
+            'GERRIT_USER': 'user-gerrit-from-env',
+            'GERRIT_TOKEN': 'pass-gerrit-from-env',
+        })
+        host.filesystem.write_text_file(
+            '/tmp/credentials.json',
+            json.dumps({
+                'GH_USER': 'user-github-from-json',
+                'GH_TOKEN': 'pass-github-from-json',
+            }))
+        self.assertEqual(
+            read_credentials(host, '/tmp/credentials.json'),
+            {
+                'GH_USER': 'user-github-from-json',
+                'GH_TOKEN': 'pass-github-from-json',
             })
 
     def test_is_testharness_baseline(self):
