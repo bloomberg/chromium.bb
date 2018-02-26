@@ -399,10 +399,11 @@ bool AXNodeData::GetStringListAttribute(
 
 bool AXNodeData::GetHtmlAttribute(
     const char* html_attr, std::string* value) const {
-  for (size_t i = 0; i < html_attributes.size(); ++i) {
-    const std::string& attr = html_attributes[i].first;
+  for (const std::pair<std::string, std::string>& html_attribute :
+       html_attributes) {
+    const std::string& attr = html_attribute.first;
     if (base::LowerCaseEqualsASCII(attr, html_attr)) {
-      *value = html_attributes[i].second;
+      *value = html_attribute.second;
       return true;
     }
   }
@@ -450,15 +451,17 @@ void AXNodeData::AddStringListAttribute(
 }
 
 void AXNodeData::SetName(const std::string& name) {
-  for (size_t i = 0; i < string_attributes.size(); ++i) {
-    if (string_attributes[i].first == ax::mojom::StringAttribute::kName) {
-      string_attributes[i].second = name;
-      return;
-    }
+  auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
+                           [](const auto& string_attribute) {
+                             return string_attribute.first ==
+                                    ax::mojom::StringAttribute::kName;
+                           });
+  if (iter == string_attributes.end()) {
+    string_attributes.push_back(
+        std::make_pair(ax::mojom::StringAttribute::kName, name));
+  } else {
+    iter->second = name;
   }
-
-  string_attributes.push_back(
-      std::make_pair(ax::mojom::StringAttribute::kName, name));
 }
 
 void AXNodeData::SetName(const base::string16& name) {
@@ -470,16 +473,17 @@ void AXNodeData::SetNameExplicitlyEmpty() {
 }
 
 void AXNodeData::SetDescription(const std::string& description) {
-  for (std::pair<ax::mojom::StringAttribute, std::string>& string_attribute :
-       string_attributes) {
-    if (string_attribute.first == ax::mojom::StringAttribute::kDescription) {
-      string_attribute.second = description;
-      return;
-    }
+  auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
+                           [](const auto& string_attribute) {
+                             return string_attribute.first ==
+                                    ax::mojom::StringAttribute::kDescription;
+                           });
+  if (iter == string_attributes.end()) {
+    string_attributes.push_back(
+        std::make_pair(ax::mojom::StringAttribute::kDescription, description));
+  } else {
+    iter->second = description;
   }
-
-  string_attributes.push_back(
-      std::make_pair(ax::mojom::StringAttribute::kDescription, description));
 }
 
 void AXNodeData::SetDescription(const base::string16& description) {
@@ -487,15 +491,17 @@ void AXNodeData::SetDescription(const base::string16& description) {
 }
 
 void AXNodeData::SetValue(const std::string& value) {
-  for (size_t i = 0; i < string_attributes.size(); ++i) {
-    if (string_attributes[i].first == ax::mojom::StringAttribute::kValue) {
-      string_attributes[i].second = value;
-      return;
-    }
+  auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
+                           [](const auto& string_attribute) {
+                             return string_attribute.first ==
+                                    ax::mojom::StringAttribute::kValue;
+                           });
+  if (iter == string_attributes.end()) {
+    string_attributes.push_back(
+        std::make_pair(ax::mojom::StringAttribute::kValue, value));
+  } else {
+    iter->second = value;
   }
-
-  string_attributes.push_back(
-      std::make_pair(ax::mojom::StringAttribute::kValue, value));
 }
 
 void AXNodeData::SetValue(const base::string16& value) {
@@ -580,13 +586,14 @@ std::string AXNodeData::ToString() const {
   if (transform && !transform->IsIdentity())
     result += " transform=" + transform->ToString();
 
-  for (size_t i = 0; i < int_attributes.size(); ++i) {
-    std::string value = base::NumberToString(int_attributes[i].second);
-    switch (int_attributes[i].first) {
+  for (const std::pair<ax::mojom::IntAttribute, int32_t>& int_attribute :
+       int_attributes) {
+    std::string value = base::NumberToString(int_attribute.second);
+    switch (int_attribute.first) {
       case ax::mojom::IntAttribute::kDefaultActionVerb:
         result += " action=" + base::UTF16ToUTF8(ActionVerbToUnlocalizedString(
                                    static_cast<ax::mojom::DefaultActionVerb>(
-                                       int_attributes[i].second)));
+                                       int_attribute.second)));
         break;
       case ax::mojom::IntAttribute::kScrollX:
         result += " scroll_x=" + value;
@@ -661,8 +668,7 @@ std::string AXNodeData::ToString() const {
         result += " row_index=" + value;
         break;
       case ax::mojom::IntAttribute::kSortDirection:
-        switch (
-            static_cast<ax::mojom::SortDirection>(int_attributes[i].second)) {
+        switch (static_cast<ax::mojom::SortDirection>(int_attribute.second)) {
           case ax::mojom::SortDirection::kUnsorted:
             result += " sort_direction=none";
             break;
@@ -682,12 +688,12 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kNameFrom:
         result += " name_from=";
         result += ui::ToString(
-            static_cast<ax::mojom::NameFrom>(int_attributes[i].second));
+            static_cast<ax::mojom::NameFrom>(int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kDescriptionFrom:
         result += " description_from=";
         result += ui::ToString(
-            static_cast<ax::mojom::DescriptionFrom>(int_attributes[i].second));
+            static_cast<ax::mojom::DescriptionFrom>(int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kActivedescendantId:
         result += " activedescendant=" + value;
@@ -714,12 +720,11 @@ std::string AXNodeData::ToString() const {
         result += " child_tree_id=" + value;
         break;
       case ax::mojom::IntAttribute::kColorValue:
-        result += base::StringPrintf(" color_value=&%X",
-                                     int_attributes[i].second);
+        result += base::StringPrintf(" color_value=&%X", int_attribute.second);
         break;
       case ax::mojom::IntAttribute::kAriaCurrentState:
-        switch (static_cast<ax::mojom::AriaCurrentState>(
-            int_attributes[i].second)) {
+        switch (
+            static_cast<ax::mojom::AriaCurrentState>(int_attribute.second)) {
           case ax::mojom::AriaCurrentState::kFalse:
             result += " aria_current_state=false";
             break;
@@ -746,15 +751,14 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case ax::mojom::IntAttribute::kBackgroundColor:
-        result += base::StringPrintf(" background_color=&%X",
-                                     int_attributes[i].second);
+        result +=
+            base::StringPrintf(" background_color=&%X", int_attribute.second);
         break;
       case ax::mojom::IntAttribute::kColor:
-        result += base::StringPrintf(" color=&%X", int_attributes[i].second);
+        result += base::StringPrintf(" color=&%X", int_attribute.second);
         break;
       case ax::mojom::IntAttribute::kTextDirection:
-        switch (
-            static_cast<ax::mojom::TextDirection>(int_attributes[i].second)) {
+        switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {
           case ax::mojom::TextDirection::kLtr:
             result += " text_direction=ltr";
             break;
@@ -772,7 +776,7 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case ax::mojom::IntAttribute::kTextStyle: {
-        int32_t text_style = int_attributes[i].second;
+        int32_t text_style = int_attribute.second;
         if (text_style == static_cast<int32_t>(ax::mojom::TextStyle::kNone))
           break;
         std::string text_style_value(" text_style=");
@@ -798,8 +802,7 @@ std::string AXNodeData::ToString() const {
         result += " posinset=" + value;
         break;
       case ax::mojom::IntAttribute::kInvalidState:
-        switch (
-            static_cast<ax::mojom::InvalidState>(int_attributes[i].second)) {
+        switch (static_cast<ax::mojom::InvalidState>(int_attribute.second)) {
           case ax::mojom::InvalidState::kFalse:
             result += " invalid_state=false";
             break;
@@ -820,8 +823,7 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case ax::mojom::IntAttribute::kCheckedState:
-        switch (
-            static_cast<ax::mojom::CheckedState>(int_attributes[i].second)) {
+        switch (static_cast<ax::mojom::CheckedState>(int_attribute.second)) {
           case ax::mojom::CheckedState::kFalse:
             result += " checked_state=false";
             break;
@@ -836,7 +838,7 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case ax::mojom::IntAttribute::kRestriction:
-        switch (static_cast<ax::mojom::Restriction>(int_attributes[i].second)) {
+        switch (static_cast<ax::mojom::Restriction>(int_attribute.second)) {
           case ax::mojom::Restriction::kReadOnly:
             result += " restriction=readonly";
             break;
@@ -858,9 +860,10 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  for (size_t i = 0; i < string_attributes.size(); ++i) {
-    std::string value = string_attributes[i].second;
-    switch (string_attributes[i].first) {
+  for (const std::pair<ax::mojom::StringAttribute, std::string>&
+           string_attribute : string_attributes) {
+    std::string value = string_attribute.second;
+    switch (string_attribute.first) {
       case ax::mojom::StringAttribute::kAccessKey:
         result += " access_key=" + value;
         break;
@@ -937,9 +940,10 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  for (size_t i = 0; i < float_attributes.size(); ++i) {
-    std::string value = base::NumberToString(float_attributes[i].second);
-    switch (float_attributes[i].first) {
+  for (const std::pair<ax::mojom::FloatAttribute, float>& float_attribute :
+       float_attributes) {
+    std::string value = base::NumberToString(float_attribute.second);
+    switch (float_attribute.first) {
       case ax::mojom::FloatAttribute::kValueForRange:
         result += " value_for_range=" + value;
         break;
@@ -960,9 +964,10 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  for (size_t i = 0; i < bool_attributes.size(); ++i) {
-    std::string value = bool_attributes[i].second ? "true" : "false";
-    switch (bool_attributes[i].first) {
+  for (const std::pair<ax::mojom::BoolAttribute, bool>& bool_attribute :
+       bool_attributes) {
+    std::string value = bool_attribute.second ? "true" : "false";
+    switch (bool_attribute.first) {
       case ax::mojom::BoolAttribute::kEditableRoot:
         result += " editable_root=" + value;
         break;
@@ -1001,9 +1006,10 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  for (size_t i = 0; i < intlist_attributes.size(); ++i) {
-    const std::vector<int32_t>& values = intlist_attributes[i].second;
-    switch (intlist_attributes[i].first) {
+  for (const std::pair<ax::mojom::IntListAttribute, std::vector<int32_t>>&
+           intlist_attribute : intlist_attributes) {
+    const std::vector<int32_t>& values = intlist_attribute.second;
+    switch (intlist_attribute.first) {
       case ax::mojom::IntListAttribute::kIndirectChildIds:
         result += " indirect_child_ids=" + IntVectorToString(values);
         break;
@@ -1087,9 +1093,11 @@ std::string AXNodeData::ToString() const {
     }
   }
 
-  for (size_t i = 0; i < stringlist_attributes.size(); ++i) {
-    const std::vector<std::string>& values = stringlist_attributes[i].second;
-    switch (stringlist_attributes[i].first) {
+  for (const std::pair<ax::mojom::StringListAttribute,
+                       std::vector<std::string>>& stringlist_attribute :
+       stringlist_attributes) {
+    const std::vector<std::string>& values = stringlist_attribute.second;
+    switch (stringlist_attribute.first) {
       case ax::mojom::StringListAttribute::kCustomActionDescriptions:
         result +=
             " custom_action_descriptions: " + base::JoinString(values, ",");
