@@ -397,4 +397,16 @@ TEST_P(ParameterizedLayoutTextTest, QuadsBasic) {
       actual_quads);
 }
 
+TEST_P(ParameterizedLayoutTextTest, WordBreakElement) {
+  SetBasicBody("foo <wbr> bar");
+
+  const Element* wbr = GetDocument().QuerySelector("wbr");
+  DCHECK(wbr->GetLayoutObject()->IsText());
+  const LayoutText* layout_wbr = ToLayoutText(wbr->GetLayoutObject());
+
+  EXPECT_EQ(0u, layout_wbr->ResolvedTextLength());
+  EXPECT_EQ(0, layout_wbr->CaretMinOffset());
+  EXPECT_EQ(0, layout_wbr->CaretMaxOffset());
+}
+
 }  // namespace blink
