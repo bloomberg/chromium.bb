@@ -440,6 +440,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // space is required by the aura::Window.
   void InternalSetBounds(const gfx::Rect& rect);
 
+  // Handles propagation of surface properties when they are changed.
+  void SyncSurfaceProperties(const cc::DeadlinePolicy& deadline_policy);
+
 #if defined(OS_WIN)
   // Creates and/or updates the legacy dummy window which corresponds to
   // the bounds of the webcontents. It is needed for accessibility and
