@@ -702,6 +702,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public boolean shouldForceLTR() {
+        return true;
+    }
+
+    @Override
     public void setUrlBarFocus(boolean shouldBeFocused) {}
 
     @Override

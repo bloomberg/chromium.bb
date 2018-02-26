@@ -2085,6 +2085,11 @@ public class LocationBarLayout extends FrameLayout
         focusCurrentTab();
     }
 
+    @Override
+    public boolean shouldForceLTR() {
+        return !mToolbarDataProvider.isDisplayingQueryTerms();
+    }
+
     /**
      * @return Returns the original url of the page.
      */
