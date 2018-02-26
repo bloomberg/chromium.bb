@@ -1154,7 +1154,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Pēc noklusējuma, ievadot nedrošu PIN, lietotājiem tiek parādīts tikai brīdinājums, nevis kļūdas ziņojums.</translation>
 <translation id="4723829699367336876">Ugunsmūra apvada iespējošana no attālās piekļuves klienta</translation>
-<translation id="4725123658714754485">Kontrolē to, vai lietojuma un diagnostikas dati, tostarp avāriju pārskati, tiek nosūtīti uzņēmumam Google. Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_OS_NAME" /> nosūtīs lietojuma un diagnostikas datus. Ja politika nav konfigurēta vai tai ir iestatīta vērtība “False”, lietojuma un diagnostikas datu nosūtīšana tiks atspējota.</translation>
 <translation id="4725528134735324213">Iespējot pakalpojumu Android Backup Service</translation>
 <translation id="4733471537137819387">Ar integrēto HTTP autentifikāciju saistītās politikas</translation>
 <translation id="4744190513568488164">Serveri, kuriem pārlūks <ph name="PRODUCT_NAME" /> var uzticēt informāciju
@@ -1602,17 +1601,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Lai piespraustu lietotnes palaišanas programmai, skatiet politiku PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Noklusējuma meklētājprogrammas dinamisko mekl. rezultātu URL</translation>
-<translation id="6029950823657977211">
-      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku IsolateOrigins, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai
-      vietnei tiek izpildīts atsevišķs process. Vietnes tiek arī izolētas
-      pēc apakšdomēniem, piemēram, norādot https://example.com/, tiek
-      izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiek ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, platformas noklusējuma vietnes izolēšanas iestatījumi tiek izmantoti pierakstīšanās ekrānā.
-      </translation>
 <translation id="603410445099326293">Parametri ieteikumu meklēšanas vietrādim URL, kurā izmantota metode POST</translation>
 <translation id="6036523166753287175">Ugunsmūra apvada iespējošana no attālās piekļuves saimniekdatora</translation>
 <translation id="6070667616071269965">Ierīces pierakstīšanās ekrāna tastatūras izkārtojumi</translation>
@@ -2569,11 +2557,5 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="930930237275114205">Iestatīt <ph name="PRODUCT_FRAME_NAME" /> lietotāja datu direktoriju</translation>
 <translation id="934390688529359269">Iespējo piespiedu pierakstīšanos pārlūkā <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Iestatīt diska kešatmiņas lielumu</translation>
-<translation id="9775893229076211">Ļauj kontrolēt, kad aktivizēt atzīmes pievienošanu kontam par apdraudētu paroles aizsardzību. Pievienot kontam atzīmi par apdraudētu paroles aizsardzību nozīmē informēt Google, ka pastāv attiecīgā konta uzlaušanas risks.
-
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOff”, netiek aktivizēta atzīmes pievienošana kontam par apdraudētu paroles aizsardzību.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPasswordReuse”, atzīmes pievienošana kontam par apdraudētu paroles aizsardzību tiek aktivizēta, kad lietotāji atkārtoti izmanto Google pakalpojumu paroles vietnēs, kas nav iekļautas baltajā sarakstā.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPhishingReuse”, atzīmes pievienošana kontam par apdraudētu paroles aizsardzību tiek aktivizēta, kad lietotāji atkārtoti izmanto Google pakalpojumu paroles pikšķerēšanas vietnēs.
-      Ja šai politikai nav iestatīta vērtība, atzīmes pievienošana kontam par apdraudētu paroles aizsardzību tiek aktivizēta, kad lietotāji atkārtoti izmanto Google pakalpojumu paroles pikšķerēšanas vietnēs, taču lietotāji var to mainīt.</translation>
 <translation id="982497069985795632">Iespējo pareizrakstības pārbaudi</translation>
 </translationbundle>

@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">Невалиден или повреден файл</translation>
 <translation id="1042174272890264476">Компютърът ви също се предлага с библиотеката RLZ на <ph name="SHORT_PRODUCT_NAME" />, която е вградена. Тя задава неуникален и непозволяващ лично идентифициране маркер за измерване на търсенията и използването на <ph name="SHORT_PRODUCT_NAME" />, стимулирани от определена промоционална кампания. Тези етикети понякога се показват в заявките за търсене с Google в <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Ами сега! Това име вече се използва!</translation>
-<translation id="1046286965898806214">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да запази профила ви за този сайт?</translation>
 <translation id="1047431265488717055">Копиране на тек&amp;ста на връзката</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> елемента се изтриват...</translation>
@@ -420,7 +419,6 @@
 <translation id="1635033183663317347">Инсталирано от контролиращия потребител.</translation>
 <translation id="1637224376458524414">Получете тази отметка на своя iPhone</translation>
 <translation id="1637765355341780467">Нещо се обърка при отварянето на потребителския ви профил. Някои функции може да не са налице.</translation>
-<translation id="1638447702436460526">Принтерът не бе намерен</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
 <translation id="1640283014264083726">PKCS 1 MD4 с RSA шифроване</translation>
 <translation id="1642494467033190216">Преди активирането на останалите функции за отстраняване на грешки трябва да се премахне защитата на rootfs и да се рестартира.</translation>
@@ -571,6 +569,7 @@
 <translation id="1856813161013948396">Отключвайте екрана с едно докосване на сензора за отпечатъци. Кликнете, за да конфигурирате.</translation>
 <translation id="1858585891038687145">Да се има доверие на този сертификат за идентифициране на производители на софтуер</translation>
 <translation id="1859234291848436338">Посока на писане</translation>
+<translation id="1861262398884155592">Тази папка е празна</translation>
 <translation id="1864111464094315414">Вход</translation>
 <translation id="1864400682872660285">По-студени цветове</translation>
 <translation id="1864676585353837027">Промяна на начина на споделяне на тези файлове</translation>
@@ -585,7 +584,6 @@
 <translation id="1878524442024357078">Забраняване на сайтовете да използват приставка за достъп до компютъра ви</translation>
 <translation id="1879449842763884566">Инсталиране в Applications...</translation>
 <translation id="1880905663253319515">Да се изтрие ли сертификатът „<ph name="CERTIFICATE_NAME" />“?</translation>
-<translation id="188190999506226223">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да запази паролата ви за <ph name="ORIGIN" />?</translation>
 <translation id="1886996562706621347">Разрешаване на питания от сайтове дали да са манипулаторите по подразбиране за протоколите (препоръчително)</translation>
 <translation id="1887442540531652736">Грешка при влизането</translation>
 <translation id="1887850431809612466">Версия на хардуера</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2762441749940182211">Достъпът до камерата е блокиран</translation>
 <translation id="2765217105034171413">Малък</translation>
 <translation id="2766006623206032690">&amp;Поставяне и старт</translation>
-<translation id="2767084307624729667">Запазени пароли за <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Премахване от списъка</translation>
 <translation id="2770690685823456775">Експортирайте паролите си в друга папка.</translation>
@@ -1219,7 +1216,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2849936225196189499">Критично</translation>
 <translation id="2850124913210091882">Създаване на резервно копие</translation>
 <translation id="2850541429955027218">Добавяне на темата</translation>
-<translation id="2853121255651601031">Паролата е запазена</translation>
 <translation id="2853916256216444076">Видеоклип от тип $1</translation>
 <translation id="2857608528410806398">Място за основния текст на известието за функцията за бързо отключване. Място за основния текст на известието за функцията за бързо отключване. Място за основния текст на известието за функцията за бързо отключване. Място за основния текст на известието за функцията за бързо отключване. Място за основния текст на известието за функцията за бързо отключване.</translation>
 <translation id="2860150991415616761">много дълго (4 сек)</translation>
@@ -1229,6 +1225,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2867768963760577682">Отваряне като фиксиран раздел</translation>
 <translation id="2868746137289129307">Това разширение не е актуално и е деактивирано от корпоративно правило. Може да бъде активирано автоматично, когато бъде налице по-нова версия.</translation>
 <translation id="2870560284913253234">Сайт</translation>
+<translation id="2870909136778269686">Актуализира се...</translation>
 <translation id="2871813825302180988">Профилът вече се използва на това устройство.</translation>
 <translation id="2872353916818027657">Размяна на основния монитор</translation>
 <translation id="287286579981869940">Добавяне на <ph name="PROVIDER_NAME" />...</translation>
@@ -1759,7 +1756,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3665842570601375360">Сигурност:</translation>
 <translation id="3668570675727296296">Езикови настройки</translation>
 <translation id="3668823961463113931">Манипулатори</translation>
-<translation id="3669030672519623291">Няма запазени пароли за този сайт</translation>
 <translation id="3670229581627177274">Включване на Bluetooth</translation>
 <translation id="3672681487849735243">Открита е фабрична грешка</translation>
 <translation id="367645871420407123">не попълвайте, ако искате паролата на root да е стандартната от тестовия образ</translation>
@@ -2295,7 +2291,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4576541033847873020">Сдвояване на устройство с Bluetooth</translation>
 <translation id="4579581181964204535">Предаването на <ph name="HOST_NAME" /> не е възможно.</translation>
 <translation id="4580526846085481512">Наистина ли искате да изтриете $1 елемента?</translation>
-<translation id="458150753955139441">Натиснете, за да се върнете назад. Използвайте контекстното меню, за да видите историята</translation>
 <translation id="4582563038311694664">Нулиране на всички настройки</translation>
 <translation id="4585793705637313973">Редактиране на страницата</translation>
 <translation id="4589268276914962177">Нов терминален раздел</translation>
@@ -2328,7 +2323,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4632483769545853758">Включване отново на звука на раздела</translation>
 <translation id="4633003931260532286">Разширението изисква <ph name="IMPORT_VERSION" /> или по-нова версия на <ph name="IMPORT_NAME" />, но само <ph name="INSTALLED_VERSION" /> е инсталирана</translation>
 <translation id="4634771451598206121">Влизане отново...</translation>
-<translation id="4636315944522859212">Принтерът бе намерен</translation>
 <translation id="4640525840053037973">Влезте с профила си в Google</translation>
 <translation id="4641539339823703554">Chrome не успя да зададе системния час. Моля, проверете го по-долу и го коригирайте при нужда.</translation>
 <translation id="4643612240819915418">&amp;Отваряне на видеоклипа в нов раздел</translation>
@@ -2460,7 +2454,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4850669014075537160">Превъртане</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4853020600495124913">Отваряне в &amp;нов прозорец</translation>
-<translation id="4853882474657327078">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за <ph name="ORIGIN" />?</translation>
 <translation id="4856478137399998590">Услугата ви за данни е активирана и готова за употреба</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Отваряне на всички в прозорец в режим „&amp;инкогнито“}=1{Отваряне в прозорец в режим „&amp;инкогнито“}other{Отваряне на всички (#) в прозорец в режим „&amp;инкогнито“}}</translation>
 <translation id="4858913220355269194">Фриц</translation>
@@ -2943,7 +2936,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="558170650521898289">Проверка на драйвери за хардуер под Microsoft Windows</translation>
 <translation id="5582839680698949063">Главно меню</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">Запазени пароли за този сайт</translation>
 <translation id="5585118885427931890">Папката с отметки не можа да се създаде.</translation>
 <translation id="558563010977877295">Отваряне на конкретна страница или набор от страници</translation>
 <translation id="5585912436068747822">Форматирането не бе успешно</translation>
@@ -2955,7 +2947,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5596627076506792578">Още опции</translation>
 <translation id="5600706100022181951">За изтеглянето на актуализацията ще се използват мобилни данни (<ph name="UPDATE_SIZE_MB" /> МБ). Искате ли да продължите?</translation>
 <translation id="5601503069213153581">ПИН код</translation>
-<translation id="5605057818926354551">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="5605623530403479164">Други търсещи машини</translation>
 <translation id="5608580678041221894">Докоснете следните клавиши, за да коригирате или преместите областта за подрязване</translation>
 <translation id="5609231933459083978">Изглежда, че приложението е невалидно.</translation>
@@ -3141,7 +3132,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5882919346125742463">Известни мрежи</translation>
 <translation id="5884474295213649357">Този раздел е свързан с USB устройство.</translation>
 <translation id="5885324376209859881">Управление на настройките за медия...</translation>
-<translation id="5887341066363321040">Няма запазени пароли за <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">Максимален брой междинни сертифициращи органи: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5895187275912066135">Издаден на</translation>
@@ -3625,7 +3615,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="6664237456442406323">За съжаление компютърът ви е конфигуриран с неправилно образуван идентификационен номер на хардуера. Това не позволява на Chrome OS да се актуализира с най-новите корекции за сигурност и машината ви <ph name="BEGIN_BOLD" />може да е уязвима към злонамерени атаки<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Нещо се обърка при отварянето на потребителския ви профил. Моля, излезте от профила си и влезте отново.</translation>
-<translation id="6669827579181361875">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да запази паролата ви за този сайт?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Искате ли Google да преведе тази страница от <ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Свързано е посочващо устройство</translation>
@@ -4990,6 +4979,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8871696467337989339">Използвате неподдържано означение за команден ред: <ph name="BAD_FLAG" />. Стабилността и сигурността ще пострадат.</translation>
 <translation id="8871974300055371298">Настройки за съдържанието</translation>
 <translation id="8872155268274985541">Намерен е невалиден файл на манифест за външно актуализиране на павилионното приложение. Актуализирането не бе успешно. Моля, извадете USB паметта.</translation>
+<translation id="8872506776304248286">Отваряне в прилож.</translation>
 <translation id="8874184842967597500">Няма връзка</translation>
 <translation id="8876215549894133151">Формат:</translation>
 <translation id="8876309039915144086">Генериране на парола...</translation>
@@ -5003,7 +4993,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="88986195241502842">Страница надолу</translation>
 <translation id="8898786835233784856">Избор на следващия раздел</translation>
 <translation id="8898840733695078011">Сила на сигнала</translation>
-<translation id="8899551033019439140">Принтерът се търси...</translation>
 <translation id="8899851313684471736">Отваряне на връзк&amp;ата в нов прозорец</translation>
 <translation id="8902667442496790482">Отваряне на настройките на Прочитане на глас</translation>
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
@@ -5125,6 +5114,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9100765901046053179">Разширени настройки</translation>
 <translation id="9101691533782776290">Стартиране на приложението</translation>
 <translation id="9102610709270966160">Активиране на разширението</translation>
+<translation id="9103868373786083162">Натиснете, за да се върнете назад. Използвайте контекстното меню, за да видите историята</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">За да освободите място, изтрийте файлове от хранилището на устройството.</translation>
 <translation id="9110990317705400362">Непрекъснато търсим начини да правим сърфирането ви по-безопасно. По-рано всеки уебсайт можеше да ви подкани да добавите разширение в браузъра си. В най-новите версии на Google Chrome трябва изрично да укажете на браузъра, че искате да инсталирате съответния софтуер, като го добавите чрез страницата „Разширения“. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>

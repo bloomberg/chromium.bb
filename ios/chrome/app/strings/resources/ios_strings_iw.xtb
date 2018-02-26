@@ -155,6 +155,7 @@
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3779810277399252432">אין חיבור לאינטרנט.</translation>
 <translation id="3783017676699494206">שמור תמונה</translation>
+<translation id="3789841737615482174">התקן</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
@@ -283,6 +284,7 @@
 <translation id="6342069812937806050">זה עתה</translation>
 <translation id="6344783595350022745">טקסט נקי</translation>
 <translation id="6362362396625799311">אין כרטיסיות של גלישה בסתר</translation>
+<translation id="6374469231428023295">נסה שוב</translation>
 <translation id="6380866119319257197">אם תשכח את ביטוי הסיסמה או תרצה לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">שם על הכרטיס</translation>
 <translation id="6406506848690869874">סנכרן</translation>
@@ -291,7 +293,7 @@
 
 הנתונים שלך הוצפנו ב-<ph name="TIME" /> באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="6418346271604475326">‏מכין PDF</translation>
-<translation id="6434591244308415567">אירעה שגיאה. אפשר לנסות שוב מאוחר יותר.</translation>
+<translation id="6434591244308415567">אירעה שגיאה. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>

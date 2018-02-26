@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1383876407941801731">검색</translation>
+<translation id="1510238584712386396">런처</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">텍스트 편집</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">기본 모니터 전환</translation>
+<translation id="3105917916468784889">화면 캡쳐</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">주소 표시줄로 이동</translation>
+<translation id="3649256019230929621">창 최소화</translation>
+<translation id="385051799172605136">뒤로</translation>
+<translation id="5316716239522500219">모니터 미러</translation>
+<translation id="5928303187149237472">해상도 변경</translation>
+<translation id="5975083100439434680">축소</translation>
+<translation id="6022924867608035986">검색창 텍스트 삭제</translation>
+<translation id="6129953537138746214">공백</translation>
+<translation id="6185696379715117369">페이지 위로</translation>
+<translation id="671928215901716392">화면 잠금</translation>
+<translation id="6727005317916125192">이전 창</translation>
+<translation id="6981982820502123353">접근성</translation>
+<translation id="7020813747703216897">일치하는 결과 없음</translation>
+<translation id="7025325401470358758">다음 창</translation>
+<translation id="7272373489634936181">단축키 검색</translation>
+<translation id="7724603315864178912">잘라내기</translation>
+<translation id="8004192919599017226">검색 시작...</translation>
+<translation id="88986195241502842">페이지 아래로</translation>
+<translation id="8903921497873541725">확대</translation>
+<translation id="9179672198516322668">자주 쓰는 단축키</translation>
 </translationbundle>

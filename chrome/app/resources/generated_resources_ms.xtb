@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">Fail tidak sah atau rosak</translation>
 <translation id="1042174272890264476">Komputer anda juga disertakan dengan pustaka RLZ <ph name="SHORT_PRODUCT_NAME" /> terbina dalam. RLZ memperuntukkan tanda nama tidak unik yang tidak boleh mengenal pasti secara peribadi untuk mengukur carian dan penggunaan <ph name="SHORT_PRODUCT_NAME" /> yang didorong oleh kempen galakan tertentu. Label ini kadangkala dipaparkan dalam pertanyaan Carian Google dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">Opp, nama ini sudah digunakan!</translation>
-<translation id="1046286965898806214">Adakah Anda Mahu <ph name="PASSWORD_MANAGER_BRAND" /> Menyimpan Akaun Anda untuk Tapak Ini?</translation>
 <translation id="1047431265488717055">Salin Te&amp;ks Pautan</translation>
 <translation id="1047726139967079566">Tanda Halaman Ini...</translation>
 <translation id="1047956942837015229">Memadamkan <ph name="COUNT" /> item...</translation>
@@ -423,7 +422,6 @@
 <translation id="1635033183663317347">Dipasang oleh penjaga anda.</translation>
 <translation id="1637224376458524414">Dapatkan penanda halaman ini pada iPhone anda</translation>
 <translation id="1637765355341780467">Berlaku kesilapan semasa membuka profil anda. Sesetengah ciri mungkin tidak tersedia.</translation>
-<translation id="1638447702436460526">Pencetak tidak ditemui</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Dengan Penyulitan RSA</translation>
 <translation id="1642494467033190216">Pengalihan keluar perlindungan rootfs dan pemulaan semula diperlukan sebelum mendayakan ciri penyahpepijatan lain.</translation>
@@ -574,6 +572,7 @@
 <translation id="1856813161013948396">Langkau skrin kunci dengan mengetik penderia cap jari. Klik untuk mengkonfigurasi.</translation>
 <translation id="1858585891038687145">Percayakan sijil ini untuk mengenal pasti pembuat perisian</translation>
 <translation id="1859234291848436338">Arah Penulisan</translation>
+<translation id="1861262398884155592">Folder ini kosong</translation>
 <translation id="1864111464094315414">Log masuk</translation>
 <translation id="1864400682872660285">Dingin</translation>
 <translation id="1864676585353837027">Tukar cara fail ini dikongsi.</translation>
@@ -588,7 +587,6 @@
 <translation id="1878524442024357078">Jangan benarkan mana-mana tapak menggunakan pemalam untuk mengakses komputer anda</translation>
 <translation id="1879449842763884566">Pasang pada Applications...</translation>
 <translation id="1880905663253319515">Padamkan sijil "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="188190999506226223">Adakah Anda Ingin <ph name="PASSWORD_MANAGER_BRAND" /> Menyimpan Kata Laluan Anda untuk <ph name="ORIGIN" />?</translation>
 <translation id="1886996562706621347">Benarkan tapak meminta untuk menjadi pengendali lalai untuk protokol (disyorkan)</translation>
 <translation id="1887442540531652736">Ralat log masuk</translation>
 <translation id="1887850431809612466">Semakan perkakasan</translation>
@@ -1150,7 +1148,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2762441749940182211">Kamera disekat</translation>
 <translation id="2765217105034171413">Kecil</translation>
 <translation id="2766006623206032690">Ta&amp;mpal dan pergi</translation>
-<translation id="2767084307624729667">Kata Laluan Disimpan untuk <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">Log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">Buang dari senarai</translation>
 <translation id="2770690685823456775">Eksport kata laluan anda ke folder lain</translation>
@@ -1223,7 +1220,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2849936225196189499">Kritikal</translation>
 <translation id="2850124913210091882">Sandaran</translation>
 <translation id="2850541429955027218">Tambahkan tema</translation>
-<translation id="2853121255651601031">Kata Laluan Disimpan</translation>
 <translation id="2853916256216444076">Video $1</translation>
 <translation id="2857608528410806398">Isi pemberitahuan Ciri QU dipaparkan di sini. Isi pemberitahuan Ciri QU dipaparkan di sini. Isi pemberitahuan Ciri QU dipaparkan di sini. Isi pemberitahuan Ciri QU dipaparkan di sini. Isi pemberitahuan Ciri QU dipaparkan di sini.</translation>
 <translation id="2860150991415616761">sangat lama (4s)</translation>
@@ -1233,6 +1229,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2867768963760577682">Buka sebagai Tab Disemat</translation>
 <translation id="2868746137289129307">Sambungan ini sudah lapuk dan dilumpuhkan oleh dasar perusahaan. Ia mungkin menjadi aktif secara automatik apabila versi yang lebih baharu tersedia.</translation>
 <translation id="2870560284913253234">Tapak</translation>
+<translation id="2870909136778269686">Mengemas kini...</translation>
 <translation id="2871813825302180988">Akaun ini telah digunakan pada peranti ini.</translation>
 <translation id="2872353916818027657">Tukar monitor utama</translation>
 <translation id="287286579981869940">Tambahkan <ph name="PROVIDER_NAME" />...</translation>
@@ -1763,7 +1760,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3665842570601375360">Keselamatan:</translation>
 <translation id="3668570675727296296">Tetapan bahasa</translation>
 <translation id="3668823961463113931">Pengendali</translation>
-<translation id="3669030672519623291">Tiada Kata Laluan Disimpan untuk Tapak Ini</translation>
 <translation id="3670229581627177274">Hidupkan Bluetooth</translation>
 <translation id="3672681487849735243">Ralat kilang telah dikesan</translation>
 <translation id="367645871420407123">biarkan kosong jika anda ingin menetapkan kata laluan akar kepada nilai imej ujian lalai</translation>
@@ -2299,7 +2295,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4576541033847873020">Gandingkan peranti Bluetooth</translation>
 <translation id="4579581181964204535">Tidak dapat menghantar <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Adakah anda pasti anda mahu memadamkan item $1?</translation>
-<translation id="458150753955139441">Tekan untuk kembali, gunakan menu konteks untuk melihat sejarah</translation>
 <translation id="4582563038311694664">Tetapkan semula semua tetapan</translation>
 <translation id="4585793705637313973">Edit halaman</translation>
 <translation id="4589268276914962177">Terminal baharu</translation>
@@ -2332,7 +2327,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4632483769545853758">Nyahredam Tab</translation>
 <translation id="4633003931260532286">Sambungan memerlukan "<ph name="IMPORT_NAME" />" dengan versi minimum "<ph name="IMPORT_VERSION" />", tetapi hanya versi "<ph name="INSTALLED_VERSION" />" yang ada dipasang</translation>
 <translation id="4634771451598206121">Log masuk semula...</translation>
-<translation id="4636315944522859212">Pencetak ditemui</translation>
 <translation id="4640525840053037973">Log masuk menggunakan Akaun Google anda</translation>
 <translation id="4641539339823703554">Chrome tidak dapat menetapkan masa sistem. Sila semak masa di bawah dan betulkan jika perlu.</translation>
 <translation id="4643612240819915418">&amp;Buka Video dalam Tab Baharu</translation>
@@ -2464,7 +2458,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4850669014075537160">Menatal</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4853020600495124913">Buka dalam tetingkap &amp;baharu</translation>
-<translation id="4853882474657327078">Adakah Anda Ingin <ph name="PASSWORD_MANAGER_BRAND" /> Mengemas Kini Kata Laluan Anda untuk <ph name="ORIGIN" />?</translation>
 <translation id="4856478137399998590">Perkhidmatan data mudah alih anda diaktifkan dan sedia untuk digunakan</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Buka Semua dalam Tetingkap &amp;Inkognito}=1{Buka dalam Tetingkap &amp;Inkognito}other{Buka Semua (#) dalam Tetingkap &amp;Inkognito}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
@@ -2947,7 +2940,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="558170650521898289">Pengesahan Pemacu Perkakasan Microsoft Windows</translation>
 <translation id="5582839680698949063">Menu utama</translation>
 <translation id="5583640892426849032">Undur ruang</translation>
-<translation id="5583726250980167172">Kata Laluan Disimpan untuk Tapak Ini</translation>
 <translation id="5585118885427931890">Tidak dapat mencipta folder penanda halaman.</translation>
 <translation id="558563010977877295">Buka halaman tertentu atau satu set halaman.</translation>
 <translation id="5585912436068747822">Pemformatan gagal</translation>
@@ -2959,7 +2951,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5596627076506792578">Lagi pilihan</translation>
 <translation id="5600706100022181951">Kemas kini akan dimuat turun menggunakan <ph name="UPDATE_SIZE_MB" /> MB data mudah alih. Adakah anda ingin meneruskan?</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">Adakah Anda Ingin <ph name="PASSWORD_MANAGER_BRAND" /> Mengemas Kini Kata Laluan Anda untuk Tapak Ini?</translation>
 <translation id="5605623530403479164">Enjin carian lain</translation>
 <translation id="5608580678041221894">Ketik kekunci berikut untuk melaras atau mengalihkan kawasan pemangkasan</translation>
 <translation id="5609231933459083978">Apl kelihatan tidak sah.</translation>
@@ -3144,7 +3135,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5882919346125742463">Rangkaian Yang Diketahui</translation>
 <translation id="5884474295213649357">Tab ini disambungkan ke peranti USB.</translation>
 <translation id="5885324376209859881">Uruskan tetapan media...</translation>
-<translation id="5887341066363321040">Tiada Kata Laluan Disimpan untuk <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">Bilangan maksimum CA pengantara: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5895187275912066135">Dikeluarkan Pada</translation>
@@ -3628,7 +3618,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">Malangnya, komputer anda dikonfigurasi dengan ID perkakasan tidak sempurna. Hal ini menghalang OS Chrome daripada mengemas kini kepada pembetulan keselamatan terbaharu dan komputer anda <ph name="BEGIN_BOLD" />mungkin terdedah kepada serangan berniat jahat<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Kesilapan telah berlaku semasa membuka profil anda. Sila log keluar dan log masuk sekali lagi.</translation>
-<translation id="6669827579181361875">Adakah Anda Mahu <ph name="PASSWORD_MANAGER_BRAND" /> Menyimpan Kata Laluan Anda untuk Tapak Ini?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Adakah anda mahu Google menterjemahkan halaman ini daripada <ph name="SOURCE_LANGUAGE" /> kepada <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Peranti penuding disambung</translation>
@@ -4993,6 +4982,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8871696467337989339">Anda menggunakan bendera baris perintah yang tidak disokong: <ph name="BAD_FLAG" />. Kestabilan dan keselamatan akan terjejas.</translation>
 <translation id="8871974300055371298">Tetapan kandungan</translation>
 <translation id="8872155268274985541">Fail manifes kemas kini luar Kiosk yang tidak sah dijumpai. Gagal mengemas kini apl Kiosk. Sila alih keluar batang USB.</translation>
+<translation id="8872506776304248286">Buka dalam apl</translation>
 <translation id="8874184842967597500">Tidak bersambung</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8876309039915144086">Jana kata laluan...</translation>
@@ -5006,7 +4996,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="88986195241502842">Halaman bawah</translation>
 <translation id="8898786835233784856">Pilih Tab Seterusnya</translation>
 <translation id="8898840733695078011">Kekuatan isyarat</translation>
-<translation id="8899551033019439140">Mencari pencetak...</translation>
 <translation id="8899851313684471736">Buka pautan dalam tetingkap &amp;baharu</translation>
 <translation id="8902667442496790482">Buka tetapan pilih untuk bercakap</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
@@ -5128,6 +5117,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9100765901046053179">Tetapan terperinci</translation>
 <translation id="9101691533782776290">Lancarkan apl</translation>
 <translation id="9102610709270966160">Dayakan Sambungan</translation>
+<translation id="9103868373786083162">Tekan untuk kembali, menu konteks untuk melihat sejarah</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">Untuk mengosongkan ruang, padamkan fail daripada storan peranti.</translation>
 <translation id="9110990317705400362">Kami sentiasa mencari cara-cara untuk membuat penyemakan imbas anda lebih selamat. Sebelum ini, mana-mana laman web boleh menggesa anda untuk menambah sambungan ke dalam penyemak imbas anda. Dalam versi terbaharu Google Chrome, anda mesti memberitahu Chrome dengan jelas bahawa anda mahu memasang sambungan ini dengan menambahnya melalui halaman Sambungan. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>

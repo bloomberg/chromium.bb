@@ -1127,7 +1127,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 
           Pokud uživatelé zadají slabý kód PIN, ve výchozím nastavení se jim zobrazí upozornění (nikoli chyba).</translation>
 <translation id="4723829699367336876">Povolení přechodu přes bránu firewall z klienta vzdáleného připojení</translation>
-<translation id="4725123658714754485">Udává, zda se do Googlu hlásí metriky využití a diagnostická data včetně zpráv o selhání. Pokud je tato zásada nastavena na hodnotu true, bude systém <ph name="PRODUCT_OS_NAME" /> hlásit metriky využití a diagnostická data. Pokud není nakonfigurována nebo je nastavena na hodnotu false, bude hlášení metrik a diagnostických dat zakázáno.</translation>
 <translation id="4725528134735324213">Povolit službu Android Backup Service</translation>
 <translation id="4733471537137819387">Zásady související s integrovaným ověřením pomocí protokolu HTTP</translation>
 <translation id="4744190513568488164">Servery, na které může <ph name="PRODUCT_NAME" /> delegovat ověření.
@@ -1561,13 +1560,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 
       Chcete-li aplikace připnout ke spouštěči, vyhledejte zásadu PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
-<translation id="6029950823657977211">
-      POZNÁMKA: Tato zásada je experimentální a může narušit některé funkce!
-      Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu IsolateOrigins, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu.
-      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud tuto zásadu zakážete, použije se logika správy procesů založená na izolaci jednotlivých webů.
-      Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
-      </translation>
 <translation id="603410445099326293">Parametry pro adresu URL návrhu, která používá metodu POST</translation>
 <translation id="6036523166753287175">Povolení přechodu přes bránu firewall z hostitele vzdáleného připojení</translation>
 <translation id="6070667616071269965">Rozložení klávesnice na přihlašovací obrazovce zařízení</translation>
@@ -2499,11 +2491,5 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
 <translation id="930930237275114205">Nastavit adresář uživatelských dat pluginu <ph name="PRODUCT_FRAME_NAME" /> </translation>
 <translation id="934390688529359269">Aktivuje vynucené přihlášení do prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Nastavení velikosti mezipaměti na disku</translation>
-<translation id="9775893229076211">Umožňuje ovládat spouštění označení účtu jako ohroženého pomocí funkce Ochrana hesla. V případě označení účtu jako ohroženého z hlediska ochrany hesla bude Google informován, že u daného účtu hrozí napadení.
-
-      Je-li tato zásada nastavena na možnost PasswordProtectionRiskOff, označení účtu jako ohroženého z hlediska ochrany hesla se spouštět nebude.
-      Je-li tato zásada nastavena na hodnotu PasswordProtectionRiskOnPasswordReuse, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatelé použijí hesla Google na webech, které nejsou uvedeny na seznamu povolených.
-      Je-li tato zásada nastavena na hodnotu PasswordProtectionRiskOnPhishingReuse, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatelé použijí hesla Google na phishingových webech.
-      Je-li tato zásada ponechána nenastavená, spustí se označení účtu jako ohroženého z hlediska ochrany hesla v případě, že uživatelé hesla Google použijí na phishingových webech, ale uživatelé toto nastavení budou moci změnit.</translation>
 <translation id="982497069985795632">Zapnout kontrolu pravopisu</translation>
 </translationbundle>

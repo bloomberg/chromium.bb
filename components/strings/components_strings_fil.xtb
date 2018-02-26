@@ -362,7 +362,7 @@
 <translation id="3539171420378717834">Magtago ng kopya ng card na ito sa device na ito</translation>
 <translation id="3542684924769048008">Gamitin ang password para sa:</translation>
 <translation id="3549644494707163724">I-encrypt ang lahat ng naka-sync na data gamit ang sarili mong passphrase sa pag-sync</translation>
-<translation id="3556433843310711081">Maaari itong alisin sa pagkaka-block ng iyong manager para sa iyo</translation>
+<translation id="3556433843310711081">Maaari itong i-unblock ng iyong manager para sa iyo</translation>
 <translation id="3566021033012934673">Hindi pribado ang iyong koneksyon</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Isinasaad ng naka-embed na page sa <ph name="SITE" /> na</translation>
@@ -639,7 +639,7 @@
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5719499550583120431">Tinatanggap ang mga prepaid card.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
-<translation id="5732392974455271431">Maaari itong alisin sa pagkaka-block ng iyong mga magulang para sa iyo</translation>
+<translation id="5732392974455271431">Maaari itong i-unblock ng iyong mga magulang para sa iyo</translation>
 <translation id="5763042198335101085">Maglagay ng wastong email address</translation>
 <translation id="5765072501007116331">Upang makita ang mga pamamaraan at kinakailangan sa paghahatid, pumili ng address</translation>
 <translation id="5770114862687765385">Mukhang sira ang file. I-click ang button na 'I-reset' upang i-reset ang session.</translation>
@@ -870,7 +870,7 @@
 <translation id="7723047071702270851">I-edit ang Card</translation>
 <translation id="774634243536837715">Na-block ang mapanganib na content.</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
-<translation id="7755287808199759310">Maaari itong alisin sa pagkaka-block ng iyong magulang para sa iyo</translation>
+<translation id="7755287808199759310">Maaari itong i-unblock ng iyong magulang para sa iyo</translation>
 <translation id="7758069387465995638">Maaaring na-block ng firewall o antivirus software ang koneksyon.</translation>
 <translation id="7759163816903619567">Display domain:</translation>
 <translation id="7761701407923456692">Hindi tumutugma sa URL ang certificate ng server.</translation>

@@ -207,7 +207,7 @@
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
-<translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que debe reiniciar</translation>
+<translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que se debe realizar un reinicio</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
 <translation id="1827523283178827583">Usar servidores proxy fijos</translation>
@@ -282,7 +282,7 @@
 <translation id="2067011586099792101">Bloquea el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="2070270043919235595">Notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
 
-      Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio reiniciar. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita reiniciar. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para reiniciar. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio realizar un reinicio. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita llevar a cabo el reinicio. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para hacerlo. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es de siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Después del reinicio, se restablecerá la sesión del usuario.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
@@ -325,7 +325,7 @@
       Si no se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada todos los días.</translation>
 <translation id="2188722565665306629">Permite establecer el período en el que se mostrarán las notificaciones de reinicio de <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
 
-      Esta configuración de política se puede usar para controlar el período, en milisegundos, durante el cual se informan a los usuarios que <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) debe reiniciarse para instalar una actualización. En este período, se le informará al usuario de manera reiterada que es necesario instalar una actualización en función de la configuración de la política de <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece, se utiliza el período predeterminado de 604800000 milisegundos (una semana).</translation>
+      Esta configuración de política se puede usar para controlar el período, en milisegundos, durante el cual se informa a los usuarios que <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) debe reiniciarse para instalar una actualización. En este período, se le informará al usuario de manera reiterada que es necesario instalar una actualización en función de la configuración de la política de <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece, se utiliza el período predeterminado de 604800000 milisegundos (una semana).</translation>
 <translation id="2194470398825717446">Esta política dejó de estar disponible en M61, usa EcryptfsMigrationStrategy en su lugar.
 
 Especifica el comportamiento de un dispositivo que se envió con ecryptfs y debe realizar una transición a la encriptación ext4.
@@ -583,6 +583,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2893546967669465276">Enviar registros del sistema al servidor de administración</translation>
 <translation id="2899002520262095963">A través de esta política, las apps de Android pueden usar la configuración de red y los Certificados de CA, pero no tienen acceso a algunas opciones de configuración.</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
+<translation id="2907992746861405243">Controla a qué impresoras de <ph name="BULK_PRINTERS_POLICY" /> pueden acceder los usuarios.
+
+      Designa la política de acceso que se usa para la configuración de impresoras en lote. Si se selecciona <ph name="PRINTERS_ALLOW_ALL" />, se muestran todas las impresoras. Si se selecciona <ph name="PRINTERS_BLACKLIST" />, se usa <ph name="BULK_PRINTERS_BLACKLIST" /> para restringir el acceso a las impresoras especificadas. Si se selecciona <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> designa solo las impresoras que se pueden seleccionar.
+
+      Si no se establece esta política, se utiliza <ph name="PRINTERS_ALLOW_ALL" />.
+      </translation>
 <translation id="2908277604670530363">Cantidad máxima de conexiones simultáneas con el servidor proxy</translation>
 <translation id="2956777931324644324">Esta política cayó en desuso a partir de la versión 36 de <ph name="PRODUCT_NAME" />.
 
@@ -713,6 +719,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se usa esta política, los usuarios podrán acceder solo a las impresoras con ID que coincidan con los valores en esta política. Los ID deben corresponder a las entradas en el archivo especificado en <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Si no se configura esta política, <ph name="PRODUCT_NAME" /> usará la versión mínima predeterminada, que es TLS 1.0.
+
+      De lo contrario, se podrá establecer en uno de los siguientes valores: "tls1", "tls1.1" o "tls1.2". De esta manera, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS anteriores a la versión especificada. Se ignorarán los valores que no se reconozcan.</translation>
 <translation id="3417418267404583991">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no requieren contraseña.
 
       Si esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> no permitirá el inicio de sesiones de invitados.</translation>
@@ -821,6 +830,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si no se establece la política, el teclado en pantalla estará inhabilitado inicialmente, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
+<translation id="3831376478177535007">Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> permite que los certificados emitidos mediante las operaciones del PKI heredado de Symantec Corporation se los considere de confianza cuando reciben la validación correcta de un certificado de CA reconocido y se vinculan a este.
+
+      Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo certificados de la infraestructura heredada de Symantec. Si una actualización del sistema operativo cambia la forma en la que este maneja dichos certificados, esta política ya no tendrá efecto. Además, se trata de una solución temporal para que las empresas tengan más tiempo para dejar de usar los certificados heredados de Symantec. Esta política se quitará el 1 de enero de 2019 o cerca de esta fecha.
+
+      Si esta política no se establece o se establece en "falsa", <ph name="PRODUCT_NAME" /> seguirá el programa de baja anunciado públicamente.
+
+      Para obtener más información sobre esta baja, consulta https://g.co/chrome/symantecpkicerts.</translation>
 <translation id="383466854578875212">Permite especificar los hosts de mensajería nativa que no están sujetos a la lista negra.
 
           Un valor de lista negra de * significa que todos los hosts de mensajería nativa están incluidos en la lista negra y solo se cargarán los hosts de mensajería nativa incluidos en la lista blanca.
@@ -1099,7 +1115,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           De manera predeterminada, si el PIN se considera poco seguro, los usuarios recibirán una advertencia, no un mensaje de error.</translation>
 <translation id="4723829699367336876">Habilitar el cruce seguro de firewall desde clientes de acceso remoto</translation>
-<translation id="4725123658714754485">Controla el envío de informes de errores, métricas de uso y datos de diagnóstico a Google. Si el valor se establece como verdadero, <ph name="PRODUCT_OS_NAME" /> enviará informes sobre métricas de uso y datos de diagnóstico. Si no se configura o se establece como falso, se inhabilitará el envío de estos informes.</translation>
 <translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación de HTTP integrada</translation>
 <translation id="4744190513568488164">Servidores a los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios
@@ -1511,17 +1526,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Para fijar apps al Launcher, consulta PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantánea del proveedor de búsqueda predeterminado</translation>
-<translation id="6029950823657977211">
-      NOTA: Esta política es experimental y puede provocar fallos.
-      Esta política se aplica a la pantalla de acceso. Consulta también la política "IsolateOrigins", que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor.
-      Si se habilita la política, cada origen designado en una lista separada por
-      comas se ejecutará en su propio proceso. Esta acción también aislará los
-      sitios designados a partir de subdominios; p. ej., si se especifica
-      https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte
-      del sitio https://ejemplo.com/.
-      Si se inhabilita la política, se aplicará la lógica de administración del proceso previo de aislamiento de sitios.
-      Si la política no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma en la pantalla de acceso.
-      </translation>
 <translation id="603410445099326293">Parámetros para URL de sugerencia que utiliza POST</translation>
 <translation id="6036523166753287175">Habilitar el cruce seguro de firewall desde hosts de acceso remoto</translation>
 <translation id="6070667616071269965">Diseños de teclado de la pantalla de acceso del dispositivo</translation>
@@ -1688,7 +1692,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>
 <translation id="673699536430961464">Esta configuración permite que los usuarios cambien entre cuentas de Google en el área de contenido de la ventana del navegador después de acceder en el dispositivo con <ph name="PRODUCT_OS_NAME" />.
 
-      Si la política se establece como falsa, no se permitirá acceder en otra cuenta desde el área de contenido de una ventana de navegador que no sea de incógnito.
+      Si la política se establece como falsa, no se permitirá acceder a otra cuenta desde el área de contenido de una ventana de navegador que no sea de incógnito.
 
       Si no se establece o se establece como verdadera, se usará el comportamiento predeterminado: se permitirá acceder a otra cuenta desde el área de contenido del navegador, excepto para las cuentas secundarias, donde se bloqueará para el área de contenido en ventanas que no sean de incógnito.
 
@@ -1704,7 +1708,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
-<translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda reiniciar</translation>
+<translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
 
@@ -2437,11 +2441,5 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permite forzar el acceso a <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Configurar el tamaño de caché de disco</translation>
-<translation id="9775893229076211">Permite controlar la forma en la que un servicio de protección de contraseñas indica que la cuenta del usuario está en riesgo, es decir, informa a Google cuando la cuenta corre riesgo de ser vulnerada.
-
-      Si esta política se establece como "PasswordProtectionRiskOff", no se activa la marca de la protección de la contraseña que indica que la cuenta está en riesgo.
-      Si se establece como "PasswordProtectionRiskOnPasswordReuse", se activa dicha marca cuando los usuarios vuelven a usar las contraseñas de Google en sitios que no están incluidos en la lista blanca.
-      Si se establece como "PasswordProtectionRiskOnPhishingReuse", se activa la marca cuando los usuarios vuelven a usar las contraseñas de Google en sitios de suplantación de identidad (phishing).
-      Si no se establece, se activa la marca cuando los usuarios vuelven a usar las contraseñas de Google en sitios de suplantación de identidad (phishing); pero el usuario puede cambiar la configuración.</translation>
 <translation id="982497069985795632">Habilitar el corrector ortográfico</translation>
 </translationbundle>

@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">ملف تالف أو غير صالح</translation>
 <translation id="1042174272890264476">‏يأتي جهاز الكمبيوتر أيضًا مزودًا بمكتبة RLZ مضمنة للمنتج <ph name="SHORT_PRODUCT_NAME" />. تعيّن RLZ علامة غير فريدة وغير متعلقة بتحديد الشخصية من أجل قياس عمليات البحث ومعدل استخدام <ph name="SHORT_PRODUCT_NAME" /> الذي تؤثر فيه حملة ترويجية محددة. تظهر هذه التصنيفات أحيانًا في طلبات بحث Google في <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1046059554679513793">عذرًا، هذا الاسم قيد الاستخدام فعلاً!</translation>
-<translation id="1046286965898806214">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> حفظ حسابك لهذا الموقع؟</translation>
 <translation id="1047431265488717055">نسخ ن&amp;ص الرابط</translation>
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1047956942837015229">جارٍ حذف <ph name="COUNT" /> من العناصر...</translation>
@@ -424,7 +423,6 @@
 <translation id="1635033183663317347">تم التثبيت من قبل الوصيّ.</translation>
 <translation id="1637224376458524414">‏الحصول على هذه الإشارة المرجعية على جهاز iPhone</translation>
 <translation id="1637765355341780467">حدث خطأ ما أثناء فتح ملفك الشخصي. وقد تكون بعض الميزات غير متاحة.</translation>
-<translation id="1638447702436460526">لم يتم العثور على طابعة</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 مع تشفير RSA</translation>
 <translation id="1642494467033190216">‏مطلوب إزالة الحماية من rootfs وإعادة التشغيل قبل تمكين ميزات التصحيح الأخرى.</translation>
@@ -575,6 +573,7 @@
 <translation id="1856813161013948396">يمكنك تخطي شاشة التأمين بمجرد النقر على مستشعر بصمات الإصبع. انقر للتهيئة.</translation>
 <translation id="1858585891038687145">الوثوق بهذه الشهادة لتحديد هوية مصممي البرامج</translation>
 <translation id="1859234291848436338">اتجاه الكتابة</translation>
+<translation id="1861262398884155592">هذا المجلد فارغ</translation>
 <translation id="1864111464094315414">تسجيل الدخول</translation>
 <translation id="1864400682872660285">أكثر برودة</translation>
 <translation id="1864676585353837027">تغيير كيفية مشاركة هذه الملفات</translation>
@@ -589,7 +588,6 @@
 <translation id="1878524442024357078">عدم السماح لأي من مواقع الويب باستخدام مكونات إضافية للوصول إلى جهاز الكمبيوتر</translation>
 <translation id="1879449842763884566">جارٍ التثبيت إلى مجلد التطبيقات...</translation>
 <translation id="1880905663253319515">هل تريد حذف الشهادة "<ph name="CERTIFICATE_NAME" />"؟</translation>
-<translation id="188190999506226223">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> حفظ كلمة مرورك لـ <ph name="ORIGIN" />؟</translation>
 <translation id="1886996562706621347">السماح للمواقع بأن تطلب أن تصبح معالجات افتراضية للبروتوكولات (مستحسن)</translation>
 <translation id="1887442540531652736">خطأ في تسجيل الدخول</translation>
 <translation id="1887850431809612466">مراجعة الأجهزة</translation>
@@ -1149,7 +1147,6 @@
 <translation id="2762441749940182211">تم حظر استخدام الكاميرا</translation>
 <translation id="2765217105034171413">صغير</translation>
 <translation id="2766006623206032690">‏&amp;لصق عنوان URL والدخول إليه</translation>
-<translation id="2767084307624729667">كلمات المرور المحفوظة لـ <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">تم تسجيل الدخول بحساب <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="2770690685823456775">تصدير كلمات المرور إلى مجلد آخر</translation>
@@ -1222,7 +1219,6 @@
 <translation id="2849936225196189499">مهمة</translation>
 <translation id="2850124913210091882">النسخ الاحتياطي</translation>
 <translation id="2850541429955027218">إضافة مظهر</translation>
-<translation id="2853121255651601031">تم حفظ كلمة المرور.</translation>
 <translation id="2853916256216444076">فيديو $1</translation>
 <translation id="2857608528410806398">يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا.</translation>
 <translation id="2860150991415616761">طويل جدًا (4 ثوانٍ)</translation>
@@ -1232,6 +1228,7 @@
 <translation id="2867768963760577682">فتح كعلامة تبويب مثبتة</translation>
 <translation id="2868746137289129307">تعتبر هذه الإضافة قديمة ومعطّلة بواسطة سياسة المؤسسة. وقد تصبح مُمكّنة تلقائيًا عندما يتوفر إصدار أحدث.</translation>
 <translation id="2870560284913253234">الموقع</translation>
+<translation id="2870909136778269686">جارٍ التحديث...</translation>
 <translation id="2871813825302180988">يتم الآن استخدام هذا الحساب فعلاً على هذا الجهاز.</translation>
 <translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
 <translation id="287286579981869940">جارٍ إضافة <ph name="PROVIDER_NAME" />...</translation>
@@ -1761,7 +1758,6 @@
 <translation id="3665842570601375360">الأمان:</translation>
 <translation id="3668570675727296296">إعدادات اللغة</translation>
 <translation id="3668823961463113931">المعالجات</translation>
-<translation id="3669030672519623291">لم يتم حفظ أي كلمات مرور لهذا الموقع</translation>
 <translation id="3670229581627177274">تشغيل البلوتوث</translation>
 <translation id="3672681487849735243">تم اكتشاف خطأ من المصنع</translation>
 <translation id="367645871420407123">اتركه فارغًا إذا كنت ترغب في تعيين كلمة مرور الجذر إلى قيمة صورة الاختبار الافتراضية</translation>
@@ -2294,7 +2290,6 @@
 <translation id="4576541033847873020">إقران جهاز بلوتوث</translation>
 <translation id="4579581181964204535">يتعذّر إرسال <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">هل تريد فعلًا حذف عناصر $1؟</translation>
-<translation id="458150753955139441">اضغط للرجوع، واستخدم قائمة السياق لمشاهدة السجلَ</translation>
 <translation id="4582563038311694664">إعادة تعيين كل الإعدادات</translation>
 <translation id="4585793705637313973">تعديل الصفحة</translation>
 <translation id="4589268276914962177">علامة تبويب طرفية جديدة</translation>
@@ -2327,7 +2322,6 @@
 <translation id="4632483769545853758">إلغاء تجاهل علامة التبويب</translation>
 <translation id="4633003931260532286">تتطلب الإضافة "<ph name="IMPORT_NAME" />" بإصدار لا يقل عن "<ph name="IMPORT_VERSION" />" لكن يتم تثبيت "<ph name="INSTALLED_VERSION" />" فقط.</translation>
 <translation id="4634771451598206121">تسجيل الدخول مرة أخرى...</translation>
-<translation id="4636315944522859212">تم العثور على طابعة</translation>
 <translation id="4640525840053037973">‏تسجيل الدخول باستخدام حسابك في Google</translation>
 <translation id="4641539339823703554">‏تعذر على Chrome تعيين وقت النظام. يُرجى التحقق من الوقت أدناه وإعادة ضبطه إذا لزم الأمر.</translation>
 <translation id="4643612240819915418">&amp;فتح مقطع الفيديو في علامة تبويب جديدة</translation>
@@ -2459,7 +2453,6 @@
 <translation id="4850669014075537160">التمرير</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4853020600495124913">فتح في &amp;نافذة جديدة</translation>
-<translation id="4853882474657327078">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة مرورك لـ <ph name="ORIGIN" />؟</translation>
 <translation id="4856478137399998590">تم تنشيط خدمة بيانات الجوال وهي جاهزة للاستخدام.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{فتح الكل في &amp;نافذة التصفح المتخفي}=1{فتح في &amp;نافذة التصفح المتخفي}two{فتح كلا العنوانين (#) في &amp;نافذة التصفح المتخفي}few{فتح كل الـ (#) عناوين في &amp;نافذة التصفح المتخفي}many{فتح كل الـ (#) عنوانًا في &amp;نافذة التصفح المتخفي}other{فتح كل الـ (#) عنوان في &amp;نافذة التصفح المتخفي}}</translation>
 <translation id="4858913220355269194">فريتز</translation>
@@ -2941,7 +2934,6 @@
 <translation id="558170650521898289">‏التحقق من برنامج تشغيل الأجهزة لـ Microsoft Windows</translation>
 <translation id="5582839680698949063">القائمة الرئيسية</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">كلمات المرور المحفوظة لهذا الموقع</translation>
 <translation id="5585118885427931890">تعذر إنشاء مجلد إشارة.</translation>
 <translation id="558563010977877295">فتح صفحة محددة أو مجموعة صفحات</translation>
 <translation id="5585912436068747822">تعذّر إتمام عملية التنسيق</translation>
@@ -2953,7 +2945,6 @@
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5600706100022181951">سيستهلك تنزيل التحديث <ph name="UPDATE_SIZE_MB" /> ميغابايت من بيانات الجوّال. هل ترغب في المتابعة؟</translation>
 <translation id="5601503069213153581">رقم التعريف الشخصي</translation>
-<translation id="5605057818926354551">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة مرورك لهذا الموقع؟</translation>
 <translation id="5605623530403479164">محرّكات البحث الأخرى</translation>
 <translation id="5608580678041221894">انقر على المفاتيح التالية لضبط منطقة الاقتصاص أو تحريكها</translation>
 <translation id="5609231933459083978">يبدو أن التطبيق غير صالح.</translation>
@@ -3138,7 +3129,6 @@
 <translation id="5882919346125742463">الشبكات المعروفة</translation>
 <translation id="5884474295213649357">‏علامة التبويب هذه متصلة بجهاز USB.</translation>
 <translation id="5885324376209859881">إدارة إعدادات الوسائط...</translation>
-<translation id="5887341066363321040">لم يتم حفظ أي كلمات مرور لـ <ph name="ORIGIN" /></translation>
 <translation id="5889282057229379085">‏أقصى عدد من المراجع المصدقة المتوسطة (CA): <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5895187275912066135">تاريخ الإصدار</translation>
@@ -3623,7 +3613,6 @@
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="6664237456442406323">‏للأسف، تمت تهيئة جهاز الكمبيوتر باستخدام معرف جهاز غير صحيح. وهذا يمنع تحديث نظام التشغيل Chrome بأحدث إصلاحات الأمان، وقد يكون جهاز الكمبيوتر <ph name="BEGIN_BOLD" />عرضة للهجمات الضارة<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">حدث خطأ ما أثناء فتح ملفك الشخصي. يُرجى الخروج ثم إعادة تسجيل الدخول.</translation>
-<translation id="6669827579181361875">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> حفظ كلمة مرورك لهذا الموقع؟</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">‏هل تريد أن يترجم Google هذه الصفحة من <ph name="SOURCE_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="6675665718701918026">الإشارة إلى الأجهزة المتصلة</translation>
@@ -4988,6 +4977,7 @@
 <translation id="8871696467337989339">إنك تستخدم علامة لا يستخدمها سطر الأوامر: <ph name="BAD_FLAG" />. سيؤثر ذلك بالسلب على الاستقرار والأمان.</translation>
 <translation id="8871974300055371298">إعدادات المحتوى</translation>
 <translation id="8872155268274985541">‏يوجد ملف غير صالح لبيان التحديث الخارجي لتطبيق Kiosk. اخفق تحديث تطبيق Kiosk. يُرجى إزالة جهاز USB.</translation>
+<translation id="8872506776304248286">فتح في التطبيق</translation>
 <translation id="8874184842967597500">غير متصل</translation>
 <translation id="8876215549894133151">التنسيق:</translation>
 <translation id="8876309039915144086">جارٍ إنشاء كلمة مرور...</translation>
@@ -5001,7 +4991,6 @@
 <translation id="88986195241502842">صفحة لأسفل</translation>
 <translation id="8898786835233784856">تحديد علامة التبويب التالية</translation>
 <translation id="8898840733695078011">قوة الإشارة</translation>
-<translation id="8899551033019439140">جارٍ البحث عن طابعة...</translation>
 <translation id="8899851313684471736">&amp;فتح الرّابط في نافذة جديدة</translation>
 <translation id="8902667442496790482">فتح إعدادات سماع الاختيار</translation>
 <translation id="8903921497873541725">تكبير</translation>
@@ -5123,6 +5112,7 @@
 <translation id="9100765901046053179">الإعدادات المتقدمة</translation>
 <translation id="9101691533782776290">إطلاق التطبيق</translation>
 <translation id="9102610709270966160">تمكين الإضافة</translation>
+<translation id="9103868373786083162">اضغط للرجوع، وقائمة السياق لمشاهدة السجلّ.</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">لتفريغ مساحة، احذف الملفات من سعة تخزين الجهاز.</translation>
 <translation id="9110990317705400362">‏نحن نبحث باستمرار عن طرق من شأنها زيادة أمان تجربة تصفحك. في السابق، كان من الممكن لأي موقع ويب أن يطالبك بتثبيت إضافة في متصفحك. أما في أحدث إصدارات Google Chrome، فيجب أن تبلغ Chrome صراحة أنك تريد تثبيت هذه الإضافات عن طريق إضافتها عبر صفحة الإضافات. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>

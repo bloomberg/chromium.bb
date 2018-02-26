@@ -283,7 +283,7 @@
 <translation id="2067011586099792101">Memblokir akses ke situs di luar paket konten</translation>
 <translation id="2070270043919235595">Beri tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang untuk menerapkan update yang tertunda.
 
-      Setelan kebijakan ini mengaktifkan notifikasi untuk memberi tahu pengguna bahwa peluncuran ulang browser direkomendasikan atau diperlukan. Jika tidak disetel, <ph name="PRODUCT_NAME" /> memberi tahu pengguna bahwa peluncuran ulang diperlukan melalui sedikit perubahan pada menunya. Jika disetel ke 'Direkomendasikan', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang direkomendasikan. Pengguna dapat menutup peringatan ini untuk menunda peluncuran ulang. Jika disetel ke 'Diperlukan', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang browser akan dilakukan secara paksa setelah periode notifikasi terlampaui. Periode ini akan disetel secara default menjadi 7 hari, dan dapat dikonfigurasi melalui setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Setelan kebijakan ini mengaktifkan notifikasi untuk memberi tahu pengguna bahwa peluncuran ulang browser direkomendasikan atau diperlukan. Jika tidak disetel, <ph name="PRODUCT_NAME" /> memberi tahu pengguna bahwa peluncuran ulang diperlukan melalui sedikit perubahan pada menunya. Jika disetel ke 'Recommended', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang direkomendasikan. Pengguna dapat menutup peringatan ini untuk menunda peluncuran ulang. Jika disetel ke 'Required', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang browser akan dilakukan secara paksa setelah periode notifikasi terlampaui. Periode ini akan disetel secara default menjadi 7 hari, dan dapat dikonfigurasi melalui setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesi pengguna akan dilanjutkan kembali setelah peluncuran ulang.</translation>
 <translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
@@ -590,6 +590,12 @@
 <translation id="2893546967669465276">Mengirim log sistem ke server pengelolaan</translation>
 <translation id="2899002520262095963">Aplikasi Android dapat menggunakan konfigurasi jaringan dan sertifikat CA yang disetel melalui kebijakan ini, namun tidak memiliki akses ke beberapa opsi konfigurasi.</translation>
 <translation id="2906874737073861391">Daftar ekstensi AppPack</translation>
+<translation id="2907992746861405243">Mengontrol printer mana dari <ph name="BULK_PRINTERS_POLICY" /> yang tersedia bagi pengguna.
+
+      Menetapkan kebijakan akses yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="BULK_PRINTERS_BLACKLIST" /> digunakan untuk membatasi akses ke printer tertentu.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="BULK_PRINTERS_WHITELIST" /> hanya akan menetapkan printer yang dapat dipilih.
+
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diterapkan.
+      </translation>
 <translation id="2908277604670530363">Jumlah maksimal sambungan serentak ke server proxy</translation>
 <translation id="2956777931324644324">Kebijakan ini dihentikan sejak <ph name="PRODUCT_NAME" /> versi 36.
 
@@ -722,6 +728,9 @@
 
       Jika kebijakan ini digunakan, hanya printer dengan ID yang cocok dengan nilai di kebijakan ini yang tersedia bagi pengguna. ID harus sesuai dengan entri dalam file yang ditentukan di <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Jika kebijakan ini tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan menggunakan versi minimum default yaitu TLS 1.0.
+
+      Jika kebijakan dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah dari versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan mengizinkan dimulainya sesi tamu.</translation>
@@ -830,6 +839,13 @@
 
           Jika kebijakan ini tidak disetel, keyboard di layar awalnya dinonaktifkan namun dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="382476126209906314">Mengonfigurasi awalan TalkGadget untuk hosting akses jarak jauh</translation>
+<translation id="3831376478177535007">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan mengizinkan sertifikat yang dikeluarkan oleh operasi Symantec Corporation's Legacy PKI untuk dipercaya jika tidak berhasil memvalidasi dan menjangkau Sertifikat CA yang dikenal.
+
+      Perlu diketahui bahwa kebijakan ini bergantung pada sistem operasi untuk tetap mengenali sertifikat dari infrastruktur lama milik Symantec. Jika update OS mengubah penanganan OS terhadap sertifikat tersebut, kebijakan ini tidak akan berlaku lagi.  Selain itu, kebijakan ini dimaksudkan sebagai solusi sementara guna memberikan perusahaan lebih banyak waktu untuk beralih dari sertifikat Symantec yang lama.  Kebijakan ini akan dihapus pada atau sekitar tanggal 1 Januari 2019.
+
+      Jika kebijakan ini tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan mengikuti jadwal penghentian yang diumumkan secara publik.
+
+      Lihat https://g.co/chrome/symantecpkicerts untuk mengetahui detail selengkapnya tentang penghentian ini.</translation>
 <translation id="383466854578875212">Memungkinkan Anda menentukan hosting perpesanan asli mana yang tidak termasuk daftar hitam.
 
           Nilai daftar hitam * menunjukkan bahwa semua hosting perpesanan asli dimasukkan dalam daftar hitam dan hanya hosting perpesanan asli yang tercantum dalam daftar putih yang akan dimuat.
@@ -1107,7 +1123,6 @@
 
           Secara default, pengguna akan mendapatkan peringatan, tetapi bukan pesan error, jika PIN dianggap lemah.</translation>
 <translation id="4723829699367336876">Mengaktifkan firewall traversal dari klien akses jarak jauh</translation>
-<translation id="4725123658714754485">Mengontrol apakah metrik penggunaan dan data diagnostik, termasuk laporan error, dilaporkan kembali ke Google. Jika disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan dan data diagnostik. Jika tidak dikonfigurasi atau disetel ke false, pelaporan metrik dan data diagnostik akan dinonaktifkan.</translation>
 <translation id="4725528134735324213">Aktifkan Android Backup Service</translation>
 <translation id="4733471537137819387">Kebijakan yang terkait dengan autentikasi HTTP terintegrasi.</translation>
 <translation id="4744190513568488164">Server yang dapat dijadikan tempat pendelegasian <ph name="PRODUCT_NAME" />.
@@ -1522,17 +1537,6 @@
 
       Untuk menyematkan aplikasi ke peluncur, lihat PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
-<translation id="6029950823657977211">
-      CATATAN: Kebijakan ini bersifat eksperimental dan dapat mengganggu fungsi!
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan 'IsolateOrigins' yang berlaku untuk sesi pengguna. Disarankan agar menyetel kedua kebijakan menjadi nilai yang sama.
-      Jika kebijakan ini diaktifkan, tiap asal yang diberi nama dalam
-      daftar yang dipisahkan koma akan menjalankan prosesnya sendiri. Tindakan ini juga akan mengisolasi
-      asal yang diberi nama oleh subdomain; mis. menentukan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan ini dinonaktifkan, logika pengelolaan proses Isolasi per-Situs akan berlaku.
-      Jika kebijakan ini tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
-      </translation>
 <translation id="603410445099326293">Parameter untuk URL yang disarankan yang menggunakan POST</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
@@ -1699,9 +1703,9 @@
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
 <translation id="673699536430961464">Setelan ini memungkinkan pengguna beralih ke akun Google lain di dalam area konten jendela browser setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini disetel ke false, pengguna tidak diizinkan untuk login ke akun lain dari area konten browser non-Rahasia.
+      Jika kebijakan ini disetel ke false, pengguna tidak diizinkan untuk login ke akun lain dari area konten browser non-Penyamaran.
 
-      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: pengguna diizinkan untuk login ke akun lain dari area konten browser, kecuali untuk akun anak, karena akun anak akan diblokir untuk area konten non-Rahasia.
+      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: pengguna diizinkan untuk login ke akun lain dari area konten browser, kecuali untuk akun anak, karena akun anak akan diblokir untuk area konten non-Penyamaran.
 
       Jika tidak diizinkan untuk login ke akun lain melalui Mode penyamaran, blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
 
@@ -2434,11 +2438,5 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="930930237275114205">Setel direktori data pengguna <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Setel ukuran cache disk</translation>
-<translation id="9775893229076211">Memungkinkan Anda mengontrol pemicu laporan perlindungan sandi pada akun yang berisiko. Laporan perlindungan sandi pada akun yang berisiko artinya memberi tahu Google bahwa akun ini berisiko dibajak.
-
-      Jika kebijakan ini disetel ke "PasswordProtectionRiskOff", tidak ada pemicu laporan perlindungan sandi pada akun yang berisiko.
-      Jika kebijakan ini disetel ke "PasswordProtectionRiskOnPasswordReuse", laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan ulang sandi Google di situs yang tidak disetujui.
-      Jika kebijakan ini disetel ke "PasswordProtectionRiskOnPhishingReuse", laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan ulang sandi Google di situs phishing, namun pengguna dapat mengubahnya.
-      Jika kebijakan ini tidak disetel, laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing, namun pengguna dapat mengubahnya.</translation>
 <translation id="982497069985795632">Aktifkan fitur pemeriksa ejaan</translation>
 </translationbundle>

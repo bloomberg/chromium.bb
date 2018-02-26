@@ -155,6 +155,7 @@
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3779810277399252432">インターネットに接続されていません。</translation>
 <translation id="3783017676699494206">画像を保存</translation>
+<translation id="3789841737615482174">インストール</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3897092660631435901">メニュー</translation>
 <translation id="3928666092801078803">データを統合する</translation>
@@ -283,6 +284,7 @@
 <translation id="6342069812937806050">たった今</translation>
 <translation id="6344783595350022745">テキストを消去</translation>
 <translation id="6362362396625799311">シークレット タブはありません</translation>
+<translation id="6374469231428023295">再試行</translation>
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6389470377220713856">名義人名</translation>
 <translation id="6406506848690869874">同期</translation>
@@ -291,7 +293,7 @@
 
 データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="6418346271604475326">PDF を準備しています</translation>
-<translation id="6434591244308415567">エラーが発生しました。しばらくしてからもう一度試してください。</translation>
+<translation id="6434591244308415567">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
 <translation id="6464071786529933911">新しいシークレット タブで開く</translation>

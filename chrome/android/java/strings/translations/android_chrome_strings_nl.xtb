@@ -245,7 +245,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3236059992281584593">1 minuut resterend</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
-<translation id="3255459706755453214">Blokkeer de leestoegang voor het klembord voor een specifieke site.</translation>
+<translation id="3255459706755453214">Blokkeer de leestoegang tot het klembord voor een specifieke site.</translation>
 <translation id="3259831549858767975">Alles op de pagina verkleinen</translation>
 <translation id="3269093882174072735">Afbeelding laden</translation>
 <translation id="3269956123044984603">Schakel in je account bij de instellingen van Android 'Gegevens automatisch synchroniseren' in om de tabbladen op je andere apparaten te bekijken.</translation>
@@ -257,7 +257,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3328801116991980348">Site-informatie</translation>
 <translation id="3341058695485821946">Bekijk hoeveel data je hebt bespaard</translation>
 <translation id="3350687908700087792">Alle incognitotabbladen sluiten</translation>
-<translation id="3358632888246345756">Sta leestoegang voor het klembord voor een specifieke site toe.</translation>
+<translation id="3358632888246345756">Geef een specifieke site leestoegang tot het klembord.</translation>
 <translation id="3365671512111106261">Niet beschikbaar wanneer Databesparing is ingeschakeld</translation>
 <translation id="3367813778245106622">Log opnieuw in om de synchronisatie te starten</translation>
 <translation id="3384347053049321195">Afbeelding delen</translation>
@@ -575,7 +575,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6177390657002841081">Databesparing inschakelen</translation>
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="618555311922999635">Navigatievenster geopend op volledige hoogte</translation>
-<translation id="6192333916571137726">Downloadbestand</translation>
+<translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -699,7 +699,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
 <translation id="729975465115245577">Je apparaat bevat geen app om het wachtwoordbestand in op te slaan.</translation>
-<translation id="7318797029885648322">Tik op Meer om artikelen weer te geven</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 geselecteerd item delen}other{# geselecteerde items delen}}</translation>

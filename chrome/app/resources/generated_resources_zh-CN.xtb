@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">文件无效或已损坏</translation>
 <translation id="1042174272890264476">您的计算机还内置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 库。RLZ 会指定非唯一、非个人身份识别代码来衡量某推广活动所带来的搜索量和 <ph name="SHORT_PRODUCT_NAME" /> 使用量。这些标签有时会显示在 <ph name="PRODUCT_NAME" /> 的 Google 搜索查询中。</translation>
 <translation id="1046059554679513793">糟糕，此名称已有人使用！</translation>
-<translation id="1046286965898806214">要让 <ph name="PASSWORD_MANAGER_BRAND" /> 保存您用于登录此网站的帐号吗？</translation>
 <translation id="1047431265488717055">复制链接文字(&amp;X)</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
@@ -420,7 +419,6 @@
 <translation id="1635033183663317347">这是您的监护人安装的。</translation>
 <translation id="1637224376458524414">在您的 iPhone 上获取此书签</translation>
 <translation id="1637765355341780467">打开您的个人资料时出了点问题，部分功能可能无法使用。</translation>
-<translation id="1638447702436460526">找不到打印机</translation>
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="1640283014264083726">PKCS #1，带有 RSA 加密的 MD4</translation>
 <translation id="1642494467033190216">要启用其他调试功能，必须先取消根文件系统保护并重启设备。</translation>
@@ -571,6 +569,7 @@
 <translation id="1856813161013948396">轻触指纹传感器即可略过锁定屏幕。点按一下即可进行配置。</translation>
 <translation id="1858585891038687145">信任该证书，以便标识软件编写者的身份</translation>
 <translation id="1859234291848436338">书写方向</translation>
+<translation id="1861262398884155592">此文件夹中没有内容</translation>
 <translation id="1864111464094315414">登录</translation>
 <translation id="1864400682872660285">冷色调</translation>
 <translation id="1864676585353837027">更改这些文件的分享方式</translation>
@@ -585,7 +584,6 @@
 <translation id="1878524442024357078">不允许任何网站使用插件访问您的计算机</translation>
 <translation id="1879449842763884566">安装到“应用”文件夹…</translation>
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
-<translation id="188190999506226223">要让 <ph name="PASSWORD_MANAGER_BRAND" /> 保存您用于登录 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
 <translation id="1887850431809612466">硬件版本</translation>
@@ -1145,7 +1143,6 @@
 <translation id="2762441749940182211">已禁止使用摄像头</translation>
 <translation id="2765217105034171413">小</translation>
 <translation id="2766006623206032690">粘贴并转到(&amp;S)</translation>
-<translation id="2767084307624729667">已保存用于登录 <ph name="ORIGIN" /> 的密码</translation>
 <translation id="276969039800130567">您已用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="2770690685823456775">将您的密码导出到其他文件夹</translation>
@@ -1218,7 +1215,6 @@
 <translation id="2849936225196189499">关键</translation>
 <translation id="2850124913210091882">备份</translation>
 <translation id="2850541429955027218">添加主题背景</translation>
-<translation id="2853121255651601031">密码已保存</translation>
 <translation id="2853916256216444076">$1 视频</translation>
 <translation id="2857608528410806398">此处为快速解锁功能通知正文。此处为快速解锁功能通知正文。此处为快速解锁功能通知正文。此处为快速解锁功能通知正文。此处为快速解锁功能通知正文。</translation>
 <translation id="2860150991415616761">非常长（4 秒）</translation>
@@ -1228,6 +1224,7 @@
 <translation id="2867768963760577682">在固定标签页中打开</translation>
 <translation id="2868746137289129307">此扩展程序已过期并已根据企业政策停用。当有新版本时，它可能会自动启用。</translation>
 <translation id="2870560284913253234">网站</translation>
+<translation id="2870909136778269686">正在更新…</translation>
 <translation id="2871813825302180988">已有人在此设备上使用该帐号。</translation>
 <translation id="2872353916818027657">切换主显示器</translation>
 <translation id="287286579981869940">添加“<ph name="PROVIDER_NAME" />”…</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3665842570601375360">安全：</translation>
 <translation id="3668570675727296296">语言设置</translation>
 <translation id="3668823961463113931">处理程序</translation>
-<translation id="3669030672519623291">未保存任何用于登录此网站的密码</translation>
 <translation id="3670229581627177274">开启蓝牙</translation>
 <translation id="3672681487849735243">检测到出厂错误</translation>
 <translation id="367645871420407123">如果您要将根密码设为默认的测试图片值，则将此字段留空</translation>
@@ -2291,7 +2287,6 @@
 <translation id="4576541033847873020">配对蓝牙设备</translation>
 <translation id="4579581181964204535">无法投射 <ph name="HOST_NAME" />。</translation>
 <translation id="4580526846085481512">您确定要删除这 $1 项吗？</translation>
-<translation id="458150753955139441">按该按钮可后退，使用上下文菜单可查看历史记录</translation>
 <translation id="4582563038311694664">重置所有设置</translation>
 <translation id="4585793705637313973">修改启动页</translation>
 <translation id="4589268276914962177">打开新终端</translation>
@@ -2324,7 +2319,6 @@
 <translation id="4632483769545853758">将此标签页取消静音</translation>
 <translation id="4633003931260532286">此扩展程序要求“<ph name="IMPORT_NAME" />”的版本不得低于“<ph name="IMPORT_VERSION" />”，但目前安装的版本只是“<ph name="INSTALLED_VERSION" />”</translation>
 <translation id="4634771451598206121">重新登录...</translation>
-<translation id="4636315944522859212">已找到打印机</translation>
 <translation id="4640525840053037973">使用您的 Google 帐号登录</translation>
 <translation id="4641539339823703554">Chrome无法设置系统时间。请检查下面的时间，并在必要时进行更正。</translation>
 <translation id="4643612240819915418">在新标签页中打开视频(&amp;O)</translation>
@@ -2395,7 +2389,7 @@
 <translation id="4748762018725435655">需要安装 Chrome 网上应用店中的扩展程序</translation>
 <translation id="4750394297954878236">建议</translation>
 <translation id="475088594373173692">第 1 位用户</translation>
-<translation id="4751476147751820511">动作或光传感器</translation>
+<translation id="4751476147751820511">动态传感器或光传感器</translation>
 <translation id="4756378406049221019">停止/重新加载</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
 <translation id="4759238208242260848">下载内容</translation>
@@ -2456,7 +2450,6 @@
 <translation id="4850669014075537160">滚动</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4853020600495124913">在新窗口中打开(&amp;O)</translation>
-<translation id="4853882474657327078">要让 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您用于登录 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{在无痕式窗口中打开全部网址(&amp;I)}=1{在无痕式窗口中打开 1 个网址(&amp;I)}other{在无痕式窗口中打开全部（# 个）网址(&amp;I)}}</translation>
 <translation id="4858913220355269194">足球</translation>
@@ -2933,7 +2926,6 @@
 <translation id="558170650521898289">Microsoft Windows 硬件驱动程序验证</translation>
 <translation id="5582839680698949063">主菜单</translation>
 <translation id="5583640892426849032">退格</translation>
-<translation id="5583726250980167172">已保存用于登录此网站的密码</translation>
 <translation id="5585118885427931890">无法创建书签文件夹。</translation>
 <translation id="558563010977877295">打开特定网页或一组网页</translation>
 <translation id="5585912436068747822">格式化失败</translation>
@@ -2945,7 +2937,6 @@
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5600706100022181951">下载更新需要使用 <ph name="UPDATE_SIZE_MB" /> MB 的移动数据流量。要继续吗？</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5605057818926354551">要让 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您用于登录此网站的密码吗？</translation>
 <translation id="5605623530403479164">其他搜索引擎</translation>
 <translation id="5608580678041221894">按以下键可调整或移动剪裁区域</translation>
 <translation id="5609231933459083978">该应用似乎无效。</translation>
@@ -3130,7 +3121,6 @@
 <translation id="5882919346125742463">已知网络</translation>
 <translation id="5884474295213649357">此标签页已连接到 USB 设备。</translation>
 <translation id="5885324376209859881">管理媒体设置...</translation>
-<translation id="5887341066363321040">未保存任何用于登录 <ph name="ORIGIN" /> 的密码</translation>
 <translation id="5889282057229379085">中级 CA 证书数目的上限为：<ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5895187275912066135">颁发日期</translation>
@@ -3613,7 +3603,6 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">很遗憾，您的计算机配置了格式错误的硬件 ID。这导致 Chrome 操作系统无法使用最新的安全修正程序进行更新，以致您的计算机<ph name="BEGIN_BOLD" />很容易遭到恶意攻击<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">打开您的个人资料时出了点问题。请先退出，然后重新登录。</translation>
-<translation id="6669827579181361875">要让 <ph name="PASSWORD_MANAGER_BRAND" /> 保存您用于登录此网站的密码吗？</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">您希望 Google 将此网页的内容从<ph name="SOURCE_LANGUAGE" />翻译为<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="6675665718701918026">已连接指针设备</translation>
@@ -4969,6 +4958,7 @@
 <translation id="8871696467337989339">您使用的是不受支持的命令行标记：<ph name="BAD_FLAG" />。稳定性和安全性会有所下降。</translation>
 <translation id="8871974300055371298">内容设置</translation>
 <translation id="8872155268274985541">发现无效的自助服务终端外部更新清单文件，未能成功更新自助服务终端应用。请拔下 U 盘。</translation>
+<translation id="8872506776304248286">在应用中打开</translation>
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8876215549894133151">格式：</translation>
 <translation id="8876309039915144086">生成密码…</translation>
@@ -4982,7 +4972,6 @@
 <translation id="88986195241502842">向下翻页</translation>
 <translation id="8898786835233784856">选择下一个标签</translation>
 <translation id="8898840733695078011">信号强度</translation>
-<translation id="8899551033019439140">正在搜索打印机…</translation>
 <translation id="8899851313684471736">在新窗口中打开链接(&amp;W)</translation>
 <translation id="8902667442496790482">打开“随选朗读”设置</translation>
 <translation id="8903921497873541725">放大</translation>
@@ -5104,6 +5093,7 @@
 <translation id="9100765901046053179">高级设置</translation>
 <translation id="9101691533782776290">启动应用</translation>
 <translation id="9102610709270966160">启用扩展程序</translation>
+<translation id="9103868373786083162">点按该按钮可后退，点按上下文菜单可查看历史记录</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">要释放空间，请将文件从设备存储空间中删除。</translation>
 <translation id="9110990317705400362">我们在不断寻找各种方式来提高上网安全。之前，任何网站都可以提示您在浏览器中添加扩展程序；而在最新版本的Google Chrome中，您必须明确告诉Chrome您想要安装这些扩展程序（即：在“扩展程序”页添加它们）后才可以。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>

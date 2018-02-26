@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1383876407941801731">Поиск</translation>
+<translation id="1510238584712386396">Панель запуска</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">Редактирование текста</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">Переключить основной монитор</translation>
+<translation id="3105917916468784889">Скриншот</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Курсор в адресную строку</translation>
+<translation id="3649256019230929621">Свернуть окно</translation>
+<translation id="385051799172605136">Назад</translation>
+<translation id="5316716239522500219">Дублировать изображения на мониторах</translation>
+<translation id="5928303187149237472">Изменить разрешение экрана.</translation>
+<translation id="5975083100439434680">Уменьшить</translation>
+<translation id="6022924867608035986">Удалить текст из окна поиска</translation>
+<translation id="6129953537138746214">Пробел</translation>
+<translation id="6185696379715117369">На страницу вверх</translation>
+<translation id="671928215901716392">Блокировать экран</translation>
+<translation id="6727005317916125192">Предыдущая панель</translation>
+<translation id="6981982820502123353">Специальные возможности</translation>
+<translation id="7020813747703216897">Ничего не найдено.</translation>
+<translation id="7025325401470358758">Следующая панель</translation>
+<translation id="7272373489634936181">Поиск быстрых клавиш</translation>
+<translation id="7724603315864178912">Вырезать</translation>
+<translation id="8004192919599017226">Начать поиск…</translation>
+<translation id="88986195241502842">На страницу вниз</translation>
+<translation id="8903921497873541725">Увеличить</translation>
+<translation id="9179672198516322668">Часто используемые быстрые клавиши</translation>
 </translationbundle>

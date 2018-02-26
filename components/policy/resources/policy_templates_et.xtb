@@ -1148,7 +1148,6 @@
 
           Vaikimisi kuvatakse kasutajatele nõrga PIN-koodi korral hoiatus, mitte veateade.</translation>
 <translation id="4723829699367336876">Luba tulemüüri läbimine kaugjuurdepääsu kliendist</translation>
-<translation id="4725123658714754485">Määrab, kas kasutusmõõdikute teave ja diagnostikaandmed, sealhulgas krahhiaruanded, edastatakse Google'ile. Kui määrate reegli väärtuse Tõene, edastab <ph name="PRODUCT_OS_NAME" /> kasutusmõõdikute teavet ja diagnostikaandmeid. Kui jätate reegli seadistamata või seate selle väärtusele Väär, keelatakse mõõdikute teabe ja diagnostikaandmete edastamine.</translation>
 <translation id="4725528134735324213">Androidi varundusteenuse lubamine</translation>
 <translation id="4733471537137819387">Integreeritud HTTP autentimisega seotud reeglid</translation>
 <translation id="4744190513568488164">Serverid, kuhu toode <ph name="PRODUCT_NAME" /> võib delegeerida.
@@ -1592,17 +1591,6 @@
 
       Rakenduste kinnitamiseks käivitusprogrammi vaadake reeglit PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
-<translation id="6029950823657977211">
-      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
-      See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit „IsolateOrigins”, mis kehtib kasutaja seansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus.
-      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
-      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
-      nimetatud lähtekohad; nt määrates aadressi https://example.com/
-      isoleeritakse ka aadress https://foo.example.com/ saidi
-      https://example.com/ osana.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
-      Kui reegel on seadistamata, kasutatakse sisselogimisekraanil platvormi saitide isoleerimise vaikeseadeid.
-      </translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
@@ -2562,11 +2550,5 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="930930237275114205">Määra rakenduse <ph name="PRODUCT_FRAME_NAME" /> kasutaja andmekataloog</translation>
 <translation id="934390688529359269">Lubab sundsisselogimise teenusesse <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ketta vahemälu mahu määramine</translation>
-<translation id="9775893229076211">Võimaldab teil juhtida ohus olevate paroolikaitse kontode märgistamise käivitamist. Ohus olevate paroolikaitse kontode märgistamine tähendab, et Google'it teavitatakse, kui kontot ähvardab kaaperdamise oht.
-
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata ohus olevate paroolikaitse kontode märgistamist.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole saitidel, mis ei kuulu lubatud saitide loendisse.
-      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole andmepüügisaitidel.
-      Kui see reegel jäetakse määramata, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutajad kasutavad Google'i paroole andmepüügisaitidel, kuid kasutaja saab seda muuta.</translation>
 <translation id="982497069985795632">Õigekirjakontrolli lubamine</translation>
 </translationbundle>

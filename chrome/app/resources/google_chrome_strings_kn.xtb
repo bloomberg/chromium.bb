@@ -165,6 +165,7 @@
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
 <translation id="5774845247549698882">ಈ ಭಾಷೆಯಲ್ಲಿ Chrome OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5855036575689098185">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿರುವ ಸಾಫ್ಟ್‌ವೇರ್ Google Chrome ನೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5877064549588274448">ಚಾನಲ್ ಬದಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಅನ್ವಯಿಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
@@ -176,6 +177,7 @@
 <translation id="6070348360322141662">ಹೆಚ್ಚುವರಿ ಭದ್ರತೆಗಾಗಿ, Google Chrome ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡುತ್ತದೆ</translation>
 <translation id="6113794647360055231">Chrome ಇದೀಗ ಉತ್ತಮಗೊಂಡಿದೆ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
 <translation id="61852838583753520">&amp;Chrome OS ನವೀಕರಿಸಿ</translation>
 <translation id="6235018212288296708">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Google Chrome ಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="6291089322031436445">Chrome Dev ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
@@ -183,6 +185,7 @@
 <translation id="6338556085225130112">Google Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
 <translation id="6410540444482791104">ಅಪಾಯಕಾರಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಸೈಟ್‌ಗಳ ಪತ್ತೆಗೆ ಸಹಾಯಮಾಡಲು Google ಗೆ ಕೆಲವು ಸಿಸ್ಟಂ ಮಾಹಿತಿ ಮತ್ತು ಪುಟ ವಿಷಯವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವ ಮೂಲಕ, ನೀವು Chrome ಅನ್ನು ಬಳಸುವುದಕ್ಕಾಗಿ ಸುರಕ್ಷಿತ ಮತ್ತು ಸರಳವಾಗಿ ಮಾಡಲು ಸಹಾಯ ಮಾಡಬಹುದು.</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">ನಿಮ್ಮ Chrome ವಿಷಯವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ನೀವು <ph name="PROFILE_EMAIL" /> ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ. Google ಖಾತೆಯಿಲ್ಲದೆ ನಿಮ್ಮ ಸಿಂಕ್ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ನವೀಕರಿಸಲು ಅಥವಾ Chrome ಬಳಸಲು <ph name="SETTINGS_LINK" /> ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>

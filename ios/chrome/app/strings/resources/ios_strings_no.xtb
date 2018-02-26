@@ -155,6 +155,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3779810277399252432">Ingen Internett-tilkobling.</translation>
 <translation id="3783017676699494206">Lagre bildet</translation>
+<translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
@@ -283,6 +284,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6342069812937806050">Akkurat nå</translation>
 <translation id="6344783595350022745">Klar tekst</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
+<translation id="6374469231428023295">Prøv på nytt</translation>
 <translation id="6380866119319257197">Hvis du glemmer passordfrasen din eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Navn som er oppført på kortet</translation>
 <translation id="6406506848690869874">Synkroniser</translation>
@@ -330,7 +332,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7203585745079012652">Svar med tale</translation>
 <translation id="722055596168483966">Tilpass Google-tjenester</translation>
 <translation id="7272437679830969316">Kan ikke bekrefte identiteten din. Passordet er ikke kopiert.</translation>
-<translation id="7291368939935408496">Forbereder passordene …</translation>
+<translation id="7291368939935408496">Klargjør passordene …</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7400418766976504921">Nettadresse</translation>

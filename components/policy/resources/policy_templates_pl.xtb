@@ -1095,7 +1095,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4722122254122249791">Włącz izolację witryn z określonych źródeł</translation>
 <translation id="4722399051042571387">Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą ustawiać kodów PIN, które są słabe i łatwe do odgadnięcia. Słabe kody PIN to na przykład ciągi takich samych cyfr (1111), kolejnych cyfr w porządku rosnącym (1234) lub malejącym (4321) i ciągi często używane. Domyślnie po wpisaniu słabego kodu PIN nie pojawia się komunikat o błędzie, a tylko ostrzeżenie.</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
-<translation id="4725123658714754485">Określa, czy statystyki użytkowania i dane diagnostyczne (w tym raporty o awariach) mają być przesyłane do Google. Jeśli włączysz tę opcję, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne. Jeśli jej nie włączysz lub nie skonfigurujesz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.</translation>
 <translation id="4725528134735324213">Włącz Android Backup Service</translation>
 <translation id="4733471537137819387">Zasady dotyczące zintegrowanego uwierzytelniania HTTP.</translation>
 <translation id="4744190513568488164">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
@@ -1509,17 +1508,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Przypinanie aplikacji do menu startowego, zobacz PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
-<translation id="6029950823657977211">
-      UWAGA: ta zasada jest eksperymentalna i może zakłócać działanie pewnych funkcji.
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie „IsolateOrigins”, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób.
-      Jeśli zasada jest włączona, każde nazwane źródło z listy wartości
-      rozdzielonych przecinkami będzie wykonywane w swoim własnym procesie.
-      Spowoduje to też izolację źródeł w subdomenach, np. podanie wartości
-      https://example.com/ spowoduje izolację https://foo.example.com/
-      razem z https://example.com/
-      Jeśli zasada jest wyłączona, stosowana jest logika zarządzania procesami funkcji izolacji witryn.
-      Jeśli zasada nie jest skonfigurowana, do ekranu logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
-      </translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez hosta dostępu zdalnego</translation>
 <translation id="6070667616071269965">Układy klawiatury na ekranie logowania na urządzeniu</translation>
@@ -2408,11 +2396,5 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="930930237275114205">Ustaw katalog danych użytkownika <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Włącza wymuszone logowanie w <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ustaw rozmiar dyskowej pamięci podręcznej.</translation>
-<translation id="9775893229076211">Umożliwia sterowanie wyzwalaniem oznaczania kont jako zagrożonych w zakresie ochrony hasłem. Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowanie Google, że dane konto jest narażone na włamanie.
-
-      Jeśli ta zasada ma ustawioną opcję „PasswordProtectionRiskOff”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem nie będzie nigdy wyzwalane.
-      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPasswordReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w innych witrynach spoza białej listy.
-      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPhishingReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach phishingowych.
-      Jeśli zasada nie jest skonfigurowana, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach phishingowych, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="982497069985795632">Włącz sprawdzanie pisowni</translation>
 </translationbundle>

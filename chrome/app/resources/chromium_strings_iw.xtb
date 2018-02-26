@@ -115,6 +115,7 @@
 <translation id="5386450000063123300">‏מעדכן את Chromium‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">‏גרסה חדשה של Chromium זמינה כעת.</translation>
 <translation id="5427571867875391349">‏הגדר את Chromium כדפדפן ברירת המחדל שלך</translation>
+<translation id="5438241569118040789">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת ביטא</translation>
 <translation id="5466153949126434691">‏Chromium מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chromium יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="5479196819031988440">‏מערכת ההפעלה של Chromium אינה יכול לפתוח את הדף הזה.</translation>
 <translation id="5480860683791598150">‏Chromium זקוק לגישה למיקום שלך כדי לשתף אותו עם האתר הזה</translation>
@@ -189,6 +190,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <ph name="BEGIN_LINK_2" />למידע נוסף<ph name="END_LINK_2" />
 
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
+<translation id="7449453770951226939">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת פיתוח</translation>
 <translation id="7451052299415159299">‏Chromium זקוק להרשאת גישה למצלמה בשביל האתר הזה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7549178288319965365">‏על מערכת ההפעלה של Chromium</translation>
@@ -202,6 +204,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7756122083761163394">‏נתוני הגלישה של הפרופיל הזה יימחקו מהמכשיר הזה. כדי לשחזר את הנתונים, היכנס אל Chrome בתור משתמש $2.</translation>
 <translation id="7773960292263897147">‏אזהרה: Chromium לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית את התוסף הזה במצב גלישה בסתר, צריך לבטל את הבחירה של האפשרות הזו.</translation>
 <translation id="7774736947049807614">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Chromium בשם המשתמש <ph name="USER_NAME" /> או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
+<translation id="7790626492778995050">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת Canary</translation>
 <translation id="7867198900892795913">‏עדכון Chromium לגירסה האחרונה לא הצליח, ולכן אין לך גישה אל תכונות חדשות ותיקוני אבטחה.</translation>
 <translation id="7937630085815544518">‏נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7962572577636132072">‏Chromium מתעדכן באופן אוטומטי כך שתמיד ברשותך הגרסה העדכנית ביותר.</translation>

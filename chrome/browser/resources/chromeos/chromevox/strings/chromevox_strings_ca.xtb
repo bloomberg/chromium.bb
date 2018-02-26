@@ -508,7 +508,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5417034931411865818">Fes clic a l'element que hi ha a sota de la tecla d'encaminament $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# símbols menor que}}</translation>
 <translation id="5444587279251314700">(activa)</translation>
-<translation id="5446809554778706307">No has posat el focus en cap element. Prem Ctrl+T per obrir una finestra nova.</translation>
+<translation id="5446809554778706307">No has posat el focus en cap element. Prem Ctrl+T per obrir una pestanya nova.</translation>
 <translation id="5451268436205074266">punts <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Complementari</translation>
 <translation id="5485036206801896268">No hi ha cap gràfic anterior.</translation>

@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1383876407941801731">Buscar</translation>
+<translation id="1510238584712386396">Selector</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">Edición de textos</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">Intercambiar monitor principal</translation>
+<translation id="3105917916468784889">Tomar captura de pantalla</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Enfoque en la barra de direcciones</translation>
+<translation id="3649256019230929621">Minimizar ventana</translation>
+<translation id="385051799172605136">Atrás</translation>
+<translation id="5316716239522500219">Reflejar monitores</translation>
+<translation id="5928303187149237472">Cambia la resolución de la pantalla</translation>
+<translation id="5975083100439434680">Alejar</translation>
+<translation id="6022924867608035986">Borrar el texto en el cuadro de búsqueda</translation>
+<translation id="6129953537138746214">Google Space</translation>
+<translation id="6185696379715117369">Retroceder página</translation>
+<translation id="671928215901716392">Bloquear pantalla</translation>
+<translation id="6727005317916125192">Panel anterior</translation>
+<translation id="6981982820502123353">Accesibilidad</translation>
+<translation id="7020813747703216897">No se encontraron resultados que coincidan</translation>
+<translation id="7025325401470358758">Siguiente panel</translation>
+<translation id="7272373489634936181">Buscar combinaciones de teclas</translation>
+<translation id="7724603315864178912">Cortar</translation>
+<translation id="8004192919599017226">Iniciar la búsqueda…</translation>
+<translation id="88986195241502842">Avanzar página</translation>
+<translation id="8903921497873541725">Acercar</translation>
+<translation id="9179672198516322668">Combinaciones de teclas populares</translation>
 </translationbundle>

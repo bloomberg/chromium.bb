@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1383876407941801731">搜尋</translation>
+<translation id="1510238584712386396">啟動器</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">文字編輯</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">切換主要顯示器</translation>
+<translation id="3105917916468784889">擷取螢幕畫面</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">將焦點移至網址列</translation>
+<translation id="3649256019230929621">將視窗縮到最小</translation>
+<translation id="385051799172605136">返回</translation>
+<translation id="5316716239522500219">顯示器鏡像</translation>
+<translation id="5928303187149237472">變更螢幕解析度</translation>
+<translation id="5975083100439434680">縮小</translation>
+<translation id="6022924867608035986">清除搜尋框文字</translation>
+<translation id="6129953537138746214">空格</translation>
+<translation id="6185696379715117369">Page Up 鍵</translation>
+<translation id="671928215901716392">鎖定螢幕</translation>
+<translation id="6727005317916125192">上一個窗格</translation>
+<translation id="6981982820502123353">協助工具</translation>
+<translation id="7020813747703216897">找不到相符的搜尋結果</translation>
+<translation id="7025325401470358758">下一個窗格</translation>
+<translation id="7272373489634936181">搜尋快速鍵</translation>
+<translation id="7724603315864178912">剪下</translation>
+<translation id="8004192919599017226">開始搜尋...</translation>
+<translation id="88986195241502842">Page Down 鍵</translation>
+<translation id="8903921497873541725">放大</translation>
+<translation id="9179672198516322668">常用快速鍵</translation>
 </translationbundle>

@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1383876407941801731">البحث</translation>
+<translation id="1510238584712386396">المشغّل</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">تعديل النص</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
+<translation id="3105917916468784889">التقاط لقطة شاشة</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">تركيز شريط العناوين</translation>
+<translation id="3649256019230929621">تصغير النافذة</translation>
+<translation id="385051799172605136">الرجوع إلى الوراء</translation>
+<translation id="5316716239522500219">نسخ الشاشات</translation>
+<translation id="5928303187149237472">تغيير دقة شاشة</translation>
+<translation id="5975083100439434680">تصغير</translation>
+<translation id="6022924867608035986">محو نص مربع البحث</translation>
+<translation id="6129953537138746214">مسافة</translation>
+<translation id="6185696379715117369">صفحة لأعلى</translation>
+<translation id="671928215901716392">قفل الشاشة</translation>
+<translation id="6727005317916125192">الجزء السابق</translation>
+<translation id="6981982820502123353">إمكانية الدخول</translation>
+<translation id="7020813747703216897">لم يتم العثور على أي نتائج مطابقة.</translation>
+<translation id="7025325401470358758">الجزء التالي</translation>
+<translation id="7272373489634936181">البحث عن اختصارات</translation>
+<translation id="7724603315864178912">قص</translation>
+<translation id="8004192919599017226">جارٍ بدء البحث...</translation>
+<translation id="88986195241502842">صفحة لأسفل</translation>
+<translation id="8903921497873541725">تكبير</translation>
+<translation id="9179672198516322668">الاختصارات الشائعة</translation>
 </translationbundle>

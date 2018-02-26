@@ -210,6 +210,7 @@
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME" /> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="1750315445671978749">Chặn tất cả các mục tải xuống</translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
+<translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
@@ -282,6 +283,11 @@
 
           Nếu không thiết lập chính sách này, tất cả bốn cơ chế sẽ được sử dụng.</translation>
 <translation id="2067011586099792101">Chặn truy cập vào các trang web nằm ngoài gói nội dung</translation>
+<translation id="2070270043919235595">Thông báo cho người dùng biết rằng phải chạy lại <ph name="PRODUCT_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
+
+      Cài đặt chính sách này cho phép thông báo để báo cho người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt. Nếu người dùng không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại qua các thay đổi nhỏ đối với menu của sản phẩm. Nếu người dùng đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ cần chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu người dùng đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng bắt buộc phải chạy lại trình duyệt sau khi khoảng thời gian thông báo đã hết. Khoảng thời gian này là 7 ngày theo mặc định và có thể định cấu hình qua cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Phiên của người dùng được lưu trữ sau lần chạy lại đó.</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2077273864382355561">Độ trễ tắt màn hình khi chạy trên nguồn pin</translation>
 <translation id="2082205219176343977">Định cấu hình phiên bản Chrome tối thiểu được phép cho thiết bị.</translation>
@@ -333,6 +339,9 @@
           Nếu cài đặt này được định cấu hình, người dùng sử dụng mở khóa nhanh sẽ được yêu cầu nhập mật khẩu vào màn hình khóa tùy theo cài đặt này.
 
           Nếu cài đặt này không được định cấu hình, người dùng sử dụng mở khóa nhanh sẽ được yêu cầu nhập mật khẩu vào màn hình khóa hàng ngày.</translation>
+<translation id="2188722565665306629">Cho phép bạn thiết lập khoảng thời gian hiển thị thông báo yêu cầu chạy lại <ph name="PRODUCT_NAME" /> để áp dụng bản cập nhật đang chờ.
+
+      Có thể sử dụng cài đặt chính sách này để kiểm soát khoảng thời gian, tính bằng mili giây, qua đó người dùng được thông báo dần dần rằng cần phải chạy lại <ph name="PRODUCT_NAME" /> (hoặc cần phải khởi động lại <ph name="PRODUCT_OS_NAME" />) để cập nhật. Quá khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật dựa trên việc đặt chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Nếu người dùng không đặt chính sách thì khoảng thời gian mặc định là 604800000 mili giây (một tuần) sẽ được sử dụng.</translation>
 <translation id="2194470398825717446">Chính sách này không dùng trong M61 nữa, vui lòng sử dụng EcryptfsMigrationStrategy.
 
       Chỉ định cách thiết bị đã có sẵn ecryptfs sẽ hoạt động và cần chuyển đổi sang mã hóa ext4..
@@ -534,6 +543,13 @@
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="2682225790874070339">Tắt Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
+<translation id="2726613915126661822">Cho phép bạn kiểm soát xem máy ảo có được phép chạy trên Chrome OS hay không.
+
+      Nếu bạn đặt chính sách này là True, thiết bị sẽ được phép chạy máy ảo.
+      Nếu bạn đặt chính sách này là False, thiết bị sẽ không được phép chạy máy ảo.
+      Khi chuyển thành False, chính sách này sẽ áp dụng cho việc khởi động máy ảo mới nhưng không tắt máy ảo đang chạy.
+      Khi bạn không đặt chính sách này trên thiết bị được quản lý, tức là thiết bị sẽ đó không được phép chạy máy ảo.
+      Các thiết bị không được quản lý được phép chạy máy ảo.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
 
@@ -757,6 +773,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có trang tab mới nào được cung cấp.
 
           Chính sách này chỉ được tuân thủ nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="3465852069254497664">Thông báo cho người dùng biết rằng cần hoặc bắt buộc chạy lại trình duyệt</translation>
 <translation id="346731943813722404">Chỉ định liệu độ trễ quản lý nguồn và giới hạn thời lượng phiên có chỉ bắt đầu chạy sau khi hoạt động đầu tiên của người dùng được quan sát thấy trong phiên hay không.
 
           Nếu chính sách này được đặt thành Đúng, độ trễ quản lý nguồn và giới hạn thời lượng phiên sẽ không bắt đầu chạy cho đến sau khi hoạt động đầu tiên của người dùng được quan sát thấy trong phiên.
@@ -790,6 +807,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3711895659073496551">Tạm ngừng</translation>
 <translation id="3736879847913515635">Cho phép thêm người trong trình quản lý người dùng</translation>
 <translation id="3737544779868348650">Tên máy chủ của mạng thiết bị</translation>
+<translation id="3740754010292550733">Đặt khoảng thời gian thông báo chạy lại bản cập nhật</translation>
 <translation id="3750220015372671395">Chặn tạo khóa trên các trang web này</translation>
 <translation id="3756011779061588474">Chặn chế độ của nhà phát triển</translation>
 <translation id="3758089716224084329">Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME" /> sử dụng và không cho người dùng thay đổi cài đặt proxy.
@@ -1012,6 +1030,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
 
           Nếu sai hoặc chưa đặt thì nhà cung cấp nội dung sẽ không trả về thông tin nào.</translation>
+<translation id="435461861920493948">Có chứa danh sách các mẫu dùng để kiểm soát khả năng hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />.
+
+      Từng tài khoản Google trên thiết bị sẽ được so sánh với các mẫu lưu trữ trong chính sách này để xác định mức hiển thị của tài khoản trong <ph name="PRODUCT_NAME" />. Tài khoản sẽ hiển thị nếu tên của tài khoản khớp với bất kỳ mẫu nào trong danh sách. Nếu không, tài khoản sẽ bị ẩn.
+
+      Hãy sử dụng ký tự đại diện '*' để khớp ký tự không hoặc các ký tự ngẫu nhiên khác. Ký tự thoát là '\', vì vậy, để khớp ký tự '*' hoặc '\' thực, hãy đặt '\' trước các ký tự đó.
+
+      Nếu bạn không đặt chính sách này, thì tất cả các tài khoản Google trên thiết bị sẽ hiển thị trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="436581050240847513">Báo cáo giao diện mạng thiết bị</translation>
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
@@ -1124,7 +1149,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Theo mặc định, người dùng sẽ nhận được cảnh báo chứ không phải lỗi, nếu mã PIN được coi là yếu.</translation>
 <translation id="4723829699367336876">Bật tính năng chặn tường lửa từ máy khách truy cập từ xa</translation>
-<translation id="4725123658714754485">Kiểm soát liệu số liệu sử dụng và dữ liệu chẩn đoán, kể cả báo cáo sự cố có được báo cáo lại cho Google hay không. Nếu được đặt thành true, thì <ph name="PRODUCT_OS_NAME" /> sẽ báo cáo số liệu sử dụng và dữ liệu chẩn đoán. Nếu chưa được định cấu hình hoặc được đặt thành false, thì báo cáo số liệu và dữ liệu chẩn đoán sẽ bị tắt.</translation>
 <translation id="4725528134735324213">Bật Android Backup Service</translation>
 <translation id="4733471537137819387">Các chính sách liên quan đến xác thực HTTP tích hợp.</translation>
 <translation id="4744190513568488164">Các máy chủ mà <ph name="PRODUCT_NAME" /> có thể ủy quyền.
@@ -1502,6 +1526,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt con trỏ lớn. Tuy nhiên, lựa chọn của người dùng không được duy trì mãi và trạng thái mặc định được khôi phục bất cứ khi nào màn hình đăng nhập mới được hiển thị hoặc người dùng không thực hiện thao tác nào trên màn hình đăng nhập trong một phút.
 
           Nếu không đặt chính sách này, con trỏ lớn bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt con trỏ lớn bất kỳ lúc nào và trạng thái của con trỏ trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
+<translation id="5929855945144989709">Cho phép các thiết bị chạy máy ảo trên Chrome OS</translation>
 <translation id="5932767795525445337">Chính sách này cũng có thể được dùng để ghim ứng dụng Android.</translation>
 <translation id="5936622343001856595">Buộc các truy vấn trong Google Web Search được hoàn tất bằng Tìm kiếm an toàn được đặt thành hoạt động và ngăn người dùng thay đổi cài đặt này.
 
@@ -1741,6 +1766,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả đồng bộ hóa dữ liệu, ghi đè RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>
+<translation id="673699536430961464">Cài đặt này cho phép người dùng chuyển đổi giữa các tài khoản Google trong vùng nội dung của cửa sổ trình duyệt sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" /> của mình.
+
+      Nếu bạn đặt chính sách này là false thì sẽ không cho phép đăng nhập vào một tài khoản khác từ vùng nội dung trình duyệt không Ẩn danh.
+
+      Nếu bạn không đặt hoặc đặt chính sách này là true thì hành vi mặc định sẽ được sử dụng: cho phép đăng nhập vào một tài khoản khác từ vùng nội dung trình duyệt, ngoại trừ tài khoản của con sẽ bị chặn đối với vùng nội dung không Ẩn danh.
+
+      Trong trường hợp không được phép đăng nhập vào một tài khoản khác qua chế độ Ẩn danh thì hãy cân nhắc chặn chế độ đó bằng chính sách IncognitoModeAvailability.
+
+      Xin lưu ý rằng người dùng sẽ có thể truy cập vào các dịch vụ của Google ở trạng thái chưa được xác thực bằng cách chặn cookie của họ.</translation>
 <translation id="6757438632136860443">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
@@ -1750,6 +1784,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
+<translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="685769593149966548">Buộc sử dụng Chế độ hạn chế nghiêm ngặt cho YouTube</translation>
 <translation id="687046793986382807">Chính sách này sẽ được xóa bỏ kể từ phiên bản 35 của <ph name="PRODUCT_NAME" />.
 
@@ -2280,6 +2315,13 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
 <translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
+<translation id="8459216513698220096">Chỉ định có xử lý hay không và cách xử lý chính sách người dùng từ GPO (Đối tượng chính sách nhóm) máy tính.
+
+      Nếu bạn đặt chính sách thành 'Mặc định' hoặc nếu bạn chưa đặt chính sách này, thì chính sách người dùng sẽ chỉ được đọc từ GPO người dùng (GPO máy tính sẽ bị bỏ qua).
+
+      Nếu bạn đặt chính sách thành 'Hợp nhất', thì chính sách người dùng trong GPO người dùng sẽ được hợp nhất với chính sách người dùng trong GPO máy tính (GPO máy tính sẽ được ưu tiên).
+
+      Nếu bạn đặt chính sách thành 'Thay thế', thì chính sách người dùng trong GPO người dùng sẽ được thay thế bằng chính sách người dùng trong GPO máy tính (GPO người dùng sẽ bị bỏ qua).</translation>
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2424,6 +2466,12 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè.
 
       Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không. Chính sách này nhằm bổ sung cho cấu hình máy in của từng người dùng.
+      </translation>
+<translation id="8934944553121392674">Kiểm soát máy in nào từ <ph name="DEVICE_PRINTERS_POLICY" /> được cung cấp cho người dùng.
+
+      Chỉ định chính sách truy cập được sử dụng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ được sử dụng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
+
+      Nếu bạn chưa đặt chính sách này, thì <ph name="PRINTERS_ALLOW_ALL" /> sẽ được sử dụng làm mặc định.
       </translation>
 <translation id="8947415621777543415">Báo cáo vị trí thiết bị</translation>
 <translation id="8951350807133946005">Thiết lập thư mục bộ nhớ đệm trên đĩa</translation>

@@ -1158,7 +1158,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če se koda PIN smatra za šibko, uporabniki privzeto prejmejo opozorilo, ne pa napake.</translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
-<translation id="4725123658714754485">Nadzira, ali so podatki meritev uporabe in diagnostični podatki, vključno s poročili o zrušitvah, poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> pošlje podatke meritev uporabe in diagnostične podatke. Če ni konfiguriran ali je onemogočen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno.</translation>
 <translation id="4725528134735324213">Omogočanje storitve Android Backup Service</translation>
 <translation id="4733471537137819387">Pravilniki, povezani z integriranim preverjanjem pristnosti HTTP.</translation>
 <translation id="4744190513568488164">Strežniki, v katere lahko <ph name="PRODUCT_NAME" /> delegira.
@@ -1603,17 +1602,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če želite pripeti aplikacije v zaganjalnik, si oglejte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
-<translation id="6029950823657977211">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik »IsolateOrigins«, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost.
-      Če je pravilnik omogočen, bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal svoj proces. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi
-      spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje osamitve spletnih mest. 
-      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest v okolju.
-      </translation>
 <translation id="603410445099326293">Parametri za URL predloga, ki uporablja POST</translation>
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
 <translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
@@ -2572,12 +2560,5 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="930930237275114205">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Omogočanje vsiljene prijave za brskalnik <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Nastavitev velikosti predpomnilnika</translation>
-<translation id="9775893229076211">Omogoča, da nadzirate sprožitev označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico. Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico pomeni sporočanje Googlu, da temu računu grozi vdor v račun.
-
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOff«, označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico ne bo sproženo.
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPasswordReuse«, 
-bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
-      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPhishingReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem.
-      Če ta pravilnik ni nastavljen, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="982497069985795632">Omogočanje preverjanja črkovanja</translation>
 </translationbundle>

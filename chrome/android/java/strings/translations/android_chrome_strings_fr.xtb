@@ -491,7 +491,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirection bloquée.</translation>
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
-<translation id="5527111080432883924">Demander avant d'autoriser les sites à consulter le texte et les images du presse-papiers (recommandé)</translation>
+<translation id="5527111080432883924">Demander avant d'autoriser les sites à accéder en lecture au texte et aux images du presse-papiers (recommandé)</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
 <translation id="5534640966246046842">Site copié</translation>
 <translation id="5537099431952529648">Tes parents et toi pouvez gérer la synchronisation et la personnalisation de Chrome dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" /></translation>
@@ -660,7 +660,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d onglet ouvert}one{%1$d onglet ouvert}other{%1$d onglets ouverts}}</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6910211073230771657">Supprimé</translation>
-<translation id="6912998170423641340">Interdire aux sites de consulter le texte et les images du presse-papiers</translation>
+<translation id="6912998170423641340">Interdire aux sites d'accéder en lecture au texte et aux images du presse-papiers</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
@@ -699,7 +699,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7253272406652746122">Ajoutez un compte Google depuis la page "Comptes" dans l'application "Paramètres" de votre appareil.</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
 <translation id="729975465115245577">Aucune application n'est installée sur votre appareil pour stocker le fichier de mots de passe.</translation>
-<translation id="7318797029885648322">Appuyez sur "Plus" pour afficher des articles</translation>
 <translation id="7333031090786104871">L'ajout du site précédent est toujours en cours</translation>
 <translation id="7352939065658542140">VIDÉO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
@@ -709,7 +708,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Expérience de première utilisation de Chrome</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
-<translation id="7423538860840206698">Non autorisé à consulter le presse-papiers</translation>
+<translation id="7423538860840206698">Accès en lecture au presse-papiers bloqué</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>

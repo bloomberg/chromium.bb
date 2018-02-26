@@ -282,9 +282,9 @@
 
           Dacă politica nu este configurată, vor fi utilizate toate cele patru scheme.</translation>
 <translation id="2067011586099792101">Se blochează accesul la site-urile din afara pachetelor de conținut</translation>
-<translation id="2070270043919235595">Notifică utilizatorul că produsul <ph name="PRODUCT_NAME" /> trebuie relansat pentru aplicarea unei actualizări în așteptare.
+<translation id="2070270043919235595">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat pentru aplicarea unei actualizări în așteptare.
 
-      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului. Dacă politica nu este setată, produsul <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile și poate fi configurată prin setarea politicii pentru <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       Sesiunea utilizatorului este restabilită după relansare.</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
@@ -331,9 +331,9 @@
           Dacă setarea este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare, în funcție de această setare.
 
           Dacă setarea nu este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare în fiecare zi.</translation>
-<translation id="2188722565665306629">Îți permite să setezi perioada în care se afișează notificările de relansare pentru <ph name="PRODUCT_NAME" /> pentru a aplica o actualizare în așteptare.
+<translation id="2188722565665306629">Îți permite să setezi perioada în care se afișează notificările de relansare a browserului <ph name="PRODUCT_NAME" /> pentru a aplica o actualizare în așteptare.
 
-      Setarea acestei politici poate fi folosită pentru a controla perioada, în milisecunde, în care utilizatorul este informat treptat că produsul <ph name="PRODUCT_NAME" /> trebuie relansat (sau produsul <ph name="PRODUCT_OS_NAME" /> trebuie repornit) pentru o actualizare. În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări pe baza setării politicii produsului <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Dacă aceasta nu este setată, se folosește perioada prestabilită de 604800000 milisecunde (o săptămână).</translation>
+      Setarea acestei politici poate fi folosită pentru a controla perioada, în milisecunde, în care utilizatorul este informat treptat că <ph name="PRODUCT_NAME" /> trebuie relansat (sau <ph name="PRODUCT_OS_NAME" /> trebuie repornit) pentru o actualizare. În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări pe baza setării politicii <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Dacă aceasta nu este setată, se folosește perioada prestabilită de 604800000 milisecunde (o săptămână).</translation>
 <translation id="2194470398825717446">Politica nu mai este dezvoltată în M61, folosește EcryptfsMigrationStrategy.
 
       Specifică modul în care trebuie să se comporte un dispozitiv care a fost livrat cu ecryptfs și necesită trecerea la criptarea ext4.
@@ -593,6 +593,12 @@
 <translation id="2893546967669465276">Trimite jurnalele de sistem serverului de gestionare</translation>
 <translation id="2899002520262095963">Aplicațiile Android pot folosi configurațiile rețelei și certificatele CA stabilite prin această politică, dar nu au acces la anumite opțiuni de configurare.</translation>
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicații</translation>
+<translation id="2907992746861405243">Controlează care imprimante din <ph name="BULK_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
+
+      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc. Dacă se selectează <ph name="PRINTERS_ALLOW_ALL" />, toate imprimantele sunt afișate. Dacă se selectează <ph name="PRINTERS_BLACKLIST" />, se va folosi <ph name="BULK_PRINTERS_BLACKLIST" /> pentru a se restricționa accesul la imprimantele specificate. Dacă se selectează <ph name="PRINTERS_WHITELIST" />, <ph name="BULK_PRINTERS_WHITELIST" /> indică numai acele imprimante care se pot selecta.
+
+      Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
+      </translation>
 <translation id="2908277604670530363">Numărul maxim de conexiuni simultane la serverul proxy</translation>
 <translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 36.
 
@@ -725,6 +731,9 @@
 
       Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile din politică. ID-urile trebuie să corespundă intrărilor din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="3414260318408232239">Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea minimă prestabilită, care este TLS 1.0.
+
+      În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1”, „tls1.1” sau „tls1.2”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS inferioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
       Dacă această politică nu este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite începerea unor sesiuni pentru invitați.</translation>
@@ -780,7 +789,7 @@
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
 <translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
-<translation id="3740754010292550733">Setează perioada pentru notificările privind actualizarea relansărilor</translation>
+<translation id="3740754010292550733">Setează perioada pentru notificările privind relansarea după actualizare</translation>
 <translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
 <translation id="3756011779061588474">Blocați modul pentru dezvoltatori</translation>
 <translation id="3758089716224084329">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
@@ -838,6 +847,13 @@
 
           Dacă politica nu este configurată, tastatura pe ecran este dezactivată inițial, dar poate fi activată oricând de utilizator.</translation>
 <translation id="382476126209906314">Configurarea prefixului TalkGadget pentru gazdele de acces la distanță</translation>
+<translation id="3831376478177535007">Când această setare este activată, <ph name="PRODUCT_NAME" /> permite acordarea de încredere certificatelor emise prin operațiuni PKI vechi ale Symantec Corporation, cu condiția ca acestea să valideze și să se asocieze unui certificat CA recunoscut.
+
+      Reține că această politică depinde de recunoașterea certificatelor din infrastructura veche Symantec de către sistemul de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează aceste certificate, această politică nu se mai aplică. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la certificatele Symantec vechi. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
+
+      Dacă această politică nu este setată sau nu este activată, <ph name="PRODUCT_NAME" /> urmează programul anunțat public de renunțare.
+
+      Accesați https://g.co/chrome/symantecpkicerts pentru mai multe detalii despre această renunțare.</translation>
 <translation id="383466854578875212">Vă permite să specificați gazdele de mesagerie nativă care nu sunt introduse în lista neagră.
 
           O valoare * în lista neagră înseamnă că toate gazdele de mesagerie nativă sunt trecute în lista neagră și că numai gazdele de mesagerie nativă trecute în lista albă se vor încărca.
@@ -1115,7 +1131,6 @@
 
           În mod prestabilit, utilizatorii vor primi un avertisment, nu o eroare, dacă codul PIN este considerat slab.</translation>
 <translation id="4723829699367336876">Activează trecerea prin firewall de la clientul cu acces la distanță</translation>
-<translation id="4725123658714754485">Această politică stabilește dacă statisticile de utilizare și datele de diagnosticare, inclusiv rapoartele de blocare, sunt raportate la Google. Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> va raporta statisticile de utilizare și datele de diagnosticare. Dacă politica nu este configurată sau este dezactivată, raportarea statisticilor și a datelor de diagnosticare va fi dezactivată.</translation>
 <translation id="4725528134735324213">Activează Android Backup Service</translation>
 <translation id="4733471537137819387">Politici referitoare la autentificarea integrată HTTP.</translation>
 <translation id="4744190513568488164">Servere spre care <ph name="PRODUCT_NAME" /> poate delega.
@@ -1534,17 +1549,6 @@
 
       Pentru a fixa aplicațiile în lansator, consultă PinnedLauncherApps.</translation>
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
-<translation id="6029950823657977211">
-      NOTĂ: Această politică este experimentală și poate întrerupe funcționarea!
-      Această politică se aplică pentru ecranul de conectare. Consultă și politica „IsolateOrigins”, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare.
-      Dacă politica este activată, fiecare dintre originile indicate într-o
-      listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola,
-      de asemenea, originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va
-      cauza și izolarea https://foo.example.com/ ca parte a site-ului
-      https://example.com/.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
-      Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
-      </translation>
 <translation id="603410445099326293">Parametrii pentru adresa URL a sugestiei care utilizează POST</translation>
 <translation id="6036523166753287175">Activați trecerea prin firewall de la gazda de acces la distanță</translation>
 <translation id="6070667616071269965">Aspectele tastaturii de pe ecranul de conectare al dispozitivului</translation>
@@ -1709,13 +1713,13 @@
 
       Politica <ph name="SYNC_DISABLED_POLICY_NAME" /> dezactivează integral sincronizarea datelor, ignorând RoamingProfileSupportEnabled.</translation>
 <translation id="6735701345096330595">Forțează activarea verificării ortografice pentru limbi</translation>
-<translation id="673699536430961464">Această setare le permite utilizatorilor să comute între conturile Google, în zona de conținut a ferestrei de browser, după ce se conectează la dispozitivul <ph name="PRODUCT_OS_NAME" />.
+<translation id="673699536430961464">Această setare le permite utilizatorilor să comute între conturile Google, în zona de conținut a ferestrei de browser, după ce se conectează la dispozitivul cu <ph name="PRODUCT_OS_NAME" />.
 
-      Dacă politica este setată la false, nu va fi permisă conectarea la alt cont din zona de conținut a unui browser non-incognito.
+      Dacă politica este setată la false, nu va fi permisă conectarea la alt cont din zona de conținut non-incognito a browserului.
 
-      Dacă politica nu este configurată sau este setată la true, se va folosi comportamentul prestabilit: va fi permisă conectarea la alt cont din zona de conținut a browser-ului, cu excepția conturilor copiilor, unde zona de conținut non-incognito va fi blocată.
+      Dacă politica nu este configurată sau este setată la true, se va folosi comportamentul prestabilit: va fi permisă conectarea la alt cont din zona de conținut a browserului, cu excepția conturilor copiilor, unde zona de conținut non-incognito va fi blocată.
 
-      În cazul în care conectarea la alt cont nu este permisă în modul incognito, îți recomandăm să blochezi acest mod prin folosirea politicii IncognitoModeAvailability.
+      În cazul în care conectarea la alt cont nu ar trebui permisă în modul incognito, îți recomandăm să blochezi acest mod prin folosirea politicii IncognitoModeAvailability.
 
       Reține că utilizatorii vor putea să acceseze serviciile Google într-o stare neautentificată prin blocarea cookie-urilor.</translation>
 <translation id="6757438632136860443">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să ruleze pluginul <ph name="FLASH_PLUGIN_NAME" />.
@@ -2447,11 +2451,5 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="930930237275114205">Setați directorul <ph name="PRODUCT_FRAME_NAME" /> pentru datele utilizatorului</translation>
 <translation id="934390688529359269">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Setați dimensiunea pentru memorare în cache pe disc</translation>
-<translation id="9775893229076211">Îți permite să controlezi declanșarea semnalării unui cont protejat prin parolă care prezintă un risc. Prin declanșarea semnalării unui cont protejat prin parolă care prezintă un risc, Google află că acest cont riscă să fie spart.
-
-      Dacă această politică este setată la „PasswordProtectionRiskOff”, nu se va declanșa semnalarea contului protejat prin parolă care prezintă un risc.
-      Dacă această politică este setată la „PasswordProtectionRiskOnPasswordReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri care nu sunt trecute în lista albă.
-      Dacă această politică este setată la „PasswordProtectionRiskOnPhishingReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing.
-      Dacă această politică nu este configurată, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing, dar utilizatorul o poate modifica.</translation>
 <translation id="982497069985795632">Activează verificarea ortografică</translation>
 </translationbundle>

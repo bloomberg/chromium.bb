@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">অবৈধ বা দূষিত ফাইল</translation>
 <translation id="1042174272890264476">আপনার কম্পিউটারও <ph name="SHORT_PRODUCT_NAME" /> এর RLZ লাইব্রেরি বিল্ট ইনের সাথে আসে৷ RLZ অনুসন্ধানগুলি পরিমাপ করার জন্য একটি সাধারণ, ব্যক্তিগতভাবে সনাক্তকরণযোগ্য নয় এমন ট্যাগ নির্ধারণ করে এবং <ph name="SHORT_PRODUCT_NAME" /> এর ব্যবহার একটি নির্দিষ্ট প্রচারাভিযানের মাধ্যমে চালিত হয়৷ এই লেবেলগুলি কখনো কখনো <ph name="PRODUCT_NAME" /> এ Google অনুসন্ধান ক্যোয়ারিগুলিতে প্রদর্শিত হয়৷</translation>
 <translation id="1046059554679513793">উপস, নামটি ইতিমধ্যে ব্যবহারে রয়েছে!</translation>
-<translation id="1046286965898806214">আপনি কি চান যে <ph name="PASSWORD_MANAGER_BRAND" /> এই সাইটের জন্য আপনার অ্যাকাউন্ট সেভ করুক?</translation>
 <translation id="1047431265488717055">লিঙ্ক ও পাঠ্য কপি করুন</translation>
 <translation id="1047726139967079566">এই পৃষ্ঠাটি বুকমার্ক করুন...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />টি আইটেম মুছে ফেলা হচ্ছে...</translation>
@@ -424,7 +423,6 @@
 <translation id="1635033183663317347">আপনার কাস্টডিয়ান দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
 <translation id="1637224376458524414">এই বুকমার্কটি আপনার iPhone এ পান</translation>
 <translation id="1637765355341780467">আপনার প্রোফাইল খোলার সময় কোনো সমস্যা হয়েছে। কিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে।</translation>
-<translation id="1638447702436460526">প্রিন্টার পাওয়া যায়নি</translation>
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="1640283014264083726">RSA এনক্রিপশানের সাথে PKCS #1 MD4</translation>
 <translation id="1642494467033190216">অন্যান্য ডিবাগিং বৈশিষ্ট্যগুলি সক্ষম করার আগে rootfs সুরক্ষা সরানোর এবং আবার চালু করার প্রয়োজন৷</translation>
@@ -574,6 +572,7 @@
 <translation id="1856813161013948396">আঙ্গুলের ছাপ নেওয়ার সেন্সরে ট্যাপ করে লক স্ক্রিন এড়িয়ে যান। কনফিগার করতে ক্লিক করুন।</translation>
 <translation id="1858585891038687145">সফ্টওয়্যার প্রস্তুতকারকদের শনাক্তকরণের জন্য এই শংসাপত্রটিকে বিশ্বাস করুন</translation>
 <translation id="1859234291848436338">লিখন নির্দেশনা</translation>
+<translation id="1861262398884155592">ফোল্ডারটি খালি</translation>
 <translation id="1864111464094315414">লগ-ইন করুন</translation>
 <translation id="1864400682872660285">কুলার</translation>
 <translation id="1864676585353837027">এই ফাইলগুলি কীভাবে শেয়ার করা হবে তা পরিবর্তন করুন</translation>
@@ -588,7 +587,6 @@
 <translation id="1878524442024357078">আপনার কম্পিউটারটি অ্যাক্সেস করার জন্য একটি প্ল্যাগ ইন ব্যবহার করতে যে কোনো সাইটকে মঞ্জুরি দেবেন না</translation>
 <translation id="1879449842763884566">অ্যাপ্লিকেশন ইনস্টল করুন...</translation>
 <translation id="1880905663253319515">শংসাপত্র মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="188190999506226223">আপনি কি <ph name="PASSWORD_MANAGER_BRAND" /> এর মাধ্যমে <ph name="ORIGIN" /> এর জন্য আপনার পাসওয়ার্ড সেভ করতে চান?</translation>
 <translation id="1886996562706621347">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট পরিচালক হতে জিজ্ঞাসা করার অনুমতি দেয় (প্রস্তাবিত)</translation>
 <translation id="1887442540531652736">সাইন-ইন করার সময় সমস্যা হয়েছে</translation>
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
@@ -1151,7 +1149,6 @@
 <translation id="2762441749940182211">ক্যামেরার ব্যবহার ব্লক করা হয়েছে</translation>
 <translation id="2765217105034171413">ক্ষুদ্র</translation>
 <translation id="2766006623206032690">প্র&amp;তিলেপন করুন ও যান</translation>
-<translation id="2767084307624729667"><ph name="ORIGIN" /> এর পাসওয়ার্ড সেভ করা হয়েছে</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> রূপে প্রবেশ করেছেন৷</translation>
 <translation id="2770465223704140727">তালিকা থেকে সরান</translation>
 <translation id="2770690685823456775">আপনার পাসওয়ার্ড অন্য ফোল্ডারে এক্সপোর্ট করুন</translation>
@@ -1224,7 +1221,6 @@
 <translation id="2849936225196189499">জটিল</translation>
 <translation id="2850124913210091882">ব্যাকআপ নিন</translation>
 <translation id="2850541429955027218">থীম জুড়ুন</translation>
-<translation id="2853121255651601031">পাসওয়ার্ড সেভ করা হয়েছে</translation>
 <translation id="2853916256216444076">$1 টি ভিডিও</translation>
 <translation id="2857608528410806398">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে।</translation>
 <translation id="2860150991415616761">খুব দীর্ঘ সময় (৪ সে.)</translation>
@@ -1234,6 +1230,7 @@
 <translation id="2867768963760577682">পিনযুক্ত ট্যাব রূপে খুলুন</translation>
 <translation id="2868746137289129307">এই এক্সটেনশানটির পুরনো সংস্করণের এবং এন্টারপ্রাইজ নীতি অক্ষম করা রয়েছে৷ যখনই নতুন সংস্করণ উপলব্ধ থাকবে তখন এটি স্বয়ংক্রিয়ভারে সক্ষমিত হবে৷</translation>
 <translation id="2870560284913253234">সাইট</translation>
+<translation id="2870909136778269686">আপডেট হচ্ছে...</translation>
 <translation id="2871813825302180988">এই অ্যাকাউন্টটি ইতিমধ্যেই এই ডিভাইসটিতে ব্যবহার করা হচ্ছে৷</translation>
 <translation id="2872353916818027657">প্রাথমিক মনিটর অদলবদল করুন</translation>
 <translation id="287286579981869940">যোগ করুন <ph name="PROVIDER_NAME" />...</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3665842570601375360">নিরাপত্তা:</translation>
 <translation id="3668570675727296296">ভাষা সেটিংস</translation>
 <translation id="3668823961463113931">হ্যান্ডলার</translation>
-<translation id="3669030672519623291">এই সাইটের জন্য কোনও পাসওয়ার্ড সেভ করা হয়নি</translation>
 <translation id="3670229581627177274">ব্লুটুথ চালু করুন</translation>
 <translation id="3672681487849735243">একটি ফ্যাক্টরি ত্রুটি সনাক্ত করা হয়েছে</translation>
 <translation id="367645871420407123">যদি আপনি ডিফল্ট টেস্ট ছবি মানে রুট পাসওয়ার্ড সেট করতে চান তবে খালি ছাড়ুন</translation>
@@ -2295,7 +2291,6 @@
 <translation id="4576541033847873020">ব্লুটুথ ডিভাইস যুক্ত করুন</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> কাস্ট করতে ব্যর্থ হয়েছে।</translation>
 <translation id="4580526846085481512">আপনি কি "$1" আইটেম মুছতে চান?</translation>
-<translation id="458150753955139441">ইতিহাস দেখার জন্য পেছনে গিয়ে প্রসঙ্গ মেনুতে টিপুন</translation>
 <translation id="4582563038311694664">সব সেটিংস আবার সেট করুন</translation>
 <translation id="4585793705637313973">পৃষ্ঠা সম্পাদনা করুন</translation>
 <translation id="4589268276914962177">নতুন টার্মিনাল</translation>
@@ -2328,7 +2323,6 @@
 <translation id="4632483769545853758">ট্যাব সশব্দ করুন</translation>
 <translation id="4633003931260532286">এক্সটেনশানের ন্যূনতম <ph name="IMPORT_VERSION" /> ভার্সনের <ph name="IMPORT_NAME" /> প্রয়োজন, কিন্তু শুধুমাত্র <ph name="INSTALLED_VERSION" /> ভার্সন ইনস্টল করা আছে</translation>
 <translation id="4634771451598206121">আবার প্রবেশ করুন...</translation>
-<translation id="4636315944522859212">প্রিন্টার পাওয়া গেছে</translation>
 <translation id="4640525840053037973">আপনার Google অ্যাকাউন্ট দিয়ে প্রবেশ করুন</translation>
 <translation id="4641539339823703554">Chrome সিস্টেমের সময় সেট করতে পারেনি। দয়া করে নিচে সময় চেক করুন এবং প্রয়োজনে এটি সংশোধন করুন।</translation>
 <translation id="4643612240819915418">নতুন ট্যাবে ভিডিও &amp;খুলুন</translation>
@@ -2460,7 +2454,6 @@
 <translation id="4850669014075537160">স্ক্রোলিং</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4853020600495124913">&amp;নতুন উইন্ডোতে খুলুন</translation>
-<translation id="4853882474657327078">আপনি কি <ph name="PASSWORD_MANAGER_BRAND" /> এর মাধ্যমে <ph name="ORIGIN" /> এর জন্য আপনার পাসওয়ার্ড আপডেট করতে চান?</translation>
 <translation id="4856478137399998590">আপনার মোবাইল ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং তা ব্যবহারের জন্য তৈরি আছে</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{সবগুলি &amp;ছদ্মবেশী উইন্ডোতে খুলুন}=1{&amp;ছদ্মবেশী উইন্ডোতে খুলুন}one{সবগুলি (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}other{সবগুলি (#টি) &amp;ছদ্মবেশী উইন্ডোতে খুলুন}}</translation>
 <translation id="4858913220355269194">ফ্রিটজ</translation>
@@ -2941,7 +2934,6 @@
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification </translation>
 <translation id="5582839680698949063">প্রধান মেনু</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">এই সাইটের পাসওয়ার্ড সেভ করা হয়েছে</translation>
 <translation id="5585118885427931890">বুকমার্ক ফোল্ডার তৈরী করা যায়নি৷</translation>
 <translation id="558563010977877295">একটি সুনির্দিষ্ট পৃষ্ঠা বা পৃষ্ঠাগুলির একটি সেট খুলুন</translation>
 <translation id="5585912436068747822">ফরম্যাটিং ব্যর্থ হয়েছে</translation>
@@ -2953,7 +2945,6 @@
 <translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
 <translation id="5600706100022181951">আপডেটটি ডাউনলোড করতে <ph name="UPDATE_SIZE_MB" /> MB মোবাইল ডেটা খরচ হবে। ডাউনলোড করতে চান?</translation>
 <translation id="5601503069213153581">পিন</translation>
-<translation id="5605057818926354551">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="5605623530403479164">অন্যান্য সার্চ ইঞ্জিন</translation>
 <translation id="5608580678041221894">কাটছাঁট করার এলাকা সমন্বয় করতে বা সরাতে নীচের কী’গুলি আলতো চাপুন</translation>
 <translation id="5609231933459083978">অ্যাপ্লিকেশানটি অবৈধ বলে মনে হচ্ছে৷</translation>
@@ -3139,7 +3130,6 @@
 <translation id="5882919346125742463">পরিচিত নেটওয়ার্কগুলি</translation>
 <translation id="5884474295213649357">এই ট্যাব একটি USB ডিভাইসের সাথে সংযুক্ত করা আছে।</translation>
 <translation id="5885324376209859881">মিডিয়া সেটিংস পরিচালনা করুন...</translation>
-<translation id="5887341066363321040"><ph name="ORIGIN" /> এর জন্য কোনও পাসওয়ার্ড সেভ করা হয়নি</translation>
 <translation id="5889282057229379085">ইন্টারমিডিয়েট CAগুলির সর্বাধিক সংখ্যা: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5895187275912066135">এই তারিখে ইস্যু করা</translation>
@@ -3623,7 +3613,6 @@
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="6664237456442406323">দুর্ভাগ্যবশত, আপনার কম্পিউটার একটি ত্রুটিপূর্ণ হার্ডওয়্যার ID এর মাধ্যমে কনফিগার করা হয়েছে৷ এটি Chrome OS কে সাম্প্রতিক সুরক্ষা সমাধানে আপডেট করা থেকে বিরত করেছে এবং আপনার কম্পিউটার <ph name="BEGIN_BOLD" />অনিষ্টকারী আক্রমণগুলির ফলে অরক্ষিত হতে পারে<ph name="END_BOLD" />৷</translation>
 <translation id="6664774537677393800">আপনার প্রোফাইল খোলার সময় কোনো সমস্যা হয়েছে। দয়া সাইন আউট করে আবার সাইন ইন করুন।</translation>
-<translation id="6669827579181361875">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড সেভ করে রাখুক?</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">আপনি কি চান যে Google এই পৃষ্ঠাটি <ph name="SOURCE_LANGUAGE" /> থেকে <ph name="TARGET_LANGUAGE" /> এ অনুবাদ করুক?</translation>
 <translation id="6675665718701918026">পয়েন্টিং ডিভাইস সংযুক্ত হয়েছে</translation>
@@ -4987,6 +4976,7 @@
 <translation id="8871696467337989339">আপনি একটি অসমর্থিত কম্যান্ড-লাইন ফ্ল্যাগ ব্যবহার করছেন: <ph name="BAD_FLAG" />৷ স্থিতাবস্থা ও নিরাপত্তার ক্ষতিগ্রস্ত হবে৷</translation>
 <translation id="8871974300055371298">সামগ্রী সেটিংস</translation>
 <translation id="8872155268274985541">বহিরাগত কিয়স্ক আপডেট ম্যানিফেস্ট অবৈধ ফাইল পাওয়া গেছে৷ কিয়স্ক অ্যাপ্লিকেশান আপডেট করতে ব্যর্থ হয়েছে৷ দয়া করে USB স্টিক সরিয়ে দিন৷</translation>
+<translation id="8872506776304248286">অ্যাপ্লিকেশানে খুলুন</translation>
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>
 <translation id="8876309039915144086">পাসওয়ার্ড তৈরি করুন...</translation>
@@ -5000,7 +4990,6 @@
 <translation id="88986195241502842">পৃষ্ঠায় নীচের দিকে যান</translation>
 <translation id="8898786835233784856">পরবর্তী ট্যাব বেছে নিন</translation>
 <translation id="8898840733695078011">সংকেতের ক্ষমতা</translation>
-<translation id="8899551033019439140">প্রিন্টার অনুসন্ধান করছে...</translation>
 <translation id="8899851313684471736">নতুন &amp;উইন্ডোতে লিঙ্ক খুলুন</translation>
 <translation id="8902667442496790482">'বাছুন ও শুনুন'-এর সেটিংস খুলুন</translation>
 <translation id="8903921497873541725">জুম বাড়ান</translation>
@@ -5122,6 +5111,7 @@
 <translation id="9100765901046053179">উন্নত সেটিংস</translation>
 <translation id="9101691533782776290">অ্যাপ্লিকেশান লঞ্চ করুন</translation>
 <translation id="9102610709270966160">এক্সটেনশান সক্ষম করুন</translation>
+<translation id="9103868373786083162">ইতিহাস দেখার জন্য ফিরে গিয়ে প্রসঙ্গ মেনুতে যেতে টিপুন</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">জায়গা খালি করার জন্য, ডিভাইসের সঞ্চয়স্থান থেকে ফাইল মুছুন।</translation>
 <translation id="9110990317705400362">আমরা ক্রমাগত আপনার ব্রাউজ করা নিরাপদ করতে উপায় খুঁজছি৷ পূর্বে, যে কোনো ওয়েবসাইট আপনার ব্রাউজারে একটি এক্সটেনশান যোগ করার অনুরোধ জানাতে পারত৷ Google Chrome এর সাম্প্রতিক সংস্করণে, আপনাকে অবশ্যই Chrome কে স্পষ্টভাবে বলতে হবে যে আপনি এক্সটেনশানগুলির পৃষ্ঠার মাধ্যমে তাদের যোগ করে এই এক্সটেনশানগুলি ইনস্টল করতে চান৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>

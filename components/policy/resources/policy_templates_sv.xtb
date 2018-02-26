@@ -1159,7 +1159,6 @@
 
           Som standard får användare ett varningsmeddelande i stället för ett felmeddelande om pinkoden anses vara osäker.</translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
-<translation id="4725123658714754485">Styr om användarstatistik och diagnostisk data, till exempel felrapporter, rapporteras till Google. Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME" /> användarstatistik och diagnostisk data. Om principen inte har konfigurerats eller om värdet är falskt inaktiveras rapportering av statistik och diagnostisk data.</translation>
 <translation id="4725528134735324213">Aktivera säkerhetskopieringstjänsten för Android</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="4744190513568488164">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
@@ -1607,17 +1606,6 @@
 
       Läs mer om PinnedLauncherApps om du vill fästa appar i översikten.</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
-<translation id="6029950823657977211">
-      OBS! Det här är en experimentell princip som kan göra att något slutar fungera.
-      Den här principen tillämpas på inloggningsskärmen. Se även principen IsolateOrigins som tillämpas på användarsessionen. Vi rekommenderar att samma värde anges för båda principerna.
-      Om principen aktiveras körs varje namngivet ursprung i en
-      kommaavgränsad lista som en egen process. Även underdomäner
-      isoleras. Om du exempelvis anger https://example.com/ isoleras
-      även https://foo.example.com/ som en del av webbplatsen
-      https://example.com/.
-      Om principen inaktiveras gäller den logik för processhantering som användes före webbplatsisoleringen.
-      Om principen inte konfigureras används standardinställningarna för webbplatsisolering för inloggningsskärmen.
-      </translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
@@ -2576,11 +2564,5 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Aktiverar tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
-<translation id="9775893229076211">Ger dig möjlighet att styra aktiveringen av lösenordsskyddets varningar om att kontot är utsatt för risk. Om lösenordsskyddets utlösare om att kontot är utsatt för risk aktiveras meddelas Google om att kontot är utsatt för risken att kapas.
-
-      Om PasswordProtectionRiskOff anges för principen aktiveras inte lösenordsskyddets utlösare om att kontot är utsatt för risk.
-      Om PasswordProtectionRiskOnPasswordReuse anges för principen aktiveras lösenordsskyddets utlösare om att kontot är utsatt för risk när användare återanvänder lösenord från Google på webbplatser som inte är med på vitlistan.
-      Om PasswordProtectionRiskOnPhishingReuse anges för principen aktiveras lösenordsskyddets utlösare om att kontot är utsatt för risk när användare återanvänder lösenord från Google på webbplatser som används för nätfiske.
-      Om inget värde anges för principen aktiveras lösenordsskyddets utlösare om att kontot är utsatt för risk när användare återanvänder lösenord från Google på webbplatser som används för nätfiske, men användaren kan ändra detta.</translation>
 <translation id="982497069985795632">Aktivera stavningskontroll</translation>
 </translationbundle>

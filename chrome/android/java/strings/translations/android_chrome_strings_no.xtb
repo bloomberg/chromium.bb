@@ -142,13 +142,13 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
-<translation id="2259659629660284697">Eksportér passord ...</translation>
+<translation id="2259659629660284697">Eksportér passord</translation>
 <translation id="2266890032547182881">Oversikt over databruk</translation>
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="230115972905494466">Fant ingen kompatible enheter</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
-<translation id="2321086116217818302">Forbereder passordene …</translation>
+<translation id="2321086116217818302">Klargjør passordene …</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
 <translation id="2328985652426384049">Kan ikke logge på</translation>
@@ -257,7 +257,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3341058695485821946">Se hvor mye data du har spart</translation>
 <translation id="3350687908700087792">Lukk alle inkognitofaner</translation>
-<translation id="3358632888246345756">Tillat lesetilgang til utklippstavlen for et bestemt nettsted.</translation>
+<translation id="3358632888246345756">Gi lesetilgang til utklippstavlen for et bestemt nettsted.</translation>
 <translation id="3365671512111106261">Utilgjengelig når Datasparing er slått på</translation>
 <translation id="3367813778245106622">Logg på igjen for å starte synkroniseringen</translation>
 <translation id="3384347053049321195">Del bildet</translation>
@@ -699,7 +699,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7253272406652746122">Legg til en Google-konto på Kontoer-siden i Innstillinger-appen på enheten din.</translation>
 <translation id="7274013316676448362">Blokkert nettsted</translation>
 <translation id="729975465115245577">Enheten din har ingen app som kan lagre passordfilen.</translation>
-<translation id="7318797029885648322">Trykk på Mer for å se flere artikler</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}other{Del # valgte elementer}}</translation>

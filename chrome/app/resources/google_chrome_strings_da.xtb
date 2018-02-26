@@ -163,7 +163,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS vises på dette sprog</translation>
-<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – canary-version af Google Chrome</translation>
+<translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5855036575689098185">Du har software på din computer, som ikke er kompatibel med Google Chrome.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5895138241574237353">Genstart</translation>
@@ -175,7 +175,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="6070348360322141662">Som et ekstra sikkerhedsniveau krypterer Google Chrome dine data</translation>
 <translation id="6113794647360055231">Chrome er blevet bedre</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
-<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – betaversion af Google Chrome</translation>
+<translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome beta</translation>
 <translation id="61852838583753520">Opdater &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Indgående regel for Google Chrome om at tillade mDNS-trafik.</translation>
 <translation id="6291089322031436445">Apps i udviklerversionen af Chrome</translation>
@@ -183,7 +183,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="6338556085225130112">Opdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6410540444482791104">Du kan hjælpe med at gøre Chrome mere sikkert og nemmere at bruge ved automatisk at sende nogle systemoplysninger og sideindhold til Google som en hjælp til at registrere skadelige apps og websites.</translation>
-<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – udviklerversion af Google Chrome</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome for udviklere</translation>
 <translation id="6566149418543181476">Opdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chrome-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference, eller hvis du vil bruge Chrome uden en Google-konto.</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>

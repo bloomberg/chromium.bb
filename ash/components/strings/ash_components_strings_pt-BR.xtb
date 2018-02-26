@@ -1,4 +1,32 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1383876407941801731">Pesquisar</translation>
+<translation id="1510238584712386396">Iniciador</translation>
+<translation id="169515659049020177">Shift</translation>
+<translation id="2145908266289632567">Edição de texto</translation>
+<translation id="2515586267016047495">Alt</translation>
+<translation id="2872353916818027657">Trocar monitor primário</translation>
+<translation id="3105917916468784889">Faça uma captura de tela</translation>
+<translation id="3126026824346185272">Ctrl</translation>
+<translation id="3140353188828248647">Foco na barra de endereço</translation>
+<translation id="3649256019230929621">Minimizar janela</translation>
+<translation id="385051799172605136">Voltar</translation>
+<translation id="5316716239522500219">Espelhar monitores</translation>
+<translation id="5928303187149237472">Alterar resolução da tela</translation>
+<translation id="5975083100439434680">Diminuir zoom</translation>
+<translation id="6022924867608035986">Limpar texto da caixa de pesquisa</translation>
+<translation id="6129953537138746214">Espaço</translation>
+<translation id="6185696379715117369">Página para cima</translation>
+<translation id="671928215901716392">Bloquear tela</translation>
+<translation id="6727005317916125192">Painel anterior</translation>
+<translation id="6981982820502123353">Acessibilidade</translation>
+<translation id="7020813747703216897">Nenhum resultado correspondente encontrado</translation>
+<translation id="7025325401470358758">Próximo painel</translation>
+<translation id="7272373489634936181">Procurar atalhos</translation>
+<translation id="7724603315864178912">Recortar</translation>
+<translation id="8004192919599017226">Iniciar pesquisa…</translation>
+<translation id="88986195241502842">Página para baixo</translation>
+<translation id="8903921497873541725">Aumentar zoom</translation>
+<translation id="9179672198516322668">Atalhos mais usados</translation>
 </translationbundle>

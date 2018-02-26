@@ -31,7 +31,6 @@
 <translation id="1039337018183941703">فایل نامعتبر یا خراب است</translation>
 <translation id="1042174272890264476">‏‫همچنین کتابخانه RLZ‏ <ph name="SHORT_PRODUCT_NAME" /> از قبل بر روی رایانه شما نصب شده است. RLZ یک برچسب غیرمنحصر بفرد و غیرقابل‌شناسایی برای سنجش جستجوها و استفاده از <ph name="SHORT_PRODUCT_NAME" /> اختصاص می‌دهد که توسط یک کمپین تبلیغاتی خاص ارائه می‌شود. در بعضی مواقع در <ph name="PRODUCT_NAME" /> این برچسب‌ها در عباراتی که در جستجوی Goole جستجو می‌شوند نمایان می‌شوند.</translation>
 <translation id="1046059554679513793">اوه، این نام از قبل در حال استفاده است!</translation>
-<translation id="1046286965898806214">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> حساب شما را برای این سایت ذخیره کند؟</translation>
 <translation id="1047431265488717055">کپی کردن متن &amp;پیوند</translation>
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
 <translation id="1047956942837015229">در حال حذف <ph name="COUNT" /> مورد...</translation>
@@ -420,7 +419,6 @@
 <translation id="1635033183663317347">قیم شما نصب کرده است.</translation>
 <translation id="1637224376458524414">‏این نشانک را در iPhone خود دریافت کنید</translation>
 <translation id="1637765355341780467">هنگام باز کردن نمایه‌تان خطایی رخ داد. ممکن است برخی از قابلیت‌ها در دسترس نباشند.</translation>
-<translation id="1638447702436460526">چاپگر پیدا نشد</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640283014264083726">‏PKCS #1 MD4 با رمزگذاری RSA</translation>
 <translation id="1642494467033190216">راه‌اندازی مجدد و برداشتن محافظت ویژگی‌های ریشه قبل از فعال کردن ویژگی‌های رفع‌اشکال دیگر لازم است.</translation>
@@ -571,6 +569,7 @@
 <translation id="1856813161013948396">به‌سادگی با ضربه زدن روی حسگر اثر انگشت، از صفحه در حالت قفل رد شوید. برای پیکربندی کلیک کنید.</translation>
 <translation id="1858585891038687145">برای شناسایی سازندگان نرم‌افزار، به این گواهی اطمینان شود</translation>
 <translation id="1859234291848436338">جهت نوشتن</translation>
+<translation id="1861262398884155592">این پوشه خالی است</translation>
 <translation id="1864111464094315414">ورود به سیستم</translation>
 <translation id="1864400682872660285">سردتر</translation>
 <translation id="1864676585353837027">نحوه اشتراک‌گذاری این فایل‌ها را تغییر دهید</translation>
@@ -585,7 +584,6 @@
 <translation id="1878524442024357078">به هیچ سایتی اجازه داده نشود برای دسترسی به رایانه‌تان از افزایه استفاده کند</translation>
 <translation id="1879449842763884566">نصب در برنامه‌ها...</translation>
 <translation id="1880905663253319515">مجوز "<ph name="CERTIFICATE_NAME" />" حذف شود؟</translation>
-<translation id="188190999506226223">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه شما را برای <ph name="ORIGIN" /> ذخیره کند؟</translation>
 <translation id="1886996562706621347">به سایت‌ها اجازه داده شود درخواست کنند که کنترل‌کننده پیش‌فرض برای پروتکل‌ها شوند (توصیه می‌شود)</translation>
 <translation id="1887442540531652736">خطای ورود به سیستم</translation>
 <translation id="1887850431809612466">بازبینی سخت‌افزار</translation>
@@ -1145,7 +1143,6 @@
 <translation id="2762441749940182211">دوربین مسدود شده است</translation>
 <translation id="2765217105034171413">کوچک</translation>
 <translation id="2766006623206032690">جا&amp;گذاری و رفتن</translation>
-<translation id="2767084307624729667">گذرواژه‌های ذخیره‌شده برای <ph name="ORIGIN" /></translation>
 <translation id="276969039800130567">با <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شد.</translation>
 <translation id="2770465223704140727">حذف از فهرست</translation>
 <translation id="2770690685823456775">گذرواژه‌ها را به پوشه دیگری صادر کنید</translation>
@@ -1218,7 +1215,6 @@
 <translation id="2849936225196189499">مهم</translation>
 <translation id="2850124913210091882">پشتیبان‌گیری</translation>
 <translation id="2850541429955027218">افزودن طرح زمینه</translation>
-<translation id="2853121255651601031">گذرواژه ذخیره شد</translation>
 <translation id="2853916256216444076">ویدیوی $1</translation>
 <translation id="2857608528410806398">‏متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید.</translation>
 <translation id="2860150991415616761">خیلی طولانی است (۴ ثانیه)</translation>
@@ -1228,6 +1224,7 @@
 <translation id="2867768963760577682">بازکردن به‌عنوان برگه پین شده</translation>
 <translation id="2868746137289129307">این افزونه قدیمی است و خط‌مشی شرکت آن را غیرفعال کرده است. شاید وقتی یک نسخه جدیدتر در دسترس قرار گیرد به صورت خودکار فعال شود.</translation>
 <translation id="2870560284913253234">سایت</translation>
+<translation id="2870909136778269686">در حال به‌روزرسانی...</translation>
 <translation id="2871813825302180988">از این حساب از قبل در این دستگاه استفاده می‌شود.</translation>
 <translation id="2872353916818027657">تعویض مانیتور اصلی</translation>
 <translation id="287286579981869940">افزودن <ph name="PROVIDER_NAME" />...</translation>
@@ -1758,7 +1755,6 @@
 <translation id="3665842570601375360">امنیت:</translation>
 <translation id="3668570675727296296">تنظیمات زبان</translation>
 <translation id="3668823961463113931">کنترل‌کننده‌ها</translation>
-<translation id="3669030672519623291">هیچ گذرواژه‌ای برای این سایت ذخیره نشده است</translation>
 <translation id="3670229581627177274">روشن کردن بلوتوث</translation>
 <translation id="3672681487849735243">یک خطای کارخانه شناسایی شده است</translation>
 <translation id="367645871420407123">اگر می‌خواهید گذرواژه ریشه را روی مقدار تصویر آرمایشی پیش‌فرض تنظیم کنید، خالی بگذارید</translation>
@@ -2294,7 +2290,6 @@
 <translation id="4576541033847873020">مرتبط‌سازی دستگاه بلوتوث</translation>
 <translation id="4579581181964204535">ارسال محتوای <ph name="HOST_NAME" /> امکان‌پذیر نیست.</translation>
 <translation id="4580526846085481512">آیا مطمئنید می‌خواهید موارد $1 را حذف کنید؟</translation>
-<translation id="458150753955139441">فشار دهید تا به عقب برگردید، از منوی بافت استفاده کنید تا سابقه را ببینید</translation>
 <translation id="4582563038311694664">بازنشانی همه تنظیمات</translation>
 <translation id="4585793705637313973">ویرایش صفحه</translation>
 <translation id="4589268276914962177">پایانه جدید</translation>
@@ -2327,7 +2322,6 @@
 <translation id="4632483769545853758">وصل کردن صدای برگه</translation>
 <translation id="4633003931260532286">افزونه به «<ph name="IMPORT_NAME" />» با نسخه حداقل «<ph name="IMPORT_VERSION" />» نیاز دارد اما تنها نسخه «<ph name="INSTALLED_VERSION" />» نصب شده است</translation>
 <translation id="4634771451598206121">ورود مجدد به سیستم...</translation>
-<translation id="4636315944522859212">چاپگر پیدا شد</translation>
 <translation id="4640525840053037973">‏ورود به سیستم با حساب Google خود</translation>
 <translation id="4641539339823703554">‏Chrome نمی‌تواند زمان سیستم را تنظیم کند. لطفاً زمان را در زیر بررسی کرده و در صورت لزوم آن را درست کنید.</translation>
 <translation id="4643612240819915418">&amp;باز کردن فایل ویدئویی در برگهٔ جدید</translation>
@@ -2459,7 +2453,6 @@
 <translation id="4850669014075537160">پیمایش</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4853020600495124913">باز کردن در پنجره &amp;جدید</translation>
-<translation id="4853882474657327078">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای <ph name="ORIGIN" /> به‌روزرسانی کند؟</translation>
 <translation id="4856478137399998590">سرویس داده تلفن همراه شما فعال شده و آمادهٔ استفاده است.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{باز کردن همه در پنجره ناشناس}=1{باز کردن در پنجره ناشناس}one{باز کردن همه (#) در پنجره ناشناس}other{باز کردن همه (#) در پنجره ناشناس}}</translation>
 <translation id="4858913220355269194">فوتبالی</translation>
@@ -2942,7 +2935,6 @@
 <translation id="558170650521898289">‏تأیید درایور سخت‌افزار Microsoft Windows</translation>
 <translation id="5582839680698949063">منوی اصلی</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="5583726250980167172">گذرواژه‌های ذخیره‌شده برای این سایت</translation>
 <translation id="5585118885427931890">پوشه نشانک ایجاد نشد.</translation>
 <translation id="558563010977877295">باز کردن یک صفحه خاص یا مجموعه‌ای از صفحات</translation>
 <translation id="5585912436068747822">قالب‌بندی ناموفق بود</translation>
@@ -2954,7 +2946,6 @@
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5600706100022181951">به‌روزرسانی با مصرف <ph name="UPDATE_SIZE_MB" /> مگابایت داده تلفن همراه بارگیری می‌شود. ادامه می‌دهید؟</translation>
 <translation id="5601503069213153581">پین</translation>
-<translation id="5605057818926354551">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="5605623530403479164">موتورهای جستجوی دیگر</translation>
 <translation id="5608580678041221894">برای تنظیم یا انتقال ناحیه بریده‌شده، روی کلیدهای زیر ضربه بزنید</translation>
 <translation id="5609231933459083978">به نظر می‌رسد این برنامه معتبر نیست.</translation>
@@ -3139,7 +3130,6 @@
 <translation id="5882919346125742463">شبکه‌های شناخته‌شده</translation>
 <translation id="5884474295213649357">‏این برگه به دستگاه USB متصل است.</translation>
 <translation id="5885324376209859881">مدیریت تنظیمات رسانه...</translation>
-<translation id="5887341066363321040">هیچ گذرواژه‌ای برای <ph name="ORIGIN" /> ذخیره نشده است</translation>
 <translation id="5889282057229379085">‏حداکثر تعداد CA های متوسط: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5895187275912066135">تاریخ صدور</translation>
@@ -3623,7 +3613,6 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6664237456442406323">‏متأسفانه، رایانه شما با یک شناسه سخت‌افزار ناقص پیکربندی شده است. این موضوح سیستم عامل Chrome را از به‌روزرسانی با جدیدترین اصلاحات امنیتی باز می‌دارد که <ph name="BEGIN_BOLD" />می‌تواند رایانه شما را در برابر حملات مخرب آسیب‌پذیر نماید<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">هنگام باز کردن نمایه‌تان مشکلی پیش آمد. لطفاً از سیستم خارج شوید و دوباره به آن وارد شوید.</translation>
-<translation id="6669827579181361875">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت ذخیره کند؟</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">‏می‌خواهید Google این صفحه را از <ph name="SOURCE_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه کند؟</translation>
 <translation id="6675665718701918026">دستگاه نشانگر متصل شد</translation>
@@ -4989,6 +4978,7 @@
 <translation id="8871696467337989339">شما از علامت پشتیبانی نشده خط فرمان <ph name="BAD_FLAG" /> استفاده می‌کنید. ثبات و امنیت صدمه می‌بینند.</translation>
 <translation id="8871974300055371298">تنظیمات محتوا</translation>
 <translation id="8872155268274985541">‏فایل مانیفست به‌روزرسانی خارجی کیوسک نامعتبری پیدا شد. به‌روزرسانی برنامه کیوسک انجام نشد. لطفاً فلش USB را خارج کنید.</translation>
+<translation id="8872506776304248286">باز کردن در برنامه</translation>
 <translation id="8874184842967597500">متصل نیست</translation>
 <translation id="8876215549894133151">قالب:</translation>
 <translation id="8876309039915144086">تولید گذرواژه...</translation>
@@ -5002,7 +4992,6 @@
 <translation id="88986195241502842">صفحه پایین</translation>
 <translation id="8898786835233784856">انتخاب برگه بعدی</translation>
 <translation id="8898840733695078011">قدرت سیگنال</translation>
-<translation id="8899551033019439140">درحال جستجوی چاپگر…</translation>
 <translation id="8899851313684471736">باز کردن پیوند در &amp;پنجره جدید</translation>
 <translation id="8902667442496790482">باز کردن تنظیمات «انتخاب کنید تا بتوانید صحبت کنید»</translation>
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
@@ -5124,6 +5113,7 @@
 <translation id="9100765901046053179">تنظیمات پیشرفته</translation>
 <translation id="9101691533782776290">راه‌اندازی برنامه</translation>
 <translation id="9102610709270966160">فعال کردن افزونه</translation>
+<translation id="9103868373786083162">برای دیدن سابقه، دکمه را فشار دهید تا به عقب، و به منوی بافت برگردید</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9109122242323516435">برای آزاد کردن فضا، فایل‌ها را در حافظه دستگاه حذف کنید.</translation>
 <translation id="9110990317705400362">‏همواره به دنبال راه‌هایی هستیم تا مرورتان را ایمن‌تر کنیم. قبلاً هر وب‌سایتی از شما می‌خواست برنامه‌افزودنی‌ای را در مرورگرتان اضافه کنید. در جدیدترین نسخه Google Chrome، باید به Chrome صراحتاً بگویید که می‌خواهید با افزودن این برنامه‌های افزودنی از طریق صفحه افزونه‌ها آنها را نصب کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
