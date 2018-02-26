@@ -57,7 +57,7 @@ void GlRenderer::RenderFrame() {
 void GlRenderer::PostRenderFrameTask(gfx::SwapResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSecondsD(1.0 / 60));
 }
 

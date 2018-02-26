@@ -206,16 +206,16 @@ class ElementEventHandlers {
   explicit ElementEventHandlers(UiElement* element) {
     DCHECK(element);
     EventHandlers event_handlers;
-    event_handlers.hover_enter = base::Bind(
+    event_handlers.hover_enter = base::BindRepeating(
         &ElementEventHandlers::HandleHoverEnter, base::Unretained(this));
-    event_handlers.hover_move = base::Bind(
+    event_handlers.hover_move = base::BindRepeating(
         &ElementEventHandlers::HandleHoverMove, base::Unretained(this));
-    event_handlers.hover_leave = base::Bind(
+    event_handlers.hover_leave = base::BindRepeating(
         &ElementEventHandlers::HandleHoverLeave, base::Unretained(this));
-    event_handlers.button_down = base::Bind(
+    event_handlers.button_down = base::BindRepeating(
         &ElementEventHandlers::HandleButtonDown, base::Unretained(this));
-    event_handlers.button_up = base::Bind(&ElementEventHandlers::HandleButtonUp,
-                                          base::Unretained(this));
+    event_handlers.button_up = base::BindRepeating(
+        &ElementEventHandlers::HandleButtonUp, base::Unretained(this));
     element->set_event_handlers(event_handlers);
   }
   void HandleHoverEnter() { hover_enter_ = true; }
