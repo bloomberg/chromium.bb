@@ -20,7 +20,6 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
                                      public ImageBitmapSource {
  public:
   virtual ImageLoader& GetImageLoader() const = 0;
-  virtual FloatSize SourceDefaultObjectSize() = 0;
 
   // Parses the given async parameter value into an ImageDecodingMode. This is
   // used by SVGImageElement and HTMLImageElement since this class is a common

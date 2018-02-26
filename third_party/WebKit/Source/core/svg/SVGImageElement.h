@@ -92,7 +92,6 @@ class CORE_EXPORT SVGImageElement final
   bool SelfHasRelativeLengths() const override;
   void DidMoveToNewDocument(Document& old_document) override;
   SVGImageLoader& GetImageLoader() const override { return *image_loader_; }
-  FloatSize SourceDefaultObjectSize() override;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;
