@@ -343,7 +343,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-c
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/clear-nested-float-more-than-one-previous-sibling-away.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-container.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Failure ]

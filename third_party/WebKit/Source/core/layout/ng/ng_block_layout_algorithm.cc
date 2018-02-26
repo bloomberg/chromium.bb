@@ -671,6 +671,12 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     child_bfc_offset_estimate = child_data.bfc_offset_estimate.block_offset +
                                 non_adjoining_margin_strut.Sum();
 
+    // Make sure that we don't move below the previously found layout
+    // opportunity. This could otherwise happen if the child has negative
+    // margins.
+    child_bfc_offset_estimate = std::min(
+        child_bfc_offset_estimate, opportunity.rect.start_offset.block_offset);
+
     std::tie(layout_result, opportunity) = LayoutNewFormattingContext(
         child, child_break_token, child_data, child_bfc_offset_estimate,
         /* abort_if_cleared */ false);
