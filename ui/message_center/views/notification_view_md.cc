@@ -88,6 +88,12 @@ constexpr SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
 // Background of inline settings area.
 const SkColor kSettingsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 
+// Text color and icon color of inline reply area when the textfield is empty.
+constexpr SkColor kTextfieldPlaceholderTextColorMD =
+    SkColorSetA(SK_ColorWHITE, 0x8A);
+constexpr SkColor kTextfieldPlaceholderIconColorMD =
+    SkColorSetA(SK_ColorWHITE, 0x60);
+
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
 
@@ -379,9 +385,9 @@ NotificationInputTextfieldMD::NotificationInputTextfieldMD(
     views::TextfieldController* controller)
     : index_(0) {
   set_controller(controller);
-  SetTextColor(SK_ColorBLACK);
+  SetTextColor(SK_ColorWHITE);
   SetBackgroundColor(SK_ColorTRANSPARENT);
-  set_placeholder_text_color(SkColorSetA(SK_ColorBLACK, 0x8A));
+  set_placeholder_text_color(kTextfieldPlaceholderTextColorMD);
   SetBorder(views::CreateEmptyBorder(kInputTextfieldPadding));
 }
 
@@ -412,14 +418,14 @@ NotificationInputReplyButtonMD::~NotificationInputReplyButtonMD() = default;
 void NotificationInputReplyButtonMD::SetNormalImage() {
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
-                                 kInputReplyButtonSize, SK_ColorBLACK));
+                                 kInputReplyButtonSize, SK_ColorWHITE));
 }
 
 void NotificationInputReplyButtonMD::SetPlaceholderImage() {
   SetImage(
       STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationInlineReplyIcon, kInputReplyButtonSize,
-                            SkColorSetA(SK_ColorBLACK, 0x60)));
+                            kTextfieldPlaceholderIconColorMD));
 }
 
 // NotificationInputContainerMD ////////////////////////////////////////////////
