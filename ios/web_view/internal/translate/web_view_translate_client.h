@@ -37,6 +37,8 @@ class WebState;
 
 namespace ios_web_view {
 
+class WebViewBrowserState;
+
 class WebViewTranslateClient
     : public translate::TranslateClient,
       public web::WebStateObserver,
@@ -81,6 +83,9 @@ class WebViewTranslateClient
 
   // web::WebStateObserver implementation.
   void WebStateDestroyed(web::WebState* web_state) override;
+
+  // The associated browser state.
+  WebViewBrowserState* browser_state_;
 
   std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;

@@ -65,4 +65,11 @@ void WebViewLanguageModelFactory::RegisterBrowserStatePrefs(
   }
 }
 
+web::BrowserState* WebViewLanguageModelFactory::GetBrowserStateToUse(
+    web::BrowserState* state) const {
+  WebViewBrowserState* browser_state =
+      WebViewBrowserState::FromBrowserState(state);
+  return browser_state->GetRecordingBrowserState();
+}
+
 }  // namespace ios_web_view

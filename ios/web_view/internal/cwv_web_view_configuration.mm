@@ -53,8 +53,8 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
 + (instancetype)defaultConfiguration {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    auto browserState =
-        std::make_unique<ios_web_view::WebViewBrowserState>(false);
+    auto browserState = std::make_unique<ios_web_view::WebViewBrowserState>(
+        /*off_the_record = */ false);
     gDefaultConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });
@@ -64,8 +64,9 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
 + (instancetype)incognitoConfiguration {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    auto browserState =
-        std::make_unique<ios_web_view::WebViewBrowserState>(true);
+    CWVWebViewConfiguration* defaultConfiguration = [self defaultConfiguration];
+    auto browserState = std::make_unique<ios_web_view::WebViewBrowserState>(
+        /*off_the_record = */ true, defaultConfiguration.browserState);
     gIncognitoConfiguration = [[CWVWebViewConfiguration alloc]
         initWithBrowserState:std::move(browserState)];
   });

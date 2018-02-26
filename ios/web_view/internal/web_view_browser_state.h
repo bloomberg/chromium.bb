@@ -21,11 +21,13 @@ namespace ios_web_view {
 
 class WebViewURLRequestContextGetter;
 
-// WebView implementation of BrowserState.  Can only be used only on the UI
+// WebView implementation of BrowserState. Can only be used only on the UI
 // thread.
 class WebViewBrowserState : public web::BrowserState {
  public:
-  explicit WebViewBrowserState(bool off_the_record);
+  explicit WebViewBrowserState(
+      bool off_the_record,
+      WebViewBrowserState* recording_browser_state = nullptr);
   ~WebViewBrowserState() override;
 
   // web::BrowserState implementation.
@@ -35,6 +37,10 @@ class WebViewBrowserState : public web::BrowserState {
 
   // Returns the associated PrefService.
   PrefService* GetPrefs();
+
+  // Returns the recording browser state associated with this browser state.
+  // Returns |this| if called on a recording browser state.
+  WebViewBrowserState* GetRecordingBrowserState();
 
   // Converts from web::BrowserState to WebViewBrowserState.
   static WebViewBrowserState* FromBrowserState(
@@ -55,6 +61,9 @@ class WebViewBrowserState : public web::BrowserState {
 
   // The PrefService associated with this BrowserState.
   std::unique_ptr<PrefService> prefs_;
+
+  // The recording browser state associated with this browser state.
+  WebViewBrowserState* recording_browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewBrowserState);
 };
