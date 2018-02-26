@@ -140,13 +140,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     cm->rst_end_stripe[i] = num_stripes;
   }
 
-// Now we need to allocate enough space to store the line buffers for the
-// stripes
-#if CONFIG_HORZONLY_FRAME_SUPERRES
+  // Now we need to allocate enough space to store the line buffers for the
+  // stripes
   const int frame_w = cm->superres_upscaled_width;
-#else
-  const int frame_w = cm->width;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   const int use_highbd = cm->use_highbitdepth ? 1 : 0;
 
   for (int p = 0; p < num_planes; ++p) {

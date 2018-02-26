@@ -781,14 +781,10 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                        "Failed to allocate last frame buffer");
 
   if (aom_realloc_frame_buffer(
-          &cpi->trial_frame_rst,
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-          cm->superres_upscaled_width, cm->superres_upscaled_height,
-#else
-          cm->width, cm->height,
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-          cm->subsampling_x, cm->subsampling_y, cm->use_highbitdepth,
-          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+          &cpi->trial_frame_rst, cm->superres_upscaled_width,
+          cm->superres_upscaled_height, cm->subsampling_x, cm->subsampling_y,
+          cm->use_highbitdepth, AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
+          NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
 
@@ -3790,11 +3786,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_qm_init(cm);
 
   av1_loop_filter_init(cm);
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   cm->superres_scale_denominator = SCALE_NUMERATOR;
   cm->superres_upscaled_width = oxcf->width;
   cm->superres_upscaled_height = oxcf->height;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   av1_loop_restoration_precal();
 
   cm->error.setjmp = 0;
@@ -4864,13 +4858,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   const int frame_width = cm->superres_upscaled_width;
   const int frame_height = cm->superres_upscaled_height;
-#else
-  const int frame_width = cm->width;
-  const int frame_height = cm->height;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   set_restoration_unit_size(frame_width, frame_height, cm->subsampling_x,
                             cm->subsampling_y, cm->rst_info);
   for (int i = 0; i < num_planes; ++i)
@@ -4926,8 +4915,6 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   }
   return new_denom;
 }
-
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
@@ -5031,18 +5018,11 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
   }
   return dimensions_are_ok(owidth, oheight, rsz);
 }
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 // Calculates resize and superres params for next frame
 size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  size_params_type rsz = {
-    oxcf->width,
-    oxcf->height,
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-    SCALE_NUMERATOR
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-  };
+  size_params_type rsz = { oxcf->width, oxcf->height, SCALE_NUMERATOR };
   int resize_denom;
   if (oxcf->pass == 1) return rsz;
   if (cpi->resize_pending_width && cpi->resize_pending_height) {
@@ -5056,12 +5036,10 @@ size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
     av1_calculate_scaled_size(&rsz.resize_width, &rsz.resize_height,
                               resize_denom);
   }
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   rsz.superres_denom = calculate_next_superres_scale(cpi);
   if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, oxcf->width,
                             oxcf->height, &rsz))
     assert(0 && "Invalid scale parameters");
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   return rsz;
 }
 
@@ -5069,14 +5047,12 @@ static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
   int encode_width = rsz->resize_width;
   int encode_height = rsz->resize_height;
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
   cm->superres_scale_denominator = rsz->superres_denom;
   av1_calculate_scaled_superres_size(&encode_width, &encode_height,
                                      rsz->superres_denom);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   set_frame_size(cpi, encode_width, encode_height);
 }
 
@@ -5085,7 +5061,6 @@ static void setup_frame_size(AV1_COMP *cpi) {
   setup_frame_size_from_params(cpi, &rsz);
 }
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 static void superres_post_encode(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -5119,7 +5094,6 @@ static void superres_post_encode(AV1_COMP *cpi) {
     cpi->source = &cpi->scaled_source;
   }
 }
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
@@ -5190,9 +5164,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_cdef_frame(cm->frame_to_show, cm, xd);
   }
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   superres_post_encode(cpi);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   if (no_restoration) {
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;

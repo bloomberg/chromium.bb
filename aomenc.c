@@ -309,7 +309,6 @@ static const arg_def_t resize_denominator =
     ARG_DEF(NULL, "resize-denominator", 1, "Frame resize denominator");
 static const arg_def_t resize_kf_denominator = ARG_DEF(
     NULL, "resize-kf-denominator", 1, "Frame resize keyframe denominator");
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 static const arg_def_t superres_mode =
     ARG_DEF(NULL, "superres-mode", 1, "Frame super-resolution mode");
 static const arg_def_t superres_denominator = ARG_DEF(
@@ -322,7 +321,6 @@ static const arg_def_t superres_qthresh = ARG_DEF(
 static const arg_def_t superres_kf_qthresh =
     ARG_DEF(NULL, "superres-kf-qthresh", 1,
             "Frame super-resolution keyframe qindex threshold");
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
                                                        { "cbr", AOM_CBR },
                                                        { "cq", AOM_CQ },
@@ -350,13 +348,11 @@ static const arg_def_t *rc_args[] = { &dropframe_thresh,
                                       &resize_mode,
                                       &resize_denominator,
                                       &resize_kf_denominator,
-#if CONFIG_HORZONLY_FRAME_SUPERRES
                                       &superres_mode,
                                       &superres_denominator,
                                       &superres_kf_denominator,
                                       &superres_qthresh,
                                       &superres_kf_qthresh,
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
                                       &end_usage,
                                       &target_bitrate,
                                       &min_quantizer,
@@ -1257,7 +1253,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.rc_resize_denominator = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_kf_denominator, argi)) {
       config->cfg.rc_resize_kf_denominator = arg_parse_uint(&arg);
-#if CONFIG_HORZONLY_FRAME_SUPERRES
     } else if (arg_match(&arg, &superres_mode, argi)) {
       config->cfg.rc_superres_mode = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_denominator, argi)) {
@@ -1268,7 +1263,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.rc_superres_qthresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_kf_qthresh, argi)) {
       config->cfg.rc_superres_kf_qthresh = arg_parse_uint(&arg);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
     } else if (arg_match(&arg, &end_usage, argi)) {
       config->cfg.rc_end_usage = arg_parse_enum_or_int(&arg);
     } else if (arg_match(&arg, &target_bitrate, argi)) {
@@ -1472,13 +1466,11 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(rc_resize_mode);
   SHOW(rc_resize_denominator);
   SHOW(rc_resize_kf_denominator);
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   SHOW(rc_superres_mode);
   SHOW(rc_superres_denominator);
   SHOW(rc_superres_kf_denominator);
   SHOW(rc_superres_qthresh);
   SHOW(rc_superres_kf_qthresh);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   SHOW(rc_end_usage);
   SHOW(rc_target_bitrate);
   SHOW(rc_min_quantizer);

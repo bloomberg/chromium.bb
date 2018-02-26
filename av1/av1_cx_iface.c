@@ -297,7 +297,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               SCALE_NUMERATOR << 1);
   RANGE_CHECK(cfg, rc_resize_kf_denominator, SCALE_NUMERATOR,
               SCALE_NUMERATOR << 1);
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_MODES - 1);
   RANGE_CHECK(cfg, rc_superres_denominator, SCALE_NUMERATOR,
               SCALE_NUMERATOR << 1);
@@ -305,7 +304,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               SCALE_NUMERATOR << 1);
   RANGE_CHECK(cfg, rc_superres_qthresh, 1, 63);
   RANGE_CHECK(cfg, rc_superres_kf_qthresh, 1, 63);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 #if CONFIG_CDF_UPDATE_MODE
   RANGE_CHECK_HI(extra_cfg, cdf_update_mode, 3);
 #endif  // CONFIG_CDF_UPDATE_MODE
@@ -601,7 +599,6 @@ static aom_codec_err_t set_encoder_config(
       oxcf->resize_kf_scale_denominator == SCALE_NUMERATOR)
     oxcf->resize_mode = RESIZE_NONE;
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
   oxcf->superres_scale_denominator = (uint8_t)cfg->rc_superres_denominator;
   oxcf->superres_kf_scale_denominator =
@@ -620,7 +617,6 @@ static aom_codec_err_t set_encoder_config(
   if (oxcf->superres_mode == SUPERRES_QTHRESH &&
       oxcf->superres_qthresh == 255 && oxcf->superres_kf_qthresh == 255)
     oxcf->superres_mode = SUPERRES_NONE;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   oxcf->maximum_buffer_size_ms = is_vbr ? 240000 : cfg->rc_buf_sz;
   oxcf->starting_buffer_level_ms = is_vbr ? 60000 : cfg->rc_buf_initial_sz;

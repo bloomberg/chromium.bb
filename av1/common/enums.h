@@ -647,10 +647,8 @@ typedef enum ATTRIBUTE_PACKED {
   RESTORE_TYPES = 4,
 } RestorationType;
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 #define SUPERRES_SCALE_BITS 3
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #ifdef __cplusplus
 }  // extern "C"

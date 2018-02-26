@@ -64,14 +64,12 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst, int bd,
                                  const int num_planes);
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
                                 int src_stride, uint8_t *dst, int dst_stride,
                                 int plane, int rows);
 void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
                                             const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
@@ -81,7 +79,6 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
 // resize scale denominator.
 void av1_calculate_scaled_size(int *width, int *height, int resize_denom);
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 // Similar to above, but calculates scaled dimensions after superres from the
 // given original dimensions and superres scale denominator.
 void av1_calculate_scaled_superres_size(int *width, int *height,
@@ -101,15 +98,12 @@ static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
   // So, the following check is more accurate.
   return (cm->width == cm->superres_upscaled_width);
 }
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 #define UPSCALE_NORMATIVE_TAPS 8
 extern const int16_t av1_resize_filter_normative[1 << RS_SUBPEL_BITS]
                                                 [UPSCALE_NORMATIVE_TAPS];
 
 int32_t av1_get_upscale_convolve_step(int in_length, int out_length);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #ifdef __cplusplus
 }  // extern "C"

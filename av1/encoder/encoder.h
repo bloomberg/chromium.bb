@@ -115,13 +115,14 @@ typedef enum {
   DELTAQ_MODE_COUNT  // This should always be the last member of the enum
 } DELTAQ_MODE;
 #endif
+
 typedef enum {
   RESIZE_NONE = 0,    // No frame resizing allowed.
   RESIZE_FIXED = 1,   // All frames are coded at the specified scale.
   RESIZE_RANDOM = 2,  // All frames are coded at a random scale.
   RESIZE_MODES
 } RESIZE_MODE;
-#if CONFIG_HORZONLY_FRAME_SUPERRES
+
 typedef enum {
   SUPERRES_NONE = 0,     // No frame superres allowed
   SUPERRES_FIXED = 1,    // All frames are coded at the specified scale,
@@ -132,7 +133,6 @@ typedef enum {
                          // q_index
   SUPERRES_MODES
 } SUPERRES_MODE;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 typedef struct AV1EncoderConfig {
   BITSTREAM_PROFILE profile;
@@ -212,14 +212,12 @@ typedef struct AV1EncoderConfig {
   uint8_t resize_scale_denominator;
   uint8_t resize_kf_scale_denominator;
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   // Frame Super-Resolution size scaling.
   SUPERRES_MODE superres_mode;
   uint8_t superres_scale_denominator;
   uint8_t superres_kf_scale_denominator;
   int superres_qthresh;
   int superres_kf_qthresh;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   // Enable feature to reduce the frame quantization every x frames.
   int frame_periodic_boost;
@@ -796,20 +794,12 @@ static INLINE void uref_cnt_fb(EncRefCntBuffer *ubufs, int *uidx,
 
 // Returns 1 if a frame is unscaled and 0 otherwise.
 static INLINE int av1_resize_unscaled(const AV1_COMMON *cm) {
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   return cm->superres_upscaled_width == cm->render_width &&
          cm->superres_upscaled_height == cm->render_height;
-#else
-  return cm->width == cm->render_width && cm->height == cm->render_height;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 }
 
 static INLINE int av1_frame_unscaled(const AV1_COMMON *cm) {
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   return av1_superres_unscaled(cm) && av1_resize_unscaled(cm);
-#else
-  return av1_resize_unscaled(cm);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 }
 
 #ifdef __cplusplus

@@ -2655,7 +2655,6 @@ static void write_render_size(const AV1_COMMON *cm,
   }
 }
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
   // First bit is whether to to scale or not
@@ -2671,7 +2670,6 @@ static void write_superres_scale(const AV1_COMMON *const cm,
         SUPERRES_SCALE_BITS);
   }
 }
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #if CONFIG_FRAME_SIZE
 static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
@@ -2681,13 +2679,8 @@ static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb)
 #endif
 {
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   const int coded_width = cm->superres_upscaled_width - 1;
   const int coded_height = cm->superres_upscaled_height - 1;
-#else
-  const int coded_width = cm->width - 1;
-  const int coded_height = cm->height - 1;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #if CONFIG_FRAME_SIZE
   if (frame_size_override) {
@@ -2702,9 +2695,7 @@ static void write_frame_size(const AV1_COMMON *cm,
   aom_wb_write_literal(wb, coded_height, 16);
 #endif
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   write_superres_scale(cm, wb);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   write_render_size(cm, wb);
 }
 
@@ -2718,21 +2709,14 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
     YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, ref_frame);
 
     if (cfg != NULL) {
-#if CONFIG_HORZONLY_FRAME_SUPERRES
       found = cm->superres_upscaled_width == cfg->y_crop_width &&
               cm->superres_upscaled_height == cfg->y_crop_height;
-#else
-      found =
-          cm->width == cfg->y_crop_width && cm->height == cfg->y_crop_height;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       found &= cm->render_width == cfg->render_width &&
                cm->render_height == cfg->render_height;
     }
     aom_wb_write_bit(wb, found);
     if (found) {
-#if CONFIG_HORZONLY_FRAME_SUPERRES
       write_superres_scale(cm, wb);
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       break;
     }
   }
@@ -3248,14 +3232,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
     write_frame_size(cm, wb);
 #endif
-#if CONFIG_HORZONLY_FRAME_SUPERRES
     assert(av1_superres_unscaled(cm) ||
            !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
     if (cm->allow_screen_content_tools &&
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-#else
-    if (cm->allow_screen_content_tools)
-#endif
       aom_wb_write_bit(wb, cm->allow_intrabc);
 #if CONFIG_CDF_UPDATE_MODE
     aom_wb_write_literal(wb, cm->cdf_update_mode, 2);
@@ -3278,14 +3258,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
-#if CONFIG_HORZONLY_FRAME_SUPERRES
       assert(av1_superres_unscaled(cm) ||
              !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
       if (cm->allow_screen_content_tools &&
           (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-#else
-      if (cm->allow_screen_content_tools)
-#endif
         aom_wb_write_bit(wb, cm->allow_intrabc);
 #if CONFIG_CDF_UPDATE_MODE
       aom_wb_write_literal(wb, cm->cdf_update_mode, 2);

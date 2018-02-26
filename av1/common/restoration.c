@@ -17,9 +17,7 @@
 #include "./aom_scale_rtcd.h"
 #include "aom_mem/aom_mem.h"
 #include "av1/common/onyxc_int.h"
-#if CONFIG_HORZONLY_FRAME_SUPERRES
 #include "av1/common/resize.h"
-#endif
 #include "av1/common/restoration.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
@@ -1595,7 +1593,6 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int mi_size_x = MI_SIZE >> ss_x;
   const int mi_size_y = MI_SIZE >> ss_y;
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   // Write m for the relative mi column or row, D for the superres denominator
   // and N for the superres numerator. If u is the upscaled (called "unscaled"
   // elsewhere) pixel offset then we can write the downscaled pixel offset in
@@ -1610,12 +1607,6 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int mi_to_num_y = mi_size_y;
   const int denom_x = av1_superres_unscaled(cm) ? size : size * SCALE_NUMERATOR;
   const int denom_y = size;
-#else
-  const int mi_to_num_x = mi_size_x;
-  const int mi_to_num_y = mi_size_y;
-  const int denom_x = size;
-  const int denom_y = size;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   const int rnd_x = denom_x - 1;
   const int rnd_y = denom_y - 1;
@@ -1683,7 +1674,6 @@ static void save_deblock_boundary_lines(
 
   int upscaled_width;
   int line_bytes;
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   if (!av1_superres_unscaled(cm)) {
     const int ss_x = is_uv && cm->subsampling_x;
     upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
@@ -1698,16 +1688,13 @@ static void save_deblock_boundary_lines(
                                  boundaries->stripe_boundary_stride, plane,
                                  lines_to_save);
   } else {
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
     upscaled_width = frame->crop_widths[is_uv];
     line_bytes = upscaled_width << use_highbd;
     for (int i = 0; i < lines_to_save; i++) {
       memcpy(bdry_rows + i * bdry_stride, src_rows + i * src_stride,
              line_bytes);
     }
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   }
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   // If we only saved one line, then copy it into the second line buffer
   if (lines_to_save == 1)
     memcpy(bdry_rows + bdry_stride, bdry_rows, line_bytes);
@@ -1732,7 +1719,6 @@ static void save_cdef_boundary_lines(const YV12_BUFFER_CONFIG *frame,
   uint8_t *bdry_rows = bdry_start + RESTORATION_CTX_VERT * stripe * bdry_stride;
   const int src_width = frame->crop_widths[is_uv];
 
-#if CONFIG_HORZONLY_FRAME_SUPERRES
   // At the point where this function is called, we've already applied
   // superres. So we don't need to extend the lines here, we can just
   // pull directly from the topmost row of the upscaled frame.
@@ -1740,10 +1726,6 @@ static void save_cdef_boundary_lines(const YV12_BUFFER_CONFIG *frame,
   const int upscaled_width = av1_superres_unscaled(cm)
                                  ? src_width
                                  : (cm->superres_upscaled_width + ss_x) >> ss_x;
-#else
-  (void)cm;
-  const int upscaled_width = src_width;
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   const int line_bytes = upscaled_width << use_highbd;
   for (int i = 0; i < RESTORATION_CTX_VERT; i++) {
     // Copy the line at 'row' into both context lines. This is because
