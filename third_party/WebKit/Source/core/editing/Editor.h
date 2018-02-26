@@ -98,10 +98,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void RegisterCommandGroup(CompositeEditCommand* command_group_wrapper);
 
-  bool DeleteWithDirection(DeleteDirection,
-                           TextGranularity,
-                           bool kill_ring,
-                           bool is_typing_action);
   void DeleteSelectionWithSmartDelete(
       DeleteMode,
       InputEvent::InputType,
@@ -287,6 +283,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                               DataTransferAccessPolicy,
                               EditorCommandSource,
                               PasteMode = kAllMimeTypes);
+  void RevealSelectionAfterEditingOperation(
+      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded);
 
  private:
   Member<LocalFrame> frame_;
@@ -318,8 +316,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void WriteSelectionToPasteboard();
 
-  void RevealSelectionAfterEditingOperation(
-      const ScrollAlignment& = ScrollAlignment::kAlignCenterIfNeeded);
   void ChangeSelectionAfterCommand(const SelectionInDOMTree&,
                                    const SetSelectionOptions&);
 

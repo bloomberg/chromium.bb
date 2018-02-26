@@ -851,12 +851,73 @@ static bool ExecuteDelete(LocalFrame& frame,
   return false;
 }
 
+static bool DeleteWithDirection(LocalFrame& frame,
+                                DeleteDirection direction,
+                                TextGranularity granularity,
+                                bool kill_ring,
+                                bool is_typing_action) {
+  Editor& editor = frame.GetEditor();
+  if (!editor.CanEdit())
+    return false;
+
+  EditingState editing_state;
+  if (frame.Selection()
+          .ComputeVisibleSelectionInDOMTreeDeprecated()
+          .IsRange()) {
+    if (is_typing_action) {
+      DCHECK(frame.GetDocument());
+      TypingCommand::DeleteKeyPressed(
+          *frame.GetDocument(),
+          editor.CanSmartCopyOrDelete() ? TypingCommand::kSmartDelete : 0,
+          granularity);
+      editor.RevealSelectionAfterEditingOperation();
+    } else {
+      if (kill_ring)
+        editor.AddToKillRing(editor.SelectedRange());
+      editor.DeleteSelectionWithSmartDelete(
+          editor.CanSmartCopyOrDelete() ? DeleteMode::kSmart
+                                        : DeleteMode::kSimple,
+          DeletionInputTypeFromTextGranularity(direction, granularity));
+      // Implicitly calls revealSelectionAfterEditingOperation().
+    }
+  } else {
+    TypingCommand::Options options = 0;
+    if (editor.CanSmartCopyOrDelete())
+      options |= TypingCommand::kSmartDelete;
+    if (kill_ring)
+      options |= TypingCommand::kKillRing;
+    switch (direction) {
+      case DeleteDirection::kForward:
+        DCHECK(frame.GetDocument());
+        TypingCommand::ForwardDeleteKeyPressed(
+            *frame.GetDocument(), &editing_state, options, granularity);
+        if (editing_state.IsAborted())
+          return false;
+        break;
+      case DeleteDirection::kBackward:
+        DCHECK(frame.GetDocument());
+        TypingCommand::DeleteKeyPressed(*frame.GetDocument(), options,
+                                        granularity);
+        break;
+    }
+    editor.RevealSelectionAfterEditingOperation();
+  }
+
+  // FIXME: We should to move this down into deleteKeyPressed.
+  // clear the "start new kill ring sequence" setting, because it was set to
+  // true when the selection was updated by deleting the range
+  if (kill_ring)
+    editor.SetStartNewKillRingSequence(false);
+
+  return true;
+}
+
 static bool ExecuteDeleteBackward(LocalFrame& frame,
                                   Event*,
                                   EditorCommandSource,
                                   const String&) {
-  frame.GetEditor().DeleteWithDirection(
-      DeleteDirection::kBackward, TextGranularity::kCharacter, false, true);
+  DeleteWithDirection(frame, DeleteDirection::kBackward,
+                      TextGranularity::kCharacter, false, true);
   return true;
 }
 
@@ -867,8 +928,8 @@ static bool ExecuteDeleteBackwardByDecomposingPreviousCharacter(
     const String&) {
   DLOG(ERROR) << "DeleteBackwardByDecomposingPreviousCharacter is not "
                  "implemented, doing DeleteBackward instead";
-  frame.GetEditor().DeleteWithDirection(
-      DeleteDirection::kBackward, TextGranularity::kCharacter, false, true);
+  DeleteWithDirection(frame, DeleteDirection::kBackward,
+                      TextGranularity::kCharacter, false, true);
   return true;
 }
 
@@ -876,8 +937,8 @@ static bool ExecuteDeleteForward(LocalFrame& frame,
                                  Event*,
                                  EditorCommandSource,
                                  const String&) {
-  frame.GetEditor().DeleteWithDirection(
-      DeleteDirection::kForward, TextGranularity::kCharacter, false, true);
+  DeleteWithDirection(frame, DeleteDirection::kForward,
+                      TextGranularity::kCharacter, false, true);
   return true;
 }
 
@@ -885,8 +946,8 @@ static bool ExecuteDeleteToBeginningOfLine(LocalFrame& frame,
                                            Event*,
                                            EditorCommandSource,
                                            const String&) {
-  frame.GetEditor().DeleteWithDirection(
-      DeleteDirection::kBackward, TextGranularity::kLineBoundary, true, false);
+  DeleteWithDirection(frame, DeleteDirection::kBackward,
+                      TextGranularity::kLineBoundary, true, false);
   return true;
 }
 
@@ -894,9 +955,8 @@ static bool ExecuteDeleteToBeginningOfParagraph(LocalFrame& frame,
                                                 Event*,
                                                 EditorCommandSource,
                                                 const String&) {
-  frame.GetEditor().DeleteWithDirection(DeleteDirection::kBackward,
-                                        TextGranularity::kParagraphBoundary,
-                                        true, false);
+  DeleteWithDirection(frame, DeleteDirection::kBackward,
+                      TextGranularity::kParagraphBoundary, true, false);
   return true;
 }
 
@@ -907,8 +967,8 @@ static bool ExecuteDeleteToEndOfLine(LocalFrame& frame,
   // Despite its name, this command should delete the newline at the end of a
   // paragraph if you are at the end of a paragraph (like
   // DeleteToEndOfParagraph).
-  frame.GetEditor().DeleteWithDirection(
-      DeleteDirection::kForward, TextGranularity::kLineBoundary, true, false);
+  DeleteWithDirection(frame, DeleteDirection::kForward,
+                      TextGranularity::kLineBoundary, true, false);
   return true;
 }
 
@@ -918,9 +978,8 @@ static bool ExecuteDeleteToEndOfParagraph(LocalFrame& frame,
                                           const String&) {
   // Despite its name, this command should delete the newline at the end of
   // a paragraph if you are at the end of a paragraph.
-  frame.GetEditor().DeleteWithDirection(DeleteDirection::kForward,
-                                        TextGranularity::kParagraphBoundary,
-                                        true, false);
+  DeleteWithDirection(frame, DeleteDirection::kForward,
+                      TextGranularity::kParagraphBoundary, true, false);
   return true;
 }
 
@@ -951,8 +1010,8 @@ static bool ExecuteDeleteWordBackward(LocalFrame& frame,
                                       Event*,
                                       EditorCommandSource,
                                       const String&) {
-  frame.GetEditor().DeleteWithDirection(DeleteDirection::kBackward,
-                                        TextGranularity::kWord, true, false);
+  DeleteWithDirection(frame, DeleteDirection::kBackward, TextGranularity::kWord,
+                      true, false);
   return true;
 }
 
@@ -960,8 +1019,8 @@ static bool ExecuteDeleteWordForward(LocalFrame& frame,
                                      Event*,
                                      EditorCommandSource,
                                      const String&) {
-  frame.GetEditor().DeleteWithDirection(DeleteDirection::kForward,
-                                        TextGranularity::kWord, true, false);
+  DeleteWithDirection(frame, DeleteDirection::kForward, TextGranularity::kWord,
+                      true, false);
   return true;
 }
 
@@ -1035,8 +1094,8 @@ static bool ExecuteForwardDelete(LocalFrame& frame,
   EditingState editing_state;
   switch (source) {
     case kCommandFromMenuOrKeyBinding:
-      frame.GetEditor().DeleteWithDirection(
-          DeleteDirection::kForward, TextGranularity::kCharacter, false, true);
+      DeleteWithDirection(frame, DeleteDirection::kForward,
+                          TextGranularity::kCharacter, false, true);
       return true;
     case kCommandFromDOM:
       // Doesn't scroll to make the selection visible, or modify the kill ring.
@@ -3278,10 +3337,10 @@ bool Editor::ExecuteCommand(const String& command_name) {
   // support.
   DCHECK(GetFrame().GetDocument()->IsActive());
   if (command_name == "DeleteToEndOfParagraph") {
-    if (!DeleteWithDirection(DeleteDirection::kForward,
+    if (!DeleteWithDirection(GetFrame(), DeleteDirection::kForward,
                              TextGranularity::kParagraphBoundary, true,
                              false)) {
-      DeleteWithDirection(DeleteDirection::kForward,
+      DeleteWithDirection(GetFrame(), DeleteDirection::kForward,
                           TextGranularity::kCharacter, true, false);
     }
     return true;
