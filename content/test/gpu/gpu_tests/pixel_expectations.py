@@ -122,3 +122,6 @@ class PixelExpectations(GpuTestExpectations):
                bug=809868)
     self.Flaky('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
                ['android'], bug=810006)
+
+    self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=815045)
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=815045)
