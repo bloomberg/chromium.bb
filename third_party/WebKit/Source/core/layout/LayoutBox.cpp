@@ -1708,6 +1708,9 @@ static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
   if (child_style.Visibility() != EVisibility::kVisible ||
       child_style.ShapeOutside())
     return false;
+  // CSS clip is not considered in foreground or background opaqueness checks.
+  if (child_box.HasClip())
+    return false;
   if (child_box.Size().IsZero())
     return false;
   if (PaintLayer* child_layer = child_box.Layer()) {

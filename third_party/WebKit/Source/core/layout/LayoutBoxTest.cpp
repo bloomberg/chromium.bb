@@ -30,6 +30,74 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
   ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
 }
 
+TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        background-color: green;
+      }
+      #child {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: blue;
+        /* clip the 200x200 box to a centered, 100x100 square. */
+        clip: rect(50px, 150px, 150px, 50px);
+      }
+    </style>
+    <div id="parent">
+      <div id="child"></div>
+    </div>
+  )HTML");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
+
+  auto* parent = GetLayoutObjectByElementId("parent");
+  EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
+}
+
+TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        background-color: green;
+      }
+      #child {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        /* clip the 200x200 box to a centered, 100x100 square. */
+        clip: rect(50px, 150px, 150px, 50px);
+      }
+      #grandchild {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: blue;
+      }
+    </style>
+    <div id="parent">
+      <div id="child">
+        <div id="grandchild"></div>
+      </div>
+    </div>
+  )HTML");
+  auto* grandchild = GetLayoutObjectByElementId("grandchild");
+  EXPECT_FALSE(grandchild->BackgroundIsKnownToBeObscured());
+
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
+
+  auto* parent = GetLayoutObjectByElementId("parent");
+  EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
+}
+
 TEST_F(LayoutBoxTest, BackgroundRect) {
   SetBodyInnerHTML(R"HTML(
     <style>div { position: absolute; width: 100px; height: 100px; padding:
