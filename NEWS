@@ -25,6 +25,8 @@ issues]].
   reason it is not suitable for inclusion in other tables. A separate
   table ~IPA-unicode-range.uti~ has been added for this
   purpose. Thanks to Ludovic Oger.
+- The Mongolian table has been improved and there is now also support
+  for grade 2 thanks to Tsengel Maidar.
 
 ** Other changes
 *** Improved documentation
@@ -52,8 +54,9 @@ issues]].
 ** New, renamed or removed tables
 *** New
 - IPA-unicode-range.uti
+- mn-MN-g2.ctb
 *** Renamed
-None
+- mn-MN.utb -> mn-MN-g1.utb
 *** Removed
 None
 
