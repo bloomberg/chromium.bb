@@ -1888,9 +1888,13 @@ static bool CanSmartReplaceWithPasteboard(LocalFrame& frame,
 static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
                                            Pasteboard* pasteboard,
                                            EditorCommandSource source) {
-  const String text = pasteboard->PlainText();
-  frame.GetEditor().PasteAsPlainText(
-      text, CanSmartReplaceWithPasteboard(frame, pasteboard), source);
+  Element* const target =
+      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  if (!target)
+    return;
+  target->DispatchEvent(TextEvent::CreateForPlainTextPaste(
+      frame.DomWindow(), pasteboard->PlainText(),
+      CanSmartReplaceWithPasteboard(frame, pasteboard)));
 }
 
 static bool DispatchPasteEvent(LocalFrame& frame,

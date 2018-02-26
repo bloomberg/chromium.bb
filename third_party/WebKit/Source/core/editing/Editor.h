@@ -206,8 +206,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void AddToKillRing(const EphemeralRange&);
 
-  void PasteAsPlainText(const String&, bool smart_replace, EditorCommandSource);
-
   Element* FindEventTargetFrom(const VisibleSelection&) const;
   Element* FindEventTargetForClipboardEvent(EditorCommandSource) const;
 
