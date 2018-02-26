@@ -250,11 +250,6 @@ bool ZeroCopyRasterBufferProvider::IsResourceSwizzleRequired(
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
 }
 
-bool ZeroCopyRasterBufferProvider::IsResourcePremultiplied(
-    bool must_support_alpha) const {
-  return true;
-}
-
 bool ZeroCopyRasterBufferProvider::CanPartialRasterIntoProvidedResource()
     const {
   return false;

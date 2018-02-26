@@ -23,7 +23,6 @@ void ContentDrawQuadBase::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::RectF& tex_coord_rect,
                                  const gfx::Size& texture_size,
                                  bool swizzle_contents,
-                                 bool is_premultiplied,
                                  bool nearest_neighbor,
                                  bool force_anti_aliasing_off) {
   DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
@@ -31,7 +30,6 @@ void ContentDrawQuadBase::SetNew(const SharedQuadState* shared_quad_state,
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
-  this->is_premultiplied = is_premultiplied;
   this->nearest_neighbor = nearest_neighbor;
   this->force_anti_aliasing_off = force_anti_aliasing_off;
 }
@@ -44,7 +42,6 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
                                  const gfx::RectF& tex_coord_rect,
                                  const gfx::Size& texture_size,
                                  bool swizzle_contents,
-                                 bool is_premultiplied,
                                  bool nearest_neighbor,
                                  bool force_anti_aliasing_off) {
   DrawQuad::SetAll(shared_quad_state, material, rect, visible_rect,
@@ -52,7 +49,6 @@ void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
   this->tex_coord_rect = tex_coord_rect;
   this->texture_size = texture_size;
   this->swizzle_contents = swizzle_contents;
-  this->is_premultiplied = is_premultiplied;
   this->nearest_neighbor = nearest_neighbor;
   this->force_anti_aliasing_off = force_anti_aliasing_off;
 }
