@@ -119,11 +119,12 @@ class LoggingCanvas : public InterceptingCanvasBase {
   std::unique_ptr<JSONArray> log_;
 };
 
-#ifndef NDEBUG
 PLATFORM_EXPORT std::unique_ptr<JSONArray> RecordAsJSON(const PaintRecord&);
 PLATFORM_EXPORT String RecordAsDebugString(const PaintRecord&);
 PLATFORM_EXPORT void ShowPaintRecord(const PaintRecord&);
-#endif
+PLATFORM_EXPORT std::unique_ptr<JSONArray> SkPictureAsJSON(const SkPicture&);
+PLATFORM_EXPORT String SkPictureAsDebugString(const SkPicture&);
+PLATFORM_EXPORT void ShowSkPicture(const SkPicture&);
 
 }  // namespace blink
 

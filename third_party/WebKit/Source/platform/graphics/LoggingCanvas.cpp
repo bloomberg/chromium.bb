@@ -917,7 +917,6 @@ std::unique_ptr<JSONArray> LoggingCanvas::Log() {
   return JSONArray::From(log_->Clone());
 }
 
-#ifndef NDEBUG
 std::unique_ptr<JSONArray> RecordAsJSON(const PaintRecord& record) {
   LoggingCanvas canvas;
   record.Playback(&canvas);
@@ -931,6 +930,19 @@ String RecordAsDebugString(const PaintRecord& record) {
 void ShowPaintRecord(const PaintRecord& record) {
   DLOG(INFO) << RecordAsDebugString(record).Utf8().data();
 }
-#endif
+
+std::unique_ptr<JSONArray> SkPictureAsJSON(const SkPicture& picture) {
+  LoggingCanvas canvas;
+  picture.playback(&canvas);
+  return canvas.Log();
+}
+
+String SkPictureAsDebugString(const SkPicture& picture) {
+  return SkPictureAsJSON(picture)->ToPrettyJSONString();
+}
+
+void ShowSkPicture(const SkPicture& picture) {
+  DLOG(INFO) << SkPictureAsDebugString(picture).Utf8().data();
+}
 
 }  // namespace blink
