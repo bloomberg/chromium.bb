@@ -76,7 +76,7 @@ enum EffectiveConnectionType {
 
     // Animation testing.
     [RaisesException] void pauseAnimations(double pauseTime);
-    bool isCompositedAnimation(Animation animation);
+    boolean isCompositedAnimation(Animation animation);
     void disableCompositedAnimation(Animation animation);
     void disableCSSAdditiveAnimations();
 
@@ -182,7 +182,7 @@ enum EffectiveConnectionType {
     [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);
     [RaisesException] void replaceMisspelled(Document document, DOMString replacement);
 
-    bool canHyphenate(DOMString locale);
+    boolean canHyphenate(DOMString locale);
     void setMockHyphenation(DOMString locale);
 
     boolean isOverwriteModeEnabled(Document document);
@@ -242,7 +242,7 @@ enum EffectiveConnectionType {
     void setMediaElementNetworkState(HTMLMediaElement element, long state);
     void setPersistent(HTMLVideoElement video, boolean persistent);
     void forceStaleStateForMediaElement(HTMLMediaElement mediaElement);
-    bool isMediaElementSuspended(HTMLMediaElement mediaElement);
+    boolean isMediaElementSuspended(HTMLMediaElement mediaElement);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);
@@ -349,12 +349,12 @@ enum EffectiveConnectionType {
     DOMString selectedTextForClipboard();
 
     void setVisualViewportOffset(long x, long y);
-    int visualViewportHeight();
-    int visualViewportWidth();
+    long visualViewportHeight();
+    long visualViewportWidth();
     double visualViewportScrollX();
     double visualViewportScrollY();
 
-    bool magnifyScaleAroundAnchor(float offset, float x, float y);
+    boolean magnifyScaleAroundAnchor(float offset, float x, float y);
 
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
@@ -382,7 +382,7 @@ enum EffectiveConnectionType {
 
     // Returns whether the scrollbar was able to be shown or hidden; not all platforms
     // support overlay scrollbars.
-    bool setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
+    boolean setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
 

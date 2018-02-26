@@ -6,5 +6,5 @@
 
 dictionary MIDIOptions {
     boolean sysex;
-    // TODO(crbug.com/502127): Add bool software to follow the latest spec.
+    // TODO(crbug.com/502127): Add boolean software to follow the latest spec.
 };

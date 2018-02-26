@@ -17,5 +17,5 @@
 
     attribute EventHandler onprogress;
 
-    [CallWith=ScriptState] Promise<bool> abort();
+    [CallWith=ScriptState] Promise<boolean> abort();
 };
