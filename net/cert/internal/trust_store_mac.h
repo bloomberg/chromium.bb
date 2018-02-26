@@ -17,7 +17,6 @@ namespace net {
 
 // TrustStoreMac is an implementation of TrustStore which uses macOS keychain
 // to find trust anchors for path building.
-// TODO(mattm): handle distrust of intermediates.
 class NET_EXPORT TrustStoreMac : public TrustStore {
  public:
   // Creates a TrustStoreMac which will find anchors that are trusted for
