@@ -1276,7 +1276,11 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
                                      id<FormSuggestionProvider> provider) {
-                   EXPECT_EQ(2u, [suggestions count]);
+                   NSMutableArray* suggestion_values = [NSMutableArray array];
+                   for (FormSuggestion* suggestion in suggestions)
+                     [suggestion_values addObject:suggestion.value];
+                   EXPECT_NSEQ((@[ @"abc", @"Show All\u2026" ]),
+                               suggestion_values);
                    block_was_called = YES;
                  }];
     EXPECT_TRUE(block_was_called);
