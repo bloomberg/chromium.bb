@@ -28,7 +28,7 @@ FilteredComputedStylePropertyMap::FilteredComputedStylePropertyMap(
   }
 }
 
-int FilteredComputedStylePropertyMap::size() {
+unsigned int FilteredComputedStylePropertyMap::size() {
   return native_properties_.size() + custom_properties_.size();
 }
 

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-int InlineStylePropertyMap::size() {
+unsigned int InlineStylePropertyMap::size() {
   const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
   return inline_style ? inline_style->PropertyCount() : 0;
 }
