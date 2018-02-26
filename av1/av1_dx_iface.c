@@ -177,37 +177,44 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
   if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
 
-  si->is_kf = 0;
-  si->w = si->h = 0;
+  si->w = 0;
+  si->is_kf = 1;
+  intra_only_flag = 1;
+  si->h = 1;
 
-  {
-    si->is_kf = 1;
-    intra_only_flag = 1;
-    si->h = 1;
+#if CONFIG_OBU_SIZING
+  size_t length_field_size = 1;
+  for (size_t i = 0; i < sizeof(uint64_t) && (data[i] & 0x80); ++i) {
+    ++length_field_size;
+  }
+  struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
+                                    NULL, NULL };
+#else
+  struct aom_read_bit_buffer rb = { data + PRE_OBU_SIZE_BYTES, data + data_sz,
+                                    0, NULL, NULL };
+  mem_get_le32(data);
+#endif
 
-    struct aom_read_bit_buffer rb = { data + PRE_OBU_SIZE_BYTES, data + data_sz,
-                                      0, NULL, NULL };
-    mem_get_le32(data);
-    aom_rb_read_literal(&rb, 8);  // obu_header
-    av1_read_profile(&rb);        // profile
-    aom_rb_read_literal(&rb, 4);  // level
+  aom_rb_read_literal(&rb, 8);  // obu_header
+  av1_read_profile(&rb);        // profile
+  aom_rb_read_literal(&rb, 4);  // level
 #if CONFIG_SCALABILITY
-    int i;
-    si->enhancement_layers_cnt = aom_rb_read_literal(&rb, 2);
-    for (i = 1; i <= (int)si->enhancement_layers_cnt; i++) {
-      aom_rb_read_literal(&rb, 4);  // level for each enhancement layer
-    }
+  int i;
+  si->enhancement_layers_cnt = aom_rb_read_literal(&rb, 2);
+  for (i = 1; i <= (int)si->enhancement_layers_cnt; i++) {
+    aom_rb_read_literal(&rb, 4);  // level for each enhancement layer
+  }
 #endif  // CONFIG_SCALABILITY
 
 #if CONFIG_FRAME_SIZE
-    int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
-    int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
-    int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
-    int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
-    si->w = max_frame_width;
-    si->h = max_frame_height;
+  int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
+  int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
+  int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
+  int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
+  si->w = max_frame_width;
+  si->h = max_frame_height;
 #endif  // CONFIG_FRAME_SIZE
-  }
+
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;
 }
