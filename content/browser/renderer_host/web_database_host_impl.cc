@@ -20,6 +20,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "url/origin.h"
 
 using storage::DatabaseUtil;
 using storage::VfsBackend;
@@ -262,11 +263,10 @@ void WebDatabaseHostImpl::Opened(const url::Origin& origin,
     return;
   }
 
-  GURL origin_url(origin.Serialize());
-  UMA_HISTOGRAM_BOOLEAN("websql.OpenDatabase", IsOriginSecure(origin_url));
+  UMA_HISTOGRAM_BOOLEAN("websql.OpenDatabase", IsOriginSecure(origin.GetURL()));
 
   int64_t database_size = 0;
-  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin_url));
+  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   db_tracker_->DatabaseOpened(origin_identifier, database_name,
                               database_description, estimated_size,
                               &database_size);
@@ -284,8 +284,7 @@ void WebDatabaseHostImpl::Modified(const url::Origin& origin,
     return;
   }
 
-  std::string origin_identifier(
-      storage::GetIdentifierFromOrigin(origin.GetURL()));
+  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   if (!database_connections_.IsDatabaseOpened(origin_identifier,
                                               database_name)) {
     mojo::ReportBadMessage("Database not opened on modify");
@@ -303,8 +302,7 @@ void WebDatabaseHostImpl::Closed(const url::Origin& origin,
     return;
   }
 
-  std::string origin_identifier(
-      storage::GetIdentifierFromOrigin(origin.GetURL()));
+  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin));
   if (!database_connections_.IsDatabaseOpened(origin_identifier,
                                               database_name)) {
     mojo::ReportBadMessage("Database not opened on close");
@@ -323,8 +321,8 @@ void WebDatabaseHostImpl::HandleSqliteError(const url::Origin& origin,
     return;
   }
 
-  db_tracker_->HandleSqliteError(
-      storage::GetIdentifierFromOrigin(origin.GetURL()), database_name, error);
+  db_tracker_->HandleSqliteError(storage::GetIdentifierFromOrigin(origin),
+                                 database_name, error);
 }
 
 void WebDatabaseHostImpl::OnDatabaseSizeChanged(
@@ -337,8 +335,8 @@ void WebDatabaseHostImpl::OnDatabaseSizeChanged(
   }
 
   GetWebDatabase().UpdateSize(
-      url::Origin::Create(storage::GetOriginFromIdentifier(origin_identifier)),
-      database_name, database_size);
+      storage::GetOriginFromIdentifier(origin_identifier), database_name,
+      database_size);
 }
 
 void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
@@ -347,8 +345,7 @@ void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   GetWebDatabase().CloseImmediately(
-      url::Origin::Create(storage::GetOriginFromIdentifier(origin_identifier)),
-      database_name);
+      storage::GetOriginFromIdentifier(origin_identifier), database_name);
 }
 
 blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {

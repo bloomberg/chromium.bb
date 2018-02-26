@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::DatabaseIdentifier;
 
@@ -41,10 +42,17 @@ TEST(DatabaseIdentifierTest, CreateIdentifierFromOrigin) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    GURL origin(cases[i].origin);
-    DatabaseIdentifier identifier =
-        DatabaseIdentifier::CreateFromOrigin(origin);
-    EXPECT_EQ(cases[i].expectedIdentifier, identifier.ToString())
+    GURL origin_url(cases[i].origin);
+    url::Origin origin = url::Origin::Create(origin_url);
+
+    DatabaseIdentifier identifier_from_url =
+        DatabaseIdentifier::CreateFromOrigin(origin_url);
+    EXPECT_EQ(cases[i].expectedIdentifier, identifier_from_url.ToString())
+        << "test case " << cases[i].origin;
+
+    DatabaseIdentifier identifier_from_origin =
+        DatabaseIdentifier::CreateFromOrigin(origin_url);
+    EXPECT_EQ(cases[i].expectedIdentifier, identifier_from_origin.ToString())
         << "test case " << cases[i].origin;
   }
 }
@@ -158,16 +166,31 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars) {
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
-    GURL origin("http://" + cases[i].hostname);
-    DatabaseIdentifier identifier =
+    GURL origin_url("http://" + cases[i].hostname);
+    url::Origin origin = url::Origin::Create(origin_url);
+    DatabaseIdentifier identifier_from_url =
+        DatabaseIdentifier::CreateFromOrigin(origin_url);
+    DatabaseIdentifier identifier_from_origin =
         DatabaseIdentifier::CreateFromOrigin(origin);
-    EXPECT_EQ(cases[i].expected, identifier.ToString())
+    EXPECT_EQ(cases[i].expected, identifier_from_url.ToString())
         << "test case " << i << " :\"" << cases[i].hostname << "\"";
+    EXPECT_EQ(cases[i].expected, identifier_from_origin.ToString())
+        << "test case " << i << " :\"" << cases[i].hostname << "\"";
+    EXPECT_EQ(identifier_from_url.ToString(),
+              identifier_from_origin.ToString());
     if (cases[i].shouldRoundTrip) {
-      DatabaseIdentifier parsed_identifier =
-          DatabaseIdentifier::Parse(identifier.ToString());
-      EXPECT_EQ(identifier.ToString(), parsed_identifier.ToString())
+      DatabaseIdentifier parsed_identifier_from_url =
+          DatabaseIdentifier::Parse(identifier_from_url.ToString());
+      EXPECT_EQ(identifier_from_url.ToString(),
+                parsed_identifier_from_url.ToString())
           << "test case " << i << " :\"" << cases[i].hostname << "\"";
+      DatabaseIdentifier parsed_identifier_from_origin =
+          DatabaseIdentifier::Parse(identifier_from_origin.ToString());
+      EXPECT_EQ(identifier_from_origin.ToString(),
+                parsed_identifier_from_origin.ToString())
+          << "test case " << i << " :\"" << cases[i].hostname << "\"";
+      EXPECT_EQ(parsed_identifier_from_url.ToString(),
+                parsed_identifier_from_origin.ToString());
     }
   }
 }
@@ -255,22 +278,31 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
   }
 }
 
-static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
+static GURL GURLToAndFromOriginIdentifier(const GURL& origin_url) {
   std::string id = storage::GetIdentifierFromOrigin(origin_url);
+  return storage::GetOriginURLFromIdentifier(id);
+}
+
+static url::Origin OriginToAndFromOriginIdentifier(const url::Origin& origin) {
+  std::string id = storage::GetIdentifierFromOrigin(origin);
   return storage::GetOriginFromIdentifier(id);
 }
 
 static void TestValidOriginIdentifier(bool expected_result,
                                       const std::string& id) {
-  EXPECT_EQ(expected_result,
-            storage::IsValidOriginIdentifier(id));
+  EXPECT_EQ(expected_result, storage::IsValidOriginIdentifier(id));
 }
 
 TEST(DatabaseIdentifierTest, OriginIdentifiers) {
-  const GURL kFileOrigin(GURL("file:///").GetOrigin());
-  const GURL kHttpOrigin(GURL("http://bar/").GetOrigin());
-  EXPECT_EQ(kFileOrigin, ToAndFromOriginIdentifier(kFileOrigin));
-  EXPECT_EQ(kHttpOrigin, ToAndFromOriginIdentifier(kHttpOrigin));
+  const GURL kFileOriginURL(GURL("file:///").GetOrigin());
+  const GURL kHttpOriginURL(GURL("http://bar/").GetOrigin());
+  const url::Origin kFileOrigin = url::Origin::Create(kFileOriginURL);
+  const url::Origin kHttpOrigin = url::Origin::Create(kHttpOriginURL);
+
+  EXPECT_EQ(kFileOriginURL, GURLToAndFromOriginIdentifier(kFileOriginURL));
+  EXPECT_EQ(kHttpOriginURL, GURLToAndFromOriginIdentifier(kHttpOriginURL));
+  EXPECT_EQ(kFileOrigin, OriginToAndFromOriginIdentifier(kFileOrigin));
+  EXPECT_EQ(kHttpOrigin, OriginToAndFromOriginIdentifier(kHttpOrigin));
 }
 
 TEST(DatabaseIdentifierTest, IsValidOriginIdentifier) {

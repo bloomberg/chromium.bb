@@ -474,8 +474,7 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
 base::FilePath CacheStorageManager::ConstructOriginPath(
     const base::FilePath& root_path,
     const url::Origin& origin) {
-  const std::string identifier =
-      storage::GetIdentifierFromOrigin(origin.GetURL());
+  const std::string identifier = storage::GetIdentifierFromOrigin(origin);
   const std::string origin_hash = base::SHA1HashString(identifier);
   const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));

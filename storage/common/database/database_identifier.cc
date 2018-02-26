@@ -51,13 +51,23 @@ std::string GetIdentifierFromOrigin(const GURL& origin) {
 }
 
 // static
-GURL GetOriginFromIdentifier(const std::string& identifier) {
+std::string GetIdentifierFromOrigin(const url::Origin& origin) {
+  return DatabaseIdentifier::CreateFromOrigin(origin).ToString();
+}
+
+// static
+url::Origin GetOriginFromIdentifier(const std::string& identifier) {
+  return url::Origin::Create(DatabaseIdentifier::Parse(identifier).ToOrigin());
+}
+
+// static
+GURL GetOriginURLFromIdentifier(const std::string& identifier) {
   return DatabaseIdentifier::Parse(identifier).ToOrigin();
 }
 
 // static
 bool IsValidOriginIdentifier(const std::string& identifier) {
-  return GetOriginFromIdentifier(identifier).is_valid();
+  return GetOriginURLFromIdentifier(identifier).is_valid();
 }
 
 static bool SchemeIsUnique(const std::string& scheme) {
@@ -67,6 +77,12 @@ static bool SchemeIsUnique(const std::string& scheme) {
 // static
 const DatabaseIdentifier DatabaseIdentifier::UniqueFileIdentifier() {
   return DatabaseIdentifier("", "", 0, true, true);
+}
+
+// static
+DatabaseIdentifier DatabaseIdentifier::CreateFromOrigin(
+    const url::Origin& origin) {
+  return CreateFromOrigin(origin.GetURL());
 }
 
 // static

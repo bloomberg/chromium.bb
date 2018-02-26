@@ -432,8 +432,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerQuotaIntegration() {
     const url::Origin kOrigin(url::Origin::Create(GURL(kOrigin1Url)));
-    const std::string kOriginId =
-        storage::GetIdentifierFromOrigin(kOrigin.GetURL());
+    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 

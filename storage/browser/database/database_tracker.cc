@@ -118,8 +118,7 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         storage::QuotaClient::kDatabase,
-        url::Origin::Create(
-            storage::GetOriginFromIdentifier(origin_identifier)),
+        storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
@@ -156,8 +155,7 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
         storage::QuotaClient::kDatabase,
-        url::Origin::Create(
-            storage::GetOriginFromIdentifier(origin_identifier)),
+        storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary);
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
@@ -375,8 +373,7 @@ bool DatabaseTracker::DeleteClosedDatabase(
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kDatabase,
-        url::Origin::Create(
-            storage::GetOriginFromIdentifier(origin_identifier)),
+        storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
@@ -436,8 +433,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kDatabase,
-        url::Origin::Create(
-            storage::GetOriginFromIdentifier(origin_identifier)),
+        storage::GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -deleted_size);
   }
 
@@ -634,7 +630,7 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
           storage::QuotaClient::kDatabase,
-          url::Origin::Create(storage::GetOriginFromIdentifier(origin_id)),
+          storage::GetOriginFromIdentifier(origin_id),
           blink::mojom::StorageType::kTemporary, new_size - old_size);
     for (auto& observer : observers_)
       observer.OnDatabaseSizeChanged(origin_id, name, new_size);
@@ -660,11 +656,11 @@ void DatabaseTracker::ScheduleDatabasesForDeletion(
 
   if (!callback.is_null())
     deletion_callbacks_.push_back(std::make_pair(callback, databases));
-  for (DatabaseSet::const_iterator ori = databases.begin();
-       ori != databases.end(); ++ori) {
-    for (std::set<base::string16>::const_iterator db = ori->second.begin();
-         db != ori->second.end(); ++db)
-      ScheduleDatabaseForDeletion(ori->first, *db);
+  for (DatabaseSet::const_iterator origin = databases.begin();
+       origin != databases.end(); ++origin) {
+    for (std::set<base::string16>::const_iterator db = origin->second.begin();
+         db != origin->second.end(); ++db)
+      ScheduleDatabaseForDeletion(origin->first, *db);
   }
 }
 
@@ -702,32 +698,32 @@ int DatabaseTracker::DeleteDataModifiedSince(
   if (!databases_table_->GetAllOriginIdentifiers(&origins_identifiers))
     return net::ERR_FAILED;
   int rv = net::OK;
-  for (std::vector<std::string>::const_iterator ori =
+  for (std::vector<std::string>::const_iterator origin =
            origins_identifiers.begin();
-       ori != origins_identifiers.end(); ++ori) {
+       origin != origins_identifiers.end(); ++origin) {
     if (special_storage_policy_.get() &&
         special_storage_policy_->IsStorageProtected(
-            storage::GetOriginFromIdentifier(*ori))) {
+            storage::GetOriginURLFromIdentifier(*origin))) {
       continue;
     }
 
     std::vector<DatabaseDetails> details;
-    if (!databases_table_->
-            GetAllDatabaseDetailsForOriginIdentifier(*ori, &details))
+    if (!databases_table_->GetAllDatabaseDetailsForOriginIdentifier(*origin,
+                                                                    &details))
       rv = net::ERR_FAILED;
     for (std::vector<DatabaseDetails>::const_iterator db = details.begin();
          db != details.end(); ++db) {
-      base::FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
+      base::FilePath db_file = GetFullDBFilePath(*origin, db->database_name);
       base::File::Info file_info;
       base::GetFileInfo(db_file, &file_info);
       if (file_info.last_modified < cutoff)
         continue;
 
       // Check if the database is opened by any renderer.
-      if (database_connections_.IsDatabaseOpened(*ori, db->database_name))
-        to_be_deleted[*ori].insert(db->database_name);
+      if (database_connections_.IsDatabaseOpened(*origin, db->database_name))
+        to_be_deleted[*origin].insert(db->database_name);
       else
-        DeleteClosedDatabase(*ori, db->database_name);
+        DeleteClosedDatabase(*origin, db->database_name);
     }
   }
 
@@ -851,7 +847,7 @@ void DatabaseTracker::ClearSessionOnlyOrigins() {
   for (std::vector<std::string>::iterator origin =
            origin_identifiers.begin();
        origin != origin_identifiers.end(); ++origin) {
-    GURL origin_url = storage::GetOriginFromIdentifier(*origin);
+    GURL origin_url = storage::GetOriginURLFromIdentifier(*origin);
     if (!special_storage_policy_->IsStorageSessionOnly(origin_url))
       continue;
     if (special_storage_policy_->IsStorageProtected(origin_url))

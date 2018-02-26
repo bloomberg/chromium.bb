@@ -229,7 +229,7 @@ class ObfuscatedOriginEnumerator
       origins_.pop_back();
     }
     current_ = record;
-    return storage::GetOriginFromIdentifier(record.origin);
+    return storage::GetOriginURLFromIdentifier(record.origin);
   }
 
   // Returns the current origin's information.
@@ -952,7 +952,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   std::string origin_string = database.GetPrimaryOrigin();
   if (origin_string.empty() || !database.HasOriginPath(origin_string))
     return;
-  const GURL origin = storage::GetOriginFromIdentifier(origin_string);
+  const GURL origin = storage::GetOriginURLFromIdentifier(origin_string);
 
   // Prepopulate the directory database(s) if and only if this instance
   // has primary origin and the directory database is already there.

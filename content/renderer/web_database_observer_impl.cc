@@ -56,11 +56,6 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
     } \
   } while (0)
 
-// TODO(jsbell): Replace with use of url::Origin end-to-end.
-// https://crbug.com/591482
-std::string GetIdentifierFromOrigin(const WebSecurityOrigin& origin) {
-  return storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin));
-}
 
 }  // namespace
 
@@ -79,7 +74,7 @@ void WebDatabaseObserverImpl::DatabaseOpened(
     const WebString& database_name,
     const WebString& database_display_name,
     unsigned long estimated_size) {
-  open_connections_->AddOpenConnection(GetIdentifierFromOrigin(origin),
+  open_connections_->AddOpenConnection(storage::GetIdentifierFromOrigin(origin),
                                        database_name.Utf16());
   GetWebDatabaseHost().Opened(origin, database_name.Utf16(),
                               database_display_name.Utf16(), estimated_size);
@@ -94,8 +89,8 @@ void WebDatabaseObserverImpl::DatabaseClosed(const WebSecurityOrigin& origin,
                                              const WebString& database_name) {
   DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
   GetWebDatabaseHost().Closed(origin, database_name.Utf16());
-  open_connections_->RemoveOpenConnection(GetIdentifierFromOrigin(origin),
-                                          database_name.Utf16());
+  open_connections_->RemoveOpenConnection(
+      storage::GetIdentifierFromOrigin(origin), database_name.Utf16());
 }
 
 void WebDatabaseObserverImpl::ReportOpenDatabaseResult(
