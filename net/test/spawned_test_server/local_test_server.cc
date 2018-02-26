@@ -123,10 +123,11 @@ bool LocalTestServer::Stop() {
     return true;
 
   // First check if the process has already terminated.
-  int exit_code;
-  bool ret = process_.WaitForExitWithTimeout(base::TimeDelta(), &exit_code);
-  if (!ret)
+  bool ret = process_.WaitForExitWithTimeout(base::TimeDelta(), nullptr);
+  if (!ret) {
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
     ret = process_.Terminate(1, true);
+  }
 
   if (ret)
     process_.Close();

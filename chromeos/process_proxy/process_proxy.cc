@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -148,7 +149,8 @@ void ProcessProxy::Close() {
   callback_.Reset();
   callback_runner_ = NULL;
 
-  process_->Terminate(0, true /* wait */);
+  process_.Terminate(0, /* wait */ false);
+  base::EnsureProcessTerminated(std::move(process_));
 
   StopWatching();
   CloseFdPair(pt_pair_);
@@ -240,12 +242,12 @@ int ProcessProxy::LaunchProcess(const base::CommandLine& cmdline,
   options.environ["CROS_USER_ID_HASH"] = user_id_hash;
 
   // Launch the process.
-  process_.reset(new base::Process(base::LaunchProcess(cmdline, options)));
+  process_ = base::LaunchProcess(cmdline, options);
 
   // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
   // Open vends pid_t* so ownership is quite vague anyway, and Process::Close
   // doesn't do much in POSIX.
-  return process_->IsValid() ? process_->Pid() : -1;
+  return process_.IsValid() ? process_.Pid() : -1;
 }
 
 void ProcessProxy::CloseFdPair(int* pipe) {

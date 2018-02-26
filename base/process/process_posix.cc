@@ -92,8 +92,8 @@ bool WaitpidWithTimeout(base::ProcessHandle handle,
 // Using kqueue on Mac so that we can wait on non-child processes.
 // We can't use kqueues on child processes because we need to reap
 // our own children using wait.
-static bool WaitForSingleNonChildProcess(base::ProcessHandle handle,
-                                         base::TimeDelta wait) {
+bool WaitForSingleNonChildProcess(base::ProcessHandle handle,
+                                  base::TimeDelta wait) {
   DCHECK_GT(handle, 0);
 
   base::ScopedFD kq(kqueue());
@@ -311,47 +311,20 @@ bool Process::Terminate(int exit_code, bool wait) const {
   DCHECK(IsValid());
   CHECK_GT(process_, 0);
 
-  bool result = kill(process_, SIGTERM) == 0;
-  if (result && wait) {
-    int tries = 60;
-    unsigned sleep_ms = 4;
+  bool did_terminate = kill(process_, SIGTERM) == 0;
 
-    // The process may not end immediately due to pending I/O
-    bool exited = false;
-    while (tries-- > 0) {
-      pid_t pid = HANDLE_EINTR(waitpid(process_, nullptr, WNOHANG));
-      if (pid == process_) {
-        exited = true;
-        break;
-      }
-      if (pid == -1) {
-        if (errno == ECHILD) {
-          // The wait may fail with ECHILD if another process also waited for
-          // the same pid, causing the process state to get cleaned up.
-          exited = true;
-          break;
-        }
-        DPLOG(ERROR) << "Error waiting for process " << process_;
-      }
-
-      usleep(sleep_ms * 1000);
-      const unsigned kMaxSleepMs = 1000;
-      if (sleep_ms < kMaxSleepMs)
-        sleep_ms *= 2;
-    }
-
-    // If we're waiting and the child hasn't died by now, force it
-    // with a SIGKILL.
-    if (!exited)
-      result = kill(process_, SIGKILL) == 0;
+  if (wait && did_terminate) {
+    if (WaitForExitWithTimeout(TimeDelta::FromSeconds(60), nullptr))
+      return true;
+    did_terminate = kill(process_, SIGKILL) == 0;
+    if (did_terminate)
+      return WaitForExit(nullptr);
   }
 
-  if (result)
-    Exited(exit_code);
-  else
+  if (!did_terminate)
     DPLOG(ERROR) << "Unable to terminate process " << process_;
 
-  return result;
+  return did_terminate;
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
