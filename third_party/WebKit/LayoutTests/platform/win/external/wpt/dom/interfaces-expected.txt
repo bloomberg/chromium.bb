@@ -381,10 +381,10 @@ PASS Document interface: operation getElementsByTagNameNS(DOMString, DOMString)
 PASS Unscopable handled correctly for getElementsByTagNameNS(DOMString, DOMString) on Document
 PASS Document interface: operation getElementsByClassName(DOMString)
 PASS Unscopable handled correctly for getElementsByClassName(DOMString) on Document
-PASS Document interface: operation createElement(DOMString, ElementCreationOptions)
-PASS Unscopable handled correctly for createElement(DOMString, ElementCreationOptions) on Document
-PASS Document interface: operation createElementNS(DOMString, DOMString, ElementCreationOptions)
-PASS Unscopable handled correctly for createElementNS(DOMString, DOMString, ElementCreationOptions) on Document
+PASS Document interface: operation createElement(DOMString, [object Object],[object Object])
+PASS Unscopable handled correctly for createElement(DOMString, [object Object],[object Object]) on Document
+PASS Document interface: operation createElementNS(DOMString, DOMString, [object Object],[object Object])
+PASS Unscopable handled correctly for createElementNS(DOMString, DOMString, [object Object],[object Object]) on Document
 PASS Document interface: operation createDocumentFragment()
 PASS Unscopable handled correctly for createDocumentFragment() on Document
 PASS Document interface: operation createTextNode(DOMString)
@@ -448,10 +448,10 @@ PASS Document interface: new Document() must inherit property "getElementsByTagN
 PASS Document interface: calling getElementsByTagNameNS(DOMString, DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "getElementsByClassName(DOMString)" with the proper type
 PASS Document interface: calling getElementsByClassName(DOMString) on new Document() with too few arguments must throw TypeError
-PASS Document interface: new Document() must inherit property "createElement(DOMString, ElementCreationOptions)" with the proper type
-PASS Document interface: calling createElement(DOMString, ElementCreationOptions) on new Document() with too few arguments must throw TypeError
-PASS Document interface: new Document() must inherit property "createElementNS(DOMString, DOMString, ElementCreationOptions)" with the proper type
-PASS Document interface: calling createElementNS(DOMString, DOMString, ElementCreationOptions) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "createElement(DOMString, [object Object],[object Object])" with the proper type
+PASS Document interface: calling createElement(DOMString, [object Object],[object Object]) on new Document() with too few arguments must throw TypeError
+PASS Document interface: new Document() must inherit property "createElementNS(DOMString, DOMString, [object Object],[object Object])" with the proper type
+PASS Document interface: calling createElementNS(DOMString, DOMString, [object Object],[object Object]) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "createDocumentFragment()" with the proper type
 PASS Document interface: new Document() must inherit property "createTextNode(DOMString)" with the proper type
 PASS Document interface: calling createTextNode(DOMString) on new Document() with too few arguments must throw TypeError
@@ -581,10 +581,10 @@ PASS Document interface: xmlDoc must inherit property "getElementsByTagNameNS(DO
 PASS Document interface: calling getElementsByTagNameNS(DOMString, DOMString) on xmlDoc with too few arguments must throw TypeError
 PASS Document interface: xmlDoc must inherit property "getElementsByClassName(DOMString)" with the proper type
 PASS Document interface: calling getElementsByClassName(DOMString) on xmlDoc with too few arguments must throw TypeError
-PASS Document interface: xmlDoc must inherit property "createElement(DOMString, ElementCreationOptions)" with the proper type
-PASS Document interface: calling createElement(DOMString, ElementCreationOptions) on xmlDoc with too few arguments must throw TypeError
-PASS Document interface: xmlDoc must inherit property "createElementNS(DOMString, DOMString, ElementCreationOptions)" with the proper type
-PASS Document interface: calling createElementNS(DOMString, DOMString, ElementCreationOptions) on xmlDoc with too few arguments must throw TypeError
+PASS Document interface: xmlDoc must inherit property "createElement(DOMString, [object Object],[object Object])" with the proper type
+PASS Document interface: calling createElement(DOMString, [object Object],[object Object]) on xmlDoc with too few arguments must throw TypeError
+PASS Document interface: xmlDoc must inherit property "createElementNS(DOMString, DOMString, [object Object],[object Object])" with the proper type
+PASS Document interface: calling createElementNS(DOMString, DOMString, [object Object],[object Object]) on xmlDoc with too few arguments must throw TypeError
 PASS Document interface: xmlDoc must inherit property "createDocumentFragment()" with the proper type
 PASS Document interface: xmlDoc must inherit property "createTextNode(DOMString)" with the proper type
 PASS Document interface: calling createTextNode(DOMString) on xmlDoc with too few arguments must throw TypeError
