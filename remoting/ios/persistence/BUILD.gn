@@ -29,6 +29,8 @@ source_set("persistence") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_keychain.cc",
+    "fake_keychain.h",
     "mock_keychain.cc",
     "mock_keychain.h",
   ]
