@@ -56,13 +56,13 @@ NotificationActivator::~NotificationActivator() = default;
 // 3) SAME_INSTANCE : Chrome is running, and it _is_ the same instance that sent
 //    the toast.
 //
-// Chrome could attach an activatation event handler to the toast so that
-// Windows can call it directly to handle the activation. However, Windows makes
-// this function call only in case SAME_INSTANCE. For the other two cases,
-// Chrome needs to handle the activation on its own. Since there is no way to
+// Chrome could attach an activation event handler to the toast so that Windows
+// can call it directly to handle the activation. However, Windows makes this
+// function call only in case SAME_INSTANCE. For the other two cases, Chrome
+// needs to handle the activation on its own. Since there is no way to
 // differentiate cases SAME_INSTANCE and NEW_INSTANCE in this
-// notification_helper process,  Chrome doesn't attach an activatation event
-// handler to the teast and handles all three cases through the command line.
+// notification_helper process, Chrome doesn't attach an activation event
+// handler to the toast and handles all three cases through the command line.
 HRESULT NotificationActivator::Activate(
     LPCWSTR app_user_model_id,
     LPCWSTR invoked_args,
