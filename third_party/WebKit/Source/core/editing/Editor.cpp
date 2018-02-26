@@ -411,17 +411,6 @@ void Editor::PasteAsPlainText(const String& pasting_text,
       GetFrame().DomWindow(), pasting_text, smart_replace));
 }
 
-void Editor::PasteAsFragment(DocumentFragment* pasting_fragment,
-                             bool smart_replace,
-                             bool match_style,
-                             EditorCommandSource source) {
-  Element* target = FindEventTargetForClipboardEvent(source);
-  if (!target)
-    return;
-  target->DispatchEvent(TextEvent::CreateForFragmentPaste(
-      GetFrame().DomWindow(), pasting_fragment, smart_replace, match_style));
-}
-
 bool Editor::DispatchCopyEvent(EditorCommandSource source) {
   // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

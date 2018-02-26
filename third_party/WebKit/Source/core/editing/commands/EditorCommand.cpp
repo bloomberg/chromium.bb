@@ -60,6 +60,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/events/TextEvent.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -1840,6 +1841,19 @@ static bool DispatchPasteEvent(LocalFrame& frame,
       EventTypeNames::paste, kDataTransferReadable, source, paste_mode);
 }
 
+static void PasteAsFragment(LocalFrame& frame,
+                            DocumentFragment* pasting_fragment,
+                            bool smart_replace,
+                            bool match_style,
+                            EditorCommandSource source) {
+  Element* const target =
+      frame.GetEditor().FindEventTargetForClipboardEvent(source);
+  if (!target)
+    return;
+  target->DispatchEvent(TextEvent::CreateForFragmentPaste(
+      frame.DomWindow(), pasting_fragment, smart_replace, match_style));
+}
+
 static void PasteWithPasteboard(LocalFrame& frame,
                                 Pasteboard* pasteboard,
                                 EditorCommandSource source) {
@@ -1879,9 +1893,9 @@ static void PasteWithPasteboard(LocalFrame& frame,
   if (!fragment)
     return;
 
-  frame.GetEditor().PasteAsFragment(
-      fragment, CanSmartReplaceWithPasteboard(frame, pasteboard),
-      chose_plain_text, source);
+  PasteAsFragment(frame, fragment,
+                  CanSmartReplaceWithPasteboard(frame, pasteboard),
+                  chose_plain_text, source);
 }
 
 static void Paste(LocalFrame& frame, EditorCommandSource source) {
