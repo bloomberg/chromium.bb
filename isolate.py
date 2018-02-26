@@ -1014,7 +1014,7 @@ def CMDrun(parser, args):
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run.')
-  cmd = tools.fix_python_path(cmd)
+  cmd = tools.fix_python_cmd(cmd)
 
   outdir = run_isolated.make_temp_dir(
       u'isolate-%s' % datetime.date.today(),

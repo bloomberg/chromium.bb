@@ -1597,7 +1597,7 @@ class IsolatedBundle(object):
       self.command = node.data['command']
       if self.command:
         self.command[0] = self.command[0].replace('/', os.path.sep)
-        self.command = tools.fix_python_path(self.command)
+        self.command = tools.fix_python_cmd(self.command)
     if self.read_only is None and node.data.get('read_only') is not None:
       self.read_only = node.data['read_only']
     if (self.relative_cwd is None and

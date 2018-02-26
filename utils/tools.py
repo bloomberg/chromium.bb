@@ -16,6 +16,7 @@ import threading
 import time
 
 import utils
+from utils import fs
 from utils import zip_package
 
 
@@ -238,14 +239,47 @@ def disable_buffering():
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
-def fix_python_path(cmd):
-  """Returns the fixed command line to call the right python executable."""
-  out = cmd[:]
-  if out[0] == 'python':
-    out[0] = sys.executable
-  elif out[0].endswith('.py'):
-    out.insert(0, sys.executable)
-  return out
+def fix_python_cmd(cmd, env=None):
+  """Returns a fixed command line to explicitly invoke python if cmd is running
+  'python' or a '.py' script.
+
+  This will probe $PATH in `env` to see if there's an available python in the
+  current $PATH (allowing tasks to bring their own python). If there's no python
+  (or python.exe) in $PATH, this will fall back to sys.executable.
+
+  NOTE: This should only be used for python2. If tasks want to include python3,
+  they should make sure that their task explicitly invokes python3.
+  """
+  if cmd[0] == 'python':
+    cmd = cmd[1:]
+  elif cmd[0].endswith('.py'):
+    pass
+  else:
+    return cmd
+
+  # At this point we need to prepend some resolved python to cmd.
+
+  if sys.platform == 'win32':
+    python_exe = 'python.exe'
+    check = fs.isfile
+  else:
+    python_exe = 'python'
+    def check(candidate):
+      try:
+        return bool(os.stat(candidate).st_mode | os.path.stat.S_IEXEC)
+      except OSError:
+        return False
+
+  found_python = sys.executable
+
+  paths = (os.environ if env is None else env).get('PATH', '').split(os.pathsep)
+  for path in paths:
+    candidate = os.path.join(path, python_exe)
+    if check(candidate):
+      found_python = candidate
+      break
+
+  return [found_python] + cmd
 
 
 def read_json(filepath):
