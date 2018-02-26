@@ -182,20 +182,6 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   si->is_kf = 0;
   si->w = si->h = 0;
 
-  // skip a potential superframe index
-  {
-    uint32_t frame_sizes[8];
-    int frame_count;
-    int index_size = 0;
-    aom_codec_err_t res = av1_parse_superframe_index(data, data_sz, frame_sizes,
-                                                     &frame_count, &index_size);
-    if (res != AOM_CODEC_OK) return res;
-
-    data += index_size;
-    data_sz -= index_size;
-    if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
-  }
-
   {
     si->is_kf = 1;
     intra_only_flag = 1;
