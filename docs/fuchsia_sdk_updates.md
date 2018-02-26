@@ -15,7 +15,7 @@ it's simply a copy of the steps run on the bot above, and so may be out of date.
 
 In order to sync a Fuchsia tree to the state matching an SDK hash, you can use:
 
-`jiri update https://storage.googleapis.com/fuchsia-snapshots/SDK_HASH_HERE`
+`jiri update https://storage.googleapis.com/fuchsia-snapshots/<SDK_HASH_HERE>`
 
 If you are waiting for a Zircon CL to roll into the SDK, you can check the
 status of the [Zircon
@@ -24,13 +24,11 @@ Checking the bot's [list of
 CLs](https://fuchsia-review.googlesource.com/q/owner:zircon-roller%40fuchsia-infra.iam.gserviceaccount.com)
 might be useful too.
 
-Another useful command, if the SDK was pulled by `cipd` (which it is
+Another useful command, if the SDK was pulled by `cipd` (which it is in
 Chromium-related projects like Crashpad, instead of directly pulling the
 .tar.gz), is:
 
-```
-cipd describe fuchsia/sdk/linux-amd64 -version CIPD_HASH_HERE
-```
+`cipd describe fuchsia/sdk/linux-amd64 -version <CIPD_HASH_HERE>`
 
 This description will show the `jiri_snapshot` "tag" for the CIPD package which
 corresponds to the SDK revision that's specified `update_sdk.py` here.
