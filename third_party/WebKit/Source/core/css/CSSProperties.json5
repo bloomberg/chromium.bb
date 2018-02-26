@@ -2431,6 +2431,7 @@
       type_name: "ShapeValue",
       computed_style_custom_functions: ["getter"],
       converter: "ConvertShapeValue",
+      keywords: ["none"]
     },
     {
       name: "shape-rendering",
