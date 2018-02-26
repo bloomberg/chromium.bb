@@ -556,10 +556,14 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   for (const auto& line : line_boxes) {
     if (line->PhysicalFragment().IsFloatingOrOutOfFlowPositioned())
       continue;
-    DCHECK(line->PhysicalFragment().IsLineBox())
-        << line->PhysicalFragment().ToString();
     const LayoutPoint child_offset =
         paint_offset + line->Offset().ToLayoutPoint();
+    if (line->PhysicalFragment().IsListMarker()) {
+      PaintAtomicInlineChild(*line, paint_info, paint_offset, paint_offset);
+      continue;
+    }
+    DCHECK(line->PhysicalFragment().IsLineBox())
+        << line->PhysicalFragment().ToString();
     PaintInlineChildren(line->Children(), paint_info, child_offset,
                         paint_offset);
   }

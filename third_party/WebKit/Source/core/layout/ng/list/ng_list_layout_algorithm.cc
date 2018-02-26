@@ -7,6 +7,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
+#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -46,7 +47,7 @@ void NGListLayoutAlgorithm::SetListMarkerPosition(
 void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
     NGBlockNode list_marker_node,
     const NGConstraintSpace& constraint_space,
-    const NGPhysicalBoxFragment& content,
+    const NGPhysicalFragment& content,
     NGLogicalOffset offset,
     NGFragmentBuilder* container_builder) {
   // Layout the list marker.
@@ -59,9 +60,11 @@ void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
       ToNGPhysicalBoxFragment(*list_marker_layout_result->PhysicalFragment()));
 
   // Compute the inline offset of the marker from its margins.
+  // The marker is relative to the border box of the list item and has nothing
+  // to do with the content offset.
   auto margins =
       InlineMarginsForOutside(list_marker_fragment, constraint_space);
-  offset.inline_offset += margins.first;
+  offset.inline_offset = margins.first;
 
   // Compute the block offset of the marker by aligning the baseline of the
   // marker to the first baseline of the content.
@@ -73,9 +76,15 @@ void NGListLayoutAlgorithm::AddListMarkerForBlockContent(
       list_marker_fragment.BaselineMetrics(
           {NGBaselineAlgorithmType::kAtomicInline, baseline_type},
           constraint_space);
-  NGBoxFragment content_fragment(constraint_space.GetWritingMode(), content);
-  NGLineHeightMetrics content_metrics = content_fragment.BaselineMetrics(
-      {NGBaselineAlgorithmType::kFirstLine, baseline_type}, constraint_space);
+  NGLineHeightMetrics content_metrics;
+  if (content.IsLineBox()) {
+    content_metrics = ToNGPhysicalLineBoxFragment(content).Metrics();
+  } else {
+    NGBoxFragment content_fragment(constraint_space.GetWritingMode(),
+                                   ToNGPhysicalBoxFragment(content));
+    content_metrics = content_fragment.BaselineMetrics(
+        {NGBaselineAlgorithmType::kFirstLine, baseline_type}, constraint_space);
+  }
 
   // |offset.block_offset| is at the top of the content. Adjust it to the top of
   // the list marker by adding the differences of the ascent between content's

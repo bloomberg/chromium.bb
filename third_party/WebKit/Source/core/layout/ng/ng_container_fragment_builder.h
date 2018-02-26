@@ -49,6 +49,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   NGContainerFragmentBuilder& SwapUnpositionedFloats(
       Vector<scoped_refptr<NGUnpositionedFloat>>*);
 
+  const NGBlockNode& UnpositionedListMarker() const {
+    return unpositioned_list_marker_;
+  }
+  NGContainerFragmentBuilder& SetUnpositionedListMarker(const NGBlockNode&);
+
   virtual NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
                                                const NGLogicalOffset&);
 
@@ -173,6 +178,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+
+  NGBlockNode unpositioned_list_marker_;
 
   Vector<scoped_refptr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;

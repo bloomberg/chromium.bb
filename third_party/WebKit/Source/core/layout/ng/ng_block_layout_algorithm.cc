@@ -110,8 +110,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
       is_resuming_(break_token && !break_token->IsBreakBefore()),
-      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())),
-      unpositioned_list_marker_(nullptr) {}
+      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
 
 Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
@@ -385,9 +384,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     } else if (child.IsFloating()) {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
-    } else if (child.IsListMarkerWrapperForBlockContent()) {
-      DCHECK(!unpositioned_list_marker_);
-      unpositioned_list_marker_ = ToNGBlockNode(child);
+    } else if (child.IsListMarker()) {
+      container_builder_.SetUnpositionedListMarker(ToNGBlockNode(child));
     } else {
       // We need to propagate the initial break-before value up our container
       // chain, until we reach a container that's not a first child. If we get
@@ -721,8 +719,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       std::max(intrinsic_block_size_,
                logical_offset.block_offset + fragment.BlockSize());
 
-  if (unpositioned_list_marker_)
-    PositionListMarker(physical_fragment, logical_offset);
+  PositionListMarker(*layout_result, logical_offset);
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
@@ -1051,8 +1048,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
                  logical_offset.block_offset + fragment.BlockSize());
   }
 
-  if (unpositioned_list_marker_)
-    PositionListMarker(physical_fragment, logical_offset);
+  PositionListMarker(*layout_result, logical_offset);
 
   container_builder_.AddChild(layout_result, logical_offset);
   if (child.IsBlock())
@@ -1596,7 +1592,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     writing_mode = child_style.GetWritingMode();
 
     // PositionListMarker() requires a first line baseline.
-    if (unpositioned_list_marker_) {
+    if (container_builder_.UnpositionedListMarker()) {
       space_builder.AddBaselineRequest(
           {NGBaselineAlgorithmType::kFirstLine,
            IsHorizontalWritingMode(constraint_space_.GetWritingMode())
@@ -1796,15 +1792,29 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
 }
 
 void NGBlockLayoutAlgorithm::PositionListMarker(
-    const NGPhysicalFragment& content,
+    const NGLayoutResult& layout_result,
     const NGLogicalOffset& content_offset) {
-  DCHECK(unpositioned_list_marker_);
+  // If this is not a list-item, propagate unpositioned list markers to
+  // ancestors.
+  if (!node_.IsListItem()) {
+    if (layout_result.UnpositionedListMarker()) {
+      container_builder_.SetUnpositionedListMarker(
+          layout_result.UnpositionedListMarker());
+    }
+    return;
+  }
 
+  // If this is a list item, add the unpositioned list marker as a child.
+  NGBlockNode list_marker_node = layout_result.UnpositionedListMarker();
+  if (!list_marker_node) {
+    list_marker_node = container_builder_.UnpositionedListMarker();
+    if (!list_marker_node)
+      return;
+    container_builder_.SetUnpositionedListMarker(NGBlockNode(nullptr));
+  }
   NGListLayoutAlgorithm::AddListMarkerForBlockContent(
-      unpositioned_list_marker_, constraint_space_,
-      ToNGPhysicalBoxFragment(content), content_offset, &container_builder_);
-
-  unpositioned_list_marker_ = NGBlockNode(nullptr);
+      list_marker_node, constraint_space_, *layout_result.PhysicalFragment(),
+      content_offset, &container_builder_);
 }
 
 }  // namespace blink

@@ -108,7 +108,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   NGTextFragmentBuilder text_builder(Node(),
                                      ConstraintSpace().GetWritingMode());
-  Optional<unsigned> list_marker_index;
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
@@ -165,9 +164,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, *line_info);
     } else if (item.Type() == NGInlineItem::kListMarker) {
-      list_marker_index = line_box_.size();
       PlaceListMarker(item, &item_result, *line_info);
-      DCHECK_GT(line_box_.size(), list_marker_index.value());
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       line_box_.AddChild(
           item.GetLayoutObject(),
@@ -185,7 +182,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                           IsLtr(line_info->BaseDirection()) ? 0 : 1, box);
   }
 
-  if (line_box_.IsEmpty()) {
+  if (line_box_.IsEmpty() && !container_builder_.UnpositionedListMarker()) {
     return;  // The line was empty.
   }
 
@@ -205,7 +202,8 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Handle out-of-flow positioned objects. They need inline offsets for their
   // static positions.
-  if (!PlaceOutOfFlowObjects(*line_info, line_box_metrics)) {
+  if (!PlaceOutOfFlowObjects(*line_info, line_box_metrics) &&
+      !container_builder_.UnpositionedListMarker()) {
     // If we have out-of-flow objects but nothing else, we don't have line box
     // metrics nor BFC offset. Exit early.
     return;
@@ -234,12 +232,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   if (IsLtr(line_info->BaseDirection()))
     line_bfc_offset.line_offset += line_info->TextIndent();
-
-  if (list_marker_index.has_value()) {
-    NGListLayoutAlgorithm::SetListMarkerPosition(
-        constraint_space_, *line_info, inline_size,
-        &line_box_[list_marker_index.value()]);
-  }
 
   container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
@@ -358,13 +350,8 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
                                                   baseline_type_);
   }
 
-  item_result->layout_result =
-      NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
-          .LayoutAtomicInline(constraint_space_, line_info.UseFirstLineStyle());
-  DCHECK(item_result->layout_result->PhysicalFragment());
-
-  // The inline position is adjusted later, when we knew the line width.
-  PlaceLayoutResult(item_result, nullptr);
+  container_builder_.SetUnpositionedListMarker(
+      NGBlockNode(ToLayoutBox(item.GetLayoutObject())));
 }
 
 // Justify the line. This changes the size of items by adding spacing.

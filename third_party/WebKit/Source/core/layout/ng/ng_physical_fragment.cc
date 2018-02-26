@@ -239,6 +239,10 @@ bool NGPhysicalFragment::IsBlockFlow() const {
   return layout_object_ && layout_object_->IsLayoutBlockFlow();
 }
 
+bool NGPhysicalFragment::IsListMarker() const {
+  return layout_object_ && layout_object_->IsLayoutNGListMarker();
+}
+
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
   // to set.

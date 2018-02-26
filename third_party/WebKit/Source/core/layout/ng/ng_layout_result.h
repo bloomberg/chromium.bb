@@ -70,6 +70,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return unpositioned_floats_;
   }
 
+  const NGBlockNode& UnpositionedListMarker() const {
+    return unpositioned_list_marker_;
+  }
+
   const NGExclusionSpace* ExclusionSpace() const {
     return exclusion_space_.get();
   }
@@ -116,6 +120,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           out_of_flow_positioned_descendants,
       Vector<NGPositionedFloat>& positioned_floats,
       Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
+      const NGBlockNode& unpositioned_list_marker,
       std::unique_ptr<const NGExclusionSpace> exclusion_space,
       const WTF::Optional<NGBfcOffset> bfc_offset,
       const NGMarginStrut end_margin_strut,
@@ -132,6 +137,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   Vector<NGPositionedFloat> positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
+
+  NGBlockNode unpositioned_list_marker_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   const WTF::Optional<NGBfcOffset> bfc_offset_;

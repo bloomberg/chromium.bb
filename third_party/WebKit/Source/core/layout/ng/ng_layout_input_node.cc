@@ -87,13 +87,12 @@ bool NGLayoutInputNode::ShouldBeConsideredAsReplaced() const {
   return box_->ShouldBeConsideredAsReplaced();
 }
 
-bool NGLayoutInputNode::IsListMarker() const {
-  return IsBlock() && box_->IsLayoutNGListMarker();
+bool NGLayoutInputNode::IsListItem() const {
+  return IsBlock() && box_->IsLayoutNGListItem();
 }
 
-bool NGLayoutInputNode::IsListMarkerWrapperForBlockContent() const {
-  return IsBlock() &&
-         LayoutNGListMarker::IsListMarkerWrapperForBlockContent(*box_);
+bool NGLayoutInputNode::IsListMarker() const {
+  return IsBlock() && box_->IsLayoutNGListMarker();
 }
 
 bool NGLayoutInputNode::IsQuirkyContainer() const {

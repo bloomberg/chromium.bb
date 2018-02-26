@@ -189,7 +189,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void AddPositionedFloats(const Vector<NGPositionedFloat>& positioned_floats);
 
   // Positions a list marker for the specified block content.
-  void PositionListMarker(const NGPhysicalFragment&, const NGLogicalOffset&);
+  void PositionListMarker(const NGLayoutResult&, const NGLogicalOffset&);
 
   // Calculates logical offset for the current fragment using either {@code
   // intrinsic_block_size_} when the fragment doesn't know it's offset or
@@ -234,7 +234,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
-  NGBlockNode unpositioned_list_marker_;
 };
 
 }  // namespace blink

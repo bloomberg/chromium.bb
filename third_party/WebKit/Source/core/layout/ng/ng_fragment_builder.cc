@@ -295,10 +295,11 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats,
-      unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
-      end_margin_strut_, intrinsic_block_size_, minimal_space_shortage_,
-      initial_break_before_, previous_break_after_, has_forced_break_,
-      is_pushed_by_floats_, NGLayoutResult::kSuccess));
+      unpositioned_floats_, unpositioned_list_marker_,
+      std::move(exclusion_space_), bfc_offset_, end_margin_strut_,
+      intrinsic_block_size_, minimal_space_shortage_, initial_break_before_,
+      previous_break_after_, has_forced_break_, is_pushed_by_floats_,
+      NGLayoutResult::kSuccess));
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
@@ -307,9 +308,9 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
   Vector<NGPositionedFloat> positioned_floats;
   return base::AdoptRef(new NGLayoutResult(
       nullptr, oof_positioned_descendants, positioned_floats,
-      unpositioned_floats_, nullptr, bfc_offset_, end_margin_strut_,
-      LayoutUnit(), LayoutUnit(), EBreakBetween::kAuto, EBreakBetween::kAuto,
-      false, false, status));
+      unpositioned_floats_, NGBlockNode(nullptr), nullptr, bfc_offset_,
+      end_margin_strut_, LayoutUnit(), LayoutUnit(), EBreakBetween::kAuto,
+      EBreakBetween::kAuto, false, false, status));
 }
 
 // Finds FragmentPairs that define inline containing blocks.

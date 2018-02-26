@@ -16,6 +16,7 @@ NGLayoutResult::NGLayoutResult(
     Vector<NGOutOfFlowPositionedDescendant>& oof_positioned_descendants,
     Vector<NGPositionedFloat>& positioned_floats,
     Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
+    const NGBlockNode& unpositioned_list_marker,
     std::unique_ptr<const NGExclusionSpace> exclusion_space,
     const WTF::Optional<NGBfcOffset> bfc_offset,
     const NGMarginStrut end_margin_strut,
@@ -27,6 +28,7 @@ NGLayoutResult::NGLayoutResult(
     bool is_pushed_by_floats,
     NGLayoutResultStatus status)
     : physical_fragment_(std::move(physical_fragment)),
+      unpositioned_list_marker_(unpositioned_list_marker),
       exclusion_space_(std::move(exclusion_space)),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut),
@@ -56,10 +58,10 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
       WTF::WrapUnique(new NGExclusionSpace(*exclusion_space_)));
   return base::AdoptRef(new NGLayoutResult(
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
-      positioned_floats, unpositioned_floats, std::move(exclusion_space),
-      bfc_offset_, end_margin_strut_, intrinsic_block_size_,
-      minimal_space_shortage_, initial_break_before_, final_break_after_,
-      has_forced_break_, is_pushed_by_floats_, Status()));
+      positioned_floats, unpositioned_floats, unpositioned_list_marker_,
+      std::move(exclusion_space), bfc_offset_, end_margin_strut_,
+      intrinsic_block_size_, minimal_space_shortage_, initial_break_before_,
+      final_break_after_, has_forced_break_, is_pushed_by_floats_, Status()));
 }
 
 }  // namespace blink
