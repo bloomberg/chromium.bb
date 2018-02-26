@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_states.h"
@@ -56,7 +57,11 @@ CronetURLRequest::CronetURLRequest(CronetURLRequestContext* context,
                                    net::RequestPriority priority,
                                    bool disable_cache,
                                    bool disable_connection_migration,
-                                   bool enable_metrics)
+                                   bool enable_metrics,
+                                   bool traffic_stats_tag_set,
+                                   int32_t traffic_stats_tag,
+                                   bool traffic_stats_uid_set,
+                                   int32_t traffic_stats_uid)
     : context_(context),
       network_tasks_(std::move(callback),
                      url,
@@ -64,7 +69,11 @@ CronetURLRequest::CronetURLRequest(CronetURLRequestContext* context,
                      CalculateLoadFlags(context->default_load_flags(),
                                         disable_cache,
                                         disable_connection_migration),
-                     enable_metrics),
+                     enable_metrics,
+                     traffic_stats_tag_set,
+                     traffic_stats_tag,
+                     traffic_stats_uid_set,
+                     traffic_stats_uid),
       initial_method_("GET"),
       initial_request_headers_(std::make_unique<net::HttpRequestHeaders>()) {
   DCHECK(!context_->IsOnNetworkThread());
@@ -151,13 +160,21 @@ CronetURLRequest::NetworkTasks::NetworkTasks(std::unique_ptr<Callback> callback,
                                              const GURL& url,
                                              net::RequestPriority priority,
                                              int load_flags,
-                                             bool enable_metrics)
+                                             bool enable_metrics,
+                                             bool traffic_stats_tag_set,
+                                             int32_t traffic_stats_tag,
+                                             bool traffic_stats_uid_set,
+                                             int32_t traffic_stats_uid)
     : callback_(std::move(callback)),
       initial_url_(url),
       initial_priority_(priority),
       initial_load_flags_(load_flags),
       enable_metrics_(enable_metrics),
-      metrics_reported_(false) {
+      metrics_reported_(false),
+      traffic_stats_tag_set_(traffic_stats_tag_set),
+      traffic_stats_tag_(traffic_stats_tag),
+      traffic_stats_uid_set_(traffic_stats_uid_set),
+      traffic_stats_uid_(traffic_stats_uid) {
   DETACH_FROM_THREAD(network_thread_checker_);
 }
 
@@ -251,6 +268,16 @@ void CronetURLRequest::NetworkTasks::Start(
   url_request_->SetPriority(initial_priority_);
   if (upload)
     url_request_->set_upload(std::move(upload));
+  if (traffic_stats_tag_set_ || traffic_stats_uid_set_) {
+#if defined(OS_ANDROID)
+    url_request_->set_socket_tag(net::SocketTag(
+        traffic_stats_uid_set_ ? traffic_stats_uid_ : net::SocketTag::UNSET_UID,
+        traffic_stats_tag_set_ ? traffic_stats_tag_
+                               : net::SocketTag::UNSET_TAG));
+#else
+    CHECK(false);
+#endif
+  }
   url_request_->Start();
 }
 

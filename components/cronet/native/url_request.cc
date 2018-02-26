@@ -227,7 +227,10 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
       std::make_unique<Callback>(this, callback, executor), GURL(url),
       ConvertRequestPriority(params->priority), params->disable_cache,
       true /* params->disableConnectionMigration */,
-      false /* params->enableMetrics */);
+      false /* params->enableMetrics */,
+      // TODO(pauljensen): Consider exposing TrafficStats API via C++ API.
+      false /* traffic_stats_tag_set */, 0 /* traffic_stats_tag */,
+      false /* traffic_stats_uid_set */, 0 /* traffic_stats_uid */);
 
   if (!params->http_method.empty() &&
       !request_->SetHttpMethod(params->http_method)) {

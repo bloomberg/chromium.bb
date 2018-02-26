@@ -224,11 +224,14 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @Override
     public UrlRequestBase createRequest(String url, UrlRequest.Callback callback, Executor executor,
             int priority, Collection<Object> requestAnnotations, boolean disableCache,
-            boolean disableConnectionMigration, boolean allowDirectExecutor) {
+            boolean disableConnectionMigration, boolean allowDirectExecutor,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid) {
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
-                    disableCache, disableConnectionMigration, allowDirectExecutor);
+                    disableCache, disableConnectionMigration, allowDirectExecutor,
+                    trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet, trafficStatsUid);
         }
     }
 

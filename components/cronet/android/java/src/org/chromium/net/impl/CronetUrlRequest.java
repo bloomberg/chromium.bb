@@ -81,6 +81,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private final Collection<Object> mRequestAnnotations;
     private final boolean mDisableCache;
     private final boolean mDisableConnectionMigration;
+    private final boolean mTrafficStatsTagSet;
+    private final int mTrafficStatsTag;
+    private final boolean mTrafficStatsUidSet;
+    private final int mTrafficStatsUid;
 
     private CronetUploadDataStream mUploadDataStream;
 
@@ -131,7 +135,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     CronetUrlRequest(CronetUrlRequestContext requestContext, String url, int priority,
             UrlRequest.Callback callback, Executor executor, Collection<Object> requestAnnotations,
-            boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor) {
+            boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -152,6 +158,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
         mRequestAnnotations = requestAnnotations;
         mDisableCache = disableCache;
         mDisableConnectionMigration = disableConnectionMigration;
+        mTrafficStatsTagSet = trafficStatsTagSet;
+        mTrafficStatsTag = trafficStatsTag;
+        mTrafficStatsUidSet = trafficStatsUidSet;
+        mTrafficStatsUid = trafficStatsUid;
     }
 
     @Override
@@ -195,7 +205,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
                 mUrlRequestAdapter =
                         nativeCreateRequestAdapter(mRequestContext.getUrlRequestContextAdapter(),
                                 mInitialUrl, mPriority, mDisableCache, mDisableConnectionMigration,
-                                mRequestContext.hasRequestFinishedListener());
+                                mRequestContext.hasRequestFinishedListener(), mTrafficStatsTagSet,
+                                mTrafficStatsTag, mTrafficStatsUidSet, mTrafficStatsUid);
                 mRequestContext.onRequestStarted();
                 if (mInitialMethod != null) {
                     if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
@@ -791,7 +802,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     private native long nativeCreateRequestAdapter(long urlRequestContextAdapter, String url,
             int priority, boolean disableCache, boolean disableConnectionMigration,
-            boolean enableMetrics);
+            boolean enableMetrics, boolean trafficStatsTagSet, int trafficStatsTag,
+            boolean trafficStatsUidSet, int trafficStatsUid);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeSetHttpMethod(long nativePtr, String method);
