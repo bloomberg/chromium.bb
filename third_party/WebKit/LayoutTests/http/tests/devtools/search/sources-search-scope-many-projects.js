@@ -41,7 +41,7 @@
   }
 
   async function fileSystemCreated() {
-    UI.viewManager.showView('sources.search');
+    UI.viewManager.showView('search.search');
 
     var uiSourceCodes = fileSystemUISourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
@@ -80,7 +80,7 @@
     function testSearch(next) {
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, true, false);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     },
 
@@ -98,7 +98,7 @@
 
       var query = 'searchTest' +
           'UniqueString';
-      var searchConfig = new Workspace.SearchConfig(query, true, false);
+      var searchConfig = new Search.SearchConfig('sources.search-in-files', query, true, false);
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     }
   ];
