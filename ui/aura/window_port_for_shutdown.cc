@@ -67,10 +67,6 @@ viz::FrameSinkId WindowPortForShutdown::GetFrameSinkId() const {
   return frame_sink_id_;
 }
 
-void WindowPortForShutdown::OnWindowAddedToRootWindow() {}
-
-void WindowPortForShutdown::OnWillRemoveWindowFromRootWindow() {}
-
 void WindowPortForShutdown::OnEventTargetingPolicyChanged() {}
 
 bool WindowPortForShutdown::ShouldRestackTransientChildren() {

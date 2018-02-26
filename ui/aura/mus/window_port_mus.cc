@@ -303,7 +303,7 @@ void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK(window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
          window_mus_type() == WindowMusType::EMBED_IN_OWNER);
-  window_->set_embed_frame_sink_id(frame_sink_id);
+  window_->SetEmbedFrameSinkId(frame_sink_id);
   UpdatePrimarySurfaceId();
 }
 
@@ -334,7 +334,7 @@ void WindowPortMus::SetFallbackSurfaceInfo(
     // |primary_surface_id_| shold not be valid, since we didn't know the
     // |window_->embed_frame_sink_id()|.
     DCHECK(!primary_surface_id_.is_valid());
-    window_->set_embed_frame_sink_id(surface_info.id().frame_sink_id());
+    window_->SetEmbedFrameSinkId(surface_info.id().frame_sink_id());
     UpdatePrimarySurfaceId();
   }
 
@@ -579,10 +579,7 @@ WindowPortMus::CreateLayerTreeFrameSink() {
             window_->GetName());
     layer_tree_frame_sink_local->SetSurfaceChangedCallback(base::BindRepeating(
         &WindowPortMus::OnSurfaceChanged, weak_ptr_factory_.GetWeakPtr()));
-    if (window_->layer()->GetCompositor()) {
-      window_->layer()->GetCompositor()->AddFrameSink(GetFrameSinkId());
-      is_frame_sink_id_added_to_compositor_ = true;
-    }
+    window_->SetEmbedFrameSinkId(frame_sink_id);
     local_layer_tree_frame_sink_ = layer_tree_frame_sink_local->GetWeakPtr();
     frame_sink = std::move(layer_tree_frame_sink_local);
   }
@@ -593,25 +590,6 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   // correct for the new created |local_layer_tree_frame_sink_|.
   GetOrAllocateLocalSurfaceId(size_in_pixel);
   return frame_sink;
-}
-
-void WindowPortMus::OnWindowAddedToRootWindow() {
-  if (base::FeatureList::IsEnabled(features::kMash))
-    return;
-  if (local_layer_tree_frame_sink_) {
-    DCHECK(!is_frame_sink_id_added_to_compositor_);
-    window_->layer()->GetCompositor()->AddFrameSink(GetFrameSinkId());
-    is_frame_sink_id_added_to_compositor_ = true;
-  }
-}
-
-void WindowPortMus::OnWillRemoveWindowFromRootWindow() {
-  if (base::FeatureList::IsEnabled(features::kMash))
-    return;
-  if (is_frame_sink_id_added_to_compositor_) {
-    window_->layer()->GetCompositor()->RemoveFrameSink(GetFrameSinkId());
-    is_frame_sink_id_added_to_compositor_ = false;
-  }
 }
 
 void WindowPortMus::OnEventTargetingPolicyChanged() {

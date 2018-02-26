@@ -190,7 +190,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 // Tests that the hit-test regions get expanded with a custom event targeter.
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   window3()->SetEventTargeter(std::make_unique<TestWindowTargeter>());
-  window2()->set_embed_frame_sink_id(viz::FrameSinkId(1, 2));
+  window2()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 2));
   const auto hit_test_data =
       hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
@@ -321,7 +321,7 @@ TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
-  window3()->set_embed_frame_sink_id(viz::FrameSinkId(1, 3));
+  window3()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 3));
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 1u);
@@ -334,7 +334,7 @@ TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 1u);
-  root()->set_embed_frame_sink_id(viz::FrameSinkId(1, 1));
+  root()->SetEmbedFrameSinkId(viz::FrameSinkId(1, 1));
   hit_test_data = hit_test_data_provider()->GetHitTestData(compositor_frame_);
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 0u);

@@ -433,7 +433,8 @@ TEST_P(WindowTest, WindowEmbeddingClientHasValidLocalSurfaceId) {
     return;
   std::unique_ptr<Window> window(CreateTestWindow(
       SK_ColorWHITE, 1, gfx::Rect(10, 10, 300, 200), root_window()));
-  window->set_embed_frame_sink_id(viz::FrameSinkId(0, 1));
+  test::WindowTestApi(window.get()).DisableFrameSinkRegistration();
+  window->SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
   EXPECT_TRUE(window->GetLocalSurfaceId().is_valid());
 }
 

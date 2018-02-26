@@ -35,7 +35,7 @@ TEST_F(WindowPortMusTest, LayerTreeFrameSinkGetsCorrectLocalSurfaceId) {
   window.SetBounds(gfx::Rect(300, 300));
   // Notify the window that it will embed an external client, so that it
   // correctly generates LocalSurfaceId.
-  window.set_embed_frame_sink_id(viz::FrameSinkId(0, 1));
+  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
 
   viz::LocalSurfaceId local_surface_id = window.GetLocalSurfaceId();
   ASSERT_TRUE(local_surface_id.is_valid());
@@ -64,7 +64,7 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
-  window.set_embed_frame_sink_id(viz::FrameSinkId(0, 1));
+  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
 
   // Allocate a new LocalSurfaceId. The ui::Layer should be updated.
   window.AllocateLocalSurfaceId();

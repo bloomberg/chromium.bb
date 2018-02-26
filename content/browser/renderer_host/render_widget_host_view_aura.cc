@@ -1904,8 +1904,6 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   DCHECK(!window_);
   DCHECK(!is_mus_browser_plugin_guest_);
   window_ = new aura::Window(this);
-  if (frame_sink_id_.is_valid())
-    window_->set_embed_frame_sink_id(frame_sink_id_);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kEmbedType,
                        aura::client::WindowEmbedType::EMBED_IN_OWNER);
@@ -1920,6 +1918,10 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   window_->SetType(type);
   window_->Init(ui::LAYER_SOLID_COLOR);
   window_->layer()->SetColor(background_color_);
+  // This needs to happen only after |window_| has been initialized using
+  // Init(), because it needs to have the layer.
+  if (frame_sink_id_.is_valid())
+    window_->SetEmbedFrameSinkId(frame_sink_id_);
 
   if (!features::IsMusEnabled())
     return;
@@ -1948,7 +1950,8 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
   delegated_frame_host_ = std::make_unique<DelegatedFrameHost>(
       frame_sink_id_, delegated_frame_host_client_.get(),
-      features::IsSurfaceSynchronizationEnabled(), enable_viz);
+      features::IsSurfaceSynchronizationEnabled(), enable_viz,
+      false /* should_register_frame_sink_id */);
   if (!create_frame_sink_callback_.is_null())
     std::move(create_frame_sink_callback_).Run(frame_sink_id_);
 

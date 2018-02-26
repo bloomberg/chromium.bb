@@ -21,6 +21,8 @@ class WindowTestApi {
 
   bool ContainsMouse() const;
 
+  void DisableFrameSinkRegistration();
+
  private:
   Window* window_;
 

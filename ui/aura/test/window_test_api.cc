@@ -27,5 +27,9 @@ bool WindowTestApi::ContainsMouse() const {
              host->dispatcher()->GetLastMouseLocationInRoot());
 }
 
+void WindowTestApi::DisableFrameSinkRegistration() {
+  window_->disable_frame_sink_id_registration_ = true;
+}
+
 }  // namespace test
 }  // namespace aura

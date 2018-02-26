@@ -37,11 +37,13 @@ namespace content {
 DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        DelegatedFrameHostClient* client,
                                        bool enable_surface_synchronization,
-                                       bool enable_viz)
+                                       bool enable_viz,
+                                       bool should_register_frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       client_(client),
       enable_surface_synchronization_(enable_surface_synchronization),
       enable_viz_(enable_viz),
+      should_register_frame_sink_id_(should_register_frame_sink_id),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -639,7 +641,8 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
     return;
   compositor_ = compositor;
   compositor_->AddObserver(this);
-  compositor_->AddFrameSink(frame_sink_id_);
+  if (should_register_frame_sink_id_)
+    compositor_->AddFrameSink(frame_sink_id_);
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -648,7 +651,8 @@ void DelegatedFrameHost::ResetCompositor() {
   resize_lock_.reset();
   if (compositor_->HasObserver(this))
     compositor_->RemoveObserver(this);
-  compositor_->RemoveFrameSink(frame_sink_id_);
+  if (should_register_frame_sink_id_)
+    compositor_->RemoveFrameSink(frame_sink_id_);
   compositor_ = nullptr;
 }
 
@@ -674,7 +678,7 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
                  ->GetHostFrameSinkManager()
                  ->CreateCompositorFrameSinkSupport(this, frame_sink_id_,
                                                     is_root, needs_sync_points);
-  if (compositor_)
+  if (compositor_ && should_register_frame_sink_id_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)
     support_->SetNeedsBeginFrame(true);
@@ -683,7 +687,7 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
 void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (!support_)
     return;
-  if (compositor_)
+  if (compositor_ && should_register_frame_sink_id_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
 }

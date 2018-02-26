@@ -76,10 +76,15 @@ class CONTENT_EXPORT DelegatedFrameHost
       public viz::mojom::CompositorFrameSinkClient,
       public viz::HostFrameSinkClient {
  public:
+  // |should_register_frame_sink_id| flag indicates whether DelegatedFrameHost
+  // is responsible for registering the associated FrameSinkId with the
+  // compositor or not. This is set only on non-aura platforms, since aura is
+  // responsible for doing the appropriate [un]registration.
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                      DelegatedFrameHostClient* client,
                      bool enable_surface_synchronization,
-                     bool enable_viz);
+                     bool enable_viz,
+                     bool should_register_frame_sink_id);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -226,6 +231,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   DelegatedFrameHostClient* const client_;
   const bool enable_surface_synchronization_;
   const bool enable_viz_;
+  const bool should_register_frame_sink_id_;
   ui::Compositor* compositor_ = nullptr;
 
   // The surface id that was most recently activated by
