@@ -44,6 +44,9 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   BaseAudioContext* GetBaseAudioContext() const;
 
+  // Returns |nullptr| if there is no active WorkletGlobalScope().
+  AudioWorkletMessagingProxy* GetMessagingProxy();
+
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
       const String& name);
 
@@ -61,9 +64,6 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   // Implements Worklet
   bool NeedsToCreateGlobalScope() final;
   WorkletGlobalScopeProxy* CreateGlobalScope() final;
-
-  // Returns |nullptr| if there is no active WorkletGlobalScope().
-  AudioWorkletMessagingProxy* GetMessagingProxy();
 
   // To catch the first global scope update and notify the context.
   bool worklet_started_ = false;

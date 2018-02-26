@@ -110,6 +110,8 @@ void AudioDestinationHandler::Render(AudioBus* source_bus,
   // Advance current sample-frame.
   size_t new_sample_frame = current_sample_frame_ + number_of_frames;
   ReleaseStore(&current_sample_frame_, new_sample_frame);
+
+  Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
 // ----------------------------------------------------------------

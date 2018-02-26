@@ -103,8 +103,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
 
     // Run the render code and check the state of processor. Finish the
     // processor if needed.
-    if (!processor_->Process(&inputBuses, &outputBuses, &param_value_map_,
-                             Context()->currentTime()) ||
+    if (!processor_->Process(&inputBuses, &outputBuses, &param_value_map_) ||
         !processor_->IsRunnable()) {
       FinishProcessorOnRenderThread();
     }

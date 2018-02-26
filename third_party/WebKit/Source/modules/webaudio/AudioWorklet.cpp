@@ -45,7 +45,7 @@ void AudioWorklet::NotifyGlobalScopeIsUpdated() {
 WebThread* AudioWorklet::GetBackingThread() {
   DCHECK(IsMainThread());
   DCHECK(GetMessagingProxy());
-  return GetMessagingProxy()->GetWorkletBackingThread();
+  return GetMessagingProxy()->GetBackingWebThread();
 }
 
 BaseAudioContext* AudioWorklet::GetBaseAudioContext() const {

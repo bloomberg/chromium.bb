@@ -56,7 +56,8 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
       const String& name) const;
 
-  WebThread* GetWorkletBackingThread();
+  WebThread* GetBackingWebThread();
+  WorkerThread* GetBackingWorkerThread();
 
   void Trace(Visitor*);
 

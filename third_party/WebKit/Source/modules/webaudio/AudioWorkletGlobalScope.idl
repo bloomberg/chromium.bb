@@ -10,6 +10,7 @@
     OriginTrialEnabled=AudioWorklet
 ] interface AudioWorkletGlobalScope : WorkletGlobalScope {
     [RaisesException, MeasureAs=AudioWorkletGlobalScopeRegisterProcessor] void registerProcessor(DOMString name, Function processorConstructor);
+    readonly attribute unsigned long long currentFrame;
     readonly attribute double currentTime;
     readonly attribute float sampleRate;
 };
