@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/media_perception_private/media_perception_api_delegate_chromeos.h"
 
+#include "base/bind.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
 
 namespace media_perception = extensions::api::media_perception_private;

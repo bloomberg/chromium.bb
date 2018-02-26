@@ -5,41 +5,43 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_CROS_COMPONENT_INSTALLER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "chrome/browser/browser_process.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "base/containers/flat_map.h"
+#include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "components/component_updater/component_installer.h"
-#include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
-#include "crypto/sha2.h"
 
 namespace component_updater {
 
+class ComponentUpdateService;
+
 struct ComponentConfig {
-  std::string name;
-  std::string env_version;
-  std::string sha2hashstr;
   ComponentConfig(const std::string& name,
                   const std::string& env_version,
                   const std::string& sha2hashstr);
   ~ComponentConfig();
+
+  std::string name;
+  std::string env_version;
+  std::string sha2hashstr;
 };
 
 class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   explicit CrOSComponentInstallerPolicy(const ComponentConfig& config);
-  ~CrOSComponentInstallerPolicy() override {}
+  ~CrOSComponentInstallerPolicy() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, IsCompatibleOrNot);
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, CompatibilityOK);
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest,
                            CompatibilityMissingManifest);
-  // The following methods override ComponentInstallerPolicy.
+
+  // ComponentInstallerPolicy:
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
@@ -57,11 +59,13 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+  // This is virtual so unit tests can override it.
   virtual bool IsCompatible(const std::string& env_version_str,
                             const std::string& min_env_version_str);
-  std::string name;
-  std::string env_version;
-  uint8_t kSha2Hash_[crypto::kSHA256Length] = {};
+
+  const std::string name_;
+  const std::string env_version_;
+  std::vector<uint8_t> sha2_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerPolicy);
 };
@@ -85,6 +89,7 @@ class CrOSComponentManager {
 
   CrOSComponentManager();
   ~CrOSComponentManager();
+
   // Installs a component and keeps it up-to-date. |load_callback| returns the
   // mount point path.
   void Load(const std::string& name,
@@ -147,9 +152,6 @@ class CrOSComponentManager {
   // point).
   void FinishLoad(LoadCallback load_callback,
                   base::Optional<base::FilePath> result);
-
-  // Returns all installed components.
-  std::vector<ComponentConfig> GetInstalled();
 
   // Registers component |configs| to be updated.
   void RegisterN(const std::vector<ComponentConfig>& configs);

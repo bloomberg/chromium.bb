@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
@@ -195,8 +196,8 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                          const std::vector<std::string>& ppd_filters) {
     if (base::FeatureList::IsEnabled(features::kCrOSComponent)) {
       std::set<std::string> components_requested;
-      for (auto& ppd_filter : ppd_filters) {
-        for (auto& component : GetComponentizedFilters()) {
+      for (const auto& ppd_filter : ppd_filters) {
+        for (const auto& component : GetComponentizedFilters()) {
           if (component.first == ppd_filter) {
             components_requested.insert(component.second);
           }
@@ -212,7 +213,8 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                            weak_factory_.GetWeakPtr(), printer, ppd_contents,
                            std::move(cb)));
         return;
-      } else if (components_requested.size() > 1) {
+      }
+      if (components_requested.size() > 1) {
         LOG(ERROR) << "More than one filter component is requested.";
         std::move(cb).Run(PrinterSetupResult::kFatalError);
         return;

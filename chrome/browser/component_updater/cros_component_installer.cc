@@ -4,18 +4,22 @@
 
 #include "chrome/browser/component_updater/cros_component_installer.h"
 
+#include <map>
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/sha2.h"
 
 // ConfigMap list-initialization expression for all downloadable
 // Chrome OS components.
@@ -45,11 +49,14 @@
      {"sha2hashstr",                                                         \
       "5714811c04f0a63aac96b39096faa759ace4c04e9b68291e7c9716128f5a2722"}}}};
 
-#define COMPONENTS_ROOT_PATH "cros-components"
-
 namespace component_updater {
 
+using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
+
 namespace {
+
+constexpr char kComponentsRootPath[] = "cros-components";
+
 // TODO(xiaochu): add metrics for component usage (crbug.com/793052).
 void LogCustomUninstall(base::Optional<bool> result) {}
 
@@ -70,27 +77,50 @@ void CleanUpOldInstalls(const std::string& name) {
   if (base::PathExists(path))
     base::DeleteFile(path, true);
 }
-}  // namespace
 
-using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
+// Returns all installed components.
+std::vector<ComponentConfig> GetInstalled() {
+  std::vector<ComponentConfig> configs;
+  base::FilePath root;
+  if (!PathService::Get(DIR_COMPONENT_USER, &root))
+    return configs;
+
+  root = root.Append(kComponentsRootPath);
+  const ConfigMap components = CONFIG_MAP_CONTENT;
+  for (auto it : components) {
+    const std::string& name = it.first;
+    const std::map<std::string, std::string>& props = it.second;
+    base::FilePath component_path = root.Append(name);
+    if (base::PathExists(component_path)) {
+      ComponentConfig config(name, props.find("env_version")->second,
+                             props.find("sha2hashstr")->second);
+      configs.push_back(config);
+    }
+  }
+  return configs;
+}
+
+}  // namespace
 
 ComponentConfig::ComponentConfig(const std::string& name,
                                  const std::string& env_version,
                                  const std::string& sha2hashstr)
     : name(name), env_version(env_version), sha2hashstr(sha2hashstr) {}
+
 ComponentConfig::~ComponentConfig() {}
 
 CrOSComponentInstallerPolicy::CrOSComponentInstallerPolicy(
     const ComponentConfig& config)
-    : name(config.name), env_version(config.env_version) {
-  if (config.sha2hashstr.length() != 64)
+    : name_(config.name), env_version_(config.env_version) {
+  if (config.sha2hashstr.length() != crypto::kSHA256Length * 2)
     return;
-  auto strstream = config.sha2hashstr;
-  for (auto& cell : kSha2Hash_) {
-    cell = stoul(strstream.substr(0, 2), nullptr, 16);
-    strstream.erase(0, 2);
-  }
+
+  bool converted = base::HexStringToBytes(config.sha2hashstr, &sha2_hash_);
+  DCHECK(converted);
+  DCHECK_EQ(crypto::kSHA256Length, sha2_hash_.size());
 }
+
+CrOSComponentInstallerPolicy::~CrOSComponentInstallerPolicy() = default;
 
 bool CrOSComponentInstallerPolicy::SupportsGroupPolicyEnabledComponentUpdates()
     const {
@@ -105,8 +135,8 @@ update_client::CrxInstaller::Result
 CrOSComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-  // TODO(xiaochu): remove this at M66 (crbug.com/792203).
-  CleanUpOldInstalls(name);
+  // TODO(xiaochu): remove after M66 ships to stable. https://crbug.com/792203
+  CleanUpOldInstalls(name_);
 
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
@@ -114,10 +144,10 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
 void CrOSComponentInstallerPolicy::OnCustomUninstall() {
   g_browser_process->platform_part()
       ->cros_component_manager()
-      ->UnregisterCompatiblePath(name);
+      ->UnregisterCompatiblePath(name_);
 
   chromeos::DBusThreadManager::Get()->GetImageLoaderClient()->UnmountComponent(
-      name, base::BindOnce(&LogCustomUninstall));
+      name_, base::BindOnce(&LogCustomUninstall));
 }
 
 void CrOSComponentInstallerPolicy::ComponentReady(
@@ -125,13 +155,15 @@ void CrOSComponentInstallerPolicy::ComponentReady(
     const base::FilePath& path,
     std::unique_ptr<base::DictionaryValue> manifest) {
   std::string min_env_version;
-  if (manifest && manifest->GetString("min_env_version", &min_env_version)) {
-    if (IsCompatible(env_version, min_env_version)) {
-      g_browser_process->platform_part()
-          ->cros_component_manager()
-          ->RegisterCompatiblePath(GetName(), path);
-    }
-  }
+  if (!manifest || !manifest->GetString("min_env_version", &min_env_version))
+    return;
+
+  if (!IsCompatible(env_version_, min_env_version))
+    return;
+
+  g_browser_process->platform_part()
+      ->cros_component_manager()
+      ->RegisterCompatiblePath(GetName(), path);
 }
 
 bool CrOSComponentInstallerPolicy::VerifyInstallation(
@@ -141,22 +173,22 @@ bool CrOSComponentInstallerPolicy::VerifyInstallation(
 }
 
 base::FilePath CrOSComponentInstallerPolicy::GetRelativeInstallDir() const {
-  base::FilePath path = base::FilePath(COMPONENTS_ROOT_PATH);
-  return path.Append(name);
+  base::FilePath path = base::FilePath(kComponentsRootPath);
+  return path.Append(name_);
 }
 
 void CrOSComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
-  hash->assign(kSha2Hash_, kSha2Hash_ + arraysize(kSha2Hash_));
+  *hash = sha2_hash_;
 }
 
 std::string CrOSComponentInstallerPolicy::GetName() const {
-  return name;
+  return name_;
 }
 
 update_client::InstallerAttributes
 CrOSComponentInstallerPolicy::GetInstallerAttributes() const {
   update_client::InstallerAttributes attrs;
-  attrs["_env_version"] = env_version;
+  attrs["_env_version"] = env_version_;
   return attrs;
 }
 
@@ -203,19 +235,15 @@ bool CrOSComponentManager::Unload(const std::string& name) {
     // Component |name| does not exist.
     return false;
   }
-  component_updater::ComponentUpdateService* updater =
-      g_browser_process->component_updater();
+  ComponentUpdateService* updater = g_browser_process->component_updater();
   const std::string id = GenerateId(it->second.find("sha2hashstr")->second);
   return updater->UnregisterComponent(id);
 }
 
 void CrOSComponentManager::RegisterInstalled() {
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&component_updater::CrOSComponentManager::GetInstalled,
-                     base::Unretained(this)),
-      base::BindOnce(&component_updater::CrOSComponentManager::RegisterN,
-                     base::Unretained(this)));
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(GetInstalled),
+      base::BindOnce(&CrOSComponentManager::RegisterN, base::Unretained(this)));
 }
 
 void CrOSComponentManager::RegisterCompatiblePath(const std::string& name,
@@ -322,32 +350,10 @@ void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
   }
 }
 
-std::vector<ComponentConfig> CrOSComponentManager::GetInstalled() {
-  std::vector<ComponentConfig> configs;
-  base::FilePath root;
-  if (!PathService::Get(DIR_COMPONENT_USER, &root))
-    return configs;
-
-  root = root.Append(COMPONENTS_ROOT_PATH);
-  const ConfigMap components = CONFIG_MAP_CONTENT;
-  for (auto it : components) {
-    const std::string& name = it.first;
-    const std::map<std::string, std::string>& props = it.second;
-    base::FilePath component_path = root.Append(name);
-    if (base::PathExists(component_path)) {
-      ComponentConfig config(name, props.find("env_version")->second,
-                             props.find("sha2hashstr")->second);
-      configs.push_back(config);
-    }
-  }
-  return configs;
-}
-
 void CrOSComponentManager::RegisterN(
     const std::vector<ComponentConfig>& configs) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  component_updater::ComponentUpdateService* updater =
-      g_browser_process->component_updater();
+  ComponentUpdateService* updater = g_browser_process->component_updater();
   for (const auto& config : configs) {
     Register(updater, config, base::OnceClosure());
   }
