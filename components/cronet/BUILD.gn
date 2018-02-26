@@ -89,18 +89,19 @@ if (!is_ios && !is_android && !is_win) {
   }
 
   test("cronet_tests") {
-    testonly = true
-
     deps = [
       ":cronet",
+      "//base",
+      "//base/test:test_support",
       "//components/cronet/native/test:cronet_native_tests",
-      "//testing/gtest:gtest_main",
+    ]
+
+    sources = [
+      "run_all_unittests.cc",
     ]
   }
 
   test("cronet_unittests") {
-    testonly = true
-
     deps = [
       ":cronet_common",
       ":cronet_common_unittests",

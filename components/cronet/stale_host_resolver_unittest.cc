@@ -379,8 +379,9 @@ TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
 // CancelWithFreshCache makes no sense; the request would've returned
 // synchronously.
 
-// crbug.com/792173
-#if defined(OS_IOS)
+// Limited expired time cases are flaky under iOS (crbug.com/792173).
+// Disallow other networks cases fail under Fuchsia (crbug.com/816143).
+#if defined(OS_IOS) || defined(OS_FUCHSIA)
 #define MAYBE_StaleUsability DISABLED_StaleUsability
 #else
 #define MAYBE_StaleUsability StaleUsability
