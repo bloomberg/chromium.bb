@@ -13,7 +13,9 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
+#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
 #include "components/translate/core/browser/translate_step.h"
@@ -33,7 +35,6 @@
 
 class AppMenuButton;
 class Browser;
-class BrowserActionsContainer;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
@@ -47,10 +48,12 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
+                    public BrowserActionsContainer::Delegate,
                     public CommandObserver,
                     public views::ButtonListener,
                     public AppMenuIconController::Delegate,
-                    public UpgradeObserver {
+                    public UpgradeObserver,
+                    public BrowserViewButtonProvider {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -97,9 +100,6 @@ class ToolbarView : public views::AccessiblePaneView,
                            translate::TranslateErrors::Type error_type,
                            bool is_user_gesture);
 
-  // Returns the maximum width the browser actions container can have.
-  int GetMaxBrowserActionsWidth() const;
-
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -126,6 +126,14 @@ class ToolbarView : public views::AccessiblePaneView,
   const ToolbarModel* GetToolbarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
+
+  // BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override;
+  base::Optional<int> GetMaxBrowserActionsWidth() const override;
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override;
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
@@ -156,6 +164,10 @@ class ToolbarView : public views::AccessiblePaneView,
   bool SetPaneFocusAndFocusDefault() override;
   void RemovePaneFocus() override;
 
+  bool is_display_mode_normal() const {
+    return display_mode_ == DISPLAYMODE_NORMAL;
+  }
+
  private:
   // Types of display mode this toolbar can have.
   enum DisplayMode {
@@ -169,6 +181,10 @@ class ToolbarView : public views::AccessiblePaneView,
                       AppMenuIconController::Severity severity,
                       bool animate) override;
 
+  // BrowserViewButtonProvider:
+  BrowserActionsContainer* GetBrowserActionsContainer() override;
+  views::MenuButton* GetAppMenuButton() override;
+
   // Used to avoid duplicating the near-identical logic of
   // ToolbarView::CalculatePreferredSize() and ToolbarView::GetMinimumSize().
   // These two functions call through to GetSizeInternal(), passing themselves
@@ -180,10 +196,6 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Loads the images for all the child views.
   void LoadImages();
-
-  bool is_display_mode_normal() const {
-    return display_mode_ == DISPLAYMODE_NORMAL;
-  }
 
   // Shows the critical notification bubble against the app menu.
   void ShowCriticalNotification();

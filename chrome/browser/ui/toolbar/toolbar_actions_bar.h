@@ -106,8 +106,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // Returns the number of icons that can fit within the given width.
   size_t WidthToIconCount(int width) const;
 
-  // Returns the number of icons that should be displayed if space allows.
-  size_t GetIconCount() const;
+  // Returns the number of icons that should be displayed if space allows. Can
+  // be overridden by children to impose a smaller limit on the number of icons.
+  virtual size_t GetIconCount() const;
 
   // Returns the starting index (inclusive) for displayable icons.
   size_t GetStartIndexInBounds() const;
@@ -238,7 +239,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
     return platform_settings_;
   }
   ToolbarActionViewController* popup_owner() { return popup_owner_; }
-  ToolbarActionViewController* popped_out_action() {
+  ToolbarActionViewController* popped_out_action() const {
     return popped_out_action_;
   }
   bool in_overflow_mode() const { return main_bar_ != nullptr; }

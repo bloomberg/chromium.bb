@@ -38,8 +38,9 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   SetBackgroundColor(SK_ColorTRANSPARENT);
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar()->browser_actions();
-  container_ = new BrowserActionsContainer(browser_, main);
+          ->button_provider()
+          ->GetBrowserActionsContainer();
+  container_ = new BrowserActionsContainer(browser_, main, main->delegate());
   SetContents(container_);
 
   // Listen for the drop to finish so we can close the app menu, if necessary.

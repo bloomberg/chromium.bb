@@ -22,6 +22,7 @@ HostedAppMenuModel::HostedAppMenuModel(ui::AcceleratorProvider* provider,
 HostedAppMenuModel::~HostedAppMenuModel() {}
 
 void HostedAppMenuModel::Build() {
+  CreateActionToolbarOverflowMenu();
   AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
@@ -37,7 +38,6 @@ void HostedAppMenuModel::Build() {
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
-  CreateActionToolbarOverflowMenu();
   CreateZoomMenu();
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
   AddItemWithStringId(IDC_FIND, IDS_FIND);

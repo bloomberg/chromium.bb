@@ -53,6 +53,7 @@
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
 class BookmarkBarView;
+class BrowserViewButtonProvider;
 class Browser;
 class BrowserViewLayout;
 class ContentsLayoutManager;
@@ -259,6 +260,11 @@ class BrowserView : public BrowserWindow,
   // FullscreenController. This method does any processing which was skipped.
   // Only exiting fullscreen in this way is currently supported.
   void FullscreenStateChanged();
+
+  // Sets the button provider for this BrowserView. Must be called before
+  // InitViews() which sets the ToolbarView as the default button provider.
+  void SetButtonProvider(BrowserViewButtonProvider* provider);
+  BrowserViewButtonProvider* button_provider() { return button_provider_; }
 
   // Overridden from BrowserWindow:
   void Show() override;
@@ -689,6 +695,10 @@ class BrowserView : public BrowserWindow,
   // The view managing the devtools and contents positions.
   // Handled by ContentsLayoutManager.
   views::View* contents_container_ = nullptr;
+
+  // Provides access to the buttons this browser view uses. Buttons may appear
+  // in the frame or in the toolbar.
+  BrowserViewButtonProvider* button_provider_ = nullptr;
 
   // Tracks and stores the last focused view which is not the
   // devtools_web_view_ or any of its children. Used to restore focus once

@@ -48,7 +48,8 @@ GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* app_menu_button = browser_view->toolbar()->app_menu_button();
+  views::View* app_menu_button =
+      browser_view->button_provider()->GetAppMenuButton();
   GlobalErrorBubbleView* bubble_view =
       new GlobalErrorBubbleView(app_menu_button, gfx::Point(),
                                 views::BubbleBorder::TOP_RIGHT, browser, error);

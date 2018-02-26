@@ -39,15 +39,6 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// Returns the ToolbarView for the given |browser|.
-ToolbarView* GetToolbarView(Browser* browser) {
-  return BrowserView::GetBrowserViewForBrowser(browser)->toolbar();
-}
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer::DropPosition
 
@@ -71,21 +62,25 @@ BrowserActionsContainer::DropPosition::DropPosition(
 
 BrowserActionsContainer::BrowserActionsContainer(
     Browser* browser,
-    BrowserActionsContainer* main_container)
-    : toolbar_actions_bar_(new ToolbarActionsBar(
-          this,
-          browser,
-          main_container ? main_container->toolbar_actions_bar_.get()
-                         : nullptr)),
+    BrowserActionsContainer* main_container,
+    Delegate* delegate,
+    bool interactive)
+    : delegate_(delegate),
       browser_(browser),
-      main_container_(main_container) {
+      main_container_(main_container),
+      interactive_(interactive) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  if (!ShownInsideMenu()) {
-    resize_animation_.reset(new gfx::SlideAnimation(this));
-    resize_area_ = new views::ResizeArea(this);
-    AddChildView(resize_area_);
+  toolbar_actions_bar_ = delegate_->CreateToolbarActionsBar(
+      this, browser,
+      main_container ? main_container->toolbar_actions_bar_.get() : nullptr);
 
+  if (!ShownInsideMenu()) {
+    if (interactive_) {
+      resize_area_ = new views::ResizeArea(this);
+      AddChildView(resize_area_);
+    }
+    resize_animation_.reset(new gfx::SlideAnimation(this));
     const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
     warning_highlight_painter_ =
         views::Painter::CreateImageGridPainter(kWarningImages);
@@ -146,8 +141,7 @@ void BrowserActionsContainer::OnToolbarActionViewDragDone() {
 }
 
 views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
-  return static_cast<views::MenuButton*>(
-      GetToolbarView(browser_)->app_menu_button());
+  return delegate_->GetOverflowReferenceView();
 }
 
 void BrowserActionsContainer::AddViewForAction(
@@ -214,9 +208,9 @@ void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
   if (resize_animation_ && !toolbar_actions_bar_->suppress_animation()) {
     if (!ShownInsideMenu()) {
       // Make sure we don't try to animate to wider than the allowed width.
-      int max_width = GetToolbarView(browser_)->GetMaxBrowserActionsWidth();
-      if (target_width > max_width)
-        target_width = GetWidthForMaxWidth(max_width);
+      base::Optional<int> max_width = delegate_->GetMaxBrowserActionsWidth();
+      if (max_width && target_width > max_width.value())
+        target_width = GetWidthForMaxWidth(max_width.value());
     }
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.
@@ -264,8 +258,8 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
       anchored_to_action_view = true;
     } else {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
-                        ->toolbar()
-                        ->app_menu_button();
+                        ->button_provider()
+                        ->GetAppMenuButton();
     }
   } else {
     anchor_view = this;
@@ -375,7 +369,8 @@ bool BrowserActionsContainer::AreDropTypesRequired() {
 }
 
 bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
-  return BrowserActionDragData::CanDrop(data, browser_->profile());
+  return interactive_ &&
+         BrowserActionDragData::CanDrop(data, browser_->profile());
 }
 
 int BrowserActionsContainer::OnDragUpdated(
@@ -534,7 +529,7 @@ bool BrowserActionsContainer::CanStartDragForView(View* sender,
                                                   const gfx::Point& press_pt,
                                                   const gfx::Point& p) {
   // We don't allow dragging while we're highlighting.
-  return !toolbar_actions_bar_->is_highlighting();
+  return interactive_ && !toolbar_actions_bar_->is_highlighting();
 }
 
 void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {

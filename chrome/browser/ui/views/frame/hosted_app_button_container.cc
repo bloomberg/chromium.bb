@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -23,6 +24,20 @@ namespace {
 
 // Padding around content setting icons.
 constexpr int kContentSettingIconInteriorPadding = 4;
+
+class HostedAppToolbarActionsBar : public ToolbarActionsBar {
+ public:
+  using ToolbarActionsBar::ToolbarActionsBar;
+
+  size_t GetIconCount() const override {
+    // Only show an icon when an extension action is popped out due to
+    // activation, and none otherwise.
+    return popped_out_action() ? 1 : 0;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HostedAppToolbarActionsBar);
+};
 
 }  // namespace
 
@@ -60,7 +75,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
     : browser_view_(browser_view),
       active_icon_color_(active_icon_color),
       inactive_icon_color_(inactive_icon_color),
-      app_menu_button_(new AppMenuButton(browser_view)) {
+      app_menu_button_(new AppMenuButton(browser_view)),
+      browser_actions_container_(
+          new BrowserActionsContainer(browser_view->browser(),
+                                      nullptr,
+                                      this,
+                                      false /* interactive */)) {
   DCHECK(browser_view_);
   auto layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
@@ -83,11 +103,28 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
     AddChildView(image_view.release());
   }
 
+  AddChildView(browser_actions_container_);
+
   app_menu_button_->SetIconColor(active_icon_color);
   AddChildView(app_menu_button_);
+
+  browser_view_->SetButtonProvider(this);
 }
 
 HostedAppButtonContainer::~HostedAppButtonContainer() {}
+
+void HostedAppButtonContainer::RefreshContentSettingViews() {
+  for (auto* v : content_setting_views_)
+    v->Update();
+}
+
+void HostedAppButtonContainer::SetPaintAsActive(bool active) {
+  for (auto* v : content_setting_views_)
+    v->SetIconColor(active ? active_icon_color_ : inactive_icon_color_);
+
+  app_menu_button_->SetIconColor(active ? active_icon_color_
+                                        : inactive_icon_color_);
+}
 
 content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
   return browser_view_->GetActiveWebContents();
@@ -105,9 +142,11 @@ void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
       ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
 }
 
-void HostedAppButtonContainer::RefreshContentSettingViews() {
-  for (auto* v : content_setting_views_)
-    v->Update();
+void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
+  if (child != browser_actions_container_)
+    return;
+
+  PreferredSizeChanged();
 }
 
 void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
@@ -115,10 +154,31 @@ void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void HostedAppButtonContainer::SetPaintAsActive(bool active) {
-  for (auto* v : content_setting_views_)
-    v->SetIconColor(active ? active_icon_color_ : inactive_icon_color_);
+views::MenuButton* HostedAppButtonContainer::GetOverflowReferenceView() {
+  return app_menu_button_;
+}
 
-  app_menu_button_->SetIconColor(active ? active_icon_color_
-                                        : inactive_icon_color_);
+base::Optional<int> HostedAppButtonContainer::GetMaxBrowserActionsWidth()
+    const {
+  // Our maximum size is 1 icon so don't specify a pixel-width max here.
+  return base::Optional<int>();
+}
+
+std::unique_ptr<ToolbarActionsBar>
+HostedAppButtonContainer::CreateToolbarActionsBar(
+    ToolbarActionsBarDelegate* delegate,
+    Browser* browser,
+    ToolbarActionsBar* main_bar) const {
+  DCHECK_EQ(browser_view_->browser(), browser);
+  return std::make_unique<HostedAppToolbarActionsBar>(delegate, browser,
+                                                      main_bar);
+}
+
+BrowserActionsContainer*
+HostedAppButtonContainer::GetBrowserActionsContainer() {
+  return browser_actions_container_;
+}
+
+views::MenuButton* HostedAppButtonContainer::GetAppMenuButton() {
+  return app_menu_button_;
 }

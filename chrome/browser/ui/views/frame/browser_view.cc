@@ -937,6 +937,12 @@ void BrowserView::FullscreenStateChanged() {
   ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
+void BrowserView::SetButtonProvider(BrowserViewButtonProvider* provider) {
+  // There should only be one button provider.
+  DCHECK(!button_provider_);
+  button_provider_ = provider;
+}
+
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -1007,8 +1013,9 @@ void BrowserView::FocusToolbar() {
 }
 
 ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
-  return toolbar_ && toolbar_->browser_actions() ?
-      toolbar_->browser_actions()->toolbar_actions_bar() : nullptr;
+  BrowserActionsContainer* container =
+      button_provider_->GetBrowserActionsContainer();
+  return container ? container->toolbar_actions_bar() : nullptr;
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -1180,7 +1187,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     if (card_view && card_view->visible())
       anchor_view = card_view;
     else
-      anchor_view = toolbar()->app_menu_button();
+      anchor_view = button_provider()->GetAppMenuButton();
   }
 
   autofill::SaveCardBubbleViews* bubble = new autofill::SaveCardBubbleViews(
@@ -1266,7 +1273,7 @@ void BrowserView::UserChangedTheme() {
 }
 
 void BrowserView::ShowAppMenu() {
-  if (!toolbar_->app_menu_button())
+  if (!button_provider_->GetAppMenuButton())
     return;
 
   // Keep the top-of-window views revealed as long as the app menu is visible.
@@ -1274,7 +1281,7 @@ void BrowserView::ShowAppMenu() {
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
 
-  toolbar_->app_menu_button()->Activate(nullptr);
+  button_provider_->GetAppMenuButton()->Activate(nullptr);
 }
 
 content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
@@ -2139,6 +2146,11 @@ void BrowserView::InitViews() {
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
+
+  // This browser view may already have a custom button provider set (e.g the
+  // hosted app frame).
+  if (!button_provider_)
+    SetButtonProvider(toolbar_);
 
   // The infobar container must come after the toolbar so its arrow paints on
   // top.

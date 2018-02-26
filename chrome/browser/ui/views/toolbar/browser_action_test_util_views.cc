@@ -29,12 +29,14 @@ namespace {
 
 // The views-specific implementation of the TestToolbarActionsBarHelper, which
 // creates and owns a BrowserActionsContainer.
-class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
+class TestToolbarActionsBarHelperViews
+    : public TestToolbarActionsBarHelper,
+      public BrowserActionsContainer::Delegate {
  public:
   TestToolbarActionsBarHelperViews(Browser* browser,
                                    BrowserActionsContainer* main_bar)
       : browser_actions_container_(
-            new BrowserActionsContainer(browser, main_bar)) {
+            new BrowserActionsContainer(browser, main_bar, this, true)) {
     container_parent_.set_owned_by_client();
     container_parent_.SetSize(gfx::Size(1000, 1000));
     container_parent_.Layout();
@@ -43,6 +45,18 @@ class TestToolbarActionsBarHelperViews : public TestToolbarActionsBarHelper {
 
   BrowserActionsContainer* browser_actions_container() {
     return browser_actions_container_;
+  }
+
+  // Overridden from BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override { return nullptr; }
+  base::Optional<int> GetMaxBrowserActionsWidth() const override {
+    return base::Optional<int>();
+  }
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override {
+    return std::make_unique<ToolbarActionsBar>(delegate, browser, main_bar);
   }
 
  private:

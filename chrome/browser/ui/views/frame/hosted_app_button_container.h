@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -19,7 +21,9 @@ class BrowserView;
 
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::View,
-                                 public ContentSettingImageView::Delegate {
+                                 public ContentSettingImageView::Delegate,
+                                 public BrowserActionsContainer::Delegate,
+                                 public BrowserViewButtonProvider {
  public:
   // |active_icon_color| and |inactive_icon_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
@@ -75,7 +79,20 @@ class HostedAppButtonContainer : public views::View,
       ContentSettingImageModel::ImageType type) const override;
 
   // views::View:
+  void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+
+  // BrowserActionsContainer::Delegate:
+  views::MenuButton* GetOverflowReferenceView() override;
+  base::Optional<int> GetMaxBrowserActionsWidth() const override;
+  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
+      ToolbarActionsBarDelegate* delegate,
+      Browser* browser,
+      ToolbarActionsBar* main_bar) const override;
+
+  // BrowserViewButtonProvider:
+  BrowserActionsContainer* GetBrowserActionsContainer() override;
+  views::MenuButton* GetAppMenuButton() override;
 
   // The containing browser view.
   BrowserView* browser_view_;
@@ -87,6 +104,7 @@ class HostedAppButtonContainer : public views::View,
   // Owned by the views hierarchy.
   AppMenuButton* app_menu_button_;
   std::vector<ContentSettingImageView*> content_setting_views_;
+  BrowserActionsContainer* browser_actions_container_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);
 };
