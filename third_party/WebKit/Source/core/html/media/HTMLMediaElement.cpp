@@ -657,6 +657,18 @@ void HTMLMediaElement::ParserDidSetAttributes() {
     muted_ = true;
 }
 
+// This method is being used as a way to know that cloneNode finished cloning
+// attribute as there is no callback notifying about the end of a cloning
+// operation. Indeed, it is required per spec to set the muted state based on
+// the content attribute when the object is created.
+void HTMLMediaElement::CloneNonAttributePropertiesFrom(const Element& other,
+                                                       CloneChildrenFlag flag) {
+  HTMLElement::CloneNonAttributePropertiesFrom(other, flag);
+
+  if (FastHasAttribute(mutedAttr))
+    muted_ = true;
+}
+
 void HTMLMediaElement::FinishParsingChildren() {
   HTMLElement::FinishParsingChildren();
 

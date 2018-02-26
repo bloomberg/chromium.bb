@@ -338,6 +338,8 @@ class CORE_EXPORT HTMLMediaElement
   bool IsURLAttribute(const Attribute&) const override;
   void AttachLayoutTree(AttachContext&) override;
   void ParserDidSetAttributes() override;
+  void CloneNonAttributePropertiesFrom(const Element&,
+                                       CloneChildrenFlag) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
