@@ -56,8 +56,8 @@ void OnModelAdded(ViewRegistry* registry, ElemBinding* element) {
   std::unique_ptr<View> view = std::make_unique<View>();
   element->set_view(view.get());
   element->bindings().push_back(std::make_unique<Binding<int>>(
-      base::Bind(&GetValue, base::Unretained(element)),
-      base::Bind(&SetValue, base::Unretained(element))));
+      base::BindRepeating(&GetValue, base::Unretained(element)),
+      base::BindRepeating(&SetValue, base::Unretained(element))));
   registry->AddView(std::move(view));
 }
 
@@ -72,10 +72,10 @@ TEST(VectorBinding, Basic) {
   ViewRegistry registry;
 
   TestVectorBinding::ModelAddedCallback added_callback =
-      base::Bind(&OnModelAdded, base::Unretained(&registry));
+      base::BindRepeating(&OnModelAdded, base::Unretained(&registry));
 
   TestVectorBinding::ModelRemovedCallback removed_callback =
-      base::Bind(&OnModelRemoved, base::Unretained(&registry));
+      base::BindRepeating(&OnModelRemoved, base::Unretained(&registry));
 
   TestVectorBinding binding(&models, added_callback, removed_callback);
 

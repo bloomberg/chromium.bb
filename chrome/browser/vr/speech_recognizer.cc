@@ -172,16 +172,16 @@ void SpeechRecognizerOnIO::NotifyRecognitionStateChanged(
     SpeechRecognitionState new_state) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&IOBrowserUIInterface::OnSpeechRecognitionStateChanged,
-                 browser_ui_, new_state));
+      base::BindOnce(&IOBrowserUIInterface::OnSpeechRecognitionStateChanged,
+                     browser_ui_, new_state));
 }
 
 void SpeechRecognizerOnIO::StartSpeechTimeout(int timeout_seconds) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  speech_timeout_->Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(timeout_seconds),
-                         base::Bind(&SpeechRecognizerOnIO::SpeechTimeout,
-                                    weak_factory_.GetWeakPtr()));
+  speech_timeout_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds),
+      base::BindRepeating(&SpeechRecognizerOnIO::SpeechTimeout,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void SpeechRecognizerOnIO::SpeechTimeout() {
@@ -214,8 +214,8 @@ void SpeechRecognizerOnIO::OnRecognitionResults(
   }
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&IOBrowserUIInterface::OnSpeechResult, browser_ui_, result_str,
-                 final_count == results.size()));
+      base::BindOnce(&IOBrowserUIInterface::OnSpeechResult, browser_ui_,
+                     result_str, final_count == results.size()));
 
   if (result_str != last_result_str_) {
     StartSpeechTimeout(kNoNewSpeechTimeoutInSeconds);
@@ -258,8 +258,8 @@ void SpeechRecognizerOnIO::OnAudioLevelsChange(int session_id,
   volume = std::max(0.0f, volume - noise_volume);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&IOBrowserUIInterface::OnSpeechSoundLevelChanged, browser_ui_,
-                 volume));
+      base::BindOnce(&IOBrowserUIInterface::OnSpeechSoundLevelChanged,
+                     browser_ui_, volume));
 }
 
 void SpeechRecognizerOnIO::OnEnvironmentEstimationComplete(int session_id) {}

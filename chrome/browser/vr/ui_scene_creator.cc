@@ -609,9 +609,10 @@ void UiSceneCreator::CreateHostedUi() {
       VR_BIND_FUNC(unsigned int, Model, model_, model->native_ui.texture_id,
                    ContentElement, hosted_ui.get(), SetTextureId));
   hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
-      base::Bind([](Model* m) { return m->native_ui.hosted_ui_enabled; },
-                 base::Unretained(model_)),
-      base::Bind(
+      base::BindRepeating(
+          [](Model* m) { return m->native_ui.hosted_ui_enabled; },
+          base::Unretained(model_)),
+      base::BindRepeating(
           [](ContentElement* dialog, const bool& enabled) {
             dialog->SetVisible(enabled);
             dialog->set_requires_layout(enabled);
@@ -620,9 +621,9 @@ void UiSceneCreator::CreateHostedUi() {
           base::Unretained(hosted_ui.get()))));
 
   hosted_ui->AddBinding(std::make_unique<Binding<float>>(
-      base::Bind([](Model* m) { return m->native_ui.size_ratio; },
-                 base::Unretained(model_)),
-      base::Bind(
+      base::BindRepeating([](Model* m) { return m->native_ui.size_ratio; },
+                          base::Unretained(model_)),
+      base::BindRepeating(
           [](ContentElement* dialog, const float& value) {
             dialog->SetSize(kContentWidth * kHostedUiWidthRatio,
                             kContentWidth * kHostedUiWidthRatio * value);
