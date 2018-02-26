@@ -125,12 +125,11 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   auto frame_sink = std::make_unique<LayerTreeFrameSinkLocal>(
       frame_sink_id_, context_factory_private->GetHostFrameSinkManager(),
       window_->GetName());
+  window_->SetEmbedFrameSinkId(frame_sink_id_);
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));
   frame_sink_ = frame_sink->GetWeakPtr();
   AllocateLocalSurfaceId();
-  if (window_->GetRootWindow())
-    window_->layer()->GetCompositor()->AddFrameSink(frame_sink_id_);
   return std::move(frame_sink);
 }
 
@@ -150,16 +149,6 @@ const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
 
 viz::FrameSinkId WindowPortLocal::GetFrameSinkId() const {
   return frame_sink_id_;
-}
-
-void WindowPortLocal::OnWindowAddedToRootWindow() {
-  if (frame_sink_id_.is_valid())
-    window_->layer()->GetCompositor()->AddFrameSink(frame_sink_id_);
-}
-
-void WindowPortLocal::OnWillRemoveWindowFromRootWindow() {
-  if (frame_sink_id_.is_valid())
-    window_->layer()->GetCompositor()->RemoveFrameSink(frame_sink_id_);
 }
 
 void WindowPortLocal::OnEventTargetingPolicyChanged() {}

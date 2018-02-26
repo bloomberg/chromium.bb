@@ -1203,6 +1203,8 @@ void WindowTreeClient::OnCaptureChanged(ui::Id new_capture_window_id,
 void WindowTreeClient::OnFrameSinkIdAllocated(
     ui::Id window_id,
     const viz::FrameSinkId& frame_sink_id) {
+  if (!base::FeatureList::IsEnabled(features::kMash))
+    return;
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;

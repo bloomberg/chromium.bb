@@ -957,7 +957,8 @@ void Window::OnStackingChanged() {
 }
 
 void Window::NotifyRemovingFromRootWindow(Window* new_root) {
-  port_->OnWillRemoveWindowFromRootWindow();
+  if (IsEmbeddingClient())
+    UnregisterFrameSinkId();
   for (WindowObserver& observer : observers_)
     observer.OnWindowRemovingFromRootWindow(this, new_root);
   for (Window::Windows::const_iterator it = children_.begin();
@@ -967,7 +968,8 @@ void Window::NotifyRemovingFromRootWindow(Window* new_root) {
 }
 
 void Window::NotifyAddedToRootWindow() {
-  port_->OnWindowAddedToRootWindow();
+  if (IsEmbeddingClient())
+    RegisterFrameSinkId();
   for (WindowObserver& observer : observers_)
     observer.OnWindowAddedToRootWindow(this);
   for (Window::Windows::const_iterator it = children_.begin();
@@ -1109,6 +1111,12 @@ viz::FrameSinkId Window::GetFrameSinkId() const {
   return port_->GetFrameSinkId();
 }
 
+void Window::SetEmbedFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+  DCHECK(frame_sink_id.is_valid());
+  embed_frame_sink_id_ = frame_sink_id;
+  RegisterFrameSinkId();
+}
+
 bool Window::IsEmbeddingClient() const {
   return embed_frame_sink_id_.is_valid();
 }
@@ -1248,6 +1256,25 @@ void Window::UpdateLayerName() {
 
   layer()->set_name(layer_name);
 #endif
+}
+
+void Window::RegisterFrameSinkId() {
+  DCHECK(embed_frame_sink_id_.is_valid());
+  DCHECK(IsEmbeddingClient());
+  if (registered_frame_sink_id_ || disable_frame_sink_id_registration_)
+    return;
+  if (auto* compositor = layer()->GetCompositor()) {
+    compositor->AddFrameSink(embed_frame_sink_id_);
+    registered_frame_sink_id_ = true;
+  }
+}
+
+void Window::UnregisterFrameSinkId() {
+  if (!registered_frame_sink_id_)
+    return;
+  registered_frame_sink_id_ = false;
+  if (auto* compositor = layer()->GetCompositor())
+    compositor->RemoveFrameSink(embed_frame_sink_id_);
 }
 
 }  // namespace aura

@@ -277,8 +277,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
   void AllocateLocalSurfaceId() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
-  void OnWindowAddedToRootWindow() override;
-  void OnWillRemoveWindowFromRootWindow() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
 

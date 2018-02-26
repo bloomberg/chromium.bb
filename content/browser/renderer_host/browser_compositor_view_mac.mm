@@ -188,7 +188,8 @@ BrowserCompositorMac::BrowserCompositorMac(
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   delegated_frame_host_.reset(new DelegatedFrameHost(
       frame_sink_id, this, features::IsSurfaceSynchronizationEnabled(),
-      base::FeatureList::IsEnabled(features::kVizDisplayCompositor)));
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
+      true /* should_register_frame_sink_id */));
 
   dfh_display_ = display::Screen::GetScreen()->GetDisplayNearestView(nil);
 

@@ -397,9 +397,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   const viz::FrameSinkId& embed_frame_sink_id() const {
     return embed_frame_sink_id_;
   }
-  void set_embed_frame_sink_id(const viz::FrameSinkId& embed_frame_sink_id) {
-    embed_frame_sink_id_ = embed_frame_sink_id;
-  }
+  void SetEmbedFrameSinkId(const viz::FrameSinkId& embed_frame_sink_id);
+
   // Returns whether this window is an embed window.
   bool IsEmbeddingClient() const;
 
@@ -528,6 +527,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();
+
+  void RegisterFrameSinkId();
+  void UnregisterFrameSinkId();
+  bool registered_frame_sink_id_ = false;
+  bool disable_frame_sink_id_registration_ = false;
 
   // Window owns its corresponding WindowPort, but the ref is held as a raw
   // pointer in |port_| so that it can still be accessed during destruction.
