@@ -3321,7 +3321,6 @@ crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-po
 # Sheriff failures 2018-02-22
 crbug.com/789921 virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
 crbug.com/814889 [ Debug ] idle-callback/test-runner-run-idle-tasks.html [ Timeout Pass ]
-crbug.com/814907 http/tests/credentialmanager/credentialscontainer-create-from-nested-frame.html [ Failure Pass ]
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
 crbug.com/814964 virtual/gpu-rasterization/images/color-profile-border-radius.html [ Failure Pass ]
 
