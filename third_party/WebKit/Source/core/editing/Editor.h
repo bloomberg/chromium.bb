@@ -276,8 +276,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     default_paragraph_separator_ = separator;
   }
 
-  static void TidyUpHTMLStructure(Document&);
-
   EditingStyle* TypingStyle() const;
   void SetTypingStyle(EditingStyle*);
   void ClearTypingStyle();
