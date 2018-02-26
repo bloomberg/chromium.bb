@@ -448,8 +448,13 @@ void BrowserTestBase::InitializeNetworkProcess() {
   network::mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &network_service_test);
-  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-  network_service_test->AddRules(std::move(mojo_rules));
+
+  // Send the DNS rules to network service process. Android needs the RunLoop
+  // to dispatch a Java callback that makes network process to enter native
+  // code.
+  base::RunLoop loop;
+  network_service_test->AddRules(std::move(mojo_rules), loop.QuitClosure());
+  loop.Run();
 }
 
 }  // namespace content

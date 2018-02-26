@@ -21,10 +21,6 @@ namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
-namespace content {
-class BrowserTestBase;
-}
-
 namespace display {
 class ForwardingDisplayDelegate;
 }
@@ -74,7 +70,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to mojo/OWNERS first.
   // BEGIN ALLOWED USAGE.
-  friend class content::BrowserTestBase;  // Test-only.
   // SynchronousCompositorHost is used for Android webview.
   friend class content::SynchronousCompositorHost;
   // LevelDBMojoProxy makes same-process sync calls from the DB thread.
