@@ -50,9 +50,9 @@ struct ScopedExpectEnableAfterCreateHelper {
 };
 
 // Function bound and passed to AudioDebugRecordingManager::EnableDebugRecording
-// as AudioDebugRecordingManager::CreateFileCallback.
-void CreateFile(const base::FilePath& file_path,
-                base::OnceCallback<void(base::File)>) {}
+// as AudioDebugRecordingManager::CreateWavFileCallback.
+void CreateWavFile(const base::FilePath& file_path,
+                   base::OnceCallback<void(base::File)>) {}
 
 }  // namespace
 
@@ -78,7 +78,7 @@ class MockAudioDebugRecordingHelper : public AudioDebugRecordingHelper {
 
   MOCK_METHOD1(DoEnableDebugRecording, void(const base::FilePath&));
   void EnableDebugRecording(const base::FilePath& file_name_suffix,
-                            AudioDebugRecordingHelper::CreateFileCallback
+                            AudioDebugRecordingHelper::CreateWavFileCallback
                                 create_file_callback) override {
     DoEnableDebugRecording(file_name_suffix);
   }
@@ -147,10 +147,10 @@ class AudioDebugRecordingManagerTest : public ::testing::Test {
 
 int AudioDebugRecordingManagerTest::expected_next_source_id_ = 1;
 
-// Shouldn't do anything but store the CreateFileCallback, i.e. no calls to
+// Shouldn't do anything but store the CreateWavFileCallback, i.e. no calls to
 // recorders.
 TEST_F(AudioDebugRecordingManagerTest, EnableDisable) {
-  manager_.EnableDebugRecording(base::BindRepeating(&CreateFile));
+  manager_.EnableDebugRecording(base::BindRepeating(&CreateWavFile));
   manager_.DisableDebugRecording();
 }
 
@@ -197,7 +197,7 @@ TEST_F(AudioDebugRecordingManagerTest, RegisterEnableDisable) {
     EXPECT_CALL(*mock_recording_helper, DisableDebugRecording());
   }
 
-  manager_.EnableDebugRecording(base::BindRepeating(&CreateFile));
+  manager_.EnableDebugRecording(base::BindRepeating(&CreateWavFile));
   manager_.DisableDebugRecording();
 }
 
@@ -210,7 +210,7 @@ TEST_F(AudioDebugRecordingManagerTest, RegisterEnableDisable) {
 TEST_F(AudioDebugRecordingManagerTest, EnableRegisterDisable) {
   ScopedExpectEnableAfterCreateHelper scoped_enable_after_create_helper;
 
-  manager_.EnableDebugRecording(base::BindRepeating(&CreateFile));
+  manager_.EnableDebugRecording(base::BindRepeating(&CreateWavFile));
 
   const AudioParameters params;
   std::vector<std::unique_ptr<AudioDebugRecorder>> recorders;

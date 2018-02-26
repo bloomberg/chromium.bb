@@ -23,9 +23,11 @@ namespace media {
 
 namespace {
 
-void CreateFile(const base::FilePath& debug_recording_file_path,
-                const base::FilePath& file_name_suffix,
-                base::OnceCallback<void(base::File)> reply_callback) {
+const base::FilePath::CharType kWavExtension[] = FILE_PATH_LITERAL("wav");
+
+void CreateWavFile(const base::FilePath& debug_recording_file_path,
+                   const base::FilePath& file_name_suffix,
+                   base::OnceCallback<void(base::File)> reply_callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
@@ -35,7 +37,8 @@ void CreateFile(const base::FilePath& debug_recording_file_path,
             return base::File(file_name, base::File::FLAG_CREATE_ALWAYS |
                                              base::File::FLAG_WRITE);
           },
-          debug_recording_file_path.AddExtension(file_name_suffix.value())),
+          debug_recording_file_path.AddExtension(file_name_suffix.value())
+              .AddExtension(kWavExtension)),
       std::move(reply_callback));
 }
 
@@ -51,7 +54,7 @@ AudioDebugRecordingSessionImpl::AudioDebugRecordingSessionImpl(
       FROM_HERE,
       base::BindOnce(
           [](AudioManager* manager,
-             AudioDebugRecordingManager::CreateFileCallback
+             AudioDebugRecordingManager::CreateWavFileCallback
                  create_file_callback) {
             AudioDebugRecordingManager* debug_recording_manager =
                 manager->GetAudioDebugRecordingManager();
@@ -61,7 +64,7 @@ AudioDebugRecordingSessionImpl::AudioDebugRecordingSessionImpl(
                 std::move(create_file_callback));
           },
           base::Unretained(audio_manager),
-          base::BindRepeating(&CreateFile, debug_recording_file_path)));
+          base::BindRepeating(&CreateWavFile, debug_recording_file_path)));
 }
 
 AudioDebugRecordingSessionImpl::~AudioDebugRecordingSessionImpl() {

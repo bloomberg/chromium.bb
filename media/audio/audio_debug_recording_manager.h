@@ -57,7 +57,7 @@ namespace media {
 
 class MEDIA_EXPORT AudioDebugRecordingManager {
  public:
-  using CreateFileCallback = base::RepeatingCallback<void(
+  using CreateWavFileCallback = base::RepeatingCallback<void(
       const base::FilePath&,
       base::OnceCallback<void(base::File)> reply_callback)>;
 
@@ -66,7 +66,7 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
   virtual ~AudioDebugRecordingManager();
 
   // Enables and disables debug recording.
-  virtual void EnableDebugRecording(CreateFileCallback create_file_callback);
+  virtual void EnableDebugRecording(CreateWavFileCallback create_file_callback);
   virtual void DisableDebugRecording();
 
   // Registers a source and returns a wrapped recorder. |stream_type| is added
@@ -110,7 +110,7 @@ class MEDIA_EXPORT AudioDebugRecordingManager {
 
   // Callback for creating debug recording files. When this is not null, debug
   // recording is enabled.
-  CreateFileCallback create_file_callback_;
+  CreateWavFileCallback create_file_callback_;
 
   base::WeakPtrFactory<AudioDebugRecordingManager> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingManager);

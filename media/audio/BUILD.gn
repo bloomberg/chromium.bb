@@ -73,7 +73,6 @@ source_set("audio") {
     "audio_debug_recording_helper.h",
     "audio_debug_recording_manager.cc",
     "audio_debug_recording_manager.h",
-    "audio_debug_recording_session.cc",
     "audio_debug_recording_session.h",
     "audio_debug_recording_session_impl.cc",
     "audio_debug_recording_session_impl.h",
@@ -338,6 +337,8 @@ static_library("test_support") {
   visibility = [ "//media:test_support" ]
   testonly = true
   sources = [
+    "audio_debug_recording_test.cc",
+    "audio_debug_recording_test.h",
     "audio_device_info_accessor_for_tests.cc",
     "audio_device_info_accessor_for_tests.h",
     "audio_system_test_util.cc",
@@ -361,6 +362,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
 
     # Do not add any other //media deps except this; it will automatically pull
     # a dep on //media which is required to ensure test_support targets all use

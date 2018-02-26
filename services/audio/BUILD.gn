@@ -15,6 +15,8 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
+    "debug_recording.cc",
+    "debug_recording.h",
     "in_process_audio_manager_accessor.cc",
     "in_process_audio_manager_accessor.h",
     "service.cc",
@@ -37,7 +39,9 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "debug_recording_unittest.cc",
     "test/audio_system_to_service_adapter_test.cc",
+    "test/debug_recording_session_unittest.cc",
     "test/in_process_service_test.cc",
   ]
 
@@ -50,6 +54,7 @@ source_set("tests") {
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

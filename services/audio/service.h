@@ -6,10 +6,12 @@
 #define SERVICES_AUDIO_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -19,6 +21,7 @@ class AudioManager;
 }  // namespace media
 
 namespace audio {
+class DebugRecording;
 class SystemInfo;
 
 class Service : public service_manager::Service {
@@ -27,7 +30,7 @@ class Service : public service_manager::Service {
   // its created on, and that thread must be AudioManager main thread.
   class AudioManagerAccessor {
    public:
-    virtual ~AudioManagerAccessor(){};
+    virtual ~AudioManagerAccessor() {}
 
     // Must be called before destruction.
     virtual void Shutdown() = 0;
@@ -49,9 +52,11 @@ class Service : public service_manager::Service {
 
  private:
   void BindSystemInfoRequest(mojom::SystemInfoRequest request);
+  void BindDebugRecordingRequest(mojom::DebugRecordingRequest request);
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   std::unique_ptr<SystemInfo> system_info_;
+  std::unique_ptr<DebugRecording> debug_recording_;
 
   service_manager::BinderRegistry registry_;
 

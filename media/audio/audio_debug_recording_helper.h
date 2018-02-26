@@ -50,7 +50,7 @@ class AudioDebugRecorder {
 // soundcard thread -> file thread.
 class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
  public:
-  using CreateFileCallback = base::OnceCallback<void(
+  using CreateWavFileCallback = base::OnceCallback<void(
       const base::FilePath&,
       base::OnceCallback<void(base::File)> reply_callback)>;
 
@@ -63,7 +63,7 @@ class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
   // Enable debug recording. Creates |debug_writer_| and runs
   // |create_file_callback| to create debug recording file.
   virtual void EnableDebugRecording(const base::FilePath& file_name_suffix,
-                                    CreateFileCallback create_file_callback);
+                                    CreateWavFileCallback create_file_callback);
 
   // Disable debug recording. Destroys |debug_writer_|.
   virtual void DisableDebugRecording();

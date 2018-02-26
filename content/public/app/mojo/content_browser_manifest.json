@@ -71,7 +71,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "audio": [ "info" ],
+        "audio": [ "info", "debug_recording"],
         "cdm": [ "media:cdm" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
