@@ -344,7 +344,7 @@ void FrameLoader::SaveScrollAnchor() {
     ScrollAnchor* scroll_anchor = layout_scrollable_area->GetScrollAnchor();
     DCHECK(scroll_anchor);
 
-    const ScrollAnchor::SerializedAnchor& serialized_anchor =
+    const SerializedAnchor& serialized_anchor =
         scroll_anchor->GetSerializedAnchor();
     if (serialized_anchor.IsValid()) {
       history_item->SetScrollAnchorData(
@@ -1224,7 +1224,7 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     // Anchor-based restore should allow for earlier restoration.
     bool did_restore =
         ShouldSerializeScrollAnchor() &&
-        view->RestoreScrollAnchor(
+        view->LayoutViewportScrollableArea()->RestoreScrollAnchor(
             {view_state->scroll_anchor_data_.selector_,
              LayoutPoint(view_state->scroll_anchor_data_.offset_.x,
                          view_state->scroll_anchor_data_.offset_.y),

@@ -17,6 +17,24 @@ class ScrollableArea;
 
 static const int kMaxSerializedSelectorLength = 500;
 
+struct SerializedAnchor {
+  SerializedAnchor() : simhash(0) {}
+  SerializedAnchor(const String& s, const LayoutPoint& p)
+      : selector(s), relative_offset(p), simhash(0) {}
+  SerializedAnchor(const String& s, const LayoutPoint& p, uint64_t hash)
+      : selector(s), relative_offset(p), simhash(hash) {}
+
+  bool IsValid() const { return !selector.IsEmpty(); }
+
+  // Used to locate an element previously used as a scroll anchor.
+  const String selector;
+  // Used to restore the previous offset of the element within its scroller.
+  const LayoutPoint relative_offset;
+  // Used to compare the similarity of a prospective anchor's contents to the
+  // contents at the time the previous anchor was saved.
+  const uint64_t simhash;
+};
+
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 class CORE_EXPORT ScrollAnchor final {
   DISALLOW_NEW();
@@ -63,25 +81,6 @@ class CORE_EXPORT ScrollAnchor final {
   // Which corner of the anchor object we are currently anchored to.
   // Only meaningful if anchorObject() is non-null.
   Corner GetCorner() const { return corner_; }
-
-  // A set of properties used to save/restore previously used scroll anchors.
-  struct SerializedAnchor {
-    SerializedAnchor() : simhash(0) {}
-    SerializedAnchor(const String& s, const LayoutPoint& p)
-        : selector(s), relative_offset(p), simhash(0) {}
-    SerializedAnchor(const String& s, const LayoutPoint& p, uint64_t hash)
-        : selector(s), relative_offset(p), simhash(hash) {}
-
-    bool IsValid() const { return !selector.IsEmpty(); }
-
-    // Used to locate an element previously used as a scroll anchor.
-    const String selector;
-    // Used to restore the previous offset of the element within its scroller.
-    const LayoutPoint relative_offset;
-    // Used to compare the similarity of a prospective anchor's contents to the
-    // contents at the time the previous anchor was saved.
-    const uint64_t simhash;
-  };
 
   // This enum must remain in sync with the corresponding enum in enums.xml.
   enum RestorationStatus {

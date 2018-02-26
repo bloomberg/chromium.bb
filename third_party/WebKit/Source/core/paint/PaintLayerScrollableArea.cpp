@@ -1073,9 +1073,15 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
   return RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
-         scroll_anchor_.HasScroller() &&
+         scroll_anchor_.HasScroller() && GetLayoutBox() &&
          GetLayoutBox()->Style()->OverflowAnchor() != EOverflowAnchor::kNone &&
          !GetLayoutBox()->GetDocument().FinishingOrIsPrinting();
+}
+
+bool PaintLayerScrollableArea::RestoreScrollAnchor(
+    const SerializedAnchor& serialized_anchor) {
+  return ShouldPerformScrollAnchoring() &&
+         scroll_anchor_.RestoreAnchor(serialized_anchor);
 }
 
 FloatQuad PaintLayerScrollableArea::LocalToVisibleContentQuad(

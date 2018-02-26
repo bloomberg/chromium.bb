@@ -138,6 +138,17 @@ class SessionHistoryTest : public ContentBrowserTest {
   }
 };
 
+class SessionHistoryScrollAnchorTest : public SessionHistoryTest {
+ protected:
+  SessionHistoryScrollAnchorTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SessionHistoryTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "ScrollAnchorSerialization");
+  }
+};
+
 // If this flakes, use http://crbug.com/61619 on windows and
 // http://crbug.com/102094 on mac.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, BasicBackForward) {
@@ -454,6 +465,18 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationReplace) {
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   ASSERT_NO_FATAL_FAILURE(NavigateAndCheckTitle(
       "location_redirect.html", "Default Title"));
+
+  NavigateToURL(shell(), GURL("javascript:void(frames[0].navigate())"));
+  EXPECT_EQ("foo", GetTabTitle());
+
+  GoBack();
+  EXPECT_EQ("Default Title", GetTabTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionHistoryScrollAnchorTest,
+                       LocationChangeInSubframe) {
+  ASSERT_NO_FATAL_FAILURE(
+      NavigateAndCheckTitle("location_redirect.html", "Default Title"));
 
   NavigateToURL(shell(), GURL("javascript:void(frames[0].navigate())"));
   EXPECT_EQ("foo", GetTabTitle());

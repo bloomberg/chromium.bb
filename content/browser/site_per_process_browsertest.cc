@@ -639,6 +639,17 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
   }
 };
 
+class SitePerProcesScrollAnchorTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcesScrollAnchorTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "ScrollAnchorSerialization");
+  }
+};
+
 // SitePerProcessEmbedderCSPEnforcementBrowserTest
 
 class SitePerProcessEmbedderCSPEnforcementBrowserTest
@@ -3380,6 +3391,29 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
   NavigateFrameAndWait(root->child_at(0), bar_url);
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcesScrollAnchorTest,
+                       RemoteToLocalScrollAnchorRestore) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/page_with_samesite_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  NavigateFrameToURL(child, frame_url);
+
+  EXPECT_NE(child->current_frame_host()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
+
+  TestFrameNavigationObserver frame_observer2(child);
+  EXPECT_TRUE(ExecuteScript(root, "window.history.back()"));
+  frame_observer2.Wait();
+
+  EXPECT_EQ(child->current_frame_host()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
 }
 
 // Check that iframe sandbox flags are replicated correctly.
