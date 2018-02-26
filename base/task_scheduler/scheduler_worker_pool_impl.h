@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/atomic_ref_count.h"
 #include "base/base_export.h"
 #include "base/containers/stack.h"
 #include "base/logging.h"
@@ -19,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/priority_queue.h"
 #include "base/task_scheduler/scheduler_lock.h"
@@ -238,6 +240,22 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
+
+  // The number of live worker threads with a reference to this
+  // SchedulerWorkerPoolImpl. This is always greater-than-or-equal to
+  // |workers_.size()| as it includes those as well as reclaimed threads that
+  // haven't yet completed their exit. JoinForTesting() must wait for this count
+  // to reach 0 before returning.
+  AtomicRefCount live_workers_count_for_testing_{0};
+  // Signaled when |live_workers_count_| reaches 0 (which can only happen after
+  // initiating JoinForTesting() as the pool always keeps at least one idle
+  // worker otherwise). Note: a Semaphore would be a better suited construct
+  // than |live_workers_count_for_testing_| +
+  // |no_workers_remaining_for_testing_| but //base currently doesn't provide it
+  // and this use case doesn't justify it.
+  WaitableEvent no_workers_remaining_for_testing_{
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED};
 
   // Workers can be added as needed up until there are |worker_capacity_|
   // workers.
