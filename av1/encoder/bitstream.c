@@ -1290,9 +1290,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (mbmi->compound_idx)
           assert(mbmi->interinter_compound_type == COMPOUND_AVERAGE);
 
-        const int comp_index_ctx = get_comp_index_context(cm, xd);
-        aom_write_symbol(w, mbmi->compound_idx,
-                         ec_ctx->compound_index_cdf[comp_index_ctx], 2);
+        if (cm->seq_params.enable_jnt_comp) {
+          const int comp_index_ctx = get_comp_index_context(cm, xd);
+          aom_write_symbol(w, mbmi->compound_idx,
+                           ec_ctx->compound_index_cdf[comp_index_ctx], 2);
+        } else {
+          assert(mbmi->compound_idx == 1);
+        }
       } else {
         assert(cpi->common.reference_mode != SINGLE_REFERENCE &&
                is_inter_compound_mode(mbmi->mode) &&

@@ -8136,10 +8136,11 @@ static int64_t handle_inter_mode(
   const MB_MODE_INFO backup_mbmi = *mbmi;
   MB_MODE_INFO best_mbmi = *mbmi;
   int64_t early_terminate = 0;
-  const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp;
 
   int comp_idx;
-  for (comp_idx = 0; comp_idx < 1 + search_jnt_comp; ++comp_idx) {
+  const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp;
+  // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
+  for (comp_idx = !search_jnt_comp; comp_idx < 2; ++comp_idx) {
     compmode_interinter_cost = 0;
     early_terminate = 0;
     *rd_stats = backup_rd_stats;

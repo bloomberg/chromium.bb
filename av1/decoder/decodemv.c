@@ -1930,9 +1930,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
 
     if (mbmi->comp_group_idx == 0) {
-      const int comp_index_ctx = get_comp_index_context(cm, xd);
-      mbmi->compound_idx = aom_read_symbol(
-          r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
+      if (cm->seq_params.enable_jnt_comp) {
+        const int comp_index_ctx = get_comp_index_context(cm, xd);
+        mbmi->compound_idx = aom_read_symbol(
+            r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
+      } else {
+        // Distance-weighted compound is disabled, so always use average
+        mbmi->compound_idx = 1;
+      }
     } else {
       assert(cm->reference_mode != SINGLE_REFERENCE &&
              is_inter_compound_mode(mbmi->mode) &&
