@@ -79,7 +79,6 @@ KeyframeEffect* KeyframeEffect::Create(
       element, keyframes, composite, script_state, exception_state);
   if (exception_state.HadException())
     return nullptr;
-
   return Create(element, model, timing);
 }
 
@@ -122,6 +121,30 @@ KeyframeEffect::~KeyframeEffect() = default;
 void KeyframeEffect::setComposite(String composite_string) {
   Model()->SetComposite(
       EffectModel::StringToCompositeOperation(composite_string));
+}
+
+void KeyframeEffect::setKeyframes(ScriptState* script_state,
+                                  const ScriptValue& keyframes,
+                                  ExceptionState& exception_state) {
+  // TODO(crbug.com/799061): Support TransitionKeyframeEffectModel. This will
+  // require a lot of work as the setKeyframes API can mutate a transition
+  // Animation into a 'normal' one with multiple properties.
+  if (!Model()->IsStringKeyframeEffectModel()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "Calling setKeyframes on CSS Transitions is not yet supported");
+    return;
+  }
+
+  StringKeyframeVector new_keyframes = EffectInput::ParseKeyframesArgument(
+      target(), keyframes, script_state, exception_state);
+  if (exception_state.HadException())
+    return;
+
+  Model()->SetComposite(EffectInput::ResolveCompositeOperation(
+      Model()->Composite(), new_keyframes));
+
+  ToStringKeyframeEffectModel(Model())->SetFrames(new_keyframes);
 }
 
 AnimationEffectTiming* KeyframeEffect::timing() {

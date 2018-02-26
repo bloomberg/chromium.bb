@@ -38,4 +38,5 @@
     RuntimeEnabled=WebAnimationsAPI
 ] interface KeyframeEffect : KeyframeEffectReadOnly {
   inherit attribute CompositeOperation composite;
+  [CallWith=ScriptState, RaisesException] void setKeyframes(object? keyframes);
 };

@@ -73,6 +73,9 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
 
   // IDL implementation.
   void setComposite(String);
+  void setKeyframes(ScriptState*,
+                    const ScriptValue& keyframes,
+                    ExceptionState&);
 
   bool IsKeyframeEffect() const override { return true; }
 

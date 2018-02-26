@@ -7,14 +7,12 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/EffectModel.h"
+#include "core/animation/KeyframeEffectModel.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-class KeyframeEffectModelBase;
-class Dictionary;
-class DictionaryIterator;
 class Element;
 class ExceptionState;
 class ScriptState;
@@ -25,26 +23,28 @@ class CORE_EXPORT EffectInput {
 
  public:
   // TODO(alancutter): Replace Element* parameter with Document&.
-  static KeyframeEffectModelBase* Convert(
+  static KeyframeEffectModelBase* Convert(Element*,
+                                          const ScriptValue& keyframes,
+                                          EffectModel::CompositeOperation,
+                                          ScriptState*,
+                                          ExceptionState&);
+
+  // Implements "Processing a keyframes argument" from the web-animations spec.
+  // https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
+  static StringKeyframeVector ParseKeyframesArgument(
       Element*,
       const ScriptValue& keyframes,
-      EffectModel::CompositeOperation effect_composite,
       ScriptState*,
       ExceptionState&);
 
- private:
-  static KeyframeEffectModelBase* ConvertArrayForm(
-      Element&,
-      DictionaryIterator keyframes,
-      EffectModel::CompositeOperation effect_composite,
-      ScriptState*,
-      ExceptionState&);
-  static KeyframeEffectModelBase* ConvertObjectForm(
-      Element&,
-      const Dictionary& keyframe,
-      EffectModel::CompositeOperation effect_composite,
-      ScriptState*,
-      ExceptionState&);
+  // Ensures that a CompositeOperation is of an allowed value for a set of
+  // StringKeyframes and the current runtime flags.
+  //
+  // Under certain runtime flags, additive composite operations are not allowed
+  // for CSS properties.
+  static EffectModel::CompositeOperation ResolveCompositeOperation(
+      EffectModel::CompositeOperation,
+      const StringKeyframeVector&);
 };
 
 }  // namespace blink

@@ -19,6 +19,7 @@
 #include "core/animation/Timing.h"
 #include "core/dom/Document.h"
 #include "core/testing/PageTestBase.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -378,6 +379,38 @@ TEST_F(AnimationKeyframeEffectV8Test, SetSpecifiedDuration) {
   EXPECT_TRUE(duration2.IsUnrestrictedDouble());
   EXPECT_EQ(2.5, duration2.GetAsUnrestrictedDouble());
   EXPECT_FALSE(duration2.IsString());
+}
+
+TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
+  ScopedCSSAdditiveAnimationsForTest css_additive_animation(false);
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
+  KeyframeEffectOptions timing_input_dictionary;
+  DummyExceptionStateForTesting exception_state;
+  V8KeyframeEffectOptions::ToImpl(scope.GetIsolate(), timing_input,
+                                  timing_input_dictionary, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  // Since there are no CSS-targeting keyframes, we can create a KeyframeEffect
+  // with composite = 'add'.
+  timing_input_dictionary.setComposite("add");
+  KeyframeEffect* effect = CreateAnimation(
+      script_state, element.Get(), js_keyframes, timing_input_dictionary);
+  EXPECT_EQ(effect->Model()->Composite(), EffectModel::kCompositeAdd);
+
+  // But if we then setKeyframes with CSS-targeting keyframes, the composite
+  // should fallback to 'replace'.
+  Vector<ScriptValue> blink_keyframes = {
+      V8ObjectBuilder(script_state).AddString("width", "10px").GetScriptValue(),
+      V8ObjectBuilder(script_state).AddString("width", "0px").GetScriptValue()};
+  ScriptValue new_js_keyframes(
+      script_state,
+      ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
+  effect->setKeyframes(script_state, new_js_keyframes, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  EXPECT_EQ(effect->Model()->Composite(), EffectModel::kCompositeReplace);
 }
 
 TEST_F(KeyframeEffectTest, TimeToEffectChange) {
