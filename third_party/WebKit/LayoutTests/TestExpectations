@@ -309,7 +309,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/028.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float-2.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/br-with-clear-2.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-intruding-floats-when-moving-to-inline-parent-3.html [ Failure Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/element-clears-float-without-clearance.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-at-start-of-clean-lines-that-are-subsequently-dirtied-vertical-rl.html [ Failure ]
@@ -376,8 +375,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline//continuation-outlines-with-layer
 crbug.com/714962 virtual/layout_ng/fast/inline/002.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/long-wrapped-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/percentage-margins.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-text-bottom.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-with-fallback-fonts.html [ Failure ]
 
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
@@ -392,7 +389,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background.html [ Fail
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-continuation-borders.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-focus-ring.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-continuation.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/inline-wrap-with-parent-padding.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-offset.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/positionedLifetime.html [ Failure ]
@@ -484,8 +480,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-rl-replaced-select
 ### 1px diff with ref files.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks-2.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks.html [ Failure ]
 
 ### Missing refs, these are also skipped for existing layout.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
