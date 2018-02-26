@@ -376,6 +376,9 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
 
+  // Prevent CORB from triggering on this request by setting an Origin header.
+  correction_fetcher_->SetHeader("Origin", "null");
+
   correction_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
