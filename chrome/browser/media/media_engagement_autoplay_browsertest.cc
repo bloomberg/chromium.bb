@@ -69,7 +69,7 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
-        switches::autoplay::kUserGestureRequiredPolicy);
+        switches::autoplay::kDocumentUserActivationRequiredPolicy);
   }
 
   void SetUp() override {
@@ -89,19 +89,27 @@ class MediaEngagementAutoplayBrowserTest : public InProcessBrowserTest {
   };
 
   void LoadTestPage(const std::string& page) {
-    ui_test_utils::NavigateToURL(browser(), http_server_.GetURL("/" + page));
+    NavigateParams params(browser()->profile(), http_server_.GetURL("/" + page),
+                          ui::PageTransition::PAGE_TRANSITION_LINK);
+    params.user_gesture = false;
+    params.is_renderer_initiated = false;
+    ui_test_utils::NavigateToURL(&params);
   }
 
   void LoadTestPageSecondaryOrigin(const std::string& page) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 http_server_origin2_.GetURL("/" + page));
+    NavigateParams params(browser()->profile(),
+                          http_server_origin2_.GetURL("/" + page),
+                          ui::PageTransition::PAGE_TRANSITION_LINK);
+    params.user_gesture = false;
+    params.is_renderer_initiated = false;
+    ui_test_utils::NavigateToURL(&params);
   }
 
   void LoadSubFrame(const std::string& page) {
-    EXPECT_TRUE(content::ExecuteScript(
-        GetWebContents(), "window.open(\"" +
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
+        GetWebContents(), "document.getElementsByName('subframe')[0].src = \"" +
                               http_server_origin2_.GetURL("/" + page).spec() +
-                              "\", \"subframe\")"));
+                              "\""));
   }
 
   void SetScores(GURL url, int visits, int media_playbacks) {
@@ -206,17 +214,33 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
-                       BypassAutoplayFrameHighEngagement) {
+                       DoNotBypassAutoplayFrameHighEngagement_NoDelegation) {
   SetScores(PrimaryOrigin(), 20, 20);
   LoadTestPage("engagement_autoplay_iframe_test.html");
+  LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
+  ExpectAutoplayDenied();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+                       DoNotBypassAutoplayFrameLowEngagement_NoDelegation) {
+  SetScores(SecondaryOrigin(), 20, 20);
+  LoadTestPage("engagement_autoplay_iframe_test.html");
+  LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
+  ExpectAutoplayDenied();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+                       BypassAutoplayFrameHighEngagement_Delegation) {
+  SetScores(PrimaryOrigin(), 20, 20);
+  LoadTestPage("engagement_autoplay_iframe_delegation.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
   ExpectAutoplayAllowed();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
-                       DoNotBypassAutoplayFrameLowEngagement) {
+                       DoNotBypassAutoplayFrameLowEngagement_Delegation) {
   SetScores(SecondaryOrigin(), 20, 20);
-  LoadTestPage("engagement_autoplay_iframe_test.html");
+  LoadTestPage("engagement_autoplay_iframe_delegation.html");
   LoadSubFrame("engagement_autoplay_iframe_test_frame.html");
   ExpectAutoplayDenied();
 }
