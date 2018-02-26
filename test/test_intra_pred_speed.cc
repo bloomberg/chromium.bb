@@ -696,6 +696,8 @@ INTRA_PRED_TEST(SSSE3_1, TX_32X32, NULL, NULL, NULL, NULL, NULL, NULL,
 INTRA_PRED_TEST(SSSE3_2, TX_32X16, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_32x16_ssse3,
                 aom_smooth_predictor_32x16_ssse3, NULL, NULL)
+INTRA_PRED_TEST(SSSE3_3, TX_32X64, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_32x64_ssse3, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
@@ -710,6 +712,8 @@ INTRA_PRED_TEST(AVX2_2, TX_32X16, aom_dc_predictor_32x16_avx2,
                 aom_dc_top_predictor_32x16_avx2,
                 aom_dc_128_predictor_32x16_avx2, aom_v_predictor_32x16_avx2,
                 NULL, aom_paeth_predictor_32x16_avx2, NULL, NULL, NULL)
+INTRA_PRED_TEST(AVX2_3, TX_32X64, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_32x64_avx2, NULL, NULL, NULL)
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON
@@ -751,6 +755,23 @@ INTRA_PRED_TEST(C_3, TX_64X16, aom_dc_predictor_64x16_c,
                 aom_smooth_predictor_64x16_c, aom_smooth_v_predictor_64x16_c,
                 aom_smooth_h_predictor_64x16_c)
 
+#if HAVE_SSSE3
+INTRA_PRED_TEST(SSSE3_4, TX_64X64, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x64_ssse3, NULL, NULL, NULL)
+INTRA_PRED_TEST(SSSE3_5, TX_64X32, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x32_ssse3, NULL, NULL, NULL)
+INTRA_PRED_TEST(SSSE3_6, TX_64X16, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x16_ssse3, NULL, NULL, NULL)
+#endif
+
+#if HAVE_AVX2
+INTRA_PRED_TEST(AVX2_4, TX_64X64, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x64_avx2, NULL, NULL, NULL)
+INTRA_PRED_TEST(AVX2_5, TX_64X32, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x32_avx2, NULL, NULL, NULL)
+INTRA_PRED_TEST(AVX2_6, TX_64X16, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_paeth_predictor_64x16_avx2, NULL, NULL, NULL)
+#endif
 // -----------------------------------------------------------------------------
 // High Bitdepth
 namespace {
