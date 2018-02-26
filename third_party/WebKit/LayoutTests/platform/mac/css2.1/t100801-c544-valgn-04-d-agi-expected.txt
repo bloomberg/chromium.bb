@@ -18,9 +18,9 @@ layer at (0,0) size 800x255
         LayoutImage {IMG} at (68.50,8.50) size 10x10
         LayoutText {#text} at (78,8) size 16x16
           text run at (78,8) width 16: " "
-        LayoutInline {SPAN} at (0,0) size 113x39
-          LayoutText {#text} at (93,7) size 113x39
-            text run at (93,7) width 113: "xxx"
+        LayoutInline {SPAN} at (0,0) size 113x38
+          LayoutText {#text} at (93,8) size 113x38
+            text run at (93,8) width 113: "xxx"
         LayoutText {#text} at (206,8) size 15x16
           text run at (206,8) width 15: " "
         LayoutImage {IMG} at (221,8.50) size 10x10
