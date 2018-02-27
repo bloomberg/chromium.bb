@@ -687,6 +687,68 @@ TEST_F(MailboxManagerSyncTest, ProduceBothWays) {
   DestroyTexture(new_texture);
 }
 
+// Test for crbug.com/816693
+// A: produce texture (without images) into M, B: consume into new_texture
+// B: push updates
+TEST_F(MailboxManagerSyncTest, ProduceTextureNotDefined) {
+  const GLuint kNewTextureId = 1234;
+  InSequence sequence;
+
+  Texture* texture = CreateTexture();
+  const GLsizei levels_needed = TextureManager::ComputeMipMapCount(
+      GL_TEXTURE_2D, kMaxTextureWidth, kMaxTextureHeight, kMaxTextureDepth);
+  SetTarget(texture, GL_TEXTURE_2D, levels_needed);
+  SetParameter(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  SetParameter(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  Mailbox name = Mailbox::Generate();
+
+  manager_->ProduceTexture(name, texture);
+
+  // Share
+  manager_->PushTextureUpdates(g_sync_token);
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewTextureId));
+  SetupUpdateTexParamExpectations(kNewTextureId, GL_LINEAR, GL_LINEAR,
+                                  GL_REPEAT, GL_REPEAT);
+  TextureBase* new_texture = manager2_->ConsumeTexture(name);
+  EXPECT_EQ(kNewTextureId, new_texture->service_id());
+
+  // Change something so that the push recreates the TextureDefinition.
+  SetParameter(static_cast<Texture*>(new_texture), GL_TEXTURE_MIN_FILTER,
+               GL_NEAREST);
+
+  // Synchronize manager2 -> manager
+  manager2_->PushTextureUpdates(g_sync_token);
+  SetupUpdateTexParamExpectations(1, GL_NEAREST, GL_LINEAR, GL_REPEAT,
+                                  GL_REPEAT);
+  manager_->PullTextureUpdates(g_sync_token);
+
+  DestroyTexture(texture);
+  DestroyTexture(new_texture);
+}
+
+TEST_F(MailboxManagerSyncTest, ProduceTextureNotBound) {
+  InSequence sequence;
+
+  Texture* texture = CreateTexture();
+  Mailbox name = Mailbox::Generate();
+
+  manager_->ProduceTexture(name, texture);
+
+  // Share
+  manager_->PushTextureUpdates(g_sync_token);
+
+  // Consume should fail.
+  TextureBase* new_texture = manager2_->ConsumeTexture(name);
+  EXPECT_EQ(nullptr, new_texture);
+
+  // Synchronize manager2 -> manager
+  manager2_->PushTextureUpdates(g_sync_token);
+  manager_->PullTextureUpdates(g_sync_token);
+
+  DestroyTexture(texture);
+}
+
 // TODO: Texture::level_infos_[][].size()
 
 // TODO: unsupported targets and formats
