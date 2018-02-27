@@ -120,15 +120,37 @@ static INLINE __m256i convolve_lowbd_x(const __m256i data,
   return convolve_lowbd(s, coeffs);
 }
 
-static INLINE void add_store_aligned(CONV_BUF_TYPE *const dst,
-                                     const __m256i *const res,
-                                     const __m256i *const avg_mask, int shift) {
+static INLINE void add_store_aligned_256(CONV_BUF_TYPE *const dst,
+                                         const __m256i *const res,
+                                         const int do_average) {
   __m256i d;
-  d = _mm256_load_si256((__m256i *)dst);
-  d = _mm256_and_si256(d, *avg_mask);
-  d = _mm256_add_epi32(d, *res);
-  if (shift) d = _mm256_srai_epi32(d, 1);
+  if (do_average) {
+    d = _mm256_load_si256((__m256i *)dst);
+    d = _mm256_add_epi32(d, *res);
+    d = _mm256_srai_epi32(d, 1);
+  } else {
+    d = *res;
+  }
   _mm256_store_si256((__m256i *)dst, d);
 }
+
+#if CONFIG_JNT_COMP
+static INLINE void mult_add_store_aligned_256(CONV_BUF_TYPE *const dst,
+                                              const __m256i *const res,
+                                              const __m256i *const wt0,
+                                              const __m256i *const wt1,
+                                              const int do_average) {
+  __m256i d;
+  if (do_average) {
+    d = _mm256_load_si256((__m256i *)dst);
+    d = _mm256_add_epi32(_mm256_mullo_epi32(d, *wt0),
+                         _mm256_mullo_epi32(*res, *wt1));
+    d = _mm256_srai_epi32(d, DIST_PRECISION_BITS);
+  } else {
+    d = *res;
+  }
+  _mm256_store_si256((__m256i *)dst, d);
+}
+#endif
 
 #endif

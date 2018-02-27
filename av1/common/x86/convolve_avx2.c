@@ -355,8 +355,7 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   const __m256i round_const =
       _mm256_set1_epi32((1 << conv_params->round_1) >> 1);
   const __m128i round_shift = _mm_cvtsi32_si128(conv_params->round_1);
-
-  const __m256i avg_mask = _mm256_set1_epi32(conv_params->do_average ? -1 : 0);
+  const int do_average = conv_params->do_average;
   __m256i coeffs[4], s[8];
 
   assert((FILTER_BITS - conv_params->round_0) >= 0);
@@ -452,8 +451,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           _mm256_add_epi32(res_lo_0_shift, round_const), round_shift);
 
       // Accumulate values into the destination buffer
-      add_store_aligned(&dst[i * dst_stride + j], &res_lo_0_round, &avg_mask,
-                        conv_params->do_average);
+      add_store_aligned_256(&dst[i * dst_stride + j], &res_lo_0_round,
+                            do_average);
 
       const __m256i res_lo_1_32b =
           _mm256_cvtepi16_epi32(_mm256_extracti128_si256(res_lo, 1));
@@ -462,8 +461,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
       const __m256i res_lo_1_round = _mm256_sra_epi32(
           _mm256_add_epi32(res_lo_1_shift, round_const), round_shift);
 
-      add_store_aligned(&dst[i * dst_stride + j + dst_stride], &res_lo_1_round,
-                        &avg_mask, conv_params->do_average);
+      add_store_aligned_256(&dst[i * dst_stride + j + dst_stride],
+                            &res_lo_1_round, do_average);
 
       if (w - j > 8) {
         const __m256i res_hi = convolve_lowbd(s + 4, coeffs);
@@ -475,8 +474,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
         const __m256i res_hi_0_round = _mm256_sra_epi32(
             _mm256_add_epi32(res_hi_0_shift, round_const), round_shift);
 
-        add_store_aligned(&dst[i * dst_stride + j + 8], &res_hi_0_round,
-                          &avg_mask, conv_params->do_average);
+        add_store_aligned_256(&dst[i * dst_stride + j + 8], &res_hi_0_round,
+                              do_average);
 
         const __m256i res_hi_1_32b =
             _mm256_cvtepi16_epi32(_mm256_extracti128_si256(res_hi, 1));
@@ -485,8 +484,8 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
         const __m256i res_hi_1_round = _mm256_sra_epi32(
             _mm256_add_epi32(res_hi_1_shift, round_const), round_shift);
 
-        add_store_aligned(&dst[i * dst_stride + j + 8 + dst_stride],
-                          &res_hi_1_round, &avg_mask, conv_params->do_average);
+        add_store_aligned_256(&dst[i * dst_stride + j + 8 + dst_stride],
+                              &res_hi_1_round, do_average);
       }
       s[0] = s[1];
       s[1] = s[2];
@@ -668,8 +667,7 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *const src_ptr = src - fo_horiz;
   const int bits = FILTER_BITS - conv_params->round_1;
-  const __m256i avg_mask = _mm256_set1_epi32(conv_params->do_average ? -1 : 0);
-
+  const int do_average = conv_params->do_average;
   __m256i filt[4], coeffs[4];
 
   assert(bits >= 0);
@@ -712,11 +710,11 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
       const __m256i res_hi_shift = _mm256_slli_epi32(res_hi_round, bits);
 
       // Accumulate values into the destination buffer
-      add_store_aligned(&dst[i * dst_stride + j], &res_lo_shift, &avg_mask,
-                        conv_params->do_average);
+      add_store_aligned_256(&dst[i * dst_stride + j], &res_lo_shift,
+                            do_average);
       if (w - j > 8) {
-        add_store_aligned(&dst[i * dst_stride + j + 8], &res_hi_shift,
-                          &avg_mask, conv_params->do_average);
+        add_store_aligned_256(&dst[i * dst_stride + j + 8], &res_hi_shift,
+                              do_average);
       }
     }
   }

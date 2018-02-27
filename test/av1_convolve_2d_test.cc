@@ -123,13 +123,47 @@ INSTANTIATE_TEST_CASE_P(C_COPY, AV1JntConvolve2DTest,
                         libaom_test::AV1Convolve2D::BuildParams(
                             av1_jnt_convolve_2d_copy_c, 0, 0, 1));
 
+INSTANTIATE_TEST_CASE_P(
+    C_X, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_x_c, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    C_Y, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_c, 0, 1, 1));
+
 INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1JntConvolve2DTest,
                         libaom_test::AV1Convolve2D::BuildParams(
                             av1_jnt_convolve_2d_copy_sse2, 0, 0, 1));
 
+INSTANTIATE_TEST_CASE_P(SSE4_1_X, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_x_sse4_1, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(SSE4_1_Y, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_y_sse4_1, 0, 1, 1));
+
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1JntConvolve2DTest,
                         libaom_test::AV1Convolve2D::BuildParams(
                             av1_jnt_convolve_2d_sse4_1, 1, 1, 1));
+
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(AVX2_COPY, AV1JntConvolve2DTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_jnt_convolve_2d_copy_avx2, 0, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    AVX2_X, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_x_avx2, 1, 0, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    AVX2_Y, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_avx2, 0, 1, 1));
+
+INSTANTIATE_TEST_CASE_P(
+    AVX2, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_avx2, 1, 1, 1));
+#endif
 #endif
 
 #if HAVE_SSSE3

@@ -15,6 +15,7 @@
 #include "./av1_rtcd.h"
 #include "aom_dsp/aom_convolve.h"
 #include "aom_dsp/x86/convolve_avx2.h"
+#include "aom_dsp/x86/convolve_common_intrin.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
 #include "aom_dsp/x86/synonyms.h"
@@ -39,7 +40,7 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint8_t *const src_ptr = src - fo_vert * src_stride - fo_horiz;
-  const __m256i avg_mask = _mm256_set1_epi32(conv_params->do_average ? -1 : 0);
+  const int do_average = conv_params->do_average;
 
   __m256i filt[4], s[8], coeffs_x[4], coeffs_y[4];
 
@@ -126,27 +127,15 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
           const __m256i res_bx =
               _mm256_permute2x128_si256(res_a_round, res_b_round, 0x31);
 
-          add_store_aligned(&dst[i * dst_stride + j], &res_ax, &avg_mask,
-                            conv_params->do_average);
-          add_store_aligned(&dst[i * dst_stride + j + dst_stride], &res_bx,
-                            &avg_mask, conv_params->do_average);
+          add_store_aligned_256(&dst[i * dst_stride + j], &res_ax, do_average);
+          add_store_aligned_256(&dst[i * dst_stride + j + dst_stride], &res_bx,
+                                do_average);
         } else {
           const __m128i res_ax = _mm256_extracti128_si256(res_a_round, 0);
           const __m128i res_bx = _mm256_extracti128_si256(res_a_round, 1);
 
-          __m128i r0 = _mm_load_si128((__m128i *)&dst[i * dst_stride + j]);
-          __m128i r1 =
-              _mm_load_si128((__m128i *)&dst[i * dst_stride + j + dst_stride]);
-          r0 = _mm_and_si128(r0, _mm256_extracti128_si256(avg_mask, 0));
-          r1 = _mm_and_si128(r1, _mm256_extracti128_si256(avg_mask, 0));
-          r0 = _mm_add_epi32(r0, res_ax);
-          r1 = _mm_add_epi32(r1, res_bx);
-          if (conv_params->do_average) {
-            r0 = _mm_srai_epi32(r0, 1);
-            r1 = _mm_srai_epi32(r1, 1);
-          }
-          _mm_store_si128((__m128i *)&dst[i * dst_stride + j], r0);
-          _mm_store_si128((__m128i *)&dst[i * dst_stride + j + dst_stride], r1);
+          add_store(&dst[i * dst_stride + j], &res_ax, do_average);
+          add_store(&dst[i * dst_stride + j + dst_stride], &res_bx, do_average);
         }
 
         s[0] = s[1];

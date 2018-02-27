@@ -34,6 +34,7 @@ set(AOM_DSP_COMMON_SOURCES
     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
     "${AOM_ROOT}/aom_dsp/subtract.c"
     "${AOM_ROOT}/aom_dsp/txfm_common.h"
+    "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_intrin.h")
 
 set(AOM_DSP_COMMON_ASM_SSE2
