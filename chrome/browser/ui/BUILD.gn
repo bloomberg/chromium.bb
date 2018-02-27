@@ -2616,6 +2616,8 @@ split_static_library("ui") {
       sources += [
         "webui/help/version_updater_win.cc",
         "webui/help/version_updater_win.h",
+        "webui/settings/incompatible_software_handler_win.cc",
+        "webui/settings/incompatible_software_handler_win.h",
       ]
       deps += [ "//google_update" ]
     } else {

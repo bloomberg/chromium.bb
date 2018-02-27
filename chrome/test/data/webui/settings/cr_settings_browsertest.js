@@ -608,6 +608,30 @@ TEST_F('CrSettingsChromeCleanupPageTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsIncompatibleSoftwarePageTest() {}
+
+CrSettingsIncompatibleSoftwarePageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/incompatible_software_page/incompatible_software_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'incompatible_software_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsIncompatibleSoftwarePageTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#endif  // defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
 
 /**

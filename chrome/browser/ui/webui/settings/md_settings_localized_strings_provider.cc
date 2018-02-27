@@ -861,6 +861,31 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("chromeCleanupDetailsExplanation",
                          cleanup_details_explanation);
 }
+
+void AddIncompatibleSoftwareStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"incompatibleSoftwareResetCardTitle",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_RESET_CARD_TITLE},
+      {"incompatibleSoftwareSubpageSubtitle",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_SUBPAGE_SUBTITLE},
+      {"incompatibleSoftwareSubpageSubtitleNoAdminRights",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_SUBPAGE_SUBTITLE_NO_ADMIN_RIGHTS},
+      {"incompatibleSoftwareListTitle",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_LIST_TITLE},
+      {"incompatibleSoftwareRemoveButton",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_REMOVE_BUTTON},
+      {"incompatibleSoftwareUpdateButton",
+       IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_UPDATE_BUTTON},
+      {"incompatibleSoftwareDone", IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_DONE},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+  // TODO(pmonette): Add the help URL when available.
+  base::string16 learn_how_text = l10n_util::GetStringFUTF16(
+      IDS_SETTINGS_INCOMPATIBLE_SOFTWARE_SUBPAGE_LEARN_HOW,
+      base::ASCIIToUTF16("chrome://placeholder"));
+  html_source->AddString("incompatibleSoftwareSubpageLearnHow", learn_how_text);
+}
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
@@ -2281,6 +2306,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   AddChromeCleanupStrings(html_source);
+  AddIncompatibleSoftwareStrings(html_source);
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
   AddChangePasswordStrings(html_source);

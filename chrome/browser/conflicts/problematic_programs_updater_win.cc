@@ -21,8 +21,8 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 
-const base::Feature kThirdPartyConflictsWarning{
-    "ThirdPartyConflictsWarning", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIncompatibleSoftwareWarning{
+    "IncompatibleSoftwareWarning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ProblematicProgram ----------------------------------------------------------
 
@@ -59,7 +59,7 @@ ProblematicProgramsUpdater::MaybeCreate(
 
   std::unique_ptr<ProblematicProgramsUpdater> instance;
 
-  if (base::FeatureList::IsEnabled(kThirdPartyConflictsWarning)) {
+  if (base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning)) {
     instance.reset(
         new ProblematicProgramsUpdater(module_list_filter, installed_programs));
   }
@@ -71,7 +71,7 @@ ProblematicProgramsUpdater::MaybeCreate(
 bool ProblematicProgramsUpdater::TrimCache() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(kThirdPartyConflictsWarning))
+  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
     return false;
 
   std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
@@ -105,7 +105,7 @@ bool ProblematicProgramsUpdater::TrimCache() {
 bool ProblematicProgramsUpdater::HasCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(kThirdPartyConflictsWarning))
+  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
     return false;
 
   return !g_browser_process->local_state()
@@ -119,21 +119,20 @@ base::Value ProblematicProgramsUpdater::GetCachedPrograms() {
 
   base::Value program_names(base::Value::Type::LIST);
 
-  if (base::FeatureList::IsEnabled(kThirdPartyConflictsWarning)) {
-    std::vector<ProblematicProgram> programs =
-        ConvertToProblematicProgramsVector(
-            *g_browser_process->local_state()
-                 ->FindPreference(prefs::kProblematicPrograms)
-                 ->GetValue());
+  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
+    return program_names;
 
-    for (const auto& program : programs) {
-      base::Value dict(base::Value::Type::DICTIONARY);
-      dict.SetKey("name", base::Value(program.info.name));
-      dict.SetKey("type",
-                  base::Value(program.blacklist_action->message_type()));
-      dict.SetKey("url", base::Value(program.blacklist_action->message_url()));
-      program_names.GetList().push_back(std::move(dict));
-    }
+  std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
+      *g_browser_process->local_state()
+           ->FindPreference(prefs::kProblematicPrograms)
+           ->GetValue());
+
+  for (const auto& program : programs) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("name", base::Value(program.info.name));
+    dict.SetKey("type", base::Value(program.blacklist_action->message_type()));
+    dict.SetKey("url", base::Value(program.blacklist_action->message_url()));
+    program_names.GetList().push_back(std::move(dict));
   }
 
   return program_names;

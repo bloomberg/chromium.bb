@@ -36,6 +36,7 @@
  *   FONTS: (undefined|!settings.Route),
  *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
  *   IMPORT_DATA: (undefined|!settings.Route),
+ *   INCOMPATIBLE_SOFTWARE: (undefined|!settings.Route),
  *   INPUT_METHODS: (undefined|!settings.Route),
  *   INTERNET: (undefined|!settings.Route),
  *   INTERNET_NETWORKS: (undefined|!settings.Route),
@@ -73,8 +74,8 @@
  *   SITE_SETTINGS_HANDLERS: (undefined|!settings.Route),
  *   SITE_SETTINGS_IMAGES: (undefined|!settings.Route),
  *   SITE_SETTINGS_JAVASCRIPT: (undefined|!settings.Route),
- *   SITE_SETTINGS_SOUND: (undefined|!settings.Route),
  *   SITE_SETTINGS_SENSORS: (undefined|!settings.Route),
+ *   SITE_SETTINGS_SOUND: (undefined|!settings.Route),
  *   SITE_SETTINGS_LOCATION: (undefined|!settings.Route),
  *   SITE_SETTINGS_MICROPHONE: (undefined|!settings.Route),
  *   SITE_SETTINGS_MIDI_DEVICES: (undefined|!settings.Route),
@@ -389,6 +390,10 @@ cr.define('settings', function() {
         // This should only be added if the feature is enabled.
         if (loadTimeData.getBoolean('userInitiatedCleanupsEnabled')) {
           r.CHROME_CLEANUP = r.RESET.createChild('/cleanup');
+        }
+        if (loadTimeData.getBoolean('showIncompatibleSoftware')) {
+          r.INCOMPATIBLE_SOFTWARE =
+              r.RESET.createChild('/incompatibleSoftware');
         }
         // </if>
       }

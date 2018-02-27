@@ -40,6 +40,14 @@ Polymer({
         return loadTimeData.getBoolean('userInitiatedCleanupsEnabled');
       },
     },
+
+    /** @private */
+    showIncompatibleSoftware_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showIncompatibleSoftware');
+      },
+    },
     // </if>
   },
 
@@ -87,8 +95,14 @@ Polymer({
   // </if>
 
   // <if expr="_google_chrome and is_win">
+  /** @private */
   onChromeCleanupTap_: function() {
     settings.navigateTo(settings.routes.CHROME_CLEANUP);
+  },
+
+  /** @private */
+  onIncompatibleSoftwareTap_: function() {
+    settings.navigateTo(settings.routes.INCOMPATIBLE_SOFTWARE);
   },
   // </if>
 
