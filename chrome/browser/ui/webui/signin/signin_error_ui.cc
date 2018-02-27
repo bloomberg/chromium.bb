@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -19,6 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -97,8 +100,21 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
   if (is_profile_blocked) {
     source->AddLocalizedString("profileBlockedMessage",
                                IDS_OLD_PROFILES_DISABLED_MESSAGE);
-    source->AddLocalizedString("profileBlockedAddPersonSuggestion",
-                               IDS_OLD_PROFILES_DISABLED_ADD_PERSON_SUGGESTION);
+    std::string allowed_domain = signin_ui_util::GetAllowedDomain(
+        g_browser_process->local_state()->GetString(
+            prefs::kGoogleServicesUsernamePattern));
+    if (allowed_domain.empty()) {
+      source->AddLocalizedString(
+          "profileBlockedAddPersonSuggestion",
+          IDS_OLD_PROFILES_DISABLED_ADD_PERSON_SUGGESTION);
+    } else {
+      source->AddString(
+          "profileBlockedAddPersonSuggestion",
+          l10n_util::GetStringFUTF16(
+              IDS_OLD_PROFILES_DISABLED_ADD_PERSON_SUGGESTION_WITH_DOMAIN,
+              base::ASCIIToUTF16(allowed_domain)));
+    }
+
     source->AddLocalizedString("profileBlockedRemoveProfileSuggestion",
                                IDS_OLD_PROFILES_DISABLED_REMOVED_OLD_PROFILE);
   } else if (!is_system_profile &&

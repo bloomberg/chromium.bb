@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 
@@ -181,5 +183,32 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+std::string GetAllowedDomain(std::string signin_pattern) {
+  std::vector<std::string> splitted_signin_pattern = base::SplitString(
+      signin_pattern, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  // There are more than one '@'s in the pattern.
+  if (splitted_signin_pattern.size() != 2)
+    return std::string();
+
+  std::string domain = splitted_signin_pattern[1];
+
+  // Trims tailing '$' if existed.
+  if (domain.size() > 0 && domain.back() == '$')
+    domain.pop_back();
+
+  // Trims tailing '\E' if existed.
+  if (domain.size() > 1 &&
+      base::EndsWith(domain, "\\E", base::CompareCase::SENSITIVE))
+    domain.erase(domain.size() - 2);
+
+  // Check if there is any special character in the domain. Note that
+  // jsmith@[192.168.2.1] is not supported.
+  if (!re2::RE2::FullMatch(domain, "[a-zA-Z0-9\\-.]+"))
+    return std::string();
+
+  return domain;
+}
 
 }  // namespace signin_ui_util

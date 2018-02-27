@@ -59,6 +59,12 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 
 #endif
 
+// Returns the domain of the policy value of RestrictSigninToPattern. Returns
+// an empty string if the policy is not set or can not be parsed. The parser
+// only supports the policy value that matches [^@]+@[a-zA-Z0-9\-.]+(\\E)?\$?$.
+// Also, the parser does not validate the policy value.
+std::string GetAllowedDomain(std::string signin_pattern);
+
 }  // namespace signin_ui_util
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_UI_UTIL_H_
