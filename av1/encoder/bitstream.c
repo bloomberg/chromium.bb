@@ -4041,6 +4041,19 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   saved_wb.bit_buffer += length_field_size;
 #endif
 
+#define EXT_TILE_DEBUG 0
+#if EXT_TILE_DEBUG
+  {
+    char fn[20] = "./fh";
+    fn[4] = cm->current_video_frame / 100 + '0';
+    fn[5] = (cm->current_video_frame % 100) / 10 + '0';
+    fn[6] = (cm->current_video_frame % 10) + '0';
+    fn[7] = '\0';
+    av1_print_uncompressed_frame_header(data - obu_size, obu_size, fn);
+  }
+#endif  // EXT_TILE_DEBUG
+#undef EXT_TILE_DEBUG
+
   if (cm->show_existing_frame) {
     data_size = 0;
   } else {
