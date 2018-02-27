@@ -114,17 +114,17 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Queue a input buffer for decode.
   void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer);
 
-  // Get a new input buffer from the queue and set it up in decoder. This will
-  // sleep if no input buffers are available. Return true if a new buffer has
-  // been set up, false if an early exit has been requested (due to initiated
-  // reset/flush/destroy).
-  bool GetInputBuffer_Locked();
+  // Gets a new |current_input_buffer_| from |input_buffers_| and sets it up in
+  // |decoder_|. This method will sleep if no |input_buffers_| are available.
+  // Returns true if a new buffer has been set up, false if an early exit has
+  // been requested (due to initiated reset/flush/destroy).
+  bool GetCurrInputBuffer_Locked();
 
-  // Signal the client that the current buffer has been read and can be
+  // Signals the client that |curr_input_buffer_| has been read and can be
   // returned. Will also release the mapping.
   void ReturnCurrInputBuffer_Locked();
 
-  // Wait for more surfaces to become available. Return true once they do or
+  // Waits for more surfaces to become available. Returns true once they do or
   // false if an early exit has been requested (due to an initiated
   // reset/flush/destroy).
   bool WaitForSurfaces_Locked();
