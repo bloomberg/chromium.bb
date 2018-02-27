@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -457,6 +458,9 @@ service_manifest("chrome_content_browser_manifest_overlay") {
     "//services/identity:manifest",
     "//services/preferences:manifest",
   ]
+  if (enable_cros_assistant) {
+    packaged_services += [ "//chromeos/services/assistant:manifest" ]
+  }
 }
 
 service_manifest("chrome_test_browser_overlay") {

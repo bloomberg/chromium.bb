@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//printing/features/features.gni")
@@ -67,6 +68,7 @@ source_set("chromeos") {
     "//chromeos:biod_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
+    "//chromeos/assistant:buildflags",
     "//chromeos/components/tether",
     "//components/arc",
     "//components/browser_sync",
@@ -1654,6 +1656,13 @@ source_set("chromeos") {
     "extensions/wallpaper_private_api.cc",
     "extensions/wallpaper_private_api.h",
   ]
+
+  if (enable_cros_assistant) {
+    deps += [
+      "//chromeos/services/assistant:lib",
+      "//chromeos/services/assistant/public/mojom",
+    ]
+  }
 
   if (use_cups) {
     sources += [

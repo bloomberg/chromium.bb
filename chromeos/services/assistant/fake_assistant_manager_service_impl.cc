@@ -11,7 +11,10 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
-void FakeAssistantManagerServiceImpl::Start() {}
+void FakeAssistantManagerServiceImpl::Start(const std::string& access_token) {}
+
+void FakeAssistantManagerServiceImpl::SetAccessToken(
+    const std::string& access_token) {}
 
 }  // namespace assistant
 }  // namespace chromeos

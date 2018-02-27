@@ -87,6 +87,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -118,13 +119,16 @@
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "net/cert/sth_distributor.h"
 #include "rlz/features/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -134,6 +138,10 @@
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #endif
 
 namespace chromeos {
@@ -1354,6 +1362,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     // self-destructs on logout.
     policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
     arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+    content::BrowserContext::GetConnectorFor(profile)->StartService(
+        chromeos::assistant::mojom::kServiceName);
+#endif
 
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)
