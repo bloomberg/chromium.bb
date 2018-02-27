@@ -612,7 +612,7 @@ nofor pass2 $l[]@46 @68-6
 nofor pass3 @6-12345 @6-123457
 nofor pass3 @6-2456 @6-24567
 nofor pass3 @6-1346 @6-13467
-nofor pass3 @6-1356 @6-13567
+nofor pass3 @6-1356 @13567
 nofor pass3 @6-1256 @6-12567
 
 # save ~ and |  before inserting extra letsigns and endcapsword in pass 2.
