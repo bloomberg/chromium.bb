@@ -4112,6 +4112,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #endif  // CONFIG_OBU_SIZING
 
   data += obu_size + length_field_size;
+#if CONFIG_EXT_TILE
+  // Since length_field_size is determined adaptively after frame header
+  // encoding, saved_wb must be adjusted accordingly.
+  saved_wb.bit_buffer += length_field_size;
+#endif
 
   if (cm->show_existing_frame) {
     data_size = 0;
