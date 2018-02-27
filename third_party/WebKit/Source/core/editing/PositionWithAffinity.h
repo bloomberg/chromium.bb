@@ -25,6 +25,8 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
   PositionWithAffinityTemplate();
   ~PositionWithAffinityTemplate();
 
+  explicit operator bool() const { return IsNotNull(); }
+
   TextAffinity Affinity() const { return affinity_; }
   const PositionTemplate<Strategy>& GetPosition() const { return position_; }
 
