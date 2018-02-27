@@ -35,6 +35,9 @@ AXAuraObjWrapper* AXViewObjWrapper::GetParent() {
 
 void AXViewObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
+  if (view_->GetViewAccessibility().IsLeaf())
+    return;
+
   // TODO(dtseng): Need to handle |Widget| child of |View|.
   for (int i = 0; i < view_->child_count(); ++i) {
     if (!view_->child_at(i)->visible())
