@@ -260,17 +260,17 @@ def fix_python_cmd(cmd, env=None):
   # At this point we need to prepend some resolved python to cmd.
 
   if sys.platform == 'win32':
-    python_exe = u'python.exe'
-    check = fs.isfile
+    python_exe = 'python.exe'
+    check = os.path.isfile
   else:
-    python_exe = u'python'
+    python_exe = 'python'
     def check(candidate):
       try:
-        return bool(fs.stat(candidate).st_mode | os.path.stat.S_IEXEC)
+        return bool(os.stat(candidate).st_mode | os.path.stat.S_IEXEC)
       except OSError:
         return False
 
-  found_python = unicode(sys.executable)
+  found_python = sys.executable
 
   paths = (os.environ if env is None else env).get('PATH', '').split(os.pathsep)
   for path in paths:
