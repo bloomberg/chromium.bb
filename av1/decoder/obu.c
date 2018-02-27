@@ -41,6 +41,21 @@ typedef enum {
 } SCALABILITY_STRUCTURES;
 #endif
 
+int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
+  if (!obu_type) return -1;
+  *obu_type = (OBU_TYPE)((obu_header >> 3) & 0xF);
+  switch (*obu_type) {
+    case OBU_SEQUENCE_HEADER: break;
+    case OBU_TEMPORAL_DELIMITER: break;
+    case OBU_FRAME_HEADER: break;
+    case OBU_TILE_GROUP: break;
+    case OBU_METADATA: break;
+    case OBU_PADDING: break;
+    default: return -1;
+  }
+  return 0;
+}
+
 static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
                                 size_t *header_size,
                                 uint8_t *obu_extension_header) {

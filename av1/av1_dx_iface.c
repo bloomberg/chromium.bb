@@ -29,6 +29,7 @@
 
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
+#include "av1/decoder/obu.h"
 
 #include "av1/av1_iface_common.h"
 
@@ -178,9 +179,15 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
 
   si->w = 0;
-  si->is_kf = 1;
+  si->h = 0;
+  si->is_kf = 0;
+
+  // TODO(tomfinegan): This function needs Sequence and Frame Header OBUs to
+  // operate properly. At present it hard codes the values to 1 for the keyframe
+  // and intra only flags, and assumes the data being parsed is a Sequence
+  // Header OBU.
   intra_only_flag = 1;
-  si->h = 1;
+  si->is_kf = 1;
 
 #if CONFIG_OBU_SIZING
   size_t length_field_size = 1;
@@ -195,7 +202,18 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   mem_get_le32(data);
 #endif
 
-  aom_rb_read_literal(&rb, 8);  // obu_header
+  const uint8_t obu_header = (uint8_t)aom_rb_read_literal(&rb, 8);
+  OBU_TYPE obu_type;
+
+  if (get_obu_type(obu_header, &obu_type) != 0)
+    return AOM_CODEC_UNSUP_BITSTREAM;
+
+  // This check is disabled because existing behavior is depended upon by
+  // decoder tests (see decode_test_driver.cc), scalability_decoder (see
+  // scalable_decoder.c), and decode_once() in this file.
+  // if (obu_type != OBU_SEQUENCE_HEADER)
+  //   return AOM_CODEC_INVALID_PARAM;
+
   av1_read_profile(&rb);        // profile
   aom_rb_read_literal(&rb, 4);  // level
 #if CONFIG_SCALABILITY

@@ -12,6 +12,15 @@
 #ifndef AV1_DECODER_OBU_H
 #define AV1_DECODER_OBU_H
 
+#include "aom/aom_codec.h"
+#include "av1/decoder/decoder.h"
+
+// Extracts OBU type from 'obu_header_byte' and returns it via 'obu_type'
+// pointer.
+// Return value is 0 when the OBU header contains a valid OBU_TYPE value, -1
+// otherwise.
+int get_obu_type(uint8_t obu_header_byte, OBU_TYPE *obu_type);
+
 void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,
                                 const uint8_t **p_data_end);

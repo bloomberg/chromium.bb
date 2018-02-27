@@ -17,6 +17,7 @@
 
 #include "aom_ports/mem_ops.h"
 #include "av1/common/common.h"
+#include "av1/decoder/obu.h"
 
 #define OBU_HEADER_SIZE_BYTES 1
 #define OBU_HEADER_EXTENSION_SIZE_BYTES 1
@@ -34,20 +35,6 @@
 #endif
 
 #if CONFIG_OBU_NO_IVF
-int read_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
-  if (!obu_type) return -1;
-  const int obu_type_value = (obu_header >> 3) & 0xF;
-  switch (obu_type_value) {
-    case OBU_SEQUENCE_HEADER: *obu_type = OBU_SEQUENCE_HEADER; break;
-    case OBU_TEMPORAL_DELIMITER: *obu_type = OBU_TEMPORAL_DELIMITER; break;
-    case OBU_FRAME_HEADER: *obu_type = OBU_FRAME_HEADER; break;
-    case OBU_TILE_GROUP: *obu_type = OBU_TILE_GROUP; break;
-    case OBU_METADATA: *obu_type = OBU_METADATA; break;
-    case OBU_PADDING: *obu_type = OBU_PADDING; break;
-    default: return -1;
-  }
-  return 0;
-}
 
 // Reads OBU size from infile and returns 0 upon success. Returns obu_size via
 // output pointer obu_size. Returns -1 when reading or parsing fails. Always
@@ -130,7 +117,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
     *bytes_read += obu_size;
 
     OBU_TYPE obu_type;
-    if (read_obu_type(data[length_field_size], &obu_type) != 0) {
+    if (get_obu_type(data[length_field_size], &obu_type) != 0) {
       warn("Invalid OBU type.\n");
       return 1;
     }
@@ -197,7 +184,7 @@ int file_is_obu(struct AvxInputContext *input_ctx) {
     return 0;
   }
   OBU_TYPE obu_type;
-  if (read_obu_type(obutd[obu_header_offset], &obu_type) != 0) {
+  if (get_obu_type(obutd[obu_header_offset], &obu_type) != 0) {
     warn("Invalid OBU type found while probing for OBU_TEMPORAL_DELIMITER.\n");
     return 0;
   }
