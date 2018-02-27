@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_AUTOCLICK_MUS_AUTOCLICK_APPLICATION_H_
-#define ASH_AUTOCLICK_MUS_AUTOCLICK_APPLICATION_H_
+#ifndef ASH_COMPONENTS_AUTOCLICK_AUTOCLICK_APPLICATION_H_
+#define ASH_COMPONENTS_AUTOCLICK_AUTOCLICK_APPLICATION_H_
 
 #include <map>
 
 #include "ash/autoclick/common/autoclick_controller_common.h"
 #include "ash/autoclick/common/autoclick_controller_common_delegate.h"
-#include "ash/autoclick/mus/public/mojom/autoclick.mojom.h"
+#include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
 #include "base/macros.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -20,15 +20,14 @@
 namespace views {
 class AuraInit;
 class Widget;
-}
+}  // namespace views
 
-namespace ash {
 namespace autoclick {
 
 class AutoclickApplication : public service_manager::Service,
                              public mash::mojom::Launchable,
                              public mojom::AutoclickController,
-                             public AutoclickControllerCommonDelegate {
+                             public ash::AutoclickControllerCommonDelegate {
  public:
   AutoclickApplication();
   ~AutoclickApplication() override;
@@ -53,7 +52,7 @@ class AutoclickApplication : public service_manager::Service,
   void BindAutoclickControllerRequest(
       mojom::AutoclickControllerRequest request);
 
-  // AutoclickControllerCommonDelegate:
+  // ash::AutoclickControllerCommonDelegate:
   views::Widget* CreateAutoclickRingWidget(
       const gfx::Point& event_location) override;
   void UpdateAutoclickRingWidget(views::Widget* widget,
@@ -67,7 +66,7 @@ class AutoclickApplication : public service_manager::Service,
   mojo::Binding<mojom::AutoclickController> autoclick_binding_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
-  std::unique_ptr<AutoclickControllerCommon> autoclick_controller_common_;
+  std::unique_ptr<ash::AutoclickControllerCommon> autoclick_controller_common_;
   std::unique_ptr<views::Widget> widget_;
 
   bool running_standalone_ = false;
@@ -76,6 +75,5 @@ class AutoclickApplication : public service_manager::Service,
 };
 
 }  // namespace autoclick
-}  // namespace ash
 
-#endif  // ASH_AUTOCLICK_MUS_AUTOCLICK_APPLICATION_H_
+#endif  // ASH_COMPONENTS_AUTOCLICK_AUTOCLICK_APPLICATION_H_

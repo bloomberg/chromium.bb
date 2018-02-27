@@ -15,7 +15,7 @@ source_set("lib") {
 
   deps = [
     "//ash/autoclick/common:autoclick",
-    "//ash/autoclick/mus/public/mojom",
+    "//ash/components/autoclick/public/mojom",
     "//ash/public/cpp",
     "//base",
     "//mash/public/mojom",
@@ -30,7 +30,7 @@ source_set("lib") {
   ]
 }
 
-service("accessibility_autoclick") {
+service("autoclick_app") {
   sources = [
     "main.cc",
   ]
@@ -47,6 +47,6 @@ service("accessibility_autoclick") {
 }
 
 service_manifest("manifest") {
-  name = "accessibility_autoclick"
+  name = "autoclick_app"
   source = "manifest.json"
 }

@@ -45,7 +45,7 @@ include_rules = [
 
 specific_include_rules = {
   "mash_service_factory.cc": [
-    "+ash/autoclick/mus/autoclick_application.h",
+    "+ash/components/autoclick/autoclick_application.h",
     "+ash/components/quick_launch/public",
     "+ash/components/quick_launch/quick_launch.h",
     "+ash/public/interfaces",

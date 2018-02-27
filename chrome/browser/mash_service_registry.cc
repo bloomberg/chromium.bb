@@ -27,7 +27,7 @@ constexpr Service kServices[] = {
     {ui::mojom::kServiceName, "UI Service", kAshAndUiProcessGroup},
     {ash::mojom::kServiceName, "Ash Window Manager and Shell",
      kAshAndUiProcessGroup},
-    {"accessibility_autoclick", "Ash Accessibility Autoclick", nullptr},
+    {"autoclick_app", "Accessibility Autoclick", nullptr},
     {"touch_hud", "Ash Touch Hud", nullptr},
     {font_service::mojom::kServiceName, "Font Service", nullptr},
 };

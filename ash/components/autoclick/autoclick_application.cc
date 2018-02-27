@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/autoclick/mus/autoclick_application.h"
+#include "ash/components/autoclick/autoclick_application.h"
 
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -23,18 +22,21 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ash {
 namespace autoclick {
+namespace {
 
 // The default wait time between last mouse movement and sending
 // the autoclick.
 const int kDefaultAutoclickDelayMs = 1000;
 
+}  // namespace
+
 // AutoclickUI handles events to the autoclick app.
 class AutoclickUI : public views::WidgetDelegateView,
                     public views::PointerWatcher {
  public:
-  explicit AutoclickUI(AutoclickControllerCommon* autoclick_controller_common)
+  explicit AutoclickUI(
+      ash::AutoclickControllerCommon* autoclick_controller_common)
       : autoclick_controller_common_(autoclick_controller_common) {
     views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
         this, true /* want_moves */);
@@ -74,18 +76,18 @@ class AutoclickUI : public views::WidgetDelegateView,
     }
   }
 
-  AutoclickControllerCommon* autoclick_controller_common_;
+  ash::AutoclickControllerCommon* autoclick_controller_common_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickUI);
 };
 
 AutoclickApplication::AutoclickApplication()
     : launchable_binding_(this), autoclick_binding_(this) {
-  registry_.AddInterface<mash::mojom::Launchable>(base::Bind(
+  registry_.AddInterface<mash::mojom::Launchable>(base::BindRepeating(
       &AutoclickApplication::BindLaunchableRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::AutoclickController>(
-      base::Bind(&AutoclickApplication::BindAutoclickControllerRequest,
-                 base::Unretained(this)));
+      base::BindRepeating(&AutoclickApplication::BindAutoclickControllerRequest,
+                          base::Unretained(this)));
 }
 
 AutoclickApplication::~AutoclickApplication() = default;
@@ -100,8 +102,9 @@ void AutoclickApplication::OnStart() {
     context()->QuitNow();
     return;
   }
-  autoclick_controller_common_.reset(new AutoclickControllerCommon(
-      base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
+  autoclick_controller_common_ =
+      std::make_unique<ash::AutoclickControllerCommon>(
+          base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this);
 }
 
 void AutoclickApplication::OnBindInterface(
@@ -129,7 +132,7 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     widget_->Init(params);
   } else {
     widget_->Close();
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    context()->QuitNow();
   }
 }
 
@@ -164,7 +167,7 @@ void AutoclickApplication::UpdateAutoclickRingWidget(
 void AutoclickApplication::DoAutoclick(const gfx::Point& event_location,
                                        const int mouse_event_flags) {
   // TODO(riajiang): Currently not working. Need to know how to generate events
-  // in mus world (crbug.com/628665).
+  // in mus world. https://crbug.com/628665
 }
 
 void AutoclickApplication::OnAutoclickCanceled() {
@@ -172,4 +175,3 @@ void AutoclickApplication::OnAutoclickCanceled() {
 }
 
 }  // namespace autoclick
-}  // namespace ash

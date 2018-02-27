@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/autoclick/mus/autoclick_application.h"
+#include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -67,8 +67,8 @@ std::unique_ptr<service_manager::Service> CreateAshService() {
       show_primary_host_on_connect);
 }
 
-std::unique_ptr<service_manager::Service> CreateAccessibilityAutoclick() {
-  return std::make_unique<ash::autoclick::AutoclickApplication>();
+std::unique_ptr<service_manager::Service> CreateAutoclickApp() {
+  return std::make_unique<autoclick::AutoclickApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
@@ -96,8 +96,7 @@ void MashServiceFactory::RegisterOutOfProcessServices(
   RegisterMashService(services, quick_launch::mojom::kServiceName,
                       &CreateQuickLaunch);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
-  RegisterMashService(services, "accessibility_autoclick",
-                      &CreateAccessibilityAutoclick);
+  RegisterMashService(services, "autoclick_app", &CreateAutoclickApp);
   RegisterMashService(services, "touch_hud", &CreateTouchHud);
   RegisterMashService(services, font_service::mojom::kServiceName,
                       &CreateFontService);

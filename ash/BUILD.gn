@@ -1070,7 +1070,7 @@ component("ash") {
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
-    "//ash/autoclick/mus/public/mojom",
+    "//ash/components/autoclick/public/mojom",
     "//ash/touch_hud",
     "//base",
     "//base:i18n",
@@ -1143,7 +1143,7 @@ component("ash") {
   ]
 
   data_deps = [
-    "//ash/autoclick/mus:accessibility_autoclick",
+    "//ash/components/autoclick:autoclick_app",
     "//ash/touch_hud/mus:touch_hud",
   ]
 
