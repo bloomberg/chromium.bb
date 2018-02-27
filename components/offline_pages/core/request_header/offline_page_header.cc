@@ -14,15 +14,20 @@ const char kOfflinePageHeaderReasonKey[] = "reason";
 const char kOfflinePageHeaderReasonValueDueToNetError[] = "error";
 const char kOfflinePageHeaderReasonValueFromDownload[] = "download";
 const char kOfflinePageHeaderReasonValueReload[] = "reload";
+const char kOfflinePageHeaderReasonValueFromNotification[] = "notification";
+const char kOfflinePageHeaderReasonFileUrlIntent[] = "file_url_intent";
+const char kOfflinePageHeaderReasonContentUrlIntent[] = "content_url_intent";
 const char kOfflinePageHeaderPersistKey[] = "persist";
 const char kOfflinePageHeaderIDKey[] = "id";
+const char kOfflinePageHeaderIntentUrlKey[] = "intent_url";
 
 namespace {
 
 bool ParseOfflineHeaderValue(const std::string& header_value,
                              bool* need_to_persist,
                              OfflinePageHeader::Reason* reason,
-                             std::string* id) {
+                             std::string* id,
+                             GURL* intent_url) {
   // If the offline header is not present, treat it as not parsed successfully.
   if (header_value.empty())
     return false;
@@ -51,10 +56,21 @@ bool ParseOfflineHeaderValue(const std::string& header_value,
         *reason = OfflinePageHeader::Reason::DOWNLOAD;
       else if (value == kOfflinePageHeaderReasonValueReload)
         *reason = OfflinePageHeader::Reason::RELOAD;
+      else if (value == kOfflinePageHeaderReasonValueFromNotification)
+        *reason = OfflinePageHeader::Reason::NOTIFICATION;
+      else if (value == kOfflinePageHeaderReasonFileUrlIntent)
+        *reason = OfflinePageHeader::Reason::FILE_URL_INTENT;
+      else if (value == kOfflinePageHeaderReasonContentUrlIntent)
+        *reason = OfflinePageHeader::Reason::CONTENT_URL_INTENT;
       else
         return false;
     } else if (key == kOfflinePageHeaderIDKey) {
       *id = value;
+    } else if (key == kOfflinePageHeaderIntentUrlKey) {
+      GURL url = GURL(value);
+      if (!url.is_valid())
+        return false;
+      *intent_url = url;
     } else {
       return false;
     }
@@ -71,6 +87,12 @@ std::string ReasonToString(OfflinePageHeader::Reason reason) {
       return kOfflinePageHeaderReasonValueFromDownload;
     case OfflinePageHeader::Reason::RELOAD:
       return kOfflinePageHeaderReasonValueReload;
+    case OfflinePageHeader::Reason::NOTIFICATION:
+      return kOfflinePageHeaderReasonValueFromNotification;
+    case OfflinePageHeader::Reason::FILE_URL_INTENT:
+      return kOfflinePageHeaderReasonFileUrlIntent;
+    case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
+      return kOfflinePageHeaderReasonContentUrlIntent;
     default:
       NOTREACHED();
       return "";
@@ -88,7 +110,8 @@ OfflinePageHeader::OfflinePageHeader(const std::string& header_value)
     : did_fail_parsing_for_test(false),
       need_to_persist(false),
       reason(Reason::NONE) {
-  if (!ParseOfflineHeaderValue(header_value, &need_to_persist, &reason, &id)) {
+  if (!ParseOfflineHeaderValue(header_value, &need_to_persist, &reason, &id,
+                               &intent_url)) {
     did_fail_parsing_for_test = true;
     Clear();
   }
@@ -117,6 +140,13 @@ std::string OfflinePageHeader::GetCompleteHeaderString() const {
     value += kOfflinePageHeaderIDKey;
     value += "=";
     value += id;
+  }
+
+  if (!intent_url.is_empty()) {
+    value += " ";
+    value += kOfflinePageHeaderIntentUrlKey;
+    value += "=";
+    value += intent_url.spec();
   }
 
   return value;
