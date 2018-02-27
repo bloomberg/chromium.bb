@@ -65,7 +65,8 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   for (const auto& id : owned_bitmaps_)
     ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
 
-  // No video capture clients should remain at this point.
+  // No video capture clients should remain after calling
+  // UnregisterCompositorFrameSinkSupport().
   DCHECK(capture_clients_.empty());
 }
 

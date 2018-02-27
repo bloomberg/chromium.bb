@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
@@ -45,9 +47,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       public mojom::FrameSinkManager,
       public HitTestAggregatorDelegate {
  public:
-  FrameSinkManagerImpl(
-      base::Optional<uint32_t> activation_deadline_in_frames = 4u,
-      DisplayProvider* display_provider = nullptr);
+  FrameSinkManagerImpl(base::Optional<uint32_t> activation_deadline_in_frames =
+                           kDefaultActivationDeadlineInFrames,
+                       DisplayProvider* display_provider = nullptr);
   ~FrameSinkManagerImpl() override;
 
   // Binds |this| as a FrameSinkManagerImpl for |request| on |task_runner|. On
