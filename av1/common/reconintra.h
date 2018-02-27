@@ -41,9 +41,7 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
   II_H_PRED,  II_H_PRED, II_V_PRED, II_SMOOTH_PRED, II_SMOOTH_PRED
 };
 
-#if CONFIG_FILTER_INTRA
 #define FILTER_INTRA_SCALE_BITS 4
-#endif  // CONFIG_FILTER_INTRA
 
 #define CONFIG_USE_ANGLE_DELTA_SUB8X8 0
 
@@ -64,9 +62,7 @@ static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
   return cm->allow_screen_content_tools && cm->allow_intrabc;
 }
 
-#if CONFIG_FILTER_INTRA
 extern const int8_t av1_filter_intra_taps[FILTER_INTRA_MODES][8][8];
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -142,12 +142,10 @@ if (NOT BUILD_SHARED_LIBS)
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/motion_vector_test.cc")
 
-    if (CONFIG_FILTER_INTRA)
-      if (HAVE_SSE4_1)
+    if (HAVE_SSE4_1)
         set(AOM_UNIT_TEST_COMMON_SOURCES
             ${AOM_UNIT_TEST_COMMON_SOURCES}
             "${AOM_ROOT}/test/filterintra_test.cc")
-      endif ()
     endif ()
 
     if (CONFIG_CFL)

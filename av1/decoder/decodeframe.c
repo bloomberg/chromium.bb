@@ -617,7 +617,6 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
   }
 }
 
-#if CONFIG_FILTER_INTRA
 static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -634,7 +633,6 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
     }
   }
 }
-#endif  // CONFIG_FILTER_INTRA
 
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                          int mi_row, int mi_col, aom_reader *r,
@@ -679,9 +677,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   }
 
-#if CONFIG_FILTER_INTRA
   if (!inter_block_tx) read_filter_intra_mode_info(xd, r);
-#endif  // CONFIG_FILTER_INTRA
 
   decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
 }

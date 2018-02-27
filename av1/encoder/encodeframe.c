@@ -789,7 +789,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
   }
 
-#if CONFIG_FILTER_INTRA
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     const int use_filter_intra_mode =
@@ -811,7 +810,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  2);
     }
   }
-#endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA_MOD
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
@@ -4809,7 +4807,6 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
         ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
 #endif  // CONFIG_ENTROPY_STATS
       } else {
-#if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
         if (mbmi->filter_intra_mode_info.use_filter_intra)
           intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
@@ -4826,18 +4823,6 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
               av1_ext_tx_ind[tx_set_type][tx_type],
               av1_num_ext_tx_set[tx_set_type]);
         }
-#else
-#if CONFIG_ENTROPY_STATS
-        ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
-                              [tx_type];
-#endif  // CONFIG_ENTROPY_STATS
-        if (allow_update_cdf) {
-          update_cdf(
-              fc->intra_ext_tx_cdf[eset][txsize_sqr_map[tx_size]][mbmi->mode],
-              av1_ext_tx_ind[tx_set_type][tx_type],
-              av1_num_ext_tx_set[tx_set_type]);
-        }
-#endif
       }
     }
   }

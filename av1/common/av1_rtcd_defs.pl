@@ -162,10 +162,8 @@ if (aom_config("CONFIG_NEW_QUANT") eq "yes") {
 
 
 # FILTER_INTRA predictor functions
-if (aom_config("CONFIG_FILTER_INTRA") eq "yes") {
-  add_proto qw/void av1_filter_intra_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left, int mode";
-  specialize qw/av1_filter_intra_predictor sse4_1/;
-}
+add_proto qw/void av1_filter_intra_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left, int mode";
+specialize qw/av1_filter_intra_predictor sse4_1/;
 
 # High bitdepth functions
 

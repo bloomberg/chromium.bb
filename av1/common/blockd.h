@@ -178,7 +178,6 @@ typedef struct {
   uint16_t palette_colors[3 * PALETTE_MAX_SIZE];
 } PALETTE_MODE_INFO;
 
-#if CONFIG_FILTER_INTRA
 typedef struct {
   uint8_t use_filter_intra;
   FILTER_INTRA_MODE filter_intra_mode;
@@ -187,7 +186,6 @@ typedef struct {
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
   DC_PRED, V_PRED, H_PRED, D157_PRED, DC_PRED
 };
-#endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_RD_DEBUG
 #define TXB_COEFF_COST_MAP_SIZE (MAX_MIB_SIZE)
@@ -257,9 +255,8 @@ typedef struct MB_MODE_INFO {
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
 #endif
 
-#if CONFIG_FILTER_INTRA
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
-#endif  // CONFIG_FILTER_INTRA
+
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[PLANE_TYPES];
 
@@ -783,7 +780,6 @@ static const uint8_t mode_to_angle_map[] = {
   0, 90, 180, 45, 135, 113, 157, 203, 67, 0, 0, 0, 0,
 };
 
-#if CONFIG_FILTER_INTRA
 static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
   if (tx == TX_INVALID) return 0;
 
@@ -805,7 +801,6 @@ static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
   }
   return TX_INVALID;
 }
-#endif
 
 // Converts block_index for given transform size to index of the block in raster
 // order.

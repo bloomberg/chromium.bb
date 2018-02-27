@@ -507,8 +507,7 @@ int main(int argc, const char **argv) {
       &fc.intrabc[0], probsfile, 1, cts_each_dim,
       "static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)]");
 
-/* filter_intra experiment */
-#if CONFIG_FILTER_INTRA
+  /* filter_intra experiment */
   cts_each_dim[0] = FILTER_INTRA_MODES;
   optimize_cdf_table(
       &fc.filter_intra_mode[0], probsfile, 1, cts_each_dim,
@@ -520,7 +519,6 @@ int main(int argc, const char **argv) {
   optimize_cdf_table(&fc.filter_intra_tx[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)]");
-#endif
 
   cts_each_dim[0] = TX_SIZES;
   cts_each_dim[1] = TXB_SKIP_CONTEXTS;

@@ -1089,7 +1089,6 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
   }
 }
 
-#if CONFIG_FILTER_INTRA
 DECLARE_ALIGNED(16, const int8_t,
                 av1_filter_intra_taps[FILTER_INTRA_MODES][8][8]) = {
   {
@@ -1242,7 +1241,6 @@ static void highbd_filter_intra_predictor(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_INTRA_EDGE
 static int is_smooth(const MB_MODE_INFO *mbmi, int plane) {
@@ -1517,12 +1515,10 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   const uint16_t *left_ref = ref - 1;
   int p_angle = 0;
   const int is_dr_mode = av1_is_directional_mode(mode);
-#if CONFIG_FILTER_INTRA
   const int use_filter_intra =
       plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
   const FILTER_INTRA_MODE filter_intra_mode =
       xd->mi[0]->mbmi.filter_intra_mode_info.filter_intra_mode;
-#endif  // CONFIG_FILTER_INTRA
   int base = 128 << (xd->bd - 8);
 
   // The default values if ref pixels are not available:
@@ -1542,9 +1538,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
     else
       need_above = 0, need_left = 1, need_above_left = 1;
   }
-#if CONFIG_FILTER_INTRA
   if (use_filter_intra) need_left = need_above = need_above_left = 1;
-#endif  // CONFIG_FILTER_INTRA
 
   assert(n_top_px >= 0);
   assert(n_topright_px >= 0);
@@ -1572,9 +1566,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   // NEED_LEFT
   if (need_left) {
     int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
-#if CONFIG_FILTER_INTRA
     if (use_filter_intra) need_bottom = 0;
-#endif  // CONFIG_FILTER_INTRA
     if (is_dr_mode) need_bottom = p_angle > 180;
     const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
     i = 0;
@@ -1603,9 +1595,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
   // NEED_ABOVE
   if (need_above) {
     int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
-#if CONFIG_FILTER_INTRA
     if (use_filter_intra) need_right = 0;
-#endif  // CONFIG_FILTER_INTRA
     if (is_dr_mode) need_right = p_angle < 90;
     const int num_top_pixels_needed = txwpx + (need_right ? txhpx : 0);
     if (n_top_px > 0) {
@@ -1651,13 +1641,11 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
     left_col[-1] = above_row[-1];
   }
 
-#if CONFIG_FILTER_INTRA
   if (use_filter_intra) {
     highbd_filter_intra_predictor(dst, dst_stride, tx_size, above_row, left_col,
                                   filter_intra_mode, xd->bd);
     return;
   }
-#endif  // CONFIG_FILTER_INTRA
 
   if (is_dr_mode) {
     int upsample_above = 0;
@@ -1743,12 +1731,10 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
   int p_angle = 0;
   const int is_dr_mode = av1_is_directional_mode(mode);
-#if CONFIG_FILTER_INTRA
   const int use_filter_intra =
       plane > 0 ? 0 : xd->mi[0]->mbmi.filter_intra_mode_info.use_filter_intra;
   const FILTER_INTRA_MODE filter_intra_mode =
       xd->mi[0]->mbmi.filter_intra_mode_info.filter_intra_mode;
-#endif  // CONFIG_FILTER_INTRA
 
   // The default values if ref pixels are not available:
   // 127 127 127 .. 127 127 127 127 127 127
@@ -1768,9 +1754,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     else
       need_above = 0, need_left = 1, need_above_left = 1;
   }
-#if CONFIG_FILTER_INTRA
   if (use_filter_intra) need_left = need_above = need_above_left = 1;
-#endif  // CONFIG_FILTER_INTRA
 
   assert(n_top_px >= 0);
   assert(n_topright_px >= 0);
@@ -1798,9 +1782,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   // NEED_LEFT
   if (need_left) {
     int need_bottom = !!(extend_modes[mode] & NEED_BOTTOMLEFT);
-#if CONFIG_FILTER_INTRA
     if (use_filter_intra) need_bottom = 0;
-#endif  // CONFIG_FILTER_INTRA
     if (is_dr_mode) need_bottom = p_angle > 180;
     const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
     i = 0;
@@ -1829,9 +1811,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   // NEED_ABOVE
   if (need_above) {
     int need_right = !!(extend_modes[mode] & NEED_ABOVERIGHT);
-#if CONFIG_FILTER_INTRA
     if (use_filter_intra) need_right = 0;
-#endif  // CONFIG_FILTER_INTRA
     if (is_dr_mode) need_right = p_angle < 90;
     const int num_top_pixels_needed = txwpx + (need_right ? txhpx : 0);
     if (n_top_px > 0) {
@@ -1874,13 +1854,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     left_col[-1] = above_row[-1];
   }
 
-#if CONFIG_FILTER_INTRA
   if (use_filter_intra) {
     av1_filter_intra_predictor(dst, dst_stride, tx_size, above_row, left_col,
                                filter_intra_mode);
     return;
   }
-#endif  // CONFIG_FILTER_INTRA
 
   if (is_dr_mode) {
     int upsample_above = 0;

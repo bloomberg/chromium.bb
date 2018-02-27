@@ -2252,7 +2252,6 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_DIST_8X8
 
-#if CONFIG_FILTER_INTRA
 static int skip_invalid_tx_size_for_filter_intra(const MB_MODE_INFO *mbmi,
                                                  int plane,
                                                  RD_STATS *rd_stats) {
@@ -2268,7 +2267,6 @@ static int skip_invalid_tx_size_for_filter_intra(const MB_MODE_INFO *mbmi,
     return 0;
   }
 }
-#endif
 
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
@@ -2286,12 +2284,10 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
 
-#if CONFIG_FILTER_INTRA
   if (skip_invalid_tx_size_for_filter_intra(&xd->mi[0]->mbmi, plane,
                                             rd_stats)) {
     return;
   }
-#endif
 
   av1_get_entropy_contexts(bsize, tx_size, pd, args.t_above, args.t_left);
 
@@ -2349,7 +2345,6 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
         return x->inter_tx_type_costs[ext_tx_set][square_tx_size][tx_type];
     } else {
       if (ext_tx_set > 0) {
-#if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
         if (mbmi->filter_intra_mode_info.use_filter_intra)
           intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
@@ -2358,10 +2353,6 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
           intra_dir = mbmi->mode;
         return x->intra_tx_type_costs[ext_tx_set][square_tx_size][intra_dir]
                                      [tx_type];
-#else
-        return x->intra_tx_type_costs[ext_tx_set][square_tx_size][mbmi->mode]
-                                     [tx_type];
-#endif
       }
     }
   }
@@ -2392,11 +2383,9 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   mbmi->tx_type = tx_type;
   mbmi->tx_size = tx_size;
-#if CONFIG_FILTER_INTRA
   if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return INT64_MAX;
   }
-#endif
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOM_PLANE_Y, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
@@ -2488,11 +2477,9 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
   prune_tx(cpi, bs, x, xd, tx_set_type, 0);
-#if CONFIG_FILTER_INTRA
   if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return;
   }
-#endif
   if (get_ext_tx_types(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used) >
           1 &&
       !xd->lossless[mbmi->segment_id]) {
@@ -2559,11 +2546,9 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->tx_type = DCT_DCT;
   mbmi->min_tx_size = TX_4X4;
 
-#if CONFIG_FILTER_INTRA
   if (skip_invalid_tx_size_for_filter_intra(mbmi, AOM_PLANE_Y, rd_stats)) {
     return;
   }
-#endif
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, mbmi->tx_size,
                    cpi->sf.use_fast_coef_costing);
 }
@@ -2708,9 +2693,7 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
                                   int mode_cost) {
   int total_rate = mode_cost;
   const int use_palette = mbmi->palette_mode_info.palette_size[0] > 0;
-#if CONFIG_FILTER_INTRA
   const int use_filter_intra = mbmi->filter_intra_mode_info.use_filter_intra;
-#endif  // CONFIG_FILTER_INTRA
   const int use_intrabc = mbmi->use_intrabc;
   // Can only activate one mode.
   assert(((mbmi->mode != DC_PRED) + use_palette + use_intrabc +
@@ -2741,7 +2724,6 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
       total_rate += palette_mode_cost;
     }
   }
-#if CONFIG_FILTER_INTRA
   if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     total_rate += x->filter_intra_cost[mbmi->tx_size][use_filter_intra];
     if (use_filter_intra) {
@@ -2749,7 +2731,6 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
                                                   .filter_intra_mode];
     }
   }
-#endif  // CONFIG_FILTER_INTRA
   if (av1_is_directional_mode(mbmi->mode)) {
     if (av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
@@ -2845,12 +2826,10 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int row, col;
   int64_t temp_sse, this_rd;
   TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
-#if CONFIG_FILTER_INTRA
   if (mbmi->filter_intra_mode_info.use_filter_intra) {
     tx_size = av1_max_tx_size_for_filter_intra(bsize, cm->tx_mode);
     if (!av1_filter_intra_allowed_txsize(tx_size)) return INT64_MAX;
   }
-#endif
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
@@ -2876,7 +2855,6 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                            MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]);
 #endif  // CONFIG_EXT_INTRA_MOD
   }
-#if CONFIG_FILTER_INTRA
   if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     if (mbmi->filter_intra_mode_info.use_filter_intra) {
       const int mode = mbmi->filter_intra_mode_info.filter_intra_mode;
@@ -2886,7 +2864,6 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       mode_cost += x->filter_intra_cost[mbmi->tx_size][0];
     }
   }
-#endif  // CONFIG_FILTER_INTRA
   this_rd =
       RDCOST(x->rdmult, this_rd_stats.rate + mode_cost, this_rd_stats.dist);
   return this_rd;
@@ -3023,9 +3000,7 @@ static int rd_pick_palette_intra_sby(
                                      cpi->common.bit_depth, count_buf);
   else
     colors = av1_count_colors(src, src_stride, rows, cols, count_buf);
-#if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
 
   if (colors > 1 && colors <= 64) {
     int r, c, i;
@@ -3064,9 +3039,7 @@ static int rd_pick_palette_intra_sby(
     }
 
     mbmi->mode = DC_PRED;
-#if CONFIG_FILTER_INTRA
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
 
     uint16_t color_cache[2 * PALETTE_MAX_SIZE];
     const int n_cache = av1_get_palette_cache(xd, 0, color_cache);
@@ -3125,7 +3098,6 @@ static int rd_pick_palette_intra_sby(
   return rate_overhead;
 }
 
-#if CONFIG_FILTER_INTRA
 // Return 1 if an filter intra mode is selected; return 0 otherwise.
 static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     int *rate, int *rate_tokenonly,
@@ -3199,7 +3171,6 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     return 0;
   }
 }
-#endif  // CONFIG_FILTER_INTRA
 
 // Run RD calculation with given luma intra prediction angle., and return
 // the RD cost. Update the best mode info. if the RD cost is the best so far.
@@ -3523,9 +3494,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   uint8_t directional_mode_skip_mask[INTRA_MODES];
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *src = x->plane[0].src.buf;
-#if CONFIG_FILTER_INTRA
   int beat_best_rd = 0;
-#endif  // CONFIG_FILTER_INTRA
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int try_palette =
@@ -3547,9 +3516,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
     angle_estimation(src, src_stride, rows, cols, bsize,
                      directional_mode_skip_mask);
-#if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
   pmi->palette_size[0] = 0;
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
@@ -3601,9 +3568,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;
       best_rd = this_rd;
-#if CONFIG_FILTER_INTRA
       beat_best_rd = 1;
-#endif  // CONFIG_FILTER_INTRA
       *rate = this_rate;
       *rate_tokenonly = this_rate_tokenonly;
       *distortion = this_distortion;
@@ -3620,7 +3585,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               ctx->blk_skip[0]);
   }
 
-#if CONFIG_FILTER_INTRA
   if (beat_best_rd && !xd->lossless[mbmi->segment_id]) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
@@ -3628,7 +3592,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       best_mbmi = *mbmi;
     }
   }
-#endif  // CONFIG_FILTER_INTRA
 
   // If previous searches use only the default tx type, do an extra search for
   // the best tx type.
@@ -8754,9 +8717,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     assert((dv.col & 7) == 0);
     assert((dv.row & 7) == 0);
     memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
-#if CONFIG_FILTER_INTRA
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
     mbmi->use_intrabc = 1;
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = UV_DC_PRED;
@@ -9130,9 +9091,7 @@ static void estimate_skip_mode_rdcost(
       }
     }
 
-#if CONFIG_FILTER_INTRA
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 #if CONFIG_JNT_COMP
     mbmi->comp_group_idx = 0;
@@ -9691,11 +9650,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->ref_frame[1] = second_ref_frame;
     pmi->palette_size[0] = 0;
     pmi->palette_size[1] = 0;
-#if CONFIG_FILTER_INTRA
     mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
-        // Evaluate all sub-pel filters irrespective of whether we can use
-        // them for this frame.
+    // Evaluate all sub-pel filters irrespective of whether we can use them for
+    // this frame.
 
     set_default_interp_filters(mbmi, cm->interp_filter);
 
@@ -9778,7 +9735,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       distortion_y = rd_stats_y.dist;
       skippable = rd_stats_y.skip;
 
-#if CONFIG_FILTER_INTRA
       uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
       memcpy(best_blk_skip, x->blk_skip[0],
              sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
@@ -9852,7 +9808,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           mbmi->filter_intra_mode_info.use_filter_intra = 0;
         }
       }
-#endif
 
       if (rate_y == INT_MAX) continue;
 
@@ -9912,9 +9867,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
       mbmi->angle_delta[PLANE_TYPE_UV] = 0;
-#if CONFIG_FILTER_INTRA
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
       mbmi->ref_mv_idx = 0;
       ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 
@@ -10562,9 +10515,7 @@ PALETTE_EXIT:
       best_mbmode.motion_mode = SIMPLE_TRANSLATION;
 
       best_mbmode.interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-#if CONFIG_FILTER_INTRA
       best_mbmode.filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
 
       set_default_interp_filters(&best_mbmode, cm->interp_filter);
 
@@ -10806,10 +10757,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
-
-#if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
-#endif  // CONFIG_FILTER_INTRA
   mbmi->mode = GLOBALMV;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->uv_mode = UV_DC_PRED;
