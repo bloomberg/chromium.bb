@@ -27,8 +27,8 @@
       'Android': 'android_without_codecs_release_bot_minimal_symbols',
       'Linux x64': 'release_bot',
       'Mac': 'release_bot_mac_strip',
-      'Win': 'release_bot_x86_minimal_symbols',
-      'Win x64': 'release_bot_minimal_symbols',
+      'Win': 'release_bot_x86_minimal_symbols_enable_archive_compression',
+      'Win x64': 'release_bot_minimal_symbols_enable_archive_compression',
     },
 
     'chromium.android': {
@@ -1522,6 +1522,14 @@
     'release_bot_minimal_symbols': [ 'release_bot', 'minimal_symbols' ],
     'release_bot_x86_minimal_symbols': [ 'release_bot', 'x86', 'minimal_symbols' ],
 
+    'release_bot_minimal_symbols_enable_archive_compression': [
+      'release_bot', 'minimal_symbols', 'enable_archive_compression'
+    ],
+
+    'release_bot_x86_minimal_symbols_enable_archive_compression': [
+      'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression'
+    ],
+
     'release_bot_x86_minimal_symbols_no_com_init_hooks': [
       'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks'
     ],
@@ -1870,6 +1878,13 @@
 
     'enable_blink_heap_incremental_marking': {
       'gn_args': 'enable_blink_heap_incremental_marking=true',
+    },
+
+    # This config enable compression on main waterfall win builder to reduce the
+    # size of chrome installer which are downloaded by bysecting script many
+    # times.
+    'enable_archive_compression': {
+      'gn_args': 'enable_archive_compression=true',
     },
 
     # This mixin is used to force configs that use it to fail. It
