@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGCircleElement.h"
 
-#include "core/css/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGEllipse.h"
 #include "core/svg/SVGLength.h"
 
@@ -96,12 +95,8 @@ void SVGCircleElement::CollectStyleForPresentationAttribute(
 void SVGCircleElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::rAttr || attr_name == SVGNames::cxAttr ||
       attr_name == SVGNames::cyAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateSVGPresentationAttributeStyle();
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::FromAttribute(attr_name));
     UpdateRelativeLengthsInformation();
-    GeometryAttributeChanged();
+    GeometryPresentationAttributeChanged(attr_name);
     return;
   }
 

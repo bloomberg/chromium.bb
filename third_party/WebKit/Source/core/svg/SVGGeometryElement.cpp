@@ -30,6 +30,7 @@
 
 #include "core/svg/SVGGeometryElement.h"
 
+#include "core/css/StyleChangeReason.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/LayoutSVGPath.h"
@@ -175,7 +176,16 @@ float SVGGeometryElement::PathLengthScaleFactor(float computed_path_length,
   return clampTo<float>(computed_path_length / author_path_length);
 }
 
+void SVGGeometryElement::GeometryPresentationAttributeChanged(
+    const QualifiedName& attr_name) {
+  InvalidateSVGPresentationAttributeStyle();
+  SetNeedsStyleRecalc(kLocalStyleChange,
+                      StyleChangeReasonForTracing::FromAttribute(attr_name));
+  GeometryAttributeChanged();
+}
+
 void SVGGeometryElement::GeometryAttributeChanged() {
+  SVGElement::InvalidationGuard invalidation_guard(this);
   if (LayoutSVGShape* layout_object = ToLayoutSVGShape(GetLayoutObject())) {
     layout_object->SetNeedsShapeUpdate();
     MarkForLayoutAndParentResourceInvalidation(layout_object);

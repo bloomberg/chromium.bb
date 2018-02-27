@@ -60,7 +60,6 @@ Path SVGPolyElement::AsPathFromPoints() const {
 
 void SVGPolyElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::pointsAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
     GeometryAttributeChanged();
     return;
   }

@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGRectElement.h"
 
-#include "core/css/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGRect.h"
 #include "core/svg/SVGLength.h"
 
@@ -138,12 +137,8 @@ void SVGRectElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
       attr_name == SVGNames::widthAttr || attr_name == SVGNames::heightAttr ||
       attr_name == SVGNames::rxAttr || attr_name == SVGNames::ryAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateSVGPresentationAttributeStyle();
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::FromAttribute(attr_name));
     UpdateRelativeLengthsInformation();
-    GeometryAttributeChanged();
+    GeometryPresentationAttributeChanged(attr_name);
     return;
   }
 
