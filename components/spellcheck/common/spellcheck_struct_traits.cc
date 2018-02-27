@@ -4,6 +4,8 @@
 
 #include "components/spellcheck/common/spellcheck_struct_traits.h"
 
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
+
 namespace mojo {
 
 spellcheck::mojom::Decoration

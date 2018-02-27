@@ -5,7 +5,6 @@
 #ifndef SERVICES_UI_PUBLIC_INTERFACES_IME_IME_STRUCT_TRAITS_H_
 #define SERVICES_UI_PUBLIC_INTERFACES_IME_IME_STRUCT_TRAITS_H_
 
-#include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/composition_text.h"
@@ -54,20 +53,20 @@ struct StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
 template <>
 struct StructTraits<ui::mojom::CandidateWindowEntryDataView,
                     ui::CandidateWindow::Entry> {
-  static std::string value(const ui::CandidateWindow::Entry& e) {
-    return base::UTF16ToUTF8(e.value);
+  static base::string16 value(const ui::CandidateWindow::Entry& e) {
+    return e.value;
   }
-  static std::string label(const ui::CandidateWindow::Entry& e) {
-    return base::UTF16ToUTF8(e.label);
+  static base::string16 label(const ui::CandidateWindow::Entry& e) {
+    return e.label;
   }
-  static std::string annotation(const ui::CandidateWindow::Entry& e) {
-    return base::UTF16ToUTF8(e.annotation);
+  static base::string16 annotation(const ui::CandidateWindow::Entry& e) {
+    return e.annotation;
   }
-  static std::string description_title(const ui::CandidateWindow::Entry& e) {
-    return base::UTF16ToUTF8(e.description_title);
+  static base::string16 description_title(const ui::CandidateWindow::Entry& e) {
+    return e.description_title;
   }
-  static std::string description_body(const ui::CandidateWindow::Entry& e) {
-    return base::UTF16ToUTF8(e.description_body);
+  static base::string16 description_body(const ui::CandidateWindow::Entry& e) {
+    return e.description_body;
   }
   static bool Read(ui::mojom::CandidateWindowEntryDataView data,
                    ui::CandidateWindow::Entry* out);
@@ -75,9 +74,7 @@ struct StructTraits<ui::mojom::CandidateWindowEntryDataView,
 
 template <>
 struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
-  static std::string text(const ui::CompositionText& c) {
-    return base::UTF16ToUTF8(c.text);
-  }
+  static base::string16 text(const ui::CompositionText& c) { return c.text; }
   static ui::ImeTextSpans ime_text_spans(const ui::CompositionText& c) {
     return c.ime_text_spans;
   }

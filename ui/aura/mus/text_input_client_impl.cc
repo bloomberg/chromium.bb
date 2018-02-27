@@ -39,8 +39,8 @@ void TextInputClientImpl::ClearCompositionText() {
   text_input_client_->ClearCompositionText();
 }
 
-void TextInputClientImpl::InsertText(const std::string& text) {
-  text_input_client_->InsertText(base::UTF8ToUTF16(text));
+void TextInputClientImpl::InsertText(const base::string16& text) {
+  text_input_client_->InsertText(text);
 }
 
 void TextInputClientImpl::InsertChar(std::unique_ptr<ui::Event> event) {

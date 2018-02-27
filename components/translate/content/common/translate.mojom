@@ -5,6 +5,7 @@
 module translate.mojom;
 
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
 
 enum TranslateError {
@@ -31,7 +32,7 @@ struct LanguageDetectionDetails {
   bool has_notranslate;
   string html_root_language;
   string adopted_language;
-  string contents;
+  mojo_base.mojom.String16 contents;
 };
 
 interface Page {

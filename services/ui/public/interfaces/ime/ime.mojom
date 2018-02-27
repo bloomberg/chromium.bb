@@ -5,6 +5,7 @@
 module ui.mojom;
 
 import "mojo/common/text_direction.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
@@ -43,18 +44,18 @@ struct CandidateWindowProperties {
 // Represents a candidate window entry.
 struct CandidateWindowEntry {
   // Value of the candidate.
-  string value;
+  mojo_base.mojom.String16 value;
 
   // Short string displayed next to the candidate, often the shortcut key or
   // index.
-  string label;
+  mojo_base.mojom.String16 label;
 
   // Additional text describing the candidate.
-  string annotation;
+  mojo_base.mojom.String16 annotation;
 
   // The usage or detailed description of the candidate.
-  string description_title;
-  string description_body;
+  mojo_base.mojom.String16 description_title;
+  mojo_base.mojom.String16 description_body;
 };
 
 // See comments for ui::ImeTextSpan::Type for more details.
@@ -80,7 +81,7 @@ struct ImeTextSpan {
 // Represents a text currently being composed by IME. Corresponds to
 // ui::CompositionText.
 struct CompositionText {
-  string text;
+  mojo_base.mojom.String16 text;
   array<ImeTextSpan> ime_text_spans;
   gfx.mojom.Range selection;
 };
@@ -163,7 +164,7 @@ interface TextInputClient {
   // Inserts a given text at the insertion point. Current composition text or
   // selection will be removed. This method should never be called when the
   // current text input type is TEXT_INPUT_TYPE_NONE.
-  InsertText(string text);
+  InsertText(mojo_base.mojom.String16 text);
 
   // Inserts a single character at the insertion point. Unlike InsertText(),
   // the character is not processed. See ui::TextInputClient::InsertChar()

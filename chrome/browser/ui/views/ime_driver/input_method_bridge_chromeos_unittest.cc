@@ -73,9 +73,8 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
     if (run_loop_)
       run_loop_->Quit();
   }
-  void InsertText(const std::string& text) override {
-    CompositionEvent ev = {CompositionEventType::INSERT_TEXT,
-                           base::UTF8ToUTF16(text), 0};
+  void InsertText(const base::string16& text) override {
+    CompositionEvent ev = {CompositionEventType::INSERT_TEXT, text, 0};
     receieved_event_ = ev;
     if (run_loop_)
       run_loop_->Quit();
