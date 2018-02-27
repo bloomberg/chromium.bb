@@ -19,6 +19,7 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
   return permission == PermissionType::GEOLOCATION ||
          permission == PermissionType::MIDI ||
          permission == PermissionType::SENSORS ||
+         permission == PermissionType::PAYMENT_HANDLER ||
          // Background sync browser tests require permission to be granted by
          // default.
          // TODO(nsatragno): add a command line flag so that it's only granted

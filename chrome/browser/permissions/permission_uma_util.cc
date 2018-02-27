@@ -100,6 +100,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "ClipboardRead";
     case PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION:
       return "SecurityKeyAttestation";
+    case PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
+      return "PaymentHandler";
     default:
       NOTREACHED();
       return "";
@@ -489,6 +491,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       break;
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.ClipboardRead", action,
+                                PermissionAction::NUM);
+      break;
+    case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.PaymentHandler", action,
                                 PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no

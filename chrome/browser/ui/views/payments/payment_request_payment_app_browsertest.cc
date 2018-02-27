@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
@@ -33,6 +34,11 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
         features::kServiceWorkerPaymentApps);
   }
 
+  PermissionRequestManager* GetPermissionRequestManager() {
+    return PermissionRequestManager::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
   // Starts the test severs and opens a test page on alicepay.com.
   void SetUpOnMainThread() override {
     PaymentRequestBrowserTestBase::SetUpOnMainThread();
@@ -40,6 +46,9 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
     ASSERT_TRUE(StartTestServer("alicepay.com", &alicepay_));
     ASSERT_TRUE(StartTestServer("bobpay.com", &bobpay_));
     ASSERT_TRUE(StartTestServer("frankpay.com", &frankpay_));
+
+    GetPermissionRequestManager()->set_auto_response_for_test(
+        PermissionRequestManager::ACCEPT_ALL);
   }
 
   // Invokes the JavaScript function install(|method_name|) in

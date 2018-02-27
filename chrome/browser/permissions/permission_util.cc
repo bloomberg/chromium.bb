@@ -48,6 +48,8 @@ std::string PermissionUtil::GetPermissionString(
       return "ClipboardRead";
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE:
       return "ClipboardWrite";
+    case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
+      return "PaymentHandler";
     default:
       break;
   }
@@ -82,6 +84,8 @@ std::string PermissionUtil::ConvertContentSettingsTypeToSafeBrowsingName(
       return "ACCESSIBILITY_EVENTS";
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
       return "CLIPBOARD_READ";
+    case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
+      return "PAYMENT_HANDLER";
     default:
       break;
   }
@@ -109,6 +113,8 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_ACCESSIBILITY_EVENTS;
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
       return PermissionRequestType::PERMISSION_CLIPBOARD_READ;
+    case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
+      return PermissionRequestType::PERMISSION_PAYMENT_HANDLER;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;
@@ -150,6 +156,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::ACCESSIBILITY_EVENTS;
   } else if (type == CONTENT_SETTINGS_TYPE_CLIPBOARD_READ) {
     *out = PermissionType::CLIPBOARD_READ;
+  } else if (type == CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER) {
+    *out = PermissionType::PAYMENT_HANDLER;
   } else {
     return false;
   }
@@ -172,6 +180,7 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case CONTENT_SETTINGS_TYPE_SENSORS:
     case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
+    case CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER:
       return true;
     default:
       return false;

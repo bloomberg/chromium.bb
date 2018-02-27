@@ -6,16 +6,22 @@
 
 #include <utility>
 
+#include "base/location.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
+#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/BasicCardHelper.h"
 #include "modules/payments/PaymentInstrument.h"
 #include "modules/payments/PaymentManager.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/modules/manifest/manifest.mojom-blink.h"
 
@@ -154,20 +160,78 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  Document* doc = ToDocumentOrNull(context);
+
+  // Should move this permission check to browser process.
+  // Please see http://crbug.com/795929
+  GetPermissionService(script_state)
+      ->RequestPermission(
+          CreatePermissionDescriptor(
+              mojom::blink::PermissionName::PAYMENT_HANDLER),
+          Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
+          WTF::Bind(&PaymentInstruments::OnRequestPermission,
+                    WrapPersistent(this), WrapPersistent(resolver),
+                    instrument_key, details));
+  return resolver->Promise();
+}
+
+ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
+  if (!manager_.is_bound()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  manager_->ClearPaymentInstruments(
+      WTF::Bind(&PaymentInstruments::onClearPaymentInstruments,
+                WrapPersistent(this), WrapPersistent(resolver)));
+  return promise;
+}
+
+mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
+    ScriptState* script_state) {
+  if (!permission_service_) {
+    ConnectToPermissionService(ExecutionContext::From(script_state),
+                               mojo::MakeRequest(&permission_service_));
+  }
+  return permission_service_.get();
+}
+
+void PaymentInstruments::OnRequestPermission(
+    ScriptPromiseResolver* resolver,
+    const String& instrument_key,
+    const PaymentInstrument& details,
+    mojom::blink::PermissionStatus status) {
+  DCHECK(resolver);
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
+    return;
+
+  ScriptState::Scope scope(resolver->GetScriptState());
+
+  if (status != mojom::blink::PermissionStatus::GRANTED) {
+    resolver->Reject(DOMException::Create(
+        kNotAllowedError, "Not allowed to install this payment handler"));
+    return;
+  }
 
   payments::mojom::blink::PaymentInstrumentPtr instrument =
       payments::mojom::blink::PaymentInstrument::New();
   instrument->name = details.hasName() ? details.name() : WTF::g_empty_string;
   if (details.hasIcons()) {
-    ExecutionContext* context = ExecutionContext::From(script_state);
+    ExecutionContext* context =
+        ExecutionContext::From(resolver->GetScriptState());
     for (const ImageObject image_object : details.icons()) {
       KURL parsed_url = context->CompleteURL(image_object.src());
       if (!parsed_url.IsValid() || !parsed_url.ProtocolIsInHTTPFamily()) {
         resolver->Reject(V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
+            resolver->GetScriptState()->GetIsolate(),
             "'" + image_object.src() + "' is not a valid URL."));
-        return promise;
+        return;
       }
 
       mojom::blink::ManifestIconPtr icon = mojom::blink::ManifestIcon::New();
@@ -189,18 +253,26 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   if (details.hasCapabilities()) {
     v8::Local<v8::String> value;
-    if (!v8::JSON::Stringify(script_state->GetContext(),
+    if (!v8::JSON::Stringify(resolver->GetScriptState()->GetContext(),
                              details.capabilities().V8Value().As<v8::Object>())
              .ToLocal(&value)) {
-      exception_state.ThrowTypeError(
-          "Capabilities should be a JSON-serializable object");
-      return exception_state.Reject(script_state);
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(),
+          "Capabilities should be a JSON-serializable object"));
+      return;
     }
     instrument->stringified_capabilities = ToCoreString(value);
     if (instrument->enabled_methods.Contains("basic-card")) {
+      ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
+                                     ExceptionState::kSetterContext,
+                                     "PaymentInstruments", "set");
       BasicCardHelper::ParseBasiccardData(
           details.capabilities(), instrument->supported_networks,
           instrument->supported_types, exception_state);
+      if (exception_state.HadException()) {
+        exception_state.Reject(resolver);
+        return;
+      }
     }
   } else {
     instrument->stringified_capabilities = WTF::g_empty_string;
@@ -210,23 +282,6 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
       instrument_key, std::move(instrument),
       WTF::Bind(&PaymentInstruments::onSetPaymentInstrument,
                 WrapPersistent(this), WrapPersistent(resolver)));
-  return promise;
-}
-
-ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
-  if (!manager_.is_bound()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
-  }
-
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  manager_->ClearPaymentInstruments(
-      WTF::Bind(&PaymentInstruments::onClearPaymentInstruments,
-                WrapPersistent(this), WrapPersistent(resolver)));
-  return promise;
 }
 
 void PaymentInstruments::onDeletePaymentInstrument(
@@ -242,6 +297,12 @@ void PaymentInstruments::onGetPaymentInstrument(
     payments::mojom::blink::PaymentInstrumentPtr stored_instrument,
     payments::mojom::blink::PaymentHandlerStatus status) {
   DCHECK(resolver);
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
+    return;
+
+  ScriptState::Scope scope(resolver->GetScriptState());
+
   if (rejectError(resolver, status))
     return;
   PaymentInstrument instrument;
@@ -268,7 +329,6 @@ void PaymentInstruments::onGetPaymentInstrument(
 
   instrument.setEnabledMethods(enabled_methods);
   if (!stored_instrument->stringified_capabilities.IsEmpty()) {
-    ScriptState::Scope scope(resolver->GetScriptState());
     ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
                                    ExceptionState::kGetterContext,
                                    "PaymentInstruments", "get");

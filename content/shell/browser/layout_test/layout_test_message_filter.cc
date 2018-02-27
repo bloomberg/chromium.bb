@@ -191,6 +191,8 @@ void LayoutTestMessageFilter::OnSetPermission(
     type = PermissionType::CLIPBOARD_READ;
   } else if (name == "clipboard-write") {
     type = PermissionType::CLIPBOARD_WRITE;
+  } else if (name == "payment-handler") {
+    type = PermissionType::PAYMENT_HANDLER;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;
