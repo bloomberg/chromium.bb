@@ -511,7 +511,7 @@ group("gn_all") {
       "//components/network_hints/browser",
       "//content/public/app:browser",
       "//content/public/app:child",
-      "//mojo/edk/test:mojo_public_system_perftests",
+      "//mojo:mojo_perftests",
       "//services/service_manager/public/cpp",
       "//testing/gmock:gmock_main",
       "//third_party/breakpad:dump_syms($host_toolchain)",

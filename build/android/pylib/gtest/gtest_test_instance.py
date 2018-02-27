@@ -31,7 +31,7 @@ RUN_IN_SUB_THREAD_TEST_SUITES = [
   'base_unittests',  # file_locking_unittest.cc uses a child process.
   'ipc_perftests',
   'ipc_tests',
-  'mojo_message_pipe_perftests',
+  'mojo_perftests',
   'mojo_unittests',
   'net_unittests'
 ]

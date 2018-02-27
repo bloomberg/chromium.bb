@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
-import("//testing/test.gni")
 import("../../../mojo/public/tools/bindings/mojom.gni")
 
 if (is_android) {
@@ -181,22 +180,4 @@ source_set("test_sources") {
   ]
 
   allow_circular_includes_from = [ "//mojo/edk/embedder:embedder_unittests" ]
-}
-
-if (!is_ios) {
-  test("mojo_message_pipe_perftests") {
-    sources = [
-      "message_pipe_perftest.cc",
-    ]
-
-    deps = [
-      ":test_utils",
-      "//base",
-      "//base/test:test_support",
-      "//mojo/edk/system",
-      "//mojo/edk/test:run_all_perftests",
-      "//mojo/edk/test:test_support",
-      "//testing/gtest",
-    ]
-  }
 }
