@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGPathElement.h"
 
-#include "core/css/StyleChangeReason.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGMPathElement.h"
 #include "core/svg/SVGPathQuery.h"
@@ -77,12 +76,8 @@ SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
 
 void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::dAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateSVGPresentationAttributeStyle();
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::FromAttribute(attr_name));
     InvalidateMPathDependencies();
-    GeometryAttributeChanged();
+    GeometryPresentationAttributeChanged(attr_name);
     return;
   }
 

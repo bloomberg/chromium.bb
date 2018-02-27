@@ -67,6 +67,7 @@ class SVGGeometryElement : public SVGGraphicsElement {
                      ConstructionType = kCreateSVGElement);
 
   void GeometryAttributeChanged();
+  void GeometryPresentationAttributeChanged(const QualifiedName&);
 
  private:
   bool IsSVGGeometryElement() const final { return true; }

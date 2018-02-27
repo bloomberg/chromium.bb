@@ -71,7 +71,6 @@ Path SVGLineElement::AsPath() const {
 void SVGLineElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::x1Attr || attr_name == SVGNames::y1Attr ||
       attr_name == SVGNames::x2Attr || attr_name == SVGNames::y2Attr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
     UpdateRelativeLengthsInformation();
     GeometryAttributeChanged();
     return;

@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGEllipseElement.h"
 
-#include "core/css/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGEllipse.h"
 #include "core/svg/SVGLength.h"
 
@@ -106,12 +105,8 @@ void SVGEllipseElement::CollectStyleForPresentationAttribute(
 void SVGEllipseElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == SVGNames::cxAttr || attr_name == SVGNames::cyAttr ||
       attr_name == SVGNames::rxAttr || attr_name == SVGNames::ryAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateSVGPresentationAttributeStyle();
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::FromAttribute(attr_name));
     UpdateRelativeLengthsInformation();
-    GeometryAttributeChanged();
+    GeometryPresentationAttributeChanged(attr_name);
     return;
   }
 
