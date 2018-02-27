@@ -198,12 +198,35 @@ aomenc_av1_webm_non_square_par() {
   fi
 }
 
+aomenc_av1_webm_cdf_update_mode() {
+  if [ "$(aom_config_option_enabled CONFIG_CDF_UPDATE_MODE)" = "yes" ] && \
+     [ "$(aomenc_can_encode_av1)" = "yes" ] && \
+     [ "$(webm_io_available)" = "yes" ]; then
+    for mode in 0 1 2; do
+      local readonly output="${AOM_TEST_OUTPUT_DIR}/cdf_mode_${mode}.webm"
+      aomenc $(yuv_raw_input) \
+        --codec=av1 \
+        $(aomenc_encode_test_fast_params) \
+        --passes=2 \
+        --cpu-used=2 \
+        --cdf-update-mode=${mode} \
+        --output="${output}"
+
+      if [ ! -e "${output}" ]; then
+        elog "Output file does not exist."
+        return 1
+      fi
+    done
+  fi
+}
+
 aomenc_tests="aomenc_av1_ivf
               aomenc_av1_webm
               aomenc_av1_webm_2pass
               aomenc_av1_ivf_lossless
               aomenc_av1_ivf_minq0_maxq0
               aomenc_av1_webm_lag5_frames10
-              aomenc_av1_webm_non_square_par"
+              aomenc_av1_webm_non_square_par
+              aomenc_av1_webm_cdf_update_mode"
 
 run_tests aomenc_verify_environment "${aomenc_tests}"

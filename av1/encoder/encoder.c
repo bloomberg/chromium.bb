@@ -5927,10 +5927,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       // compression loss).
       // TODO(huisu@google.com): design schemes for various trade-offs between
       // compression quality and decoding speed.
-      if (frame_is_intra_only(cm) || !cm->show_frame)
-        cm->disable_cdf_update = 0;
-      else
-        cm->disable_cdf_update = 1;
+      cm->disable_cdf_update =
+          (frame_is_intra_only(cm) || !cm->show_frame) ? 0 : 1;
       break;
   }
 #endif  // CONFIG_CDF_UPDATE_MODE
