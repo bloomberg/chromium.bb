@@ -26,7 +26,7 @@ class TriggerThrottlerTest : public ::testing::Test {
   TriggerThrottler* throttler() { return &trigger_throttler_; }
 
   void SetTestClock(base::Clock* clock) {
-    trigger_throttler_.SetClockForTesting(base::WrapUnique(clock));
+    trigger_throttler_.SetClockForTesting(clock);
   }
 
   std::vector<time_t> GetEventTimestampsForTriggerType(
@@ -98,11 +98,11 @@ TEST_F(TriggerThrottlerTest, TriggerQuotaResetsAfterOneDay) {
   // We initialize the test clock to several days ago and fire some events to
   // use up quota. We then advance the clock by a day and ensure quota is
   // available again.
-  base::SimpleTestClock* test_clock(new base::SimpleTestClock);
-  test_clock->SetNow(base::Time::Now() - base::TimeDelta::FromDays(10));
-  time_t base_ts = test_clock->Now().ToTimeT();
+  base::SimpleTestClock test_clock;
+  test_clock.SetNow(base::Time::Now() - base::TimeDelta::FromDays(10));
+  time_t base_ts = test_clock.Now().ToTimeT();
 
-  SetTestClock(test_clock);
+  SetTestClock(&test_clock);
   SetQuotaForTriggerType(TriggerType::AD_SAMPLE, 2);
 
   // First two triggers should work
@@ -122,9 +122,9 @@ TEST_F(TriggerThrottlerTest, TriggerQuotaResetsAfterOneDay) {
 
   // Move the clock forward by 1 day (and a bit) and try the trigger again,
   // quota should be available now.
-  test_clock->Advance(base::TimeDelta::FromDays(1) +
-                      base::TimeDelta::FromSeconds(1));
-  time_t advanced_ts = test_clock->Now().ToTimeT();
+  test_clock.Advance(base::TimeDelta::FromDays(1) +
+                     base::TimeDelta::FromSeconds(1));
+  time_t advanced_ts = test_clock.Now().ToTimeT();
   EXPECT_TRUE(throttler()->TriggerCanFire(TriggerType::AD_SAMPLE));
 
   // The previous time stamps should remain in the throttler.

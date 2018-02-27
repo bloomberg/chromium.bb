@@ -62,7 +62,7 @@ class PermissionReporter {
   // Used by tests. This constructor allows tests to have access to the
   // ReportSender and use a test Clock.
   PermissionReporter(std::unique_ptr<net::ReportSender> report_sender,
-                     std::unique_ptr<base::Clock> clock);
+                     base::Clock* clock);
 
   // Builds and serializes a permission report with |report_info| included.
   // The serialized report is written into |output|. Returns true if the
@@ -85,7 +85,7 @@ class PermissionReporter {
                      PermissionAndOriginHash>
       report_logs_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionReporter);
 };

@@ -291,7 +291,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   void ResetGetHashErrors();
 
   // Overrides the clock used to check the time.
-  void SetClockForTests(std::unique_ptr<base::Clock> clock);
+  void SetClockForTests(base::Clock* clock);
 
   // Updates the state of the full hash cache upon receiving a valid response
   // from the server.
@@ -345,7 +345,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   int url_fetcher_id_;
 
   // The clock used to vend times.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // The following sets represent the combination of lists that we would always
   // request from the server, irrespective of which list we found the hash

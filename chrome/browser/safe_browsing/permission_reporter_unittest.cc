@@ -73,16 +73,14 @@ class PermissionReporterTest : public ::testing::Test {
  protected:
   void SetUp() override {
     mock_report_sender_ = new MockPermissionReportSender;
-    clock_ = new base::SimpleTestClock;
-    permission_reporter_.reset(new PermissionReporter(
-        base::WrapUnique(mock_report_sender_), base::WrapUnique(clock_)));
+    permission_reporter_.reset(
+        new PermissionReporter(base::WrapUnique(mock_report_sender_), &clock_));
   }
 
   // Owned by |permission_reporter_|.
   MockPermissionReportSender* mock_report_sender_;
 
-  // Owned by |permission_reporter_|.
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
 
   std::unique_ptr<PermissionReporter> permission_reporter_;
 };
@@ -197,17 +195,17 @@ TEST_F(PermissionReporterTest, IsReportThresholdExceeded) {
       BuildDummyReportInfo(kDummyOriginTwo, kDummyPermissionOne));
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
-  clock_->Advance(base::TimeDelta::FromMinutes(1));
+  clock_.Advance(base::TimeDelta::FromMinutes(1));
   permission_reporter_->SendReport(BuildDummyReportInfo());
 
-  clock_->Advance(base::TimeDelta::FromMicroseconds(1));
+  clock_.Advance(base::TimeDelta::FromMicroseconds(1));
   permission_reporter_->SendReport(BuildDummyReportInfo());
   EXPECT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
 
-  clock_->Advance(base::TimeDelta::FromMinutes(1));
+  clock_.Advance(base::TimeDelta::FromMinutes(1));
   reports_to_send = 12;
   while (reports_to_send--) {
-    clock_->Advance(base::TimeDelta::FromSeconds(5));
+    clock_.Advance(base::TimeDelta::FromSeconds(5));
     permission_reporter_->SendReport(BuildDummyReportInfo());
   }
   EXPECT_EQ(kMaximumReportsPerOriginPerPermissionPerMinute,

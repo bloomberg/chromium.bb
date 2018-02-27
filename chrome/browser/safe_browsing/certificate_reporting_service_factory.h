@@ -27,7 +27,7 @@ class CertificateReportingServiceFactory
   // Setters for testing.
   void SetReportEncryptionParamsForTesting(uint8_t* server_public_key,
                                            uint32_t server_public_key_version);
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
   void SetQueuedReportTTLForTesting(base::TimeDelta queued_report_ttl);
   void SetMaxQueuedReportCountForTesting(size_t max_report_count);
   void SetServiceResetCallbackForTesting(
@@ -50,7 +50,7 @@ class CertificateReportingServiceFactory
   uint8_t* server_public_key_;
   uint32_t server_public_key_version_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   base::TimeDelta queued_report_ttl_;
   size_t max_queued_report_count_;
   base::Callback<void()> service_reset_callback_;
