@@ -8,13 +8,14 @@ What does *not* work:
 
 * goma. Sorry. ([internal bug](http://b/64390790)) You can use the
   [jumbo build](jumbo.md) for faster build times.
-* renderer processes crash at startup ([bug](https://crbug.com/803591))
+* 64-bit renderer processes don't use V8 snapshots, slowing down their startup
+  ([bug](https://crbug.com/803591))
 * on Mac hosts, building a 32-bit chrome ([bug](https://crbug.com/794838))
 
 All other targets build fine (including `chrome`, `browser_tests`, ...).
 
 Uses of `.asm` files have been stubbed out.  As a result, some of Skia's
-software rendering paths are not present in cross builds, Crashpad cannot
+software rendering fast paths are not present in cross builds, Crashpad cannot
 report crashes, and NaCl defaults to disabled and cannot be enabled in
 cross builds ([.asm bug](https://crbug.com/762167)).
 
@@ -61,22 +62,11 @@ to the Windows box and run it to install the chrome you just built.
 
 You can run the Windows binaries you built on swarming, like so:
 
-    tools/mb/mb.py isolate //out/gnwin base_unittests
-    tools/swarming_client/isolate.py archive \
-        -I https://isolateserver.appspot.com \
-        -i out/gnwin/base_unittests.isolate \
-        -s out/gnwin/base_unittests.isolated
-    tools/swarming_client/swarming.py trigger \
-        -S https://chromium-swarm.appspot.com \
-        -I https://isolateserver.appspot.com \
-        -d os Windows -d pool Chrome -s <hash printed by previous command>
-        [ -- <flag to target process, for example --gtest_filter>... ]
+    tools/run_swarmed.py -C out/gnwin -t base_unittests [ --gtest_filter=... ]
 
-Most tests that build should pass.  However, the cross build uses
-the lld linker, and a couple of tests fail when using lld. You can look at
-https://build.chromium.org/p/chromium.clang/builders/CrWinClangLLD%20tester
-to get an idea of which tests fail with lld.
+See the contents of run_swarmed.py for how to do this manually.
 
-TODO(thakis): It'd be nice if there was a script for doing this. Maybe make
-tools/fuchsa/run-swarmed.py work for win cross builds too, or create
-`run_base_unittests` script targets during the build (like Android).
+There's a bot doing 64-bit release cross builds at
+https://ci.chromium.org/buildbot/chromium.clang/linux-win_cross-rel/
+which also runs tests. You can look at it to get an idea of which tests pass in
+the cross build.
