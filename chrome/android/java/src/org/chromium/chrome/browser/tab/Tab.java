@@ -2032,6 +2032,16 @@ public class Tab
     }
 
     /**
+     * @return The ID of the renderer process that backs this tab or
+     *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
+     */
+    @VisibleForTesting
+    public int getCurrentRenderProcessIdForTesting() {
+        assert mNativeTabAndroid != 0;
+        return nativeGetCurrentRenderProcessId(mNativeTabAndroid);
+    }
+
+    /**
      * @return Whether or not the sad tab is showing.
      */
     public boolean isShowingSadTab() {
@@ -3518,4 +3528,5 @@ public class Tab
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native void nativeMediaDownloadInProductHelpDismissed(long nativeTabAndroid);
+    private native int nativeGetCurrentRenderProcessId(long nativeTabAndroid);
 }

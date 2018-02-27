@@ -759,13 +759,6 @@ void ContentViewCore::SendOrientationChangeEventInternal() {
   static_cast<WebContentsImpl*>(web_contents())->OnScreenOrientationChange();
 }
 
-jint ContentViewCore::GetCurrentRenderProcessId(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetRenderProcessIdFromRenderViewHost(
-      web_contents_->GetRenderViewHost());
-}
-
 jboolean ContentViewCore::UsingSynchronousCompositing(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

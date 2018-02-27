@@ -240,6 +240,10 @@ class TabAndroid : public CoreTabHelperDelegate,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jint GetCurrentRenderProcessId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   bool HasPrerenderedUrl(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& url);

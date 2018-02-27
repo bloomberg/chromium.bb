@@ -514,11 +514,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     }
 
     @Override
-    public int getCurrentRenderProcessId() {
-        return nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-    }
-
-    @Override
     public void onHide() {
         assert mWebContents != null;
         hidePopupsAndPreserveSelection();
@@ -1127,7 +1122,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore, boolean enabled);
     private native void nativeSelectPopupMenuItems(
             long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
-    private native int nativeGetCurrentRenderProcessId(long nativeContentViewCore);
     private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
     private native void nativeWasResized(long nativeContentViewCore);
     private native void nativeSetTextTrackSettings(long nativeContentViewCore,

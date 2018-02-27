@@ -203,24 +203,20 @@ public class BindingManagerIntegrationTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Make sure that the renderers were spawned.
-            Assert.assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
-            Assert.assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
+            Assert.assertTrue(tabs[0].getCurrentRenderProcessIdForTesting() > 0);
+            Assert.assertTrue(tabs[1].getCurrentRenderProcessIdForTesting() > 0);
 
             // Verify that the renderer of the foreground tab was signalled as visible.
-            mBindingManager.assertIsInForeground(
-                    tabs[0].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInForeground(tabs[0].getCurrentRenderProcessIdForTesting());
             // Verify that the renderer of the tab loaded in background was signalled as not
             // visible.
-            mBindingManager.assertIsInBackground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInBackground(tabs[1].getCurrentRenderProcessIdForTesting());
 
             // Select tabs[1] and verify that the renderer visibility was flipped.
             TabModelUtils.setIndex(
                     mActivityTestRule.getActivity().getCurrentTabModel(), indexOf(tabs[1]));
-            mBindingManager.assertIsInBackground(
-                    tabs[0].getContentViewCore().getCurrentRenderProcessId());
-            mBindingManager.assertIsInForeground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInBackground(tabs[0].getCurrentRenderProcessIdForTesting());
+            mBindingManager.assertIsInForeground(tabs[1].getCurrentRenderProcessIdForTesting());
         });
     }
 
@@ -271,27 +267,25 @@ public class BindingManagerIntegrationTest {
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Make sure that the renderers were spawned.
-            Assert.assertTrue(tabs[0].getContentViewCore().getCurrentRenderProcessId() > 0);
-            Assert.assertTrue(tabs[1].getContentViewCore().getCurrentRenderProcessId() > 0);
+            Assert.assertTrue(tabs[0].getCurrentRenderProcessIdForTesting() > 0);
+            Assert.assertTrue(tabs[1].getCurrentRenderProcessIdForTesting() > 0);
 
             // Verify that the renderer of the foreground tab was signalled as visible.
-            mBindingManager.assertIsInForeground(
-                    tabs[0].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInForeground(tabs[0].getCurrentRenderProcessIdForTesting());
             // Verify that the renderer of the tab loaded in background was signalled as not
             // visible.
-            mBindingManager.assertIsInBackground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInBackground(tabs[1].getCurrentRenderProcessIdForTesting());
         });
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
         Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
-                tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                tabs[1].getCurrentRenderProcessIdForTesting()));
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() == 0;
+                        return tabs[1].getCurrentRenderProcessIdForTesting() == 0;
                     }
                 });
 
@@ -304,20 +298,18 @@ public class BindingManagerIntegrationTest {
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() != 0;
+                        return tabs[1].getCurrentRenderProcessIdForTesting() != 0;
                     }
                 });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "isInForeground() was not called for the process.",
-                tabs[1].getContentViewCore().getCurrentRenderProcessId());
+                tabs[1].getCurrentRenderProcessIdForTesting());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Verify the visibility of the renderers.
-            mBindingManager.assertIsInBackground(
-                    tabs[0].getContentViewCore().getCurrentRenderProcessId());
-            mBindingManager.assertIsInForeground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInBackground(tabs[0].getCurrentRenderProcessIdForTesting());
+            mBindingManager.assertIsInForeground(tabs[1].getCurrentRenderProcessIdForTesting());
         });
     }
 
@@ -343,13 +335,13 @@ public class BindingManagerIntegrationTest {
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
         Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
-                tab.getContentViewCore().getCurrentRenderProcessId()));
+                tab.getCurrentRenderProcessIdForTesting()));
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tab.getContentViewCore().getCurrentRenderProcessId() == 0;
+                        return tab.getCurrentRenderProcessIdForTesting() == 0;
                     }
                 });
 
@@ -363,24 +355,23 @@ public class BindingManagerIntegrationTest {
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tab.getContentViewCore().getCurrentRenderProcessId() != 0;
+                        return tab.getCurrentRenderProcessIdForTesting() != 0;
                     }
                 });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "isInForeground() was not called for the process.",
-                tab.getContentViewCore().getCurrentRenderProcessId());
+                tab.getCurrentRenderProcessIdForTesting());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Verify the visibility of the renderer.
-            mBindingManager.assertIsInForeground(
-                    tab.getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInForeground(tab.getCurrentRenderProcessIdForTesting());
         });
     }
 
     private int getRenderProcessId(final Tab tab) {
         return ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> tab.getContentViewCore().getCurrentRenderProcessId());
+                () -> tab.getCurrentRenderProcessIdForTesting());
     }
 
     /**
@@ -434,29 +425,27 @@ public class BindingManagerIntegrationTest {
                         && tabs[0] != mActivityTestRule.getActivity().getActivityTab()
                         && mActivityTestRule.getActivity()
                                    .getActivityTab()
-                                   .getContentViewCore()
-                                   .getCurrentRenderProcessId()
+                                   .getCurrentRenderProcessIdForTesting()
                         != 0;
             }
         });
         tabs[1] = mActivityTestRule.getActivity().getActivityTab();
-        Assert.assertEquals(tabs[0].getContentViewCore().getCurrentRenderProcessId(),
-                tabs[1].getContentViewCore().getCurrentRenderProcessId());
+        Assert.assertEquals(tabs[0].getCurrentRenderProcessIdForTesting(),
+                tabs[1].getCurrentRenderProcessIdForTesting());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Verify the visibility of the renderer.
-            mBindingManager.assertIsInForeground(
-                    tabs[0].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInForeground(tabs[0].getCurrentRenderProcessIdForTesting());
         });
 
         Assert.assertTrue(ChildProcessLauncherHelper.crashProcessForTesting(
-                tabs[1].getContentViewCore().getCurrentRenderProcessId()));
+                tabs[1].getCurrentRenderProcessIdForTesting()));
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Renderer crash wasn't noticed by the browser.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() == 0;
+                        return tabs[1].getCurrentRenderProcessIdForTesting() == 0;
                     }
                 });
         // Reload the tab, respawning the renderer.
@@ -470,22 +459,20 @@ public class BindingManagerIntegrationTest {
                 new Criteria("Process for the crashed tab was not respawned.") {
                     @Override
                     public boolean isSatisfied() {
-                        return tabs[1].getContentViewCore().getCurrentRenderProcessId() != 0;
+                        return tabs[1].getCurrentRenderProcessIdForTesting() != 0;
                     }
                 });
 
         mBindingManager.assertSetInForegroundWasCalled(
                 "setInForeground() was not called for the process.",
-                tabs[1].getContentViewCore().getCurrentRenderProcessId());
+                tabs[1].getCurrentRenderProcessIdForTesting());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             // Verify the visibility of the renderer.
-            mBindingManager.assertIsInForeground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInForeground(tabs[1].getCurrentRenderProcessIdForTesting());
             tabs[1].hide();
             tabs[1].setImportance(ChildProcessImportance.NORMAL);
-            mBindingManager.assertIsInBackground(
-                    tabs[1].getContentViewCore().getCurrentRenderProcessId());
+            mBindingManager.assertIsInBackground(tabs[1].getCurrentRenderProcessIdForTesting());
         });
     }
 

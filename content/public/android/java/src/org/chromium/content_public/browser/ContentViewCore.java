@@ -178,12 +178,6 @@ public interface ContentViewCore {
     void onShow();
 
     /**
-     * @return The ID of the renderer process that backs this tab or
-     *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
-     */
-    int getCurrentRenderProcessId();
-
-    /**
      * To be called when the ContentView is hidden.
      */
     void onHide();

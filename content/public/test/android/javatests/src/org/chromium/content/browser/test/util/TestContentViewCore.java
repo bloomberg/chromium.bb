@@ -87,11 +87,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void onShow() {}
 
     @Override
-    public int getCurrentRenderProcessId() {
-        return 0;
-    }
-
-    @Override
     public void onHide() {}
 
     @Override
