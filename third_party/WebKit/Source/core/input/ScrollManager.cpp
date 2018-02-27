@@ -149,10 +149,10 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
 
 bool ScrollManager::CanScroll(const ScrollState& scroll_state,
                               const Element& current_element) {
-  const double delta_x = scroll_state.isBeginning() ? scroll_state.deltaXHint()
-                                                    : scroll_state.deltaX();
-  const double delta_y = scroll_state.isBeginning() ? scroll_state.deltaYHint()
-                                                    : scroll_state.deltaY();
+  double delta_x = scroll_state.isBeginning() ? scroll_state.deltaXHint()
+                                              : scroll_state.deltaX();
+  double delta_y = scroll_state.isBeginning() ? scroll_state.deltaYHint()
+                                              : scroll_state.deltaY();
   if (!delta_x && !delta_y)
     return true;
 
@@ -175,6 +175,11 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
 
   if (!scrollable_area)
     return false;
+
+  if (!scrollable_area->UserInputScrollable(kHorizontalScrollbar))
+    delta_x = 0;
+  if (!scrollable_area->UserInputScrollable(kVerticalScrollbar))
+    delta_y = 0;
 
   ScrollOffset current_offset = scrollable_area->GetScrollOffset();
   ScrollOffset target_offset = current_offset + ScrollOffset(delta_x, delta_y);
