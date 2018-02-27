@@ -31,6 +31,7 @@
 #ifndef WebServiceWorker_h
 #define WebServiceWorker_h
 
+#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -76,7 +77,9 @@ class WebServiceWorker {
                                    TransferableMessage,
                                    const WebSecurityOrigin&) = 0;
 
-  virtual void TerminateForTesting() {}
+  using TerminateForTestingCallback = WebCallbacks<void, void>;
+  virtual void TerminateForTesting(
+      std::unique_ptr<TerminateForTestingCallback>) {}
 };
 }
 

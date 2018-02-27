@@ -85,8 +85,9 @@ void ServiceWorkerHandle::RegisterIntoDispatcherHost(
   dispatcher_host_->RegisterServiceWorkerHandle(base::WrapUnique(this));
 }
 
-void ServiceWorkerHandle::TerminateForTesting() {
-  version_->StopWorker(base::DoNothing());
+void ServiceWorkerHandle::TerminateForTesting(
+    TerminateForTestingCallback callback) {
+  version_->StopWorker(std::move(callback));
 }
 
 base::WeakPtr<ServiceWorkerHandle> ServiceWorkerHandle::AsWeakPtr() {

@@ -5,18 +5,22 @@
 #ifndef InternalsServiceWorker_h
 #define InternalsServiceWorker_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
 class Internals;
+class ScriptState;
 class ServiceWorker;
 
 class InternalsServiceWorker {
   STATIC_ONLY(InternalsServiceWorker);
 
  public:
-  static void terminateServiceWorker(Internals&, ServiceWorker*);
+  static ScriptPromise terminateServiceWorker(ScriptState*,
+                                              Internals&,
+                                              ServiceWorker*);
 };
 
 }  // namespace blink

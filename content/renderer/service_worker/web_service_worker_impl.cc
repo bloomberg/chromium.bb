@@ -38,6 +38,12 @@ class ServiceWorkerHandleImpl : public blink::WebServiceWorker::Handle {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleImpl);
 };
 
+void OnTerminated(
+    std::unique_ptr<WebServiceWorkerImpl::TerminateForTestingCallback>
+        callback) {
+  callback->OnSuccess();
+}
+
 }  // namespace
 
 // static
@@ -102,8 +108,10 @@ void WebServiceWorkerImpl::PostMessageToWorker(
       url::Origin(source_origin)));
 }
 
-void WebServiceWorkerImpl::TerminateForTesting() {
-  GetObjectHost()->TerminateForTesting();
+void WebServiceWorkerImpl::TerminateForTesting(
+    std::unique_ptr<TerminateForTestingCallback> callback) {
+  GetObjectHost()->TerminateForTesting(
+      base::BindOnce(&OnTerminated, std::move(callback)));
 }
 
 // static

@@ -63,7 +63,8 @@ class CONTENT_EXPORT WebServiceWorkerImpl
       blink::WebServiceWorkerProvider* provider,
       blink::TransferableMessage message,
       const blink::WebSecurityOrigin& source_origin) override;
-  void TerminateForTesting() override;
+  void TerminateForTesting(
+      std::unique_ptr<TerminateForTestingCallback> callback) override;
 
   // Creates WebServiceWorker::Handle object that owns a reference to the given
   // WebServiceWorkerImpl object.

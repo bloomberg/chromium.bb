@@ -81,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
                       ServiceWorkerVersion* version);
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
-  void TerminateForTesting() override;
+  void TerminateForTesting(TerminateForTestingCallback callback) override;
 
   base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
 

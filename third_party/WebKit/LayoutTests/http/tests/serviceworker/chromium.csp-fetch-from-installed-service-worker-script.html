@@ -28,10 +28,8 @@ function create_csp_test(worker_url) {
                 .then(() => { resolve(sw); });
             });
         })
-      .then(sw => {
-          internals.terminateServiceWorker(sw);
-          return navigator.serviceWorker.getRegistration(scope);
-        })
+      .then(sw => internals.terminateServiceWorker(sw))
+      .then(() => navigator.serviceWorker.getRegistration(scope))
       .then(r => {
           fetch_tests_from_worker(r.active);
         });

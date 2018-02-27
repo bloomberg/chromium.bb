@@ -38,7 +38,9 @@ class MockServiceWorkerObjectHost
 
  private:
   // Implements blink::mojom::ServiceWorkerObjectHost.
-  void TerminateForTesting() override { NOTREACHED(); }
+  void TerminateForTesting(TerminateForTestingCallback callback) override {
+    NOTREACHED();
+  }
 
   int32_t handle_id_;
   int64_t version_id_;
