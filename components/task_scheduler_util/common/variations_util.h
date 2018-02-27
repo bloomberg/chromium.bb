@@ -5,24 +5,12 @@
 #ifndef COMPONENTS_TASK_SCHEDULER_UTIL_COMMON_VARIATIONS_UTIL_H_
 #define COMPONENTS_TASK_SCHEDULER_UTIL_COMMON_VARIATIONS_UTIL_H_
 
-#include <map>
 #include <memory>
-#include <string>
 
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/task_scheduler.h"
 
 namespace task_scheduler_util {
-
-// Builds a TaskScheduler::InitParams from pool descriptors in
-// |variations_params| that are prefixed with |variation_param_prefix|. Returns
-// nullptr on failure.
-//
-// TODO(fdoray): Migrate callers to the overload below and remove this.
-// https://crbug.com/810049
-std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
-    base::StringPiece variation_param_prefix,
-    const std::map<std::string, std::string>& variation_params);
 
 // Builds a TaskScheduler::InitParams from variations params that are prefixed
 // with |variation_param_prefix| in the BrowserScheduler field trial. Returns

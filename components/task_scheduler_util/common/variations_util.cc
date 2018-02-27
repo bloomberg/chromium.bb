@@ -4,7 +4,8 @@
 
 #include "components/task_scheduler_util/common/variations_util.h"
 
-#include <memory>
+#include <map>
+#include <string>
 
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
@@ -14,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace task_scheduler_util {
 
@@ -87,8 +87,11 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
 }  // namespace
 
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
-    base::StringPiece variation_param_prefix,
-    const std::map<std::string, std::string>& variation_params) {
+    base::StringPiece variation_param_prefix) {
+  std::map<std::string, std::string> variation_params;
+  if (!base::GetFieldTrialParams("BrowserScheduler", &variation_params))
+    return nullptr;
+
   const auto background_worker_pool_params = GetWorkerPoolParams(
       variation_param_prefix, "Background", variation_params);
   const auto background_blocking_worker_pool_params = GetWorkerPoolParams(
@@ -108,14 +111,6 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
   return std::make_unique<base::TaskScheduler::InitParams>(
       *background_worker_pool_params, *background_blocking_worker_pool_params,
       *foreground_worker_pool_params, *foreground_blocking_worker_pool_params);
-}
-
-std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
-    base::StringPiece variation_param_prefix) {
-  std::map<std::string, std::string> variation_params;
-  if (!base::GetFieldTrialParams("BrowserScheduler", &variation_params))
-    return nullptr;
-  return GetTaskSchedulerInitParams(variation_param_prefix, variation_params);
 }
 
 std::unique_ptr<base::TaskScheduler::InitParams>
