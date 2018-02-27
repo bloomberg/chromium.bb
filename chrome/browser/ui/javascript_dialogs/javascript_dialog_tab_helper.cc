@@ -43,6 +43,84 @@ bool IsWebContentsForemost(content::WebContents* web_contents) {
 #endif
 }
 
+// The relationship between origins in displayed dialogs.
+//
+// This is used for a UMA histogram. Please never alter existing values, only
+// append new ones.
+//
+// Note that "HTTP" in these enum names refers to a scheme that is either HTTP
+// or HTTPS.
+enum class DialogOriginRelationship {
+  // The dialog was shown by a main frame with a non-HTTP(S) scheme, or by a
+  // frame within a non-HTTP(S) main frame.
+  NON_HTTP_MAIN_FRAME = 1,
+
+  // The dialog was shown by a main frame with an HTTP(S) scheme.
+  HTTP_MAIN_FRAME = 2,
+
+  // The dialog was displayed by an HTTP(S) frame which shared the same origin
+  // as the main frame.
+  HTTP_MAIN_FRAME_HTTP_SAME_ORIGIN_ALERTING_FRAME = 3,
+
+  // The dialog was displayed by an HTTP(S) frame which had a different origin
+  // from the main frame.
+  HTTP_MAIN_FRAME_HTTP_DIFFERENT_ORIGIN_ALERTING_FRAME = 4,
+
+  // The dialog was displayed by a non-HTTP(S) frame whose nearest HTTP(S)
+  // ancestor shared the same origin as the main frame.
+  HTTP_MAIN_FRAME_NON_HTTP_ALERTING_FRAME_SAME_ORIGIN_ANCESTOR = 5,
+
+  // The dialog was displayed by a non-HTTP(S) frame whose nearest HTTP(S)
+  // ancestor was a different origin than the main frame.
+  HTTP_MAIN_FRAME_NON_HTTP_ALERTING_FRAME_DIFFERENT_ORIGIN_ANCESTOR = 6,
+
+  COUNT,
+};
+
+DialogOriginRelationship GetDialogOriginRelationship(
+    content::WebContents* web_contents,
+    content::RenderFrameHost* alerting_frame) {
+  GURL main_frame_url = web_contents->GetURL();
+
+  if (!main_frame_url.SchemeIsHTTPOrHTTPS())
+    return DialogOriginRelationship::NON_HTTP_MAIN_FRAME;
+
+  if (alerting_frame == web_contents->GetMainFrame())
+    return DialogOriginRelationship::HTTP_MAIN_FRAME;
+
+  GURL alerting_frame_url = alerting_frame->GetLastCommittedURL();
+
+  if (alerting_frame_url.SchemeIsHTTPOrHTTPS()) {
+    if (main_frame_url.GetOrigin() == alerting_frame_url.GetOrigin()) {
+      return DialogOriginRelationship::
+          HTTP_MAIN_FRAME_HTTP_SAME_ORIGIN_ALERTING_FRAME;
+    }
+    return DialogOriginRelationship::
+        HTTP_MAIN_FRAME_HTTP_DIFFERENT_ORIGIN_ALERTING_FRAME;
+  }
+
+  // Walk up the tree to find the nearest ancestor frame of the alerting frame
+  // that has an HTTP(S) scheme. Note that this is guaranteed to terminate
+  // because the main frame has an HTTP(S) scheme.
+  content::RenderFrameHost* nearest_http_ancestor_frame =
+      alerting_frame->GetParent();
+  while (!nearest_http_ancestor_frame->GetLastCommittedURL()
+              .SchemeIsHTTPOrHTTPS()) {
+    nearest_http_ancestor_frame = nearest_http_ancestor_frame->GetParent();
+  }
+
+  GURL nearest_http_ancestor_frame_url =
+      nearest_http_ancestor_frame->GetLastCommittedURL();
+
+  if (main_frame_url.GetOrigin() ==
+      nearest_http_ancestor_frame_url.GetOrigin()) {
+    return DialogOriginRelationship::
+        HTTP_MAIN_FRAME_NON_HTTP_ALERTING_FRAME_SAME_ORIGIN_ANCESTOR;
+  }
+  return DialogOriginRelationship::
+      HTTP_MAIN_FRAME_NON_HTTP_ALERTING_FRAME_DIFFERENT_ORIGIN_ANCESTOR;
+}
+
 }  // namespace
 
 enum class JavaScriptDialogTabHelper::DismissalCause {
@@ -57,7 +135,7 @@ enum class JavaScriptDialogTabHelper::DismissalCause {
   DIALOG_BUTTON_CLICKED = 6,
   TAB_NAVIGATED = 7,
   TAB_SWITCHED_OUT = 8,
-  MAX,
+  COUNT,
 };
 
 JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
@@ -86,25 +164,39 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     const base::string16& default_prompt_text,
     DialogClosedCallback callback,
     bool* did_suppress_message) {
+  DCHECK_EQ(alerting_web_contents,
+            content::WebContents::FromRenderFrameHost(render_frame_host));
+
   GURL alerting_frame_url = render_frame_host->GetLastCommittedURL();
 
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
+  DialogOriginRelationship origin_relationship =
+      GetDialogOriginRelationship(alerting_web_contents, render_frame_host);
   bool foremost = IsWebContentsForemost(parent_web_contents);
   navigation_metrics::Scheme scheme =
       navigation_metrics::GetScheme(alerting_frame_url);
   switch (dialog_type) {
     case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Alert",
+                                origin_relationship,
+                                DialogOriginRelationship::COUNT);
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Alert", scheme,
                                 navigation_metrics::Scheme::COUNT);
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Confirm",
+                                origin_relationship,
+                                DialogOriginRelationship::COUNT);
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Confirm", scheme,
                                 navigation_metrics::Scheme::COUNT);
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Prompt",
+                                origin_relationship,
+                                DialogOriginRelationship::COUNT);
       UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Prompt", scheme,
                                 navigation_metrics::Scheme::COUNT);
@@ -209,11 +301,19 @@ void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
     content::RenderFrameHost* render_frame_host,
     bool is_reload,
     DialogClosedCallback callback) {
+  DCHECK_EQ(web_contents,
+            content::WebContents::FromRenderFrameHost(render_frame_host));
+
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
+  DialogOriginRelationship origin_relationship =
+      GetDialogOriginRelationship(web_contents, render_frame_host);
   bool foremost = IsWebContentsForemost(parent_web_contents);
   navigation_metrics::Scheme scheme =
       navigation_metrics::GetScheme(render_frame_host->GetLastCommittedURL());
+  UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.BeforeUnload",
+                            origin_relationship,
+                            DialogOriginRelationship::COUNT);
   UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.BeforeUnload", foremost);
   UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.BeforeUnload", scheme,
                             navigation_metrics::Scheme::COUNT);
@@ -317,17 +417,17 @@ void JavaScriptDialogTabHelper::LogDialogDismissalCause(
     case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Alert",
                                 static_cast<int>(cause),
-                                static_cast<int>(DismissalCause::MAX));
+                                static_cast<int>(DismissalCause::COUNT));
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Confirm",
                                 static_cast<int>(cause),
-                                static_cast<int>(DismissalCause::MAX));
+                                static_cast<int>(DismissalCause::COUNT));
       break;
     case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Prompt",
                                 static_cast<int>(cause),
-                                static_cast<int>(DismissalCause::MAX));
+                                static_cast<int>(DismissalCause::COUNT));
       break;
   }
 }
