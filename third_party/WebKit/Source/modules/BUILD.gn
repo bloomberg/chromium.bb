@@ -241,6 +241,7 @@ jumbo_source_set("unit_tests") {
     "animationworklet/AnimationWorkletGlobalScopeTest.cpp",
     "animationworklet/AnimationWorkletThreadTest.cpp",
     "animationworklet/WorkletAnimationTest.cpp",
+    "background_fetch/BackgroundFetchIconLoaderTest.cpp",
     "background_fetch/BackgroundFetchManagerTest.cpp",
     "cachestorage/CacheTest.cpp",
     "canvas/canvas2d/CanvasRenderingContext2DAPITest.cpp",
