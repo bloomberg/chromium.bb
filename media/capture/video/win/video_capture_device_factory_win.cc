@@ -21,14 +21,15 @@
 #include "base/win/scoped_variant.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_initializer.h"
+#include "media/capture/video/win/metrics.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
 #include "media/capture/video/win/video_capture_device_win.h"
 
 using Descriptor = media::VideoCaptureDeviceDescriptor;
 using Descriptors = media::VideoCaptureDeviceDescriptors;
-using Microsoft::WRL::ComPtr;
 using base::win::ScopedCoMem;
 using base::win::ScopedVariant;
+using Microsoft::WRL::ComPtr;
 
 namespace media {
 
@@ -347,7 +348,19 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
 
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
-          base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)) {}
+          base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)) {
+  if (!PlatformSupportsMediaFoundation()) {
+    use_media_foundation_ = false;
+    LogVideoCaptureWinBackendUsed(
+        VideoCaptureWinBackendUsed::kUsingDirectShowAsFallback);
+  } else if (use_media_foundation_) {
+    LogVideoCaptureWinBackendUsed(
+        VideoCaptureWinBackendUsed::kUsingMediaFoundationAsDefault);
+  } else {
+    LogVideoCaptureWinBackendUsed(
+        VideoCaptureWinBackendUsed::kUsingDirectShowAsDefault);
+  }
+}
 
 std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
     const Descriptor& device_descriptor) {

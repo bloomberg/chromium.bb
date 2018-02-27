@@ -25,13 +25,14 @@
 #include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/video_capture_device_utils_win.h"
 
+using base::Location;
 using base::win::ScopedCoMem;
 using Microsoft::WRL::ComPtr;
-using base::Location;
 
 namespace media {
 
 namespace {
+
 class MFPhotoCallback final
     : public base::RefCountedThreadSafe<MFPhotoCallback>,
       public IMFCaptureEngineOnSampleCallback {
@@ -80,6 +81,11 @@ class MFPhotoCallback final
       buffer->Unlock();
       if (blob) {
         std::move(callback_).Run(std::move(blob));
+        LogWindowsImageCaptureOutcome(
+            VideoCaptureWinBackend::kMediaFoundation,
+            ImageCaptureOutcome::kSucceededUsingPhotoStream,
+            IsHighResolution(format_));
+
         // What is it supposed to mean if there is more than one buffer sent to
         // us as a response to requesting a single still image? Are we supposed
         // to somehow concatenate the buffers? Or is it safe to ignore extra
@@ -92,7 +98,14 @@ class MFPhotoCallback final
 
  private:
   friend class base::RefCountedThreadSafe<MFPhotoCallback>;
-  ~MFPhotoCallback() = default;
+  ~MFPhotoCallback() {
+    if (callback_) {
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kMediaFoundation,
+          ImageCaptureOutcome::kFailedUsingPhotoStream,
+          IsHighResolution(format_));
+    }
+  }
 
   VideoCaptureDevice::TakePhotoCallback callback_;
   const VideoCaptureFormat format_;
@@ -414,7 +427,8 @@ bool VideoCaptureDeviceMFWin::GetPixelFormatFromMFSourceMediaSubtype(
 }
 
 HRESULT VideoCaptureDeviceMFWin::ExecuteHresultCallbackWithRetries(
-    base::RepeatingCallback<HRESULT()> callback) {
+    base::RepeatingCallback<HRESULT()> callback,
+    MediaFoundationFunctionRequiringRetry which_function) {
   // Retry callback execution on MF_E_INVALIDREQUEST.
   // MF_E_INVALIDREQUEST is not documented in MediaFoundation documentation.
   // It could mean that MediaFoundation or the underlying device can be in a
@@ -431,6 +445,8 @@ HRESULT VideoCaptureDeviceMFWin::ExecuteHresultCallbackWithRetries(
 
     // Give up after some amount of time
   } while (hr == MF_E_INVALIDREQUEST && retry_count++ < max_retry_count_);
+  LogNumberOfRetriesNeededToWorkAroundMFInvalidRequest(which_function,
+                                                       retry_count);
 
   return hr;
 }
@@ -439,11 +455,13 @@ HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCount(IMFCaptureSource* source,
                                                       DWORD* count) {
   // Sometimes, GetDeviceStreamCount returns an
   // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD* count) {
-        return source->GetDeviceStreamCount(count);
-      },
-      base::Unretained(source), count));
+  return ExecuteHresultCallbackWithRetries(
+      base::BindRepeating(
+          [](IMFCaptureSource* source, DWORD* count) {
+            return source->GetDeviceStreamCount(count);
+          },
+          base::Unretained(source), count),
+      MediaFoundationFunctionRequiringRetry::kGetDeviceStreamCount);
 }
 
 HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCategory(
@@ -452,12 +470,15 @@ HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCategory(
     MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
   // We believe that GetDeviceStreamCategory could be affected by the same
   // behaviour of GetDeviceStreamCount and GetAvailableDeviceMediaType
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD stream_index,
-         MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
-        return source->GetDeviceStreamCategory(stream_index, stream_category);
-      },
-      base::Unretained(source), stream_index, stream_category));
+  return ExecuteHresultCallbackWithRetries(
+      base::BindRepeating(
+          [](IMFCaptureSource* source, DWORD stream_index,
+             MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
+            return source->GetDeviceStreamCategory(stream_index,
+                                                   stream_category);
+          },
+          base::Unretained(source), stream_index, stream_category),
+      MediaFoundationFunctionRequiringRetry::kGetDeviceStreamCategory);
 }
 
 HRESULT VideoCaptureDeviceMFWin::GetAvailableDeviceMediaType(
@@ -467,13 +488,15 @@ HRESULT VideoCaptureDeviceMFWin::GetAvailableDeviceMediaType(
     IMFMediaType** type) {
   // Rarely, for some unknown reason, GetAvailableDeviceMediaType returns an
   // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD stream_index, DWORD media_type_index,
-         IMFMediaType** type) {
-        return source->GetAvailableDeviceMediaType(stream_index,
-                                                   media_type_index, type);
-      },
-      base::Unretained(source), stream_index, media_type_index, type));
+  return ExecuteHresultCallbackWithRetries(
+      base::BindRepeating(
+          [](IMFCaptureSource* source, DWORD stream_index,
+             DWORD media_type_index, IMFMediaType** type) {
+            return source->GetAvailableDeviceMediaType(stream_index,
+                                                       media_type_index, type);
+          },
+          base::Unretained(source), stream_index, media_type_index, type),
+      MediaFoundationFunctionRequiringRetry::kGetAvailableDeviceMediaType);
 }
 
 HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
@@ -539,6 +562,16 @@ VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
 
 VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!video_stream_take_photo_callbacks_.empty()) {
+    for (size_t k = 0; k < video_stream_take_photo_callbacks_.size(); k++) {
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kMediaFoundation,
+          ImageCaptureOutcome::kFailedUsingVideoStream,
+          selected_video_capability_
+              ? IsHighResolution(selected_video_capability_->supported_format)
+              : false);
+    }
+  }
 }
 
 bool VideoCaptureDeviceMFWin::Init() {
@@ -924,10 +957,19 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
 
     mojom::BlobPtr blob =
         Blobify(data, length, selected_video_capability_->supported_format);
-    if (!blob)
+    if (!blob) {
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kMediaFoundation,
+          ImageCaptureOutcome::kFailedUsingVideoStream,
+          IsHighResolution(selected_video_capability_->supported_format));
       continue;
+    }
 
     std::move(cb).Run(std::move(blob));
+    LogWindowsImageCaptureOutcome(
+        VideoCaptureWinBackend::kMediaFoundation,
+        ImageCaptureOutcome::kSucceededUsingVideoStream,
+        IsHighResolution(selected_video_capability_->supported_format));
   }
 }
 

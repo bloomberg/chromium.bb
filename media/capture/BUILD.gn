@@ -140,6 +140,8 @@ component("capture_lib") {
     "video/win/capability_list_win.h",
     "video/win/filter_base_win.cc",
     "video/win/filter_base_win.h",
+    "video/win/metrics.cc",
+    "video/win/metrics.h",
     "video/win/pin_base_win.cc",
     "video/win/pin_base_win.h",
     "video/win/sink_filter_observer_win.h",
