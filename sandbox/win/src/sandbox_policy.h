@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/security_level.h"
@@ -253,8 +254,15 @@ class TargetPolicy {
   // Enable OPM API emulation when in Win32k lockdown.
   virtual bool GetEnableOPMRedirection() = 0;
 
-  // Configure policy to use an AppContainer profile.
-  virtual ResultCode SetAppContainerProfile(AppContainerProfile* profile) = 0;
+  // Configure policy to use an AppContainer profile. |package_name| is the
+  // name of the profile to use. Specifying True for |create_profile| ensures
+  // the profile exists, if set to False process creation will fail if the
+  // profile has not already been created.
+  virtual ResultCode AddAppContainerProfile(const wchar_t* package_name,
+                                            bool create_profile) = 0;
+
+  // Get the configured AppContainerProfile.
+  virtual scoped_refptr<AppContainerProfile> GetAppContainerProfile() = 0;
 
  protected:
   ~TargetPolicy() {}

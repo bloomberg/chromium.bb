@@ -15,7 +15,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/app_container_profile.h"
+#include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/sync_policy_test.h"
 #include "sandbox/win/src/win_utils.h"
 #include "sandbox/win/tests/common/controller.h"
@@ -144,17 +144,19 @@ class AppContainerProfileTest : public ::testing::Test {
       return;
     package_name_ = GenerateRandomPackageName();
     broker_services_ = GetBroker();
-    profile_ = AppContainerProfile::Create(package_name_.c_str(), L"Name",
-                                           L"Description");
     policy_ = broker_services_->CreatePolicy();
-    policy_->SetAppContainerProfile(profile_.get());
+    ASSERT_EQ(SBOX_ALL_OK,
+              policy_->AddAppContainerProfile(package_name_.c_str(), true));
+    // For testing purposes we known the base class so cast directly.
+    profile_ = static_cast<AppContainerProfileBase*>(
+        policy_->GetAppContainerProfile().get());
   }
 
   void TearDown() override {
     if (scoped_process_info_.IsValid())
       ::TerminateProcess(scoped_process_info_.process_handle(), 0);
     if (profile_)
-      AppContainerProfile::Delete(package_name_.c_str());
+      AppContainerProfileBase::Delete(package_name_.c_str());
   }
 
  protected:
@@ -175,7 +177,7 @@ class AppContainerProfileTest : public ::testing::Test {
 
   std::wstring package_name_;
   BrokerServices* broker_services_;
-  scoped_refptr<AppContainerProfile> profile_;
+  scoped_refptr<AppContainerProfileBase> profile_;
   scoped_refptr<TargetPolicy> policy_;
   base::win::ScopedProcessInformation scoped_process_info_;
 };

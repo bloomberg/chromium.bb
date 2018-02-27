@@ -17,7 +17,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/app_container_profile.h"
+#include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/sid.h"
 #include "sandbox/win/src/win_utils.h"
@@ -181,11 +181,12 @@ TEST(AppContainerTest, CreateAndDeleteAppContainerProfile) {
 
   std::wstring package_name = GenerateRandomPackageName();
   EXPECT_FALSE(ProfileExist(package_name));
-  scoped_refptr<AppContainerProfile> profile = AppContainerProfile::Create(
-      package_name.c_str(), L"Name", L"Description");
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Create(package_name.c_str(), L"Name",
+                                      L"Description");
   ASSERT_NE(nullptr, profile.get());
   EXPECT_TRUE(ProfileExist(package_name));
-  EXPECT_TRUE(AppContainerProfile::Delete(package_name.c_str()));
+  EXPECT_TRUE(AppContainerProfileBase::Delete(package_name.c_str()));
   EXPECT_FALSE(ProfileExist(package_name));
 }
 
@@ -195,19 +196,20 @@ TEST(AppContainerTest, CreateAndOpenAppContainerProfile) {
 
   std::wstring package_name = GenerateRandomPackageName();
   EXPECT_FALSE(ProfileExist(package_name));
-  scoped_refptr<AppContainerProfile> profile = AppContainerProfile::Create(
-      package_name.c_str(), L"Name", L"Description");
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Create(package_name.c_str(), L"Name",
+                                      L"Description");
   ASSERT_NE(nullptr, profile.get());
   EXPECT_TRUE(ProfileExist(package_name));
-  scoped_refptr<AppContainerProfile> open_profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> open_profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   ASSERT_NE(nullptr, profile.get());
   EXPECT_TRUE(::EqualSid(profile->GetPackageSid().GetPSID(),
                          open_profile->GetPackageSid().GetPSID()));
-  EXPECT_TRUE(AppContainerProfile::Delete(package_name.c_str()));
+  EXPECT_TRUE(AppContainerProfileBase::Delete(package_name.c_str()));
   EXPECT_FALSE(ProfileExist(package_name));
-  scoped_refptr<AppContainerProfile> open_profile2 =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> open_profile2 =
+      AppContainerProfileBase::Open(package_name.c_str());
   EXPECT_FALSE(ProfileExist(package_name));
 }
 
@@ -216,8 +218,8 @@ TEST(AppContainerTest, SetLowPrivilegeAppContainer) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   ASSERT_NE(nullptr, profile.get());
   profile->SetEnableLowPrivilegeAppContainer(true);
   EXPECT_TRUE(profile->GetEnableLowPrivilegeAppContainer());
@@ -228,8 +230,8 @@ TEST(AppContainerTest, OpenAppContainerProfileAndGetSecurityCapabilities) {
     return;
 
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   ASSERT_NE(nullptr, profile.get());
 
   std::vector<Sid> capabilities;
@@ -245,9 +247,9 @@ TEST(AppContainerTest, OpenAppContainerProfileAndGetSecurityCapabilities) {
 
   ASSERT_TRUE(profile->AddCapability(kInternetClient));
   capabilities.push_back(Sid::FromKnownCapability(kInternetClient));
-  Sid sid_sddl = Sid::FromSddlString(L"S-1-15-3-1");
-  ASSERT_TRUE(profile->AddCapability(sid_sddl));
-  capabilities.push_back(sid_sddl);
+  const wchar_t kSddlSid[] = L"S-1-15-3-1";
+  ASSERT_TRUE(profile->AddCapabilitySddl(kSddlSid));
+  capabilities.push_back(Sid::FromSddlString(kSddlSid));
   auto with_capabilities = profile->GetSecurityCapabilities();
   ASSERT_TRUE(ValidSecurityCapabilities(
       with_capabilities.get(), profile->GetPackageSid(), capabilities));
@@ -258,8 +260,9 @@ TEST(AppContainerTest, GetResources) {
     return;
 
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile = AppContainerProfile::Create(
-      package_name.c_str(), L"Name", L"Description");
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Create(package_name.c_str(), L"Name",
+                                      L"Description");
   ASSERT_NE(nullptr, profile.get());
   base::win::ScopedHandle key;
   EXPECT_TRUE(profile->GetRegistryLocation(KEY_READ, &key));
@@ -275,7 +278,7 @@ TEST(AppContainerTest, GetResources) {
       pipe_path.value().c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE,
       PIPE_UNLIMITED_INSTANCES, 0, 0, 0, nullptr));
   EXPECT_TRUE(pipe_handle.IsValid());
-  EXPECT_TRUE(AppContainerProfile::Delete(package_name.c_str()));
+  EXPECT_TRUE(AppContainerProfileBase::Delete(package_name.c_str()));
 }
 
 TEST(AppContainerTest, AccessCheckFile) {
@@ -284,8 +287,8 @@ TEST(AppContainerTest, AccessCheckFile) {
 
   // We don't need a valid profile to do the access check tests.
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   profile->AddCapability(kInternetClient);
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -320,8 +323,8 @@ TEST(AppContainerTest, AccessCheckRegistry) {
 
   // We don't need a valid profile to do the access check tests.
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   // Ensure the key doesn't exist.
   RegDeleteKey(HKEY_CURRENT_USER, package_name.c_str());
   SECURITY_ATTRIBUTES_SDDL sa(
@@ -350,8 +353,8 @@ TEST(AppContainerTest, ImpersonationCapabilities) {
     return;
 
   std::wstring package_name = GenerateRandomPackageName();
-  scoped_refptr<AppContainerProfile> profile =
-      AppContainerProfile::Open(package_name.c_str());
+  scoped_refptr<AppContainerProfileBase> profile =
+      AppContainerProfileBase::Open(package_name.c_str());
   ASSERT_NE(nullptr, profile.get());
 
   std::vector<Sid> capabilities;
@@ -375,9 +378,9 @@ TEST(AppContainerTest, ImpersonationCapabilities) {
     impersonation_capabilities.push_back(
         Sid::FromNamedCapability(L"FakeCapability"));
   }
-  Sid sid_sddl = Sid::FromSddlString(L"S-1-15-3-1");
-  ASSERT_TRUE(profile->AddImpersonationCapability(sid_sddl));
-  impersonation_capabilities.push_back(sid_sddl);
+  const wchar_t kSddlSid[] = L"S-1-15-3-1";
+  ASSERT_TRUE(profile->AddImpersonationCapabilitySddl(kSddlSid));
+  impersonation_capabilities.push_back(Sid::FromSddlString(kSddlSid));
   ASSERT_TRUE(CompareSidVectors(profile->GetCapabilities(), capabilities));
   ASSERT_TRUE(CompareSidVectors(profile->GetImpersonationCapabilities(),
                                 impersonation_capabilities));

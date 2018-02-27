@@ -598,29 +598,12 @@ base::string16 GetAppContainerProfileName(
   return base::UTF8ToWide(profile_name);
 }
 
-sandbox::ResultCode GetAppContainerProfile(
+sandbox::ResultCode SetupAppContainerProfile(
+    sandbox::AppContainerProfile* profile,
     const base::CommandLine& command_line,
-    service_manager::SandboxType sandbox_type,
-    const std::string& appcontainer_id,
-    bool create_profile,
-    scoped_refptr<sandbox::AppContainerProfile>* profile_result) {
+    service_manager::SandboxType sandbox_type) {
   if (sandbox_type != service_manager::SANDBOX_TYPE_GPU)
     return sandbox::SBOX_ERROR_UNSUPPORTED;
-
-  base::string16 profile_name =
-      GetAppContainerProfileName(appcontainer_id, sandbox_type);
-  scoped_refptr<sandbox::AppContainerProfile> profile;
-  if (create_profile) {
-    profile = sandbox::AppContainerProfile::Create(
-        profile_name.c_str(), L"Chrome Sandbox", L"Profile for Chrome Sandbox");
-  } else {
-    profile = sandbox::AppContainerProfile::Open(profile_name.c_str());
-  }
-
-  if (!profile) {
-    DLOG(ERROR) << "Creating AppContainerProfile failed";
-    return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE;
-  }
 
   if (!profile->AddImpersonationCapability(L"chromeInstallFiles")) {
     DLOG(ERROR) << "AppContainerProfile::AddImpersonationCapability() failed";
@@ -648,7 +631,6 @@ sandbox::ResultCode GetAppContainerProfile(
     profile->SetEnableLowPrivilegeAppContainer(true);
   }
 
-  *profile_result = profile;
   return sandbox::SBOX_ALL_OK;
 }
 
@@ -734,9 +716,16 @@ sandbox::ResultCode SandboxWin::AddAppContainerProfileToPolicy(
     service_manager::SandboxType sandbox_type,
     const std::string& appcontainer_id,
     sandbox::TargetPolicy* policy) {
-  scoped_refptr<sandbox::AppContainerProfile> profile;
-  sandbox::ResultCode result = GetAppContainerProfile(
-      command_line, sandbox_type, appcontainer_id, true, &profile);
+  base::string16 profile_name =
+      GetAppContainerProfileName(appcontainer_id, sandbox_type);
+  sandbox::ResultCode result =
+      policy->AddAppContainerProfile(profile_name.c_str(), true);
+  if (result != sandbox::SBOX_ALL_OK)
+    return result;
+
+  scoped_refptr<sandbox::AppContainerProfile> profile =
+      policy->GetAppContainerProfile();
+  result = SetupAppContainerProfile(profile.get(), command_line, sandbox_type);
   if (result != sandbox::SBOX_ALL_OK)
     return result;
 
@@ -749,7 +738,8 @@ sandbox::ResultCode SandboxWin::AddAppContainerProfileToPolicy(
       granted_access_status;
   if (!access_check)
     return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_ACCESS_CHECK;
-  return policy->SetAppContainerProfile(profile.get());
+
+  return sandbox::SBOX_ALL_OK;
 }
 
 // static
