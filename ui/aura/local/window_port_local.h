@@ -61,7 +61,7 @@ class AURA_EXPORT WindowPortLocal : public WindowPort {
   float last_device_scale_factor_ = 1.0f;
   viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  base::WeakPtr<aura::LayerTreeFrameSinkLocal> frame_sink_;
+  base::WeakPtr<cc::LayerTreeFrameSink> frame_sink_;
 
   base::WeakPtrFactory<WindowPortLocal> weak_factory_;
 

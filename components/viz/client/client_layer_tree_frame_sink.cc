@@ -57,11 +57,6 @@ ClientLayerTreeFrameSink::ClientLayerTreeFrameSink(
 
 ClientLayerTreeFrameSink::~ClientLayerTreeFrameSink() {}
 
-base::WeakPtr<ClientLayerTreeFrameSink> ClientLayerTreeFrameSink::GetWeakPtr() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return weak_factory_.GetWeakPtr();
-}
-
 bool ClientLayerTreeFrameSink::BindToClient(
     cc::LayerTreeFrameSinkClient* client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

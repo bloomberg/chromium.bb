@@ -68,7 +68,6 @@ class VIZ_CLIENT_EXPORT ClientLayerTreeFrameSink
 
   ~ClientLayerTreeFrameSink() override;
 
-  base::WeakPtr<ClientLayerTreeFrameSink> GetWeakPtr();
   const HitTestDataProvider* hit_test_data_provider() const {
     return hit_test_data_provider_.get();
   }

@@ -59,6 +59,10 @@ LayerTreeFrameSink::~LayerTreeFrameSink() {
     DetachFromClient();
 }
 
+base::WeakPtr<LayerTreeFrameSink> LayerTreeFrameSink::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   DCHECK(client);
   DCHECK(!client_);
