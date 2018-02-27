@@ -5,12 +5,12 @@
 #ifndef DEVICE_FIDO_MOCK_U2F_DEVICE_H_
 #define DEVICE_FIDO_MOCK_U2F_DEVICE_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
-#include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,17 +32,20 @@ class MockU2fDevice : public U2fDevice {
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.
   MOCK_METHOD2(DeviceTransactPtr,
-               void(U2fApduCommand* command, DeviceCallback& cb));
-  void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
-                      DeviceCallback cb) override;
+               void(std::vector<uint8_t> command, DeviceCallback& cb));
+  void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
-  static void TransactNoError(std::unique_ptr<U2fApduCommand> command,
+  static void TransactNoError(const std::vector<uint8_t>& command,
                               DeviceCallback cb);
-  static void NotSatisfied(U2fApduCommand* cmd, DeviceCallback& cb);
-  static void WrongData(U2fApduCommand* cmd, DeviceCallback& cb);
-  static void NoErrorSign(U2fApduCommand* cmd, DeviceCallback& cb);
-  static void NoErrorRegister(U2fApduCommand* cmd, DeviceCallback& cb);
-  static void SignWithCorruptedResponse(U2fApduCommand* cmd,
+  static void NotSatisfied(const std::vector<uint8_t>& command,
+                           DeviceCallback& cb);
+  static void WrongData(const std::vector<uint8_t>& command,
+                        DeviceCallback& cb);
+  static void NoErrorSign(const std::vector<uint8_t>& command,
+                          DeviceCallback& cb);
+  static void NoErrorRegister(const std::vector<uint8_t>& command,
+                              DeviceCallback& cb);
+  static void SignWithCorruptedResponse(const std::vector<uint8_t>& command,
                                         DeviceCallback& cb);
   static void WinkDoNothing(WinkCallback& cb);
 

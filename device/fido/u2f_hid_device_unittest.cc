@@ -277,16 +277,16 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion(),
+      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
       base::BindOnce(&ResponseCallback, &response1));
   std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion(),
+      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
       base::BindOnce(&ResponseCallback, &response2));
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->DeviceTransact(U2fApduCommand::CreateVersion(),
+  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
                          base::Bind(&ResponseCallback, &response3));
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
   EXPECT_EQ(nullptr, response1);
@@ -313,7 +313,7 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   device->state_ = U2fHidDevice::State::IDLE;
   std::unique_ptr<U2fApduResponse> response0(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->DeviceTransact(U2fApduCommand::CreateVersion(),
+  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
                          base::Bind(&ResponseCallback, &response0));
   EXPECT_EQ(nullptr, response0);
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
@@ -322,16 +322,16 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion(),
+      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
       base::BindOnce(&ResponseCallback, &response1));
   std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.emplace(
-      U2fApduCommand::CreateVersion(),
+      U2fApduCommand::CreateVersion()->GetEncodedCommand(),
       base::BindOnce(&ResponseCallback, &response2));
   std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
-  device->DeviceTransact(U2fApduCommand::CreateVersion(),
+  device->DeviceTransact(U2fApduCommand::CreateVersion()->GetEncodedCommand(),
                          base::Bind(&ResponseCallback, &response3));
   FakeHidConnection::mock_connection_error_ = false;
 

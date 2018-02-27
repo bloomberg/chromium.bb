@@ -23,11 +23,10 @@ class U2fHidDevice : public U2fDevice {
  public:
   U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info,
                device::mojom::HidManager* hid_manager);
-
   ~U2fHidDevice() final;
 
   // Send a U2f command to this device
-  void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
+  void DeviceTransact(std::vector<uint8_t> command,
                       DeviceCallback callback) final;
   // Send a wink command if supported
   void TryWink(WinkCallback callback) final;
@@ -56,19 +55,17 @@ class U2fHidDevice : public U2fDevice {
 
   // Open a connection to this device
   void Connect(ConnectCallback callback);
-  void OnConnect(std::unique_ptr<U2fApduCommand> command,
+  void OnConnect(std::vector<uint8_t> command,
                  DeviceCallback callback,
                  device::mojom::HidConnectionPtr connection);
   // Ask device to allocate a unique channel id for this connection
-  void AllocateChannel(std::unique_ptr<U2fApduCommand> command,
-                       DeviceCallback callback);
+  void AllocateChannel(std::vector<uint8_t> command, DeviceCallback callback);
   void OnAllocateChannel(std::vector<uint8_t> nonce,
-                         std::unique_ptr<U2fApduCommand> command,
+                         std::vector<uint8_t> command,
                          DeviceCallback callback,
                          bool success,
                          std::unique_ptr<FidoHidMessage> message);
-  void Transition(std::unique_ptr<U2fApduCommand> command,
-                  DeviceCallback callback);
+  void Transition(std::vector<uint8_t> command, DeviceCallback callback);
   // Write all message packets to device, and read response if expected
   void WriteMessage(std::unique_ptr<FidoHidMessage> message,
                     bool response_expected,
@@ -105,7 +102,7 @@ class U2fHidDevice : public U2fDevice {
   State state_ = State::INIT;
 
   base::CancelableOnceClosure timeout_callback_;
-  std::queue<std::pair<std::unique_ptr<U2fApduCommand>, DeviceCallback>>
+  std::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>
       pending_transactions_;
 
   // All the U2fHidDevice instances are owned by U2fRequest. So it is safe to

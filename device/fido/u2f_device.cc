@@ -22,14 +22,14 @@ void U2fDevice::Register(const std::vector<uint8_t>& app_param,
                          const std::vector<uint8_t>& challenge_param,
                          bool individual_attestation_ok,
                          MessageCallback callback) {
-  std::unique_ptr<U2fApduCommand> register_cmd = U2fApduCommand::CreateRegister(
-      app_param, challenge_param, individual_attestation_ok);
+  auto register_cmd = U2fApduCommand::CreateRegister(app_param, challenge_param,
+                                                     individual_attestation_ok);
   if (!register_cmd) {
     std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                             std::vector<uint8_t>());
     return;
   }
-  DeviceTransact(std::move(register_cmd),
+  DeviceTransact(register_cmd->GetEncodedCommand(),
                  base::BindOnce(&U2fDevice::OnRegisterComplete, GetWeakPtr(),
                                 std::move(callback)));
 }
@@ -39,25 +39,25 @@ void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
                      const std::vector<uint8_t>& key_handle,
                      MessageCallback callback,
                      bool check_only) {
-  std::unique_ptr<U2fApduCommand> sign_cmd = U2fApduCommand::CreateSign(
-      app_param, challenge_param, key_handle, check_only);
+  auto sign_cmd = U2fApduCommand::CreateSign(app_param, challenge_param,
+                                             key_handle, check_only);
   if (!sign_cmd) {
     std::move(callback).Run(U2fReturnCode::INVALID_PARAMS,
                             std::vector<uint8_t>());
     return;
   }
-  DeviceTransact(std::move(sign_cmd),
+  DeviceTransact(sign_cmd->GetEncodedCommand(),
                  base::BindOnce(&U2fDevice::OnSignComplete, GetWeakPtr(),
                                 std::move(callback)));
 }
 
 void U2fDevice::Version(VersionCallback callback) {
-  std::unique_ptr<U2fApduCommand> version_cmd = U2fApduCommand::CreateVersion();
+  auto version_cmd = U2fApduCommand::CreateVersion();
   if (!version_cmd) {
     std::move(callback).Run(false, ProtocolVersion::UNKNOWN);
     return;
   }
-  DeviceTransact(std::move(version_cmd),
+  DeviceTransact(version_cmd->GetEncodedCommand(),
                  base::BindOnce(&U2fDevice::OnVersionComplete, GetWeakPtr(),
                                 std::move(callback), false /* legacy */));
 }
@@ -129,7 +129,7 @@ void U2fDevice::OnVersionComplete(
     if (!version_cmd) {
       std::move(callback).Run(false, ProtocolVersion::UNKNOWN);
     } else {
-      DeviceTransact(std::move(version_cmd),
+      DeviceTransact(version_cmd->GetEncodedCommand(),
                      base::BindOnce(&U2fDevice::OnVersionComplete, GetWeakPtr(),
                                     std::move(callback), true /* legacy */));
     }

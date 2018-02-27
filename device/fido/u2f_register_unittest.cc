@@ -828,8 +828,7 @@ TEST_F(U2fRegisterTest, TestRegisterResponseData) {
 }
 
 MATCHER_P(IndicatesIndividualAttestation, expected, "") {
-  const std::vector<uint8_t> cmd = arg->GetEncodedCommand();
-  return cmd.size() >= 2 && ((cmd[2] & 0x80) == 0x80) == expected;
+  return arg.size() >= 2 && ((arg[2] & 0x80) == 0x80) == expected;
 }
 
 TEST_F(U2fRegisterTest, TestIndividualAttestation) {

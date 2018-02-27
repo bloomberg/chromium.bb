@@ -22,7 +22,6 @@
 
 namespace device {
 
-class U2fApduCommand;
 class U2fBleFrame;
 
 class U2fBleDevice : public U2fDevice {
@@ -46,7 +45,7 @@ class U2fBleDevice : public U2fDevice {
 
  protected:
   // U2fDevice:
-  void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
+  void DeviceTransact(std::vector<uint8_t> command,
                       DeviceCallback callback) override;
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
