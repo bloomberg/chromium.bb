@@ -260,18 +260,24 @@ void DragController::DispatchOperation(ServerWindow* target,
       break;
     }
     case OperationType::ENTER: {
+      std::unique_ptr<ServerWindowTracker> tracker =
+          std::make_unique<ServerWindowTracker>();
+      tracker->Add(target);
       connection->PerformOnDragEnter(
           target, op.event_flags, op.screen_position, drag_operations_,
           base::Bind(&DragController::OnDragStatusCompleted,
-                     weak_factory_.GetWeakPtr(), target->id()));
+                     weak_factory_.GetWeakPtr(), base::Passed(&tracker)));
       state->waiting_on_reply = OperationType::ENTER;
       break;
     }
     case OperationType::OVER: {
+      std::unique_ptr<ServerWindowTracker> tracker =
+          std::make_unique<ServerWindowTracker>();
+      tracker->Add(target);
       connection->PerformOnDragOver(
           target, op.event_flags, op.screen_position, drag_operations_,
           base::Bind(&DragController::OnDragStatusCompleted,
-                     weak_factory_.GetWeakPtr(), target->id()));
+                     weak_factory_.GetWeakPtr(), base::Passed(&tracker)));
       state->waiting_on_reply = OperationType::OVER;
       break;
     }
@@ -281,10 +287,13 @@ void DragController::DispatchOperation(ServerWindow* target,
       break;
     }
     case OperationType::DROP: {
+      std::unique_ptr<ServerWindowTracker> tracker =
+          std::make_unique<ServerWindowTracker>();
+      tracker->Add(target);
       connection->PerformOnCompleteDrop(
           target, op.event_flags, op.screen_position, drag_operations_,
           base::Bind(&DragController::OnDragDropCompleted,
-                     weak_factory_.GetWeakPtr(), target->id()));
+                     weak_factory_.GetWeakPtr(), base::Passed(&tracker)));
       state->waiting_on_reply = OperationType::DROP;
       break;
     }
@@ -301,23 +310,23 @@ void DragController::OnRespondToOperation(ServerWindow* window) {
     DispatchOperation(window, &state);
 }
 
-void DragController::OnDragStatusCompleted(const WindowId& id,
-                                           DropEffectBitmask bitmask) {
-  ServerWindow* window = source_->GetWindowById(id);
-  if (!window) {
+void DragController::OnDragStatusCompleted(
+    std::unique_ptr<ServerWindowTracker> tracker,
+    DropEffectBitmask bitmask) {
+  if (tracker->windows().empty()) {
     // The window has been deleted and its queue is empty.
     return;
   }
 
   // We must remove the completed item.
-  OnRespondToOperation(window);
-  SetWindowDropOperations(window, bitmask);
+  OnRespondToOperation(*(tracker->windows().begin()));
+  SetWindowDropOperations(*(tracker->windows().begin()), bitmask);
 }
 
-void DragController::OnDragDropCompleted(const WindowId& id,
-                                         DropEffect action) {
-  ServerWindow* window = source_->GetWindowById(id);
-  if (!window) {
+void DragController::OnDragDropCompleted(
+    std::unique_ptr<ServerWindowTracker> tracker,
+    DropEffect action) {
+  if (tracker->windows().empty()) {
     // The window has been deleted after we sent the drop message. It's really
     // hard to recover from this so just signal to the source that our drag
     // failed.
@@ -325,7 +334,7 @@ void DragController::OnDragDropCompleted(const WindowId& id,
     return;
   }
 
-  OnRespondToOperation(window);
+  OnRespondToOperation(*(tracker->windows().begin()));
   MessageDragCompleted(action != 0u, action);
 }
 

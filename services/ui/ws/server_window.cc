@@ -20,29 +20,15 @@
 namespace ui {
 namespace ws {
 
-ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
-    : ServerWindow(delegate,
-                   id,
-                   viz::FrameSinkId(id.client_id, id.window_id),
-                   Properties()) {}
-
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
-                           const WindowId& id,
                            const viz::FrameSinkId& frame_sink_id,
                            const Properties& properties)
     : delegate_(delegate),
-      id_(id),
-      parent_(nullptr),
-      stacking_target_(nullptr),
-      transient_parent_(nullptr),
-      modal_type_(MODAL_TYPE_NONE),
-      visible_(false),
+      owning_tree_id_(frame_sink_id.client_id()),
       // Default to kPointer as kNull doesn't change the cursor, it leaves
       // the last non-null cursor.
       cursor_(ui::CursorType::kPointer),
       non_client_cursor_(ui::CursorType::kPointer),
-      opacity_(1),
-      can_focus_(true),
       properties_(properties),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
@@ -267,19 +253,6 @@ const ServerWindow* ServerWindow::GetRootForDrawn() const {
   return delegate_->GetRootWindowForDrawn(this);
 }
 
-ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
-  if (id_ == window_id)
-    return this;
-
-  for (ServerWindow* child : children_) {
-    ServerWindow* window = child->GetChildWindow(window_id);
-    if (window)
-      return window;
-  }
-
-  return nullptr;
-}
-
 bool ServerWindow::AddTransientWindow(ServerWindow* child) {
   if (child->transient_parent())
     child->transient_parent()->RemoveTransientWindow(child);
@@ -483,10 +456,9 @@ std::string ServerWindow::GetDebugWindowInfo() const {
   if (has_created_compositor_frame_sink_)
     frame_sink = " [" + frame_sink_id_.ToString() + "]";
 
-  return base::StringPrintf("id=%s visible=%s bounds=%s name=%s%s",
-                            id_.ToString().c_str(), visible_ ? "true" : "false",
-                            bounds_.ToString().c_str(), name.c_str(),
-                            frame_sink.c_str());
+  return base::StringPrintf(
+      "visible=%s bounds=%s name=%s%s", visible_ ? "true" : "false",
+      bounds_.ToString().c_str(), name.c_str(), frame_sink.c_str());
 }
 
 void ServerWindow::BuildDebugInfo(const std::string& depth,

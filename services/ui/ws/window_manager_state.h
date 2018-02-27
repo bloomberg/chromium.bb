@@ -95,11 +95,6 @@ class WindowManagerState : public EventDispatcherDelegate,
   // Deletes the WindowManagerDisplayRoot whose root is |display_root|.
   void DeleteWindowManagerDisplayRoot(ServerWindow* display_root);
 
-  // Returns the ServerWindow corresponding to an orphaned root with the
-  // specified id. See |orphaned_window_manager_display_roots_| for details on
-  // what on orphaned root is.
-  ServerWindow* GetOrphanedRootWithId(const WindowId& id);
-
   // TODO(sky): EventDispatcher is really an implementation detail and should
   // not be exposed.
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }

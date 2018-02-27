@@ -129,16 +129,6 @@ gfx::Size Display::GetSize() const {
   return root_->bounds().size();
 }
 
-ServerWindow* Display::GetRootWithId(const WindowId& id) {
-  if (id == root_->id())
-    return root_.get();
-  for (auto& pair : window_manager_display_root_map_) {
-    if (pair.second->root()->id() == id)
-      return pair.second->root();
-  }
-  return nullptr;
-}
-
 WindowManagerDisplayRoot* Display::GetWindowManagerDisplayRootWithRoot(
     const ServerWindow* window) {
   for (auto& pair : window_manager_display_root_map_) {
@@ -260,9 +250,9 @@ void Display::CreateWindowManagerDisplayRootFromFactory(
 void Display::CreateRootWindow(const gfx::Size& size) {
   DCHECK(!root_);
 
-  WindowId id = display_manager()->GetAndAdvanceNextRootId();
-  ClientWindowId client_window_id(id.client_id, id.window_id);
-  root_.reset(window_server_->CreateServerWindow(id, client_window_id,
+  const ClientWindowId client_window_id =
+      display_manager()->GetAndAdvanceNextRootId();
+  root_.reset(window_server_->CreateServerWindow(client_window_id,
                                                  ServerWindow::Properties()));
   root_->set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
@@ -362,7 +352,7 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
 
   if (old_focused_window) {
     owning_tree_old =
-        window_server_->GetTreeWithId(old_focused_window->id().client_id);
+        window_server_->GetTreeWithId(old_focused_window->owning_tree_id());
     if (owning_tree_old) {
       owning_tree_old->ProcessFocusChanged(old_focused_window,
                                            new_focused_window);
@@ -378,7 +368,7 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   WindowTree* embedded_tree_new = nullptr;
   if (new_focused_window) {
     owning_tree_new =
-        window_server_->GetTreeWithId(new_focused_window->id().client_id);
+        window_server_->GetTreeWithId(new_focused_window->owning_tree_id());
     if (owning_tree_new && owning_tree_new != owning_tree_old &&
         owning_tree_new != embedded_tree_old) {
       owning_tree_new->ProcessFocusChanged(old_focused_window,

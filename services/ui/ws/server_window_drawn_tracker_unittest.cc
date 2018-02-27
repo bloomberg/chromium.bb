@@ -70,10 +70,10 @@ class TestServerWindowDrawnTrackerObserver
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDrawnTrackerObserver);
 };
 
-WindowId MakeWindowId() {
+viz::FrameSinkId MakeFrameSinkId() {
   constexpr int client_id = 1;
   static int window_id = 0;
-  return WindowId(client_id, ++window_id);
+  return viz::FrameSinkId(client_id, ++window_id);
 }
 
 }  // namespace
@@ -96,7 +96,7 @@ class ServerWindowDrawnTrackerTest : public testing::Test {
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
   std::unique_ptr<ServerWindow> window(
-      new ServerWindow(&server_window_delegate, MakeWindowId()));
+      new ServerWindow(&server_window_delegate, MakeFrameSinkId()));
   server_window_delegate.set_root_window(window.get());
   TestServerWindowDrawnTrackerObserver drawn_observer;
   ServerWindowDrawnTracker tracker(window.get(), &drawn_observer);
@@ -139,10 +139,10 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
 
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
-  ServerWindow root(&server_window_delegate, MakeWindowId());
+  ServerWindow root(&server_window_delegate, MakeFrameSinkId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  ServerWindow child(&server_window_delegate, MakeWindowId());
+  ServerWindow child(&server_window_delegate, MakeFrameSinkId());
   child.SetVisible(true);
   root.Add(&child);
 
@@ -168,14 +168,14 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
 
 TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
-  ServerWindow root(&server_window_delegate, MakeWindowId());
+  ServerWindow root(&server_window_delegate, MakeFrameSinkId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
-  ServerWindow child(&server_window_delegate, MakeWindowId());
+  ServerWindow child(&server_window_delegate, MakeFrameSinkId());
   child.SetVisible(true);
   root.Add(&child);
 
-  ServerWindow child_child(&server_window_delegate, MakeWindowId());
+  ServerWindow child_child(&server_window_delegate, MakeFrameSinkId());
   child_child.SetVisible(true);
   child.Add(&child_child);
 
@@ -201,10 +201,10 @@ TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
 
 TEST_F(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
-  ServerWindow root(&server_window_delegate, MakeWindowId());
-  ServerWindow child1(&server_window_delegate, MakeWindowId());
-  ServerWindow child2(&server_window_delegate, MakeWindowId());
-  ServerWindow child3(&server_window_delegate, MakeWindowId());
+  ServerWindow root(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child1(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child2(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child3(&server_window_delegate, MakeFrameSinkId());
   server_window_delegate.set_root_window(&root);
 
   root.Add(&child1);
@@ -244,11 +244,11 @@ TEST_F(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
 
 TEST_F(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
-  ServerWindow root(&server_window_delegate, MakeWindowId());
-  ServerWindow child1(&server_window_delegate, MakeWindowId());
-  ServerWindow child2(&server_window_delegate, MakeWindowId());
-  ServerWindow child11(&server_window_delegate, MakeWindowId());
-  ServerWindow child111(&server_window_delegate, MakeWindowId());
+  ServerWindow root(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child1(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child2(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child11(&server_window_delegate, MakeFrameSinkId());
+  ServerWindow child111(&server_window_delegate, MakeFrameSinkId());
   server_window_delegate.set_root_window(&root);
 
   root.Add(&child1);

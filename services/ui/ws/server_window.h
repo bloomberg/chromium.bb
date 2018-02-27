@@ -52,13 +52,11 @@ class ServerWindow : public viz::HostFrameSinkClient {
   using Properties = std::map<std::string, std::vector<uint8_t>>;
   using Windows = std::vector<ServerWindow*>;
 
-  ServerWindow(ServerWindowDelegate* delegate, const WindowId& id);
   // |frame_sink_id| needs to be an input here as we are creating frame_sink_id_
   // based on the ClientWindowId clients provided.
   ServerWindow(ServerWindowDelegate* delegate,
-               const WindowId& id,
                const viz::FrameSinkId& frame_sink_id,
-               const Properties& properties);
+               const Properties& properties = Properties());
   ~ServerWindow() override;
 
   void AddObserver(ServerWindowObserver* observer);
@@ -78,7 +76,8 @@ class ServerWindow : public viz::HostFrameSinkClient {
       viz::mojom::CompositorFrameSinkRequest request,
       viz::mojom::CompositorFrameSinkClientPtr client);
 
-  const WindowId& id() const { return id_; }
+  // Id of the tree that owns and created this window.
+  ClientSpecificId owning_tree_id() const { return owning_tree_id_; }
 
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
   void UpdateFrameSinkId(const viz::FrameSinkId& frame_sink_id);
@@ -138,10 +137,6 @@ class ServerWindow : public viz::HostFrameSinkClient {
   }
 
   const Windows& children() const { return children_; }
-
-  // Returns the ServerWindow object with the provided |id| if it lies in a
-  // subtree of |this|.
-  ServerWindow* GetChildWindow(const WindowId& id);
 
   // Transient window management.
   // Adding transient child fails if the child window is modal to system.
@@ -258,30 +253,32 @@ class ServerWindow : public viz::HostFrameSinkClient {
   void OnStackingChanged();
 
   ServerWindowDelegate* const delegate_;
-  const WindowId id_;
+  // This is the client id of the WindowTree that owns this window. This is
+  // cached as the |frame_sink_id_| may change.
+  const ClientSpecificId owning_tree_id_;
   // This may change for embed windows.
   viz::FrameSinkId frame_sink_id_;
   base::Optional<viz::LocalSurfaceId> current_local_surface_id_;
 
-  ServerWindow* parent_;
+  ServerWindow* parent_ = nullptr;
   Windows children_;
 
   // Transient window management.
   // If non-null we're actively restacking transient as the result of a
   // transient ancestor changing.
-  ServerWindow* stacking_target_;
-  ServerWindow* transient_parent_;
+  ServerWindow* stacking_target_ = nullptr;
+  ServerWindow* transient_parent_ = nullptr;
   Windows transient_children_;
 
-  ModalType modal_type_;
-  bool visible_;
+  ModalType modal_type_ = MODAL_TYPE_NONE;
+  bool visible_ = false;
   gfx::Rect bounds_;
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
   ui::CursorData cursor_;
   ui::CursorData non_client_cursor_;
-  float opacity_;
-  bool can_focus_;
+  float opacity_ = 1.0f;
+  bool can_focus_ = true;
   mojom::EventTargetingPolicy event_targeting_policy_ =
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS;
   gfx::Transform transform_;

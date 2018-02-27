@@ -29,11 +29,11 @@ class ModalWindowControllerTest : public testing::Test {
 
 TEST_F(ModalWindowControllerTest, MinContainer) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root_window(&window_delegate, WindowId(1, 1));
+  ServerWindow root_window(&window_delegate, viz::FrameSinkId(1, 1));
   window_delegate.set_root_window(&root_window);
-  ServerWindow container1(&window_delegate, WindowId(1, 2));
-  ServerWindow container2(&window_delegate, WindowId(1, 3));
-  ServerWindow container3(&window_delegate, WindowId(1, 4));
+  ServerWindow container1(&window_delegate, viz::FrameSinkId(1, 2));
+  ServerWindow container2(&window_delegate, viz::FrameSinkId(1, 3));
+  ServerWindow container3(&window_delegate, viz::FrameSinkId(1, 4));
 
   root_window.SetVisible(true);
   container1.SetVisible(true);
@@ -47,7 +47,7 @@ TEST_F(ModalWindowControllerTest, MinContainer) {
   blocking_containers[0].min_container = &container2;
   modal_window_controller.SetBlockingContainers(blocking_containers);
 
-  ServerWindow window(&window_delegate, WindowId(1, 5));
+  ServerWindow window(&window_delegate, viz::FrameSinkId(1, 5));
   window.SetVisible(true);
 
   // Window should be blocked when not attached to hierarchy.
@@ -75,11 +75,11 @@ TEST_F(ModalWindowControllerTest, MinContainer) {
 
 TEST_F(ModalWindowControllerTest, SystemModalContainer) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root_window(&window_delegate, WindowId(1, 1));
+  ServerWindow root_window(&window_delegate, viz::FrameSinkId(1, 1));
   window_delegate.set_root_window(&root_window);
-  ServerWindow container1(&window_delegate, WindowId(1, 2));
-  ServerWindow container2(&window_delegate, WindowId(1, 3));
-  ServerWindow container3(&window_delegate, WindowId(1, 4));
+  ServerWindow container1(&window_delegate, viz::FrameSinkId(1, 2));
+  ServerWindow container2(&window_delegate, viz::FrameSinkId(1, 3));
+  ServerWindow container3(&window_delegate, viz::FrameSinkId(1, 4));
 
   root_window.SetVisible(true);
   container1.SetVisible(true);
@@ -97,13 +97,13 @@ TEST_F(ModalWindowControllerTest, SystemModalContainer) {
   blocking_containers[0].min_container = &container2;
   modal_window_controller.SetBlockingContainers(blocking_containers);
 
-  ServerWindow window(&window_delegate, WindowId(1, 5));
+  ServerWindow window(&window_delegate, viz::FrameSinkId(1, 5));
   window.SetVisible(true);
 
   container2.Add(&window);
   EXPECT_FALSE(modal_window_controller.IsWindowBlocked(&window));
 
-  ServerWindow modal_window(&window_delegate, WindowId(1, 6));
+  ServerWindow modal_window(&window_delegate, viz::FrameSinkId(1, 6));
   modal_window.SetModalType(MODAL_TYPE_SYSTEM);
   modal_window_controller.AddSystemModalWindow(&modal_window);
 

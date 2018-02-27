@@ -188,10 +188,9 @@ ThreadedImageCursorsFactory* WindowServer::GetThreadedImageCursorsFactory() {
 }
 
 ServerWindow* WindowServer::CreateServerWindow(
-    const WindowId& id,
     const viz::FrameSinkId& frame_sink_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
-  ServerWindow* window = new ServerWindow(this, id, frame_sink_id, properties);
+  ServerWindow* window = new ServerWindow(this, frame_sink_id, properties);
   window->AddObserver(this);
   return window;
 }
@@ -306,29 +305,6 @@ WindowTree* WindowServer::GetTreeWithClientName(
       return entry.second.get();
   }
   return nullptr;
-}
-
-ServerWindow* WindowServer::GetWindow(const WindowId& id) {
-  // kWindowServerClientId is used for Display and WindowManager nodes.
-  if (id.client_id == kWindowServerClientId) {
-    for (Display* display : display_manager_->displays()) {
-      ServerWindow* window = display->GetRootWithId(id);
-      if (window)
-        return window;
-    }
-    // WindowManagerDisplayRoots are destroyed by the client and not held by
-    // the Display.
-    for (auto& pair : tree_map_) {
-      if (pair.second->window_manager_state()) {
-        ServerWindow* window =
-            pair.second->window_manager_state()->GetOrphanedRootWithId(id);
-        if (window)
-          return window;
-      }
-    }
-  }
-  WindowTree* tree = GetTreeWithId(id.client_id);
-  return tree ? tree->GetWindow(id) : nullptr;
 }
 
 void WindowServer::OnTreeMessagedClient(ClientSpecificId id) {
@@ -448,7 +424,7 @@ void WindowServer::WindowManagerCreatedTopLevelWindow(
     WindowManagerSentBogusMessage();
     return;
   }
-  if (window && (window->id().client_id != wm_tree->id() ||
+  if (window && (window->owning_tree_id() != wm_tree->id() ||
                  !window->children().empty() || GetTreeWithRoot(window))) {
     DVLOG(1)
         << "WindowManager responded with invalid window; window should "
@@ -705,7 +681,7 @@ void WindowServer::OnFirstSurfaceActivation(
 
   // We always use the owner of the window's id (even for an embedded window),
   // because an embedded window's id is allocated by the parent's window tree.
-  WindowTree* window_tree = GetTreeWithId(window->id().client_id);
+  WindowTree* window_tree = GetTreeWithId(window->owning_tree_id());
   if (window_tree)
     window_tree->ProcessWindowSurfaceChanged(window, surface_info);
 }
@@ -793,7 +769,7 @@ void WindowServer::HandleTemporaryReferenceForNewSurface(
     ServerWindow* window) {
   DCHECK(host_frame_sink_manager_);
   // TODO(kylechar): Investigate adding tests for this.
-  const ClientSpecificId window_client_id = window->id().client_id;
+  const ClientSpecificId window_client_id = window->owning_tree_id();
 
   // Find the root ServerWindow for the client that embeds |window|, which is
   // the root of the client that embeds |surface_id|. The client that embeds
@@ -802,7 +778,7 @@ void WindowServer::HandleTemporaryReferenceForNewSurface(
   // embedder, so the first ServerWindow with a different client id will be the
   // root of the embedder.
   ServerWindow* current = window->parent();
-  while (current && current->id().client_id == window_client_id)
+  while (current && current->owning_tree_id() == window_client_id)
     current = current->parent();
 
   // The client that embeds |window| is expected to submit a CompositorFrame

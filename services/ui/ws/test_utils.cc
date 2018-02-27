@@ -803,7 +803,7 @@ display::Display MakeDisplay(int origin_x,
 
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u
-             ? tree->GetWindow((*tree->roots().begin())->id())
+             ? const_cast<ServerWindow*>(*(tree->roots().begin()))
              : nullptr;
 }
 

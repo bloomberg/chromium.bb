@@ -231,7 +231,7 @@ bool WindowManagerAccessPolicy::IsValidIdForNewWindow(
 
 bool WindowManagerAccessPolicy::WasCreatedByThisClient(
     const ServerWindow* window) const {
-  return window->id().client_id == client_id_;
+  return window->owning_tree_id() == client_id_;
 }
 
 }  // namespace ws

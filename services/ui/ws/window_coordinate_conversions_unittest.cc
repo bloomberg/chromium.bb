@@ -29,12 +29,12 @@ class WindowCoordinateConversions : public testing::Test {
 
 TEST_F(WindowCoordinateConversions, Transform) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
-  ServerWindow child(&window_delegate, WindowId(1, 3));
+  ServerWindow child(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
   child.SetBounds(gfx::Rect(0, 0, 20, 20), base::nullopt);
@@ -45,7 +45,7 @@ TEST_F(WindowCoordinateConversions, Transform) {
   transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
   child.SetTransform(transform);
 
-  ServerWindow child_child(&window_delegate, WindowId(1, 4));
+  ServerWindow child_child(&window_delegate, viz::FrameSinkId(1, 4));
   child.Add(&child_child);
   child_child.SetVisible(true);
   child_child.SetBounds(gfx::Rect(4, 6, 12, 24), base::nullopt);

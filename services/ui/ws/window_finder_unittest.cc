@@ -29,19 +29,19 @@ class WindowFinderTest : public testing::Test {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindow) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
-  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  ServerWindow child1(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
   child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
-  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  ServerWindow child2(&window_delegate, viz::FrameSinkId(1, 4));
   root.Add(&child2);
   child2.SetVisible(true);
   child2.SetBounds(gfx::Rect(15, 15, 20, 20), base::nullopt);
@@ -74,12 +74,12 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindow) {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
-  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  ServerWindow child1(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
   child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
@@ -125,12 +125,12 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
-  ServerWindow child_with_mask(&window_delegate, WindowId(1, 4));
+  ServerWindow child_with_mask(&window_delegate, viz::FrameSinkId(1, 4));
   root.Add(&child_with_mask);
   child_with_mask.SetVisible(true);
   child_with_mask.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
@@ -149,19 +149,19 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
 
   // Create two windows, |child1| and |child2|. The two overlap but |child2| is
   // not a valid event target.
-  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  ServerWindow child1(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child1);
   child1.SetVisible(true);
   child1.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
 
-  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  ServerWindow child2(&window_delegate, viz::FrameSinkId(1, 4));
   root.Add(&child2);
   child2.set_event_targeting_policy(mojom::EventTargetingPolicy::NONE);
   child2.SetVisible(true);
@@ -176,7 +176,7 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
 
 TEST_F(WindowFinderTest, NonClientPreferredOverChild) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
@@ -184,13 +184,13 @@ TEST_F(WindowFinderTest, NonClientPreferredOverChild) {
   // Create two windows, |child| and |child_child|; |child| is a child of the
   // root and |child_child| and child of |child|. All share the same size with
   // |child| having a non-client area.
-  ServerWindow child(&window_delegate, WindowId(1, 3));
+  ServerWindow child(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
   child.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
   child.SetClientArea(gfx::Insets(2, 3, 4, 5), std::vector<gfx::Rect>());
 
-  ServerWindow child_child(&window_delegate, WindowId(1, 4));
+  ServerWindow child_child(&window_delegate, viz::FrameSinkId(1, 4));
   child.Add(&child_child);
   child_child.SetVisible(true);
   child_child.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
@@ -203,13 +203,13 @@ TEST_F(WindowFinderTest, NonClientPreferredOverChild) {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
-  ServerWindow child(&window_delegate, WindowId(1, 3));
+  ServerWindow child(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
   child.SetBounds(gfx::Rect(10, 10, 20, 20), base::nullopt);
@@ -224,7 +224,7 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
                          &root, EventSource::MOUSE, gfx::Point(9, 9))
                          .window);
 
-  ServerWindow child_child(&window_delegate, WindowId(1, 4));
+  ServerWindow child_child(&window_delegate, viz::FrameSinkId(1, 4));
   child.Add(&child_child);
   child_child.SetVisible(true);
   child_child.SetBounds(gfx::Rect(12, 12, 4, 4), base::nullopt);
@@ -249,12 +249,12 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
 
 TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
-  ServerWindow child(&window_delegate, WindowId(1, 3));
+  ServerWindow child(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&child);
   child.SetVisible(true);
   child.SetBounds(gfx::Rect(10, 10, 10, 10), base::nullopt);
@@ -283,13 +283,13 @@ TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
 TEST_F(WindowFinderTest,
        FindDeepestVisibleWindowWithTransformOnParentMagnified) {
   TestServerWindowDelegate window_delegate(viz_host_proxy());
-  ServerWindow root(&window_delegate, WindowId(1, 2));
+  ServerWindow root(&window_delegate, viz::FrameSinkId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   root.SetVisible(true);
   root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
   window_delegate.set_root_window(&root);
-  ServerWindow c1(&window_delegate, WindowId(1, 3));
+  ServerWindow c1(&window_delegate, viz::FrameSinkId(1, 3));
   root.Add(&c1);
   c1.SetVisible(true);
   c1.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
@@ -297,12 +297,12 @@ TEST_F(WindowFinderTest,
   transform.Scale(SkFloatToMScalar(.5f), SkFloatToMScalar(.5f));
   c1.SetTransform(transform);
 
-  ServerWindow c2(&window_delegate, WindowId(1, 4));
+  ServerWindow c2(&window_delegate, viz::FrameSinkId(1, 4));
   c1.Add(&c2);
   c2.SetVisible(true);
   c2.SetBounds(gfx::Rect(0, 0, 200, 200), base::nullopt);
 
-  ServerWindow c3(&window_delegate, WindowId(1, 5));
+  ServerWindow c3(&window_delegate, viz::FrameSinkId(1, 5));
   c2.Add(&c3);
   c3.SetVisible(true);
   c3.SetBounds(gfx::Rect(0, 190, 200, 10), base::nullopt);

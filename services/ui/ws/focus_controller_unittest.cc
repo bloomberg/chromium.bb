@@ -92,21 +92,21 @@ class FocusControllerTest : public testing::Test {
 
 TEST_F(FocusControllerTest, Basic) {
   TestServerWindowDelegate server_window_delegate(viz_host_proxy());
-  ServerWindow root(&server_window_delegate, WindowId(1, 1));
+  ServerWindow root(&server_window_delegate, viz::FrameSinkId(1, 1));
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
   root.set_is_activation_parent(true);
-  ServerWindow child(&server_window_delegate, WindowId(1, 2));
+  ServerWindow child(&server_window_delegate, viz::FrameSinkId(1, 2));
   child.SetVisible(true);
   child.set_is_activation_parent(true);
   root.Add(&child);
-  ServerWindow child_child(&server_window_delegate, WindowId(1, 3));
+  ServerWindow child_child(&server_window_delegate, viz::FrameSinkId(1, 3));
   child_child.SetVisible(true);
   child.Add(&child_child);
   child_child.set_is_activation_parent(true);
 
   // Sibling of |child|.
-  ServerWindow child2(&server_window_delegate, WindowId(1, 4));
+  ServerWindow child2(&server_window_delegate, viz::FrameSinkId(1, 4));
   child2.SetVisible(true);
   root.Add(&child2);
 
@@ -191,19 +191,19 @@ class TestServerWindowDelegate2 : public ServerWindowDelegate {
 
 TEST_F(FocusControllerTest, ActiveWindowMovesToDifferentDisplay) {
   TestServerWindowDelegate2 server_window_delegate(viz_host_proxy());
-  ServerWindow root1(&server_window_delegate, WindowId(1, 1));
+  ServerWindow root1(&server_window_delegate, viz::FrameSinkId(1, 1));
   root1.SetVisible(true);
   root1.set_is_activation_parent(true);
-  ServerWindow root2(&server_window_delegate, WindowId(1, 2));
+  ServerWindow root2(&server_window_delegate, viz::FrameSinkId(1, 2));
   root2.SetVisible(true);
   root2.set_is_activation_parent(true);
 
-  ServerWindow child(&server_window_delegate, WindowId(1, 3));
+  ServerWindow child(&server_window_delegate, viz::FrameSinkId(1, 3));
   root1.Add(&child);
   child.SetVisible(true);
   child.set_is_activation_parent(true);
 
-  ServerWindow child_child(&server_window_delegate, WindowId(1, 4));
+  ServerWindow child_child(&server_window_delegate, viz::FrameSinkId(1, 4));
   child.Add(&child_child);
   child_child.SetVisible(true);
 

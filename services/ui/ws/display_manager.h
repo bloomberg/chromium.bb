@@ -112,7 +112,7 @@ class DisplayManager : public UserIdTrackerObserver,
 
   // Returns the id for the next root window (both for the root of a Display
   // as well as the root of WindowManagers).
-  WindowId GetAndAdvanceNextRootId();
+  ClientWindowId GetAndAdvanceNextRootId();
 
   // Called when the AcceleratedWidget is available for |display|.
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
@@ -158,7 +158,8 @@ class DisplayManager : public UserIdTrackerObserver,
       cursor_location_managers_;
 
   // ID to use for next root node.
-  ClientSpecificId next_root_id_;
+  // TODO(sky): figure out why this starts at 2.
+  ClientSpecificId next_root_id_ = 2;
 
   bool got_initial_config_from_window_manager_ = false;
 

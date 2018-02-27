@@ -568,22 +568,19 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
       "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
       ChangesToDescription1(*tracker->changes())[0]);
 
-  OnEventAckTimeout(window()->id().client_id);
+  OnEventAckTimeout(window()->owning_tree_id());
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
 }
 
 TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
   WindowTree* embedder_tree = tree();
-  ServerWindow* embedder_root = window();
   const ClientWindowId embed_window_id(embedder_tree->id(), 12);
   embedder_tree->NewWindow(embed_window_id, ServerWindow::Properties());
   ServerWindow* embedder_window =
       embedder_tree->GetWindowByClientId(embed_window_id);
   ASSERT_TRUE(
-      embedder_tree->AddWindow(ClientWindowId(embedder_root->id().client_id,
-                                              embedder_root->id().window_id),
-                               embed_window_id));
+      embedder_tree->AddWindow(FirstRootId(embedder_tree), embed_window_id));
 
   TestWindowTreeClient* embedder_client = wm_client();
 
