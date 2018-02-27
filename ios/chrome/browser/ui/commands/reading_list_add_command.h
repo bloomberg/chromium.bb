@@ -7,16 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-
 class GURL;
 
-@interface ReadingListAddCommand : GenericChromeCommand
+@interface ReadingListAddCommand : NSObject
 
 @property(nonatomic, readonly) const GURL& URL;
 @property(copy, nonatomic, readonly) NSString* title;
 
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithURL:(const GURL&)URL
                       title:(NSString*)title NS_DESIGNATED_INITIALIZER;

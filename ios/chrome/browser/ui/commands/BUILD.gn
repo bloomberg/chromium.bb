@@ -5,21 +5,14 @@
 source_set("commands") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "UIKit+ChromeExecuteCommand.h",
-    "UIKit+ChromeExecuteCommand.mm",
     "activity_service_commands.h",
     "application_commands.h",
     "browser_commands.h",
     "browsing_data_commands.h",
-    "clear_browsing_data_command.h",
-    "clear_browsing_data_command.mm",
     "command_dispatcher.h",
     "command_dispatcher.mm",
     "external_search_commands.h",
-    "generic_chrome_command.h",
-    "generic_chrome_command.mm",
     "history_popup_commands.h",
-    "ios_command_ids.h",
     "open_new_tab_command.h",
     "open_new_tab_command.mm",
     "open_url_command.h",

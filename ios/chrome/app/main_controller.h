@@ -46,11 +46,6 @@
 // to the user preferences.
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
-// UIResponder addition to execute a Chrome command.  Overridden in UIWindow to
-// forward the call to the application delegate. The application delegate
-// forwards the call to this class.
-- (void)chromeExecuteCommand:(id)sender;
-
 // Returns whether the tab switcher is active.
 - (BOOL)isTabSwitcherActive;
 

@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "components/signin/core/browser/signin_metrics.h"
-#include "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
 @class ChromeIdentity;
 
@@ -29,10 +28,10 @@ enum AuthenticationOperation {
 };
 
 // A command to perform a sign in operation.
-@interface ShowSigninCommand : GenericChromeCommand
+@interface ShowSigninCommand : NSObject
 
 // Mark inherited initializer as unavailable to prevent calling it by mistake.
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Initializes a command to perform the specified operation with a
 // SigninInteractionController and invoke a possibly-nil callback when finished.

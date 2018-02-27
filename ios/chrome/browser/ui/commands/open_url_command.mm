@@ -22,17 +22,12 @@
 @synthesize fromChrome = _fromChrome;
 @synthesize appendTo = _appendTo;
 
-- (instancetype)initWithTag:(NSInteger)tag {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithURL:(const GURL&)url
                    referrer:(const web::Referrer&)referrer
                 inIncognito:(BOOL)inIncognito
                inBackground:(BOOL)inBackground
                    appendTo:(OpenPosition)appendTo {
-  if ((self = [super initWithTag:0])) {
+  if ((self = [super init])) {
     _url = url;
     _referrer = referrer;
     _inIncognito = inIncognito;

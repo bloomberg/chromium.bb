@@ -19,16 +19,11 @@
 @synthesize URL = _URL;
 
 - (instancetype)initWithURL:(const GURL&)URL title:(NSString*)title {
-  if (self = [super initWithTag:0]) {
+  if (self = [super init]) {
     _URL = URL;
     _title = title;
   }
   return self;
-}
-
-- (instancetype)initWithTag:(NSInteger)tag {
-  NOTREACHED();
-  return nil;
 }
 
 @end

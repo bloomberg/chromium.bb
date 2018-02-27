@@ -109,9 +109,6 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
@@ -1625,33 +1622,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                  completion:nil];
 }
 
-#pragma mark - chromeExecuteCommand
-
-- (IBAction)chromeExecuteCommand:(id)sender {
-  NSInteger command = [sender tag];
-
-  switch (command) {
-    case IDC_CLEAR_BROWSING_DATA_IOS: {
-      // Clear both the main browser state and the associated incognito
-      // browser state.
-      ClearBrowsingDataCommand* command =
-          base::mac::ObjCCastStrict<ClearBrowsingDataCommand>(sender);
-      DCHECK(![command browserState]->IsOffTheRecord());
-      [self removeBrowsingDataForBrowserState:[command browserState]
-                                   timePeriod:[command timePeriod]
-                                   removeMask:[command mask]
-                              completionBlock:[command completionBlock]];
-      break;
-    }
-    default:
-      // Unknown commands get dropped with a warning.
-      NOTREACHED() << "Unknown command id " << command;
-      LOG(WARNING) << "Unknown command id " << command;
-      break;
-  }
-}
-
-#pragma mark - chromeExecuteCommand helpers
+#pragma mark - ApplicationCommands helpers
 
 - (void)openUrlFromSettings:(OpenUrlCommand*)command {
   DCHECK([command fromChrome]);

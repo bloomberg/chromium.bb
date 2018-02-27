@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 
 namespace web {
@@ -17,10 +16,10 @@ struct Referrer;
 class GURL;
 
 // A command to open a new tab.
-@interface OpenUrlCommand : GenericChromeCommand
+@interface OpenUrlCommand : NSObject
 
 // Mark inherited initializer as unavailable to prevent calling it by mistake.
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Initializes a command intended to open a URL as a link from a page.
 - (instancetype)initWithURL:(const GURL&)url

@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ui/gfx/image/image.h"
 
-@class GenericChromeCommand;
 @protocol SyncPresenter;
 
 namespace gfx {

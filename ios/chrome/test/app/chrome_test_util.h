@@ -15,7 +15,6 @@ class ChromeBrowserState;
 
 @protocol ApplicationCommands;
 @class DeviceSharingManager;
-@class GenericChromeCommand;
 @class MainController;
 @class NewTabPageController;
 @class UIViewController;
