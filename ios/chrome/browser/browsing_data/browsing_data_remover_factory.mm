@@ -11,6 +11,11 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_impl.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // static
 BrowsingDataRemover* BrowsingDataRemoverFactory::GetForBrowserState(
@@ -43,7 +48,8 @@ BrowsingDataRemoverFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<BrowsingDataRemoverImpl>(browser_state);
+  return std::make_unique<BrowsingDataRemoverImpl>(
+      browser_state, [SessionServiceIOS sharedService]);
 }
 
 web::BrowserState* BrowsingDataRemoverFactory::GetBrowserStateToUse(

@@ -25,12 +25,6 @@ class WebState;
 // Utility method that allows to access the iOS SessionService from C++ code.
 namespace session_util {
 
-// Deletes the file containing the commands for the last session. Finishes the
-// deletion even if |browser_state| is destroyed after this call. |callback| is
-// invoked once the deletion completes.
-void DeleteLastSession(ios::ChromeBrowserState* browser_state,
-                       base::OnceClosure callback);
-
 // Create a WebState initialized with |browser_state| and serialized navigation.
 // The returned WebState has web usage enabled.
 std::unique_ptr<web::WebState> CreateWebStateWithNavigationEntries(

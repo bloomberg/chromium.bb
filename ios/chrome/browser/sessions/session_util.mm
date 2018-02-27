@@ -21,16 +21,6 @@
 
 namespace session_util {
 
-// Deletes the file containing the commands for the last session.
-void DeleteLastSession(ios::ChromeBrowserState* browser_state,
-                       base::OnceClosure callback) {
-  NSString* state_path =
-      base::SysUTF8ToNSString(browser_state->GetStatePath().AsUTF8Unsafe());
-  [[SessionServiceIOS sharedService]
-      deleteLastSessionFileInDirectory:state_path
-                            completion:std::move(callback)];
-}
-
 std::unique_ptr<web::WebState> CreateWebStateWithNavigationEntries(
     ios::ChromeBrowserState* browser_state,
     int last_committed_item_index,
