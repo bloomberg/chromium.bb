@@ -190,13 +190,14 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   void OnCacheWriteFailure();
   void OnDataReceived(int result);
 
-  // Notifies the transactions waiting on Read of the result, by posting a task
-  // for each of them.
-  void ProcessWaitingForReadTransactions(int result);
+  // Completes any pending IO_PENDING read operations by copying any received
+  // bytes from read_buf_ to the given buffer and posts a task to run the
+  // callback with |result|.
+  void CompleteWaitingForReadTransactions(int result);
 
-  // Sets the state to FAIL_READ so that any subsequent Read on an idle
-  // transaction fails.
-  void SetIdleWritersFailState(int result);
+  // Removes idle writers, passing |result| which is to be used for any
+  // subsequent read transaction.
+  void RemoveIdleWriters(int result);
 
   // Invoked when |active_transaction_| fails to read from network or write to
   // cache. |error| indicates network read error code or cache write error.

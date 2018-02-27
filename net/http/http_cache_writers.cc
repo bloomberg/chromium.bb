@@ -239,10 +239,10 @@ bool HttpCache::Writers::CanAddWriters(ParallelWritingPattern* reason) {
 void HttpCache::Writers::ProcessFailure(int error) {
   // Notify waiting_for_read_ of the failure. Tasks will be posted for all the
   // transactions.
-  ProcessWaitingForReadTransactions(error);
+  CompleteWaitingForReadTransactions(error);
 
   // Idle readers should fail when Read is invoked on them.
-  SetIdleWritersFailState(error);
+  RemoveIdleWriters(error);
 }
 
 void HttpCache::Writers::TruncateEntry() {
@@ -477,7 +477,7 @@ void HttpCache::Writers::OnDataReceived(int result) {
     if (active_transaction_)
       EraseTransaction(active_transaction_, result);
     active_transaction_ = nullptr;
-    ProcessWaitingForReadTransactions(write_len_);
+    CompleteWaitingForReadTransactions(write_len_);
 
     // Invoke entry processing.
     DCHECK(ContainsOnlyIdleWriters());
@@ -491,7 +491,7 @@ void HttpCache::Writers::OnDataReceived(int result) {
 
   // Notify waiting_for_read_. Tasks will be posted for all the
   // transactions.
-  ProcessWaitingForReadTransactions(write_len_);
+  CompleteWaitingForReadTransactions(write_len_);
 
   active_transaction_ = nullptr;
 }
@@ -514,7 +514,7 @@ void HttpCache::Writers::OnCacheWriteFailure() {
   }
 }
 
-void HttpCache::Writers::ProcessWaitingForReadTransactions(int result) {
+void HttpCache::Writers::CompleteWaitingForReadTransactions(int result) {
   for (auto it = waiting_for_read_.begin(); it != waiting_for_read_.end();) {
     Transaction* transaction = it->first;
     int callback_result = result;
@@ -540,7 +540,7 @@ void HttpCache::Writers::ProcessWaitingForReadTransactions(int result) {
   }
 }
 
-void HttpCache::Writers::SetIdleWritersFailState(int result) {
+void HttpCache::Writers::RemoveIdleWriters(int result) {
   // Since this is only for idle transactions, waiting_for_read_
   // should be empty.
   DCHECK(waiting_for_read_.empty());
