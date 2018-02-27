@@ -1091,7 +1091,7 @@
     ],
 
     'cfi_full_diag_icall_release_static_dcheck_always_on': [
-      'cfi_full', 'cfi_diag', 'cfi_icall', 'thin_lto', 'release', 'static', 'dcheck_always_on',
+      'cfi_full', 'cfi_diag', 'cfi_icall', 'clang_tot', 'thin_lto', 'release', 'static', 'dcheck_always_on',
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
