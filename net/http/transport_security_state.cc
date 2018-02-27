@@ -12,6 +12,8 @@
 #include "base/build_time.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -33,10 +35,6 @@
 #include "net/http/http_security_headers.h"
 #include "net/net_features.h"
 #include "net/ssl/ssl_info.h"
-
-#if !defined(OS_NACL)
-#include "base/metrics/field_trial.h"
-#endif
 
 namespace net {
 
@@ -64,6 +62,15 @@ const size_t kReportCacheKeyLength = 16;
 //   0: Use the default implementation (e.g. production)
 //   1: Unless a delegate says otherwise, require CT.
 int g_ct_required_for_testing = 0;
+
+// Controls whether or not Certificate Transparency should be enforced for
+// newly-issued certificates.
+const base::Feature kEnforceCTForNewCerts{"EnforceCTForNewCerts",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+// The date (as the number of seconds since the Unix Epoch) to enforce CT for
+// new certificates.
+constexpr base::FeatureParam<int> kEnforceCTForNewCertsDate{
+    &kEnforceCTForNewCerts, "date", 0};
 
 bool IsDynamicExpectCTEnabled() {
   return base::FeatureList::IsEnabled(
@@ -921,23 +928,21 @@ TransportSecurityState::CheckCTRequirements(
                 ? (complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET)
                 : CT_NOT_REQUIRED);
 
-  // Until CT is required for all secure hosts on the Internet, this should
-  // remain CT_NOT_REQUIRED. It is provided to simplify the various
-  // short-circuit returns below.
-  const CTRequirementsStatus default_response = CT_NOT_REQUIRED;
-
-// FieldTrials are not supported in Native Client apps.
-#if !defined(OS_NACL)
-  // Emergency escape valve; not to be activated until there's an actual
-  // emergency (e.g. a weird path-building bug due to a CA's failed
-  // disclosure of cross-signed sub-CAs).
-  std::string group_name =
-      base::FieldTrialList::FindFullName("EnforceCTForProblematicRoots");
-  if (base::StartsWith(group_name, "disabled",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return default_response;
+  // This is provided as a means for CAs to test their own issuance practices
+  // prior to Certificate Transparency becoming mandatory. A parameterized
+  // Feature/FieldTrial is provided, with a single parameter, "date", that
+  // allows a CA to simulate an enforcement date. The expected use case is
+  // that a CA will simulate a date of today/yesterday to see if their newly
+  // issued certificates comply.
+  if (base::FeatureList::IsEnabled(kEnforceCTForNewCerts)) {
+    base::Time enforcement_date =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromSeconds(kEnforceCTForNewCertsDate.Get());
+    if (enforcement_date > base::Time::UnixEpoch() &&
+        validated_certificate_chain->valid_start() > enforcement_date) {
+      return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
+    }
   }
-#endif
 
   const base::Time epoch = base::Time::UnixEpoch();
   const CTRequiredPolicies& ct_required_policies = GetCTRequiredPolicies();
@@ -977,7 +982,7 @@ TransportSecurityState::CheckCTRequirements(
   if (found)
     return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
 
-  return default_response;
+  return CT_NOT_REQUIRED;
 }
 
 void TransportSecurityState::SetDelegate(
