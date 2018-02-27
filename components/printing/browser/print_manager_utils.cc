@@ -27,10 +27,16 @@ bool IsOopifEnabled() {
 
 void CreateCompositeClientIfNeeded(content::WebContents* web_contents,
                                    bool for_preview) {
+  // TODO(weili): We only create pdf compositor client and use pdf compositor
+  // service when site-per-process flag or feature is enabled, or
+  // top-document-isolation feature is enabled. This doesn't cover all cases
+  // where OOPIF is used such as isolate-origin, but should be good for feature
+  // testing purpose. Eventually, we will remove this check and use pdf
+  // compositor service by default for printing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess) ||
+      base::FeatureList::IsEnabled(features::kSitePerProcess) ||
       base::FeatureList::IsEnabled(features::kTopDocumentIsolation)) {
-    // For cases need to support OOPIFs.
     PrintCompositeClient::CreateForWebContents(web_contents);
     if (for_preview) {
       PrintCompositeClient::FromWebContents(web_contents)
