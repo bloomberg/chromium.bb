@@ -55,12 +55,7 @@ mojom("interfaces") {
     "//url/mojom:url_mojom_origin",
   ]
 
-  # TODO(xhwang): Remove cdm_service_mac.mojom when we support EnabledIf
-  # attribute in mojom files. See https://crbug.com/676224
   if (is_mac) {
-    sources -= [ "cdm_service.mojom" ]
-    sources += [ "cdm_service_mac.mojom" ]
-
     # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
     # remove this dependency.
     public_deps += [ "//sandbox/mac/mojom" ]
