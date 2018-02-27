@@ -94,12 +94,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     // The window or one of its descendants IsVisible() [1] and:
     // - Its bounds aren't completely covered by fully opaque windows [2], or,
     // - Its transform, bounds or opacity is animated.
-    NOT_OCCLUDED,
-    // The window and all its descendants are either !IsVisible() [1] or:
-    // - Have bounds are completely covered by fully opaque windows [2], and,
+    VISIBLE,
+    // The window or one of its descendants IsVisible() [1], but they all:
+    // - Have bounds completely covered by fully opaque windows [2], and,
     // - Have no transform, bounds or opacity animation.
     OCCLUDED,
-    //
+    // The window is not IsVisible() [1].
+    HIDDEN,
     // [1] A window can only be IsVisible() if all its parent are IsVisible().
     // [2] A window is "fully opaque" if:
     // - It's visible (IsVisible()).
@@ -108,7 +109,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     // - Its combined opacity is 1 (GetCombinedOpacity()).
     // - The type of its layer is not ui::LAYER_NOT_DRAWN.
     //
-    // TODO(fdoray): Split OCCLUDED into OCCLUDED and HIDDEN.
     // TODO(fdoray): A window that clips its children shouldn't be VISIBLE just
     // because it has an animated child.
   };
@@ -442,7 +442,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void SetVisible(bool visible);
 
   // Updates the occlusion state of the window.
-  void SetOccluded(bool occluded);
+  void SetOcclusionState(OcclusionState occlusion_state);
 
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();

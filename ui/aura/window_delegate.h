@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
@@ -90,9 +91,10 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   virtual void OnWindowTargetVisibilityChanged(bool visible) = 0;
 
   // Called when the occlusion state of the Window changes while tracked (see
-  // WindowOcclusionTracker::Track). |is_occluded| indicates whether the Window
-  // is occluded. Impls must not change any aura::Window.
-  virtual void OnWindowOcclusionChanged(bool is_occluded) {}
+  // WindowOcclusionTracker::Track). |occlusion_state| is the new occlusion
+  // state of the Window.
+  virtual void OnWindowOcclusionChanged(
+      Window::OcclusionState occlusion_state) {}
 
   // Called from Window::HitTest to check if the window has a custom hit test
   // mask. It works similar to the views counterparts. That is, if the function

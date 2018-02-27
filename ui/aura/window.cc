@@ -794,13 +794,11 @@ void Window::SetVisible(bool visible) {
   NotifyWindowVisibilityChanged(this, visible);
 }
 
-void Window::SetOccluded(bool occluded) {
-  OcclusionState occlusion_state =
-      occluded ? OcclusionState::OCCLUDED : OcclusionState::NOT_OCCLUDED;
+void Window::SetOcclusionState(OcclusionState occlusion_state) {
   if (occlusion_state != occlusion_state_) {
     occlusion_state_ = occlusion_state;
     if (delegate_)
-      delegate_->OnWindowOcclusionChanged(occluded);
+      delegate_->OnWindowOcclusionChanged(occlusion_state);
   }
 }
 
