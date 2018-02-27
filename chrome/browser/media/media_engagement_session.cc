@@ -5,8 +5,10 @@
 #include "chrome/browser/media/media_engagement_session.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -127,6 +129,13 @@ void MediaEngagementSession::RecordUkmMetrics() {
   if (!ukm_recorder)
     return;
 
+  bool is_preloaded = false;
+  if (base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData)) {
+    is_preloaded =
+        MediaEngagementPreloadedList::GetInstance()->CheckOriginIsPresent(
+            origin_);
+  }
+
   MediaEngagementScore score =
       service_->CreateEngagementScore(origin_.GetURL());
   ukm::builders::Media_Engagement_SessionFinished(ukm_source_id_)
@@ -135,6 +144,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
       .SetEngagement_Score(round(score.actual_score() * 100))
       .SetPlaybacks_Delta(significant_playback_recorded_)
       .SetEngagement_IsHigh(score.high_score())
+      .SetEngagement_IsPreloaded(is_preloaded)
       .SetPlayer_Audible_Delta(audible_players_total_)
       .SetPlayer_Audible_Total(score.audible_playbacks())
       .SetPlayer_Significant_Delta(significant_players_total_)
