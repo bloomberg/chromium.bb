@@ -29,27 +29,29 @@ class U2fRegister : public U2fRequest {
       U2fReturnCode status_code,
       base::Optional<RegisterResponseData> response_data)>;
 
-  U2fRegister(std::string relying_party_id,
-              service_manager::Connector* connector,
-              const base::flat_set<U2fTransportProtocol>& protocols,
-              const std::vector<std::vector<uint8_t>>& registered_keys,
-              const std::vector<uint8_t>& challenge_hash,
-              const std::vector<uint8_t>& app_param,
-              bool individual_attestation_ok,
-              RegisterResponseCallback completion_callback);
-  ~U2fRegister() override;
-
   static std::unique_ptr<U2fRequest> TryRegistration(
       std::string relying_party_id,
       service_manager::Connector* connector,
       const base::flat_set<U2fTransportProtocol>& protocols,
-      const std::vector<std::vector<uint8_t>>& registered_keys,
-      const std::vector<uint8_t>& challenge_hash,
-      const std::vector<uint8_t>& app_param,
+      std::vector<std::vector<uint8_t>> registered_keys,
+      std::vector<uint8_t> challenge_digest,
+      std::vector<uint8_t> app_id_digest,
       bool individual_attestation_ok,
       RegisterResponseCallback completion_callback);
 
+  U2fRegister(std::string relying_party_id,
+              service_manager::Connector* connector,
+              const base::flat_set<U2fTransportProtocol>& protocols,
+              std::vector<std::vector<uint8_t>> registered_keys,
+              std::vector<uint8_t> challenge_digest,
+              std::vector<uint8_t> app_id_digest,
+              bool individual_attestation_ok,
+              RegisterResponseCallback completion_callback);
+  ~U2fRegister() override;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(U2fRegisterTest, TestCreateU2fRegisterCommand);
+
   void TryDevice() override;
   void OnTryDevice(bool is_duplicate_registration,
                    U2fReturnCode return_code,
@@ -69,9 +71,6 @@ class U2fRegister : public U2fRequest {
   // registration for all key handles provided in |registered_keys_|.
   bool CheckedForDuplicateRegistration();
 
-  const std::vector<std::vector<uint8_t>> registered_keys_;
-  std::vector<uint8_t> challenge_hash_;
-  std::vector<uint8_t> app_param_;
   // Indicates whether the token should be signaled that using an individual
   // attestation certificate is acceptable.
   const bool individual_attestation_ok_;

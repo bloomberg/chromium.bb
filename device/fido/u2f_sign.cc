@@ -6,42 +6,45 @@
 
 #include <utility>
 
+#include "device/fido/u2f_apdu_command.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
-
-U2fSign::U2fSign(std::string relying_party_id,
-                 service_manager::Connector* connector,
-                 const base::flat_set<U2fTransportProtocol>& protocols,
-                 const std::vector<std::vector<uint8_t>>& registered_keys,
-                 const std::vector<uint8_t>& challenge_hash,
-                 const std::vector<uint8_t>& app_param,
-                 SignResponseCallback completion_callback)
-    : U2fRequest(std::move(relying_party_id), connector, protocols),
-      registered_keys_(registered_keys),
-      challenge_hash_(challenge_hash),
-      app_param_(app_param),
-      completion_callback_(std::move(completion_callback)),
-      weak_factory_(this) {}
-
-U2fSign::~U2fSign() = default;
 
 // static
 std::unique_ptr<U2fRequest> U2fSign::TrySign(
     std::string relying_party_id,
     service_manager::Connector* connector,
     const base::flat_set<U2fTransportProtocol>& protocols,
-    const std::vector<std::vector<uint8_t>>& registered_keys,
-    const std::vector<uint8_t>& challenge_hash,
-    const std::vector<uint8_t>& app_param,
+    std::vector<std::vector<uint8_t>> registered_keys,
+    std::vector<uint8_t> challenge_digest,
+    std::vector<uint8_t> app_id_digest,
     SignResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fSign>(
       std::move(relying_party_id), connector, protocols, registered_keys,
-      challenge_hash, app_param, std::move(completion_callback));
+      challenge_digest, app_id_digest, std::move(completion_callback));
   request->Start();
 
   return request;
 }
+
+U2fSign::U2fSign(std::string relying_party_id,
+                 service_manager::Connector* connector,
+                 const base::flat_set<U2fTransportProtocol>& protocols,
+                 std::vector<std::vector<uint8_t>> registered_keys,
+                 std::vector<uint8_t> challenge_digest,
+                 std::vector<uint8_t> app_id_digest,
+                 SignResponseCallback completion_callback)
+    : U2fRequest(std::move(relying_party_id),
+                 connector,
+                 protocols,
+                 std::move(app_id_digest),
+                 std::move(challenge_digest),
+                 std::move(registered_keys)),
+      completion_callback_(std::move(completion_callback)),
+      weak_factory_(this) {}
+
+U2fSign::~U2fSign() = default;
 
 void U2fSign::TryDevice() {
   DCHECK(current_device_);
@@ -58,7 +61,7 @@ void U2fSign::TryDevice() {
   // Try signing current device with the first registered key
   auto it = registered_keys_.cbegin();
   current_device_->Sign(
-      app_param_, challenge_hash_, *it,
+      app_id_digest_, challenge_digest_, *it,
       base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it));
 }
 
@@ -96,7 +99,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
       if (++it != registered_keys_.end()) {
         // Key is not for this device. Try signing with the next key.
         current_device_->Sign(
-            app_param_, challenge_hash_, *it,
+            app_id_digest_, challenge_digest_, *it,
             base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(), it));
       } else {
         // No provided key was accepted by this device. Send registration

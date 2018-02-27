@@ -160,6 +160,8 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorReset = 0x07,
 };
 
+enum class kCoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
+
 // String key values for CTAP request optional parameters and
 // AuthenticatorGetInfo response.
 extern const char kResidentKeyMapKey[];
@@ -175,7 +177,7 @@ extern const size_t kHidMaxPacketSize;
 extern const size_t kHidInitPacketDataSize;
 extern const size_t kHidContinuationPacketDataSize;
 extern const uint8_t kHidMaxLockSeconds;
-// Messages are limited to an init packet and 128 continuation packets.
+// Messages are limited to an initiation packet and 128 continuation packets.
 extern const size_t kHidMaxMessageSize;
 
 }  // namespace device

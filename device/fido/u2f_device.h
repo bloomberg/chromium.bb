@@ -41,6 +41,8 @@ class U2fDevice {
   U2fDevice();
   virtual ~U2fDevice();
 
+  // TODO(hongjunchoi): https://crbug.com/810229 Move all encoding logic from
+  // U2fDevice to U2fRequest.
   // Raw messages parameters are defined by the specification at
   // https://fidoalliance.org/specs/fido-u2f-v1.0-nfc-bt-amendment-20150514/fido-u2f-raw-message-formats.html
   void Register(const std::vector<uint8_t>& appid_digest,

@@ -9,7 +9,7 @@
 namespace device {
 
 PublicKeyCredentialParams::PublicKeyCredentialParams(
-    std::vector<std::tuple<std::string, int>> credential_params)
+    std::vector<CredentialInfo> credential_params)
     : public_key_credential_params_(std::move(credential_params)) {}
 
 PublicKeyCredentialParams::PublicKeyCredentialParams(
@@ -27,9 +27,9 @@ cbor::CBORValue PublicKeyCredentialParams::ConvertToCBOR() const {
   for (const auto& credential : public_key_credential_params_) {
     cbor::CBORValue::MapValue cbor_credential_map;
     cbor_credential_map[cbor::CBORValue("type")] =
-        cbor::CBORValue(std::get<0>(credential));
+        cbor::CBORValue(credential.type);
     cbor_credential_map[cbor::CBORValue("alg")] =
-        cbor::CBORValue(std::get<1>(credential));
+        cbor::CBORValue(credential.algorithm);
     credential_param_array.emplace_back(std::move(cbor_credential_map));
   }
   return cbor::CBORValue(std::move(credential_param_array));

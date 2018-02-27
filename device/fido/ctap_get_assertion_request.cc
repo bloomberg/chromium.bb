@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/ctap_get_assertion_request_param.h"
+#include "device/fido/ctap_get_assertion_request.h"
 
 #include <utility>
 
@@ -12,22 +12,21 @@
 
 namespace device {
 
-CTAPGetAssertionRequestParam::CTAPGetAssertionRequestParam(
+CtapGetAssertionRequest::CtapGetAssertionRequest(
     std::string rp_id,
     std::vector<uint8_t> client_data_hash)
     : rp_id_(std::move(rp_id)),
       client_data_hash_(std::move(client_data_hash)) {}
 
-CTAPGetAssertionRequestParam::CTAPGetAssertionRequestParam(
-    CTAPGetAssertionRequestParam&& that) = default;
+CtapGetAssertionRequest::CtapGetAssertionRequest(
+    CtapGetAssertionRequest&& that) = default;
 
-CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::operator=(
-    CTAPGetAssertionRequestParam&& other) = default;
+CtapGetAssertionRequest& CtapGetAssertionRequest::operator=(
+    CtapGetAssertionRequest&& other) = default;
 
-CTAPGetAssertionRequestParam::~CTAPGetAssertionRequestParam() = default;
+CtapGetAssertionRequest::~CtapGetAssertionRequest() = default;
 
-base::Optional<std::vector<uint8_t>> CTAPGetAssertionRequestParam::Encode()
-    const {
+std::vector<uint8_t> CtapGetAssertionRequest::EncodeAsCBOR() const {
   cbor::CBORValue::MapValue cbor_map;
   cbor_map[cbor::CBORValue(1)] = cbor::CBORValue(rp_id_);
   cbor_map[cbor::CBORValue(2)] = cbor::CBORValue(client_data_hash_);
@@ -57,8 +56,7 @@ base::Optional<std::vector<uint8_t>> CTAPGetAssertionRequestParam::Encode()
 
   auto serialized_param =
       cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
-  if (!serialized_param)
-    return base::nullopt;
+  DCHECK(serialized_param);
 
   std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
       CtapRequestCommand::kAuthenticatorGetAssertion)});
@@ -67,33 +65,31 @@ base::Optional<std::vector<uint8_t>> CTAPGetAssertionRequestParam::Encode()
   return cbor_request;
 }
 
-CTAPGetAssertionRequestParam&
-CTAPGetAssertionRequestParam::SetUserVerificationRequired(
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetUserVerificationRequired(
     bool user_verification_required) {
   user_verification_required_ = user_verification_required;
   return *this;
 }
 
-CTAPGetAssertionRequestParam&
-CTAPGetAssertionRequestParam::SetUserPresenceRequired(
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetUserPresenceRequired(
     bool user_presence_required) {
   user_presence_required_ = user_presence_required;
   return *this;
 }
 
-CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::SetAllowList(
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetAllowList(
     std::vector<PublicKeyCredentialDescriptor> allow_list) {
   allow_list_ = std::move(allow_list);
   return *this;
 }
 
-CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::SetPinAuth(
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetPinAuth(
     std::vector<uint8_t> pin_auth) {
   pin_auth_ = std::move(pin_auth);
   return *this;
 }
 
-CTAPGetAssertionRequestParam& CTAPGetAssertionRequestParam::SetPinProtocol(
+CtapGetAssertionRequest& CtapGetAssertionRequest::SetPinProtocol(
     uint8_t pin_protocol) {
   pin_protocol_ = pin_protocol;
   return *this;
