@@ -40,6 +40,7 @@ tests:
   - - aiguë, ambiguë, contiguë, exiguë, canoë; aïe, aïeul, coïncider, archaïque, haïr, ouïe, ouïr, astéroïde, maïs, paranoïa; capharnaüm
     - ⠁⠊⠛⠥⠫⠂ ⠁⠍⠃⠊⠛⠥⠫⠂ ⠉⠕⠝⠞⠊⠛⠥⠫⠂ ⠑⠭⠊⠛⠥⠫⠂ ⠉⠁⠝⠕⠫⠆ ⠁⠻⠑⠂ ⠁⠻⠑⠥⠇⠂ ⠉⠕⠻⠝⠉⠊⠙⠑⠗⠂ ⠁⠗⠉⠓⠁⠻⠟⠥⠑⠂ ⠓⠁⠻⠗⠂ ⠕⠥⠻⠑⠂ ⠕⠥⠻⠗⠂ ⠁⠎⠞⠿⠗⠕⠻⠙⠑⠂ ⠍⠁⠻⠎⠂ ⠏⠁⠗⠁⠝⠕⠻⠁⠆ ⠉⠁⠏⠓⠁⠗⠝⠁⠳⠍
   - ["HCl", "⠨⠓⠨⠉⠇", xfail: true]
+  - ["HCl", "⠨⠨⠓⠉⠠⠄⠇"]
   - ["McDonald", "⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙"]
   - ["L’Europe", "⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑"]
 
@@ -84,5 +85,9 @@ tests:
     - aiguë, ambiguë, contiguë, exiguë, canoë; aïe, aïeul, coïncider, archaïque, haïr, ouïe, ouïr, astéroïde, maïs, paranoïa; capharnaüm
   - ["⠪⠕ ⠁⠝ ⠊⠞⠑⠍⠲", "• an item."]
   - ["⠨⠓⠨⠉⠇", "HCl"]
+  - ["⠨⠨⠓⠉⠠⠄⠇", "HCl"]
   - ["⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙", "McDonald"]
   - ["⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑", "L'Europe"]
+  - ["⠒⠨⠝⠑ ⠏⠁⠎ ⠎⠑ ⠏⠑⠝⠉⠓⠑⠗ ⠁⠥ ⠨⠙⠑⠓⠕⠗⠎⠲ ⠋⠕⠕", "NE PAS SE PENCHER AU DEHORS. foo", xfail: true]
+  - ["⠒⠨⠝⠑ ⠏⠁⠎ ⠎⠑ ⠏⠑⠝⠉⠓⠑⠗ ⠁⠥ ⠙⠑⠓⠕⠗⠎⠨⠒⠲", "NE PAS SE PENCHER AU DEHORS."]
+    

@@ -270,6 +270,8 @@ numericnocontchars 0123456789
 
 capsletter 46
 begcapsword 46-46
+endcapsword 6-3 # The first method is not compatible with liblouis, so use of the alternative method (official but but less common)
+
 begcaps 25-46
 endcaps 46-25 # official = 46 but conflict with capsletter
 
