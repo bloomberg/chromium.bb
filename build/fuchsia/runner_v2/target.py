@@ -143,7 +143,7 @@ class Target(object):
         return True
       time.sleep(_ATTACH_RETRY_INTERVAL)
     sys.stderr.write(' timeout limit reached.\n')
-    raise FuchsiaTargetException('Couldn\'t connect to QEMU using SSH.')
+    raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 
   def _GetSshConfigPath(self, path):
     raise NotImplementedError

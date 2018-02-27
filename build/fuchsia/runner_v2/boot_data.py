@@ -29,6 +29,7 @@ Host *
 
 def _TargetCpuToSdkBinPath(target_arch):
   """Returns the path to the kernel & bootfs .bin files for |target_cpu|."""
+
   return os.path.join(common.SDK_ROOT, 'target', target_arch)
 
 
@@ -62,45 +63,69 @@ def _ProvisionSSH(output_dir):
         _SSH_CONFIG_TEMPLATE.format(identity=id_key_path,
                                     known_hosts=known_hosts_path))
 
+  if os.path.exists(known_hosts_path):
+    os.remove(known_hosts_path)
+
   return (
       ssh_config_path,
-      (('data/ssh/ssh_host_ed25519_key', host_key_path),
-       ('data/ssh/ssh_host_ed25519_key.pub', host_pubkey_path),
-       ('data/ssh/authorized_keys', id_pubkey_path))
+      (('ssh/ssh_host_ed25519_key', host_key_path),
+       ('ssh/ssh_host_ed25519_key.pub', host_pubkey_path),
+       ('ssh/authorized_keys', id_pubkey_path))
   )
 
 
-def GetKernelPath(target_arch):
-  return os.path.join(_TargetCpuToSdkBinPath(target_arch), 'zircon.bin')
+def GetTargetFile(target_arch, filename):
+  """Computes a path to |filename| in the Fuchsia target directory specific to
+  |target_arch|."""
+
+  return os.path.join(_TargetCpuToSdkBinPath(target_arch), filename)
 
 
 def GetSSHConfigPath(output_dir):
   return output_dir + '/ssh_config'
 
 
-def CreateBootdata(output_dir, target_arch):
-  """Creates a bootdata image ready for SSH remote access.
+def ConfigureDataFVM(output_dir, sparse):
+  """Builds the FVM image for the persistent /data volume and prepopulates it
+  with SSH keys.
 
-  Returns a path to the bootdata.bin file."""
+  output_dir: Path to the output directory which will contain the FVM file.
+  sparse: If true, then a netboot-friendly sparse file will be generated.
 
-  base_boot_data = os.path.join(
-      _TargetCpuToSdkBinPath(target_arch), 'bootdata.bin')
-  ssh_config, ssh_data = _ProvisionSSH(output_dir)
-  ssh_manifest = tempfile.NamedTemporaryFile(delete=False)
-  for key, val in ssh_data:
-    ssh_manifest.write("%s=%s\n" % (key, val))
-  ssh_manifest.close()
-  mkbootfs_path = os.path.join(common.SDK_ROOT, 'tools', 'mkbootfs')
-  bootfs_path = output_dir + '/image.bootfs'
-  args = [mkbootfs_path, '-o', bootfs_path,
-          '--target=boot', base_boot_data,
-          '--target=system', ssh_manifest.name]
+  Returns the path to the new FVM file."""
 
-  logging.debug(' '.join(args))
-  subprocess.check_call(args)
-  os.remove(ssh_manifest.name)
+  logging.debug('Building persistent data FVM file.')
+  data_file = os.path.join(output_dir, 'data.minfs.bin')
+  try:
+    # Build up the minfs partition data and install keys into it.
+    ssh_config, ssh_data = _ProvisionSSH(output_dir)
+    manifest = tempfile.NamedTemporaryFile()
+    for dest, src in ssh_data:
+      manifest.write('%s=%s\n' % (dest, src))
+    manifest.flush()
+    minfs_path = os.path.join(common.SDK_ROOT, 'tools', 'minfs')
+    subprocess.check_call([minfs_path, '%s@10m' % data_file, 'create'])
+    subprocess.check_call([minfs_path, data_file, 'manifest', manifest.name])
 
-  return bootfs_path
+    # Wrap the minfs partition in a FVM container.
+    fvm_path = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
+    fvm_output_path = os.path.join(output_dir, 'fvm.data.blk')
+    if os.path.exists(fvm_output_path):
+      os.remove(fvm_output_path)
+
+    if sparse:
+      cmd = [fvm_path, fvm_output_path, 'sparse', '--compress', 'lz4',
+             '--data', data_file]
+    else:
+      cmd = [fvm_path, fvm_output_path, 'create', '--data', data_file]
+
+    logging.debug(' '.join(cmd))
+
+    subprocess.check_call(cmd)
+    return fvm_output_path
+
+  finally:
+    os.remove(data_file)
 
 
 def GetNodeName(output_dir):

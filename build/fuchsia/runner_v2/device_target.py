@@ -66,12 +66,23 @@ class DeviceTarget(target.Target):
 
       logging.info('Netbooting Fuchsia. ' +
                    'Please ensure that your device is in bootloader mode.')
-      boot_data_path = boot_data.CreateBootdata(
-          self._output_dir, self._GetTargetSdkArch())
       bootserver_path = os.path.join(common.SDK_ROOT, 'tools', 'bootserver')
-      bootserver_command = [bootserver_path, '-1',
-                            boot_data.GetKernelPath(self._GetTargetSdkArch()),
-                            boot_data_path, '--'] + \
+      data_fvm_path = boot_data.ConfigureDataFVM(self._output_dir, True)
+      bootserver_command = [bootserver_path,
+                            '-1',
+                            '--efi',
+                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                    'local.esp.blk'),
+                            '--fvm',
+                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                    'fvm.sparse.blk'),
+                            '--fvm',
+                            data_fvm_path,
+                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                    'zircon.bin'),
+                            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                    'bootdata-blobstore.bin'),
+                            '--'] + \
                             boot_data.GetKernelArgs(self._output_dir)
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
