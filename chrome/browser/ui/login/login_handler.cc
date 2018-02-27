@@ -28,7 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -39,6 +39,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
@@ -56,6 +57,7 @@
 using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
+using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
 
@@ -72,6 +74,13 @@ enum AuthPromptType {
   AUTH_PROMPT_TYPE_SUBRESOURCE_CROSS_ORIGIN = 3,
   AUTH_PROMPT_TYPE_ENUM_COUNT = 4
 };
+
+// Helper to remove the ref from an net::URLRequest to the LoginHandler.
+// Should only be called from the IO thread, since it accesses an
+// net::URLRequest.
+void ResetLoginHandlerForRequest(net::URLRequest* request) {
+  ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request);
+}
 
 void RecordHttpAuthPromptType(AuthPromptType prompt_type) {
   UMA_HISTOGRAM_ENUMERATION("Net.HttpAuthPromptType", prompt_type,
@@ -90,23 +99,27 @@ LoginHandler::LoginModelData::LoginModelData(
   DCHECK(model);
 }
 
-LoginHandler::LoginHandler(
-    net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const base::Callback<void(const net::AuthCredentials&)>&
-        auth_required_callback)
+LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
+                           net::URLRequest* request)
     : handled_auth_(false),
       auth_info_(auth_info),
+      request_(request),
+      http_network_session_(
+          request_->context()->http_transaction_factory()->GetSession()),
       password_manager_(NULL),
-      web_contents_getter_(web_contents_getter),
-      login_model_(NULL),
-      auth_required_callback_(auth_required_callback) {
+      login_model_(NULL) {
   // This constructor is called on the I/O thread, so we cannot load the nib
   // here. BuildViewImpl() will be invoked on the UI thread later, so wait with
   // loading the nib until then.
+  DCHECK(request_) << "LoginHandler constructed with NULL request";
   DCHECK(auth_info_.get()) << "LoginHandler constructed with NULL auth info";
 
   AddRef();  // matched by LoginHandler::ReleaseSoon().
+
+  const content::ResourceRequestInfo* info =
+      ResourceRequestInfo::ForRequest(request);
+  DCHECK(info);
+  web_contents_getter_ = info->GetWebContentsGetterForRequest();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(&LoginHandler::AddObservers, this));
@@ -116,8 +129,8 @@ void LoginHandler::OnRequestCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
       "Why is OnRequestCancelled called from the UI thread?";
 
-  // Callback is no longer valid.
-  auth_required_callback_.Reset();
+  // Reference is no longer valid.
+  request_ = NULL;
 
   // Give up on auth if the request was cancelled. Since the dialog was canceled
   // by the ResourceLoader and not the user, we should cancel the navigation as
@@ -236,12 +249,9 @@ void LoginHandler::Observe(int type,
     return;
 
   // Ignore login notification events from other profiles.
-  NavigationController* controller =
-      content::Source<NavigationController>(source).ptr();
-  if (controller->GetBrowserContext() !=
-      requesting_contents->GetBrowserContext()) {
+  if (login_details->handler()->http_network_session_ !=
+      http_network_session_)
     return;
-  }
 
   // Set or cancel the auth in this handler.
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
@@ -392,9 +402,10 @@ bool LoginHandler::TestAndSetAuthHandled() {
 void LoginHandler::SetAuthDeferred(const base::string16& username,
                                    const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!auth_required_callback_.is_null()) {
-    std::move(auth_required_callback_)
-        .Run(net::AuthCredentials(username, password));
+
+  if (request_) {
+    request_->SetAuth(net::AuthCredentials(username, password));
+    ResetLoginHandlerForRequest(request_);
   }
 }
 
@@ -422,8 +433,13 @@ void LoginHandler::DoCancelAuth(bool dismiss_navigation) {
 // Calls CancelAuth from the IO loop.
 void LoginHandler::CancelAuthDeferred() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!auth_required_callback_.is_null())
-    std::move(auth_required_callback_).Run(net::AuthCredentials());
+
+  if (request_) {
+    request_->CancelAuth();
+    // Verify that CancelAuth doesn't destroy the request via our delegate.
+    DCHECK(request_ != NULL);
+    ResetLoginHandlerForRequest(request_);
+  }
 }
 
 // Closes the view_contents from the UI loop.
@@ -642,18 +658,15 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
 
 // ----------------------------------------------------------------------------
 // Public API
-LoginHandler* CreateLoginPrompt(
-    net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool is_main_frame,
-    const GURL& url,
-    const base::Callback<void(const net::AuthCredentials&)>&
-        auth_required_callback) {
-  LoginHandler* handler = LoginHandler::Create(auth_info, web_contents_getter,
-                                               auth_required_callback);
+
+LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
+                                net::URLRequest* request) {
+  bool is_main_frame =
+      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0;
+  LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&LoginHandler::LoginDialogCallback, url,
+      base::BindOnce(&LoginHandler::LoginDialogCallback, request->url(),
                      base::RetainedRef(auth_info), base::RetainedRef(handler),
                      is_main_frame));
   return handler;

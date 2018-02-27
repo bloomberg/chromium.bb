@@ -97,6 +97,7 @@
 # http://crbug.com/783990
 # Add support for http auth.
 -WorkerTest.SharedWorkerHttpAuth
+-WorkerTest.WorkerHttpAuth
 
 # http://crbug.com/787614
 -ResourceDispatcherHostBrowserTest.ContentDispositionEmpty

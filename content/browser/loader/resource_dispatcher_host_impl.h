@@ -107,6 +107,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
   void SetAllowCrossOriginAuthPrompt(bool value) override;
+  void ClearLoginDelegateForRequest(net::URLRequest* request) override;
   void RegisterInterceptor(const std::string& http_header,
                            const std::string& starts_with,
                            const InterceptorCallback& interceptor) override;
@@ -686,9 +687,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_content_initiated,
       bool must_download,
       bool is_new_request);
-
-  void RunAuthRequiredCallback(net::URLRequest* url_request,
-                               const net::AuthCredentials& credentials);
 
   // Returns true if there are two or more tabs that are not network 2-quiet
   // (i.e. have at least three outstanding requests).

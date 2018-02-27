@@ -23,6 +23,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -35,7 +36,7 @@ namespace {
 // A ResourceDispatchHostDelegate that uses ResourceThrottles to pause a
 // targeted request temporarily, to run a chunk of test code.
 class TestResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
+    : public ShellResourceDispatcherHostDelegate {
  public:
   using RequestDeferredHook = base::Callback<void(const base::Closure& resume)>;
   TestResourceDispatcherHostDelegate() : throttle_created_(false) {}
@@ -47,7 +48,7 @@ class TestResourceDispatcherHostDelegate
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ResourceDispatcherHostDelegate::RequestBeginning(
+    ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
 
     // If this is a request for the tracked URL, add a throttle to track it.

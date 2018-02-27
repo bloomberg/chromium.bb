@@ -29,6 +29,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
@@ -43,7 +44,7 @@ namespace content {
 // Tracks a single request for a specified URL, and allows waiting until the
 // request is destroyed, and then inspecting whether it completed successfully.
 class TrackingResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
+    : public ShellResourceDispatcherHostDelegate {
  public:
   TrackingResourceDispatcherHostDelegate() : throttle_created_(false) {
   }
@@ -55,7 +56,7 @@ class TrackingResourceDispatcherHostDelegate
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ResourceDispatcherHostDelegate::RequestBeginning(
+    ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
     // Expect only a single request for the tracked url.
     ASSERT_FALSE(throttle_created_);

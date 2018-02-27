@@ -223,12 +223,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     custom_cancel_reason_ = reason.as_string();
   }
 
-  bool first_auth_attempt() const { return first_auth_attempt_; }
-
-  void set_first_auth_attempt(bool first_auth_attempt) {
-    first_auth_attempt_ = first_auth_attempt;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -269,7 +263,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
   base::Optional<std::string> suggested_filename_;
   bool blocked_cross_site_document_;
-  bool first_auth_attempt_;
 
   // Keeps upload body blobs alive for the duration of the request.
   BlobHandles blob_handles_;

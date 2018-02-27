@@ -13,7 +13,6 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
-#include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_settings.h"
@@ -675,19 +674,6 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
 
 bool AwContentBrowserClient::ShouldCreateTaskScheduler() {
   return g_should_create_task_scheduler;
-}
-
-content::ResourceDispatcherHostLoginDelegate*
-AwContentBrowserClient::CreateLoginDelegate(
-    net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool is_main_frame,
-    const GURL& url,
-    bool first_auth_attempt,
-    const base::Callback<void(const net::AuthCredentials&)>&
-        auth_required_callback) {
-  return new AwLoginDelegate(auth_info, web_contents_getter, first_auth_attempt,
-                             auth_required_callback);
 }
 
 // static

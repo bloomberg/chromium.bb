@@ -10,6 +10,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
@@ -22,6 +23,7 @@
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -402,6 +404,13 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
       base::Bind(&DownloadStartingOnUIThread,
                  request_info->GetWebContentsGetterForRequest(), url,
                  user_agent, content_disposition, mime_type, content_length));
+}
+
+content::ResourceDispatcherHostLoginDelegate*
+    AwResourceDispatcherHostDelegate::CreateLoginDelegate(
+        net::AuthChallengeInfo* auth_info,
+        net::URLRequest* request) {
+  return new AwLoginDelegate(auth_info, request);
 }
 
 bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(
