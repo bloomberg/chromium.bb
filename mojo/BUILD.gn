@@ -27,12 +27,10 @@ group("mojo") {
 group("tests") {
   testonly = true
   deps = [
+    ":mojo_perftests",
     ":mojo_unittests",
     "//ipc:ipc_tests",
     "//mojo/common:mojo_common_unittests",
-    "//mojo/edk/system:mojo_message_pipe_perftests",
-    "//mojo/edk/test:mojo_public_bindings_perftests",
-    "//mojo/edk/test:mojo_public_system_perftests",
     "//services/service_manager/tests",
   ]
 }
@@ -45,4 +43,27 @@ test("mojo_unittests") {
     "//mojo/public/cpp/bindings/tests",
     "//mojo/public/cpp/system/tests",
   ]
+}
+
+test("mojo_perftests") {
+  deps = [
+    "//mojo/edk/test:run_all_perftests",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/c/system/tests:perftests",
+    "//mojo/public/cpp/bindings/tests:perftests",
+  ]
+
+  if (!is_ios) {
+    sources = [
+      "//mojo/edk/system/message_pipe_perftest.cc",
+    ]
+
+    deps += [
+      "//base",
+      "//base/test:test_support",
+      "//mojo/edk/system",
+      "//mojo/edk/system:test_utils",
+      "//testing/gtest",
+    ]
+  }
 }
