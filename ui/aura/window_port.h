@@ -95,9 +95,6 @@ class AURA_EXPORT WindowPort {
   // factor.
   virtual const viz::LocalSurfaceId& GetLocalSurfaceId() = 0;
 
-  // This can return invalid FrameSinkId.
-  virtual viz::FrameSinkId GetFrameSinkId() const = 0;
-
   virtual void OnEventTargetingPolicyChanged() = 0;
 
   // See description of function with same name in transient_window_client.

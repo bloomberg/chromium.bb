@@ -392,14 +392,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the FrameSinkId. In LOCAL mode, this returns a valid FrameSinkId
   // only if a LayerTreeFrameSink has been created. In MUS mode, this always
   // return a valid FrameSinkId.
-  viz::FrameSinkId GetFrameSinkId() const;
+  const viz::FrameSinkId& GetFrameSinkId() const;
 
-  const viz::FrameSinkId& embed_frame_sink_id() const {
-    return embed_frame_sink_id_;
-  }
+  // Use SetEmbedFrameSinkId() when this window is embedding another client.
+  // See comment for |frame_sink_id_| below for more details.
   void SetEmbedFrameSinkId(const viz::FrameSinkId& embed_frame_sink_id);
+  void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
+    DCHECK(!embeds_external_client_);
+    DCHECK(!frame_sink_id_.is_valid());
+    frame_sink_id_ = frame_sink_id;
+  }
 
-  // Returns whether this window is an embed window.
+  // Returns whether this window is embedding another client.
   bool IsEmbeddingClient() const;
 
  protected:
@@ -575,8 +579,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   int id_;
 
-  // Only set when it is embedding another client inside.
-  viz::FrameSinkId embed_frame_sink_id_;
+  // The FrameSinkId associated with this window. If this window is embedding
+  // another client, then this should be set to the FrameSinkId of that client,
+  // and |embeds_external_client_| is turned on. However, a window can still
+  // have a valid FrameSinkId without embedding another client, to facilitate
+  // hit-testing.
+  viz::FrameSinkId frame_sink_id_;
+  bool embeds_external_client_ = false;
 
   // Whether layer is initialized as non-opaque. Defaults to false.
   bool transparent_;
