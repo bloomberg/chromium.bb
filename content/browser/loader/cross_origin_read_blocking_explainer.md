@@ -1,11 +1,10 @@
 # Cross-Origin Read Blocking (CORB)
 
-This document outlines Cross-Origin Read Blocking, an algorithm by which some
+This document outlines Cross-Origin Read Blocking, an algorithm by which
 dubious cross-origin resource loads may be identified and blocked by web
 browsers before they reach the web page. CORB offers a way to maintain
 same-origin protections on user data, even in the presence of side channel
 attacks.
-
 
 ### The problem
 
@@ -19,26 +18,25 @@ resources to be selectively read across origins.
 Certain type of content, however, can be shown to be incompatible with all of
 the historically-allowed permissive contexts. JSON is one such type: a JSON
 response will result in a decode error when targeted by the `<img>` tag, either
-a no-op or syntax error when targeted by the `<script>` tag, and so on. The only
-case where a web page can load JSON with observable consequences, is via
-fetch() or XMLHttpRequest; and in those cases, cross-origin reads are moderated
-by CORS.
+a no-op or syntax error when targeted by the `<script>` tag, and so on. The
+only case where a web page can load JSON with observable consequences, is via
+`fetch()` or `XMLHttpRequest`; and in those cases, cross-origin reads are
+moderated by CORS.
 
-If such resources can be detected and blocked earlier in the progress of the
-load -- say, before the response makes it to the image decoder or JavaScript
-parser -- the chances of information leakage via potential side channels can be
-reduced.
+By detecting and blocking loads of CORB-protected resources early -- that is,
+before the response makes it to the image decoder or JavaScript parser stage --
+CORB defends against side channel vulnerabilities that may be present in the
+stages which are skipped.
 
+### What attacks does CORB mitigate?
 
-### What attacks can CORB mitigate?
-
-CORB can mitigate the following attack vectors:
+CORB mitigates the following attack vectors:
 
 * Cross-Site Script Inclusion (XSSI)
   * XSSI is the technique of pointing the `<script>` tag at a target resource
-    which is not JavaScript, and observing some side-effects when the resulting
+    which is not JavaScript, and observing some side effects when the resulting
     resource is interpreted as JavaScript. An early example of this attack was
-    discovered in 2006: by overwriting the Javascript Array constructor, the
+    discovered in 2006: by overwriting the JavaScript Array constructor, the
     contents of JSON lists could be intercepted as simply as:
       `<script src="https://example.com/secret.json">`.
     While the array constructor attack vector is fixed in current
@@ -53,19 +51,23 @@ CORB can mitigate the following attack vectors:
     algorithm that a resource should be CORB-protected.
 
 * Speculative Side Channel Attack (e.g. Spectre).
-  * For example, an attacker may 1) use an
-    `<img src="https://example.com/secret.json">` element to pull a cross-site
-    secret into the process where the attacker's Javascript runs, and then 2)
-    use a speculative side channel attack (e.g. Spectre) to read the secret.
+  * For example, an attacker may 1) use an `<img
+    src="https://example.com/secret.json">` element to pull a cross-site secret
+    into the process where the attacker's JavaScript runs, and then 2) use a
+    speculative side channel attack [(e.g. Spectre)](https://spectreattack.com)
+    to read the secret.
   * CORB can prevent this class of attacks when used in tandem with Site
     Isolation, by preventing the JSON resource from being present in the
     memory of a process hosting a cross-site page.
 
-
 ### Algorithm Goals
 
-* CORB-protected resources should be blocked from reaching cross-site pages,
-  unless explicitly permitted by CORS.
+CORB asks a question of each resource loaded by a webpage: if the resource were
+replaced with an empty or placeholder value, would the webpage be able to tell
+the difference? If not, then the resource can be classified as CORB-protected,
+and blocked. Such an algorithm ought to have the following properties:
+* The bodies and headers of CORB-protected resources should be blocked from
+  reaching cross-site pages, unless explicitly permitted by CORS.
 * CORB should protect as many resources as possible.
 * CORB should cause minimal web-compatibility breakages.
 * CORB should be resilient to the most frequent Content-Type mislabelings,
@@ -74,41 +76,44 @@ CORB can mitigate the following attack vectors:
 * CORB should provide a means for web authors to affirmatively protect resources
   which are not intended for cross-origin access.
 
-
 ### How does CORB "block" a response?
 
 When CORB decides that a response needs to be CORB-protected, the response is
 modified as follows:
-* The response response body is replaced with an empty body.
+* The response body is replaced with an empty body.
 * The response headers are filtered down to the
   [CORS safelisted response headers](https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name)
   (i.e. all other response headers are removed from the response).
 
-CORB blocking needs to take place before the response reaches the process
-hosting the cross-origin initiator of the request.  In other words, CORB
-blocking should prevent CORB-protected response data from ever being present in
-the memory of the process hosting a cross-origin website (even temporarily or
-for a short term).  This is different from the concept of
-[filtered responses](https://fetch.spec.whatwg.org/#concept-filtered-response) (e.g.
-[CORS filtered response](https://fetch.spec.whatwg.org/#concept-filtered-response-cors) or
+To be effective against speculative side-channel attacks, CORB blocking must
+take place before the response reaches the process hosting the cross-origin
+initiator of the request.  In other words, CORB blocking should prevent CORB-
+protected response data from ever being present in the memory of the process
+hosting a cross-origin website (even temporarily or for a short term).  This is
+different from the concept of [filtered responses](https://fetch.spec.whatwg.org/#concept-filtered-response)
+(e.g. [CORS filtered response](https://fetch.spec.whatwg.org/#concept-filtered-response-cors) or
 [opaque filtered response](https://fetch.spec.whatwg.org/#concept-filtered-response-opaque))
 which just provide a limited view into full data that remains stored in an
 [internal response](https://fetch.spec.whatwg.org/#concept-internal-response)
 and may be implemented inside the renderer process.
 
-
 ### What kinds of requests are CORB-eligible?
 
-Responses to the following kinds of requests are not eligible for CORB
-protection:
+The following kinds of requests are CORB-exempt:
 
 * [navigation requests](https://fetch.spec.whatwg.org/#navigation-request)
   or requests where the
   [request destination](https://fetch.spec.whatwg.org/#concept-request-destination)
   is "object" or "embed".
-  Enforcing isolation between cross-origin `<iframe>`s or `<object>`s or is
+  Enforcing isolation between cross-origin `<iframe>`s or `<object>`s is
   outside the scope of CORB (and depends on Site Isolation approach specific to
   each browser).
+
+> [nick@chromium.org] TODO: Although Site Isolation is out of scope for CORB,
+> it should be noted that if a browser handles `<iframe>` elements by loading
+> cross-site subdocuments in-process, then this provides a route by which
+> CORS-protected HTML resources can be loaded into the process, and thereby
+> potentially vulnerable to speculative side channel attacks.
 
 > [lukasza@chromium.org] TODO: Figure out how
 > [Edge's VM-based isolation](https://cloudblogs.microsoft.com/microsoftsecure/2017/10/23/making-microsoft-edge-the-most-secure-browser-with-windows-defender-application-guard/)
@@ -146,108 +151,155 @@ All other kinds of requests may be CORB-eligible.  This includes:
     - "style"
     - "report" requests like CSP reports, NEL reports, etc.
 
+The essential idea of CORB is to consider whether a particular resource might be
+unsuitable for use in *every* context listed above. If every possible usage
+would result in either a CORS error, a syntax/decoding error, or no observable
+consequence, CORB ought to be able to block the cross-origin load without
+changing the observable consequences of the load. Prior to CORB, details are
+already suppressed from cross-origin errors, to prevent information leaks. Thus,
+the observable consequences of such errors are already limited, and feasible to
+preserve while blocking.
 
-### What assets can CORB protect?
+### Which responses can be protected by CORB?
 
-The CORB algorithm will declare a response as either CORB-protected (and
-eligible to be blocked) or CORB-exempt (and always allowed through). It will be
-shown that the following types of content can be CORB-protected:
+It will be shown that the following types of content can be CORB-protected:
  * JSON
+ * HTML (assuming out-of-process `<iframe>` support)
  * XML
- * HTML (with special handling of `<iframe>` embedding and )
  * Plain text
  * Any response, when prefixed with certain XSSI-defeating patterns (this is
    a common convention for conveying JSON).
 
-> [lukasza@chromium.org] TODO: Rewrite the remainder of this section:
-> - Change *document*-vs-*resource* narrative to
->   CORB-protected VS CORB-allowed (or non-CORB-eligible).
-> - Plain text = sniffing for HTML or XML or JSON
-> - Exclude PDF/ZIP/other from CORB and cover how web developers can protect
->   PDF/ZIP/other resources even though the are not CORB-protected
-> - Cover how images/videos are not protected
->   (mention possibility of an opt-in via header)
+These are each discussed in the following sections.
 
-CORB decides whether a response is a *document* or a *resource* primarily based
-on the Content-Type header.
+#### Protecting JSON
 
-CORB considers responses with the following `Content-Type` headers to be
-*resources* (these are the content types that can be used in `<img>`, `<audio>`,
-`<video>`, `<script>` and other similar elements which may be embedded
-cross-origin):
-* [JavaScript MIME type](https://html.spec.whatwg.org/#javascript-mime-type)
-  like `application/javascript` or `text/jscript`
-* `text/css`
-* [image types](https://mimesniff.spec.whatwg.org/#image-type) like types
-  matching `image/*`
-* [audio or video types](https://mimesniff.spec.whatwg.org/#audio-or-video-type)
-  like `audio/*`, `video/*` or `application/ogg`
-* [text/vtt](https://w3c.github.io/webvtt/#file-structure)
-* `font/*` or one of legacy
-  [font types](https://mimesniff.spec.whatwg.org/#font-type)
+JSON is a widely used data format on the web; support for JSON is built into the
+web platform. As such, JSON responses are very likely to contain user data worth
+protecting. Additionally, unlike HTML or image formats, there are no legacy HTML
+mechanisms (that is, predating CORS) which allow cross-origin embedding of JSON
+resources.
 
-> [lukasza@chromium.org] Some images (and other content types) may contain
-> sensitive data that shouldn't be shared with other origins.  To avoid breaking
-> existing websites images have to be treated by default as cross-origin
-> *resources*, but maybe we should consider letting websites opt-into additional
-> protection.  For examples a server might somehow indicate to treat its images
-> as origin-bound *documents* protected by CORB (e.g.  with a new kind of HTTP
-> response header that we might want to consider).
+Because the JSON syntax is derived from and overlaps with JavaScript, care must
+be employed to handle the possibility of JavaScript/JSON polyglots. Treatment of
+JSON by CORB breaks into three cases:
+ * Non-empty JSON object literal: A non-empty JSON object
+   (such as `{"key": "value"}`). This is precisely the subset of JSON syntax
+   which is invalid JavaScript syntax -- the colon after the first string
+   literal will generate a syntax error. CORB can protect these cases, even if
+   labeled with a different Content-Type, by sniffing the response body.
+ * Other JSON literals: The remaining subset of the JSON syntax (for example,
+   `null` or `[1, 2, "3"]`) also happens to be valid JavaScript syntax. In
+   particular, when evaluated as script, they are value expressions that should
+   have no side effects. Thus, if they can be detected, they can be CORB-
+   protected. Detection here is possible, but requires implementing a validator
+   that understands the full JSON syntax:
+    * If the response is not labeled with a JSON Content Type, CORB might detect
+      these cases either by buffering and validating the entire response body as
+      JSON; the entire response must be considered because of the potential for
+      a valid, side-effect-having JavaScript program like `[1, 2,
+      "3"].map(...)`.
+    * If the response is indeed labeled with a JSON Content Type, CORB may
+      decide to sniff the response to confirm for valid JSON, only up to a
+      certain number of bytes. This avoids buffering and parsing that might
+      consume an unbounded amount of memory.
+ * JSON served with an XSSI-defeating prefix: As a mitigation for past browser
+   vulnerabilities, many actual websites and frameworks employ a convention of
+   prefixing their fetchable resources with a prefix designed to force a JavaScript error.
+   These prefixes have not been standardized prior to CORB, but a few approaches
+   seem prevalent:
 
-CORB considers HTML, XML and JSON to be *documents* - this covers responses
-with one of the following `Content-Type` headers:
-* [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
-* [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
-  (except `image/svg+xml` which is a *resource*)
-* [JSON MIME type](https://html.spec.whatwg.org/#json-mime-type)
+    * The character sequence `)]}'` is built into [the angular.js
+      framework](https://docs.angularjs.org/api/ng/service/$http), [the Java
+      Spring framework](https://goo.gl/xP7FWn), and is observed in wide use on
+      the google.com domain.
+    * The character sequence `{} &&` was [historically built into the Java
+      Spring framework](https://goo.gl/JYPFAv).
+    * Infinite loops, such as `for(;;);`, are observed in wide use on the
+      facebook.com domain.
 
-Responses marked as `multipart/*` are conservatively considered *resources*.
-This avoids having to parse the content types of the nested parts.
-We recommend not supporting multipart range requests for sensitive documents.
-
-Responses with a MIME type not explicitly named above (e.g. `application/pdf` or
-`application/zip`) are considered to be *documents*.  Similarly, responses that
-don't contain a `Content-Type` header, are also considered *documents*.  This
-helps meet the goal of protecting as many *documents* as possible.
-
-> [lukasza@chromium.org] Maybe this is too aggressive for the initial launch of
-> CORB?  See also https://crbug.com/802836.  OTOH, it seems that in the
-> long-term this is the right approach (e.g. defining a short list of types and
-> type patterns that don't need protection, rather than trying to define a long
-> and open-ended list of types that need protection today or would need
-> protection in the future).
-
-CORB considers `text/plain` to be a *document*.
-TODO: application/octet-stream.
-
-> [lukasza@chromium.org] This seems like a one-off in the current
-> implementation.  Maybe `text/plain` should just be treated as
-> "a MIME type not explicitly named above".
-
-Additionally CORB may classify as a *document* any response that 1) has
-Content-Type set to a non-empty value different from `text/css` and 2) starts
-with a JSON parser breaker (e.g. `)]}'` or `{}&&` or `for(;;);`) - regardless of
-the presence of `X-Content-Type-Options: nosniff` header.  A JSON parser breaker
-is highly unlikely to be present in a *resource* (and therefore highly unlikely
-to lead to misclassification of a *resource* as a *document*) - for example:
-
-* A JSON parser breaker would cause a syntax error (or a hang) if present
-  in an `application/javascript`.
-* A JSON parser breaker is highly unlikely at the beginning of binary
-  *resources* like images, videos or fonts (which typically require
-  the first few bytes to be hardcoded to a specific sequence - for example
-  `FF D8 FF` for image/jpeg).
-* `text/css` (and missing and/or empty Content-Type) is an exception, because
-  these Content-Types are allowed for stylesheets and it is possible to
-  construct a file that begins with a JSON parser break, but at the same time
-  parses fine as a stylesheet - for example:
+   The presence of a recognized XSSI defense like a JSON parser breakers is a
+   strong signal to the CORB algorithm that a resource should be CORB-protected.
+   As such, these prefixes should trigger CORB protection in almost every case,
+   no matter what follows them. This is argued to be safe because:
+     * A JSON parser breaker would cause a syntax error (or a hang) if present
+       in an `application/javascript`.
+     * These JSON parser breaker patterns are not known to collide with binary
+       resources like images, videos or fonts (which typically require
+       the first few bytes to be hardcoded to a specific sequence - for example
+       `FF D8 FF` for image/jpeg).
+     * Collisions with `text/css` stylesheets is theoretically possible, because
+       it is possible to construct a file that begins with a JSON parser
+       breaker, but at the same parses fine as a stylesheet - for example:
 ```css
 )]}'
 {}
 h1 { color: red; }
 ```
+       `text/css` is therefore established as an exception, even though the
+       practical likelihood of such a scenario seems low.
 
-### Sniffing for *resources* served with an incorrect MIME type.
+JSON is also being employed by some web features. One example is `<link
+rel="manifest">`, whose `href` attribute specifies a JSON manifest file.
+Fortunately, this mechanism requires CORS when the manifest is specified cross-
+origin, so its CORB treatment works identically to the rules applied to fetch().
+
+> [nick@chromium.org] TODO: Is there a spec link for JSON being side-effect
+> free when interpreted as script?
+
+#### Protecting HTML
+
+HTML can be embedded cross-origin via `<iframe>`, but browsers can choose to
+implement such embeddings by loading parent and child documents in separate
+processes as appropriate.
+
+Other than navigation (including `<iframe>` navigations), HTML documents can
+only be loaded by fetch() and XHR, both of which require CORS. HTML sniffing is
+already well-understood, so (unlike JSON) it is relatively easy to identify HTML
+resources with high confidence. Only one ambiguous polyglot case has been
+identified that CORB needs to handle conservatively: HTML-style comments, which
+are part of the JavaScript syntax. CORB handles these by skipping over HTML
+comment blocks when sniffing to confirm a HTML content type.
+
+> [nick@chromium.org] TODO: What subset of HTML responses are worth blocking, if
+> out-of-process iframes and site isolation are not available? Is it valuable to
+> hoist the `X-Frame-Options` into CORB in that scenario?
+
+#### Protecting XML
+
+XML, like JSON, is a widely used data exchange format, and like HTML, is a
+document format that's built into the web platform (notably via XmlHttpRequest).
+
+Confirming an XML content-type via sniffing is more straightforward than JSON or
+HTML: XML is signified by the pattern `<?xml`, possibly preceded by whitespace.
+
+The only identified XML case that requires special treatment by CORB is
+`image/svg+xml`, which is an image type. All other XML mime types are treated as
+CORB-protected.
+
+#### Protecting text/plain
+
+If a text/plain response sniffs as one of the other CORB-protected types, the
+response can be CORB-protected.
+
+> [nick@chromium.org] This section needs a strong justification for why
+> text/plain gets this special interpretation. Ideally data showing that
+> text/plain is commonly used to serve HTML, JSON, or XML. Treatment of
+> text/plain in our current implementation may actually be an artifact of
+> an earlier prototype, which ran after standard mime sniffing, and may have
+> seen 'text/plain' MIME types applied as a default MIME type when the response
+> omitted a Content-Type header.
+
+> [lukasza@chromium.org] TODO: Should application/octet-stream be protected
+> similarly?
+
+### Multipart responses and HTTP range requests
+
+Responses marked as `multipart/*` are conservatively considered CORB-exempt, and
+not blocked. This avoids having to parse the content types of the nested parts.
+We recommend not supporting multipart range requests for sensitive documents.
+
+### Detecting resources incorrectly labeled with a CORB-protected MIME type
 
 CORB can't always rely solely on the MIME type of the HTTP response to
 distinguish documents from resources, since the MIME type on network responses
@@ -270,18 +322,12 @@ body really matches the CORB-protected Content-Type response header:
   [HTML sniffing rules](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type),
   used in other contexts.
 
-> [lukasza@chromium.org] It is not practical to try teaching CORB about sniffing
-> all possible types of *documents* like `application/pdf`, `application/zip`,
-> etc.
+> [lukasza@chromium.org] Is it practical to try teaching CORB about sniffing all
+> possible types of non-webby content like `application/pdf`, `application/zip`,
+> etc?
 
 > [lukasza@chromium.org] Some MIME types types are inherently not sniffable
 > (for example `application/octet-stream`).
-
-> [lukasza@chromium.org] TODO: Explain how text/plain sniffs for *any* of HTML,
-> XML or JSON.  Also discuss whether text/plain+nosniff should be different
-> from text/html+nosniff (the latter should be CORB-protected, not sure about
-> the former, given the still not understood media blocking that happens with
-> CORB).
 
 CORB should trust the `Content-Type` header in scenarios where sniffing
 shouldn't or cannot be done:
@@ -310,8 +356,17 @@ Sniffing is a best-effort heuristic and for best security results, we
 recommend 1) marking responses with the correct Content-Type header and 2)
 opting out of sniffing by using the `X-Content-Type-Options: nosniff` header.
 
+### Why can't JSONP be protected?
 
-### How CORB interacts with images?
+CORB cannot protect JSONP responses, because JSONP is just JavaScript, and
+JavaScript resources are CORB-exempt due to the `<script>`  work cross-origin.
+JSONP should be a discouraged pattern on the modern web.
+
+> JSONP should not be confused with the convention of prefixing JSON responses
+> with parser-breaking prefixes. Parser-breaking prefixes are synergistic with
+> CORB, if the prefix is one known to CORB.
+
+### How does CORB interact with images?
 
 CORB should have no observable impact on `<img>` tags unless the image resource
 is both 1) mislabeled with an incorrect, non-image, CORB-protected Content-Type
@@ -440,7 +495,7 @@ Examples:
     Both with and without CORB, the script will not execute, because the
     `nosniff` response header response will cause the response to be blocked
     when its MIME type (`text/html` in the example) is not a
-    [JavaScript MIME type](https://html.spec.whatwg.org/multipage/scripting.html#javascript-mime-type)
+    [JavaScript MIME type](https://html.spec.whatwg.org/multipage/scripting.html#javaScript-mime-type)
     (this behavior is required by the
     [Fetch spec](https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?)).
   * WPT test: `fetch/corb/script-js-mislabeled-as-html-nosniff.sub.html`
@@ -452,7 +507,7 @@ like `importScripts()`, `navigator.serviceWorker.register()`,
 `audioWorklet.addModule()`, etc.
 
 
-### How CORB interacts with stylesheets?
+### How does CORB interact with stylesheets?
 
 CORB should have no observable impact on stylesheets.
 
@@ -511,7 +566,7 @@ Examples:
   * WPT test: `fetch/corb/style-css-with-json-parser-breaker.sub.html`
 
 
-### How CORB interacts with other web platform features?
+### How does CORB interact with other web platform features?
 
 CORB has no impact on the following scenarios:
 
@@ -580,7 +635,6 @@ To test CORB one can turn on the feature in Chrome M63+ by launching it with the
 
 CORB demo page: https://anforowicz.github.io/xsdb-demo/index.html
 
-
 ### Summary of CORB behavior
 
 * Protected origins
@@ -606,44 +660,47 @@ CORB demo page: https://anforowicz.github.io/xsdb-demo/index.html
     * CORB SHOULD allow non-opaque responses from service workers
     * CORB SHOULD block opaque responses from service workers
 
-* *document*-vs-*resource* classification
-    * CORB SHOULD classify as a *resource* all responses with the following
-      Content-Type:
-      * `application/javascript`
+* Classification rules based on Content-Type and response data:
+  * Classification based on Content-Type header alone:
+    * CORB SHOULD classify as CORB-exempt all responses with the following
+      Content-Types:
       * `text/css`
-      * [image types](https://mimesniff.spec.whatwg.org/#image-type) - types
-        matching `image/*`
-      * [audio or video types](https://mimesniff.spec.whatwg.org/#audio-or-video-type)
-        like `audio/*`, `video/*` or `application/ogg`
-      * `font/*` or one of legacy
-        [font types](https://mimesniff.spec.whatwg.org/#font-type)
-    * CORB SHOULD classify as a *document* all responses with the following
-      Content-Type if either 1) the response sniffs as the reported type or 2)
-      the `X-Content-Type-Options: nosniff` header is present:
+  * Classification based on response body alone:
+    * CORB MAY classify as CORB-protected any response whose body meets any
+      of the criteria below, regardless of its Content-Type and regardless of
+      the presence of `X-Content-Type-Options: nosniff` header.
+        * Response body begins with a JSON parser breaker such as:
+          * `)]}'`
+          * `{}&&`
+          * `for(;;);`
+        * Response body has a prefix that indicates a valid, non-empty JSON
+          object.
+
+  * Classification based on Content-Type and sniffing:
+    * CORB SHOULD classify as CORB-exempt all responses
+      `image/svg+xml`
+    * CORB SHOULD classify as CORB-protected all responses with the following
+      Content-Type if either 1) the response body sniffs as the reported type or
+      2) the `X-Content-Type-Options: nosniff` header is present:
       * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
       * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
-        (except `image/svg+xml` which is a *resource*)
+        (except `image/svg+xml` which is CORB-exempt, per rules above)
       * JSON MIME type - one of `text/json`, `text/json+*`, `text/x-json`,
         `text/x-json+*`, `application/json`, `application/json+*` or `*+json`
-    * CORB MAY classify as a *document* any response with a Content-Type not
-      explicitly listed in the previous 2 bullet items.
-    * CORB MAY classify as a *document* any response with a missing Content-Type
-      response header.
-    * CORB MAY classify as a *document* any response starting with a JSON parser
-      breaker (e.g. `)]}'` or `{}&&` or `for(;;);`), regardless of its
-      Content-Type and regardless of the presence of `X-Content-Type-Options:
-      nosniff` header.
-
-> [lukasza@chromium.org] Should the JSON parser breaker sniffing be somehow
-> weaved into one of explainer sections above?
+    * CORB MAY classify as a CORB-protected any response with a missing
+      Content-Type response header, if the response body sniffs as one of the
+      CORB-protected types listed above.
+    * CORB SHOULD classify as CORB-exempt any response with a Content-Type not
+      explicitly listed in this section.
 
 * Sniffing to confirm the Content-Type of the response
     * CORB SHOULD NOT sniff if `X-Content-Type-Options: nosniff` is present.
     * CORB MAY avoid sniffing 206 content range responses with a single-range.
     * CORB MAY limit sniffing to the first few network packets.
     * If Content-Type is `text/html` then CORB SHOULD allow the response
-      if it doesn't
-      [sniff as `text/html`](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type).
+      if it doesn't sniff as `text/html` according to the [sniffing rules]
+      (https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type),
+      amended so that the pattern `"<!--"` is removed from the matching table.
     * If Content-Type is one of TODO then CORB SHOULD allow the response
       if it doesn't
       [sniff as `text/xml`](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type).
