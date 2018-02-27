@@ -23,7 +23,7 @@ class AuthenticatorData {
     kAttestation = 1u << 6
   };
 
-  AuthenticatorData(std::string relying_party_id,
+  AuthenticatorData(std::vector<uint8_t> application_parameter,
                     uint8_t flags,
                     std::vector<uint8_t> counter,
                     base::Optional<AttestedCredentialData> data);
@@ -35,15 +35,16 @@ class AuthenticatorData {
   ~AuthenticatorData();
 
   // Produces a byte array consisting of:
-  // * hash(relying_party_id)
+  // * hash(relying_party_id / appid)
   // * flags
   // * counter
   // * attestation_data.
   std::vector<uint8_t> SerializeToByteArray() const;
 
  private:
-  // RP ID associated with the credential
-  std::string relying_party_id_;
+  // The application parameter: a SHA-256 hash of either the RP ID or the AppID
+  // associated with the credential.
+  std::vector<uint8_t> application_parameter_;
 
   // Flags (bit 0 is the least significant bit):
   // [ED | AT | RFU | RFU | RFU | RFU | RFU | UP ]

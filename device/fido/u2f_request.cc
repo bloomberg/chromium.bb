@@ -23,15 +23,13 @@
 
 namespace device {
 
-U2fRequest::U2fRequest(std::string relying_party_id,
-                       service_manager::Connector* connector,
+U2fRequest::U2fRequest(service_manager::Connector* connector,
                        const base::flat_set<U2fTransportProtocol>& protocols,
-                       std::vector<uint8_t> app_id_digest,
+                       std::vector<uint8_t> application_parameter,
                        std::vector<uint8_t> challenge_digest,
                        std::vector<std::vector<uint8_t>> registered_keys)
     : state_(State::INIT),
-      relying_party_id_(std::move(relying_party_id)),
-      app_id_digest_(app_id_digest),
+      application_parameter_(application_parameter),
       challenge_digest_(challenge_digest),
       registered_keys_(registered_keys),
       weak_factory_(this) {
@@ -75,7 +73,7 @@ void U2fRequest::SetDiscoveriesForTesting(
 }
 
 // static
-const std::vector<uint8_t>& U2fRequest::GetBogusAppParam() {
+const std::vector<uint8_t>& U2fRequest::GetBogusApplicationParameter() {
   static const std::vector<uint8_t> kBogusAppParam(32, 0x41);
   return kBogusAppParam;
 }
@@ -96,14 +94,14 @@ std::unique_ptr<U2fApduCommand> U2fRequest::GetU2fVersionApduCommand(
 std::unique_ptr<U2fApduCommand> U2fRequest::GetU2fSignApduCommand(
     const std::vector<uint8_t>& key_handle,
     bool is_check_only_sign) const {
-  return U2fApduCommand::CreateSign(app_id_digest_, challenge_digest_,
+  return U2fApduCommand::CreateSign(application_parameter_, challenge_digest_,
                                     key_handle, is_check_only_sign);
 }
 
 std::unique_ptr<U2fApduCommand> U2fRequest::GetU2fRegisterApduCommand(
     bool is_individual_attestation) const {
-  return U2fApduCommand::CreateRegister(app_id_digest_, challenge_digest_,
-                                        is_individual_attestation);
+  return U2fApduCommand::CreateRegister(
+      application_parameter_, challenge_digest_, is_individual_attestation);
 }
 
 void U2fRequest::Transition() {
