@@ -309,9 +309,7 @@ void AppWindow::Init(const GURL& url,
     // notifies observers of the window being hidden.
     Hide();
   } else {
-    // Panels are not activated by default.
-    Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
-                                                       : SHOW_ACTIVE);
+    Show(SHOW_INACTIVE);
 
     // These states may cause the window to show, so they are ignored if the
     // window is initially hidden.
@@ -321,6 +319,10 @@ void AppWindow::Init(const GURL& url,
       Maximize();
     else if (new_params.state == ui::SHOW_STATE_MINIMIZED)
       Minimize();
+
+    // Panels are not activated by default.
+    Show(window_type_is_panel() || !new_params.focused ? SHOW_INACTIVE
+                                                       : SHOW_ACTIVE);
   }
 
   OnNativeWindowChanged();
