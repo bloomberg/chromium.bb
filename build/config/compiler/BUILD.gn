@@ -2049,16 +2049,7 @@ config("minimal_symbols") {
       # TODO(thakis): Remove this again once dump_syms is fixed.
       cflags += [ "-gdwarf-3" ]
     }
-    if (is_linux && !using_sanitizer) {
-      # minimal_symbols needs to only produce valid stack traces, and -g0 does
-      # that, even though you might think it'd produce no symbols at all.
-      # Not using -g1 allows us to speed up link time and save disk space.
-      cflags += [ "-g0" ]
-    } else {
-      # If sanitizer detects some failure, symbolizer tries to show files and
-      # line number from debug symbols.
-      cflags += [ "-g1" ]
-    }
+    cflags += [ "-g1" ]
     ldflags = []
     if (is_android && is_clang) {
       # Android defaults to symbol_level=1 builds in production builds
