@@ -536,6 +536,16 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
  public:
   FrameFetchContextHintsTest() = default;
 
+  void SetUp() override {
+    FrameFetchContextTest::SetUp();
+    // Set the document URL to a secure document.
+    document->SetURL(KURL("https://www.example.com/"));
+    document->SetSecurityOrigin(
+        SecurityOrigin::Create(KURL("https://www.example.com/")));
+    Settings* settings = document->GetSettings();
+    settings->SetScriptEnabled(true);
+  }
+
  protected:
   void ExpectHeader(const char* input,
                     const char* header_name,
@@ -573,6 +583,10 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
+  // The origin of the resource does not match the origin of the main frame
+  // resource. Client hints are still attached.
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
+               "4");
 }
 
 // Verify that client hints are not attched when the resources do not belong to
