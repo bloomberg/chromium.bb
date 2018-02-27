@@ -23,6 +23,7 @@ class ProcessedStudy {
   static const char kGenericDefaultExperimentName[];
 
   ProcessedStudy();
+  ProcessedStudy(const ProcessedStudy& other);
   ~ProcessedStudy();
 
   bool Init(const Study* study, bool is_expired);
@@ -39,8 +40,8 @@ class ProcessedStudy {
 
   bool is_expired() const { return is_expired_; }
 
-  const std::string& single_feature_name() const {
-    return single_feature_name_;
+  const std::vector<std::string>& associated_features() const {
+    return associated_features_;
   }
 
   // Gets the index of the experiment with the given |name|. Returns -1 if no
@@ -58,20 +59,22 @@ class ProcessedStudy {
 
  private:
   // Corresponding Study object. Weak reference.
-  const Study* study_;
+  const Study* study_ = nullptr;
 
   // Computed total group probability for the study.
-  base::FieldTrial::Probability total_probability_;
+  base::FieldTrial::Probability total_probability_ = 0;
 
   // Whether all assignments are to a single group.
-  bool all_assignments_to_one_group_;
+  bool all_assignments_to_one_group_ = false;
 
   // Whether the study is expired.
-  bool is_expired_;
+  bool is_expired_ = false;
 
-  // If the study has groups that enable/disable a single feature, the name of
-  // that feature.
-  std::string single_feature_name_;
+  // A list of feature names associated with this study by default. Studies
+  // might have groups that do not specify any feature associations – this is
+  // often the case for a default group, for example. The features listed here
+  // will be associated with all such groups.
+  std::vector<std::string> associated_features_;
 };
 
 }  // namespace variations

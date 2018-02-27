@@ -20,7 +20,7 @@ bool ValidateStudyAndComputeTotalProbability(
     const Study& study,
     base::FieldTrial::Probability* total_probability,
     bool* all_assignments_to_one_group,
-    std::string* single_feature_name) {
+    std::vector<std::string>* associated_features) {
   if (study.filter().has_min_version() &&
       !base::Version::IsValidWildcardString(study.filter().min_version())) {
     DVLOG(1) << study.name() << " has invalid min version: "
@@ -97,10 +97,19 @@ bool ValidateStudyAndComputeTotalProbability(
     return false;
   }
 
-  if (!has_multiple_features && !single_feature_name_seen.empty())
-    single_feature_name->swap(single_feature_name_seen);
-  else
-    single_feature_name->clear();
+  // Check if this study enables/disables a single feature and uses explicit
+  // activation (i.e. the trial should be activated when queried). If so, ensure
+  // that groups that don't explicitly enable/disable that feature are still
+  // associated with it (i.e. so "Default" group gets reported).
+  //
+  // Note: This checks for ACTIVATION_EXPLICIT, since there is no reason to
+  // have this association with ACTIVATION_AUTO (where the trial starts active),
+  // as well as allowing flexibility to disable this behavior in the future from
+  // the server by introducing a new activation type.
+  if (!has_multiple_features && !single_feature_name_seen.empty() &&
+      study.activation_type() == Study_ActivationType_ACTIVATION_EXPLICIT) {
+    associated_features->push_back(single_feature_name_seen);
+  }
 
   *total_probability = divisor;
   *all_assignments_to_one_group = !multiple_assigned_groups;
@@ -114,11 +123,9 @@ bool ValidateStudyAndComputeTotalProbability(
 const char ProcessedStudy::kGenericDefaultExperimentName[] =
     "VariationsDefaultExperiment";
 
-ProcessedStudy::ProcessedStudy()
-    : study_(nullptr),
-      total_probability_(0),
-      all_assignments_to_one_group_(false),
-      is_expired_(false) {}
+ProcessedStudy::ProcessedStudy() {}
+
+ProcessedStudy::ProcessedStudy(const ProcessedStudy& other) = default;
 
 ProcessedStudy::~ProcessedStudy() {
 }
@@ -126,10 +133,10 @@ ProcessedStudy::~ProcessedStudy() {
 bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   base::FieldTrial::Probability total_probability = 0;
   bool all_assignments_to_one_group = false;
-  std::string single_feature_name;
+  std::vector<std::string> associated_features;
   if (!ValidateStudyAndComputeTotalProbability(*study, &total_probability,
                                                &all_assignments_to_one_group,
-                                               &single_feature_name)) {
+                                               &associated_features)) {
     return false;
   }
 
@@ -137,7 +144,7 @@ bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   is_expired_ = is_expired;
   total_probability_ = total_probability;
   all_assignments_to_one_group_ = all_assignments_to_one_group;
-  single_feature_name_.swap(single_feature_name);
+  associated_features_.swap(associated_features);
   return true;
 }
 
