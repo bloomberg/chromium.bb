@@ -124,6 +124,7 @@ source_set("chromeos") {
     "//components/tracing:startup_tracing",
     "//components/ukm/content",
     "//components/user_manager",
+    "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//third_party/fontconfig",
