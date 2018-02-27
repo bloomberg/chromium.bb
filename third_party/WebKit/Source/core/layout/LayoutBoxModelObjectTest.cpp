@@ -1088,4 +1088,32 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   EXPECT_FALSE(target_layer->NeedsRepaint());
 }
 
+TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
+  // We do not create LayoutObject for option elements inside multiple selects
+  // on platforms where DelegatesMenuListRendering() returns true like Android.
+  if (LayoutTheme::GetTheme().DelegatesMenuListRendering())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      @keyframes op {
+        0% { opacity: 0 }
+        100% { opacity: 1 }
+      }
+      option {
+        animation: op 0.001s;
+      }
+    </style>
+    <select multiple size=1>
+      <option id=opt>PASS</option>
+    </select>
+  )HTML");
+
+  auto* option_element = GetDocument().getElementById("opt");
+  auto* option_layout = option_element->GetLayoutObject();
+  ASSERT_TRUE(option_layout);
+  EXPECT_TRUE(option_layout->StyleRef().IsStackingContext());
+  EXPECT_TRUE(option_layout->StyleRef().HasCurrentOpacityAnimation());
+}
+
 }  // namespace blink
