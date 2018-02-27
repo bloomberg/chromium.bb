@@ -19,6 +19,7 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web_view/internal/language/web_view_language_model_factory.h"
+#import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
@@ -45,6 +46,11 @@ WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {
   web_state->AddObserver(this);
+  language::IOSLanguageDetectionTabHelper::CreateForWebState(
+      web_state, translate_driver_.CreateLanguageDetectionCallback(),
+      ios_web_view::WebViewUrlLanguageHistogramFactory::GetForBrowserState(
+          ios_web_view::WebViewBrowserState::FromBrowserState(
+              web_state->GetBrowserState())));
 }
 
 WebViewTranslateClient::~WebViewTranslateClient() = default;

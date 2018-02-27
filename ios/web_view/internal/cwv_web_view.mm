@@ -86,6 +86,8 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 - (void)updateTitle;
 // Returns a new CWVAutofillController created from |_webState|.
 - (CWVAutofillController*)newAutofillController;
+// Returns a new CWVTranslationController created from |_webState|.
+- (CWVTranslationController*)newTranslationController;
 
 @end
 
@@ -390,10 +392,17 @@ static NSString* gUserAgentProduct = nil;
 
 - (CWVTranslationController*)translationController {
   if (!_translationController) {
-    _translationController = [[CWVTranslationController alloc] init];
-    _translationController.webState = _webState.get();
+    _translationController = [self newTranslationController];
   }
   return _translationController;
+}
+
+- (CWVTranslationController*)newTranslationController {
+  ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
+  ios_web_view::WebViewTranslateClient* translateClient =
+      ios_web_view::WebViewTranslateClient::FromWebState(_webState.get());
+  return [[CWVTranslationController alloc]
+      initWithTranslateClient:translateClient];
 }
 
 #pragma mark - Autofill
@@ -482,7 +491,12 @@ static NSString* gUserAgentProduct = nil;
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
-  _translationController.webState = _webState.get();
+  if (_translationController) {
+    id<CWVTranslationControllerDelegate> delegate =
+        _translationController.delegate;
+    _translationController = [self newTranslationController];
+    _translationController.delegate = delegate;
+  }
 
   // Recreate and restore the delegate only if previously lazily loaded.
   if (_autofillController) {

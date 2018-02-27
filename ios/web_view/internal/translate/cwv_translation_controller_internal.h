@@ -12,17 +12,18 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 
-namespace web {
-class WebState;
-}
+namespace ios_web_view {
+class WebViewTranslateClient;
+}  // namespace ios_web_view
 
 NS_ASSUME_NONNULL_BEGIN
 
 // Some internal methods needed to hide any C++ details.
 @interface CWVTranslationController ()
 
-// Set to create a new translate stack under the new webState.
-@property(nonatomic, assign) web::WebState* webState;
+- (instancetype)initWithTranslateClient:
+    (ios_web_view::WebViewTranslateClient*)translateClient
+    NS_DESIGNATED_INITIALIZER;
 
 // Called to keep this class informed of the current translate progress.
 // |step| the state of current translation.
