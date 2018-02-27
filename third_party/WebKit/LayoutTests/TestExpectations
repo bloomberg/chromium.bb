@@ -3424,7 +3424,6 @@ crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
-crbug.com/417782 virtual/prefer_compositing_to_lcd_text/compositing/overflow/tiled-mask.html [ Failure ]
 crbug.com/417782 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Failure ]
 crbug.com/417782 virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
