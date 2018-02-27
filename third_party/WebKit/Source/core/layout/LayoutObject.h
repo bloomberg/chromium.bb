@@ -1755,6 +1755,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void InvalidateClipPathCache();
 
+  // Call |SetShouldInvalidateSelection| on all selected children.
+  void InvalidateSelectionOfSelectedChildren();
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
@@ -2194,7 +2197,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutView to return the owning LayoutObject in the containing frame.
   inline LayoutObject* ParentCrossingFrames() const;
 
-  void InvalidatePaintForSelection();
   void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
   void ApplyFirstLineChanges(const ComputedStyle& old_style);
 
