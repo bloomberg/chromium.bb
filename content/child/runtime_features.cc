@@ -233,7 +233,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableFeatureFromString(
       "SlimmingPaintV175",
       base::FeatureList::IsEnabled(features::kSlimmingPaintV175) ||
-          command_line.HasSwitch(switches::kEnableSlimmingPaintV175));
+          command_line.HasSwitch(switches::kEnableSlimmingPaintV175) ||
+          enableExperimentalWebPlatformFeatures);
 
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
