@@ -419,8 +419,8 @@ typedef struct AV1_COMP {
   double m_rate_array[32];
   int rate_size;
   int rate_index;
-  hash_table *previsou_hash_table;
-  int previsous_index;
+  hash_table *previous_hash_table;
+  int previous_index;
   int cur_poc;  // DebugInfo
 #endif
 

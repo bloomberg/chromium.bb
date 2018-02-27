@@ -6887,12 +6887,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
 #if CONFIG_AMVR
   cpi->cur_poc++;
-  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
+  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools &&
+      !frame_is_intra_only(cm)) {
     if (cpi->common.seq_params.force_integer_mv == 2) {
       struct lookahead_entry *previous_entry =
-          cpi->lookahead->buf + cpi->previsous_index;
+          cpi->lookahead->buf + cpi->previous_index;
       cpi->common.cur_frame_force_integer_mv = is_integer_mv(
-          cpi, cpi->source, &previous_entry->img, cpi->previsou_hash_table);
+          cpi, cpi->source, &previous_entry->img, cpi->previous_hash_table);
     } else {
       cpi->common.cur_frame_force_integer_mv =
           cpi->common.seq_params.force_integer_mv;
@@ -6916,12 +6917,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #if CONFIG_HASH_ME
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
 #if CONFIG_AMVR
-    cpi->previsou_hash_table = &cm->cur_frame->hash_table;
+    cpi->previous_hash_table = &cm->cur_frame->hash_table;
     {
       int l;
       for (l = -MAX_PRE_FRAMES; l < cpi->lookahead->max_sz; l++) {
         if ((cpi->lookahead->buf + l) == source) {
-          cpi->previsous_index = l;
+          cpi->previous_index = l;
           break;
         }
       }
