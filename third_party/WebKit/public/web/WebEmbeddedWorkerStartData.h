@@ -36,7 +36,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebSettings.h"
-#include "third_party/WebKit/common/net/ip_address_space.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
 
 namespace blink {
 

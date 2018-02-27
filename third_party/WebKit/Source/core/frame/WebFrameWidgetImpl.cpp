@@ -81,7 +81,7 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
 

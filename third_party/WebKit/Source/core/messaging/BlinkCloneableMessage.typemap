@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/common/message_port/message_port.mojom"
+mojom = "//third_party/WebKit/public/mojom/message_port/message_port.mojom"
 public_headers =
     [ "//third_party/WebKit/Source/core/messaging/BlinkCloneableMessage.h" ]
 traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkCloneableMessageStructTraits.h" ]

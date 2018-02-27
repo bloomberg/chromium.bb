@@ -112,18 +112,9 @@ jumbo_source_set("blink_common_unittests_sources") {
 # This target includes all mojom interfaces which can be used from
 # Source/platform. In particular these mojom interfaces can't use types that
 # are typemapped to a type in Source/core.
+# TODO(kinuko): Move these targets in public/mojom/BUILD.gn.
 mojom("mojo_platform_bindings") {
   sources = [
-    # NOTE: Consider adding new mojom files under public/mojom, this target
-    # will be deprecated.
-    "loader/prefetch_url_loader_service.mojom",
-    "net/ip_address_space.mojom",
-    "page/page_visibility_state.mojom",
-    "quota/quota_dispatcher_host.mojom",
-    "quota/quota_types.mojom",
-
-    # TODO(kinuko): Create a separate BUILD.gn in public/mojom (or have the
-    # target in public/BUILD.gn).
     "../public/mojom/array_buffer/array_buffer_contents.mojom",
     "../public/mojom/blob/blob.mojom",
     "../public/mojom/blob/blob_registry.mojom",
@@ -133,6 +124,11 @@ mojom("mojo_platform_bindings") {
     "../public/mojom/clipboard/clipboard.mojom",
     "../public/mojom/color_chooser/color_chooser.mojom",
     "../public/mojom/feature_policy/feature_policy.mojom",
+    "../public/mojom/loader/prefetch_url_loader_service.mojom",
+    "../public/mojom/net/ip_address_space.mojom",
+    "../public/mojom/page/page_visibility_state.mojom",
+    "../public/mojom/quota/quota_dispatcher_host.mojom",
+    "../public/mojom/quota/quota_types.mojom",
     "../public/mojom/service_worker/navigation_preload_state.mojom",
     "../public/mojom/service_worker/service_worker.mojom",
     "../public/mojom/service_worker/service_worker_client.mojom",
@@ -166,9 +162,10 @@ mojom("mojo_platform_bindings") {
 # This target can include mojom interfaces which do use types that are
 # typemapped to a type in Source/core. This also means these interfaces are not
 # available from Source/platform.
+# TODO(kinuko): Move these targets in public/mojom/BUILD.gn.
 mojom("mojo_bindings") {
   sources = [
-    "message_port/message_port.mojom",
+    "../public/mojom/message_port/message_port.mojom",
   ]
 
   public_deps = [

@@ -36,7 +36,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/common/net/ip_address_space.mojom-shared.h"
+#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
 
 namespace blink {
 

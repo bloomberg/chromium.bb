@@ -30,7 +30,6 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
@@ -41,6 +40,7 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 

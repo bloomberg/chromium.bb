@@ -5,7 +5,7 @@
 #ifndef QuotaUtils_h
 #define QuotaUtils_h
 
-#include "third_party/WebKit/common/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
 
 namespace blink {
 

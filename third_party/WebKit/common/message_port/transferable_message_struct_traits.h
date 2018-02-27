@@ -7,8 +7,8 @@
 
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/WebKit/common/message_port/cloneable_message_struct_traits.h"
-#include "third_party/WebKit/common/message_port/message_port.mojom.h"
 #include "third_party/WebKit/public/common/message_port/transferable_message.h"
+#include "third_party/WebKit/public/mojom/message_port/message_port.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {

@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
@@ -21,6 +20,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 
 namespace blink {

@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/WebKit/common/loader/prefetch_url_loader_service.mojom.h"
+#include "third_party/WebKit/public/mojom/loader/prefetch_url_loader_service.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;

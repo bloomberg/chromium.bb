@@ -29,7 +29,6 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -46,6 +45,7 @@
 #include "platform/network/http_names.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 
 namespace blink {
 

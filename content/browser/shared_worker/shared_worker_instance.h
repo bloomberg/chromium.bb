@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/common/net/ip_address_space.mojom.h"
+#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/shared_worker_creation_context_type.mojom.h"
 #include "url/gurl.h"

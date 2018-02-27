@@ -12,8 +12,8 @@
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/bindings/core/v8/V8BindingForTesting.h"
-#include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
 #include "third_party/WebKit/public/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/public/mojom/message_port/message_port.mojom-blink.h"
 
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
