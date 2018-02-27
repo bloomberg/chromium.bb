@@ -141,7 +141,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Option 1",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "user-agent"
     },
     {
       "nodeType": 1,
@@ -163,7 +164,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Option 2",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "user-agent"
     },
     {
       "nodeType": 3,
@@ -211,6 +213,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "InputValue",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 8,
+      "shadowRootType": "user-agent",
       "isClickable": true
     },
     {
@@ -251,7 +254,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeName": "#text",
       "nodeValue": "ButtonValue",
       "backendNodeId": "<number>",
-      "layoutNodeIndex": 11
+      "layoutNodeIndex": 11,
+      "shadowRootType": "user-agent"
     },
     {
       "nodeType": 3,
@@ -422,6 +426,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "TextAreaValue",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 23,
+      "shadowRootType": "user-agent",
       "isClickable": true
     },
     {

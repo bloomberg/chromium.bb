@@ -1983,6 +1983,8 @@ experimental domain DOMSnapshot
       optional integer templateContentIndex
       # Type of a pseudo element node.
       optional DOM.PseudoType pseudoType
+      # Shadow root type.
+      optional DOM.ShadowRootType shadowRootType
       # Whether this DOM node responds to mouse clicks. This includes nodes that have had click
       # event listeners attached via JavaScript as well as anchor tags that naturally navigate when
       # clicked.
