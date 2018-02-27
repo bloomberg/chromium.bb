@@ -41,3 +41,7 @@ bool BrandedImageProvider::GetToolbarVoiceSearchButtonImageId(int* image_id) {
 UIImage* BrandedImageProvider::GetWhatsNewIconImage(WhatsNewIcon type) {
   return nil;
 }
+
+UIImage* BrandedImageProvider::GetToolbarSearchButtonImage() {
+  return nil;
+}

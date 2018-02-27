@@ -30,6 +30,14 @@
   return button;
 }
 
++ (instancetype)toolbarButtonWithImage:(UIImage*)image {
+  ToolbarButton* button = [[self class] buttonWithType:UIButtonTypeSystem];
+  [button setImage:image forState:UIControlStateNormal];
+  button.titleLabel.textAlignment = NSTextAlignmentCenter;
+  button.translatesAutoresizingMaskIntoConstraints = NO;
+  return button;
+}
+
 - (void)layoutSubviews {
   [super layoutSubviews];
   // If the UIButton title has text it will center it on top of the image,

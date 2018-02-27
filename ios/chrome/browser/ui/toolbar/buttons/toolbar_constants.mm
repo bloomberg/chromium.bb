@@ -29,6 +29,7 @@ const CGFloat kIcongnitoLocationBackgroundColor = 0x737373;
 const CGFloat kProgressBarHeight = 2.0f;
 
 const CGFloat kToolsMenuButtonWidth = 44.0f;
+const CGFloat kAdaptiveToolbarButtonWidth = 44.0f;
 const CGFloat kToolbarButtonWidth = 48.0f;
 const CGFloat kLeadingLocationBarButtonWidth = 40.0f;
 const CGFloat kToolbarButtonTitleNormalColor = 0x555555;
@@ -40,6 +41,8 @@ const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
 const CGFloat kLeadingLocationBarButtonImageInset = 15;
 const CGFloat kCancelButtonHorizontalInset = 8;
+
+const CGFloat kToolbarButtonTintColorAlpha = 0.5;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 
