@@ -23,6 +23,7 @@
 #include "chromeos/network/network_state_test.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/session_manager/core/session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,9 +67,11 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     fake_host_scanner_ = std::make_unique<FakeHostScanner>();
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
 
     host_scan_scheduler_ = std::make_unique<HostScanSchedulerImpl>(
-        network_state_handler(), fake_host_scanner_.get());
+        network_state_handler(), fake_host_scanner_.get(),
+        session_manager_.get());
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
@@ -140,6 +143,12 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     return wifi_service_path;
   }
 
+  void SetScreenLockedState(bool is_locked) {
+    session_manager_->SetSessionState(
+        is_locked ? session_manager::SessionState::LOCKED
+                  : session_manager::SessionState::LOGIN_PRIMARY);
+  }
+
   void VerifyScanDuration(size_t expected_num_seconds) {
     histogram_tester_->ExpectTimeBucketCount(
         "InstantTethering.HostScanBatchDuration",
@@ -150,6 +159,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::string ethernet_service_path_;
 
   std::unique_ptr<FakeHostScanner> fake_host_scanner_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   base::MockTimer* mock_timer_;
   base::SimpleTestClock* test_clock_;
@@ -175,6 +185,16 @@ TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
   // Fire the timer; the duration should be recorded.
   mock_timer_->Fire();
   VerifyScanDuration(5u /* expected_num_sections */);
+}
+
+TEST_F(HostScanSchedulerImplTest, ScansWhenDeviceUnlocked) {
+  // Lock the screen. This should not trigger a scan.
+  SetScreenLockedState(true /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+
+  // Unlock the screen. A scan should start.
+  SetScreenLockedState(false /* is_locked */);
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested) {
