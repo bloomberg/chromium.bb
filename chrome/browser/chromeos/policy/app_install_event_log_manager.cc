@@ -114,6 +114,9 @@ void AppInstallEventLogManager::Clear(
 
 void AppInstallEventLogManager::Add(const std::set<std::string>& packages,
                                     const em::AppInstallReportLogEvent& event) {
+  if (packages.empty()) {
+    return;
+  }
   base::PostTaskAndReplyWithResult(
       log_task_runner_.get(), FROM_HERE,
       base::BindOnce(&Log::Add, base::Unretained(log_.get()), packages, event),

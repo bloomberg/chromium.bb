@@ -1234,6 +1234,8 @@ source_set("chromeos") {
     "policy/android_management_client.h",
     "policy/app_install_event_log.cc",
     "policy/app_install_event_log.h",
+    "policy/app_install_event_log_collector.cc",
+    "policy/app_install_event_log_collector.h",
     "policy/app_install_event_log_manager.cc",
     "policy/app_install_event_log_manager.h",
     "policy/app_install_event_log_manager_wrapper.cc",
