@@ -628,6 +628,11 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                           views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
+void RootWindowController::HideContextMenu() {
+  if (menu_runner_)
+    menu_runner_->Cancel();
+}
+
 void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   StatusAreaWidget* status_area_widget =
       shelf_->shelf_widget()->status_area_widget();

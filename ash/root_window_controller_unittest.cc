@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -635,6 +636,35 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
 
   ASSERT_FALSE(observer2.destroyed());
   delete window2;
+}
+
+// Verify that the context menu gets hidden when entering or exiting tablet
+// mode.
+TEST_F(RootWindowControllerTest, ContextMenuDisappearsInTabletMode) {
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
+
+  // Open context menu.
+  ui::test::EventGenerator generator(controller->GetRootWindow());
+  generator.PressRightButton();
+  generator.ReleaseRightButton();
+  EXPECT_TRUE(controller->menu_model_);
+  EXPECT_TRUE(controller->menu_runner_);
+
+  // Verify menu closes on entering tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_FALSE(controller->menu_model_);
+  EXPECT_FALSE(controller->menu_runner_);
+
+  // Open context menu.
+  generator.PressRightButton();
+  generator.ReleaseRightButton();
+  EXPECT_TRUE(controller->menu_model_);
+  EXPECT_TRUE(controller->menu_runner_);
+
+  // Verify menu closes on exiting tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(controller->menu_model_);
+  EXPECT_FALSE(controller->menu_runner_);
 }
 
 class VirtualKeyboardRootWindowControllerTest
