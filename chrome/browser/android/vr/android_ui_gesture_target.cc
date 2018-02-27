@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr/android_ui_gesture_target.h"
 
+#include <cmath>
+
 #include "jni/AndroidUiGestureTarget_jni.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -18,9 +20,11 @@ namespace vr {
 AndroidUiGestureTarget::AndroidUiGestureTarget(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                float scale_factor,
-                                               float scroll_ratio)
+                                               float scroll_ratio,
+                                               int touch_slop)
     : scale_factor_(scale_factor),
       scroll_ratio_(scroll_ratio),
+      touch_slop_(touch_slop),
       java_ref_(env, obj) {}
 
 AndroidUiGestureTarget::~AndroidUiGestureTarget() = default;
@@ -37,19 +41,34 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
 
   int64_t event_time_ms = event->TimeStampSeconds() * 1000;
   switch (event->GetType()) {
-    case blink::WebGestureEvent::kGestureScrollBegin:
+    case blink::WebGestureEvent::kGestureScrollBegin: {
       DCHECK(gesture->data.scroll_begin.delta_hint_units ==
              blink::WebGestureEvent::ScrollUnits::kPrecisePixels);
-      scroll_x_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_x_hint) +
-                  gesture->x;
-      scroll_y_ = (scroll_ratio_ * gesture->data.scroll_begin.delta_y_hint) +
-                  gesture->y;
+
       SetPointer(gesture->x, gesture->y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
+
+      float xdiff = gesture->data.scroll_begin.delta_x_hint;
+      float ydiff = gesture->data.scroll_begin.delta_y_hint;
+
+      if (xdiff == 0 && ydiff == 0)
+        ydiff = touch_slop_;
+      double dist = std::sqrt((xdiff * xdiff) + (ydiff * ydiff));
+      if (dist < touch_slop_) {
+        xdiff *= touch_slop_ / dist;
+        ydiff *= touch_slop_ / dist;
+      }
+
+      float xtarget = xdiff * scroll_ratio_ + gesture->x;
+      float ytarget = ydiff * scroll_ratio_ + gesture->y;
+      scroll_x_ = xtarget > 0 ? std::ceil(xtarget) : std::floor(xtarget);
+      scroll_y_ = ytarget > 0 ? std::ceil(ytarget) : std::floor(ytarget);
+
       SetPointer(scroll_x_, scroll_y_);
       // Send a move immediately so that we can't accidentally trigger a click.
       Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
       break;
+    }
     case blink::WebGestureEvent::kGestureScrollEnd:
       SetPointer(scroll_x_, scroll_y_);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
@@ -66,6 +85,7 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
     case blink::WebGestureEvent::kGestureFlingCancel:
+      Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
       Inject(content::MOTION_EVENT_ACTION_CANCEL, event_time_ms);
       break;
     case blink::WebMouseEvent::kMouseEnter:
@@ -131,9 +151,10 @@ AndroidUiGestureTarget* AndroidUiGestureTarget::FromJavaObject(
 static jlong JNI_AndroidUiGestureTarget_Init(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj,
                                              jfloat scale_factor,
-                                             jfloat scroll_ratio) {
-  return reinterpret_cast<intptr_t>(
-      new AndroidUiGestureTarget(env, obj, scale_factor, scroll_ratio));
+                                             jfloat scroll_ratio,
+                                             jint touch_slop) {
+  return reinterpret_cast<intptr_t>(new AndroidUiGestureTarget(
+      env, obj, scale_factor, scroll_ratio, touch_slop));
 }
 
 }  // namespace vr

@@ -22,7 +22,8 @@ class AndroidUiGestureTarget {
   AndroidUiGestureTarget(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          float scale_factor,
-                         float scroll_ratio);
+                         float scroll_ratio,
+                         int touch_slop);
   ~AndroidUiGestureTarget();
 
   static AndroidUiGestureTarget* FromJavaObject(
@@ -38,6 +39,7 @@ class AndroidUiGestureTarget {
   int scroll_y_ = 0;
   float scale_factor_;
   float scroll_ratio_;
+  int touch_slop_;
 
   JavaObjectWeakGlobalRef java_ref_;
 
