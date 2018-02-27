@@ -39,6 +39,8 @@ class CORE_EXPORT UnderlyingSourceBase
   ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
   virtual ScriptPromise Cancel(ScriptState*, ScriptValue reason);
 
+  ScriptValue type(ScriptState*) const;
+
   void notifyLockAcquired();
   void notifyLockReleased();
 
