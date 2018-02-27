@@ -34,7 +34,10 @@ namespace views {
 namespace {
 
 // TODO(markusheintz|msw): Use NativeTheme colors.
-const SkColor kTabTitleColor_Inactive = SkColorSetRGB(0x64, 0x64, 0x64);
+constexpr SkColor kTabTitleColor_InactiveBorder =
+    SkColorSetARGBMacro(0xFF, 0x64, 0x64, 0x64);
+constexpr SkColor kTabTitleColor_InactiveHighlight =
+    SkColorSetARGBMacro(0xFF, 0x80, 0x86, 0x8B);
 constexpr SkColor kTabTitleColor_ActiveBorder = SK_ColorBLACK;
 constexpr SkColor kTabTitleColor_ActiveHighlight =
     SkColorSetARGBMacro(0xFF, 0x42, 0x85, 0xF4);
@@ -45,11 +48,15 @@ constexpr SkColor kTabHighlightBackgroundColor =
     SkColorSetARGBMacro(0xFF, 0xE8, 0xF0, 0xFE);
 constexpr int kTabHighlightBorderRadius = 32;
 constexpr int kTabHighlightPreferredHeight = 32;
-constexpr int kTabHighlightPreferredWidth = 192;
+constexpr int kTabHighlightPreferredWidth = 208;
 
-const gfx::Font::Weight kHoverWeight = gfx::Font::Weight::NORMAL;
+const gfx::Font::Weight kHoverWeightBorder = gfx::Font::Weight::NORMAL;
+const gfx::Font::Weight kHoverWeightHighlight = gfx::Font::Weight::MEDIUM;
 const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
-const gfx::Font::Weight kInactiveWeight = gfx::Font::Weight::NORMAL;
+const gfx::Font::Weight kInactiveWeightBorder = gfx::Font::Weight::NORMAL;
+const gfx::Font::Weight kInactiveWeightHighlight = gfx::Font::Weight::MEDIUM;
+
+constexpr int kLabelFontSizeDeltaHighlight = 1;
 
 const int kHarmonyTabStripTabHeight = 32;
 constexpr int kBorderThickness = 2;
@@ -182,24 +189,31 @@ void Tab::SetSelected(bool selected) {
 
 void Tab::OnStateChanged() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const bool is_highlight_mode =
+      tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight;
+  const int font_size_delta = is_highlight_mode ? kLabelFontSizeDeltaHighlight
+                                                : ui::kLabelFontSizeDelta;
   switch (tab_state_) {
     case TAB_INACTIVE:
-      title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kInactiveWeight));
+      title_->SetEnabledColor(is_highlight_mode
+                                  ? kTabTitleColor_InactiveHighlight
+                                  : kTabTitleColor_InactiveBorder);
+      title_->SetFontList(
+          rb.GetFontListWithDelta(font_size_delta, gfx::Font::NORMAL,
+                                  is_highlight_mode ? kInactiveWeightHighlight
+                                                    : kInactiveWeightBorder));
       break;
     case TAB_ACTIVE:
-      title_->SetEnabledColor(tabbed_pane_->GetStyle() ==
-                                      TabbedPane::TabStripStyle::kHighlight
-                                  ? kTabTitleColor_ActiveHighlight
-                                  : kTabTitleColor_ActiveBorder);
+      title_->SetEnabledColor(is_highlight_mode ? kTabTitleColor_ActiveHighlight
+                                                : kTabTitleColor_ActiveBorder);
       title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kActiveWeight));
+          font_size_delta, gfx::Font::NORMAL, kActiveWeight));
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
       title_->SetFontList(rb.GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kHoverWeight));
+          font_size_delta, gfx::Font::NORMAL,
+          is_highlight_mode ? kHoverWeightHighlight : kHoverWeightBorder));
       break;
   }
 }
@@ -388,8 +402,7 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
     const int kTabStripEdgePadding = 8;
     const int kTabSpacing = 16;
     layout = std::make_unique<BoxLayout>(
-        BoxLayout::kVertical,
-        gfx::Insets(kTabStripEdgePadding, 0, 0, kTabStripEdgePadding),
+        BoxLayout::kVertical, gfx::Insets(kTabStripEdgePadding, 0, 0, 0),
         kTabSpacing);
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   }
@@ -407,6 +420,10 @@ const char* TabStrip::GetClassName() const {
 }
 
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
+  // Do not draw border line in kHighlight mode.
+  if (style_ == TabbedPane::TabStripStyle::kHighlight)
+    return;
+
   cc::PaintFlags fill_flags;
   fill_flags.setColor(kTabBorderColor);
   fill_flags.setStrokeWidth(kTabBorderThickness);
@@ -425,7 +442,7 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   }
 
   int selected_tab_index = GetSelectedTabIndex();
-  if (style_ == TabbedPane::TabStripStyle::kBorder && selected_tab_index >= 0) {
+  if (selected_tab_index >= 0) {
     Tab* selected_tab = GetTabAtIndex(selected_tab_index);
     SkPath path;
     SkScalar tab_height =
@@ -536,6 +553,10 @@ void MdTabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
 }
 
 void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
+  // Do not draw border line in kHighlight mode.
+  if (style() == TabbedPane::TabStripStyle::kHighlight)
+    return;
+
   const int kUnselectedBorderThickness = 1;
   const int kSelectedBorderThickness = 2;
   const bool is_horizontal =
@@ -558,10 +579,6 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   }
   canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
                              ui::NativeTheme::kColorId_TabBottomBorder));
-  if (orientation() == TabbedPane::Orientation::kVertical &&
-      style() == TabbedPane::TabStripStyle::kHighlight) {
-    return;
-  }
 
   int min_main_axis = 0;
   int max_main_axis = 0;
