@@ -47,7 +47,7 @@ specific_include_rules = {
   "mash_service_factory.cc": [
     "+ash/components/autoclick/autoclick_application.h",
     "+ash/components/quick_launch/public",
-    "+ash/components/quick_launch/quick_launch.h",
+    "+ash/components/quick_launch/quick_launch_application.h",
     "+ash/components/touch_hud/touch_hud_application.h",
     "+ash/public/interfaces",
     "+ash/window_manager_service.h",

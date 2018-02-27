@@ -27,7 +27,7 @@ group("all") {
   if (is_chromeos) {
     deps += [
       "//ash/components/autoclick:autoclick_app",
-      "//ash/components/quick_launch",
+      "//ash/components/quick_launch:quick_launch_app",
       "//ash/components/touch_hud:touch_hud_app",
       "//ash/standalone:ash_standalone",
       "//mash:mash_unittests",

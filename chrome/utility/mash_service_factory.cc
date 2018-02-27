@@ -8,7 +8,7 @@
 
 #include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/components/quick_launch/quick_launch.h"
+#include "ash/components/quick_launch/quick_launch_application.h"
 #include "ash/components/touch_hud/touch_hud_application.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/window_manager_service.h"
@@ -71,8 +71,8 @@ std::unique_ptr<service_manager::Service> CreateAutoclickApp() {
   return std::make_unique<autoclick::AutoclickApplication>();
 }
 
-std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
-  return std::make_unique<quick_launch::QuickLaunch>();
+std::unique_ptr<service_manager::Service> CreateQuickLaunchApp() {
+  return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTouchHudApp() {
@@ -94,7 +94,7 @@ void MashServiceFactory::RegisterOutOfProcessServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
   RegisterUiService(services, cursors_.get());
   RegisterMashService(services, quick_launch::mojom::kServiceName,
-                      &CreateQuickLaunch);
+                      &CreateQuickLaunchApp);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, "autoclick_app", &CreateAutoclickApp);
   RegisterMashService(services, "touch_hud_app", &CreateTouchHudApp);

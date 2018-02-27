@@ -27,7 +27,7 @@ source_set("lib") {
 
     data_deps = [
       "//ash:ash_service",
-      "//ash/components/quick_launch",
+      "//ash/components/quick_launch:quick_launch_app",
     ]
   }
 }

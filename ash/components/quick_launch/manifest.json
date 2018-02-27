@@ -1,5 +1,5 @@
 {
-  "name": "quick_launch",
+  "name": "quick_launch_app",
   "display_name": "Quick Launch Bar",
   "sandbox_type": "none",
   "interface_provider_specs": {
