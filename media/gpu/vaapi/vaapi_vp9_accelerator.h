@@ -7,7 +7,6 @@
 
 #include "base/sequence_checker.h"
 #include "media/filters/vp9_parser.h"
-#include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vp9_decoder.h"
 
 namespace media {
@@ -17,7 +16,7 @@ class VaapiDecodeSurface;
 class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
-class MEDIA_GPU_EXPORT VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
+class VaapiVP9Accelerator : public VP9Decoder::VP9Accelerator {
  public:
   VaapiVP9Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
                       scoped_refptr<VaapiWrapper> vaapi_wrapper);

@@ -6,14 +6,13 @@
 #define MEDIA_GPU_VAAPI_VAAPI_DECODE_SURFACE_H_
 
 #include "base/memory/ref_counted.h"
-#include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
 // Wrapper of a VASurface with an id and visible area.
-class MEDIA_GPU_EXPORT VaapiDecodeSurface
+class VaapiDecodeSurface
     : public base::RefCountedThreadSafe<VaapiDecodeSurface> {
  public:
   VaapiDecodeSurface(int32_t bitstream_id,
