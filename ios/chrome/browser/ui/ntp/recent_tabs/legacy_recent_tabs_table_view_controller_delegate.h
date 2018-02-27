@@ -5,11 +5,10 @@
 #import <Foundation/Foundation.h>
 
 // Protocol used by LegacyRecentTabsTableViewController to communicate to its
-// Coordinator.
+// mediator.
 @protocol LegacyRecentTabsTableViewControllerDelegate<NSObject>
 
 // Tells the delegate to refresh the session view.
-- (void)refreshSessionsViewRecentTabsTableViewController:
-    (LegacyRecentTabsTableViewController*)controller;
+- (void)refreshSessionsView;
 
 @end

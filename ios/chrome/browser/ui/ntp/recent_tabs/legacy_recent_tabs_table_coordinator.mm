@@ -4,59 +4,25 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 
-#include <memory>
-
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/sessions/core/tab_restore_service.h"
-#include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/synced_session.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/sync/synced_sessions_bridge.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/closed_tabs_observer_bridge.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface LegacyRecentTabsTableCoordinator ()<
-    ClosedTabsObserving,
-    SyncedSessionsObserver,
-    LegacyRecentTabsTableViewControllerDelegate> {
-  std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
-      _syncedSessionsObserver;
-  std::unique_ptr<recent_tabs::ClosedTabsObserverBridge> _closedTabsObserver;
-  SessionsSyncUserState _userState;
+@interface LegacyRecentTabsTableCoordinator () {
   LegacyRecentTabsTableViewController* _tableViewController;
-  ios::ChromeBrowserState* _browserState;  // Weak.
 }
 
-// Return the user's current sign-in and chrome-sync state.
-- (SessionsSyncUserState)userSignedInState;
-// Utility functions for -userSignedInState so these can be mocked out
-// easily for unit tests.
-- (BOOL)isSignedIn;
-- (BOOL)isSyncTabsEnabled;
-- (BOOL)hasForeignSessions;
-- (BOOL)isSyncCompleted;
-// Reload the panel.
-- (void)refreshSessionsView;
-// Force a contact to the sync server to reload remote sessions.
-- (void)reloadSessionsData;
+@property(nonatomic, strong) RecentTabsMediator* mediator;
 
 @end
 
-// The controller for RecentTabs panel that is added to the NewTabPage
-// Instantiate a UITableView and a UITableViewController, and notifies the
-// UITableViewController of any signed in state change.
 @implementation LegacyRecentTabsTableCoordinator
-
 @synthesize handsetCommandHandler = _handsetCommandHandler;
+@synthesize mediator = _mediator;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
@@ -75,140 +41,29 @@
   if (self) {
     DCHECK(controller);
     DCHECK(browserState);
-    _browserState = browserState;
     _tableViewController = controller;
-    [_tableViewController setDelegate:self];
+    _mediator = [[RecentTabsMediator alloc] init];
+    _mediator.browserState = browserState;
+    _mediator.consumer = _tableViewController;
+    [_tableViewController setDelegate:_mediator];
   }
   return self;
 }
 
 - (void)start {
   _tableViewController.handsetCommandHandler = self.handsetCommandHandler;
-  [self initObservers];
-  [self reloadSessions];
+  [self.mediator initObservers];
+  [self.mediator reloadSessions];
 }
 
 - (void)stop {
   [_tableViewController dismissModals];
   [_tableViewController setDelegate:nil];
-  [self deallocObservers];
+  [self.mediator disconnect];
 }
 
 - (UIViewController*)viewController {
   return _tableViewController;
-}
-
-#pragma mark - Exposed to the SyncedSessionsObserver
-
-- (void)reloadSessions {
-  [self reloadSessionsData];
-  [self refreshSessionsView];
-}
-
-- (void)onSyncStateChanged {
-  [self refreshSessionsView];
-}
-
-#pragma mark - Exposed to the ClosedTabsObserving
-
-- (void)tabRestoreServiceChanged:(sessions::TabRestoreService*)service {
-  sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-  restoreService->LoadTabsFromLastSession();
-  [_tableViewController refreshRecentlyClosedTabs];
-}
-
-- (void)tabRestoreServiceDestroyed:(sessions::TabRestoreService*)service {
-  [_tableViewController setTabRestoreService:nullptr];
-}
-
-#pragma mark - Private
-
-- (void)initObservers {
-  if (!_syncedSessionsObserver) {
-    _syncedSessionsObserver =
-        std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
-            self, _browserState);
-  }
-  if (!_closedTabsObserver) {
-    _closedTabsObserver =
-        std::make_unique<recent_tabs::ClosedTabsObserverBridge>(self);
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService)
-      restoreService->AddObserver(_closedTabsObserver.get());
-    [_tableViewController setTabRestoreService:restoreService];
-  }
-}
-
-- (void)deallocObservers {
-  _syncedSessionsObserver.reset();
-
-  if (_closedTabsObserver) {
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService) {
-      restoreService->RemoveObserver(_closedTabsObserver.get());
-    }
-    _closedTabsObserver.reset();
-  }
-}
-
-- (BOOL)isSignedIn {
-  return _syncedSessionsObserver->IsSignedIn();
-}
-
-- (BOOL)isSyncTabsEnabled {
-  DCHECK([self isSignedIn]);
-  SyncSetupService* service =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
-  return !service->UserActionIsRequiredToHaveSyncWork();
-}
-
-// Returns whether this profile has any foreign sessions to sync.
-- (SessionsSyncUserState)userSignedInState {
-  if (![self isSignedIn])
-    return SessionsSyncUserState::USER_SIGNED_OUT;
-  if (![self isSyncTabsEnabled])
-    return SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF;
-  if ([self hasForeignSessions])
-    return SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS;
-  if (![self isSyncCompleted])
-    return SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS;
-  return SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS;
-}
-
-- (BOOL)hasForeignSessions {
-  browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
-  DCHECK(service);
-  sync_sessions::OpenTabsUIDelegate* openTabs =
-      service->GetOpenTabsUIDelegate();
-  std::vector<const sync_sessions::SyncedSession*> sessions;
-  return openTabs ? openTabs->GetAllForeignSessions(&sessions) : NO;
-}
-
-- (BOOL)isSyncCompleted {
-  return _syncedSessionsObserver->IsFirstSyncCycleCompleted();
-}
-
-- (void)reloadSessionsData {
-  DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-  const syncer::ModelTypeSet types(syncer::SESSIONS);
-  // Requests a sync refresh of the sessions for the current profile.
-  IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState)
-      ->TriggerRefresh(types);
-}
-
-- (void)refreshSessionsView {
-  [_tableViewController refreshUserState:[self userSignedInState]];
-}
-
-#pragma mark - RecentTabsTableViewControllerDelegate
-
-- (void)refreshSessionsViewRecentTabsTableViewController:
-    (LegacyRecentTabsTableViewController*)controller {
-  [self refreshSessionsView];
 }
 
 @end

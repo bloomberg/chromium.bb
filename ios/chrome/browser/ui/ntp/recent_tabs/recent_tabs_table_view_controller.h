@@ -5,11 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_NTP_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller_interface.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+namespace ios {
+class ChromeBrowserState;
+}
+
+@protocol ApplicationCommands;
+@protocol UrlLoader;
+
 @interface RecentTabsTableViewController
-    : ChromeTableViewController<RecentTabsTableViewControllerInterface>
+    : ChromeTableViewController<RecentTabsTableConsumer>
 // The coordinator's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher used by this ViewController.

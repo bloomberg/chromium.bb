@@ -10,12 +10,7 @@
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
 @synthesize browserState = _browserState;
-// TODO(crbug.com/805135):Implement LegacyRecentTabsTableViewControllerDelegate.
-@synthesize delegate = _delegate;
 @synthesize dispatcher = _dispatcher;
-// TODO(crbug.com/805135): RecentTabsHandsetViewControllerCommand might be
-// removed in order to use the dispatcher instead.
-@synthesize handsetCommandHandler = _handsetCommandHandler;
 @synthesize loader = _loader;
 
 #pragma mark - Public Interface
