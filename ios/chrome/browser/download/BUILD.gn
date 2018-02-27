@@ -13,6 +13,8 @@ source_set("download") {
     "download_manager_tab_helper.h",
     "download_manager_tab_helper.mm",
     "download_manager_tab_helper_delegate.h",
+    "google_drive_app_constants.h",
+    "google_drive_app_constants.mm",
     "pass_kit_mime_type.cc",
     "pass_kit_mime_type.h",
     "pass_kit_tab_helper.h",
@@ -30,7 +32,10 @@ source_set("download") {
     "//ios/web/public/download",
   ]
 
-  libs = [ "PassKit.framework" ]
+  libs = [
+    "Foundation.framework",
+    "PassKit.framework",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

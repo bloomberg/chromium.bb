@@ -10,6 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#import "ios/chrome/browser/download/google_drive_app_constants.h"
+#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
@@ -33,6 +35,7 @@
   // View controller for presenting "Open In.." dialog.
   UIDocumentInteractionController* _openInController;
   DownloadManagerMediator _mediator;
+  StoreKitCoordinator* _storeKitCoordinator;
 }
 @end
 
@@ -68,6 +71,9 @@
   _confirmationDialog = nil;
   _mediator.SetDownloadTask(nullptr);
   _downloadTask = nullptr;
+
+  [_storeKitCoordinator stop];
+  _storeKitCoordinator = nil;
 }
 
 #pragma mark - DownloadManagerTabHelperDelegate
@@ -155,6 +161,18 @@
                          [weakSelf cancelDownload];
                        }
                      }];
+}
+
+- (void)installDriveForDownloadManagerViewController:
+    (DownloadManagerViewController*)controller {
+  if (!_storeKitCoordinator) {
+    _storeKitCoordinator = [[StoreKitCoordinator alloc]
+        initWithBaseViewController:self.baseViewController];
+    _storeKitCoordinator.iTunesItemIdentifier =
+        kGoogleDriveITunesItemIdentifier;
+  }
+  [_storeKitCoordinator start];
+  [controller setInstallDriveButtonVisible:NO animated:YES];
 }
 
 - (void)downloadManagerViewControllerDidStartDownload:
