@@ -1618,9 +1618,8 @@ public class ChromeTabbedActivity
             private ChromeHomeIphMenuHeader mChromeHomeIphMenuHeader;
 
             private boolean showDataSaverFooter() {
-                return getBottomSheet() == null
-                        && DataReductionProxySettings.getInstance()
-                                   .shouldUseDataReductionMainMenuItem();
+                return DataReductionProxySettings.getInstance()
+                        .shouldUseDataReductionMainMenuItem();
             }
 
             @Override
@@ -1635,11 +1634,6 @@ public class ChromeTabbedActivity
 
             @Override
             public int getFooterResourceId() {
-                if (getBottomSheet() != null
-                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
-                    return R.layout.icon_row_menu_footer;
-                }
-
                 return showDataSaverFooter() ? R.layout.data_reduction_main_menu_item : 0;
             }
 
@@ -1649,15 +1643,6 @@ public class ChromeTabbedActivity
                 if (getBottomSheet() == null) return null;
 
                 boolean isPageMenu = getAppMenuPropertiesDelegate().shouldShowPageMenu();
-                LayoutInflater inflater = LayoutInflater.from(ChromeTabbedActivity.this);
-
-                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                if (!tracker.wouldTriggerHelpUI(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
-                    return DataReductionProxySettings.getInstance()
-                                    .shouldUseDataReductionMainMenuItem()
-                            ? inflater.inflate(R.layout.data_reduction_main_menu_item, null)
-                            : null;
-                }
 
                 // Return early if the conditions aren't right to show the Chrome Home IPH menu
                 // header.
@@ -1666,6 +1651,9 @@ public class ChromeTabbedActivity
                         || AppMenuPropertiesDelegate.shouldShowNavMenuItems()) {
                     return null;
                 }
+
+                LayoutInflater inflater = LayoutInflater.from(ChromeTabbedActivity.this);
+                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
 
                 // Show the Chrome Home menu header if the Tracker allows it.
                 if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
