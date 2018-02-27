@@ -20,6 +20,9 @@ constexpr int kAvatarIconSize = 16;
 // Used to identify the "Use another account" button.
 constexpr int kUseAnotherAccountCmdId = std::numeric_limits<int>::max();
 
+// Anchor inset used to position the accounts menu.
+constexpr int kAnchorInset = 8;
+
 // TODO(tangltom): Calculate these values considering the existing menu config
 constexpr int kVerticalImagePadding = 9;
 constexpr int kHorizontalImagePadding = 6;
@@ -86,9 +89,18 @@ void DiceAccountsMenu::Show(views::View* anchor_view) {
   DCHECK(!runner_);
   runner_ = std::make_unique<views::MenuRunner>(
       &menu_, views::MenuRunner::COMBOBOX | views::MenuRunner::ALWAYS_VIEWS);
-  runner_->RunMenuAt(anchor_view->GetWidget(), nullptr,
-                     anchor_view->GetBoundsInScreen(),
-                     views::MENU_ANCHOR_BUBBLE_BELOW, ui::MENU_SOURCE_MOUSE);
+  // Calculate custom anchor bounds to position the menu.
+  // The menu is aligned along the right edge (left edge in RTL mode) of the
+  // anchor, slightly shifted inside by |kAnchorInset| and overlapping
+  // |anchor_view| on the bottom by |kAnchorInset|. |anchor_bounds|' width is
+  // set to 0 so that the menu only is as wide as it needs to be.
+  gfx::Rect anchor_bounds = anchor_view->GetBoundsInScreen();
+  anchor_bounds.Inset(
+      base::i18n::IsRTL() ? kAnchorInset : anchor_bounds.width() - kAnchorInset,
+      kAnchorInset, 0, kAnchorInset);
+  anchor_bounds.set_width(0);
+  runner_->RunMenuAt(anchor_view->GetWidget(), nullptr, anchor_bounds,
+                     views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_MOUSE);
 }
 
 DiceAccountsMenu::~DiceAccountsMenu() {}
