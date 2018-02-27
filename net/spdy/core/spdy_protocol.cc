@@ -8,6 +8,7 @@
 
 #include "net/spdy/core/spdy_bug_tracker.h"
 #include "net/spdy/platform/api/spdy_flags.h"
+#include "net/spdy/platform/api/spdy_ptr_util.h"
 
 namespace net {
 
