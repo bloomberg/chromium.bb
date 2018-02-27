@@ -148,7 +148,10 @@
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
+-ClientHintsBrowserTest.ClientHintsHttpsSubresourceDifferentOrigin
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
+-ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed
+-ClientHintsBrowserTest.ClientHintsNoLifetimeScriptNotAllowed
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DevToolsSanityTest.TestNetworkPushTime
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
