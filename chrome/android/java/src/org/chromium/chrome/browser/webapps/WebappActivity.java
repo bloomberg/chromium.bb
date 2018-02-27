@@ -518,16 +518,6 @@ public class WebappActivity extends SingleTabActivity {
                     mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            // Initialize the time of the last is-update-needed check with the
-                            // registration time. This prevents checking for updates on the
-                            // first run.
-                            // TODO(yusufo): We should clearly define what can be
-                            // registered through the support library and what happens for Trusted
-                            // Web Activities here.
-                            if (getBrowserSession() == null) {
-                                storage.updateTimeOfLastCheckForUpdatedWebManifest();
-                            }
-
                             onDeferredStartupWithStorage(storage);
                         }
                     });
