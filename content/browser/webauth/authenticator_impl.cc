@@ -182,7 +182,9 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
   DCHECK(timer_);
 }
 
-AuthenticatorImpl::~AuthenticatorImpl() {}
+AuthenticatorImpl::~AuthenticatorImpl() {
+  bindings_.CloseAllBindings();
+}
 
 void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
   bindings_.AddBinding(this, std::move(request));
