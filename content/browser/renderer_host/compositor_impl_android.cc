@@ -621,8 +621,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
-  host_->SetViewportSize(size_);
-  host_->SetDeviceScaleFactor(1);
+  host_->SetViewportSizeAndScale(size_, 1.f, viz::LocalSurfaceId());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -662,7 +661,7 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
 
   size_ = size;
   if (host_)
-    host_->SetViewportSize(size);
+    host_->SetViewportSizeAndScale(size_, 1.f, viz::LocalSurfaceId());
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);

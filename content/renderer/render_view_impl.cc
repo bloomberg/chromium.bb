@@ -2211,12 +2211,6 @@ void RenderViewImpl::DidCompletePageScaleAnimation() {
   }
 }
 
-void RenderViewImpl::OnDeviceScaleFactorChanged() {
-  RenderWidget::OnDeviceScaleFactorChanged();
-  if (auto_resize_mode_)
-    AutoResizeCompositor(viz::LocalSurfaceId());
-}
-
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
     bool enabled,
     const blink::WebDeviceEmulationParams& params) {

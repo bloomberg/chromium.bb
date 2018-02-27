@@ -1350,7 +1350,9 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
               layer_tree_host_.get());
 
-    layer_tree_host_->SetDeviceScaleFactor(test_scale);
+    layer_tree_host_->SetViewportSizeAndScale(
+        layer_tree_host_->device_viewport_size(), test_scale,
+        layer_tree_host_->local_surface_id());
 
     scrollbar_layer->Update();
 
@@ -1414,7 +1416,9 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
     scrollbar_layer->set_visible_layer_rect(scrollbar_rect);
 
-    layer_tree_host_->SetDeviceScaleFactor(test_scale);
+    layer_tree_host_->SetViewportSizeAndScale(
+        layer_tree_host_->device_viewport_size(), test_scale,
+        layer_tree_host_->local_surface_id());
 
     scrollbar_layer->Update();
 

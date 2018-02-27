@@ -124,8 +124,9 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetIsForOopif(bool is_for_oopif);
   void SetContentSourceId(uint32_t source_id);
-  void SetViewportSize(const gfx::Size& device_viewport_size,
-                       const viz::LocalSurfaceId& local_surface_id);
+  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
+                               float device_scale_factor,
+                               const viz::LocalSurfaceId& local_surface_id);
   void SetURLForUkm(const GURL& url);
 
   // WebLayerTreeView implementation.

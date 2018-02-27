@@ -349,17 +349,18 @@ void Compositor::SetScaleAndSize(float scale,
                                  const gfx::Size& size_in_pixel,
                                  const viz::LocalSurfaceId& local_surface_id) {
   DCHECK_GT(scale, 0);
+  bool device_scale_factor_changed = device_scale_factor_ != scale;
+  device_scale_factor_ = scale;
+
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
-    host_->SetViewportSize(size_in_pixel, local_surface_id);
+    host_->SetViewportSizeAndScale(size_in_pixel, scale, local_surface_id);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
     if (context_factory_private_)
       context_factory_private_->ResizeDisplay(this, size_in_pixel);
   }
-  if (device_scale_factor_ != scale) {
-    device_scale_factor_ = scale;
-    host_->SetDeviceScaleFactor(scale);
+  if (device_scale_factor_changed) {
     if (is_pixel_canvas())
       host_->SetRecordingScaleFactor(scale);
     if (root_layer_)

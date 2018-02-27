@@ -389,7 +389,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   GURL GetURLForGraphicsContext3D() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
-  void OnDeviceScaleFactorChanged() override;
   void ResizeWebWidget() override;
 
   RenderViewImpl(CompositorDependencies* compositor_deps,

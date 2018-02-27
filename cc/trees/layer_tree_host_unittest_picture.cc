@@ -190,7 +190,8 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
         // Change the picture layer's size along with the viewport, so it will
         // consider picking a new tile size.
         picture_->SetBounds(gfx::Size(768, 1056));
-        layer_tree_host()->SetViewportSize(gfx::Size(768, 1056));
+        layer_tree_host()->SetViewportSizeAndScale(gfx::Size(768, 1056), 1.f,
+                                                   viz::LocalSurfaceId());
         break;
       case 2:
         EndTest();
@@ -595,7 +596,8 @@ class LayerTreeHostPictureTestForceRecalculateScales
     root->AddChild(normal_layer_);
 
     layer_tree_host()->SetRootLayer(root);
-    layer_tree_host()->SetViewportSize(size);
+    layer_tree_host()->SetViewportSizeAndScale(size, 1.f,
+                                               viz::LocalSurfaceId());
 
     client_.set_fill_with_nonsolid_color(true);
     client_.set_bounds(size);

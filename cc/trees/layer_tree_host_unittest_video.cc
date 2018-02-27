@@ -36,7 +36,7 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     video_layer_id_ = video->id();
 
     layer_tree_host()->SetRootLayer(root);
-    layer_tree_host()->SetDeviceScaleFactor(2.f);
+    SetInitialDeviceScaleFactor(2.f);
     LayerTreeHostVideoTest::SetupTree();
   }
 
