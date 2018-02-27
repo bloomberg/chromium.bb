@@ -46,8 +46,12 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.net.NetworkChangeNotifier;
 
-class WebViewChromiumAwInit {
-
+/**
+ * Class controlling the Chromium initialization for WebView.
+ * We hold on to most static objects used by WebView here.
+ * This class is shared between the webkit glue layer and the support library glue layer.
+ */
+public class WebViewChromiumAwInit {
     private static final String TAG = "WebViewChromiumAwInit";
 
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
@@ -286,10 +290,10 @@ class WebViewChromiumAwInit {
 
     /**
      * Returns the lock used for guarding chromium initialization.
-     * We make this package-public to let higher-level classes use this lock to guard variables
+     * We make this public to let higher-level classes use this lock to guard variables
      * dependent on this class, to avoid introducing new locks (which can cause deadlocks).
      */
-    Object getLock() {
+    public Object getLock() {
         return mLock;
     }
 

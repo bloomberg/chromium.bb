@@ -24,4 +24,8 @@ public class WebkitToSharedGlueConverter {
         ContentSettingsAdapter contentSettingsAdapter = (ContentSettingsAdapter) webSettings;
         return contentSettingsAdapter.getAwSettings();
     }
+
+    public static WebViewChromiumAwInit getGlobalAwInit() {
+        return WebViewChromiumFactoryProvider.getSingleton().getAwInit();
+    }
 }
