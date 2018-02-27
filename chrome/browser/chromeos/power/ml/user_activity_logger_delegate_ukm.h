@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace chromeos {
@@ -51,10 +52,20 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
     bool is_browser_visible;
     // Whether the containing browser is the topmost one on the screen.
     bool is_topmost_browser;
+    // Tab URL's engagement score. -1 if engagement service is disabled.
+    int engagement_score;
+    // Tab content type.
+    metrics::TabMetricsEvent::ContentType content_type;
+    // Whether user has form entry, i.e. text input.
+    bool has_form_entry;
   };
 
   // Source IDs of open tabs' URLs.
   std::map<ukm::SourceId, TabProperty> source_ids_;
+
+  // This ID is incremented each time a UserActivity is logged to UKM.
+  // Event index starts from 1, and resets when a new session starts.
+  int next_sequence_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerDelegateUkm);
 };
