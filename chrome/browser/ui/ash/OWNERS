@@ -6,5 +6,6 @@ stevenjb@chromium.org
 
 per-file session*=xiyuan@chromium.org
 per-file chrome_keyboard_ui*=yhanada@chromium.org
+per-file keyboard_*=yhanada@chromium.org
 
 # COMPONENT: UI>Shell
