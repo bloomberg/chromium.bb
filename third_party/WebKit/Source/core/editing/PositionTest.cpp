@@ -141,6 +141,12 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow) {
   EXPECT_EQ(t1, PositionInFlatTree::AfterNode(*host).NodeAsRangeLastNode());
 }
 
+TEST_F(PositionTest, OperatorBool) {
+  SetBodyContent("foo");
+  EXPECT_FALSE(static_cast<bool>(Position()));
+  EXPECT_TRUE(static_cast<bool>(Position(GetDocument().body(), 0)));
+}
+
 TEST_F(PositionTest, ToPositionInFlatTreeWithActiveInsertionPoint) {
   const char* body_content = "<p id='host'>00<b id='one'>11</b>22</p>";
   const char* shadow_content =
