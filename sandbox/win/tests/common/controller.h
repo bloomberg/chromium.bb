@@ -67,18 +67,11 @@ extern "C" {
 typedef int (*CommandFunction)(int argc, wchar_t **argv);
 }
 
-class AppContainerProfile;
-
 // Class to facilitate the launch of a test inside the sandbox.
 class TestRunner {
  public:
   TestRunner(JobLevel job_level, TokenLevel startup_token,
              TokenLevel main_token);
-
-  TestRunner(JobLevel job_level,
-             TokenLevel startup_token,
-             TokenLevel main_token,
-             AppContainerProfile* profile);
 
   TestRunner();
 

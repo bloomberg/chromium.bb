@@ -15,10 +15,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/app_container_profile.h"
+#include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sid.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -127,18 +128,31 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
   void SetEnableOPMRedirection() override {}
   bool GetEnableOPMRedirection() override { return false; }
 
-  sandbox::ResultCode SetAppContainerProfile(
-      sandbox::AppContainerProfile* profile) override {
-    app_container_profile_ = profile;
+  sandbox::ResultCode AddAppContainerProfile(const wchar_t* package_name,
+                                             bool create_profile) override {
+    if (create_profile) {
+      app_container_profile_ = sandbox::AppContainerProfileBase::Create(
+          package_name, L"Sandbox", L"Sandbox");
+    } else {
+      app_container_profile_ =
+          sandbox::AppContainerProfileBase::Open(package_name);
+    }
+    if (!app_container_profile_)
+      return sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE;
     return sandbox::SBOX_ALL_OK;
   }
 
-  scoped_refptr<sandbox::AppContainerProfile> GetAppContainerProfile() {
+  scoped_refptr<sandbox::AppContainerProfile> GetAppContainerProfile()
+      override {
+    return app_container_profile_;
+  }
+
+  scoped_refptr<sandbox::AppContainerProfileBase> GetAppContainerProfileBase() {
     return app_container_profile_;
   }
 
  private:
-  scoped_refptr<sandbox::AppContainerProfile> app_container_profile_;
+  scoped_refptr<sandbox::AppContainerProfileBase> app_container_profile_;
 };
 
 std::vector<sandbox::Sid> GetCapabilitySids(
@@ -193,7 +207,7 @@ bool EqualSidList(const std::vector<sandbox::Sid>& left,
 }
 
 bool CheckCapabilities(
-    sandbox::AppContainerProfile* profile,
+    sandbox::AppContainerProfileBase* profile,
     const std::initializer_list<base::string16>& additional_capabilities) {
   auto additional_caps = GetCapabilitySids(additional_capabilities);
   auto impersonation_caps = GetCapabilitySids(
@@ -230,7 +244,7 @@ class SandboxWinTest : public ::testing::Test {
       const base::CommandLine& base_command_line,
       bool access_check_fail,
       service_manager::SandboxType sandbox_type,
-      scoped_refptr<sandbox::AppContainerProfile>* profile) {
+      scoped_refptr<sandbox::AppContainerProfileBase>* profile) {
     base::FilePath path;
     base::CommandLine command_line(base_command_line);
 
@@ -246,7 +260,7 @@ class SandboxWinTest : public ::testing::Test {
         service_manager::SandboxWin::AddAppContainerProfileToPolicy(
             command_line, sandbox_type, kAppContainerId, &policy);
     if (result == sandbox::SBOX_ALL_OK)
-      *profile = policy.GetAppContainerProfile();
+      *profile = policy.GetAppContainerProfileBase();
     return result;
   }
 
@@ -275,7 +289,7 @@ TEST_F(SandboxWinTest, AppContainerAccessCheckFail) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  scoped_refptr<sandbox::AppContainerProfile> profile;
+  scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result =
       CreateAppContainerProfile(command_line, true, SANDBOX_TYPE_GPU, &profile);
   EXPECT_EQ(sandbox::SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_ACCESS_CHECK,
@@ -287,7 +301,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfile) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  scoped_refptr<sandbox::AppContainerProfile> profile;
+  scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
       command_line, false, SANDBOX_TYPE_GPU, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
@@ -305,7 +319,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileDisableLpac) {
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kDisableGpuLpac);
-  scoped_refptr<sandbox::AppContainerProfile> profile;
+  scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
       command_line, false, SANDBOX_TYPE_GPU, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
@@ -319,7 +333,7 @@ TEST_F(SandboxWinTest, AppContainerCheckProfileAddCapabilities) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAddGpuAppContainerCaps,
                                  "  cap1   ,   cap2   ,");
-  scoped_refptr<sandbox::AppContainerProfile> profile;
+  scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
       command_line, false, SANDBOX_TYPE_GPU, &profile);
   ASSERT_EQ(sandbox::SBOX_ALL_OK, result);
@@ -331,7 +345,7 @@ TEST_F(SandboxWinTest, AppContainerUnsupportedType) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  scoped_refptr<sandbox::AppContainerProfile> profile;
+  scoped_refptr<sandbox::AppContainerProfileBase> profile;
   sandbox::ResultCode result = CreateAppContainerProfile(
       command_line, false, SANDBOX_TYPE_NO_SANDBOX, &profile);
   EXPECT_EQ(sandbox::SBOX_ERROR_UNSUPPORTED, result);

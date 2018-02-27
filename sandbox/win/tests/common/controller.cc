@@ -94,8 +94,7 @@ BrokerServices* GetBroker() {
 
 TestRunner::TestRunner(JobLevel job_level,
                        TokenLevel startup_token,
-                       TokenLevel main_token,
-                       AppContainerProfile* profile)
+                       TokenLevel main_token)
     : is_init_(false),
       is_async_(false),
       no_sandbox_(false),
@@ -117,20 +116,11 @@ TestRunner::TestRunner(JobLevel job_level,
   if (!policy_)
     return;
 
-  if (profile && policy_->SetAppContainerProfile(profile) != SBOX_ALL_OK) {
-    return;
-  }
-
   policy_->SetJobLevel(job_level, 0);
   policy_->SetTokenLevel(startup_token, main_token);
 
   is_init_ = true;
 }
-
-TestRunner::TestRunner(JobLevel job_level,
-                       TokenLevel startup_token,
-                       TokenLevel main_token)
-    : TestRunner(job_level, startup_token, main_token, nullptr) {}
 
 TestRunner::TestRunner()
     : TestRunner(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN) {}

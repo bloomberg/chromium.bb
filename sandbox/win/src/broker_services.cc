@@ -368,8 +368,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (inherited_handle_list.size())
     ++attribute_count;
 
-  scoped_refptr<AppContainerProfile> profile =
-      policy_base->GetAppContainerProfile();
+  scoped_refptr<AppContainerProfileBase> profile =
+      policy_base->GetAppContainerProfileBase();
   if (profile) {
     if (base::win::GetVersion() < base::win::VERSION_WIN8)
       return SBOX_ERROR_BAD_PARAMS;
