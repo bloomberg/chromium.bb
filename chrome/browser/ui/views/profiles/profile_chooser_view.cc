@@ -1064,8 +1064,10 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
     promotext_top_spacing = 24;
   }
   // Add the promo text.
-  views::Label* promo = new views::Label(
-      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_PROMO));
+  bool show_personalized_promo = !dice_sync_promo_accounts_.empty();
+  views::Label* promo = new views::Label(l10n_util::GetStringUTF16(
+      show_personalized_promo ? IDS_PROFILES_DICE_SYNC_PROMO
+                              : IDS_PROFILES_DICE_SIGNIN_PROMO));
   promo->SetMultiLine(true);
   promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
@@ -1081,9 +1083,8 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   signin_button_view->SetBorder(
       views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
 
-  if (dice_sync_promo_accounts_.empty()) {
-    // When there is no signed in web account, create a sign-in button without
-    // account information.
+  if (!show_personalized_promo) {
+    // Create a sign-in button without account information.
     signin_current_profile_button_ = new DiceSigninButton(this);
     signin_button_view->AddChildView(signin_current_profile_button_);
     view->AddChildView(signin_button_view);

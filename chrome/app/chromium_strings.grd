@@ -661,6 +661,14 @@ Chromium is unable to recover your settings.
         Chromium
       </message>
 
+      <!-- DICE sign-in promo strings -->
+      <message name="IDS_PROFILES_DICE_SIGNIN_PROMO" desc="Text describing the benefits of signing in and turning on Sync.">
+        Sign in to sync and personalize Chromium across your devices
+      </message>
+      <message name="IDS_PROFILES_DICE_SYNC_PROMO" desc="Text describing the benefits of turning on Sync.">
+        Sync and personalize Chromium across your devices
+      </message>
+
       <!-- Tutorial card in the avatar menu bubble -->
       <message name="IDS_PROFILES_CONFIRM_SIGNIN_TUTORIAL_TITLE" desc="The title of the tutorial card in the avatar menu bubble view shown when a user signs in to Chromium.">
         You're now signed in to Chromium
