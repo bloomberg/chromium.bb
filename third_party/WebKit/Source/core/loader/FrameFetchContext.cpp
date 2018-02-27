@@ -1154,6 +1154,16 @@ scoped_refptr<const SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
   if (IsDetached())
     return frozen_state_->requestor_origin;
 
+  // Should not be called during the document load, and |document_| should be
+  // always set beforehand for a subresource loading.
+  DCHECK(document_);
+
+  // If sandbox is enabled and allow-same-origin is not set in the attribute,
+  // |document|'s SecurityOrigin is set to the unique opaque origin, and
+  // FrameFetchContext::GetSecurityOrigin also respects the unique origin.
+  // But, we still need to set the unveiled document origin to the requestor
+  // origin. See also sandbox's spec;
+  // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-sandbox.
   if (document_->IsSandboxed(kSandboxOrigin))
     return SecurityOrigin::Create(document_->Url());
 
