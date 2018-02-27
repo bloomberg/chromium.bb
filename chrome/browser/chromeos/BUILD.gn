@@ -456,8 +456,6 @@ source_set("chromeos") {
     "attestation/platform_verification_flow.h",
     "authpolicy/auth_policy_credentials_manager.cc",
     "authpolicy/auth_policy_credentials_manager.h",
-    "background/ash_wallpaper_delegate.cc",
-    "background/ash_wallpaper_delegate.h",
     "base/file_flusher.cc",
     "base/file_flusher.h",
     "base/locale_util.cc",

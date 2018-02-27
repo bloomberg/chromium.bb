@@ -5,7 +5,6 @@
 #include "ash/test_shell_delegate.h"
 
 #include "ash/accessibility/default_accessibility_delegate.h"
-#include "ash/default_wallpaper_delegate.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
@@ -51,11 +50,6 @@ NetworkingConfigDelegate* TestShellDelegate::GetNetworkingConfigDelegate() {
 std::unique_ptr<ScreenshotDelegate>
 TestShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<TestScreenshotDelegate>();
-}
-
-std::unique_ptr<WallpaperDelegate>
-TestShellDelegate::CreateWallpaperDelegate() {
-  return std::make_unique<DefaultWallpaperDelegate>();
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {

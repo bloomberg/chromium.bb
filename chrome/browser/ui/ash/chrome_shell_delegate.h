@@ -40,7 +40,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void OpenUrlFromArc(const GURL& url) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
-  std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;

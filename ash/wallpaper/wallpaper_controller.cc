@@ -21,7 +21,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_decoder.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/bind.h"
@@ -1355,6 +1354,11 @@ void WallpaperController::RemovePolicyWallpaper(
   // otherwise setting default wallpaper is not allowed.
   RemoveUserWallpaperInfo(user_info->account_id, !user_info->is_ephemeral);
   SetDefaultWallpaper(std::move(user_info), wallpaper_files_id, show_wallpaper);
+}
+
+void WallpaperController::SetAnimationDuration(
+    base::TimeDelta animation_duration) {
+  animation_duration_ = animation_duration;
 }
 
 void WallpaperController::OpenWallpaperPickerIfAllowed() {

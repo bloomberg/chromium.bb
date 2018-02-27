@@ -59,6 +59,7 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);
   void RemovePolicyWallpaper(const AccountId& account_id);
+  void SetAnimationDuration(const base::TimeDelta& animation_duration);
   void OpenWallpaperPickerIfAllowed();
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
