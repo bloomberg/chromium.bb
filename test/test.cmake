@@ -130,25 +130,17 @@ if (NOT BUILD_SHARED_LIBS)
         ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/av1_convolve_optimz_test.cc"
         "${AOM_ROOT}/test/av1_convolve_test.cc"
+        "${AOM_ROOT}/test/cdef_test.cc"
+        "${AOM_ROOT}/test/intrabc_test.cc"
         "${AOM_ROOT}/test/intrapred_test.cc"
         "${AOM_ROOT}/test/lpf_test.cc"
-        "${AOM_ROOT}/test/scan_test.cc"
         "${AOM_ROOT}/test/onyxc_int_test.cc"
+        "${AOM_ROOT}/test/scan_test.cc"
         "${AOM_ROOT}/test/simd_cmp_impl.h")
 
     set(AOM_UNIT_TEST_ENCODER_SOURCES
         ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/motion_vector_test.cc")
-
-    set(AOM_UNIT_TEST_COMMON_SOURCES
-        ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/cdef_test.cc")
-
-    if (CONFIG_INTRABC)
-        set(AOM_UNIT_TEST_COMMON_SOURCES
-            ${AOM_UNIT_TEST_COMMON_SOURCES}
-            "${AOM_ROOT}/test/intrabc_test.cc")
-    endif ()
 
     if (CONFIG_FILTER_INTRA)
       if (HAVE_SSE4_1)
