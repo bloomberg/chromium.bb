@@ -1539,6 +1539,19 @@ void UiSceneCreator::CreateKeyboard() {
   keyboard->SetKeyboardDelegate(keyboard_delegate_);
   keyboard->SetDrawPhase(kPhaseForeground);
   keyboard->SetTranslate(0.0, kKeyboardVerticalOffsetDMM, 0.0);
+  keyboard->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            return std::pair<bool, gfx::PointF>(
+                m->controller.touching_touchpad,
+                m->controller.touchpad_touch_position);
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](Keyboard* keyboard, const std::pair<bool, gfx::PointF>& value) {
+            keyboard->OnTouchStateUpdated(value.first, value.second);
+          },
+          base::Unretained(keyboard.get()))));
   VR_BIND_VISIBILITY(keyboard,
                      model->editing_input || model->editing_web_input);
   scaler->AddChild(std::move(keyboard));

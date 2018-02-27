@@ -750,6 +750,9 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.laser_origin = laser_origin;
   controller_model.handedness = controller_->GetHandedness();
   controller_model.recentered = controller_->GetRecentered();
+  controller_model.touching_touchpad = controller_->IsTouching();
+  controller_model.touchpad_touch_position =
+      gfx::PointF(controller_->TouchPosX(), controller_->TouchPosY());
   controller_model_ = controller_model;
 
   ReticleModel reticle_model;

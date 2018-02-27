@@ -27,6 +27,8 @@ struct ControllerModel {
   UiInputManager::ButtonState touchpad_button_state = UiInputManager::UP;
   UiInputManager::ButtonState app_button_state = UiInputManager::UP;
   UiInputManager::ButtonState home_button_state = UiInputManager::UP;
+  bool touching_touchpad = false;
+  gfx::PointF touchpad_touch_position;
   float opacity = 1.0f;
   bool quiescent = false;
   bool resting_in_viewport = false;

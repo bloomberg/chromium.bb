@@ -129,6 +129,13 @@ bool GvrKeyboardDelegate::SupportsSelection() {
   return gvr_keyboard_supports_selection(gvr_keyboard_);
 }
 
+void GvrKeyboardDelegate::OnTouchStateUpdated(
+    bool is_touching,
+    const gfx::PointF& touch_position) {
+  gvr::Vec2f position = {touch_position.x(), touch_position.y()};
+  gvr_keyboard_update_controller_touch(gvr_keyboard_, is_touching, &position);
+}
+
 void GvrKeyboardDelegate::OnButtonDown(const gfx::PointF& position) {
   gvr_keyboard_update_button_state(
       gvr_keyboard_, gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK, true);

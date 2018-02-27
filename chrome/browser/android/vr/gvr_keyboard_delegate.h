@@ -36,6 +36,8 @@ class GvrKeyboardDelegate : public KeyboardDelegate {
                const gfx::Point3F& ray_target,
                gfx::Point3F* hit_position) override;
   void Draw(const CameraModel& model) override;
+  void OnTouchStateUpdated(bool is_touching,
+                           const gfx::PointF& touch_position) override;
   bool SupportsSelection() override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
