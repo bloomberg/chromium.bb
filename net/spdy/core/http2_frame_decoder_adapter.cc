@@ -804,7 +804,7 @@ void Http2DecoderAdapter::ResetInternal() {
   CorruptFrameHeader(&frame_header_);
   CorruptFrameHeader(&hpack_first_frame_header_);
 
-  frame_decoder_.reset(new Http2FrameDecoder(this));
+  frame_decoder_ = SpdyMakeUnique<Http2FrameDecoder>(this);
   hpack_decoder_ = nullptr;
 }
 
