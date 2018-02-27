@@ -47,18 +47,25 @@ def _Spawn(args):
       'tools/swarming_client/swarming.py', 'trigger',
       '-S', 'https://chromium-swarm.appspot.com',
       '-I', 'https://isolateserver.appspot.com',
-      '-d', 'os', 'Linux',
       '-d', 'pool', 'Chrome',
+      '-s', isolated_hash,
+      '--dump-json', json_file,
+  ]
+  if args.target_os == 'fuchsia':
+    trigger_args += [
+      '-d', 'os', 'Linux',
       '-d', 'kvm', '1',
       '-d', 'gpu', 'none',
       '-d', 'cpu', args.arch,
-      '-s', isolated_hash,
-      '--dump-json', json_file,
+    ]
+  elif args.target_os == 'win':
+    trigger_args += [ '-d', 'os', 'Windows' ]
+  trigger_args += [
       '--',
       '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json']
   if gtest_filter:
     trigger_args.append('--gtest_filter=' + gtest_filter)
-  else:
+  elif args.target_os == 'fuchsia':
     filter_file = \
         'testing/buildbot/filters/fuchsia.' + args.test_name + '.filter'
     if os.path.isfile(filter_file):
@@ -91,7 +98,9 @@ def _Collect(spawn_result):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--out-dir', default='out/fuch', help='Build directory.')
+  parser.add_argument('-C', '--out-dir', default='out/fuch',
+                      help='Build directory.')
+  parser.add_argument('--target-os', default='detect', help='gn target_os')
   parser.add_argument('--test-name', '-t', required=True,
                       help='Name of test to run.')
   parser.add_argument('--arch', '-a', default='detect',
@@ -106,8 +115,22 @@ def main():
 
   args = parser.parse_args()
 
+  if args.target_os == 'detect':
+    with open(os.path.join(args.out_dir, 'args.gn')) as f:
+      gn_args = {}
+      for l in f:
+        l = l.split('#')[0].strip()
+        if not l: continue
+        k, v = map(str.strip, l.split('=', 1))
+        gn_args[k] = v
+    if 'target_os' in gn_args:
+      args.target_os = gn_args['target_os'].strip('"')
+    else:
+      args.target_os = { 'darwin': 'mac', 'linux2': 'linux', 'win32': 'win' }[
+                           sys.platform]
+
   # Determine the CPU architecture of the test binary, if not specified.
-  if args.arch == 'detect':
+  if args.arch == 'detect' and args.target_os == 'fuchsia':
     executable_info = subprocess.check_output(
         ['file', os.path.join(args.out_dir, args.test_name)])
     if 'ARM aarch64' in executable_info:
