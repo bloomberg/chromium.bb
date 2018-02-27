@@ -8760,6 +8760,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     mbmi->use_intrabc = 1;
     mbmi->mode = DC_PRED;
     mbmi->uv_mode = UV_DC_PRED;
+    mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->mv[0].as_mv = dv;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
     mbmi->skip = 0;

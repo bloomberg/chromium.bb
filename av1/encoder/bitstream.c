@@ -1340,6 +1340,7 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (use_intrabc) {
     assert(mbmi->mode == DC_PRED);
     assert(mbmi->uv_mode == UV_DC_PRED);
+    assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
     int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
 #if !CONFIG_TXK_SEL
