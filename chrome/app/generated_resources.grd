@@ -7390,9 +7390,6 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME" desc="Button to sign in and turn on Sync for a web account when the name is empty.">
         Sync to your account
       </message>
-      <message name="IDS_PROFILES_DICE_SIGNIN_PROMO" desc="Text describing the benefits of signing in and turning on Sync.">
-        Sign in for a personalized browsing experience, synced across your devices
-      </message>
       <message name="IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync with another web account.">
         Sync to another account
       </message>
