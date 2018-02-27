@@ -54,20 +54,9 @@ class SynchronousCompositorProxyRegistry
       : compositor_task_runner_(std::move(compositor_task_runner)) {}
 
   ~SynchronousCompositorProxyRegistry() override {
-    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  }
-
-  using ProxyAutoDeleted = std::unique_ptr<SynchronousCompositorProxyRegistry,
-                                           base::OnTaskRunnerDeleter>;
-
-  static ProxyAutoDeleted Create(
-      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner) {
-    if (!compositor_task_runner)
-      return ProxyAutoDeleted(nullptr, base::OnTaskRunnerDeleter(nullptr));
-
-    return ProxyAutoDeleted(
-        new SynchronousCompositorProxyRegistry(compositor_task_runner),
-        base::OnTaskRunnerDeleter(compositor_task_runner));
+    // Ensure the proxy has already been release on the compositor thread
+    // before destroying this object.
+    DCHECK(!proxy_);
   }
 
   void CreateProxy(ui::SynchronousInputHandlerProxy* handler) {
@@ -99,6 +88,11 @@ class SynchronousCompositorProxyRegistry
     sink_ = nullptr;
   }
 
+  void DestroyProxy() {
+    DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+    proxy_.reset();
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<SynchronousCompositorProxyMojo> proxy_;
@@ -127,13 +121,14 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
       renderer_scheduler_(renderer_scheduler),
       input_event_queue_(render_widget->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      compositor_task_runner_(std::move(compositor_task_runner))
+      compositor_task_runner_(std::move(compositor_task_runner)) {
 #if defined(OS_ANDROID)
-      ,
-      synchronous_compositor_registry_(
-          SynchronousCompositorProxyRegistry::Create(compositor_task_runner_))
+  if (compositor_task_runner) {
+    synchronous_compositor_registry_ =
+        std::make_unique<SynchronousCompositorProxyRegistry>(
+            compositor_task_runner);
+  }
 #endif
-{
 }
 
 void WidgetInputHandlerManager::Init() {
@@ -195,6 +190,10 @@ void WidgetInputHandlerManager::AddInterface(
 }
 
 void WidgetInputHandlerManager::WillShutdown() {
+#if defined(OS_ANDROID)
+  if (synchronous_compositor_registry_)
+    synchronous_compositor_registry_->DestroyProxy();
+#endif
   input_handler_proxy_.reset();
 }
 

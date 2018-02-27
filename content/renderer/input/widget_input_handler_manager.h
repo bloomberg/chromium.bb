@@ -150,7 +150,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<SynchronousCompositorProxyRegistry, base::OnTaskRunnerDeleter>
+  std::unique_ptr<SynchronousCompositorProxyRegistry>
       synchronous_compositor_registry_;
 #endif
 
