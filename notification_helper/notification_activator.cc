@@ -81,14 +81,14 @@ HRESULT NotificationActivator::Activate(
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchNative(switches::kNotificationLaunchId,
                                   invoked_args);
+  base::string16 params(command_line.GetCommandLineString());
 
   SHELLEXECUTEINFO info;
   memset(&info, 0, sizeof(info));
   info.cbSize = sizeof(info);
   info.fMask = SEE_MASK_NOASYNC | SEE_MASK_FLAG_LOG_USAGE;
   info.lpFile = chrome_exe_path.value().c_str();
-  base::string16 arguments(command_line.GetCommandLineString());
-  info.lpParameters = arguments.c_str();
+  info.lpParameters = params.c_str();
   info.nShow = SW_SHOWNORMAL;
 
   if (!::ShellExecuteEx(&info)) {
