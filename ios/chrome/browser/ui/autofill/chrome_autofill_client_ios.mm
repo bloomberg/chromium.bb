@@ -49,7 +49,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       bridge_(bridge),
       identity_manager_(
           IdentityManagerFactory::GetInstance()->GetForBrowserState(
-              browser_state)),
+              browser_state->GetOriginalChromeBrowserState())),
       identity_provider_(std::move(identity_provider)),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
