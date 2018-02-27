@@ -18,7 +18,7 @@ namespace device {
 // static
 base::Optional<RegisterResponseData>
 RegisterResponseData::CreateFromU2fRegisterResponse(
-    std::string relying_party_id,
+    const std::vector<uint8_t>& relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(u2f_parsing_utils::kEs256,
@@ -51,7 +51,7 @@ RegisterResponseData::CreateFromU2fRegisterResponse(
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
 
-  AuthenticatorData authenticator_data(std::move(relying_party_id), flags,
+  AuthenticatorData authenticator_data(relying_party_id_hash, flags,
                                        std::move(counter),
                                        std::move(attested_credential_data));
 

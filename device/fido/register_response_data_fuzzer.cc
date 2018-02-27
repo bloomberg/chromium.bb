@@ -10,7 +10,8 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> input(data, data + size);
+  std::vector<uint8_t> relying_party_id_hash(32);
   auto response = device::RegisterResponseData::CreateFromU2fRegisterResponse(
-      "https://google.com", input);
+      relying_party_id_hash, input);
   return 0;
 }

@@ -30,10 +30,9 @@ class U2fRequest : public U2fDiscovery::Observer {
   // observer for each passed in transport protocol.
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once U2F
   // is servicified.
-  U2fRequest(std::string relying_party_id,
-             service_manager::Connector* connector,
+  U2fRequest(service_manager::Connector* connector,
              const base::flat_set<U2fTransportProtocol>& protocols,
-             std::vector<uint8_t> app_id_digest,
+             std::vector<uint8_t> application_parameter,
              std::vector<uint8_t> challenge_digest,
              std::vector<std::vector<uint8_t>> registered_keys);
   ~U2fRequest() override;
@@ -47,7 +46,7 @@ class U2fRequest : public U2fDiscovery::Observer {
 
   // Returns bogus application parameter and challenge to be used to verify user
   // presence.
-  static const std::vector<uint8_t>& GetBogusAppParam();
+  static const std::vector<uint8_t>& GetBogusApplicationParameter();
   static const std::vector<uint8_t>& GetBogusChallenge();
   // Returns APDU formatted U2F version request command. If |is_legacy_version|
   // is set to true, suffix {0x00, 0x00} is added at the end.
@@ -87,9 +86,8 @@ class U2fRequest : public U2fDiscovery::Observer {
   std::list<U2fDevice*> devices_;
   std::list<U2fDevice*> attempted_devices_;
   State state_;
-  const std::string relying_party_id_;
   std::vector<std::unique_ptr<U2fDiscovery>> discoveries_;
-  std::vector<uint8_t> app_id_digest_;
+  std::vector<uint8_t> application_parameter_;
   std::vector<uint8_t> challenge_digest_;
   std::vector<std::vector<uint8_t>> registered_keys_;
 
