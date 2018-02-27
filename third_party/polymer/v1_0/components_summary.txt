@@ -24,9 +24,9 @@ Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v1.1.
 
 Name: iron-autogrow-textarea
 Repository: https://github.com/PolymerElements/iron-autogrow-textarea.git
-Tree: v1.0.13
-Revision: 399cfdbb3fac0c7b61d14a8cf8402c0195b0ff04
-Tree link: https://github.com/PolymerElements/iron-autogrow-textarea/tree/v1.0.13
+Tree: v2.1.1
+Revision: ac2bf6158b2c52294c8bcc85c677ee13d06e7aaa
+Tree link: https://github.com/PolymerElements/iron-autogrow-textarea/tree/v2.1.1
 
 Name: iron-behaviors
 Repository: https://github.com/PolymerElements/iron-behaviors.git

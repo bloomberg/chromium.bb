@@ -9,7 +9,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_library("iron-autogrow-textarea-extracted") {
   deps = [
     "../iron-behaviors:iron-control-state-extracted",
-    "../iron-form-element-behavior:iron-form-element-behavior-extracted",
     "../iron-validatable-behavior:iron-validatable-behavior-extracted",
   ]
 }
