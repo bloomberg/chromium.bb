@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
+
 @class OpenNewTabCommand;
 @class OpenUrlCommand;
 @class ShowSigninCommand;
@@ -45,7 +47,9 @@
 // object that implements the methods in this protocol should be able to forward
 // ApplicationSettingsCommands to the settings view controller if necessary.
 
-@protocol ApplicationCommands<NSObject, ApplicationSettingsCommands>
+@protocol ApplicationCommands<NSObject,
+                              ApplicationSettingsCommands,
+                              BrowsingDataCommands>
 
 // Dismisses all modal dialogs.
 - (void)dismissModalDialogs;
@@ -98,12 +102,6 @@
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Add Account UI, presenting from |baseViewController|.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController;
-
-// Prepares the UI for ClearBrowsingData.
-- (void)prepareForBrowsingDataRemoval;
-
-// Updates the UI once ClearBrowsingData has occured.
-- (void)browsingDataWasRemoved;
 
 @end
 

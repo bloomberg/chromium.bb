@@ -29,7 +29,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -46,7 +45,7 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
@@ -524,20 +523,10 @@ const int kMaxTimesHistoryNoticeShown = 1;
 - (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask {
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
-  BrowsingDataRemovalController* browsingDataRemovalController =
-      [[BrowsingDataRemovalController alloc] init];
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
-    [self.dispatcher prepareForBrowsingDataRemoval];
-  }
-
-  [browsingDataRemovalController
-      removeBrowsingDataFromBrowserState:_browserState
-                                    mask:mask
-                              timePeriod:_timePeriod
-                       completionHandler:^{
-                         [self.dispatcher browsingDataWasRemoved];
-                       }];
+  [self.dispatcher removeBrowsingDataForBrowserState:_browserState
+                                          timePeriod:_timePeriod
+                                          removeMask:mask
+                                     completionBlock:nil];
 
   // Send the "Cleared Browsing Data" event to the feature_engagement::Tracker
   // when the user initiates a clear browsing data action. No event is sent if
