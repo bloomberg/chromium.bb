@@ -22,9 +22,13 @@ class Receiver {
  public:
   using BytesChunk = blink::WebVector<char>;
 
-  Receiver(mojo::ScopedDataPipeConsumerHandle handle, uint64_t total_bytes)
+  Receiver(mojo::ScopedDataPipeConsumerHandle handle,
+           uint64_t total_bytes,
+           scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : handle_(std::move(handle)),
-        watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+        watcher_(FROM_HERE,
+                 mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                 std::move(task_runner)),
         remaining_bytes_(total_bytes) {}
 
   void Start(base::OnceClosure callback) {
@@ -118,9 +122,10 @@ class BundledReceivers {
   BundledReceivers(mojo::ScopedDataPipeConsumerHandle meta_data_handle,
                    uint64_t meta_data_size,
                    mojo::ScopedDataPipeConsumerHandle body_handle,
-                   uint64_t body_size)
-      : meta_data_(std::move(meta_data_handle), meta_data_size),
-        body_(std::move(body_handle), body_size) {}
+                   uint64_t body_size,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : meta_data_(std::move(meta_data_handle), meta_data_size, task_runner),
+        body_(std::move(body_handle), body_size, std::move(task_runner)) {}
 
   // Starts reading the pipes and invokes |callback| when both are finished.
   void Start(base::OnceClosure callback) {
@@ -148,14 +153,19 @@ class Internal : public blink::mojom::ServiceWorkerInstalledScriptsManager {
   // Creates and binds a new Internal instance to |request|.
   static void Create(
       scoped_refptr<ThreadSafeScriptContainer> script_container,
-      blink::mojom::ServiceWorkerInstalledScriptsManagerRequest request) {
+      blink::mojom::ServiceWorkerInstalledScriptsManagerRequest request,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     mojo::MakeStrongBinding(
-        std::make_unique<Internal>(std::move(script_container)),
+        std::make_unique<Internal>(std::move(script_container),
+                                   std::move(task_runner)),
         std::move(request));
   }
 
-  Internal(scoped_refptr<ThreadSafeScriptContainer> script_container)
-      : script_container_(std::move(script_container)), weak_factory_(this) {}
+  Internal(scoped_refptr<ThreadSafeScriptContainer> script_container,
+           scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : script_container_(std::move(script_container)),
+        task_runner_(std::move(task_runner)),
+        weak_factory_(this) {}
 
   ~Internal() override {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
@@ -174,7 +184,7 @@ class Internal : public blink::mojom::ServiceWorkerInstalledScriptsManager {
     GURL script_url = script_info->script_url;
     auto receivers = std::make_unique<BundledReceivers>(
         std::move(script_info->meta_data), script_info->meta_data_size,
-        std::move(script_info->body), script_info->body_size);
+        std::move(script_info->body), script_info->body_size, task_runner_);
     receivers->Start(base::BindOnce(&Internal::OnScriptReceived,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(script_info)));
@@ -213,6 +223,7 @@ class Internal : public blink::mojom::ServiceWorkerInstalledScriptsManager {
   THREAD_CHECKER(io_thread_checker_);
   std::map<GURL, std::unique_ptr<BundledReceivers>> running_receivers_;
   scoped_refptr<ThreadSafeScriptContainer> script_container_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<Internal> weak_factory_;
 };
 
@@ -234,7 +245,8 @@ WebServiceWorkerInstalledScriptsManagerImpl::Create(
   io_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&Internal::Create, script_container,
-                     std::move(installed_scripts_info->manager_request)));
+                     std::move(installed_scripts_info->manager_request),
+                     io_task_runner));
   return manager;
 }
 
