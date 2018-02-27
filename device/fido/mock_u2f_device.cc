@@ -18,13 +18,14 @@ void MockU2fDevice::TryWink(WinkCallback cb) {
   TryWinkRef(cb);
 }
 
-void MockU2fDevice::DeviceTransact(std::unique_ptr<U2fApduCommand> command,
+void MockU2fDevice::DeviceTransact(std::vector<uint8_t> command,
                                    DeviceCallback cb) {
-  DeviceTransactPtr(command.get(), cb);
+  DeviceTransactPtr(std::move(command), cb);
 }
 
 // static
-void MockU2fDevice::NotSatisfied(U2fApduCommand* cmd, DeviceCallback& cb) {
+void MockU2fDevice::NotSatisfied(const std::vector<uint8_t>& cmd,
+                                 DeviceCallback& cb) {
   std::move(cb).Run(true,
                     std::make_unique<U2fApduResponse>(
                         std::vector<uint8_t>(),
@@ -32,14 +33,16 @@ void MockU2fDevice::NotSatisfied(U2fApduCommand* cmd, DeviceCallback& cb) {
 }
 
 // static
-void MockU2fDevice::WrongData(U2fApduCommand* cmd, DeviceCallback& cb) {
+void MockU2fDevice::WrongData(const std::vector<uint8_t>& cmd,
+                              DeviceCallback& cb) {
   std::move(cb).Run(true, std::make_unique<U2fApduResponse>(
                               std::vector<uint8_t>(),
                               U2fApduResponse::Status::SW_WRONG_DATA));
 }
 
 // static
-void MockU2fDevice::NoErrorSign(U2fApduCommand* cmd, DeviceCallback& cb) {
+void MockU2fDevice::NoErrorSign(const std::vector<uint8_t>& cmd,
+                                DeviceCallback& cb) {
   std::move(cb).Run(true, std::make_unique<U2fApduResponse>(
                               std::vector<uint8_t>(
                                   std::begin(test_data::kTestU2fSignResponse),
@@ -48,7 +51,8 @@ void MockU2fDevice::NoErrorSign(U2fApduCommand* cmd, DeviceCallback& cb) {
 }
 
 // static
-void MockU2fDevice::NoErrorRegister(U2fApduCommand* cmd, DeviceCallback& cb) {
+void MockU2fDevice::NoErrorRegister(const std::vector<uint8_t>& cmd,
+                                    DeviceCallback& cb) {
   std::move(cb).Run(
       true,
       std::make_unique<U2fApduResponse>(
@@ -58,7 +62,7 @@ void MockU2fDevice::NoErrorRegister(U2fApduCommand* cmd, DeviceCallback& cb) {
 }
 
 // static
-void MockU2fDevice::SignWithCorruptedResponse(U2fApduCommand* cmd,
+void MockU2fDevice::SignWithCorruptedResponse(const std::vector<uint8_t>& cmd,
                                               DeviceCallback& cb) {
   std::move(cb).Run(
       true, std::make_unique<U2fApduResponse>(

@@ -16,8 +16,6 @@
 
 namespace device {
 
-class U2fApduCommand;
-
 // Device abstraction for an individual U2F device. A U2F device defines the
 // standardized Register, Sign, and GetVersion methods.
 class U2fDevice {
@@ -62,7 +60,7 @@ class U2fDevice {
  protected:
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction.
-  virtual void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
+  virtual void DeviceTransact(std::vector<uint8_t> command,
                               DeviceCallback callback) = 0;
   virtual base::WeakPtr<U2fDevice> GetWeakPtr() = 0;
 

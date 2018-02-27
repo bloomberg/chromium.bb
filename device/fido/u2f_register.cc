@@ -8,7 +8,6 @@
 
 #include "base/stl_util.h"
 #include "device/fido/register_response_data.h"
-#include "device/fido/u2f_apdu_command.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {

@@ -13,13 +13,14 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
+#include "device/fido/u2f_apdu_command.h"
 #include "device/fido/u2f_device.h"
 #include "device/fido/u2f_discovery.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
-};
+};  // namespace service_manager
 
 namespace device {
 
