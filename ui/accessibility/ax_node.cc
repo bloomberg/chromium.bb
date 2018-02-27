@@ -21,6 +21,58 @@ AXNode::AXNode(AXNode* parent, int32_t id, int32_t index_in_parent)
 AXNode::~AXNode() {
 }
 
+int AXNode::GetUnignoredChildCount() const {
+  int count = 0;
+  for (int i = 0; i < child_count(); i++) {
+    AXNode* child = children_[i];
+    if (child->data().HasState(ax::mojom::State::kIgnored))
+      count += child->GetUnignoredChildCount();
+    else
+      count++;
+  }
+  return count;
+}
+
+AXNode* AXNode::GetUnignoredChildAtIndex(int index) const {
+  int count = 0;
+  for (int i = 0; i < child_count(); i++) {
+    AXNode* child = children_[i];
+    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+      int nested_child_count = child->GetUnignoredChildCount();
+      if (index < count + nested_child_count)
+        return child->GetUnignoredChildAtIndex(index - count);
+      else
+        count += nested_child_count;
+    } else {
+      if (count == index)
+        return child;
+      else
+        count++;
+    }
+  }
+
+  return nullptr;
+}
+
+AXNode* AXNode::GetUnignoredParent() const {
+  AXNode* result = parent();
+  while (result && result->data().HasState(ax::mojom::State::kIgnored))
+    result = result->parent();
+  return result;
+}
+
+int AXNode::GetUnignoredIndexInParent() const {
+  AXNode* parent = GetUnignoredParent();
+  if (parent) {
+    for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
+      if (parent->GetUnignoredChildAtIndex(i) == this)
+        return i;
+    }
+  }
+
+  return 0;
+}
+
 bool AXNode::IsTextNode() const {
   return data().role == ax::mojom::Role::kStaticText ||
          data().role == ax::mojom::Role::kLineBreak ||

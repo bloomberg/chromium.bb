@@ -222,6 +222,7 @@ chrome.automation.StateType = {
   HASPOPUP: 'haspopup',
   HORIZONTAL: 'horizontal',
   HOVERED: 'hovered',
+  IGNORED: 'ignored',
   INVISIBLE: 'invisible',
   LINKED: 'linked',
   MULTILINE: 'multiline',

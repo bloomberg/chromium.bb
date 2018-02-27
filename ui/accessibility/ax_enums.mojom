@@ -230,6 +230,8 @@ enum State {
    // Grows horizontally, e.g. most toolbars and separators.
   kHorizontal,
   kHovered,
+  // Skip over this node in the accessibility tree, but keep its subtree.
+  kIgnored,
   kInvisible,
   kLinked,
   kMultiline,
