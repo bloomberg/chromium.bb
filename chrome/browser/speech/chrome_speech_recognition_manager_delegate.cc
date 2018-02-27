@@ -32,7 +32,6 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "extensions/features/features.h"
@@ -276,13 +275,11 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
 
   // Make sure that initiators (extensions/web pages) properly set the
   // |render_process_id| field, which is needed later to retrieve the profile.
-  DCHECK_NE(context.render_process_id,
-            content::ChildProcessHost::kInvalidUniqueID);
+  DCHECK_NE(context.render_process_id, 0);
 
   int render_process_id = context.render_process_id;
   int render_view_id = context.render_view_id;
-  if (context.embedder_render_process_id !=
-      content::ChildProcessHost::kInvalidUniqueID) {
+  if (context.embedder_render_process_id) {
     // If this is a request originated from a guest, we need to re-route the
     // permission check through the embedder (app).
     render_process_id = context.embedder_render_process_id;
