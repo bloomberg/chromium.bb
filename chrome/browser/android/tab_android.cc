@@ -889,6 +889,17 @@ void TabAndroid::ClearThumbnailPlaceholder(JNIEnv* env,
     tab_content_manager_->NativeRemoveTabThumbnail(GetAndroidId());
 }
 
+jint TabAndroid::GetCurrentRenderProcessId(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
+  DCHECK(host);
+  content::RenderProcessHost* render_process = host->GetProcess();
+  DCHECK(render_process);
+  if (render_process->HasConnection())
+    return render_process->GetHandle();
+  return 0;
+}
+
 void TabAndroid::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,

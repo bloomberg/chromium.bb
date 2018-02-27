@@ -162,10 +162,6 @@ class ContentViewCore : public WebContentsObserver {
                            const base::android::JavaParamRef<jobject>& jobj,
                            jboolean opaque);
 
-  jint GetCurrentRenderProcessId(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   jboolean UsingSynchronousCompositing(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
