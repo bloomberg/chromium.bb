@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Unit;
 import org.chromium.components.content_view.ContentView;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -31,6 +33,7 @@ public class CastWebContentsService extends Service {
     private static final boolean DEBUG = true;
     private static final int CAST_NOTIFICATION_ID = 100;
 
+    private final Controller<Unit> mLifetimeController = new Controller<>();
     private String mInstanceId;
     private CastAudioManager mAudioManager;
     private WindowAndroid mWindow;
@@ -56,10 +59,7 @@ public class CastWebContentsService extends Service {
     public void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
 
-        if (mAudioManager.abandonAudioFocus(null) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Log.e(TAG, "Failed to abandon audio focus");
-        }
-
+        mLifetimeController.reset();
         super.onDestroy();
     }
 
@@ -74,13 +74,9 @@ public class CastWebContentsService extends Service {
         }
 
         mWindow = new WindowAndroid(this);
-        mAudioManager = CastAudioManager.getAudioManager(this);
-
-        if (mAudioManager.requestAudioFocus(
-                    null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-                != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Log.e(TAG, "Failed to obtain audio focus");
-        }
+        CastAudioManager.getAudioManager(this).requestAudioFocusWhen(
+                mLifetimeController, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        mLifetimeController.set(Unit.unit());
     }
 
     @Override
@@ -115,7 +111,7 @@ public class CastWebContentsService extends Service {
     private void detachWebContentsIfAny() {
         if (DEBUG) Log.d(TAG, "detachWebContentsIfAny");
 
-        stopForeground(true /*removeNotification*/ );
+        stopForeground(true /*removeNotification*/);
 
         if (mContentView != null) {
             mContentView = null;

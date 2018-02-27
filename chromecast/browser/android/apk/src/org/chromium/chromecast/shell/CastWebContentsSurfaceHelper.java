@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.Unit;
 import org.chromium.components.content_view.ContentView;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
@@ -46,6 +47,7 @@ class CastWebContentsSurfaceHelper {
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
     private final Controller<WebContents> mHasWebContentsState = new Controller<>();
+    private final Controller<Unit> mResumedState = new Controller<>();
     private final Controller<Uri> mHasUriState = new Controller<>();
 
     private final Activity mHostActivity;
@@ -76,6 +78,8 @@ class CastWebContentsSurfaceHelper {
         mCastWebContentsLayout = castWebContentsLayout;
         mHandler = new Handler();
         mAudioManager = CastAudioManager.getAudioManager(getActivity());
+        mAudioManager.requestAudioFocusWhen(
+                mResumedState, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
         mHasWebContentsState.watch(() -> {
@@ -216,11 +220,7 @@ class CastWebContentsSurfaceHelper {
     }
 
     void onPause() {
-        // Release the audio focus. Note that releasing audio focus does not stop audio playback,
-        // it just notifies the framework that this activity has stopped playing audio.
-        if (mAudioManager.abandonAudioFocus(null) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Log.e(TAG, "Failed to abandon audio focus");
-        }
+        mResumedState.reset();
 
         if (mContentViewCore != null) {
             mContentViewCore.onPause();
@@ -248,11 +248,8 @@ class CastWebContentsSurfaceHelper {
     }
 
     void onResume() {
-        if (mAudioManager.requestAudioFocus(
-                    null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-                != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Log.e(TAG, "Failed to obtain audio focus");
-        }
+        mResumedState.set(Unit.unit());
+
         if (mContentViewCore != null) {
             mContentViewCore.onResume();
         }
