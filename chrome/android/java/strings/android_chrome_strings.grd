@@ -2191,7 +2191,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Popular pages from Chrome
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_DESCRIPTION" desc="Text containing the offline pages description.">
-        <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - Pages updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>4 minutes ago</ex></ph>
+        <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>4 minutes ago</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>

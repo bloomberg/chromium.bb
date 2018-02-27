@@ -37,10 +37,12 @@
                     android:layout_weight="1"
                     android:text="@string/download_manager_offline_header_title" />
 
+                <!-- TODO(shaktisahu) : Add it back on when UX is determined. -->
                 <TextView
                     android:id="@+id/new_badge"
                     style="@style/DownloadNewBadgeStyle"
-                    android:layout_weight="0" />
+                    android:layout_weight="0"
+                    android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/expand_icon"

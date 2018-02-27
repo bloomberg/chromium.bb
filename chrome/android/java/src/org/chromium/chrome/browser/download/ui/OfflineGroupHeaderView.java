@@ -10,7 +10,6 @@ import android.content.res.ColorStateList;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -44,7 +43,6 @@ public class OfflineGroupHeaderView
     private TextView mDescriptionTextView;
     private ImageView mExpandImage;
     private TintedImageView mIconImageView;
-    private View mNewBadgeView;
 
     public OfflineGroupHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -69,7 +67,6 @@ public class OfflineGroupHeaderView
         mIconImageView = (TintedImageView) findViewById(R.id.icon_view);
         mDescriptionTextView = (TextView) findViewById(R.id.description);
         mExpandImage = (ImageView) findViewById(R.id.expand_icon);
-        mNewBadgeView = findViewById(R.id.new_badge);
     }
 
     /**
@@ -112,7 +109,6 @@ public class OfflineGroupHeaderView
         updateExpandIcon(header.isExpanded());
         setChecked(mSelectionDelegate.isHeaderSelected(header));
         updateCheckIcon(isChecked());
-        mNewBadgeView.setVisibility(header.shouldShowRecentBadge() ? View.VISIBLE : View.GONE);
     }
 
     private void updateExpandIcon(boolean expanded) {
