@@ -32,11 +32,12 @@ typedef void (*comp_mask_pred_func)(uint8_t *comp_pred, const uint8_t *pred,
                                     int width, int height, const uint8_t *ref,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask);
-
+#if HAVE_SSSE3 || HAVE_AV2
 const BLOCK_SIZE kValidBlockSize[] = {
   BLOCK_8X8,   BLOCK_8X16, BLOCK_8X32,  BLOCK_16X8,  BLOCK_16X16,
   BLOCK_16X32, BLOCK_32X8, BLOCK_32X16, BLOCK_32X32,
 };
+#endif
 typedef std::tr1::tuple<comp_mask_pred_func, BLOCK_SIZE> CompMaskPredParam;
 
 class AV1CompMaskVarianceTest

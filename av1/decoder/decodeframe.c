@@ -1823,7 +1823,7 @@ static void get_ls_tile_buffers(
     // need the last (bottom right) tile buffer, as we need to know where the
     // end of the compressed frame buffer is for proper superframe decoding.
 
-    const uint8_t *tile_col_data_end[MAX_TILE_COLS];
+    const uint8_t *tile_col_data_end[MAX_TILE_COLS] = { NULL };
     const uint8_t *const data_start = data;
 
     const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);

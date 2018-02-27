@@ -226,7 +226,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
       dec_init_flags |= AOM_CODEC_USE_INPUT_FRAGMENTS;
     testing::internal::scoped_ptr<Decoder> decoder(
         codec_->CreateDecoder(dec_cfg, dec_init_flags));
-#if CONFIG_AV1 && CONFIG_EXT_TILE
+#if CONFIG_AV1_DECODER && CONFIG_EXT_TILE
     if (decoder->IsAV1()) {
       // Set dec_cfg.tile_row = -1 and dec_cfg.tile_col = -1 so that the whole
       // frame is decoded.

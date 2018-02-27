@@ -3379,6 +3379,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
 #endif
 #if CONFIG_TILE_INFO_FIRST
+  (void)saved_wb;
   write_tile_info(cm, wb);
 #endif
   encode_loopfilter(cm, wb);
