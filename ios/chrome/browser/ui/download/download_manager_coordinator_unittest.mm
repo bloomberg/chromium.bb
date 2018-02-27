@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 
+#import <StoreKit/StoreKit.h>
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
@@ -27,6 +28,7 @@
 #endif
 
 using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForUIElementTimeout;
 
 namespace {
 
@@ -271,6 +273,42 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
   EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
   EXPECT_FALSE(coordinator_.downloadTask);
   EXPECT_EQ(web::DownloadTask::State::kCancelled, task.GetState());
+
+  // Stop to avoid holding a dangling pointer to destroyed task.
+  [coordinator_ stop];
+}
+
+// Tests presenting Install Google Drive dialog. Coordinator presents StoreKit
+// dialog and hides Install Google Drive button.
+TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Make Install Google Drive UI visible.
+  [viewController setInstallDriveButtonVisible:YES animated:NO];
+  // The button itself is never hidden, but the superview which contains the
+  // button changes it's alpha.
+  ASSERT_EQ(1.0f, viewController.installDriveButton.superview.alpha);
+
+  [viewController.delegate
+      installDriveForDownloadManagerViewController:viewController];
+
+  // Verify that Store Kit dialog was presented.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return [base_view_controller_.presentedViewController class] ==
+           [SKStoreProductViewController class];
+  }));
+
+  // Verify that Install Google Drive UI is hidden.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    return viewController.installDriveButton.superview.alpha == 0.0f;
+  }));
 
   // Stop to avoid holding a dangling pointer to destroyed task.
   [coordinator_ stop];
