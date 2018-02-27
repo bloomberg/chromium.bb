@@ -53,6 +53,8 @@ CertStatus MapNetErrorToCertStatus(int error) {
       return CERT_STATUS_NAME_CONSTRAINT_VIOLATION;
     case ERR_CERT_VALIDITY_TOO_LONG:
       return CERT_STATUS_VALIDITY_TOO_LONG;
+    case ERR_CERT_SYMANTEC_LEGACY:
+      return CERT_STATUS_SYMANTEC_LEGACY;
     default:
       return 0;
   }
@@ -77,6 +79,8 @@ int MapCertStatusToNetError(CertStatus cert_status) {
     return ERR_CERT_COMMON_NAME_INVALID;
   if (cert_status & CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED)
     return ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+  if (cert_status & CERT_STATUS_SYMANTEC_LEGACY)
+    return ERR_CERT_SYMANTEC_LEGACY;
   // CERT_STATUS_NON_UNIQUE_NAME is intentionally not mapped to an error.
   // It is treated as just a warning and used to degrade the SSL UI.
   if (cert_status & CERT_STATUS_NAME_CONSTRAINT_VIOLATION)
