@@ -24,9 +24,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/zlib.h"
 
-// Some builds don't support the allocator shim in which case the memory long
-// won't function.
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+// Some builds don't support memlog in which case the tests won't function.
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(SYZYASAN)
 
 namespace profiling {
 
@@ -156,4 +155,4 @@ INSTANTIATE_TEST_CASE_P(Memlog,
 
 }  // namespace profiling
 
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(SYZYASAN)
