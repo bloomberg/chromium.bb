@@ -28,6 +28,7 @@
 #include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/network/network_state_test.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "components/session_manager/core/session_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -195,6 +196,7 @@ class HostScannerImplTest : public NetworkStateTest {
 
     scanned_device_infos_from_current_scan_.clear();
 
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -218,8 +220,8 @@ class HostScannerImplTest : public NetworkStateTest {
     test_clock_ = std::make_unique<base::SimpleTestClock>();
 
     host_scanner_ = base::WrapUnique(new HostScannerImpl(
-        network_state_handler(), fake_tether_host_fetcher_.get(),
-        fake_ble_connection_manager_.get(),
+        network_state_handler(), session_manager_.get(),
+        fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
         gms_core_notifications_state_tracker_.get(),
@@ -244,11 +246,12 @@ class HostScannerImplTest : public NetworkStateTest {
   // |test_scanned_device_infos| vector at the index |test_device_index| with
   // the "final result" value of |is_final_scan_result|.
   void ReceiveScanResultAndVerifySuccess(
-      FakeHostScannerOperation& fake_operation,
+      FakeHostScannerOperation* fake_operation,
       size_t test_device_index,
       bool is_final_scan_result,
       NotificationPresenter::PotentialHotspotNotificationState
-          expected_notification_state) {
+          expected_notification_state,
+      int num_expected_host_scan_histogram_samples = 1) {
     bool already_in_list = false;
     for (auto& scanned_device_info : scanned_device_infos_from_current_scan_) {
       if (scanned_device_info.remote_device.GetDeviceId() ==
@@ -264,7 +267,7 @@ class HostScannerImplTest : public NetworkStateTest {
     }
 
     int previous_scan_finished_count = test_observer_->scan_finished_count();
-    fake_operation.SendScannedDeviceListUpdate(
+    fake_operation->SendScannedDeviceListUpdate(
         scanned_device_infos_from_current_scan_, is_final_scan_result);
     VerifyScanResultsMatchCache();
     EXPECT_EQ(previous_scan_finished_count + (is_final_scan_result ? 1 : 0),
@@ -290,8 +293,9 @@ class HostScannerImplTest : public NetworkStateTest {
         expected_event_type = HostScannerImpl::HostScanResultEventType::
             NOTIFICATION_SHOWN_MULTIPLE_HOSTS;
       }
-      histogram_tester_.ExpectUniqueSample("InstantTethering.HostScanResult",
-                                           expected_event_type, 1);
+      histogram_tester_.ExpectUniqueSample(
+          "InstantTethering.HostScanResult", expected_event_type,
+          num_expected_host_scan_histogram_samples);
     }
   }
 
@@ -372,12 +376,19 @@ class HostScannerImplTest : public NetworkStateTest {
     ConfigureService(ss.str());
   }
 
+  void SetScreenLockedState(bool is_locked) {
+    session_manager_->SetSessionState(
+        is_locked ? session_manager::SessionState::LOCKED
+                  : session_manager::SessionState::LOGIN_PRIMARY);
+  }
+
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
 
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<HostScanDevicePrioritizer> fake_host_scan_device_prioritizer_;
@@ -422,25 +433,25 @@ TEST_F(HostScannerImplTest, TestScan_ConnectingToExistingNetwork) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
@@ -459,29 +470,73 @@ TEST_F(HostScannerImplTest, TestNotificationNotDisplayedMultipleTimes) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_FALSE(host_scanner_->IsScanActive());
+}
+
+TEST_F(HostScannerImplTest, TestNotificationDisplaysMultipleTimesWhenUnlocked) {
+  // Start a scan and receive a result.
+  host_scanner_->StartScan();
+  ASSERT_EQ(1u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  ReceiveScanResultAndVerifySuccess(
+      fake_host_scanner_operation_factory_->created_operations()[0],
+      0u /* test_device_index */, true /* is_final_scan_result */,
+      NotificationPresenter::PotentialHotspotNotificationState::
+          SINGLE_HOTSPOT_NEARBY_SHOWN);
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+
+  // The scan has completed, and the "single hotspot nearby" notification should
+  // be shown. Remove it.
+  EXPECT_EQ(
+      NotificationPresenter::PotentialHotspotNotificationState::
+          SINGLE_HOTSPOT_NEARBY_SHOWN,
+      fake_notification_presenter_->GetPotentialHotspotNotificationState());
+  fake_notification_presenter_->RemovePotentialHotspotNotification();
+
+  // Now, simulate locking then unlocking the device.
+  SetScreenLockedState(true /* is_locked */);
+  SetScreenLockedState(false /* is_locked */);
+
+  // Start another scan and receive a result.
+  host_scanner_->StartScan();
+  ASSERT_EQ(2u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  ReceiveScanResultAndVerifySuccess(
+      fake_host_scanner_operation_factory_->created_operations()[1],
+      0u /* test_device_index */, true /* is_final_scan_result */,
+      NotificationPresenter::PotentialHotspotNotificationState::
+          SINGLE_HOTSPOT_NEARBY_SHOWN,
+      2 /* num_expected_host_scan_histogram_samples */);
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+
+  // The notification should be visible since the device was locked and unlocked
+  // since the last time it was shown.
+  EXPECT_EQ(
+      NotificationPresenter::PotentialHotspotNotificationState::
+          SINGLE_HOTSPOT_NEARBY_SHOWN,
+      fake_notification_presenter_->GetPotentialHotspotNotificationState());
 }
 
 TEST_F(HostScannerImplTest, TestScan_ResultsFromAllDevices) {
@@ -493,25 +548,25 @@ TEST_F(HostScannerImplTest, TestScan_ResultsFromAllDevices) {
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       3u /* test_device_index */, true /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -548,13 +603,13 @@ TEST_F(HostScannerImplTest, TestScan_ResultsFromSomeDevices) {
 
   // Only receive updates from the 0th and 1st device.
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -586,7 +641,7 @@ TEST_F(HostScannerImplTest, TestScan_MultipleScanCallsDuringOperation) {
 
   // Receive updates from the 0th device.
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
@@ -622,19 +677,19 @@ TEST_F(HostScannerImplTest, TestScan_MultipleCompleteScanSessions) {
 
   // Receive updates from devices 0-2.
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           SINGLE_HOTSPOT_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       1u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[0],
+      fake_host_scanner_operation_factory_->created_operations()[0],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -672,7 +727,7 @@ TEST_F(HostScannerImplTest, TestScan_MultipleCompleteScanSessions) {
   // still be present in the cache even though no results have been received
   // from that device during this scan session.
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[1],
+      fake_host_scanner_operation_factory_->created_operations()[1],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
@@ -712,18 +767,18 @@ TEST_F(HostScannerImplTest, TestScan_MultipleCompleteScanSessions) {
   // be present in the cache even though no results have been received from that
   // device during this scan session.
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_host_scanner_operation_factory_->created_operations()[2],
       0u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   EXPECT_TRUE(host_scanner_->IsScanActive());
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_host_scanner_operation_factory_->created_operations()[2],
       2u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
   ReceiveScanResultAndVerifySuccess(
-      *fake_host_scanner_operation_factory_->created_operations()[2],
+      fake_host_scanner_operation_factory_->created_operations()[2],
       3u /* test_device_index */, false /* is_final_scan_result */,
       NotificationPresenter::PotentialHotspotNotificationState::
           NO_HOTSPOT_NOTIFICATION_SHOWN);
