@@ -132,13 +132,6 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "DownloadStarting should not be called.";
   }
 
-  ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
-      net::URLRequest* request) override {
-    ADD_FAILURE() << "CreateLoginDelegate should not be called.";
-    return nullptr;
-  }
-
   bool HandleExternalProtocol(
       const GURL& url,
       ResourceRequestInfo* resource_request_info) override {

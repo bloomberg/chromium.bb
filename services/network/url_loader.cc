@@ -268,6 +268,7 @@ URLLoader::URLLoader(
       report_raw_headers_(report_raw_headers),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       keepalive_statistics_recorder_(std::move(keepalive_statistics_recorder)),
+      first_auth_attempt_(true),
       weak_ptr_factory_(this) {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     CHECK(!url_loader_client_.internal_state()
@@ -436,8 +437,18 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
 void URLLoader::OnAuthRequired(net::URLRequest* unused,
                                net::AuthChallengeInfo* auth_info) {
-  NOTIMPLEMENTED() << "http://crbug.com/756654";
-  net::URLRequest::Delegate::OnAuthRequired(unused, auth_info);
+  if (!network_service_client_) {
+    OnAuthRequiredResponse(net::AuthCredentials());
+    return;
+  }
+
+  network_service_client_->OnAuthRequired(
+      process_id_, render_frame_id_, url_request_->url(), first_auth_attempt_,
+      auth_info,
+      base::BindOnce(&URLLoader::OnAuthRequiredResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  first_auth_attempt_ = false;
 }
 
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
@@ -795,6 +806,18 @@ void URLLoader::OnCertificateRequestedResponse(
     } else {
       url_request_->ContinueWithCertificate(nullptr, nullptr);
     }
+  }
+}
+
+void URLLoader::OnAuthRequiredResponse(
+    const net::AuthCredentials& credentials) {
+  if (!url_request_)
+    return;
+
+  if (credentials.Empty()) {
+    url_request_->CancelAuth();
+  } else {
+    url_request_->SetAuth(credentials);
   }
 }
 
