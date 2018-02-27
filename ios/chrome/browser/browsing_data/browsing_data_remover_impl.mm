@@ -693,6 +693,12 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
     if (!task.callback.is_null()) {
       current_task_runner->PostTask(FROM_HERE, std::move(task.callback));
     }
+
+    // Notify the observer that some browsing data has been removed.
+    current_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BrowsingDataRemoverImpl::NotifyBrowsingDataRemoved,
+                       GetWeakPtr(), task.mask));
   }
 
   if (removal_queue_.empty()) {

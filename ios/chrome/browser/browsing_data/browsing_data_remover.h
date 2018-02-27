@@ -7,16 +7,19 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+
+class BrowsingDataRemoverObserver;
 
 // BrowsingDataRemover is responsible for removing data related to
 // browsing: history, downloads, cookies, ...
 class BrowsingDataRemover : public KeyedService {
  public:
-  BrowsingDataRemover() = default;
-  ~BrowsingDataRemover() override = default;
+  BrowsingDataRemover();
+  ~BrowsingDataRemover() override;
 
   // Is the service currently in the process of removing data?
   virtual bool IsRemoving() const = 0;
@@ -28,7 +31,18 @@ class BrowsingDataRemover : public KeyedService {
                       BrowsingDataRemoveMask remove_mask,
                       base::OnceClosure callback) = 0;
 
+  // Adds/removes |observer| from the list of observers notified when data is
+  // removed by BrowsingDataRemover.
+  void AddObserver(BrowsingDataRemoverObserver* observer);
+  void RemoveObserver(BrowsingDataRemoverObserver* observer);
+
+ protected:
+  // Invokes |OnBrowsingDataRemoved| on all registered observers.
+  void NotifyBrowsingDataRemoved(BrowsingDataRemoveMask mask);
+
  private:
+  base::ObserverList<BrowsingDataRemoverObserver, true> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };
 
