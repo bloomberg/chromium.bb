@@ -20,10 +20,10 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
 
- private:
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(LoginBaseBubbleView);
 };
 
