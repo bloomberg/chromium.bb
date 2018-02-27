@@ -19,6 +19,10 @@
 #include "components/sync_sessions/synced_session.h"
 #include "components/sync_sessions/tab_node_pool.h"
 
+namespace sync_pb {
+class SessionSpecifics;
+}
+
 namespace sync_sessions {
 
 class SyncSessionsClient;
@@ -254,6 +258,12 @@ class SyncedSessionTracker {
 
   DISALLOW_COPY_AND_ASSIGN(SyncedSessionTracker);
 };
+
+// Helper function to load and add window or tab data from synced specifics to
+// our internal tracking in SyncedSessionTracker.
+void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
+                                base::Time modification_time,
+                                SyncedSessionTracker* tracker);
 
 }  // namespace sync_sessions
 

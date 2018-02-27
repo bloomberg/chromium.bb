@@ -1399,10 +1399,11 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
       helper()->BuildForeignSession(kTag1, tab_list1, &tabs));
 
   // Update associator with the session's meta node, window, and tabs.
-  manager()->UpdateTrackerWithSpecifics(meta, base::Time());
+  UpdateTrackerWithSpecifics(meta, base::Time(), &manager()->session_tracker_);
   for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs.begin();
        iter != tabs.end(); ++iter) {
-    manager()->UpdateTrackerWithSpecifics(*iter, base::Time());
+    UpdateTrackerWithSpecifics(*iter, base::Time(),
+                               &manager()->session_tracker_);
   }
   ASSERT_TRUE(manager()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
       &foreign_sessions));
