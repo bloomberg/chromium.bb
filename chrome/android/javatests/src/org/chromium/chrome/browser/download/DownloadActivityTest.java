@@ -32,7 +32,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
@@ -721,7 +720,6 @@ public class DownloadActivityTest {
         // Start the activity up.
         Intent intent = new Intent();
         intent.setClass(InstrumentationRegistry.getTargetContext(), DownloadActivity.class);
-        intent.putExtra(DownloadUtils.EXTRA_DOWNLOAD_HOME_URL, UrlConstants.DOWNLOADS_URL);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return mActivityTestRule.launchActivity(intent);
     }
