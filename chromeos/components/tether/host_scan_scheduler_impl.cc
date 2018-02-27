@@ -14,6 +14,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
 
@@ -43,21 +44,26 @@ const int kNumMetricsBuckets = 1000;
 
 HostScanSchedulerImpl::HostScanSchedulerImpl(
     NetworkStateHandler* network_state_handler,
-    HostScanner* host_scanner)
+    HostScanner* host_scanner,
+    session_manager::SessionManager* session_manager)
     : network_state_handler_(network_state_handler),
       host_scanner_(host_scanner),
+      session_manager_(session_manager),
       timer_(std::make_unique<base::OneShotTimer>()),
       clock_(std::make_unique<base::DefaultClock>()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      is_screen_locked_(session_manager_->IsScreenLocked()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
   host_scanner_->AddObserver(this);
+  session_manager_->AddObserver(this);
 }
 
 HostScanSchedulerImpl::~HostScanSchedulerImpl() {
   network_state_handler_->SetTetherScanState(false);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
   host_scanner_->RemoveObserver(this);
+  session_manager_->RemoveObserver(this);
 
   // If the most recent batch of host scans has already been logged, return
   // early.
@@ -106,6 +112,15 @@ void HostScanSchedulerImpl::ScanFinished() {
                 base::TimeDelta::FromSeconds(kMaxNumSecondsBetweenBatchScans),
                 base::Bind(&HostScanSchedulerImpl::LogHostScanBatchMetric,
                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HostScanSchedulerImpl::OnSessionStateChanged() {
+  bool was_screen_locked = is_screen_locked_;
+  is_screen_locked_ = session_manager_->IsScreenLocked();
+
+  // If the device was just unlocked, start a scan.
+  if (was_screen_locked && !is_screen_locked_)
+    EnsureScan();
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
