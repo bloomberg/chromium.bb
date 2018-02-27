@@ -35,6 +35,87 @@ enum lf_path {
   LF_PATH_SLOW,
 };
 
+#if LOOP_FILTER_BITMASK
+typedef struct {
+  uint64_t bits[4];
+} FilterMaskY;
+
+typedef uint64_t FilterMaskUV;
+
+// This structure holds bit masks for all 4x4 blocks in a 64x64 region.
+// Each 1 bit represents a position in which we want to apply the loop filter.
+// For Y plane, 4x4 in 64x64 requires 16x16 = 256 bit, therefore we use 4
+// uint64_t; For U, V plane, for 420 format, plane size is 32x32, thus we use
+// a uint64_t to represent bitmask.
+// Left_ entries refer to whether we apply a filter on the border to the
+// left of the block.   Above_ entries refer to whether or not to apply a
+// filter on the above border.
+// Since each transform is accompanied by a potentially different type of
+// loop filter there is a different entry in the array for each transform size.
+typedef struct {
+  FilterMaskY left_y[TX_SIZES];
+  FilterMaskY above_y[TX_SIZES];
+  FilterMaskUV left_u[TX_SIZES];
+  FilterMaskUV above_u[TX_SIZES];
+  FilterMaskUV left_v[TX_SIZES];
+  FilterMaskUV above_v[TX_SIZES];
+
+  // Y plane vertical edge and horizontal edge filter level
+  uint8_t lfl_y_hor[MAX_MIB_SIZE / 2][MAX_MIB_SIZE / 2];
+  uint8_t lfl_y_ver[MAX_MIB_SIZE / 2][MAX_MIB_SIZE / 2];
+
+  // UV plane vertical edge and horizontal edge shares the same level
+  uint8_t lfl_u[MAX_MIB_SIZE / 4][MAX_MIB_SIZE / 4];
+  uint8_t lfl_v[MAX_MIB_SIZE / 4][MAX_MIB_SIZE / 4];
+} LoopFilterMaskInfo;
+// TODO(chengchen): remove old version of bitmask construction code once
+// new bitmask is complete.
+
+// Loopfilter bit mask per super block
+#define LOOP_FILTER_MASK_NUM 4
+typedef struct {
+  LoopFilterMaskInfo lfm_info[LOOP_FILTER_MASK_NUM];
+  int is_setup;
+} LoopFilterMask;
+
+// To determine whether to apply loop filtering at one transform block edge,
+// we need information of the neighboring transform block. Specifically,
+// in determining a vertical edge, we need the information of the tx block
+// to its left. For a horizontal edge, we need info of the tx block above it.
+// Thus, we need to record info of right column and bottom row of tx blocks.
+// We record the information of the neighboring superblock, when bitmask
+// building for a superblock is finished. And it will be used for next
+// superblock bitmask building.
+// Information includes:
+// ------------------------------------------------------------
+//                    MAX_MIB_SIZE
+// Y  tx_size above |--------------|
+// Y  tx_size left  |--------------|
+// UV tx_size above |--------------|
+// UV tx_size left  |--------------|
+// Y level above    |--------------|
+// Y level left     |--------------|
+// U level above    |--------------|
+// U level left     |--------------|
+// V level above    |--------------|
+// V level left     |--------------|
+// skip             |--------------|
+// ------------------------------------------------------------
+typedef struct {
+  TX_SIZE tx_size_y_above[MAX_MIB_SIZE];
+  TX_SIZE tx_size_y_left[MAX_MIB_SIZE];
+  TX_SIZE tx_size_uv_above[MAX_MIB_SIZE];
+  TX_SIZE tx_size_uv_left[MAX_MIB_SIZE];
+  uint8_t y_level_above[MAX_MIB_SIZE];
+  uint8_t y_level_left[MAX_MIB_SIZE];
+  uint8_t u_level_above[MAX_MIB_SIZE];
+  uint8_t u_level_left[MAX_MIB_SIZE];
+  uint8_t v_level_above[MAX_MIB_SIZE];
+  uint8_t v_level_left[MAX_MIB_SIZE];
+  uint8_t skip[MAX_MIB_SIZE];
+} LpfSuperblockInfo;
+#endif  // LOOP_FILTER_BITMASK
+
 struct loopfilter {
   int filter_level[2];
   int filter_level_u;
@@ -54,6 +135,13 @@ struct loopfilter {
   // 0 = ZERO_MV, MV
   int8_t mode_deltas[MAX_MODE_LF_DELTAS];
   int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
+
+#if LOOP_FILTER_BITMASK
+  LoopFilterMask *lfm;
+  size_t lfm_num;
+  int lfm_stride;
+  LpfSuperblockInfo neighbor_sb_lpf_info;
+#endif
 };
 
 // Need to align this structure so when it is declared and

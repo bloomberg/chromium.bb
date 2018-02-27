@@ -95,6 +95,11 @@ typedef enum COMPOUND_DIST_WEIGHT_MODE {
 
 #define FRAME_NUM_LIMIT (INT_MAX - MAX_FRAME_DISTANCE - 1)
 
+// TODO(chengchen): Temporal flag serve as experimental flag for WIP
+// bitmask construction.
+// Shall be removed when bitmask code is completely checkedin
+#define LOOP_FILTER_BITMASK 1
+
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.
 // 10: Profile 1.  8-bit 4:4:4, 4:2:2, and 4:4:0.
