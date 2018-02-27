@@ -62,7 +62,7 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // In other cases, let a valid FrameSinkId be selected by
   // context_factory_private().
   CreateCompositor(base::FeatureList::IsEnabled(features::kMash)
-                       ? window_mus->GetFrameSinkId()
+                       ? window_mus->GenerateFrameSinkIdFromServerId()
                        : viz::FrameSinkId());
   if (!init_params.uses_real_accelerated_widget) {
     gfx::AcceleratedWidget accelerated_widget;

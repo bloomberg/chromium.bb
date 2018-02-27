@@ -63,10 +63,6 @@ const viz::LocalSurfaceId& WindowPortForShutdown::GetLocalSurfaceId() {
   return local_surface_id_;
 }
 
-viz::FrameSinkId WindowPortForShutdown::GetFrameSinkId() const {
-  return frame_sink_id_;
-}
-
 void WindowPortForShutdown::OnEventTargetingPolicyChanged() {}
 
 bool WindowPortForShutdown::ShouldRestackTransientChildren() {

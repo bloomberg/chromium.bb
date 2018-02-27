@@ -118,14 +118,13 @@ void WindowPortLocal::OnPropertyChanged(
 
 std::unique_ptr<cc::LayerTreeFrameSink>
 WindowPortLocal::CreateLayerTreeFrameSink() {
-  DCHECK(!frame_sink_id_.is_valid());
   auto* context_factory_private =
       aura::Env::GetInstance()->context_factory_private();
-  frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
+  auto frame_sink_id = context_factory_private->AllocateFrameSinkId();
   auto frame_sink = std::make_unique<LayerTreeFrameSinkLocal>(
-      frame_sink_id_, context_factory_private->GetHostFrameSinkManager(),
+      frame_sink_id, context_factory_private->GetHostFrameSinkManager(),
       window_->GetName());
-  window_->SetEmbedFrameSinkId(frame_sink_id_);
+  window_->SetEmbedFrameSinkId(frame_sink_id);
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));
   frame_sink_ = frame_sink->GetWeakPtr();
@@ -147,14 +146,10 @@ const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
   return local_surface_id_;
 }
 
-viz::FrameSinkId WindowPortLocal::GetFrameSinkId() const {
-  return frame_sink_id_;
-}
-
 void WindowPortLocal::OnEventTargetingPolicyChanged() {}
 
 void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
-  DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
+  DCHECK_EQ(surface_info.id().frame_sink_id(), window_->GetFrameSinkId());
   DCHECK_EQ(surface_info.id().local_surface_id(), local_surface_id_);
   window_->layer()->SetShowPrimarySurface(
       surface_info.id(), window_->bounds().size(), SK_ColorWHITE,

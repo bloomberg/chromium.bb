@@ -99,10 +99,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       scoped_refptr<viz::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
-  // WindowPort:
-  // Returns either the FrameSinkId set by window server or its server_id with
-  // the client id part 0.
-  viz::FrameSinkId GetFrameSinkId() const override;
+  viz::FrameSinkId GenerateFrameSinkIdFromServerId() const;
 
  private:
   friend class WindowPortMusTest;
@@ -311,7 +308,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   // for a local aura::Window, we need keep a weak ptr of it, so we can update
   // the local surface id when necessary.
   base::WeakPtr<cc::LayerTreeFrameSink> local_layer_tree_frame_sink_;
-  bool is_frame_sink_id_added_to_compositor_ = false;
 
   base::WeakPtrFactory<WindowPortMus> weak_ptr_factory_;
 

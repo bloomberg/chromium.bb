@@ -40,6 +40,7 @@
 #include "ui/aura/window_port.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -1086,11 +1087,15 @@ bool Window::CleanupGestureState() {
 }
 
 std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
-  return port_->CreateLayerTreeFrameSink();
+  auto sink = port_->CreateLayerTreeFrameSink();
+  DCHECK(frame_sink_id_.is_valid());
+  DCHECK(embeds_external_client_);
+  DCHECK(GetLocalSurfaceId().is_valid());
+  return sink;
 }
 
 viz::SurfaceId Window::GetSurfaceId() const {
-  return viz::SurfaceId(port_->GetFrameSinkId(), port_->GetLocalSurfaceId());
+  return viz::SurfaceId(GetFrameSinkId(), port_->GetLocalSurfaceId());
 }
 
 void Window::AllocateLocalSurfaceId() {
@@ -1101,24 +1106,25 @@ const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
   return port_->GetLocalSurfaceId();
 }
 
-viz::FrameSinkId Window::GetFrameSinkId() const {
+const viz::FrameSinkId& Window::GetFrameSinkId() const {
   if (IsRootWindow()) {
     DCHECK(host_);
     auto* compositor = host_->compositor();
     DCHECK(compositor);
     return compositor->frame_sink_id();
   }
-  return port_->GetFrameSinkId();
+  return frame_sink_id_;
 }
 
 void Window::SetEmbedFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   DCHECK(frame_sink_id.is_valid());
-  embed_frame_sink_id_ = frame_sink_id;
+  frame_sink_id_ = frame_sink_id;
+  embeds_external_client_ = true;
   RegisterFrameSinkId();
 }
 
 bool Window::IsEmbeddingClient() const {
-  return embed_frame_sink_id_.is_valid();
+  return embeds_external_client_;
 }
 
 void Window::OnPaintLayer(const ui::PaintContext& context) {
@@ -1259,12 +1265,12 @@ void Window::UpdateLayerName() {
 }
 
 void Window::RegisterFrameSinkId() {
-  DCHECK(embed_frame_sink_id_.is_valid());
+  DCHECK(frame_sink_id_.is_valid());
   DCHECK(IsEmbeddingClient());
   if (registered_frame_sink_id_ || disable_frame_sink_id_registration_)
     return;
   if (auto* compositor = layer()->GetCompositor()) {
-    compositor->AddFrameSink(embed_frame_sink_id_);
+    compositor->AddFrameSink(frame_sink_id_);
     registered_frame_sink_id_ = true;
   }
 }
@@ -1274,7 +1280,7 @@ void Window::UnregisterFrameSinkId() {
     return;
   registered_frame_sink_id_ = false;
   if (auto* compositor = layer()->GetCompositor())
-    compositor->RemoveFrameSink(embed_frame_sink_id_);
+    compositor->RemoveFrameSink(frame_sink_id_);
 }
 
 }  // namespace aura

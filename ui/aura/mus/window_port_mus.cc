@@ -132,10 +132,12 @@ WindowPortMus::RequestLayerTreeFrameSink(
   return layer_tree_frame_sink;
 }
 
-viz::FrameSinkId WindowPortMus::GetFrameSinkId() const {
-  if (window_->IsEmbeddingClient())
-    return window_->embed_frame_sink_id();
-  return viz::FrameSinkId(0, server_id());
+viz::FrameSinkId WindowPortMus::GenerateFrameSinkIdFromServerId() const {
+  // With mus, the client does not know its own client id. So it uses a constant
+  // value of 0. This gets replaced in the server side with the correct value
+  // where appropriate.
+  constexpr int kClientSelfId = 0;
+  return viz::FrameSinkId(kClientSelfId, server_id());
 }
 
 WindowPortMus::ServerChangeIdType WindowPortMus::ScheduleChange(
@@ -332,14 +334,14 @@ void WindowPortMus::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   if (!window_->IsEmbeddingClient()) {
     // |primary_surface_id_| shold not be valid, since we didn't know the
-    // |window_->embed_frame_sink_id()|.
+    // |window_->frame_sink_id()|.
     DCHECK(!primary_surface_id_.is_valid());
     window_->SetEmbedFrameSinkId(surface_info.id().frame_sink_id());
     UpdatePrimarySurfaceId();
   }
 
   // The frame sink id should never be changed.
-  DCHECK_EQ(surface_info.id().frame_sink_id(), window_->embed_frame_sink_id());
+  DCHECK_EQ(surface_info.id().frame_sink_id(), window_->GetFrameSinkId());
 
   fallback_surface_info_ = surface_info;
   UpdateClientSurfaceEmbedder();
@@ -568,10 +570,11 @@ WindowPortMus::CreateLayerTreeFrameSink() {
                                                ->GetGpuMemoryBufferManager());
     local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
     frame_sink = std::move(client_layer_tree_frame_sink);
+    window_->SetEmbedFrameSinkId(GenerateFrameSinkIdFromServerId());
   } else {
     auto* context_factory_private =
         aura::Env::GetInstance()->context_factory_private();
-    auto frame_sink_id = GetFrameSinkId();
+    auto frame_sink_id = window_->GetFrameSinkId();
     DCHECK(frame_sink_id.is_valid());
     auto layer_tree_frame_sink_local =
         std::make_unique<LayerTreeFrameSinkLocal>(
@@ -612,7 +615,7 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
     return;
 
   primary_surface_id_ =
-      viz::SurfaceId(window_->embed_frame_sink_id(), local_surface_id_);
+      viz::SurfaceId(window_->GetFrameSinkId(), local_surface_id_);
   UpdateClientSurfaceEmbedder();
 }
 
@@ -640,7 +643,7 @@ void WindowPortMus::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
   // TODO(fsamuel): Rename OnFirstSurfaceActivation() and set primary earlier
   // based on feedback from LayerTreeFrameSinkLocal.
   DCHECK(!base::FeatureList::IsEnabled(features::kMash));
-  DCHECK_EQ(surface_info.id().frame_sink_id(), GetFrameSinkId());
+  DCHECK_EQ(surface_info.id().frame_sink_id(), window_->GetFrameSinkId());
   DCHECK_EQ(surface_info.id().local_surface_id(), local_surface_id_);
   window_->layer()->SetShowPrimarySurface(
       surface_info.id(), window_->bounds().size(), SK_ColorWHITE,

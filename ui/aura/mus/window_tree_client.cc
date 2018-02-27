@@ -400,6 +400,11 @@ void WindowTreeClient::AttachCompositorFrameSink(
 void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
   DCHECK(windows_.find(window->server_id()) == windows_.end());
   windows_[window->server_id()] = window;
+  if (window->GetWindow()) {
+    auto* port = WindowPortMus::Get(window->GetWindow());
+    window->GetWindow()->set_frame_sink_id(
+        port->GenerateFrameSinkIdFromServerId());
+  }
 }
 
 WindowMus* WindowTreeClient::GetWindowByServerId(ui::Id id) {

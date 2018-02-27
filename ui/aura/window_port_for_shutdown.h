@@ -41,13 +41,11 @@ class WindowPortForShutdown : public WindowPort {
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
   void AllocateLocalSurfaceId() override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() override;
-  viz::FrameSinkId GetFrameSinkId() const override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
 
  private:
   viz::LocalSurfaceId local_surface_id_;
-  viz::FrameSinkId frame_sink_id_;
   DISALLOW_COPY_AND_ASSIGN(WindowPortForShutdown);
 };
 
