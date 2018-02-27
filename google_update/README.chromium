@@ -1,10 +1,5 @@
-Originally this IDL was provided by the Google Update team so that we could use
-the On-Demand checking for updates. Now it is copied from the public Omaha
-repository with minor modifications. See
-http://omaha.googlecode.com/svn/trunk/official/goopdate/omaha3_idl.idl.
-
-This copy is based on http://omaha.googlecode.com/svn/trunk/official/goopdate/omaha3_idl.idl@120
-with the following two coclasses removed:
+The IDL in this directory is provided by the Google Update team. The original
+file was modified by removing the following two coclasses:
 
   [
     uuid(___AUTO_GENERATED_GUID___),

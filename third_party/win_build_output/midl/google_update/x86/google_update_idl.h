@@ -66,11 +66,25 @@ typedef interface IApp IApp;
 #endif 	/* __IApp_FWD_DEFINED__ */
 
 
+#ifndef __IApp2_FWD_DEFINED__
+#define __IApp2_FWD_DEFINED__
+typedef interface IApp2 IApp2;
+
+#endif 	/* __IApp2_FWD_DEFINED__ */
+
+
 #ifndef __IAppCommand_FWD_DEFINED__
 #define __IAppCommand_FWD_DEFINED__
 typedef interface IAppCommand IAppCommand;
 
 #endif 	/* __IAppCommand_FWD_DEFINED__ */
+
+
+#ifndef __IAppCommand2_FWD_DEFINED__
+#define __IAppCommand2_FWD_DEFINED__
+typedef interface IAppCommand2 IAppCommand2;
+
+#endif 	/* __IAppCommand2_FWD_DEFINED__ */
 
 
 #ifndef __IAppVersion_FWD_DEFINED__
@@ -178,6 +192,13 @@ typedef interface IProcessLauncher IProcessLauncher;
 #endif 	/* __IProcessLauncher_FWD_DEFINED__ */
 
 
+#ifndef __IProcessLauncher2_FWD_DEFINED__
+#define __IProcessLauncher2_FWD_DEFINED__
+typedef interface IProcessLauncher2 IProcessLauncher2;
+
+#endif 	/* __IProcessLauncher2_FWD_DEFINED__ */
+
+
 #ifndef __IOneClickProcessLauncher_FWD_DEFINED__
 #define __IOneClickProcessLauncher_FWD_DEFINED__
 typedef interface IOneClickProcessLauncher IOneClickProcessLauncher;
@@ -197,6 +218,13 @@ typedef interface IProgressWndEvents IProgressWndEvents;
 typedef interface IJobObserver IJobObserver;
 
 #endif 	/* __IJobObserver_FWD_DEFINED__ */
+
+
+#ifndef __IJobObserver2_FWD_DEFINED__
+#define __IJobObserver2_FWD_DEFINED__
+typedef interface IJobObserver2 IJobObserver2;
+
+#endif 	/* __IJobObserver2_FWD_DEFINED__ */
 
 
 #ifndef __IGoogleUpdate_FWD_DEFINED__
@@ -234,11 +262,25 @@ typedef interface IApp IApp;
 #endif 	/* __IApp_FWD_DEFINED__ */
 
 
+#ifndef __IApp2_FWD_DEFINED__
+#define __IApp2_FWD_DEFINED__
+typedef interface IApp2 IApp2;
+
+#endif 	/* __IApp2_FWD_DEFINED__ */
+
+
 #ifndef __IAppCommand_FWD_DEFINED__
 #define __IAppCommand_FWD_DEFINED__
 typedef interface IAppCommand IAppCommand;
 
 #endif 	/* __IAppCommand_FWD_DEFINED__ */
+
+
+#ifndef __IAppCommand2_FWD_DEFINED__
+#define __IAppCommand2_FWD_DEFINED__
+typedef interface IAppCommand2 IAppCommand2;
+
+#endif 	/* __IAppCommand2_FWD_DEFINED__ */
 
 
 #ifndef __IAppVersion_FWD_DEFINED__
@@ -1688,6 +1730,386 @@ EXTERN_C const IID IID_IApp;
 #endif 	/* __IApp_INTERFACE_DEFINED__ */
 
 
+#ifndef __IApp2_INTERFACE_DEFINED__
+#define __IApp2_INTERFACE_DEFINED__
+
+/* interface IApp2 */
+/* [unique][helpstring][uuid][dual][object] */ 
+
+
+EXTERN_C const IID IID_IApp2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("084D78A8-B084-4E14-A629-A2C419B0E3D9")
+    IApp2 : public IApp
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_untrustedData( 
+            /* [retval][out] */ BSTR *__MIDL__IApp20000) = 0;
+        
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_untrustedData( 
+            /* [in] */ BSTR __MIDL__IApp20001) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IApp2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IApp2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IApp2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IApp2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IApp2 * This,
+            /* [out] */ UINT *pctinfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IApp2 * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IApp2 * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IApp2 * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_currentVersion )( 
+            IApp2 * This,
+            /* [retval][out] */ IDispatch **current);
+        
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_nextVersion )( 
+            IApp2 * This,
+            /* [retval][out] */ IDispatch **next);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_appId )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0000);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_displayName )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0001);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_displayName )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0002);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_language )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0003);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_language )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0004);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ap )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0005);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ap )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0006);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ttToken )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0007);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ttToken )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0008);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_iid )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0009);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_iid )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0010);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_brandCode )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0011);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_brandCode )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0012);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_clientId )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0013);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_clientId )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0014);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_labels )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0015);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_labels )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0016);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_referralId )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0017);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_referralId )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0018);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_command )( 
+            IApp2 * This,
+            /* [in] */ BSTR command_id,
+            /* [retval][out] */ IDispatch **command);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_browserType )( 
+            IApp2 * This,
+            /* [retval][out] */ UINT *__MIDL__IApp0019);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_browserType )( 
+            IApp2 * This,
+            /* [in] */ UINT __MIDL__IApp0020);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_clientInstallData )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0021);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_clientInstallData )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0022);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_serverInstallDataIndex )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp0023);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_serverInstallDataIndex )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp0024);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_isEulaAccepted )( 
+            IApp2 * This,
+            /* [retval][out] */ VARIANT_BOOL *__MIDL__IApp0025);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_isEulaAccepted )( 
+            IApp2 * This,
+            /* [in] */ VARIANT_BOOL __MIDL__IApp0026);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_usageStatsEnable )( 
+            IApp2 * This,
+            /* [retval][out] */ UINT *__MIDL__IApp0027);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_usageStatsEnable )( 
+            IApp2 * This,
+            /* [in] */ UINT __MIDL__IApp0028);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_installTimeDiffSec )( 
+            IApp2 * This,
+            /* [retval][out] */ UINT *__MIDL__IApp0029);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_currentState )( 
+            IApp2 * This,
+            /* [retval][out] */ IDispatch **__MIDL__IApp0030);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_untrustedData )( 
+            IApp2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IApp20000);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_untrustedData )( 
+            IApp2 * This,
+            /* [in] */ BSTR __MIDL__IApp20001);
+        
+        END_INTERFACE
+    } IApp2Vtbl;
+
+    interface IApp2
+    {
+        CONST_VTBL struct IApp2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IApp2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IApp2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IApp2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IApp2_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define IApp2_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define IApp2_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define IApp2_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define IApp2_get_currentVersion(This,current)	\
+    ( (This)->lpVtbl -> get_currentVersion(This,current) ) 
+
+#define IApp2_get_nextVersion(This,next)	\
+    ( (This)->lpVtbl -> get_nextVersion(This,next) ) 
+
+#define IApp2_get_appId(This,__MIDL__IApp0000)	\
+    ( (This)->lpVtbl -> get_appId(This,__MIDL__IApp0000) ) 
+
+#define IApp2_get_displayName(This,__MIDL__IApp0001)	\
+    ( (This)->lpVtbl -> get_displayName(This,__MIDL__IApp0001) ) 
+
+#define IApp2_put_displayName(This,__MIDL__IApp0002)	\
+    ( (This)->lpVtbl -> put_displayName(This,__MIDL__IApp0002) ) 
+
+#define IApp2_get_language(This,__MIDL__IApp0003)	\
+    ( (This)->lpVtbl -> get_language(This,__MIDL__IApp0003) ) 
+
+#define IApp2_put_language(This,__MIDL__IApp0004)	\
+    ( (This)->lpVtbl -> put_language(This,__MIDL__IApp0004) ) 
+
+#define IApp2_get_ap(This,__MIDL__IApp0005)	\
+    ( (This)->lpVtbl -> get_ap(This,__MIDL__IApp0005) ) 
+
+#define IApp2_put_ap(This,__MIDL__IApp0006)	\
+    ( (This)->lpVtbl -> put_ap(This,__MIDL__IApp0006) ) 
+
+#define IApp2_get_ttToken(This,__MIDL__IApp0007)	\
+    ( (This)->lpVtbl -> get_ttToken(This,__MIDL__IApp0007) ) 
+
+#define IApp2_put_ttToken(This,__MIDL__IApp0008)	\
+    ( (This)->lpVtbl -> put_ttToken(This,__MIDL__IApp0008) ) 
+
+#define IApp2_get_iid(This,__MIDL__IApp0009)	\
+    ( (This)->lpVtbl -> get_iid(This,__MIDL__IApp0009) ) 
+
+#define IApp2_put_iid(This,__MIDL__IApp0010)	\
+    ( (This)->lpVtbl -> put_iid(This,__MIDL__IApp0010) ) 
+
+#define IApp2_get_brandCode(This,__MIDL__IApp0011)	\
+    ( (This)->lpVtbl -> get_brandCode(This,__MIDL__IApp0011) ) 
+
+#define IApp2_put_brandCode(This,__MIDL__IApp0012)	\
+    ( (This)->lpVtbl -> put_brandCode(This,__MIDL__IApp0012) ) 
+
+#define IApp2_get_clientId(This,__MIDL__IApp0013)	\
+    ( (This)->lpVtbl -> get_clientId(This,__MIDL__IApp0013) ) 
+
+#define IApp2_put_clientId(This,__MIDL__IApp0014)	\
+    ( (This)->lpVtbl -> put_clientId(This,__MIDL__IApp0014) ) 
+
+#define IApp2_get_labels(This,__MIDL__IApp0015)	\
+    ( (This)->lpVtbl -> get_labels(This,__MIDL__IApp0015) ) 
+
+#define IApp2_put_labels(This,__MIDL__IApp0016)	\
+    ( (This)->lpVtbl -> put_labels(This,__MIDL__IApp0016) ) 
+
+#define IApp2_get_referralId(This,__MIDL__IApp0017)	\
+    ( (This)->lpVtbl -> get_referralId(This,__MIDL__IApp0017) ) 
+
+#define IApp2_put_referralId(This,__MIDL__IApp0018)	\
+    ( (This)->lpVtbl -> put_referralId(This,__MIDL__IApp0018) ) 
+
+#define IApp2_get_command(This,command_id,command)	\
+    ( (This)->lpVtbl -> get_command(This,command_id,command) ) 
+
+#define IApp2_get_browserType(This,__MIDL__IApp0019)	\
+    ( (This)->lpVtbl -> get_browserType(This,__MIDL__IApp0019) ) 
+
+#define IApp2_put_browserType(This,__MIDL__IApp0020)	\
+    ( (This)->lpVtbl -> put_browserType(This,__MIDL__IApp0020) ) 
+
+#define IApp2_get_clientInstallData(This,__MIDL__IApp0021)	\
+    ( (This)->lpVtbl -> get_clientInstallData(This,__MIDL__IApp0021) ) 
+
+#define IApp2_put_clientInstallData(This,__MIDL__IApp0022)	\
+    ( (This)->lpVtbl -> put_clientInstallData(This,__MIDL__IApp0022) ) 
+
+#define IApp2_get_serverInstallDataIndex(This,__MIDL__IApp0023)	\
+    ( (This)->lpVtbl -> get_serverInstallDataIndex(This,__MIDL__IApp0023) ) 
+
+#define IApp2_put_serverInstallDataIndex(This,__MIDL__IApp0024)	\
+    ( (This)->lpVtbl -> put_serverInstallDataIndex(This,__MIDL__IApp0024) ) 
+
+#define IApp2_get_isEulaAccepted(This,__MIDL__IApp0025)	\
+    ( (This)->lpVtbl -> get_isEulaAccepted(This,__MIDL__IApp0025) ) 
+
+#define IApp2_put_isEulaAccepted(This,__MIDL__IApp0026)	\
+    ( (This)->lpVtbl -> put_isEulaAccepted(This,__MIDL__IApp0026) ) 
+
+#define IApp2_get_usageStatsEnable(This,__MIDL__IApp0027)	\
+    ( (This)->lpVtbl -> get_usageStatsEnable(This,__MIDL__IApp0027) ) 
+
+#define IApp2_put_usageStatsEnable(This,__MIDL__IApp0028)	\
+    ( (This)->lpVtbl -> put_usageStatsEnable(This,__MIDL__IApp0028) ) 
+
+#define IApp2_get_installTimeDiffSec(This,__MIDL__IApp0029)	\
+    ( (This)->lpVtbl -> get_installTimeDiffSec(This,__MIDL__IApp0029) ) 
+
+#define IApp2_get_currentState(This,__MIDL__IApp0030)	\
+    ( (This)->lpVtbl -> get_currentState(This,__MIDL__IApp0030) ) 
+
+
+#define IApp2_get_untrustedData(This,__MIDL__IApp20000)	\
+    ( (This)->lpVtbl -> get_untrustedData(This,__MIDL__IApp20000) ) 
+
+#define IApp2_put_untrustedData(This,__MIDL__IApp20001)	\
+    ( (This)->lpVtbl -> put_untrustedData(This,__MIDL__IApp20001) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IApp2_INTERFACE_DEFINED__ */
+
+
 #ifndef __IAppCommand_INTERFACE_DEFINED__
 #define __IAppCommand_INTERFACE_DEFINED__
 
@@ -1862,6 +2284,173 @@ EXTERN_C const IID IID_IAppCommand;
 
 
 #endif 	/* __IAppCommand_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAppCommand2_INTERFACE_DEFINED__
+#define __IAppCommand2_INTERFACE_DEFINED__
+
+/* interface IAppCommand2 */
+/* [unique][helpstring][uuid][dual][object] */ 
+
+
+EXTERN_C const IID IID_IAppCommand2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("3D05F64F-71E3-48A5-BF6B-83315BC8AE1F")
+    IAppCommand2 : public IAppCommand
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_output( 
+            /* [retval][out] */ BSTR *__MIDL__IAppCommand20000) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppCommand2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IAppCommand2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IAppCommand2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IAppCommand2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IAppCommand2 * This,
+            /* [out] */ UINT *pctinfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IAppCommand2 * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IAppCommand2 * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IAppCommand2 * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_isWebAccessible )( 
+            IAppCommand2 * This,
+            /* [retval][out] */ VARIANT_BOOL *__MIDL__IAppCommand0000);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_status )( 
+            IAppCommand2 * This,
+            /* [retval][out] */ UINT *__MIDL__IAppCommand0001);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_exitCode )( 
+            IAppCommand2 * This,
+            /* [retval][out] */ DWORD *__MIDL__IAppCommand0002);
+        
+        HRESULT ( STDMETHODCALLTYPE *execute )( 
+            IAppCommand2 * This,
+            /* [optional][in] */ VARIANT arg1,
+            /* [optional][in] */ VARIANT arg2,
+            /* [optional][in] */ VARIANT arg3,
+            /* [optional][in] */ VARIANT arg4,
+            /* [optional][in] */ VARIANT arg5,
+            /* [optional][in] */ VARIANT arg6,
+            /* [optional][in] */ VARIANT arg7,
+            /* [optional][in] */ VARIANT arg8,
+            /* [optional][in] */ VARIANT arg9);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_output )( 
+            IAppCommand2 * This,
+            /* [retval][out] */ BSTR *__MIDL__IAppCommand20000);
+        
+        END_INTERFACE
+    } IAppCommand2Vtbl;
+
+    interface IAppCommand2
+    {
+        CONST_VTBL struct IAppCommand2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppCommand2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppCommand2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppCommand2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppCommand2_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define IAppCommand2_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define IAppCommand2_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define IAppCommand2_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define IAppCommand2_get_isWebAccessible(This,__MIDL__IAppCommand0000)	\
+    ( (This)->lpVtbl -> get_isWebAccessible(This,__MIDL__IAppCommand0000) ) 
+
+#define IAppCommand2_get_status(This,__MIDL__IAppCommand0001)	\
+    ( (This)->lpVtbl -> get_status(This,__MIDL__IAppCommand0001) ) 
+
+#define IAppCommand2_get_exitCode(This,__MIDL__IAppCommand0002)	\
+    ( (This)->lpVtbl -> get_exitCode(This,__MIDL__IAppCommand0002) ) 
+
+#define IAppCommand2_execute(This,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9)	\
+    ( (This)->lpVtbl -> execute(This,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9) ) 
+
+
+#define IAppCommand2_get_output(This,__MIDL__IAppCommand20000)	\
+    ( (This)->lpVtbl -> get_output(This,__MIDL__IAppCommand20000) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppCommand2_INTERFACE_DEFINED__ */
 
 
 #ifndef __IAppVersion_INTERFACE_DEFINED__
@@ -3207,6 +3796,12 @@ EXTERN_C const IID IID_IAppWeb;
         
         virtual HRESULT STDMETHODCALLTYPE uninstall( void) = 0;
         
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_serverInstallDataIndex( 
+            /* [retval][out] */ BSTR *__MIDL__IAppWeb0001) = 0;
+        
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_serverInstallDataIndex( 
+            /* [in] */ BSTR __MIDL__IAppWeb0002) = 0;
+        
     };
     
     
@@ -3295,6 +3890,14 @@ EXTERN_C const IID IID_IAppWeb;
         HRESULT ( STDMETHODCALLTYPE *uninstall )( 
             IAppWeb * This);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_serverInstallDataIndex )( 
+            IAppWeb * This,
+            /* [retval][out] */ BSTR *__MIDL__IAppWeb0001);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_serverInstallDataIndex )( 
+            IAppWeb * This,
+            /* [in] */ BSTR __MIDL__IAppWeb0002);
+        
         END_INTERFACE
     } IAppWebVtbl;
 
@@ -3355,6 +3958,12 @@ EXTERN_C const IID IID_IAppWeb;
 #define IAppWeb_uninstall(This)	\
     ( (This)->lpVtbl -> uninstall(This) ) 
 
+#define IAppWeb_get_serverInstallDataIndex(This,__MIDL__IAppWeb0001)	\
+    ( (This)->lpVtbl -> get_serverInstallDataIndex(This,__MIDL__IAppWeb0001) ) 
+
+#define IAppWeb_put_serverInstallDataIndex(This,__MIDL__IAppWeb0002)	\
+    ( (This)->lpVtbl -> put_serverInstallDataIndex(This,__MIDL__IAppWeb0002) ) 
+
 #endif /* COBJMACROS */
 
 
@@ -3377,7 +3986,7 @@ EXTERN_C const IID IID_IAppCommandWeb;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
-    MIDL_INTERFACE("68D6C2BD-712E-4c96-93E8-49CB8A9AAEED")
+    MIDL_INTERFACE("8476CE12-AE1F-4198-805C-BA0F9B783F57")
     IAppCommandWeb : public IDispatch
     {
     public:
@@ -3386,6 +3995,9 @@ EXTERN_C const IID IID_IAppCommandWeb;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_exitCode( 
             /* [retval][out] */ DWORD *__MIDL__IAppCommandWeb0001) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_output( 
+            /* [retval][out] */ BSTR *__MIDL__IAppCommandWeb0002) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE execute( 
             /* [optional][in] */ VARIANT arg1,
@@ -3464,6 +4076,10 @@ EXTERN_C const IID IID_IAppCommandWeb;
             IAppCommandWeb * This,
             /* [retval][out] */ DWORD *__MIDL__IAppCommandWeb0001);
         
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_output )( 
+            IAppCommandWeb * This,
+            /* [retval][out] */ BSTR *__MIDL__IAppCommandWeb0002);
+        
         HRESULT ( STDMETHODCALLTYPE *execute )( 
             IAppCommandWeb * This,
             /* [optional][in] */ VARIANT arg1,
@@ -3517,6 +4133,9 @@ EXTERN_C const IID IID_IAppCommandWeb;
 
 #define IAppCommandWeb_get_exitCode(This,__MIDL__IAppCommandWeb0001)	\
     ( (This)->lpVtbl -> get_exitCode(This,__MIDL__IAppCommandWeb0001) ) 
+
+#define IAppCommandWeb_get_output(This,__MIDL__IAppCommandWeb0002)	\
+    ( (This)->lpVtbl -> get_output(This,__MIDL__IAppCommandWeb0002) ) 
 
 #define IAppCommandWeb_execute(This,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9)	\
     ( (This)->lpVtbl -> execute(This,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9) ) 
@@ -4118,6 +4737,118 @@ EXTERN_C const IID IID_IProcessLauncher;
 #endif 	/* __IProcessLauncher_INTERFACE_DEFINED__ */
 
 
+#ifndef __IProcessLauncher2_INTERFACE_DEFINED__
+#define __IProcessLauncher2_INTERFACE_DEFINED__
+
+/* interface IProcessLauncher2 */
+/* [unique][helpstring][uuid][oleautomation][object] */ 
+
+
+EXTERN_C const IID IID_IProcessLauncher2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("D106AB5F-A70E-400E-A21B-96208C1D8DBB")
+    IProcessLauncher2 : public IProcessLauncher
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE LaunchCmdLineEx( 
+            /* [string][in] */ const WCHAR *cmd_line,
+            /* [out] */ DWORD *server_proc_id,
+            /* [out] */ ULONG_PTR *proc_handle,
+            /* [out] */ ULONG_PTR *stdout_handle) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IProcessLauncher2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IProcessLauncher2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IProcessLauncher2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IProcessLauncher2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *LaunchCmdLine )( 
+            IProcessLauncher2 * This,
+            /* [string][in] */ const WCHAR *cmd_line);
+        
+        HRESULT ( STDMETHODCALLTYPE *LaunchBrowser )( 
+            IProcessLauncher2 * This,
+            /* [in] */ DWORD browser_type,
+            /* [string][in] */ const WCHAR *url);
+        
+        HRESULT ( STDMETHODCALLTYPE *LaunchCmdElevated )( 
+            IProcessLauncher2 * This,
+            /* [string][in] */ const WCHAR *app_guid,
+            /* [string][in] */ const WCHAR *cmd_id,
+            /* [in] */ DWORD caller_proc_id,
+            /* [out] */ ULONG_PTR *proc_handle);
+        
+        HRESULT ( STDMETHODCALLTYPE *LaunchCmdLineEx )( 
+            IProcessLauncher2 * This,
+            /* [string][in] */ const WCHAR *cmd_line,
+            /* [out] */ DWORD *server_proc_id,
+            /* [out] */ ULONG_PTR *proc_handle,
+            /* [out] */ ULONG_PTR *stdout_handle);
+        
+        END_INTERFACE
+    } IProcessLauncher2Vtbl;
+
+    interface IProcessLauncher2
+    {
+        CONST_VTBL struct IProcessLauncher2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IProcessLauncher2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IProcessLauncher2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IProcessLauncher2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IProcessLauncher2_LaunchCmdLine(This,cmd_line)	\
+    ( (This)->lpVtbl -> LaunchCmdLine(This,cmd_line) ) 
+
+#define IProcessLauncher2_LaunchBrowser(This,browser_type,url)	\
+    ( (This)->lpVtbl -> LaunchBrowser(This,browser_type,url) ) 
+
+#define IProcessLauncher2_LaunchCmdElevated(This,app_guid,cmd_id,caller_proc_id,proc_handle)	\
+    ( (This)->lpVtbl -> LaunchCmdElevated(This,app_guid,cmd_id,caller_proc_id,proc_handle) ) 
+
+
+#define IProcessLauncher2_LaunchCmdLineEx(This,cmd_line,server_proc_id,proc_handle,stdout_handle)	\
+    ( (This)->lpVtbl -> LaunchCmdLineEx(This,cmd_line,server_proc_id,proc_handle,stdout_handle) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IProcessLauncher2_INTERFACE_DEFINED__ */
+
+
 #ifndef __IOneClickProcessLauncher_INTERFACE_DEFINED__
 #define __IOneClickProcessLauncher_INTERFACE_DEFINED__
 
@@ -4200,11 +4931,11 @@ EXTERN_C const IID IID_IOneClickProcessLauncher;
 #endif 	/* __IOneClickProcessLauncher_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_google_update_idl_0000_0020 */
+/* interface __MIDL_itf_google_update_idl_0000_0023 */
 /* [local] */ 
 
 typedef /* [public][public] */ 
-enum __MIDL___MIDL_itf_google_update_idl_0000_0020_0001
+enum __MIDL___MIDL_itf_google_update_idl_0000_0023_0001
     {
         COMPLETION_CODE_SUCCESS	= 1,
         COMPLETION_CODE_SUCCESS_CLOSE_UI	= ( COMPLETION_CODE_SUCCESS + 1 ) ,
@@ -4220,8 +4951,8 @@ enum __MIDL___MIDL_itf_google_update_idl_0000_0020_0001
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0020_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0020_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0023_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0023_v0_0_s_ifspec;
 
 #ifndef __IProgressWndEvents_INTERFACE_DEFINED__
 #define __IProgressWndEvents_INTERFACE_DEFINED__
@@ -4505,6 +5236,88 @@ EXTERN_C const IID IID_IJobObserver;
 #endif 	/* __IJobObserver_INTERFACE_DEFINED__ */
 
 
+#ifndef __IJobObserver2_INTERFACE_DEFINED__
+#define __IJobObserver2_INTERFACE_DEFINED__
+
+/* interface IJobObserver2 */
+/* [unique][helpstring][uuid][oleautomation][object] */ 
+
+
+EXTERN_C const IID IID_IJobObserver2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("19692F10-ADD2-4EFF-BE54-E61C62E40D13")
+    IJobObserver2 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE OnInstalling2( 
+            /* [in] */ int time_remaining_ms,
+            /* [in] */ int pos) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IJobObserver2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IJobObserver2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IJobObserver2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IJobObserver2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnInstalling2 )( 
+            IJobObserver2 * This,
+            /* [in] */ int time_remaining_ms,
+            /* [in] */ int pos);
+        
+        END_INTERFACE
+    } IJobObserver2Vtbl;
+
+    interface IJobObserver2
+    {
+        CONST_VTBL struct IJobObserver2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IJobObserver2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IJobObserver2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IJobObserver2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IJobObserver2_OnInstalling2(This,time_remaining_ms,pos)	\
+    ( (This)->lpVtbl -> OnInstalling2(This,time_remaining_ms,pos) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IJobObserver2_INTERFACE_DEFINED__ */
+
+
 #ifndef __IGoogleUpdate_INTERFACE_DEFINED__
 #define __IGoogleUpdate_INTERFACE_DEFINED__
 
@@ -4691,6 +5504,8 @@ EXTERN_C const IID IID_IGoogleUpdateCore;
 
 /* library GoogleUpdate3Lib */
 /* [helpstring][version][uuid] */ 
+
+
 
 
 
