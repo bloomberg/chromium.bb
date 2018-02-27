@@ -1480,6 +1480,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Tests that scrolling bubbles from an oopif if its source body has
+// "overflow:hidden" style.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
+  GURL url_domain_a(embedded_test_server()->GetURL(
+      "a.com", "/scrollable_page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_domain_a));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  FrameTreeNode* iframe_node = root->child_at(0);
+  GURL url_domain_b(
+      embedded_test_server()->GetURL("b.com", "/body_overflow_hidden.html"));
+  NavigateFrameToURL(iframe_node, url_domain_b);
+  WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
+      iframe_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  ScrollObserver scroll_observer(0, -5);
+  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+      &scroll_observer);
+
+  // Now scroll the nested frame downward, this must bubble to the root since
+  // the iframe source body is not scrollable.
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  gfx::Rect bounds = child_view->GetViewBounds();
+  float scale_factor = GetPageScaleFactor(shell());
+  scroll_event.SetPositionInWidget(
+      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 10) *
+                       scale_factor),
+      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 10) *
+                       scale_factor));
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = -5.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.has_precise_scrolling_deltas = true;
+  child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+
+  // Send a wheel end event to complete the scrolling sequence when wheel scroll
+  // latching is enabled.
+  if (root_view->wheel_scroll_latching_enabled()) {
+    scroll_event.delta_y = 0.0f;
+    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    child_view->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  }
+
+  scroll_observer.Wait();
+}
+
 // This test verifies that scrolling an element to view works across OOPIFs.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollElementIntoView) {
   GURL url_domain_a(
