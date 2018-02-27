@@ -147,7 +147,7 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
   // If occlusion states have been recomputed
   // |kMaxComputeOcclusionIterationsBeforeStable| times and are still not
   // stable, iterate one last time to set the occlusion state of all tracked
-  // windows to NOT_OCCLUDED.
+  // windows based on IsVisible().
   while (num_times_occlusion_recomputed_ <= kMaxRecomputeOcclusion) {
     const bool exceeded_max_num_times_occlusion_recomputed =
         num_times_occlusion_recomputed_ == kMaxRecomputeOcclusion;
@@ -184,12 +184,14 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
       auto it = tracked_windows_.find(window);
       if (it != tracked_windows_.end() &&
           it->second != Window::OcclusionState::UNKNOWN) {
-        // Fallback to NOT_OCCLUDED for all IsVisible() windows if the maximum
-        // number of times that occlusion can be recomputed was exceeded.
-        if (exceeded_max_num_times_occlusion_recomputed && window->IsVisible())
-          it->second = Window::OcclusionState::NOT_OCCLUDED;
+        // Fallback to VISIBLE/HIDDEN if the maximum number of times that
+        // occlusion can be recomputed was exceeded.
+        if (exceeded_max_num_times_occlusion_recomputed) {
+          it->second = window->IsVisible() ? Window::OcclusionState::VISIBLE
+                                           : Window::OcclusionState::HIDDEN;
+        }
 
-        window->SetOccluded(it->second == Window::OcclusionState::OCCLUDED);
+        window->SetOcclusionState(it->second);
       }
     }
   }
@@ -290,12 +292,17 @@ void WindowOcclusionTracker::SetWindowAndDescendantsAreOccluded(
     SetWindowAndDescendantsAreOccluded(child_window, is_occluded);
 }
 
-void WindowOcclusionTracker::SetOccluded(Window* window, bool occluded) {
+void WindowOcclusionTracker::SetOccluded(Window* window, bool is_occluded) {
   auto tracked_window = tracked_windows_.find(window);
-  if (tracked_window != tracked_windows_.end()) {
-    tracked_window->second = occluded ? Window::OcclusionState::OCCLUDED
-                                      : Window::OcclusionState::NOT_OCCLUDED;
-  }
+  if (tracked_window == tracked_windows_.end())
+    return;
+
+  if (!window->IsVisible())
+    tracked_window->second = Window::OcclusionState::HIDDEN;
+  else if (is_occluded)
+    tracked_window->second = Window::OcclusionState::OCCLUDED;
+  else
+    tracked_window->second = Window::OcclusionState::VISIBLE;
 }
 
 bool WindowOcclusionTracker::WindowIsTracked(Window* window) const {

@@ -91,13 +91,14 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // |animated_windows_|, adds |window| to |animated_windows_| and returns true.
   bool MaybeObserveAnimatedWindow(Window* window);
 
-  // Calls SetOccluded(|is_occluded|) on |window| and its descendants if they
-  // are in |tracked_windows_|.
+  // Calls SetOccluded() with |is_occluded| as argument for |window| and its
+  // descendants.
   void SetWindowAndDescendantsAreOccluded(Window* window, bool is_occluded);
 
-  // Updates the occlusion state of |window| in |tracked_windows_|. No-op if
-  // |window| is not in |tracked_windows_|.
-  void SetOccluded(Window* window, bool occluded);
+  // Updates the occlusion state of |window| in |tracked_windows_|, based on
+  // |is_occluded| and window->IsVisible(). No-op if |window| is not in
+  // |tracked_windows_|.
+  void SetOccluded(Window* window, bool is_occluded);
 
   // Returns true if |window| is in |tracked_windows_|.
   bool WindowIsTracked(Window* window) const;
