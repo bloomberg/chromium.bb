@@ -27,6 +27,7 @@
 
 namespace extensions {
 
+class ExtensionNavigationUIData;
 class InfoMap;
 
 // Owns URLLoaderFactory bindings for WebRequest proxies with the Network
@@ -137,7 +138,7 @@ class WebRequestProxyingURLLoaderFactory
   void StartProxying(
       int render_process_id,
       int render_frame_id,
-      bool is_navigation,
+      std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       base::OnceClosure on_disconnect);
@@ -167,7 +168,7 @@ class WebRequestProxyingURLLoaderFactory
   void* const browser_context_;
   int render_process_id_ = -1;
   int render_frame_id_ = -1;
-  bool is_navigation_ = false;
+  std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   InfoMap* const info_map_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;

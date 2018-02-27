@@ -31,6 +31,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
@@ -430,6 +431,16 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
   *factory_request = mojo::MakeRequest(&target_factory_info);
 
+  std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
+  if (is_navigation) {
+    int tab_id;
+    int window_id;
+    ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
+        content::WebContents::FromRenderFrameHost(frame), &tab_id, &window_id);
+    navigation_ui_data =
+        std::make_unique<ExtensionNavigationUIData>(frame, tab_id, window_id);
+  }
+
   auto proxy = base::MakeRefCounted<WebRequestProxyingURLLoaderFactory>(
       frame->GetProcess()->GetBrowserContext(), info_map_);
   proxies_.emplace(proxy.get(), proxy);
@@ -437,7 +448,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&WebRequestProxyingURLLoaderFactory::StartProxying, proxy,
                      frame->GetProcess()->GetID(), frame->GetRoutingID(),
-                     is_navigation, std::move(proxied_request),
+                     std::move(navigation_ui_data), std::move(proxied_request),
                      std::move(target_factory_info),
                      base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe,
                                     weak_ptr_factory_.GetWeakPtr(),

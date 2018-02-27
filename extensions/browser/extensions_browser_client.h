@@ -296,6 +296,15 @@ class ExtensionsBrowserClient {
   virtual ExtensionNavigationUIData* GetExtensionNavigationUIData(
       net::URLRequest* request);
 
+  // Retrives the embedder's notion of tab and window ID for a given
+  // WebContents. May return -1 for either or both values if the embedder does
+  // not implement any such concepts. This is used to support the WebRequest API
+  // exposing such numbers to callers.
+  virtual void GetTabAndWindowIdForWebContents(
+      content::WebContents* web_contents,
+      int* tab_id,
+      int* window_id);
+
   // Returns a delegate that provides kiosk mode functionality.
   virtual KioskDelegate* GetKioskDelegate() = 0;
 

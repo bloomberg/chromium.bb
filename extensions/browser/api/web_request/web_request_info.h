@@ -35,6 +35,8 @@ struct ResourceResponseHead;
 
 namespace extensions {
 
+class ExtensionNavigationUIData;
+
 // A URL request representation used by WebRequest API internals. This structure
 // carries information about an in-progress request.
 struct WebRequestInfo {
@@ -66,7 +68,7 @@ struct WebRequestInfo {
   WebRequestInfo(uint64_t request_id,
                  int render_process_id,
                  int render_frame_id,
-                 bool is_navigation,
+                 std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
                  int32_t routing_id,
                  const network::ResourceRequest& request);
 
@@ -164,6 +166,9 @@ struct WebRequestInfo {
   std::unique_ptr<Logger> logger;
 
  private:
+  void InitializeWebViewAndFrameData(
+      const ExtensionNavigationUIData* navigation_ui_data);
+
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);
 };
 

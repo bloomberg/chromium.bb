@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
 #include "net/http/http_util.h"
 
 namespace extensions {
@@ -47,9 +48,11 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
   // Derive a new WebRequestInfo value any time |Restart()| is called, because
   // the details in |request_| may have changed e.g. if we've been redirected.
-  info_.emplace(request_id_, factory_->render_process_id_,
-                factory_->render_frame_id_, factory_->is_navigation_,
-                routing_id_, request_);
+  info_.emplace(
+      request_id_, factory_->render_process_id_, factory_->render_frame_id_,
+      factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
+                                    : nullptr,
+      routing_id_, request_);
 
   auto continuation =
       base::BindRepeating(&InProgressRequest::ContinueToBeforeSendHeaders,
@@ -412,7 +415,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
 void WebRequestProxyingURLLoaderFactory::StartProxying(
     int render_process_id,
     int render_frame_id,
-    bool is_navigation,
+    std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     base::OnceClosure on_disconnect) {
@@ -421,7 +424,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
   on_disconnect_ = std::move(on_disconnect);
   render_process_id_ = render_process_id;
   render_frame_id_ = render_frame_id;
-  is_navigation_ = is_navigation;
+  navigation_ui_data_ = std::move(navigation_ui_data);
 
   target_factory_.Bind(std::move(target_factory_info));
   target_factory_.set_connection_error_handler(
