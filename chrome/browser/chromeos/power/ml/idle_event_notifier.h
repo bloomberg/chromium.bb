@@ -37,12 +37,16 @@ using TimeOfDay = base::TimeDelta;
 
 // IdleEventNotifier listens to signals and notifies its observers when an idle
 // event is generated. An idle event is generated when the idle period reaches
-// |idle_delay_|. No further idle events will be generated until user becomes
-// active again, followed by an idle period of |idle_delay_|.
+// kIdleDelay. No further idle events will be generated until user becomes
+// active again, followed by an idle period of kIdleDelay.
 class IdleEventNotifier : public PowerManagerClient::Observer,
                           public ui::UserActivityObserver,
                           public viz::mojom::VideoDetectorObserver {
  public:
+  // An idle event is generated after this idle period.
+  static constexpr base::TimeDelta kIdleDelay =
+      base::TimeDelta::FromSeconds(30);
+
   struct ActivityData {
     ActivityData();
 
@@ -67,6 +71,11 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
     // event.
     base::Optional<base::TimeDelta> time_since_last_mouse;
     base::Optional<base::TimeDelta> time_since_last_key;
+    // How long recent video has been playing.
+    base::TimeDelta video_playing_time;
+    // Duration from when video ended. It is unset if video did not play
+    // (|video_playing_time| = 0).
+    base::Optional<base::TimeDelta> time_since_video_ended;
   };
 
   class Observer {
@@ -106,9 +115,6 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   void OnVideoActivityStarted() override;
   void OnVideoActivityEnded() override;
 
-  const base::TimeDelta& idle_delay() const { return idle_delay_; }
-  void set_idle_delay(const base::TimeDelta& delay) { idle_delay_ = delay; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(IdleEventNotifierTest, CheckInitialValues);
   friend class IdleEventNotifierTest;
@@ -134,8 +140,10 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
   // Updates all activity-related timestamps.
   void UpdateActivityData(ActivityType type);
 
-  // An idle event is generated after an idle period of |idle_delay_|.
-  base::TimeDelta idle_delay_ = base::TimeDelta::FromSeconds(30);
+  // Clears timestamps used to calculate |ActivityData::recent_time_active| so
+  // that its duration is recalculated after user is inactive for more than
+  // kIdleDelay or when suspend duration is longer than kIdleDelay.
+  void ResetTimestampsPerIdleEvent();
 
   // It is base::DefaultClock, but will be set to a mock clock for tests.
   std::unique_ptr<base::Clock> clock_;

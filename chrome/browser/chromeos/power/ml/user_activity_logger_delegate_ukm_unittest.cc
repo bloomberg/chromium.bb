@@ -52,6 +52,8 @@ class UserActivityLoggerDelegateUkmTest
     features->set_last_activity_time_sec(7300);
     features->set_last_user_activity_time_sec(3800);
     features->set_recent_time_active_sec(10);
+    features->set_video_playing_time_sec(800);
+    features->set_time_since_video_ended_sec(400);
     features->set_on_to_dim_sec(100);
     features->set_dim_to_screen_off_sec(200);
     features->set_time_since_last_mouse_sec(100);
@@ -143,11 +145,13 @@ class UserActivityLoggerDelegateUkmTest
       {UserActivity::kLastUserActivityTimeName, 1},
       {UserActivity::kOnBatteryName, base::nullopt},
       {UserActivity::kRecentTimeActiveName, 10},
+      {UserActivity::kRecentVideoPlayingTimeName, 600},
       {UserActivity::kScreenDimDelayName, 100},
       {UserActivity::kScreenDimToOffDelayName, 200},
       {UserActivity::kSequenceIdName, 1},
       {UserActivity::kTimeSinceLastKeyName, base::nullopt},
-      {UserActivity::kTimeSinceLastMouseName, 100}};
+      {UserActivity::kTimeSinceLastMouseName, 100},
+      {UserActivity::kTimeSinceLastVideoEndedName, 360}};
 
  private:
   UserActivityLoggerDelegateUkm user_activity_logger_delegate_ukm_;
@@ -167,12 +171,14 @@ TEST_F(UserActivityLoggerDelegateUkmTest, BucketEveryFivePercents) {
 TEST_F(UserActivityLoggerDelegateUkmTest, ExponentiallyBucketTimestamp) {
   const std::vector<int> original_values = {0,   18,  59,  60,  62,  69,  72,
                                             299, 300, 306, 316, 599, 600, 602};
-  const std::vector<int> buckets = {0,   18,  59,  60,  60,  60,  70,
+  constexpr UserActivityLoggerDelegateUkm::Bucket buckets[] = {
+      {60, 1}, {300, 10}, {600, 20}};
+  const std::vector<int> results = {0,   18,  59,  60,  60,  60,  70,
                                     290, 300, 300, 300, 580, 600, 600};
   for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(buckets[i],
+    EXPECT_EQ(results[i],
               UserActivityLoggerDelegateUkm::ExponentiallyBucketTimestamp(
-                  original_values[i]));
+                  original_values[i], buckets, arraysize(buckets)));
   }
 }
 

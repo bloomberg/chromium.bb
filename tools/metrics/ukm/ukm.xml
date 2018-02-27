@@ -2663,6 +2663,11 @@ be describing additional metrics about the same event.
       Duration of activity in seconds up to last activity.
     </summary>
   </metric>
+  <metric name="RecentVideoPlayingTime">
+    <summary>
+      Recent video playing time in seconds.
+    </summary>
+  </metric>
   <metric name="ScreenDimDelay">
     <summary>
       Delay after which the screen will be dimmed in seconds.
@@ -2688,6 +2693,11 @@ be describing additional metrics about the same event.
   <metric name="TimeSinceLastMouse">
     <summary>
       Time from last mouse or touch event in seconds.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastVideoEnded">
+    <summary>
+      Time from the end of the last video playing in seconds.
     </summary>
   </metric>
 </event>

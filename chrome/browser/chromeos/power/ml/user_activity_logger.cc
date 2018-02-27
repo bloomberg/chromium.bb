@@ -238,6 +238,13 @@ void UserActivityLogger::ExtractFeatures(
         activity_data.time_since_last_key.value().InSeconds());
   }
 
+  features_.set_video_playing_time_sec(
+      activity_data.video_playing_time.InSeconds());
+
+  if (activity_data.time_since_video_ended) {
+    features_.set_time_since_video_ended_sec(
+        activity_data.time_since_video_ended.value().InSeconds());
+  }
 
   // Set device mode.
   if (lid_state_ == chromeos::PowerManagerClient::LidState::CLOSED) {

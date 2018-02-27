@@ -448,6 +448,8 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   data.last_activity_time_of_day = base::TimeDelta::FromSeconds(100);
   data.recent_time_active = base::TimeDelta::FromSeconds(10);
   data.time_since_last_mouse = base::TimeDelta::FromSeconds(20);
+  data.video_playing_time = base::TimeDelta::FromSeconds(90);
+  data.time_since_video_ended = base::TimeDelta::FromSeconds(2);
 
   ReportIdleEvent(data);
   ReportUserActivity(nullptr);
@@ -466,6 +468,8 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   EXPECT_EQ(100, features.last_activity_time_sec());
   EXPECT_EQ(10, features.recent_time_active_sec());
   EXPECT_EQ(20, features.time_since_last_mouse_sec());
+  EXPECT_EQ(90, features.video_playing_time_sec());
+  EXPECT_EQ(2, features.time_since_video_ended_sec());
   EXPECT_FALSE(features.has_last_user_activity_time_sec());
   EXPECT_FALSE(features.has_time_since_last_key_sec());
 }
