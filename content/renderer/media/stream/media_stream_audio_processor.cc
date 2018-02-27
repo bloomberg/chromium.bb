@@ -624,9 +624,13 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // Create and configure the webrtc::AudioProcessing.
   webrtc::AudioProcessingBuilder ap_builder;
   if (using_aec3_) {
+    webrtc::EchoCanceller3Config aec3_config;
+    aec3_config.ep_strength.bounded_erl =
+        base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
+
     ap_builder.SetEchoControlFactory(
         std::unique_ptr<webrtc::EchoControlFactory>(
-            new webrtc::EchoCanceller3Factory()));
+            new webrtc::EchoCanceller3Factory(aec3_config)));
   }
   audio_processing_.reset(ap_builder.Create(config));
 
