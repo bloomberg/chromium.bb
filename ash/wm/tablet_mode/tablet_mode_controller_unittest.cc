@@ -15,6 +15,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/user_action_tester.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -687,6 +688,41 @@ TEST_F(TabletModeControllerTest, RestoreAfterExit) {
   // The bounds should be restored to the original bounds, and
   // should not be clamped by the portrait display in touch view.
   EXPECT_EQ(gfx::Rect(10, 10, 900, 300), w1->bounds());
+}
+
+TEST_F(TabletModeControllerTest, RecordLidAngle) {
+  // The timer shouldn't be running before we've received accelerometer data.
+  EXPECT_FALSE(
+      tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+
+  base::HistogramTester histogram_tester;
+  OpenLidToAngle(300.0f);
+  ASSERT_TRUE(tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+  histogram_tester.ExpectBucketCount(
+      TabletModeController::kLidAngleHistogramName, 300, 1);
+
+  ASSERT_TRUE(tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+  histogram_tester.ExpectBucketCount(
+      TabletModeController::kLidAngleHistogramName, 300, 2);
+
+  OpenLidToAngle(90.0f);
+  ASSERT_TRUE(tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+  histogram_tester.ExpectBucketCount(
+      TabletModeController::kLidAngleHistogramName, 90, 1);
+
+  // The timer should be stopped in response to a lid-only update since we can
+  // no longer compute an angle.
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, 0.0f, kMeanGravity));
+  EXPECT_FALSE(
+      tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+  histogram_tester.ExpectTotalCount(
+      TabletModeController::kLidAngleHistogramName, 3);
+
+  // When lid and base data is received, the timer should be started again.
+  OpenLidToAngle(180.0f);
+  ASSERT_TRUE(tablet_mode_controller()->TriggerRecordLidAngleTimerForTesting());
+  histogram_tester.ExpectBucketCount(
+      TabletModeController::kLidAngleHistogramName, 180, 1);
 }
 
 }  // namespace ash
