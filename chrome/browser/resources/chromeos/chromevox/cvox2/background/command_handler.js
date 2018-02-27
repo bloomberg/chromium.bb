@@ -255,6 +255,7 @@ CommandHandler.onCommand = function(command) {
   var speechProps = {};
   var skipSync = false;
   var didNavigate = false;
+  var tryScrolling = true;
   switch (command) {
     case 'nextCharacter':
       didNavigate = true;
@@ -466,12 +467,14 @@ CommandHandler.onCommand = function(command) {
           current.start.node.root, Dir.FORWARD, AutomationPredicate.object);
       if (node)
         current = cursors.Range.fromNode(node);
+      tryScrolling = false;
       break;
     case 'jumpToBottom':
       var node = AutomationUtil.findLastNode(
           current.start.node.root, AutomationPredicate.object);
       if (node)
         current = cursors.Range.fromNode(node);
+      tryScrolling = false;
       break;
     case 'forceClickOnCurrentItem':
       if (ChromeVoxState.instance.currentRange) {
@@ -774,7 +777,7 @@ CommandHandler.onCommand = function(command) {
     }
   }
 
-  if (current && current.start && current.start.node &&
+  if (tryScrolling && current && current.start && current.start.node &&
       ChromeVoxState.instance.currentRange.start.node) {
     var exited = AutomationUtil.getUniqueAncestors(
         current.start.node, ChromeVoxState.instance.currentRange.start.node);

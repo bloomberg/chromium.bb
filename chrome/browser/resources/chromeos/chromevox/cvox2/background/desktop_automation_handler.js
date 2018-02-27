@@ -157,6 +157,9 @@ DesktopAutomationHandler.prototype = {
    */
   onEventIfInRange: function(evt) {
     var prev = ChromeVoxState.instance.currentRange;
+    if (!prev)
+      return;
+
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
       // Intentionally skip setting range.
