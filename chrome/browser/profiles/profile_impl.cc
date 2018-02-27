@@ -143,9 +143,16 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/assistant/buildflags.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
+#include "chromeos/services/assistant/service.h"
+#endif
+
 #endif
 
 #if !defined(OS_ANDROID)
@@ -1098,6 +1105,22 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
         content::BrowserThread::UI);
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
+
+#if defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating([] {
+      return std::unique_ptr<service_manager::Service>(
+          std::make_unique<chromeos::assistant::Service>());
+    });
+    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::UI);
+    services->insert(
+        std::make_pair(chromeos::assistant::mojom::kServiceName, info));
+  }
+#endif
+#endif
 
   service_manager::EmbeddedServiceInfo identity_service_info;
 

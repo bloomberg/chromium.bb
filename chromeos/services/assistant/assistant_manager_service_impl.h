@@ -25,22 +25,14 @@ namespace assistant {
 // Implementation of AssistantManagerService based on libassistant.
 class AssistantManagerServiceImpl : public AssistantManagerService {
  public:
-  class AuthTokenProvider {
-   public:
-    virtual const std::string GetAccessToken() = 0;
-
-   protected:
-    virtual ~AuthTokenProvider() = default;
-  };
-
-  explicit AssistantManagerServiceImpl(AuthTokenProvider* auth_token_provider);
+  AssistantManagerServiceImpl();
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
-  void Start() override;
+  void Start(const std::string& access_token) override;
+  void SetAccessToken(const std::string& access_token) override;
 
  private:
-  AuthTokenProvider* const auth_token_provider_;
   PlatformApiImpl platform_api_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;

@@ -4,8 +4,6 @@
 
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -16,10 +14,8 @@
 namespace chromeos {
 namespace assistant {
 
-AssistantManagerServiceImpl::AssistantManagerServiceImpl(
-    AuthTokenProvider* auth_token_provider)
-    : auth_token_provider_(auth_token_provider),
-      platform_api_(kDefaultConfigStr),
+AssistantManagerServiceImpl::AssistantManagerServiceImpl()
+    : platform_api_(kDefaultConfigStr),
       assistant_manager_(
           assistant_client::AssistantManager::Create(&platform_api_,
                                                      kDefaultConfigStr)),
@@ -28,7 +24,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
-void AssistantManagerServiceImpl::Start() {
+void AssistantManagerServiceImpl::Start(const std::string& access_token) {
   auto* internal_options =
       assistant_manager_internal_->CreateDefaultInternalOptions();
   SetAssistantOptions(internal_options);
@@ -39,16 +35,19 @@ void AssistantManagerServiceImpl::Start() {
   // By default AssistantManager will not start listening for its hotword until
   // we explicitly set EnableListening() to |true|.
   assistant_manager_->EnableListening(true);
+  SetAccessToken(access_token);
+  assistant_manager_->Start();
+}
 
+void AssistantManagerServiceImpl::SetAccessToken(
+    const std::string& access_token) {
   // Push the |access_token| we got as an argument into AssistantManager before
   // starting to ensure that all server requests will be authenticated once
   // it is started. |user_id| is used to pair a user to their |access_token|,
   // since we do not support multi-user in this example we can set it to a
   // dummy value like "0".
   assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
-      /* user_id: */ "0", auth_token_provider_->GetAccessToken())});
-
-  assistant_manager_->Start();
+      /* user_id: */ "0", access_token)});
 }
 
 }  // namespace assistant

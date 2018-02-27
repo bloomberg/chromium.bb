@@ -19,6 +19,12 @@ source_set("lib") {
 
   deps = [
     "//chromeos",
+    "//chromeos/assistant:buildflags",
+    "//chromeos/services/assistant/public/mojom",
+    "//services/identity/public/mojom",
+  ]
+
+  public_deps = [
     "//mojo/public/cpp/bindings:bindings",
     "//services/service_manager/public/cpp:cpp",
   ]
@@ -64,17 +70,6 @@ source_set("lib") {
 service_manifest("manifest") {
   name = "assistant"
   source = "manifest.json"
-}
-
-service("assistant") {
-  sources = [
-    "main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//services/service_manager/public/cpp",
-  ]
 }
 
 source_set("tests") {

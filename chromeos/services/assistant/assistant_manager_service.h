@@ -14,12 +14,13 @@ namespace assistant {
 // Interface class that defines all assistant functionalities.
 class AssistantManagerService {
  public:
-  // Start the assistant in the background.  In particular the assistant would
-  // start listening for hotword and respond.
-  virtual void Start() = 0;
-
- protected:
   virtual ~AssistantManagerService() = default;
+
+  // Start the assistant in the background with |token|.
+  virtual void Start(const std::string& access_token) = 0;
+
+  // Set access token for assistant.
+  virtual void SetAccessToken(const std::string& access_token) = 0;
 };
 
 }  // namespace assistant
