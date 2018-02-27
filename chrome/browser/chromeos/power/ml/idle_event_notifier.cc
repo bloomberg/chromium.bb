@@ -19,6 +19,8 @@ namespace ml {
 
 using TimeSinceBoot = base::TimeDelta;
 
+constexpr base::TimeDelta IdleEventNotifier::kIdleDelay;
+
 struct IdleEventNotifier::ActivityDataInternal {
   // Use base::Time here because we later need to convert them to local time
   // since midnight.
@@ -30,6 +32,8 @@ struct IdleEventNotifier::ActivityDataInternal {
   base::Optional<TimeSinceBoot> earliest_activity_since_boot;
   base::Optional<TimeSinceBoot> last_mouse_since_boot;
   base::Optional<TimeSinceBoot> last_key_since_boot;
+  base::Optional<TimeSinceBoot> video_start_time;
+  base::Optional<TimeSinceBoot> video_end_time;
 };
 
 IdleEventNotifier::ActivityData::ActivityData()
@@ -118,10 +122,18 @@ void IdleEventNotifier::SuspendDone(const base::TimeDelta& sleep_duration) {
 
   // SuspendDone is triggered by user opening the lid (or other user
   // activities).
-  if (sleep_duration >= idle_delay_) {
-    internal_data_->last_activity_since_boot = base::TimeDelta();
-    internal_data_->earliest_activity_since_boot = base::nullopt;
+  if (sleep_duration >= kIdleDelay) {
+    ResetTimestampsPerIdleEvent();
+    if (video_playing_) {
+      // This could happen when user closes the lid while video is playing.
+      // If OnVideoActivityEnded is not received before system is suspended, we
+      // could have |video_playing_| = true. If |sleep_duration| < kIdleDelay,
+      // we consider video never stopped. Otherwise, we treat it as a new video
+      // playing session.
+      internal_data_->video_start_time = boot_clock_->GetTimeSinceBoot();
+    }
   }
+
   UpdateActivityData(ActivityType::USER_OTHER);
   ResetIdleDelayTimer();
 }
@@ -141,11 +153,19 @@ void IdleEventNotifier::OnUserActivity(const ui::Event* event) {
 }
 
 void IdleEventNotifier::OnVideoActivityStarted() {
+  if (video_playing_) {
+    NOTREACHED() << "Duplicate start of video activity";
+    return;
+  }
   video_playing_ = true;
   UpdateActivityData(ActivityType::VIDEO);
 }
 
 void IdleEventNotifier::OnVideoActivityEnded() {
+  if (!video_playing_) {
+    NOTREACHED() << "Duplicate end of video activity";
+    return;
+  }
   video_playing_ = false;
   UpdateActivityData(ActivityType::VIDEO);
   ResetIdleDelayTimer();
@@ -189,6 +209,13 @@ IdleEventNotifier::ActivityData IdleEventNotifier::ConvertActivityData(
         time_since_boot - internal_data.last_key_since_boot.value();
   }
 
+  if (internal_data_->video_start_time && internal_data_->video_end_time) {
+    DCHECK(!video_playing_);
+    data.video_playing_time = internal_data_->video_end_time.value() -
+                              internal_data_->video_start_time.value();
+    data.time_since_video_ended =
+        time_since_boot - internal_data_->video_end_time.value();
+  }
   return data;
 }
 
@@ -201,7 +228,7 @@ void IdleEventNotifier::ResetIdleDelayTimer() {
   if (idle_delay_timer_.IsRunning()) {
     idle_delay_timer_.AbandonAndStop();
   }
-  idle_delay_timer_.Start(FROM_HERE, idle_delay_, this,
+  idle_delay_timer_.Start(FROM_HERE, kIdleDelay, this,
                           &IdleEventNotifier::OnIdleDelayTimeout);
 }
 
@@ -213,11 +240,7 @@ void IdleEventNotifier::OnIdleDelayTimeout() {
 
   for (auto& observer : observers_)
     observer.OnIdleEventObserved(data);
-  // Only clears out |last_activity_since_boot| and
-  // |earliest_activity_since_boot because they are used to calculate recent
-  // time active, which should be reset between idle events.
-  internal_data_->last_activity_since_boot = base::TimeDelta();
-  internal_data_->earliest_activity_since_boot = base::nullopt;
+  ResetTimestampsPerIdleEvent();
 }
 
 void IdleEventNotifier::UpdateActivityData(ActivityType type) {
@@ -232,8 +255,19 @@ void IdleEventNotifier::UpdateActivityData(ActivityType type) {
     internal_data_->earliest_activity_since_boot = time_since_boot;
   }
 
-  if (type == ActivityType::VIDEO)
+  if (type == ActivityType::VIDEO) {
+    if (video_playing_) {
+      if (!internal_data_->video_start_time ||
+          (internal_data_->video_end_time &&
+           (time_since_boot - internal_data_->video_end_time.value() >=
+            kIdleDelay))) {
+        internal_data_->video_start_time = time_since_boot;
+      }
+    } else {
+      internal_data_->video_end_time = time_since_boot;
+    }
     return;
+  }
 
   // All other activity is user-initiated.
   internal_data_->last_user_activity_time = now;
@@ -249,6 +283,14 @@ void IdleEventNotifier::UpdateActivityData(ActivityType type) {
       // We don't track other activity types.
       return;
   }
+}
+
+// Only clears out |last_activity_since_boot| and
+// |earliest_activity_since_boot| because they are used to calculate recent
+// time active, which should be reset between idle events.
+void IdleEventNotifier::ResetTimestampsPerIdleEvent() {
+  internal_data_->last_activity_since_boot = base::TimeDelta();
+  internal_data_->earliest_activity_since_boot = base::nullopt;
 }
 
 }  // namespace ml

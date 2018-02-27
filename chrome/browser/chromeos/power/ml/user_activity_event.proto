@@ -130,7 +130,14 @@ message UserActivityEvent {
 
     // Whether network is connected.
     optional bool is_online = 15;
-  }
+
+    // Duration of latest non-stop video playing before the current idle
+    // event. If a video paused/stopped temporarily (i.e. less than
+    // start_delay_sec), we consider it as non-stop.
+    optional int32 video_playing_time_sec = 16;
+    // Duration from the time video ended to the time of idle event.
+    optional int32 time_since_video_ended_sec = 17;
+  }  // next id = 18
 
   optional ModelParams params = 1;
   optional Event event = 2;

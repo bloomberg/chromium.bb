@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_DELEGATE_UKM_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_LOGGER_DELEGATE_UKM_H_
 
-#include <vector>
-
 #include "base/macros.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
@@ -25,13 +23,24 @@ class UserActivityLoggerDelegateUkm : public UserActivityLoggerDelegate {
   // |original_value| should be in the range of [0, 100].
   static int BucketEveryFivePercents(int original_value);
 
-  // Bucket |timestamp_sec| such that
-  // 1. if |timestamp_sec| < 60sec, return original value.
-  // 2. if |timestamp_sec| < 5min, bucket to nearest 10sec.
-  // 3. if |timestamp_sec| < 10min, bucket to nearest 20sec.
-  // 4. if |timestamp_sec| >= 10min, cap it at 10min.
-  // In all cases, the returned value is in seconds.
-  static int ExponentiallyBucketTimestamp(int timestamp_sec);
+  // Both |boundary_end| and |rounding| are seconds.
+  struct Bucket {
+    int boundary_end;
+    int rounding;
+  };
+
+  // Bucket |timestamp_sec| using given |buckets|, which is an array of
+  // Bucket and must be sorted in ascending order of
+  // |boundary_end|. An example
+  // of |buckets| is {{60, 1}, {300, 10}, {600, 20}}. This function looks for
+  // the first |boundary_end| > |timestamp_sec| and bucket it to the nearest
+  // |rounding|. If |timestamp_sec| is greater than all |boundary_end|, the
+  // function returns the largest |boundary_end|. Using the above |buckets|
+  // example, the function will return 30 if |timestamp_sec| = 30, and 290 if
+  // |timestamp_sec| = 299.
+  static int ExponentiallyBucketTimestamp(int timestamp_sec,
+                                          const Bucket* buckets,
+                                          size_t num_buckets);
 
   UserActivityLoggerDelegateUkm();
   ~UserActivityLoggerDelegateUkm() override;
