@@ -15,6 +15,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -357,7 +358,8 @@ public class VrShellImpl
 
         if (mVrBrowsingEnabled) {
             mAndroidUiGestureTarget = new AndroidUiGestureTarget(mNonVrViews.getInputTarget(),
-                    mContentVrWindowAndroid.getDisplay().getDipScale(), getNativePageScrollRatio());
+                    mContentVrWindowAndroid.getDisplay().getDipScale(), getNativePageScrollRatio(),
+                    getTouchSlop());
             nativeSetAndroidGestureTarget(mNativeVrShell, mAndroidUiGestureTarget);
         }
     }
@@ -750,8 +752,9 @@ public class VrShellImpl
         }
 
         nativeSetAlertDialog(mNativeVrShell, width, height);
-        mAndroidDialogGestureTarget = new AndroidUiGestureTarget(
-                mVrUiViewContainer.getInputTarget(), 1.0f, getNativePageScrollRatio());
+        mAndroidDialogGestureTarget =
+                new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f,
+                        getNativePageScrollRatio(), getTouchSlop());
         nativeSetDialogGestureTarget(mNativeVrShell, mAndroidDialogGestureTarget);
     }
 
@@ -926,6 +929,11 @@ public class VrShellImpl
     private float getNativePageScrollRatio() {
         return mActivity.getWindowAndroid().getDisplay().getDipScale()
                 / mContentVrWindowAndroid.getDisplay().getDipScale();
+    }
+
+    private int getTouchSlop() {
+        ViewConfiguration vc = ViewConfiguration.get(mActivity);
+        return vc.getScaledTouchSlop();
     }
 
     private void launchNTP() {
