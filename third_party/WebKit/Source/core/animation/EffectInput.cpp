@@ -88,30 +88,25 @@ Vector<WTF::Optional<EffectModel::CompositeOperation>> ParseCompositeProperty(
   return result;
 }
 
-void SetKeyframeValue(Element& element,
+void SetKeyframeValue(Element* element,
+                      Document& document,
                       StringKeyframe& keyframe,
                       const String& property,
                       const String& value,
                       ExecutionContext* execution_context) {
-  StyleSheetContents* style_sheet_contents =
-      element.GetDocument().ElementSheet().Contents();
+  StyleSheetContents* style_sheet_contents = document.ElementSheet().Contents();
   CSSPropertyID css_property =
-      AnimationInputHelpers::KeyframeAttributeToCSSProperty(
-          property, element.GetDocument());
+      AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
   if (css_property != CSSPropertyInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyVariable
             ? keyframe.SetCSSPropertyValue(
-                  AtomicString(property),
-                  element.GetDocument().GetPropertyRegistry(), value,
-                  element.GetDocument().GetSecureContextMode(),
-                  style_sheet_contents)
-            : keyframe.SetCSSPropertyValue(
-                  css_property, value,
-                  element.GetDocument().GetSecureContextMode(),
-                  style_sheet_contents);
+                  AtomicString(property), document.GetPropertyRegistry(), value,
+                  document.GetSecureContextMode(), style_sheet_contents)
+            : keyframe.SetCSSPropertyValue(css_property, value,
+                                           document.GetSecureContextMode(),
+                                           style_sheet_contents);
     if (!set_result.did_parse && execution_context) {
-      Document& document = ToDocument(*execution_context);
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
             kJSMessageSource, kWarningMessageLevel,
@@ -125,8 +120,8 @@ void SetKeyframeValue(Element& element,
                                                                       element);
   if (css_property != CSSPropertyInvalid) {
     keyframe.SetPresentationAttributeValue(
-        CSSProperty::Get(css_property), value,
-        element.GetDocument().GetSecureContextMode(), style_sheet_contents);
+        CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
+        style_sheet_contents);
     return;
   }
   const QualifiedName* svg_attribute =
@@ -203,7 +198,8 @@ struct KeyframeOutput {
   Vector<std::pair<String, String>> property_value_pairs;
 };
 
-StringKeyframeVector ConvertArrayForm(Element& element,
+StringKeyframeVector ConvertArrayForm(Element* element,
+                                      Document& document,
                                       DictionaryIterator iterator,
                                       ScriptState* script_state,
                                       ExceptionState& exception_state) {
@@ -310,8 +306,8 @@ StringKeyframeVector ConvertArrayForm(Element& element,
     // using the syntax specified for that property.
     for (const auto& pair : processed_keyframe.property_value_pairs) {
       // TODO(crbug.com/777971): Make parsing of property values spec-compliant.
-      SetKeyframeValue(element, *keyframe.get(), pair.first, pair.second,
-                       execution_context);
+      SetKeyframeValue(element, document, *keyframe.get(), pair.first,
+                       pair.second, execution_context);
     }
 
     if (processed_keyframe.base_keyframe.hasComposite()) {
@@ -329,7 +325,7 @@ StringKeyframeVector ConvertArrayForm(Element& element,
     // procedure.
     scoped_refptr<TimingFunction> timing_function =
         AnimationInputHelpers::ParseTimingFunction(
-            processed_keyframe.base_keyframe.easing(), &element.GetDocument(),
+            processed_keyframe.base_keyframe.easing(), &document,
             exception_state);
     if (!timing_function)
       return {};
@@ -380,7 +376,8 @@ static bool GetPropertyIndexedKeyframeValues(
 // web-animations spec for an object form keyframes argument.
 //
 // See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
-StringKeyframeVector ConvertObjectForm(Element& element,
+StringKeyframeVector ConvertObjectForm(Element* element,
+                                       Document& document,
                                        const Dictionary& dictionary,
                                        ScriptState* script_state,
                                        ExceptionState& exception_state) {
@@ -466,8 +463,8 @@ StringKeyframeVector ConvertObjectForm(Element& element,
       if (result.is_new_entry)
         result.stored_value->value = StringKeyframe::Create();
 
-      SetKeyframeValue(element, *result.stored_value->value.get(), property,
-                       values[i], execution_context);
+      SetKeyframeValue(element, document, *result.stored_value->value.get(),
+                       property, values[i], execution_context);
     }
   }
 
@@ -535,8 +532,8 @@ StringKeyframeVector ConvertObjectForm(Element& element,
       // If parsing the “easing” property fails, throw a TypeError and abort
       // this procedure.
       scoped_refptr<TimingFunction> timing_function =
-          AnimationInputHelpers::ParseTimingFunction(
-              easing, &element.GetDocument(), exception_state);
+          AnimationInputHelpers::ParseTimingFunction(easing, &document,
+                                                     exception_state);
       if (!timing_function)
         return {};
 
@@ -570,8 +567,8 @@ StringKeyframeVector ConvertObjectForm(Element& element,
   // procedure.
   for (size_t i = results.size(); i < easings.size(); i++) {
     scoped_refptr<TimingFunction> timing_function =
-        AnimationInputHelpers::ParseTimingFunction(
-            easings[i], &element.GetDocument(), exception_state);
+        AnimationInputHelpers::ParseTimingFunction(easings[i], &document,
+                                                   exception_state);
     if (!timing_function)
       return {};
   }
@@ -601,10 +598,6 @@ KeyframeEffectModelBase* EffectInput::Convert(
     EffectModel::CompositeOperation composite,
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  // TODO(crbug.com/772014): The element is allowed to be null; remove check.
-  if (!element)
-    return StringKeyframeEffectModel::Create(StringKeyframeVector(), composite);
-
   StringKeyframeVector parsed_keyframes =
       ParseKeyframesArgument(element, keyframes, script_state, exception_state);
   if (exception_state.HadException())
@@ -640,15 +633,20 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
   if (exception_state.HadException())
     return {};
 
+  // TODO(crbug.com/816934): Get spec to specify what parsing context to use.
+  Document& document = element
+                           ? element->GetDocument()
+                           : *ToDocument(ExecutionContext::From(script_state));
+
   StringKeyframeVector parsed_keyframes;
   DictionaryIterator iterator =
       dictionary.GetIterator(ExecutionContext::From(script_state));
   if (iterator.IsNull()) {
-    parsed_keyframes =
-        ConvertObjectForm(*element, dictionary, script_state, exception_state);
+    parsed_keyframes = ConvertObjectForm(element, document, dictionary,
+                                         script_state, exception_state);
   } else {
-    parsed_keyframes =
-        ConvertArrayForm(*element, iterator, script_state, exception_state);
+    parsed_keyframes = ConvertArrayForm(element, document, iterator,
+                                        script_state, exception_state);
   }
 
   if (!ValidatePartialKeyframes(parsed_keyframes)) {
