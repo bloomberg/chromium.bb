@@ -7681,7 +7681,7 @@ I don't think this site should be blocked!
         To continue, click OK, then click Add Person to create a new profile for your <ph name="DOMAIN">$1<ex>example.com</ex></ph> email address.
       </message>
       <message name="IDS_OLD_PROFILES_DISABLED_REMOVED_OLD_PROFILE" desc="The suggestion that tells the user to delete old profile when the user tries to use an old profile that is disabled by policy">
-        Although you can no longer access your old profile, you can remove it.
+        Although you can no longer access your old profile, you can still remove it.
       </message>
       <if expr="is_android">
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="Mobile: An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
