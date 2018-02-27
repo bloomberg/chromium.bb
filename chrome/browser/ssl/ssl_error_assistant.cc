@@ -36,6 +36,8 @@ net::CertStatus MapToCertStatus(
     case chrome_browser_ssl::DynamicInterstitial::
         ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
       return net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED;
+    case chrome_browser_ssl::DynamicInterstitial::ERR_CERT_SYMANTEC_LEGACY:
+      return net::CERT_STATUS_SYMANTEC_LEGACY;
     case chrome_browser_ssl::DynamicInterstitial::ERR_CERT_REVOKED:
       return net::CERT_STATUS_REVOKED;
     case chrome_browser_ssl::DynamicInterstitial::ERR_CERT_INVALID:

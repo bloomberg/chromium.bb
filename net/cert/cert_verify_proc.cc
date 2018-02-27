@@ -609,7 +609,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   if (!(flags & CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT) &&
       IsLegacySymantecCert(verify_result->public_key_hashes)) {
     if (IsUntrustedSymantecCert(*verify_result->verified_cert)) {
-      verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+      verify_result->cert_status |= CERT_STATUS_SYMANTEC_LEGACY;
       if (rv == OK || IsCertificateError(rv))
         rv = MapCertStatusToNetError(verify_result->cert_status);
     }

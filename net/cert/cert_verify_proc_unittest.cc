@@ -1495,8 +1495,8 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     CertVerifyResult test_result_1;
     error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
                                 nullptr, CertificateList(), &test_result_1);
-    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-    EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    EXPECT_THAT(error, IsError(ERR_CERT_SYMANTEC_LEGACY));
+    EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
 
     // ... Unless the Symantec cert chains through a whitelisted intermediate.
     CertVerifyResult whitelisted_result;
@@ -1520,7 +1520,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
                             CertVerifier::VERIFY_DISABLE_SYMANTEC_ENFORCEMENT,
                             nullptr, CertificateList(), &test_result_3);
     EXPECT_THAT(error, IsOk());
-    EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    EXPECT_FALSE(test_result_3.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
   }
 
   // Test that certificates from the legacy Symantec infrastructure that
@@ -1546,7 +1546,7 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), 0,
                                 nullptr, CertificateList(), &test_result_1);
     EXPECT_THAT(error, IsOk());
-    EXPECT_FALSE(test_result_1.cert_status & CERT_STATUS_AUTHORITY_INVALID);
+    EXPECT_FALSE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
   }
 }
 
