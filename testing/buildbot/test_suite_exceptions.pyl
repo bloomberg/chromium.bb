@@ -352,6 +352,7 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsanCov',
+      'linux-win_cross-rel',
       'ToTLinuxUBSanVptr',
       'UBSanVptr Linux',
       # chromium.fyi
