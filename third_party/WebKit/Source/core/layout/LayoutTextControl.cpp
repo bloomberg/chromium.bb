@@ -62,6 +62,15 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
     inner_editor->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(StyleChangeReason::kControl));
+
+    // The inner editor element uses the LayoutTextControl's ::selection style
+    // (see: GetUncachedSelectionStyle in SelectionPaintingUtils.cpp) so ensure
+    // the inner editor selection is invalidated anytime style changes and a
+    // ::selection style is or was present on LayoutTextControl.
+    if (StyleRef().HasPseudoStyle(kPseudoIdSelection) ||
+        (old_style && old_style->HasPseudoStyle(kPseudoIdSelection))) {
+      inner_editor_layout_object->InvalidateSelectionOfSelectedChildren();
+    }
   }
   GetTextControlElement()->UpdatePlaceholderVisibility();
 }

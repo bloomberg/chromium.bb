@@ -2201,7 +2201,7 @@ void LayoutObject::ApplyPseudoStyleChanges(const ComputedStyle& old_style) {
 
   if (old_style.HasPseudoStyle(kPseudoIdSelection) ||
       StyleRef().HasPseudoStyle(kPseudoIdSelection))
-    InvalidatePaintForSelection();
+    InvalidateSelectionOfSelectedChildren();
 }
 
 void LayoutObject::ApplyFirstLineChanges(const ComputedStyle& old_style) {
@@ -3837,7 +3837,7 @@ LayoutRect LayoutObject::DebugRect() const {
   return rect;
 }
 
-void LayoutObject::InvalidatePaintForSelection() {
+void LayoutObject::InvalidateSelectionOfSelectedChildren() {
   // setSelectionState() propagates the state up the containing block chain to
   // tell if a block contains selected nodes or not. If this layout object is
   // not a block, we need to get the selection state from the containing block
