@@ -762,11 +762,10 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   // Returns false if this |extension_id| was not expected or if this
   // |extension_id| has already reported. The caller is responsible for
   // validating |filename|.
-  bool DeterminerCallback(
-      Profile* profile,
-      const std::string& extension_id,
-      const base::FilePath& filename,
-      downloads::FilenameConflictAction conflict_action) {
+  bool DeterminerCallback(content::BrowserContext* browser_context,
+                          const std::string& extension_id,
+                          const base::FilePath& filename,
+                          downloads::FilenameConflictAction conflict_action) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     bool found_info = false;
     for (size_t index = 0; index < determiners_.size(); ++index) {
@@ -794,7 +793,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
               &determined_conflict_action_,
               &warnings);
           if (!warnings.empty())
-            WarningService::NotifyWarningsOnUI(profile, warnings);
+            WarningService::NotifyWarningsOnUI(browser_context, warnings);
           if (winner_extension_id == determiners_[index].extension_id)
             determiner_ = determiners_[index];
         }
@@ -1727,7 +1726,7 @@ void ExtensionDownloadsEventRouter::DetermineFilenameInternal(
 }
 
 bool ExtensionDownloadsEventRouter::DetermineFilename(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     bool include_incognito,
     const std::string& ext_id,
     int download_id,
@@ -1736,7 +1735,8 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
     std::string* error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordApiFunctions(DOWNLOADS_FUNCTION_DETERMINE_FILENAME);
-  DownloadItem* item = GetDownload(profile, include_incognito, download_id);
+  DownloadItem* item =
+      GetDownload(browser_context, include_incognito, download_id);
   ExtensionDownloadsEventRouterData* data =
       item ? ExtensionDownloadsEventRouterData::Get(item) : NULL;
   // maxListeners=1 in downloads.idl and suggestCallback in
@@ -1760,8 +1760,8 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
               base::FilePath());
   // If the invalid filename check is moved to before DeterminerCallback(), then
   // it will block forever waiting for this ext_id to report.
-  if (Fault(!data->DeterminerCallback(
-                profile, ext_id, filename, conflict_action),
+  if (Fault(!data->DeterminerCallback(browser_context, ext_id, filename,
+                                      conflict_action),
             errors::kUnexpectedDeterminer, error) ||
       Fault((!const_filename.empty() && !valid_filename),
             errors::kInvalidFilename, error))

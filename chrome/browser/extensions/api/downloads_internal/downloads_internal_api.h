@@ -6,17 +6,17 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DOWNLOADS_INTERNAL_DOWNLOADS_INTERNAL_API_H_
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 class DownloadsInternalDetermineFilenameFunction
-    : public ChromeAsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloadsInternal.determineFilename",
                              DOWNLOADSINTERNAL_DETERMINEFILENAME);
   DownloadsInternalDetermineFilenameFunction();
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  protected:
   ~DownloadsInternalDetermineFilenameFunction() override;

@@ -330,7 +330,7 @@ class ExtensionDownloadsEventRouter
   // existing files, then |overwrite| will be true. Returns true on success,
   // false otherwise.
   static bool DetermineFilename(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       bool include_incognito,
       const std::string& ext_id,
       int download_id,
