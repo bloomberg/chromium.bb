@@ -5780,13 +5780,6 @@ if (!is_ios && !is_proto_quic) {
     if (enable_websockets) {
       sources += [ "websockets/websocket_frame_perftest.cc" ]
     }
-
-    # Some linker failures have been observed for this target on the Win64
-    # continuous builder, see crbug.com/659369.
-    # TODO(sebmarchand): Remove this once we have some data.
-    if (is_win && linkrepro_root_dir != "") {
-      ldflags = [ "/LINKREPRO:" + linkrepro_root_dir + "/" + target_name ]
-    }
   }
 }
 
