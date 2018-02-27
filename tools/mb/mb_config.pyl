@@ -631,7 +631,7 @@
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
 
       'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot_compile_only',
-      'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
+      'linux_chromium_rel_ng': 'gpu_tests_release_trybot_no_symbols',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_layout_tests_root_layer_scrolls': 'release_trybot',
@@ -1346,6 +1346,10 @@
 
     'gpu_tests_release_trybot': [
       'gpu_tests', 'release_trybot',
+    ],
+
+    'gpu_tests_release_trybot_no_symbols': [
+      'gpu_tests', 'release_trybot', 'no_symbols',
     ],
 
     'gpu_tests_release_trybot_cm': [
