@@ -105,6 +105,7 @@ NSError* IdentityMissingError() {
 }
 
 @synthesize handlingError = _handlingError;
+@synthesize dispatcher = _dispatcher;
 
 #pragma mark - Public methods
 
@@ -287,7 +288,7 @@ NSError* IdentityMissingError() {
       return;
 
     case CLEAR_DATA:
-      [_performer clearData:_browserState];
+      [_performer clearData:_browserState dispatcher:_dispatcher];
       return;
 
     case SIGN_IN:

@@ -626,6 +626,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
               postSignInAction:postSignInAction
       presentingViewController:self];
+  _authenticationFlow.dispatcher = self.dispatcher;
 
   __weak SyncSettingsCollectionViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {

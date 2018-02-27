@@ -12,6 +12,7 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer_delegate.h"
 
+@protocol BrowsingDataCommands;
 @class ChromeIdentity;
 
 namespace ios {
@@ -61,7 +62,8 @@ class ChromeBrowserState;
 
 // Clears browsing data from |browserState| and sends |didClearData| to the
 // delegate when complete.
-- (void)clearData:(ios::ChromeBrowserState*)browserState;
+- (void)clearData:(ios::ChromeBrowserState*)browserState
+       dispatcher:(id<BrowsingDataCommands>)dispatcher;
 
 // Determines whether the user must decide what to do with |identity|'s browsing
 // data before signing into |browserState|.

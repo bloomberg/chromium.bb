@@ -6,7 +6,6 @@
 
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -19,16 +18,14 @@
 namespace chrome_test_util {
 
 bool ClearBrowsingHistory() {
-  MainController* main_controller = GetMainController();
-  ios::ChromeBrowserState* active_state = GetOriginalBrowserState();
   __block bool did_complete = false;
-  [main_controller
-      removeBrowsingDataFromBrowserState:active_state
-                                    mask:BrowsingDataRemoveMask::REMOVE_HISTORY
-                              timePeriod:browsing_data::TimePeriod::ALL_TIME
-                       completionHandler:^{
-                         did_complete = true;
-                       }];
+  [GetMainController()
+      removeBrowsingDataForBrowserState:GetOriginalBrowserState()
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_HISTORY
+                        completionBlock:^{
+                          did_complete = true;
+                        }];
   return testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout,
                                               ^{
                                                 return did_complete;

@@ -31,7 +31,7 @@
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
+#import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -275,28 +275,18 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                  completion:nil];
 }
 
-- (void)clearData:(ios::ChromeBrowserState*)browserState {
+- (void)clearData:(ios::ChromeBrowserState*)browserState
+       dispatcher:(id<BrowsingDataCommands>)dispatcher {
   DCHECK(!AuthenticationServiceFactory::GetForBrowserState(browserState)
               ->GetAuthenticatedUserEmail());
 
-  // TODO(crbug.com/738881): pass a dispatcher here and remove the use
-  // of -chromeExecuteCommands:.
-  const browsing_data::TimePeriod timePeriod =
-      browsing_data::TimePeriod::ALL_TIME;
-  const BrowsingDataRemoveMask removeDataMask =
-      BrowsingDataRemoveMask::REMOVE_ALL;
-
-  ClearBrowsingDataCommand* command = [[ClearBrowsingDataCommand alloc]
-      initWithBrowserState:browserState->GetOriginalChromeBrowserState()
-                      mask:removeDataMask
-                timePeriod:timePeriod
-           completionBlock:^{
-             [_delegate didClearData];
-           }];
-
-  DCHECK([[UIApplication sharedApplication] keyWindow]);
-  UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
-  [mainWindow chromeExecuteCommand:command];
+  [dispatcher
+      removeBrowsingDataForBrowserState:browserState
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                        completionBlock:^{
+                          [_delegate didClearData];
+                        }];
 }
 
 - (BOOL)shouldHandleMergeCaseForIdentity:(ChromeIdentity*)identity

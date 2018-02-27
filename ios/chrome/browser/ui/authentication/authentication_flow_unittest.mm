@@ -199,7 +199,8 @@ TEST_F(AuthenticationFlowTest, TestSignOutUserChoice) {
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didClearData];
-  }] clearData:browser_state_.get()];
+  }] clearData:browser_state_.get()
+      dispatcher:nil];
 
   [[performer_ expect] signInIdentity:identity1_
                      withHostedDomain:nil
@@ -287,7 +288,8 @@ TEST_F(AuthenticationFlowTest, TestShowManagedConfirmation) {
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didClearData];
-  }] clearData:browser_state_.get()];
+  }] clearData:browser_state_.get()
+      dispatcher:nil];
 
   [[performer_ expect] signInIdentity:identity1_
                      withHostedDomain:@"foo.com"

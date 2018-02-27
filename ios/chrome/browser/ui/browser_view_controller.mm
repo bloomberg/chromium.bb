@@ -1007,6 +1007,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_dispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationSettingsCommands)];
+    // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
+    // passed protocol conforms to, so BrowsingDataCommands is explicitly
+    // dispatched to the endpoint as well. Since this is potentially
+    // fragile, DCHECK that it should still work (if the endpoint is nonnull).
+    DCHECK(!applicationCommandEndpoint ||
+           [applicationCommandEndpoint
+               conformsToProtocol:@protocol(BrowsingDataCommands)]);
+    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+                              forProtocol:@protocol(BrowsingDataCommands)];
 
     _snackbarCoordinator = [[SnackbarCoordinator alloc] init];
     _snackbarCoordinator.dispatcher = _dispatcher;

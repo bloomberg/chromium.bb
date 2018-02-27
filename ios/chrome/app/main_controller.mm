@@ -245,8 +245,9 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 class MainControllerAuthenticationServiceDelegate
     : public AuthenticationServiceDelegate {
  public:
-  explicit MainControllerAuthenticationServiceDelegate(
-      ios::ChromeBrowserState* browser_state);
+  MainControllerAuthenticationServiceDelegate(
+      ios::ChromeBrowserState* browser_state,
+      id<BrowsingDataCommands> dispatcher);
   ~MainControllerAuthenticationServiceDelegate() override;
 
   // AuthenticationServiceDelegate implementation.
@@ -254,36 +255,27 @@ class MainControllerAuthenticationServiceDelegate
 
  private:
   ios::ChromeBrowserState* browser_state_ = nullptr;
+  __weak id<BrowsingDataCommands> dispatcher_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(MainControllerAuthenticationServiceDelegate);
 };
 
 MainControllerAuthenticationServiceDelegate::
     MainControllerAuthenticationServiceDelegate(
-        ios::ChromeBrowserState* browser_state)
-    : browser_state_(browser_state) {}
+        ios::ChromeBrowserState* browser_state,
+        id<BrowsingDataCommands> dispatcher)
+    : browser_state_(browser_state), dispatcher_(dispatcher) {}
 
 MainControllerAuthenticationServiceDelegate::
     ~MainControllerAuthenticationServiceDelegate() = default;
 
 void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     ProceduralBlock completion) {
-  // TODO(crbug.com/738881): pass a dispatcher here and remove the use
-  // of -chromeExecuteCommands:.
-  const browsing_data::TimePeriod timePeriod =
-      browsing_data::TimePeriod::ALL_TIME;
-  const BrowsingDataRemoveMask removeDataMask =
-      BrowsingDataRemoveMask::REMOVE_ALL;
-
-  ClearBrowsingDataCommand* command =
-      [[ClearBrowsingDataCommand alloc] initWithBrowserState:browser_state_
-                                                        mask:removeDataMask
-                                                  timePeriod:timePeriod
-                                             completionBlock:completion];
-
-  DCHECK([[UIApplication sharedApplication] keyWindow]);
-  UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
-  [mainWindow chromeExecuteCommand:command];
+  [dispatcher_
+      removeBrowsingDataForBrowserState:browser_state_
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                        completionBlock:completion];
 }
 
 }  // namespace
@@ -722,7 +714,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
       _mainBrowserState,
       std::make_unique<MainControllerAuthenticationServiceDelegate>(
-          _mainBrowserState));
+          _mainBrowserState, self));
 
   // Send "Chrome Opened" event to the feature_engagement::Tracker on cold
   // start.
@@ -840,15 +832,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
   ios::ChromeBrowserState* otrBrowserState =
       _mainBrowserState->GetOffTheRecordChromeBrowserState();
-  void (^completion)() = ^{
-    [self activateBVCAndMakeCurrentBVCPrimary];
-  };
-  const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
-  [self.browsingDataRemovalController
-      removeBrowsingDataFromBrowserState:otrBrowserState
-                                    mask:mask
-                              timePeriod:browsing_data::TimePeriod::ALL_TIME
-                       completionHandler:completion];
+  [self removeBrowsingDataForBrowserState:otrBrowserState
+                               timePeriod:browsing_data::TimePeriod::ALL_TIME
+                               removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                          completionBlock:^{
+                            [self activateBVCAndMakeCurrentBVCPrimary];
+                          }];
 }
 
 - (void)deleteIncognitoBrowserState {
@@ -1570,23 +1559,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                      completion:nil];
 }
 
-- (void)prepareForBrowsingDataRemoval {
-  // Disables browsing and purges web views.
-  // Must be called only on the main thread.
-  DCHECK([NSThread isMainThread]);
-  [self.mainBVC setActive:NO];
-  [self.otrBVC setActive:NO];
-}
-
-- (void)browsingDataWasRemoved {
-  // Activates browsing and enables web views.
-  // Must be called only on the main thread.
-  DCHECK([NSThread isMainThread]);
-  [self.mainBVC setActive:YES];
-  [self.otrBVC setActive:YES];
-  [self.currentBVC setPrimary:YES];
-}
-
 #pragma mark - ApplicationSettingsCommands
 
 // TODO(crbug.com/779791) : Remove show settings from MainController.
@@ -1675,10 +1647,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       ClearBrowsingDataCommand* command =
           base::mac::ObjCCastStrict<ClearBrowsingDataCommand>(sender);
       DCHECK(![command browserState]->IsOffTheRecord());
-      [self removeBrowsingDataFromBrowserState:[command browserState]
-                                          mask:[command mask]
-                                    timePeriod:[command timePeriod]
-                             completionHandler:[command completionBlock]];
+      [self removeBrowsingDataForBrowserState:[command browserState]
+                                   timePeriod:[command timePeriod]
+                                   removeMask:[command mask]
+                              completionBlock:[command completionBlock]];
       break;
     }
     default:
@@ -2062,29 +2034,38 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.currentBVC;
 }
 
-#pragma mark - Browsing data clearing
+#pragma mark - BrowsingDataCommands
 
-- (void)removeBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                      mask:(BrowsingDataRemoveMask)mask
-                                timePeriod:(browsing_data::TimePeriod)timePeriod
-                         completionHandler:(ProceduralBlock)completionHandler {
+- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+                               timePeriod:(browsing_data::TimePeriod)timePeriod
+                               removeMask:(BrowsingDataRemoveMask)removeMask
+                          completionBlock:(ProceduralBlock)completionBlock {
   // TODO(crbug.com/632772): Remove web usage disabling once
   // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
-    [self prepareForBrowsingDataRemoval];
+  if (IsRemoveDataMaskSet(removeMask,
+                          BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
+    // Disables browsing and purges web views.
+    // Must be called only on the main thread.
+    DCHECK([NSThread isMainThread]);
+    [self.mainBVC setActive:NO];
+    [self.otrBVC setActive:NO];
   }
-  ProceduralBlock browsingDataRemoved = ^{
-    [self browsingDataWasRemoved];
-    if (completionHandler) {
-      completionHandler();
-    }
-  };
+
   [self.browsingDataRemovalController
       removeBrowsingDataFromBrowserState:browserState
-                                    mask:mask
+                                    mask:removeMask
                               timePeriod:timePeriod
-                       completionHandler:browsingDataRemoved];
+                       completionHandler:^{
+                         // Activates browsing and enables web views.
+                         // Must be called only on the main thread.
+                         DCHECK([NSThread isMainThread]);
+                         [self.mainBVC setActive:YES];
+                         [self.otrBVC setActive:YES];
+                         [self.currentBVC setPrimary:YES];
+
+                         if (completionBlock)
+                           completionBlock();
+                       }];
 }
 
 #pragma mark - Navigation Controllers

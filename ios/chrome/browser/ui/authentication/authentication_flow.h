@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer_delegate.h"
 
 @class AuthenticationFlowPerformer;
+@protocol BrowsingDataCommands;
 @class ChromeIdentity;
 @class UIViewController;
 
@@ -56,6 +57,9 @@ class ChromeBrowserState;
 // flag set to NO.
 // Does nothing if the sign in flow is already done.
 - (void)cancelAndDismiss;
+
+// The dispatcher used to clear browsing data.
+@property(nonatomic, weak) id<BrowsingDataCommands> dispatcher;
 
 @end
 

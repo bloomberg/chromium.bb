@@ -34,6 +34,7 @@
 #include "ios/chrome/browser/ui/authentication/signin_account_selector_view_controller.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -330,6 +331,7 @@ enum AuthenticationState {
                                        shouldClearData:_shouldClearData
                                       postSignInAction:POST_SIGNIN_ACTION_NONE
                               presentingViewController:self];
+  _authenticationFlow.dispatcher = self.dispatcher;
   __weak ChromeSigninViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {
     [weakSelf onAccountSigninCompletion:success];
