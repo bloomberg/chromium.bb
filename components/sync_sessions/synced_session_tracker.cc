@@ -4,12 +4,15 @@
 
 #include "components/sync_sessions/synced_session_tracker.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
+
 namespace sync_sessions {
 
 namespace {
@@ -40,6 +43,84 @@ bool IsPresentable(SyncSessionsClient* sessions_client,
     }
   }
   return false;
+}
+
+// Verify that tab IDs appear only once within a session. Intended to prevent
+// http://crbug.com/360822.
+bool IsValidSessionHeader(const sync_pb::SessionHeader& header) {
+  std::set<int> session_tab_ids;
+  for (int i = 0; i < header.window_size(); ++i) {
+    const sync_pb::SessionWindow& window = header.window(i);
+    for (int j = 0; j < window.tab_size(); ++j) {
+      const int tab_id = window.tab(j);
+      bool success = session_tab_ids.insert(tab_id).second;
+      if (!success)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+void PopulateSyncedSessionWindowFromSpecifics(
+    const std::string& session_tag,
+    const sync_pb::SessionWindow& specifics,
+    base::Time mtime,
+    SyncedSessionWindow* synced_session_window,
+    SyncedSessionTracker* tracker) {
+  sessions::SessionWindow* session_window =
+      &synced_session_window->wrapped_window;
+  if (specifics.has_window_id())
+    session_window->window_id.set_id(specifics.window_id());
+  if (specifics.has_selected_tab_index())
+    session_window->selected_tab_index = specifics.selected_tab_index();
+  synced_session_window->window_type = specifics.browser_type();
+  if (specifics.has_browser_type()) {
+    if (specifics.browser_type() ==
+        sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
+      session_window->type = sessions::SessionWindow::TYPE_TABBED;
+    } else {
+      // Note: custom tabs are treated like popup windows on restore, as you can
+      // restore a custom tab on a platform that doesn't support them.
+      session_window->type = sessions::SessionWindow::TYPE_POPUP;
+    }
+  }
+  session_window->timestamp = mtime;
+  session_window->tabs.clear();
+  for (int i = 0; i < specifics.tab_size(); i++) {
+    SessionID::id_type tab_id = specifics.tab(i);
+    tracker->PutTabInWindow(session_tag, session_window->window_id.id(),
+                            tab_id);
+  }
+}
+
+void PopulateSyncedSessionFromSpecifics(
+    const std::string& session_tag,
+    const sync_pb::SessionHeader& header_specifics,
+    base::Time mtime,
+    SyncedSession* synced_session,
+    SyncedSessionTracker* tracker) {
+  if (header_specifics.has_client_name())
+    synced_session->session_name = header_specifics.client_name();
+  if (header_specifics.has_device_type()) {
+    synced_session->device_type = header_specifics.device_type();
+  }
+  synced_session->modified_time =
+      std::max(mtime, synced_session->modified_time);
+
+  // Process all the windows and their tab information.
+  int num_windows = header_specifics.window_size();
+  DVLOG(1) << "Populating " << session_tag << " with " << num_windows
+           << " windows.";
+
+  for (int i = 0; i < num_windows; ++i) {
+    const sync_pb::SessionWindow& window_s = header_specifics.window(i);
+    SessionID::id_type window_id = window_s.window_id();
+    tracker->PutWindowInSession(session_tag, window_id);
+    PopulateSyncedSessionWindowFromSpecifics(
+        session_tag, window_s, synced_session->modified_time,
+        synced_session->windows[window_id].get(), tracker);
+  }
 }
 
 }  // namespace
@@ -490,6 +571,86 @@ void SyncedSessionTracker::Clear() {
 
   local_tab_pool_.Clear();
   local_session_tag_.clear();
+}
+
+void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
+                                base::Time modification_time,
+                                SyncedSessionTracker* tracker) {
+  std::string session_tag = specifics.session_tag();
+  SyncedSession* session = tracker->GetSession(session_tag);
+  if (specifics.has_header()) {
+    // Read in the header data for this session. Header data is
+    // essentially a collection of windows, each of which has an ordered id list
+    // for their tabs.
+
+    if (!IsValidSessionHeader(specifics.header())) {
+      LOG(WARNING) << "Ignoring session node with invalid header "
+                   << "and tag " << session_tag << ".";
+      return;
+    }
+
+    // Load (or create) the SyncedSession object for this client.
+    const sync_pb::SessionHeader& header = specifics.header();
+
+    // Reset the tab/window tracking for this session (must do this before
+    // we start calling PutWindowInSession and PutTabInWindow so that all
+    // unused tabs/windows get cleared by the CleanupSession(...) call).
+    tracker->ResetSessionTracking(session_tag);
+
+    PopulateSyncedSessionFromSpecifics(session_tag, header, modification_time,
+                                       session, tracker);
+
+    // Delete any closed windows and unused tabs as necessary.
+    tracker->CleanupSession(session_tag);
+  } else if (specifics.has_tab()) {
+    const sync_pb::SessionTab& tab_s = specifics.tab();
+    SessionID::id_type tab_id = tab_s.tab_id();
+    DVLOG(1) << "Populating " << session_tag << "'s tab id " << tab_id
+             << " from node " << specifics.tab_node_id();
+
+    // Ensure the tracker is aware of the tab node id. Deleting foreign sessions
+    // requires deleting all relevant tab nodes, and it's easier to track the
+    // tab node ids themselves separately from the tab ids.
+    //
+    // Note that TabIDs are not stable across restarts of a client. Consider
+    // this example with two tabs:
+    //
+    // http://a.com  TabID1 --> NodeIDA
+    // http://b.com  TabID2 --> NodeIDB
+    //
+    // After restart, tab ids are reallocated. e.g, one possibility:
+    // http://a.com TabID2 --> NodeIDA
+    // http://b.com TabID1 --> NodeIDB
+    //
+    // If that happened on a remote client, here we will see an update to
+    // TabID1 with tab_node_id changing from NodeIDA to NodeIDB, and TabID2
+    // with tab_node_id changing from NodeIDB to NodeIDA.
+    //
+    // We can also wind up here if we created this tab as an out-of-order
+    // update to the header node for this session before actually associating
+    // the tab itself, so the tab node id wasn't available at the time and
+    // is currently kInvalidTabNodeID.
+    //
+    // In both cases, we can safely throw it into the set of node ids.
+    tracker->OnTabNodeSeen(session_tag, specifics.tab_node_id());
+    sessions::SessionTab* tab = tracker->GetTab(session_tag, tab_id);
+    if (!tab->timestamp.is_null() && tab->timestamp > modification_time) {
+      DVLOG(1) << "Ignoring " << session_tag << "'s session tab " << tab_id
+               << " with earlier modification time: " << tab->timestamp
+               << " vs " << modification_time;
+      return;
+    }
+
+    // Update SessionTab based on protobuf.
+    tab->SetFromSyncData(tab_s, modification_time);
+
+    // Update the last modified time.
+    if (session->modified_time < modification_time)
+      session->modified_time = modification_time;
+  } else {
+    LOG(WARNING) << "Ignoring session node with missing header/tab "
+                 << "fields and tag " << session_tag << ".";
+  }
 }
 
 }  // namespace sync_sessions

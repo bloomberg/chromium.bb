@@ -40,10 +40,8 @@ class SyncPrefs;
 }  // namespace syncer
 
 namespace sync_pb {
-class SessionHeader;
 class SessionSpecifics;
 class SessionTab;
-class SessionWindow;
 }  // namespace sync_pb
 
 namespace extensions {
@@ -107,9 +105,6 @@ class SessionsSyncManager : public syncer::SyncableService,
  private:
   friend class extensions::ExtensionSessionsTest;
   friend class SessionsSyncManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSyncedSession);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionWindow);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SetSessionTabFromDelegate);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SetSessionTabFromDelegateNavigationIndex);
@@ -123,12 +118,9 @@ class SessionsSyncManager : public syncer::SyncableService,
                            ProcessForeignDeleteTabsWithReusedNodeIds);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SaveUnassociatedNodesForReassociation);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesCorruptNode);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesBadHash);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            MergeLocalSessionExistingTabs);
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
-                           CheckPrerenderedWebContentsSwap);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            AssociateWindowsDontReloadTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SwappedOutOnRestore);
@@ -136,11 +128,6 @@ class SessionsSyncManager : public syncer::SyncableService,
                            ProcessRemoteDeleteOfLocalSession);
 
   void InitializeCurrentMachineTag(const std::string& cache_guid);
-
-  // Load and add window or tab data from synced specifics to our internal
-  // tracking.
-  void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
-                                  const base::Time& modification_time);
 
   // Returns true if |sync_data| contained a header node for the current
   // machine, false otherwise. |new_changes| is a link to the SyncChange
@@ -175,22 +162,6 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Same as above but it also notifies the processor.
   void DeleteForeignSessionFromUI(const std::string& tag);
-
-  // Used to populate a session header from the session specifics header
-  // provided.
-  void PopulateSyncedSessionFromSpecifics(
-      const std::string& session_tag,
-      const sync_pb::SessionHeader& header_specifics,
-      base::Time mtime,
-      SyncedSession* synced_session);
-
-  // Builds |synced_session_window| from the session specifics window
-  // provided and updates the SessionTracker with foreign session data created.
-  void PopulateSyncedSessionWindowFromSpecifics(
-      const std::string& session_tag,
-      const sync_pb::SessionWindow& specifics,
-      base::Time mtime,
-      SyncedSessionWindow* synced_session_window);
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should
@@ -257,10 +228,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   // when re-starting succeeds.
   // See |local_tab_pool_out_of_sync_|.
   bool RebuildAssociations();
-
-  // Validates the content of a SessionHeader protobuf.
-  // Returns false if validation fails.
-  static bool IsValidSessionHeader(const sync_pb::SessionHeader& header);
 
   // Calculates the tag hash from a specifics object. Calculating the hash is
   // something we typically want to avoid doing in the model type like this.
