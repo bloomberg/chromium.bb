@@ -1045,8 +1045,10 @@ public class VrShellDelegate
                 return;
             }
             instance.onAutopresentIntent();
-        } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_LAUNCH_INTENT)
-                && isVrShellEnabled(instance.mVrSupportLevel)) {
+        } else if (isVrShellEnabled(instance.mVrSupportLevel)
+                && (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_LAUNCH_INTENT)
+                           || ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.VR_ICON_IN_DAYDREAM_HOME))) {
             if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: vr");
             instance.onVrIntent();
         } else {
