@@ -81,9 +81,9 @@ struct ArcNotificationData {
   // Title of notification
   string title;
   // DEPRECATED: Mimetype of |icon_data|
-  string deprecated_icon_mimetype;
+  string? deprecated_icon_mimetype;
   // DEPRECATED: Binary data of the icon
-  array<uint8> deprecated_icon_data;
+  array<uint8>? deprecated_icon_data;
   // Priority of notification
   ArcNotificationPriority priority;
   // Timestamp related to the notification
@@ -93,7 +93,7 @@ struct ArcNotificationData {
   // DEPRECATED: The maximum value of progress.
   int32 deprecated_progress_max;
   // DEPRECATED: Action buttons
-  array<DeprecatedArcNotificationButton> deprecated_buttons;
+  array<DeprecatedArcNotificationButton>? deprecated_buttons;
   // Flag if the notification has FLAG_NO_CLEAR.
   [MinVersion=1]
   bool no_clear;
