@@ -112,16 +112,39 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     std::vector<const ReportingReport*> reports;
     cache()->GetReports(&reports);
 
+    // First determine which origins we're allowed to upload reports about.
+    std::set<url::Origin> origins;
+    for (const ReportingReport* report : reports) {
+      origins.insert(url::Origin::Create(report->url));
+    }
+    delegate()->CanSendReports(
+        std::move(origins),
+        base::BindOnce(&ReportingDeliveryAgentImpl::OnSendPermissionsChecked,
+                       weak_factory_.GetWeakPtr(), std::move(reports)));
+  }
+
+  void OnSendPermissionsChecked(std::vector<const ReportingReport*> reports,
+                                std::set<url::Origin> allowed_origins) {
+    std::vector<const ReportingReport*> disallowed_reports;
+
     // Sort reports into (origin, group) buckets.
     std::map<OriginGroup, std::vector<const ReportingReport*>>
         origin_group_reports;
     for (const ReportingReport* report : reports) {
       url::Origin origin = url::Origin::Create(report->url);
-      if (!delegate()->CanSendReport(origin))
+      if (allowed_origins.find(origin) == allowed_origins.end()) {
+        disallowed_reports.push_back(report);
         continue;
-      OriginGroup origin_group(url::Origin::Create(report->url), report->group);
+      }
+      OriginGroup origin_group(origin, report->group);
       origin_group_reports[origin_group].push_back(report);
     }
+
+    // Remove from the cache any reports that we're not allowed to upload.
+    cache()->RemoveReports(
+        disallowed_reports,
+        ReportingReport::Outcome::ERASED_NO_BACKGROUND_SYNC_PERMISSION);
+    disallowed_reports.clear();
 
     // Find endpoint for each (origin, group) bucket and sort reports into
     // endpoint buckets. Don't allow concurrent deliveries to the same (origin,

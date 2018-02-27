@@ -262,14 +262,16 @@ bool LayeredNetworkDelegate::OnCanQueueReportingReport(
 void LayeredNetworkDelegate::OnCanQueueReportingReportInternal(
     const url::Origin& origin) const {}
 
-bool LayeredNetworkDelegate::OnCanSendReportingReport(
-    const url::Origin& origin) const {
-  OnCanSendReportingReportInternal(origin);
-  return nested_network_delegate_->CanSendReportingReport(origin);
+void LayeredNetworkDelegate::OnCanSendReportingReports(
+    std::set<url::Origin> origins,
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
+  OnCanSendReportingReportsInternal(origins);
+  nested_network_delegate_->CanSendReportingReports(std::move(origins),
+                                                    std::move(result_callback));
 }
 
-void LayeredNetworkDelegate::OnCanSendReportingReportInternal(
-    const url::Origin& origin) const {}
+void LayeredNetworkDelegate::OnCanSendReportingReportsInternal(
+    const std::set<url::Origin>& origins) const {}
 
 bool LayeredNetworkDelegate::OnCanSetReportingClient(
     const url::Origin& origin,

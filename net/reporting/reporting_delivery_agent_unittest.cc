@@ -126,6 +126,35 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   EXPECT_TRUE(pending_uploads().empty());
 }
 
+TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
+  // This mimics the check that is controlled by the BACKGROUND_SYNC permission
+  // in a real browser profile.
+  context()->test_delegate()->set_disallow_report_uploads(true);
+
+  static const int kAgeMillis = 12345;
+
+  base::DictionaryValue body;
+  body.SetString("key", "value");
+
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(),
+                     tick_clock()->NowTicks(), 0);
+
+  tick_clock()->Advance(base::TimeDelta::FromMilliseconds(kAgeMillis));
+
+  EXPECT_TRUE(delivery_timer()->IsRunning());
+  delivery_timer()->Fire();
+
+  // We should not try to upload the report, since we weren't given permission
+  // for this origin.
+  EXPECT_TRUE(pending_uploads().empty());
+
+  // Disallowed reports should have been removed from the cache.
+  std::vector<const ReportingReport*> reports;
+  cache()->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
+}
+
 TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
   static const url::Origin kDifferentOrigin =
       url::Origin::Create(GURL("https://origin2/"));

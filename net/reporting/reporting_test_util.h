@@ -6,6 +6,7 @@
 #define NET_REPORTING_REPORTING_TEST_UTIL_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -89,9 +90,15 @@ class TestReportingDelegate : public ReportingDelegate {
 
   ~TestReportingDelegate() override;
 
+  void set_disallow_report_uploads(bool disallow_report_uploads) {
+    disallow_report_uploads_ = disallow_report_uploads;
+  }
+
   bool CanQueueReport(const url::Origin& origin) const override;
 
-  bool CanSendReport(const url::Origin& origin) const override;
+  void CanSendReports(std::set<url::Origin> origins,
+                      base::OnceCallback<void(std::set<url::Origin>)>
+                          result_callback) const override;
 
   bool CanSetClient(const url::Origin& origin,
                     const GURL& endpoint) const override;
@@ -104,6 +111,8 @@ class TestReportingDelegate : public ReportingDelegate {
                  const JsonFailureCallback& failure_callback) const override;
 
  private:
+  bool disallow_report_uploads_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestReportingDelegate);
 };
 

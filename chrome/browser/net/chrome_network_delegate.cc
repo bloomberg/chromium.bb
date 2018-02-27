@@ -532,13 +532,24 @@ bool ChromeNetworkDelegate::OnCanQueueReportingReport(
                                                  origin.GetURL());
 }
 
-bool ChromeNetworkDelegate::OnCanSendReportingReport(
-    const url::Origin& origin) const {
-  if (!cookie_settings_)
-    return true;
+void ChromeNetworkDelegate::OnCanSendReportingReports(
+    std::set<url::Origin> origins,
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
+  if (!cookie_settings_) {
+    std::move(result_callback).Run(std::move(origins));
+    return;
+  }
 
-  return cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
-                                                 origin.GetURL());
+  for (auto it = origins.begin(); it != origins.end();) {
+    const auto& origin = *it;
+    if (!cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
+                                                 origin.GetURL())) {
+      origins.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+  std::move(result_callback).Run(std::move(origins));
 }
 
 bool ChromeNetworkDelegate::OnCanSetReportingClient(

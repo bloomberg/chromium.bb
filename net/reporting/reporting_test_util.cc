@@ -118,8 +118,12 @@ bool TestReportingDelegate::CanQueueReport(const url::Origin& origin) const {
   return true;
 }
 
-bool TestReportingDelegate::CanSendReport(const url::Origin& origin) const {
-  return true;
+void TestReportingDelegate::CanSendReports(
+    std::set<url::Origin> origins,
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
+  if (disallow_report_uploads_)
+    origins.clear();
+  std::move(result_callback).Run(std::move(origins));
 }
 
 bool TestReportingDelegate::CanSetClient(const url::Origin& origin,

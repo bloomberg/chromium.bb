@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -118,7 +119,9 @@ class NET_EXPORT NetworkDelegate {
       const GURL& referrer_url) const;
 
   bool CanQueueReportingReport(const url::Origin& origin) const;
-  bool CanSendReportingReport(const url::Origin& origin) const;
+  void CanSendReportingReports(
+      std::set<url::Origin> origins,
+      base::OnceCallback<void(std::set<url::Origin>)> result_callback) const;
   bool CanSetReportingClient(const url::Origin& origin,
                              const GURL& endpoint) const;
   bool CanUseReportingClient(const url::Origin& origin,
@@ -310,7 +313,10 @@ class NET_EXPORT NetworkDelegate {
 
   virtual bool OnCanQueueReportingReport(const url::Origin& origin) const = 0;
 
-  virtual bool OnCanSendReportingReport(const url::Origin& origin) const = 0;
+  virtual void OnCanSendReportingReports(
+      std::set<url::Origin> origins,
+      base::OnceCallback<void(std::set<url::Origin>)> result_callback)
+      const = 0;
 
   virtual bool OnCanSetReportingClient(const url::Origin& origin,
                                        const GURL& endpoint) const = 0;

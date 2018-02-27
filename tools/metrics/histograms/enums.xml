@@ -37775,6 +37775,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Erased: browsing data removed"/>
   <int value="8" label="Erased: Reporting shut down"/>
   <int value="9" label="Delivered"/>
+  <int value="10" label="Discarded: Background sync not allowed"/>
 </enum>
 
 <enum name="ReportProcessingResult">
