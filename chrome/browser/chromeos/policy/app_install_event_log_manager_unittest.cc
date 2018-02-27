@@ -170,14 +170,16 @@ class AppInstallEventLogManagerTest : public testing::Test {
     event_.set_timestamp(event_.timestamp() + 1);
   }
 
-  void AddLogEntryForAllApps() {
-    for (const auto& package_name : packages_) {
+  void AddLogEntryForsetOfApps(const std::set<std::string>& packages) {
+    for (const auto& package_name : packages) {
       events_[package_name].push_back(event_);
     }
-    manager_->Add(packages_, event_);
+    manager_->Add(packages, event_);
     FlushNonDelayedTasks();
     event_.set_timestamp(event_.timestamp() + 1);
   }
+
+  void AddLogEntryForAllApps() { AddLogEntryForsetOfApps(packages_); }
 
   void ExpectUploadAndCaptureCallback(
       CloudPolicyClient::StatusCallback* callback) {
@@ -261,7 +263,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogManagerTest);
 };
 
-// Create a manager with an empty log. Verify that no upload is scheduled and no
+// Create a manager with an empty log. Verify that no store is scheduled and no
 // upload occurs.
 TEST_F(AppInstallEventLogManagerTest, CreateEmpty) {
   EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);
@@ -407,6 +409,20 @@ TEST_F(AppInstallEventLogManagerTest, AddForMultipleApps) {
   VerifyAndDeleteLogFile();
 
   EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);
+  FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(base::PathExists(log_file_path_));
+}
+
+// Wait twenty minutes. Add an identical log entry for an empty set of apps.
+// Verify that no store is scheduled and no upload occurs.
+TEST_F(AppInstallEventLogManagerTest, AddForZeroApps) {
+  EXPECT_CALL(cloud_policy_client_, UploadAppInstallReport(_, _)).Times(0);
+  CreateManager();
+
+  const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
+  FastForwardTo(offset);
+  AddLogEntryForsetOfApps({});
+
   FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(base::PathExists(log_file_path_));
 }
