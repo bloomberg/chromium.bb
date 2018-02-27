@@ -56,6 +56,7 @@
         "ash_pref_connector": [ "pref_connector" ],
         "catalog": [ "directory" ],
         "local_state": [ "pref_client" ],
+        "quick_launch_app": [ "mash:launchable" ],
         "ui": [ "display_dev", "window_manager", "video_detector" ],
         "touch_hud_app": [ "mash:launchable" ],
         "data_decoder": [ "image_decoder" ]
