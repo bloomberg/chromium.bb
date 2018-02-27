@@ -6,13 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/viz/common/constants.h"
 
 namespace switches {
-namespace {
-
-constexpr uint32_t kDefaultActivationDeadlineInFrames = 4;
-
-}  // namespace
 
 // The default number of the BeginFrames to wait to activate a surface with
 // dependencies.
@@ -43,7 +39,7 @@ base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
       command_line->GetSwitchValueASCII(
           switches::kDeadlineToSynchronizeSurfaces);
   if (deadline_to_synchronize_surfaces_string.empty())
-    return kDefaultActivationDeadlineInFrames;
+    return viz::kDefaultActivationDeadlineInFrames;
 
   uint32_t activation_deadline_in_frames;
   if (!base::StringToUint(deadline_to_synchronize_surfaces_string,

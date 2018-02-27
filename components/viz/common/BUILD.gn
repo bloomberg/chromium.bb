@@ -33,6 +33,8 @@ viz_component("common") {
   defines = [ "VIZ_COMMON_IMPLEMENTATION" ]
 
   sources = [
+    "constants.cc",
+    "constants.h",
     "display/renderer_settings.cc",
     "display/renderer_settings.h",
     "features.cc",
