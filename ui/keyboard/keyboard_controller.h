@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
@@ -246,6 +247,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Reports error histogram in case lingering in an intermediate state.
   void ReportLingeringState();
 
+  // Shows the keyboard if the last time the keyboard was hidden was a small
+  // time ago.
+  void ShowKeyboardIfWithinTransientBlurThreshold();
+
   void SetContainerBehaviorInternal(const ContainerType type);
 
   std::unique_ptr<KeyboardUI> ui_;
@@ -277,6 +282,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardControllerState state_;
 
   NotificationManager notification_manager_;
+
+  base::Time time_of_last_blur_ = base::Time::UnixEpoch();
 
   static KeyboardController* instance_;
 

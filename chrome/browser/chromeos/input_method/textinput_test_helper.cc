@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -157,6 +158,13 @@ void TextInputTestHelper::WaitForSurroundingTextChanged(
   while (expected_text != surrounding_text_ ||
          expected_selection != selection_range_)
     content::RunMessageLoop();
+  waiting_type_ = NO_WAIT;
+}
+
+void TextInputTestHelper::WaitForPassageOfTimeMillis(const int milliseconds) {
+  CHECK_EQ(NO_WAIT, waiting_type_);
+  waiting_type_ = WAIT_ON_PASSAGE_OF_TIME;
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(milliseconds));
   waiting_type_ = NO_WAIT;
 }
 
