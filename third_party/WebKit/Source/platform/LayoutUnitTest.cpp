@@ -287,4 +287,12 @@ TEST(LayoutUnitTest, UnaryMinus) {
   EXPECT_EQ(LayoutUnit::Max(), -LayoutUnit::Min());
 }
 
+TEST(LayoutUnitTest, LayoutUnitPlusPlus) {
+  EXPECT_EQ(LayoutUnit(-1), LayoutUnit(-2)++);
+  EXPECT_EQ(LayoutUnit(0), LayoutUnit(-1)++);
+  EXPECT_EQ(LayoutUnit(1), LayoutUnit(0)++);
+  EXPECT_EQ(LayoutUnit(2), LayoutUnit(1)++);
+  EXPECT_EQ(LayoutUnit::Max(), LayoutUnit(LayoutUnit::Max())++);
+}
+
 }  // namespace blink

@@ -125,7 +125,7 @@ class LayoutUnit {
   operator bool() const { return value_; }
 
   LayoutUnit operator++(int) {
-    value_ += kFixedPointDenominator;
+    value_ = ClampAdd(value_, kFixedPointDenominator);
     return *this;
   }
 
