@@ -15,10 +15,10 @@ class ServiceWorkerProviderHost;
 class URLLoaderFactoryGetter;
 
 // S13nServiceWorker:
-// Created per one controller worker for script loading (only during
+// Created per one running service worker for loading its scripts (only during
 // installation, eventually). This is kept alive while
-// ServiceWorkerNetworkProvider in the renderer process is alive.
-// Used only when IsServicificationEnabled is true.
+// ServiceWorkerNetworkProvider in the renderer process is alive.  Used only
+// when IsServicificationEnabled is true.
 class ServiceWorkerScriptURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
