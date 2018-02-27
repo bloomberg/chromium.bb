@@ -38,7 +38,8 @@ struct PaymentInstrument {
 // and PaymentManager.idl in render side. This interface is implemented
 // by payment_manager.cc and runs in browser side.
 interface PaymentManager {
-  Init(string service_worker_script_url, string service_worker_scope);
+  // |context_url| is the url of the web page creating this interface.
+  Init(string context_url, string service_worker_scope);
   DeletePaymentInstrument(string instrument_key)
       => (PaymentHandlerStatus status);
   GetPaymentInstrument(string instrument_key)
