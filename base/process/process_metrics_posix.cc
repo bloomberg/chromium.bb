@@ -7,12 +7,15 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 #include "base/logging.h"
 #include "build/build_config.h"
+
+#if !defined(OS_FUCHSIA)
+#include <sys/resource.h>
+#endif
 
 #if defined(OS_MACOSX)
 #include <malloc/malloc.h>

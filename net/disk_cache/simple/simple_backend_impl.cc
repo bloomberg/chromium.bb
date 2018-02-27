@@ -9,7 +9,7 @@
 #include <functional>
 #include <limits>
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 #include <sys/resource.h>
 #endif
 
