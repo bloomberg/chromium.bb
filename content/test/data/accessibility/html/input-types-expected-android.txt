@@ -1,49 +1,49 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
 ++++android.view.View
-++++++android.view.View clickable name='Default:'
-++++++android.widget.EditText editable_text focusable input_type=1
+++++++android.view.View name='Default: '
+++++++android.widget.EditText clickable editable_text focusable name='Default: ' input_type=1
 ++++android.view.View
-++++++android.view.View clickable name='Button:'
-++++++android.widget.Button focusable
-++++android.widget.CheckBox checkable clickable focusable name='Checkbox: '
+++++++android.view.View name='Button: '
+++++++android.widget.Button role_description='button' clickable focusable name='Button: '
+++++android.widget.CheckBox role_description='checkbox' checkable clickable focusable name='Checkbox: '
 ++++android.view.View
-++++++android.view.View clickable name='Color:'
-++++++android.widget.Spinner clickable focusable name='#000000'
+++++++android.view.View name='Color: '
+++++++android.widget.Spinner role_description='color picker' clickable focusable name='#000000'
 ++++android.view.View
-++++++android.view.View clickable name='Email:'
-++++++android.widget.EditText editable_text focusable input_type=209
+++++++android.view.View name='Email: '
+++++++android.widget.EditText clickable editable_text focusable name='Email: ' input_type=209
 ++++android.view.View
-++++++android.view.View clickable name='File:'
-++++++android.widget.Button clickable focusable name='Choose File'
+++++++android.view.View name='File: '
+++++++android.widget.Button role_description='button' clickable focusable name='File: '
 ++++android.view.View
-++++++android.view.View clickable name='Image:'
-++++++android.widget.Button focusable
+++++++android.view.View name='Image: '
+++++++android.widget.Button role_description='button' clickable focusable name='Image: '
 ++++android.view.View
-++++++android.view.View clickable name='Number:'
-++++++android.widget.EditText editable_text focusable input_type=2
+++++++android.view.View name='Number: '
+++++++android.widget.EditText role_description='spin button' clickable editable_text focusable name='Number: ' input_type=2
 ++++android.view.View
-++++++android.view.View clickable name='Password:'
-++++++android.widget.EditText editable_text focusable password input_type=225
-++++android.widget.RadioButton checkable clickable focusable name='Radio: '
+++++++android.view.View name='Password: '
+++++++android.widget.EditText clickable editable_text focusable password name='Password: ' input_type=225
+++++android.widget.RadioButton role_description='radio button' checkable clickable focusable name='Radio: '
 ++++android.view.View
-++++++android.view.View clickable name='Range:'
-++++++android.widget.SeekBar clickable focusable range name='50' item_index=50 item_count=100 range_max=100 range_current_value=50
+++++++android.view.View name='Range: '
+++++++android.widget.SeekBar role_description='slider' clickable focusable range name='Range: ' item_index=50 item_count=100 range_max=100 range_current_value=50
 ++++android.view.View
-++++++android.view.View clickable name='Reset:'
-++++++android.widget.Button clickable focusable name='Reset'
+++++++android.view.View name='Reset: '
+++++++android.widget.Button role_description='button' clickable focusable name='Reset: '
 ++++android.view.View
-++++++android.view.View clickable name='Search:'
-++++++android.widget.EditText editable_text focusable input_type=1
+++++++android.view.View name='Search: '
+++++++android.widget.EditText clickable editable_text focusable name='Search: ' input_type=1
 ++++android.view.View
-++++++android.view.View clickable name='Submit:'
-++++++android.widget.Button clickable focusable name='Submit'
+++++++android.view.View name='Submit: '
+++++++android.widget.Button role_description='button' clickable focusable name='Submit: '
 ++++android.view.View
-++++++android.view.View clickable name='Tel:'
-++++++android.widget.EditText editable_text focusable input_type=3
+++++++android.view.View name='Tel: '
+++++++android.widget.EditText clickable editable_text focusable name='Tel: ' input_type=3
 ++++android.view.View
-++++++android.view.View clickable name='Text:'
-++++++android.widget.EditText editable_text focusable input_type=1
+++++++android.view.View name='Text: '
+++++++android.widget.EditText clickable editable_text focusable name='Text: ' input_type=1
 ++++android.view.View
-++++++android.view.View clickable name='Url:'
-++++++android.widget.EditText editable_text focusable input_type=17
+++++++android.view.View name='Url: '
+++++++android.widget.EditText clickable editable_text focusable name='Url: ' input_type=17
