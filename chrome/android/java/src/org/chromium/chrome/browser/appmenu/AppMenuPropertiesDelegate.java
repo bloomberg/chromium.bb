@@ -73,9 +73,6 @@ public class AppMenuPropertiesDelegate {
 
     protected BookmarkBridge mBookmarkBridge;
 
-    @Nullable
-    private AppMenuIconRowFooter mAppMenuIconRowFooter;
-
     public AppMenuPropertiesDelegate(ChromeActivity activity) {
         mActivity = activity;
     }
@@ -260,21 +257,6 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
-     * Called after the menu has been shown to finish initializing views.
-     * @param menu The {@link AppMenu} that was shown.
-     */
-    public void onShow(final AppMenu menu) {
-        View footerView = menu.getFooterView();
-        if (!(footerView instanceof AppMenuIconRowFooter)) {
-            mAppMenuIconRowFooter = null;
-            return;
-        }
-
-        mAppMenuIconRowFooter = (AppMenuIconRowFooter) footerView;
-        mAppMenuIconRowFooter.initialize(mActivity, menu, mBookmarkBridge);
-    }
-
-    /**
      * Sets the visibility and labels of the "Add to Home screen" and "Open WebAPK" menu items.
      */
     protected void prepareAddToHomescreenMenuItem(
@@ -326,8 +308,6 @@ public class AppMenuPropertiesDelegate {
                             : resources.getInteger(R.integer.reload_button_level_reload));
             mReloadMenuItem.setTitle(isLoading
                     ? R.string.accessibility_btn_stop_loading : R.string.accessibility_btn_refresh);
-        } else if (mAppMenuIconRowFooter != null) {
-            mAppMenuIconRowFooter.loadingStateChanged(isLoading);
         }
     }
 
@@ -336,7 +316,6 @@ public class AppMenuPropertiesDelegate {
      */
     public void onMenuDismissed() {
         mReloadMenuItem = null;
-        mAppMenuIconRowFooter = null;
     }
 
     // Set enabled to be |enable| for all MenuItems with |id| in |menu|.
