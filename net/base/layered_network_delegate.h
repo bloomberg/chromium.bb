@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 
 #include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
@@ -90,7 +91,9 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   bool OnCanQueueReportingReport(const url::Origin& origin) const final;
 
-  bool OnCanSendReportingReport(const url::Origin& origin) const final;
+  void OnCanSendReportingReports(std::set<url::Origin> origins,
+                                 base::OnceCallback<void(std::set<url::Origin>)>
+                                     result_callback) const final;
 
   bool OnCanSetReportingClient(const url::Origin& origin,
                                const GURL& endpoint) const final;
@@ -173,8 +176,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   virtual void OnCanQueueReportingReportInternal(
       const url::Origin& origin) const;
 
-  virtual void OnCanSendReportingReportInternal(
-      const url::Origin& origin) const;
+  virtual void OnCanSendReportingReportsInternal(
+      const std::set<url::Origin>& origins) const;
 
   virtual void OnCanSetReportingClientInternal(const url::Origin& origin,
                                                const GURL& endpoint) const;

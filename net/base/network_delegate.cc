@@ -188,9 +188,11 @@ bool NetworkDelegate::CanQueueReportingReport(const url::Origin& origin) const {
   return OnCanQueueReportingReport(origin);
 }
 
-bool NetworkDelegate::CanSendReportingReport(const url::Origin& origin) const {
+void NetworkDelegate::CanSendReportingReports(
+    std::set<url::Origin> origins,
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnCanSendReportingReport(origin);
+  OnCanSendReportingReports(std::move(origins), std::move(result_callback));
 }
 
 bool NetworkDelegate::CanSetReportingClient(const url::Origin& origin,

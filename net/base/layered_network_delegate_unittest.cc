@@ -343,8 +343,8 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_queue_reporting_report_count"]);
   }
 
-  void OnCanSendReportingReportInternal(
-      const url::Origin& origin) const override {
+  void OnCanSendReportingReportsInternal(
+      const std::set<url::Origin>& origins) const override {
     ++(*counters_)["on_can_send_reporting_report_count"];
     EXPECT_EQ(1, (*counters_)["on_can_send_reporting_report_count"]);
   }
