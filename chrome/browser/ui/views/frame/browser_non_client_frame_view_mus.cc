@@ -90,9 +90,6 @@ BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(nullptr),
-#if defined(FRAME_AVATAR_BUTTON)
-      profile_switcher_(this),
-#endif
       tab_strip_(nullptr) {
 }
 
@@ -164,14 +161,6 @@ int BrowserNonClientFrameViewMus::GetThemeBackgroundXInset() const {
 void BrowserNonClientFrameViewMus::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
-}
-
-views::View* BrowserNonClientFrameViewMus::GetProfileSwitcherView() const {
-#if defined(FRAME_AVATAR_BUTTON)
-  return profile_switcher_.view();
-#else
-  return nullptr;
-#endif
 }
 
 void BrowserNonClientFrameViewMus::UpdateClientArea() {
@@ -259,8 +248,9 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
   int hit_test = HTCLIENT;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (hit_test == HTCAPTION && profile_switcher_.view() &&
-      ConvertedHitTest(this, profile_switcher_.view(), point)) {
+  views::View* profile_switcher_view = GetProfileSwitcherView();
+  if (hit_test == HTCAPTION && profile_switcher_view &&
+      ConvertedHitTest(this, profile_switcher_view, point)) {
     return HTCLIENT;
   }
 #endif
@@ -314,7 +304,7 @@ void BrowserNonClientFrameViewMus::Layout() {
     LayoutIncognitoButton();
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (profile_switcher_.view())
+  if (GetProfileSwitcherView())
     LayoutProfileSwitcher();
 #endif
 
@@ -370,24 +360,12 @@ gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
 // BrowserNonClientFrameViewMus, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
+AvatarButtonStyle BrowserNonClientFrameViewMus::GetAvatarButtonStyle() const {
 #if defined(FRAME_AVATAR_BUTTON)
-  if (browser_view()->IsRegularOrGuestSession()) {
-    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
-    return;
-  }
+  return AvatarButtonStyle::NATIVE;
+#else
+  return AvatarButtonStyle::NONE;
 #endif
-  Browser* browser = browser_view()->browser();
-
-  // Similar logic as in BrowserNonClientFrameViewAsh::UpdateProfileIcons (minus
-  // the multi-profile part). That is, no profile indicator for non-tabbed and
-  // non-app browser window, or regular/guest user browser window.
-  if (!browser->is_type_tabbed() && !browser->is_app())
-    return;
-  if (browser_view()->IsRegularOrGuestSession())
-    return;
-
-  UpdateProfileIndicatorIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,9 +395,10 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   int right_inset = kTabstripRightSpacing + frame_right_insets;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (profile_switcher_.view()) {
-    right_inset += kAvatarButtonOffset +
-                   profile_switcher_.view()->GetPreferredSize().width();
+  views::View* profile_switcher_view = GetProfileSwitcherView();
+  if (profile_switcher_view) {
+    right_inset +=
+        kAvatarButtonOffset + profile_switcher_view->GetPreferredSize().width();
   }
 #endif
 
@@ -435,10 +414,11 @@ bool BrowserNonClientFrameViewMus::UsePackagedAppHeaderStyle() const {
 
 void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
-  gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
+  views::View* profile_switcher_view = GetProfileSwitcherView();
+  gfx::Size button_size = profile_switcher_view->GetPreferredSize();
   int button_x = width() - GetTabStripRightInset() + kAvatarButtonOffset;
-  profile_switcher_.view()->SetBounds(button_x, 0, button_size.width(),
-                                      button_size.height());
+  profile_switcher_view->SetBounds(button_x, 0, button_size.width(),
+                                   button_size.height());
 #endif
 }
 

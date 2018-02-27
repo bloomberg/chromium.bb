@@ -87,7 +87,6 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(nullptr),
       window_title_(nullptr),
-      profile_switcher_(this),
       minimize_button_(nullptr),
       maximize_button_(nullptr),
       restore_button_(nullptr),
@@ -213,10 +212,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   return min_size;
 }
 
-views::View* GlassBrowserFrameView::GetProfileSwitcherView() const {
-  return profile_switcher_.view();
-}
-
 void GlassBrowserFrameView::OnBrowserViewInitViewsComplete() {
   if (browser_view()->tabstrip()) {
     DCHECK(!tab_strip_observer_.IsObserving(browser_view()->tabstrip()));
@@ -275,11 +270,13 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   // See if the point is within the incognito icon or the profile switcher menu.
+  views::View* profile_switcher_view = GetProfileSwitcherView();
   if ((profile_indicator_icon() &&
        profile_indicator_icon()->GetMirroredBounds().Contains(point)) ||
-      (profile_switcher_.view() &&
-       profile_switcher_.view()->GetMirroredBounds().Contains(point)))
+      (profile_switcher_view &&
+       profile_switcher_view->GetMirroredBounds().Contains(point))) {
     return HTCLIENT;
+  }
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);
 
@@ -439,11 +436,8 @@ void GlassBrowserFrameView::Layout() {
 // GlassBrowserFrameView, protected:
 
 // BrowserNonClientFrameView:
-void GlassBrowserFrameView::UpdateProfileIcons() {
-  if (browser_view()->IsRegularOrGuestSession())
-    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
-  else
-    UpdateProfileIndicatorIcon();
+AvatarButtonStyle GlassBrowserFrameView::GetAvatarButtonStyle() const {
+  return AvatarButtonStyle::NATIVE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -462,9 +456,10 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
   bool hit_incognito_icon =
       profile_indicator_icon() &&
       profile_indicator_icon()->GetMirroredBounds().Intersects(rect);
+  views::View* profile_switcher_view = GetProfileSwitcherView();
   bool hit_profile_switcher_button =
-      profile_switcher_.view() &&
-      profile_switcher_.view()->GetMirroredBounds().Intersects(rect);
+      profile_switcher_view &&
+      profile_switcher_view->GetMirroredBounds().Intersects(rect);
   return hit_incognito_icon || hit_profile_switcher_button ||
          !frame()->client_view()->bounds().Intersects(rect);
 }
@@ -705,7 +700,7 @@ void GlassBrowserFrameView::FillClientEdgeRects(int x,
 void GlassBrowserFrameView::LayoutProfileSwitcher() {
   DCHECK(browser_view()->IsRegularOrGuestSession());
 
-  View* profile_switcher = profile_switcher_.view();
+  View* profile_switcher = GetProfileSwitcherView();
   if (!profile_switcher)
     return;
 

@@ -29,7 +29,7 @@ constexpr int kTabstripRightInset = 4;  // Margin for profile switcher.
 BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
     BrowserFrame* frame,
     BrowserView* browser_view)
-    : BrowserNonClientFrameView(frame, browser_view), profile_switcher_(this) {}
+    : BrowserNonClientFrameView(frame, browser_view) {}
 
 BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
 }
@@ -52,8 +52,9 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
 
 int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
   int inset = kTabstripRightInset;
-  if (profile_switcher_.view()) {
-    inset += profile_switcher_.view()->GetPreferredSize().width();
+  views::View* profile_switcher_view = GetProfileSwitcherView();
+  if (profile_switcher_view) {
+    inset += profile_switcher_view->GetPreferredSize().width();
   } else if (profile_indicator_icon()) {
     inset += profile_indicator_icon()->bounds().width() + kAvatarIconPadding;
   }
@@ -80,11 +81,12 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
-  if (profile_switcher_.view()) {
+  views::View* profile_switcher_view = GetProfileSwitcherView();
+  if (profile_switcher_view) {
     gfx::Point point_in_switcher(point);
-    views::View::ConvertPointToTarget(this, profile_switcher_.view(),
+    views::View::ConvertPointToTarget(this, profile_switcher_view,
                                       &point_in_switcher);
-    if (profile_switcher_.view()->HitTestPoint(point_in_switcher)) {
+    if (profile_switcher_view->HitTestPoint(point_in_switcher)) {
       return HTCLIENT;
     }
   }
@@ -141,13 +143,14 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
 void BrowserNonClientFrameViewMac::Layout() {
   DCHECK(browser_view());
+  views::View* profile_switcher_view = GetProfileSwitcherView();
   if (profile_indicator_icon() && browser_view()->IsTabStripVisible()) {
     LayoutIncognitoButton();
     // Mac lays out the incognito icon on the right, as the stoplight
     // buttons live in its Windows/Linux location.
     profile_indicator_icon()->SetX(width() - GetTabStripRightInset());
-  } else if (profile_switcher_.view() != nullptr) {
-    gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
+  } else if (profile_switcher_view != nullptr) {
+    gfx::Size button_size = profile_switcher_view->GetPreferredSize();
     int button_x = width() - GetTabStripRightInset();
     int button_y = 0;
     TabStrip* tabstrip = browser_view()->tabstrip();
@@ -157,23 +160,15 @@ void BrowserNonClientFrameViewMac::Layout() {
       // Align the switcher's bottom to bottom of the new tab button;
       button_y = new_tab_button_bottom - button_size.height();
     }
-    profile_switcher_.view()->SetBounds(button_x, button_y, button_size.width(),
-                                        button_size.height());
+    profile_switcher_view->SetBounds(button_x, button_y, button_size.width(),
+                                     button_size.height());
   }
   BrowserNonClientFrameView::Layout();
 }
 
-views::View* BrowserNonClientFrameViewMac::GetProfileSwitcherView() const {
-  return profile_switcher_.view();
-}
-
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewMac::UpdateProfileIcons() {
-  if (browser_view()->IsRegularOrGuestSession()) {
-    profile_switcher_.Update(AvatarButtonStyle::NATIVE);
-  } else {
-    UpdateProfileIndicatorIcon();
-  }
+AvatarButtonStyle BrowserNonClientFrameViewMac::GetAvatarButtonStyle() const {
+  return AvatarButtonStyle::NATIVE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

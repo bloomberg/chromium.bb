@@ -498,15 +498,9 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
 // BrowserNonClientFrameViewAsh, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
-  Browser* browser = browser_view()->browser();
-  if (!browser->is_type_tabbed() && !browser->is_app())
-    return;
-  if ((browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE) ||
-      MultiUserWindowManager::ShouldShowAvatar(
-          browser_view()->GetNativeWindow())) {
-    UpdateProfileIndicatorIcon();
-  }
+AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
+  // Ash doesn't support a profile switcher button.
+  return AvatarButtonStyle::NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

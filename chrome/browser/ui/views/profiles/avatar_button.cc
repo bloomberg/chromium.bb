@@ -195,6 +195,7 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
       profile_observer_(this),
       button_style_(button_style),
       widget_observer_(this) {
+  DCHECK_NE(button_style, AvatarButtonStyle::NONE);
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   views::NavButtonProvider* nav_button_provider =
       manager->get_nav_button_provider();

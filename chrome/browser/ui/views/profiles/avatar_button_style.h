@@ -7,6 +7,7 @@
 
 // Different Avatar button styles that can be applied.
 enum class AvatarButtonStyle {
+  NONE,    // No avatar button should be used.
   THEMED,  // Used in a themed browser window.
   NATIVE,  // Used in a native aero or metro window.
 };
