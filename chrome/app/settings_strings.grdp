@@ -2268,9 +2268,6 @@
     <message name="IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER" desc="Title for an item in the 'Reset and clean up' section of Chrome Settings. 'Clean up' refers to cleaning up harmful software on the user's computer. Imperative.">
       Clean up computer
     </message>
-    <message name="IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER_DESCRIPTION" desc="Description of an item in Chrome Settings. Imperative.">
-      Find and remove harmful software
-    </message>
   </if>
 
   <!-- Factory Reset / Powerwash -->

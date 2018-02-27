@@ -64,12 +64,7 @@
         <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
           <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"
               on-click="onChromeCleanupTap_" actionable>
-            <div class="start">
-              $i18n{resetCleanupComputerTrigger}
-              <div class="secondary" id="chromeCleanupSecondary">
-                $i18n{resetCleanupComputerTriggerDescription}
-              </div>
-            </div>
+            <div class="start">$i18n{resetCleanupComputerTrigger}</div>
             <button id="chromeCleanupArrow" is="paper-icon-button-light"
                 class="subpage-arrow"
                 aria-label="$i18n{resetCleanupComputerTrigger}"

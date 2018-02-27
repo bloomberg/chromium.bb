@@ -895,8 +895,6 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     {"resetCleanupComputerTrigger",
      IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER},
-    {"resetCleanupComputerTriggerDescription",
-     IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER_DESCRIPTION},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
