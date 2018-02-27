@@ -859,6 +859,33 @@ class SSLUITestBase : public InProcessBrowserTest {
     return ssl_interstitial->controller();
   }
 
+  // Helper function that checks that after proceeding through an interstitial,
+  // the app window is closed, a new tab with the app URL is opened, and there
+  // is no interstitial.
+  void ProceedThroughInterstitialInAppAndCheckNewTabOpened(
+      Browser* app_browser,
+      const GURL& app_url) {
+    Profile* profile = browser()->profile();
+
+    size_t num_browsers = chrome::GetBrowserCount(profile);
+    EXPECT_EQ(app_browser, chrome::FindLastActive());
+    int num_tabs = browser()->tab_strip_model()->count();
+
+    ProceedThroughInterstitial(
+        app_browser->tab_strip_model()->GetActiveWebContents());
+
+    EXPECT_EQ(--num_browsers, chrome::GetBrowserCount(profile));
+    EXPECT_EQ(browser(), chrome::FindLastActive());
+    EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+
+    WebContents* new_tab = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_FALSE(IsShowingInterstitial(new_tab));
+
+    CheckAuthenticationBrokenState(new_tab, net::CERT_STATUS_DATE_INVALID,
+                                   AuthState::NONE);
+    EXPECT_EQ(app_url, new_tab->GetVisibleURL());
+  }
+
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_server_expired_;
   net::EmbeddedTestServer https_server_mismatched_;
@@ -898,6 +925,25 @@ class SSLUITestBase : public InProcessBrowserTest {
         path, https_server_mismatched_.host_port_pair(), &replacement_path);
     ui_test_utils::NavigateToURL(browser(),
                                  https_server_.GetURL(replacement_path));
+  }
+
+  Browser* InstallAndOpenTestBookmarkApp(const GURL& app_url) {
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = app_url;
+    web_app_info.scope = app_url.GetWithoutFilename();
+    web_app_info.title = base::UTF8ToUTF16("Test app");
+    web_app_info.description = base::UTF8ToUTF16("Test description");
+
+    Profile* profile = browser()->profile();
+    const extensions::Extension* bookmark_app =
+        extensions::browsertest_util::InstallBookmarkApp(profile, web_app_info);
+
+    ui_test_utils::UrlLoadObserver url_observer(
+        app_url, content::NotificationService::AllSources());
+    Browser* app_browser =
+        extensions::browsertest_util::LaunchAppBrowser(profile, bookmark_app);
+    url_observer.Wait();
+    return app_browser;
   }
 
  private:
@@ -1513,50 +1559,51 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
   feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
   ASSERT_TRUE(https_server_expired_.Start());
-  Profile* profile = browser()->profile();
 
-  // Install app.
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = https_server_expired_.GetURL("/ssl/google.html");
-  web_app_info.scope = https_server_expired_.GetURL("/ssl/");
-  web_app_info.title = base::UTF8ToUTF16("Test app");
-  web_app_info.description = base::UTF8ToUTF16("Test description");
-
-  const extensions::Extension* app =
-      extensions::browsertest_util::InstallBookmarkApp(profile, web_app_info);
-
-  // Launch app and wait for it to load.
-  ui_test_utils::UrlLoadObserver url_observer(
-      web_app_info.app_url, content::NotificationService::AllSources());
-  Browser* app_browser =
-      extensions::browsertest_util::LaunchAppBrowser(profile, app);
-  url_observer.Wait();
+  const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");
+  Browser* app_browser = InstallAndOpenTestBookmarkApp(app_url);
 
   WebContents* app_tab = app_browser->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(app_tab);
   CheckAuthenticationBrokenState(app_tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::SHOWING_INTERSTITIAL);
 
-  size_t num_browsers = chrome::GetBrowserCount(profile);
-  EXPECT_EQ(app_browser, chrome::FindLastActive());
-  int num_tabs = browser()->tab_strip_model()->count();
+  ProceedThroughInterstitialInAppAndCheckNewTabOpened(app_browser, app_url);
+}
 
-  ProceedThroughInterstitial(app_tab);
+// Visits a page with https error and proceed. Then open the app and proceed.
+IN_PROC_BROWSER_TEST_P(SSLUITestCommitted,
+                       InAppTestHTTPSExpiredCertAndPreviouslyProceeded) {
+  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
 
-  // After proceeding through an interstitial, the app window should be closed,
-  // and a new tab should be opened with the target URL and there should no
-  // longer be an interstitial.
-  EXPECT_EQ(--num_browsers, chrome::GetBrowserCount(profile));
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(https_server_expired_.Start());
 
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_FALSE(tab->GetInterstitialPage());
+  const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");
 
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+  // Go through the interstitial in a regular browser tab.
+  ui_test_utils::NavigateToURL(browser(), app_url);
+
+  WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(initial_tab);
+  CheckAuthenticationBrokenState(initial_tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  ProceedThroughInterstitial(initial_tab);
+  CheckAuthenticationBrokenState(initial_tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::NONE);
-  EXPECT_EQ(https_server_expired_.GetURL("/ssl/google.html"),
-            tab->GetVisibleURL());
+
+  Browser* app_browser = InstallAndOpenTestBookmarkApp(app_url);
+
+  // Apps are not allowed to have SSL errors, so the interstitial should be
+  // showing even though the user proceeded through it in a regular tab.
+  WebContents* app_tab = app_browser->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitial(app_tab);
+  CheckAuthenticationBrokenState(app_tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  ProceedThroughInterstitialInAppAndCheckNewTabOpened(app_browser, app_url);
 }
 
 // Visits a page with https error and don't proceed (and ensure we can still
