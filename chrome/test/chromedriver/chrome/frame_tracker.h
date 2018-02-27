@@ -11,21 +11,26 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+#include "chrome/test/chromedriver/chrome/web_view.h"
 
 namespace base {
 class DictionaryValue;
 }
 
+struct BrowserInfo;
 class DevToolsClient;
 class Status;
 
 // Tracks execution context creation.
 class FrameTracker : public DevToolsEventListener {
  public:
-  explicit FrameTracker(DevToolsClient* client);
+  FrameTracker(DevToolsClient* client,
+               WebView* web_view = nullptr,
+               const BrowserInfo* browser_info = nullptr);
   ~FrameTracker() override;
 
   Status GetContextIdForFrame(const std::string& frame_id, int* context_id);
+  WebView* GetTargetForFrame(const std::string& frame_id);
 
   // Overridden from DevToolsEventListener:
   Status OnConnected(DevToolsClient* client) override;
@@ -35,6 +40,9 @@ class FrameTracker : public DevToolsEventListener {
 
  private:
   std::map<std::string, int> frame_to_context_map_;
+  std::map<std::string, std::unique_ptr<WebView>> frame_to_target_map_;
+  WebView* web_view_;
+  const BrowserInfo* browser_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTracker);
 };

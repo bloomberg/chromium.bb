@@ -100,6 +100,8 @@ class StubWebView : public WebView {
   Status GetScreenOrientation(std::string* orientation) override;
   Status SetScreenOrientation(std::string orientation) override;
   Status DeleteScreenOrientation() override;
+  bool IsOOPIF(const std::string& frame_id) override;
+  FrameTracker* GetFrameTracker() const override;
 
  private:
   std::string id_;

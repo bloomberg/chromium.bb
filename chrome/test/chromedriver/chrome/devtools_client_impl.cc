@@ -89,6 +89,7 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
                                        const std::string& id)
     : socket_(factory.Run()),
       url_(url),
+      parent_(nullptr),
       crashed_(false),
       id_(id),
       frontend_closer_func_(base::Bind(&FakeCloseFrontends)),
@@ -104,6 +105,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const FrontendCloserFunc& frontend_closer_func)
     : socket_(factory.Run()),
       url_(url),
+      parent_(nullptr),
       crashed_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
@@ -111,6 +113,20 @@ DevToolsClientImpl::DevToolsClientImpl(
       unnotified_event_(NULL),
       next_id_(1),
       stack_count_(0) {}
+
+DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
+                                       const std::string& session_id)
+    : parent_(parent),
+      session_id_(session_id),
+      crashed_(false),
+      id_(session_id),
+      frontend_closer_func_(base::BindRepeating(&FakeCloseFrontends)),
+      parser_func_(base::BindRepeating(&internal::ParseInspectorMessage)),
+      unnotified_event_(NULL),
+      next_id_(1),
+      stack_count_(0) {
+  parent->children_[session_id] = this;
+}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
@@ -120,6 +136,7 @@ DevToolsClientImpl::DevToolsClientImpl(
     const ParserFunc& parser_func)
     : socket_(factory.Run()),
       url_(url),
+      parent_(nullptr),
       crashed_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
@@ -128,7 +145,10 @@ DevToolsClientImpl::DevToolsClientImpl(
       next_id_(1),
       stack_count_(0) {}
 
-DevToolsClientImpl::~DevToolsClientImpl() {}
+DevToolsClientImpl::~DevToolsClientImpl() {
+  if (parent_ != nullptr)
+    parent_->children_.erase(session_id_);
+}
 
 void DevToolsClientImpl::SetParserFuncForTesting(
     const ParserFunc& parser_func) {
@@ -147,16 +167,18 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
   if (stack_count_)
     return Status(kUnknownError, "cannot connect when nested");
 
-  if (socket_->IsConnected())
-    return Status(kOk);
+  if (parent_ == nullptr) {
+    if (socket_->IsConnected())
+      return Status(kOk);
 
-  if (!socket_->Connect(url_)) {
-    // Try to close devtools frontend and then reconnect.
-    Status status = frontend_closer_func_.Run();
-    if (status.IsError())
-      return status;
-    if (!socket_->Connect(url_))
-      return Status(kDisconnected, "unable to connect to renderer");
+    if (!socket_->Connect(url_)) {
+      // Try to close devtools frontend and then reconnect.
+      Status status = frontend_closer_func_.Run();
+      if (status.IsError())
+        return status;
+      if (!socket_->Connect(url_))
+        return Status(kDisconnected, "unable to connect to renderer");
+    }
   }
 
   unnotified_connect_listeners_ = listeners_;
@@ -262,7 +284,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     bool expect_response,
     bool wait_for_response,
     const Timeout* timeout) {
-  if (!socket_->IsConnected())
+  if (parent_ == nullptr && !socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
   int command_id = next_id_++;
@@ -275,8 +297,17 @@ Status DevToolsClientImpl::SendCommandInternal(
     VLOG(1) << "DEVTOOLS COMMAND " << method << " (id=" << command_id << ") "
             << FormatValueForDisplay(params);
   }
-  if (!socket_->Send(message))
+  if (parent_ != nullptr) {
+    base::DictionaryValue params2;
+    params2.SetString("sessionId", session_id_);
+    params2.SetString("message", message);
+    Status status = parent_->SendCommandInternal(
+        "Target.sendMessageToTarget", params2, nullptr, true, false, timeout);
+    if (status.IsError())
+      return status;
+  } else if (!socket_->Send(message)) {
     return Status(kDisconnected, "unable to send message to renderer");
+  }
 
   if (expect_response) {
     linked_ptr<ResponseInfo> response_info =
@@ -338,6 +369,9 @@ Status DevToolsClientImpl::ProcessNextMessage(
   if (crashed_)
     return Status(kTabCrashed);
 
+  if (parent_ != nullptr)
+    return parent_->ProcessNextMessage(-1, timeout);
+
   std::string message;
   switch (socket_->ReceiveNextMessage(&message, timeout)) {
     case SyncWebSocket::kOk:
@@ -359,6 +393,11 @@ Status DevToolsClientImpl::ProcessNextMessage(
       break;
   }
 
+  return HandleMessage(expected_id, message);
+}
+
+Status DevToolsClientImpl::HandleMessage(int expected_id,
+                                         const std::string& message) {
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
@@ -413,6 +452,23 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
     }
     if (enable_status.IsError())
       return status;
+  }
+  if (event.method == "Target.receivedMessageFromTarget") {
+    std::string session_id;
+    if (!event.params->GetString("sessionId", &session_id))
+      return Status(
+          kUnknownError,
+          "missing sessionId in Target.receivedMessageFromTarget event");
+    if (children_.count(session_id) == 0)
+      return Status(kUnknownError, "unknown sessionId");
+    DevToolsClientImpl* child = children_[session_id];
+    std::string message;
+    if (!event.params->GetString("message", &message))
+      return Status(
+          kUnknownError,
+          "missing message in Target.receivedMessageFromTarget event");
+
+    return child->HandleMessage(-1, message);
   }
   return Status(kOk);
 }

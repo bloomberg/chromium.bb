@@ -19,6 +19,7 @@ class TimeDelta;
 class Value;
 }
 
+class FrameTracker;
 struct Geoposition;
 class JavaScriptDialogManager;
 struct KeyEvent;
@@ -217,6 +218,10 @@ class WebView {
   virtual Status SetScreenOrientation(std::string orientation) = 0;
 
   virtual Status DeleteScreenOrientation() = 0;
+
+  virtual bool IsOOPIF(const std::string& frame_id) = 0;
+
+  virtual FrameTracker* GetFrameTracker() const = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_
