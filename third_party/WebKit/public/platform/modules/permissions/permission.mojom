@@ -19,6 +19,7 @@ enum PermissionName {
   ACCESSIBILITY_EVENTS,
   CLIPBOARD_READ,
   CLIPBOARD_WRITE,
+  PAYMENT_HANDLER,
 };
 
 struct MidiPermissionDescriptor {

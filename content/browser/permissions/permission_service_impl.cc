@@ -57,6 +57,8 @@ PermissionType PermissionDescriptorToPermissionType(
       return PermissionType::CLIPBOARD_READ;
     case PermissionName::CLIPBOARD_WRITE:
       return PermissionType::CLIPBOARD_WRITE;
+    case PermissionName::PAYMENT_HANDLER:
+      return PermissionType::PAYMENT_HANDLER;
   }
 
   NOTREACHED();

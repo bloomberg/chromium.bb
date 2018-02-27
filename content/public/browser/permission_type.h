@@ -28,6 +28,7 @@ enum class PermissionType {
   ACCESSIBILITY_EVENTS = 13,
   CLIPBOARD_READ = 14,
   CLIPBOARD_WRITE = 15,
+  PAYMENT_HANDLER = 16,
 
   // Always keep this at the end.
   NUM,

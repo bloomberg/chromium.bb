@@ -994,6 +994,8 @@ jumbo_split_static_library("browser") {
     "password_manager/password_store_win.cc",
     "password_manager/password_store_win.h",
     "password_manager/reauth_purpose.h",
+    "payments/payment_handler_permission_context.cc",
+    "payments/payment_handler_permission_context.h",
     "payments/ssl_validity_checker.cc",
     "performance_monitor/performance_monitor.cc",
     "performance_monitor/performance_monitor.h",

@@ -104,6 +104,9 @@ enum ContentSettingsType {
   // a site.
   CONTENT_SETTINGS_TYPE_PLUGINS_DATA,
 
+  // Used to store whether to allow a website to install a payment handler.
+  CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

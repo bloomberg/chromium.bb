@@ -75,6 +75,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_SOUND, "sound"},
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, "clipboard"},
     {CONTENT_SETTINGS_TYPE_SENSORS, "sensors"},
+    {CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, "payment-handler"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions, such as

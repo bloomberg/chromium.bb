@@ -143,6 +143,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreateClipboardPermissionDescriptor(
         permission_name, clipboard_permission.allowWithoutGesture());
   }
+  if (name == "payment-handler")
+    return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
 
   return nullptr;
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/payments/payment_handler_permission_context.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
@@ -117,6 +118,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_CLIPBOARD_READ;
     case PermissionType::CLIPBOARD_WRITE:
       return CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE;
+    case PermissionType::PAYMENT_HANDLER:
+      return CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -298,6 +301,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
       std::make_unique<ClipboardReadPermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE] =
       std::make_unique<ClipboardWritePermissionContext>(profile);
+  permission_contexts_[CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER] =
+      std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {
