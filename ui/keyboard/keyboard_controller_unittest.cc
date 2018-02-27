@@ -283,6 +283,15 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
 
   bool IsKeyboardClosed() { return keyboard_closed_; }
 
+  void SetProgrammaticFocus(ui::TextInputClient* client) {
+    controller_->OnTextInputStateChanged(client);
+  }
+
+  void AddTimeToTransientBlurCounter(double seconds) {
+    controller_->time_of_last_blur_ -=
+        base::TimeDelta::FromMilliseconds((int)(1000 * seconds));
+  }
+
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = ui()->GetInputMethod();
     input_method->SetFocusedTextInputClient(client);
@@ -457,6 +466,82 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   generator.ClickLeftButton();
   EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
   keyboard_container->RemovePreTargetHandler(&observer);
+}
+
+// Tests that blur-then-focus that occur in less than the transient threshold
+// cause the keyboard to re-show.
+TEST_F(KeyboardControllerTest, TransientBlurShortDelay) {
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+  base::RunLoop run_loop;
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
+      new KeyboardContainerObserver(keyboard_container, &run_loop));
+  root_window()->AddChild(keyboard_container);
+
+  // Keyboard is hidden
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Set programmatic focus to the text field. Nothing happens
+  SetProgrammaticFocus(&input_client);
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Click it for real. Keyboard starts to appear.
+  SetFocus(&input_client);
+  EXPECT_TRUE(keyboard_container->IsVisible());
+
+  // Focus a non text field
+  SetFocus(&no_input_client);
+
+  // It waits 100 ms and then hides. Wait for this routine to finish.
+  EXPECT_TRUE(WillHideKeyboard());
+  RunLoop(&run_loop);
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Virtually wait half a second
+  AddTimeToTransientBlurCounter(0.5);
+  // Apply programmatic focus to the text field.
+  SetProgrammaticFocus(&input_client);
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_FALSE(WillHideKeyboard());
+}
+
+// Tests that blur-then-focus that occur past the transient threshold do not
+// cause the keyboard to re-show.
+TEST_F(KeyboardControllerTest, TransientBlurLongDelay) {
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+  base::RunLoop run_loop;
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
+      new KeyboardContainerObserver(keyboard_container, &run_loop));
+  root_window()->AddChild(keyboard_container);
+
+  // Keyboard is hidden
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Set programmatic focus to the text field. Nothing happens
+  SetProgrammaticFocus(&input_client);
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Click it for real. Keyboard starts to appear.
+  SetFocus(&input_client);
+  EXPECT_TRUE(keyboard_container->IsVisible());
+
+  // Focus a non text field
+  SetFocus(&no_input_client);
+
+  // It waits 100 ms and then hides. Wait for this routine to finish.
+  EXPECT_TRUE(WillHideKeyboard());
+  RunLoop(&run_loop);
+  EXPECT_FALSE(keyboard_container->IsVisible());
+
+  // Wait 5 seconds and then set programmatic focus to a text field
+  AddTimeToTransientBlurCounter(5.0);
+  SetProgrammaticFocus(&input_client);
+  EXPECT_FALSE(keyboard_container->IsVisible());
 }
 
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {

@@ -107,6 +107,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndTest, OpenOnlyOnSyncFocus) {
   ClickElementWithId(web_contents, "blur");
   ASSERT_TRUE(keyboard::WaitUntilHidden());
 
+  // If async focus occurs quickly after blur, then it should still invoke the
+  // keyboard.
+  ClickElementWithId(web_contents, "async");
+  helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_TRUE(IsKeyboardVisible());
+
+  ClickElementWithId(web_contents, "blur");
+  ASSERT_TRUE(keyboard::WaitUntilHidden());
+  helper.WaitForPassageOfTimeMillis(3600);
+
   ClickElementWithId(web_contents, "async");
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(controller->GetStateForTest(),

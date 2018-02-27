@@ -55,6 +55,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
                                  const gfx::Rect& expected_composition_head);
   void WaitForSurroundingTextChanged(const base::string16& expected_text,
                                      const gfx::Range& expected_selection);
+  void WaitForPassageOfTimeMillis(const int milliseconds);
 
   // Converts from string to gfx::Rect. The string should be "x,y,width,height".
   // Returns false if the conversion failed.
@@ -70,6 +71,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
     WAIT_ON_CARET_BOUNDS_CHANGED,
     WAIT_ON_FOCUS,
     WAIT_ON_TEXT_INPUT_TYPE_CHANGED,
+    WAIT_ON_PASSAGE_OF_TIME,
   };
 
   // ui::InputMethodObserver overrides.

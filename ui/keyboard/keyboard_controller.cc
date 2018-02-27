@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -25,6 +26,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/path.h"
@@ -51,6 +53,13 @@ constexpr int kHideKeyboardDelayMs = 100;
 // Reports an error histogram if the keyboard state is lingering in an
 // intermediate state for more than 5 seconds.
 constexpr int kReportLingeringStateDelayMs = 5000;
+
+// Delay threshold after the keyboard enters the WILL_HIDE state. If text focus
+// is regained during this threshold, the keyboard will show again, even if it
+// is an asynchronous event. This is for the benefit of things like login flow
+// where the password field may get text focus after an animation that plays
+// after the user enters their username.
+constexpr int kTransientBlurThresholdMs = 3500;
 
 // State transition diagram (document linked from crbug.com/719905)
 bool isAllowedStateTransition(keyboard::KeyboardControllerState from,
@@ -495,15 +504,34 @@ void KeyboardController::OnTextInputStateChanged(
         return;
     }
   } else {
-    // Abort a pending keyboard hide.
-    if (WillHideKeyboard())
-      ChangeState(KeyboardControllerState::SHOWN);
+    switch (state_) {
+      case KeyboardControllerState::WILL_HIDE:
+        // Abort a pending keyboard hide.
+        ChangeState(KeyboardControllerState::SHOWN);
+        return;
+      case KeyboardControllerState::HIDDEN:
+        if (focused)
+          ShowKeyboardIfWithinTransientBlurThreshold();
+        return;
+      default:
+        break;
+    }
     // Do not explicitly show the Virtual keyboard unless it is in the process
-    // of hiding. Instead, the virtual keyboard is shown in response to a user
-    // gesture (mouse or touch) that is received while an element has input
-    // focus. Showing the keyboard requires an explicit call to
-    // OnShowImeIfNeeded.
+    // of hiding or the hide duration was very short (transient blur). Instead,
+    // the virtual keyboard is shown in response to a user gesture (mouse or
+    // touch) that is received while an element has input focus. Showing the
+    // keyboard requires an explicit call to OnShowImeIfNeeded.
   }
+}
+
+void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
+  static const base::TimeDelta kTransientBlurThreshold =
+      base::TimeDelta::FromMilliseconds(kTransientBlurThresholdMs);
+
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta time_since_last_blur = now - time_of_last_blur_;
+  if (time_since_last_blur < kTransientBlurThreshold)
+    ShowKeyboard(false);
 }
 
 void KeyboardController::OnShowImeIfNeeded() {
@@ -679,6 +707,8 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   if (state_ == state)
     return;
 
+  KeyboardControllerState original_state = state_;
+
   state_ = state;
 
   if (state != KeyboardControllerState::WILL_HIDE)
@@ -692,11 +722,16 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   switch (state_) {
     case KeyboardControllerState::LOADING_EXTENSION:
     case KeyboardControllerState::WILL_HIDE:
+      if (state_ == KeyboardControllerState::WILL_HIDE &&
+          original_state == KeyboardControllerState::SHOWN) {
+        time_of_last_blur_ = base::Time::Now();
+      }
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&KeyboardController::ReportLingeringState,
                          weak_factory_report_lingering_state_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kReportLingeringStateDelayMs));
+
       break;
     default:
       // Do nothing
