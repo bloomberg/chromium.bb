@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.text.Editable;
@@ -97,7 +98,7 @@ public class UrlBar extends AutocompleteEditText {
     private MotionEvent mSuppressedTouchDownEvent;
     private boolean mAllowFocus = true;
 
-    private boolean mPendingScrollTLD;
+    private boolean mPendingScroll;
     private int mPreviousWidth;
     private String mPreviousTldScrollText;
     private int mPreviousTldScrollViewWidth;
@@ -126,6 +127,14 @@ public class UrlBar extends AutocompleteEditText {
 
     /** The location of this view on the last ACTION_DOWN event. */
     private float mDownEventViewTop;
+
+    /** What scrolling action should be taken after the URL bar text changes. **/
+    @IntDef({NO_SCROLL, SCROLL_TO_TLD, SCROLL_TO_BEGINNING})
+    public @interface ScrollType {}
+
+    public static final int NO_SCROLL = 0;
+    public static final int SCROLL_TO_TLD = 1;
+    public static final int SCROLL_TO_BEGINNING = 2;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -176,6 +185,12 @@ public class UrlBar extends AutocompleteEditText {
          * @return Whether or not we should force LTR text on the URL bar when unfocused.
          */
         boolean shouldForceLTR();
+
+        /**
+         * @return What scrolling action should be performed after the URL text is modified.
+         */
+        @ScrollType
+        int getScrollType();
     }
 
     public UrlBar(Context context, AttributeSet attrs) {
@@ -314,7 +329,7 @@ public class UrlBar extends AutocompleteEditText {
 
         if (focused) {
             StartupMetrics.getInstance().recordFocusedOmnibox();
-            mPendingScrollTLD = false;
+            mPendingScroll = false;
         }
 
         fixupTextDirection();
@@ -658,22 +673,42 @@ public class UrlBar extends AutocompleteEditText {
         setText(displayText);
 
         boolean textChanged = !TextUtils.equals(previousText, getEditableText());
-        if (textChanged && !isFocused()) scrollToTLD();
+        if (textChanged && !isFocused()) scrollDisplayText();
         return textChanged;
     }
 
-    /**
-     * Scroll to ensure the TLD is visible.
-     */
-    public void scrollToTLD() {
+    public void scrollDisplayText() {
         if (isLayoutRequested()) {
-            mPendingScrollTLD = true;
+            if (mUrlBarDelegate.getScrollType() == NO_SCROLL) return;
+            mPendingScroll = true;
         } else {
-            scrollToTLDInternal();
+            scrollDisplayTextInternal();
         }
     }
 
-    private void scrollToTLDInternal() {
+    public void scrollDisplayTextInternal() {
+        switch (mUrlBarDelegate.getScrollType()) {
+            case SCROLL_TO_TLD:
+                scrollToTLD();
+                break;
+            case SCROLL_TO_BEGINNING:
+                scrollToBeginning();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void scrollToBeginning() {
+        int scrollX = 0;
+        if (BidiFormatter.getInstance().isRtl(getTextWithAutocomplete())) {
+            int textWidth = (int) getLayout().getPaint().measureText(getTextWithAutocomplete());
+            scrollX = textWidth - getMeasuredWidth();
+        }
+        scrollTo(scrollX, getScrollY());
+    }
+
+    public void scrollToTLD() {
         if (mFocused) return;
 
         // Ensure any selection from the focus state is cleared.
@@ -757,11 +792,11 @@ public class UrlBar extends AutocompleteEditText {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
-        if (mPendingScrollTLD) {
-            scrollToTLDInternal();
-            mPendingScrollTLD = false;
+        if (mPendingScroll) {
+            scrollDisplayTextInternal();
+            mPendingScroll = false;
         } else if (mPreviousWidth != (right - left)) {
-            scrollToTLDInternal();
+            scrollDisplayTextInternal();
             mPreviousWidth = right - left;
         }
     }
@@ -771,7 +806,7 @@ public class UrlBar extends AutocompleteEditText {
         // TextView internally attempts to keep the selection visible, but in the unfocused state
         // this class ensures that the TLD is visible.
         if (!mFocused) return false;
-        assert !mPendingScrollTLD;
+        assert !mPendingScroll;
 
         return super.bringPointIntoView(offset);
     }

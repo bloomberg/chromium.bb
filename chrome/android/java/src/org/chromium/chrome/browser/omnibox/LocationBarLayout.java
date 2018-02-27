@@ -2090,6 +2090,13 @@ public class LocationBarLayout extends FrameLayout
         return !mToolbarDataProvider.isDisplayingQueryTerms();
     }
 
+    @Override
+    @UrlBar.ScrollType
+    public int getScrollType() {
+        return mToolbarDataProvider.isDisplayingQueryTerms() ? UrlBar.SCROLL_TO_BEGINNING
+                                                             : UrlBar.SCROLL_TO_TLD;
+    }
+
     /**
      * @return Returns the original url of the page.
      */
@@ -2698,9 +2705,9 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Scroll to ensure the TLD is visible.
+     * Scroll to ensure the TLD is visible, if necessary.
      */
     public void scrollUrlBarToTld() {
-        mUrlBar.scrollToTLD();
+        if (getScrollType() == UrlBar.SCROLL_TO_TLD) mUrlBar.scrollToTLD();
     }
 }
