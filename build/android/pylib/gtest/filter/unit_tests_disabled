@@ -37,37 +37,6 @@ ChromeSelectFilePolicyTest.ExpectAsynchronousListenerCall
 # http://crbug.com/139033
 ChromeDownloadManagerDelegateTest.StartDownload_PromptAlways
 
-# Extension support is limited on Android.
-# Some of these can be enabled if we register extension related prefs in
-# browser_prefs.cc
-ExtensionTest.*
-ExtensionAPI.*
-ExtensionFileUtilTest.*
-ExtensionPermissionsTest.*
-ExtensionUnpackerTest.*
-ActiveTabTest.*
-ExtensionAppsPromo.*
-ComponentLoaderTest.*
-ExtensionFromUserScript.*
-ExtensionFromWebApp.*
-ExtensionIconManagerTest.*
-ExtensionServiceTest.*
-ExtensionServiceTestSimple.*
-ExtensionSourcePriorityTest.*
-ExtensionSpecialStoragePolicyTest.*
-ExternalPolicyProviderTest.*
-ExternalProviderImplTest.*
-MenuManagerTest.*
-PageActionControllerTest.*
-PermissionsUpdaterTest.*
-ImageLoaderTest.*
-ImageLoadingTrackerTest.*
-ExtensionSettingsFrontendTest.*
-ExtensionSettingsSyncTest.*
-ExtensionUpdaterTest.*
-UserScriptListenerTest.*
-ExtensionActionIconFactoryTest.*
-
 # crbug.com/139411
 AutocompleteProviderTest.*
 HistoryContentsProviderBodyOnlyTest.*
@@ -93,9 +62,6 @@ VariationsUtilTest.NoAssociation
 # crbug.com/141473
 AutofillManagerTest.UpdatePasswordSyncState
 AutofillManagerTest.UpdatePasswordGenerationState
-
-# crbug.com/144227
-ExtensionIconImageTest.*
 
 # crbug.com/145843
 EntropyProviderTest.UseOneTimeRandomizationSHA1
