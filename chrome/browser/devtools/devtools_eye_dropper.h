@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -37,7 +36,7 @@ class DevToolsEyeDropper : public content::WebContentsObserver {
 
   void UpdateFrame();
   void ResetFrame();
-  void FrameUpdated(const SkBitmap&, content::ReadbackResponse);
+  void FrameUpdated(const SkBitmap&);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
   void UpdateCursor();
 

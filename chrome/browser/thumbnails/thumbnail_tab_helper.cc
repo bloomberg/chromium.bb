@@ -302,16 +302,14 @@ void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(
       &thumbnailing_context_->requested_copy_size);
   copy_from_surface_start_time_ = base::TimeTicks::Now();
   waiting_for_capture_ = true;
-  view->CopyFromSurface(copy_rect, thumbnailing_context_->requested_copy_size,
-                        base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
-                                   weak_factory_.GetWeakPtr(), trigger),
-                        kN32_SkColorType);
+  view->CopyFromSurface(
+      copy_rect, thumbnailing_context_->requested_copy_size,
+      base::BindOnce(&ThumbnailTabHelper::ProcessCapturedBitmap,
+                     weak_factory_.GetWeakPtr(), trigger));
 }
 
-void ThumbnailTabHelper::ProcessCapturedBitmap(
-    TriggerReason trigger,
-    const SkBitmap& bitmap,
-    content::ReadbackResponse response) {
+void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
+                                               const SkBitmap& bitmap) {
   // If |waiting_for_capture_| is false, that means something happened in the
   // meantime which makes the captured image unsafe to use.
   bool was_canceled = !waiting_for_capture_;
@@ -321,7 +319,7 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
       base::TimeTicks::Now() - copy_from_surface_start_time_;
   UMA_HISTOGRAM_TIMES("Thumbnails.CopyFromSurfaceTime", copy_from_surface_time);
 
-  if (response == content::READBACK_SUCCESS && !was_canceled) {
+  if (!bitmap.drawsNothing() && !was_canceled) {
     // On success, we must be on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // From here on, nothing can fail, so log success.

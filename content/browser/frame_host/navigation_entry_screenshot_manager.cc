@@ -125,12 +125,8 @@ void NavigationEntryScreenshotManager::TakeScreenshot() {
   const gfx::Size view_size_on_screen = view->GetViewBounds().size();
   view->CopyFromSurface(
       gfx::Rect(), view_size_on_screen,
-      // TODO(crbug/759310): This should be BindOnce, but requires a public
-      // interface change.
-      base::BindRepeating(&NavigationEntryScreenshotManager::OnScreenshotTaken,
-                          screenshot_factory_.GetWeakPtr(),
-                          entry->GetUniqueID()),
-      kN32_SkColorType);
+      base::BindOnce(&NavigationEntryScreenshotManager::OnScreenshotTaken,
+                     screenshot_factory_.GetWeakPtr(), entry->GetUniqueID()));
 }
 
 // Implemented here and not in NavigationEntry because this manager keeps track
@@ -151,15 +147,14 @@ void NavigationEntryScreenshotManager::SetMinScreenshotIntervalMS(
 
 void NavigationEntryScreenshotManager::OnScreenshotTaken(
     int unique_id,
-    const SkBitmap& bitmap,
-    ReadbackResponse response) {
+    const SkBitmap& bitmap) {
   NavigationEntryImpl* entry = owner_->GetEntryWithUniqueID(unique_id);
   if (!entry) {
     LOG(ERROR) << "Invalid entry with unique id: " << unique_id;
     return;
   }
 
-  if ((response != READBACK_SUCCESS) || bitmap.empty() || bitmap.isNull()) {
+  if (bitmap.drawsNothing()) {
     if (!ClearScreenshot(entry))
       OnScreenshotSet(entry);
     return;

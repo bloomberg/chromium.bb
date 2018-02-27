@@ -21,7 +21,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -57,28 +56,26 @@ class TabContentManager::TabReadbackRequest {
         drop_after_readback_(false),
         weak_factory_(this) {
     DCHECK(rwhv);
-    content::ReadbackRequestCallback result_callback =
-        base::Bind(&TabReadbackRequest::OnFinishGetTabThumbnailBitmap,
-                   weak_factory_.GetWeakPtr());
+    auto result_callback =
+        base::BindOnce(&TabReadbackRequest::OnFinishGetTabThumbnailBitmap,
+                       weak_factory_.GetWeakPtr());
 
-    SkColorType color_type = kN32_SkColorType;
     gfx::Size view_size_in_pixels =
         rwhv->GetNativeView()->GetPhysicalBackingSize();
     if (view_size_in_pixels.IsEmpty()) {
-      result_callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
+      std::move(result_callback).Run(SkBitmap());
       return;
     }
     gfx::Size thumbnail_size(
         gfx::ScaleToCeiledSize(view_size_in_pixels, thumbnail_scale_));
-    rwhv->CopyFromSurface(gfx::Rect(), thumbnail_size, result_callback,
-                          color_type);
+    rwhv->CopyFromSurface(gfx::Rect(), thumbnail_size,
+                          std::move(result_callback));
   }
 
   virtual ~TabReadbackRequest() {}
 
-  void OnFinishGetTabThumbnailBitmap(const SkBitmap& bitmap,
-                                     content::ReadbackResponse response) {
-    if (response != content::READBACK_SUCCESS || drop_after_readback_) {
+  void OnFinishGetTabThumbnailBitmap(const SkBitmap& bitmap) {
+    if (bitmap.drawsNothing() || drop_after_readback_) {
       end_callback_.Run(0.f, SkBitmap());
       return;
     }

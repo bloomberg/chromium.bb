@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_API_WEB_CONTENTS_CAPTURE_CLIENT_H_
 
 #include "base/macros.h"
-#include "content/public/browser/readback_types.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/extension_types.h"
 
@@ -31,18 +30,17 @@ class WebContentsCaptureClient {
   virtual bool ClientAllowsTransparency() = 0;
 
   enum FailureReason {
-    FAILURE_REASON_UNKNOWN,
+    FAILURE_REASON_READBACK_FAILED,
     FAILURE_REASON_ENCODING_FAILED,
     FAILURE_REASON_VIEW_INVISIBLE
   };
   bool CaptureAsync(content::WebContents* web_contents,
                     const api::extension_types::ImageDetails* image_detail,
-                    const content::ReadbackRequestCallback callback);
+                    base::OnceCallback<void(const SkBitmap&)> callback);
   bool EncodeBitmap(const SkBitmap& bitmap, std::string* base64_result);
   virtual void OnCaptureFailure(FailureReason reason) = 0;
   virtual void OnCaptureSuccess(const SkBitmap& bitmap) = 0;
-  void CopyFromSurfaceComplete(const SkBitmap& bitmap,
-                               content::ReadbackResponse response);
+  void CopyFromSurfaceComplete(const SkBitmap& bitmap);
 
  private:
   // The format (JPEG vs PNG) of the resulting image.  Set in RunAsync().

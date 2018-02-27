@@ -5845,10 +5845,11 @@ class ChildFrameCompositorFrameSwapCounter {
 
  private:
   void RegisterCallback() {
-    view_->RegisterFrameSwappedCallback(std::make_unique<base::Closure>(
-        base::Bind(&ChildFrameCompositorFrameSwapCounter::OnFrameSwapped,
-                   weak_factory_.GetWeakPtr())));
+    view_->RegisterFrameSwappedCallback(
+        base::BindOnce(&ChildFrameCompositorFrameSwapCounter::OnFrameSwapped,
+                       weak_factory_.GetWeakPtr()));
   }
+
   void OnFrameSwapped() {
     counter_++;
 

@@ -203,7 +203,6 @@ jumbo_source_set("browser_sources") {
     "push_messaging_service.cc",
     "push_messaging_service.h",
     "quota_permission_context.h",
-    "readback_types.h",
     "reload_type.h",
     "render_frame_host.h",
     "render_frame_metadata_provider.h",

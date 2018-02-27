@@ -9,12 +9,8 @@
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/readback_types.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace viz {
-class CopyOutputResult;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 }
@@ -26,12 +22,6 @@ CONTENT_EXPORT viz::FrameSinkId AllocateFrameSinkId();
 CONTENT_EXPORT viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
 CONTENT_EXPORT viz::HostFrameSinkManager* GetHostFrameSinkManager();
-
-void CopyFromCompositingSurfaceHasResult(
-    const gfx::Size& dst_size_in_pixel,
-    const SkColorType color_type,
-    const ReadbackRequestCallback& callback,
-    std::unique_ptr<viz::CopyOutputResult> result);
 
 namespace surface_utils {
 

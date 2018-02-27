@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "content/public/browser/readback_types.h"
+#include "base/run_loop.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -39,14 +39,6 @@ class OOPBrowserTest : public ContentBrowserTest {
       command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
-  void GetSnapshot(const base::Closure& done_cb,
-                   const SkBitmap& bitmap,
-                   ReadbackResponse response) {
-    ASSERT_EQ(response, ReadbackResponse::READBACK_SUCCESS);
-    snapshot_ = bitmap;
-    done_cb.Run();
-  }
-
   void VerifyVisualStateUpdated(const base::Closure& done_cb,
                                 bool visual_state_updated) {
     ASSERT_TRUE(visual_state_updated);
@@ -72,18 +64,23 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
 
   auto* rwh = shell()->web_contents()->GetRenderViewHost()->GetWidget();
   ASSERT_TRUE(rwh->GetView()->IsSurfaceAvailableForCopy());
+  base::RunLoop run_loop;
+  SkBitmap snapshot;
   rwh->GetView()->CopyFromSurface(
       gfx::Rect(), gfx::Size(),
-      base::Bind(&OOPBrowserTest::GetSnapshot, base::Unretained(this),
-                 base::MessageLoop::QuitWhenIdleClosure()),
-      kN32_SkColorType);
-  content::RunMessageLoop();
+      base::BindOnce(
+          [](SkBitmap* snapshot, base::OnceClosure done_cb,
+             const SkBitmap& bitmap) {
+            *snapshot = bitmap;
+            std::move(done_cb).Run();
+          },
+          &snapshot, run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
 
-  EXPECT_GT(snapshot_.width(), 0);
-  EXPECT_GT(snapshot_.height(), 0);
-  for (int i = 0; i < snapshot_.width(); ++i) {
-    for (int j = 0; j < snapshot_.height(); ++j) {
-      ASSERT_EQ(snapshot_.getColor(i, j), SK_ColorBLUE);
+  EXPECT_FALSE(snapshot.drawsNothing());
+  for (int i = 0; i < snapshot.width(); ++i) {
+    for (int j = 0; j < snapshot.height(); ++j) {
+      ASSERT_EQ(snapshot.getColor(i, j), SK_ColorBLUE);
     }
   }
 };

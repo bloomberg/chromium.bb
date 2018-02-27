@@ -647,15 +647,15 @@ void HeadlessWebContentsImpl::DidReceiveCompositorFrame() {
 
 void HeadlessWebContentsImpl::PendingFrameReadbackComplete(
     HeadlessWebContentsImpl::PendingFrame* pending_frame,
-    const SkBitmap& bitmap,
-    content::ReadbackResponse response) {
-  TRACE_EVENT2(
-      "headless", "HeadlessWebContentsImpl::PendingFrameReadbackComplete",
-      "sequence_number", pending_frame->sequence_number, "response", response);
-  if (response == content::READBACK_SUCCESS) {
-    pending_frame->bitmap = std::make_unique<SkBitmap>(bitmap);
+    const SkBitmap& bitmap) {
+  TRACE_EVENT2("headless",
+               "HeadlessWebContentsImpl::PendingFrameReadbackComplete",
+               "sequence_number", pending_frame->sequence_number, "success",
+               !bitmap.drawsNothing());
+  if (bitmap.drawsNothing()) {
+    LOG(WARNING) << "Readback from surface failed.";
   } else {
-    LOG(WARNING) << "Readback from surface failed with response " << response;
+    pending_frame->bitmap = std::make_unique<SkBitmap>(bitmap);
   }
 
   pending_frame->wait_for_copy_result = false;
@@ -685,22 +685,26 @@ void HeadlessWebContentsImpl::BeginFrame(
   auto pending_frame = std::make_unique<PendingFrame>();
   pending_frame->sequence_number = sequence_number;
   pending_frame->callback = frame_finished_callback;
+  // Note: It's important to move |pending_frame| into |pending_frames_| now
+  // since the CopyFromSurface() call below can run its result callback
+  // synchronously on certain platforms/environments.
+  auto* const pending_frame_raw_ptr = pending_frame.get();
+  pending_frames_.emplace_back(std::move(pending_frame));
 
   if (capture_screenshot) {
-    pending_frame->wait_for_copy_result = true;
     content::RenderWidgetHostView* view =
         web_contents()->GetRenderWidgetHostView();
-    if (view) {
+    if (view && view->IsSurfaceAvailableForCopy()) {
+      pending_frame_raw_ptr->wait_for_copy_result = true;
       view->CopyFromSurface(
           gfx::Rect(), gfx::Size(),
-          base::Bind(&HeadlessWebContentsImpl::PendingFrameReadbackComplete,
-                     base::Unretained(this),
-                     base::Unretained(pending_frame.get())),
-          kN32_SkColorType);
+          base::BindOnce(&HeadlessWebContentsImpl::PendingFrameReadbackComplete,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         pending_frame_raw_ptr));
+    } else {
+      LOG(WARNING) << "Surface not ready for screenshot.";
     }
   }
-
-  pending_frames_.push_back(std::move(pending_frame));
 
   ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
   DCHECK(compositor);

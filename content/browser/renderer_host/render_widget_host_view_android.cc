@@ -811,22 +811,17 @@ SkColor RenderWidgetHostViewAndroid::background_color() const {
 void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
-  // TODO(crbug/759310): |preferred_color_type| will be removed from this API
-  // soon.
-  DCHECK_EQ(preferred_color_type, kN32_SkColorType);
-
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromSurface");
   if (!IsSurfaceAvailableForCopy()) {
-    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   if (!using_browser_compositor_) {
-    SynchronousCopyContents(src_subrect, output_size, callback);
+    SynchronousCopyContents(src_subrect, output_size, std::move(callback));
     UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
                         base::TimeTicks::Now() - start_time);
     return;
@@ -836,16 +831,15 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, output_size,
       base::BindOnce(
-          [](const ReadbackRequestCallback& callback,
+          [](base::OnceCallback<void(const SkBitmap&)> callback,
              base::TimeTicks start_time, const SkBitmap& bitmap) {
             TRACE_EVENT0(
                 "cc", "RenderWidgetHostViewAndroid::CopyFromSurface finished");
             UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
                                 base::TimeTicks::Now() - start_time);
-            callback.Run(bitmap, bitmap.drawsNothing() ? READBACK_FAILED
-                                                       : READBACK_SUCCESS);
+            std::move(callback).Run(bitmap);
           },
-          callback, start_time));
+          std::move(callback), start_time));
 }
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
@@ -1132,7 +1126,7 @@ void RenderWidgetHostViewAndroid::DidScroll() {}
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_dip,
     const gfx::Size& dst_size_in_pixel,
-    const ReadbackRequestCallback& callback) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   // Note: When |src_subrect| is empty, a conversion from the view size must
   // be made instead of using |current_frame_size_|. The latter sometimes also
   // includes extra height for the toolbar UI, which is not intended for
@@ -1156,7 +1150,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   int output_height = output_size_in_pixel.height();
 
   if (!sync_compositor_) {
-    callback.Run(SkBitmap(), READBACK_FAILED);
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
@@ -1167,7 +1161,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
       (float)output_width / (float)input_size_in_pixel.width(),
       (float)output_height / (float)input_size_in_pixel.height());
   sync_compositor_->DemandDrawSw(&canvas);
-  callback.Run(bitmap, READBACK_SUCCESS);
+  std::move(callback).Run(bitmap);
 }
 
 WebContentsAccessibilityAndroid*

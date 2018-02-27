@@ -10,10 +10,9 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/readback_types.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -179,16 +178,17 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // bitmap's size may not be the same as |src_rect.size()| due to the pixel
   // scale used by the underlying device.
   //
-  // |callback| is always invoked, at some point in the future, with success/
-  // fail status and an SkBitmap containing the copied pixel data. It may be
-  // called sychronously or asynchronously.
+  // |callback| is guaranteed to be run, either synchronously or at some point
+  // in the future (depending on the platform implementation and the current
+  // state of the Surface). If the copy failed, the bitmap's drawsNothing()
+  // method will return true.
   //
   // If the view's renderer is suspended (see WasOccluded()), this may result in
   // copying old data or failing.
-  virtual void CopyFromSurface(const gfx::Rect& src_rect,
-                               const gfx::Size& output_size,
-                               const ReadbackRequestCallback& callback,
-                               const SkColorType color_type) = 0;
+  virtual void CopyFromSurface(
+      const gfx::Rect& src_rect,
+      const gfx::Size& output_size,
+      base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 
   // Notification that a node was touched.
   // The |location_dips_screen| parameter contains the location where the touch

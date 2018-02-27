@@ -891,14 +891,13 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
 void RenderWidgetHostViewAura::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   if (!IsSurfaceAvailableForCopy()) {
-    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
+    std::move(callback).Run(SkBitmap());
     return;
   }
-  delegated_frame_host_->CopyFromCompositingSurface(
-      src_subrect, dst_size, callback, preferred_color_type);
+  delegated_frame_host_->CopyFromCompositingSurface(src_subrect, dst_size,
+                                                    std::move(callback));
 }
 
 #if defined(OS_WIN)

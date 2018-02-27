@@ -856,19 +856,15 @@ void PageHandler::InnerSwapCompositorFrame() {
   // Request a copy of the surface as a scaled SkBitmap.
   view->CopyFromSurface(
       gfx::Rect(), snapshot_size,
-      // TODO(crbug/759310): This should be BindOnce.
-      base::BindRepeating(&PageHandler::ScreencastFrameCaptured,
-                          weak_factory_.GetWeakPtr(),
-                          base::Passed(&page_metadata)),
-      kN32_SkColorType);
+      base::BindOnce(&PageHandler::ScreencastFrameCaptured,
+                     weak_factory_.GetWeakPtr(), std::move(page_metadata)));
   frames_in_flight_++;
 }
 
 void PageHandler::ScreencastFrameCaptured(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
-    const SkBitmap& bitmap,
-    ReadbackResponse response) {
-  if (response != READBACK_SUCCESS) {
+    const SkBitmap& bitmap) {
+  if (bitmap.drawsNothing()) {
     if (capture_retry_count_) {
       --capture_retry_count_;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

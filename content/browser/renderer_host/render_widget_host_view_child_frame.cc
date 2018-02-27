@@ -641,12 +641,12 @@ void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
 }
 
 void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
-  // We only use callbacks once, therefore we make a new list for registration
-  // before we start, and discard the old list entries when we are done.
-  FrameSwappedCallbackList process_callbacks;
+  std::vector<base::OnceClosure> process_callbacks;
+  // Swap the vectors to avoid re-entrancy issues due to calls to
+  // RegisterFrameSwappedCallback() while running the OnceClosures.
   process_callbacks.swap(frame_swapped_callbacks_);
-  for (std::unique_ptr<base::Closure>& callback : process_callbacks)
-    callback->Run();
+  for (base::OnceClosure& callback : process_callbacks)
+    std::move(callback).Run();
 }
 
 gfx::Vector2d RenderWidgetHostViewChildFrame::GetOffsetFromRootSurface() {
@@ -836,53 +836,38 @@ void RenderWidgetHostViewChildFrame::StopSpeaking() {}
 #endif  // defined(OS_MACOSX)
 
 void RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(
-    std::unique_ptr<base::Closure> callback) {
-  frame_swapped_callbacks_.push_back(std::move(callback));
+    base::OnceClosure callback) {
+  frame_swapped_callbacks_.emplace_back(std::move(callback));
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromSurface(
-    const gfx::Rect& src_rect,
+    const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
-  // TODO(crbug/759310): Only NavigationEntryScreenshotManager needs grayscale.
-  // Move that transformation to there; and then remove |preferred_color_type|
-  // from this API and the end-to-end code path.
-  DCHECK(preferred_color_type == kN32_SkColorType ||
-         preferred_color_type == kAlpha_8_SkColorType);
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  // TODO(crbug.com/812059): Need a "copy from surface" VIZ API.
+  if (enable_viz_) {
+    std::move(callback).Run(SkBitmap());
+    return;
+  }
 
   if (!IsSurfaceAvailableForCopy()) {
     // Defer submitting the copy request until after a frame is drawn, at which
     // point we should be guaranteed that the surface is available.
-    RegisterFrameSwappedCallback(std::make_unique<base::Closure>(base::Bind(
-        &RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest, AsWeakPtr(),
-        src_rect, output_size, callback, preferred_color_type)));
+    RegisterFrameSwappedCallback(base::BindOnce(
+        &RenderWidgetHostViewChildFrame::CopyFromSurface, AsWeakPtr(),
+        src_subrect, output_size, std::move(callback)));
     return;
   }
-
-  SubmitSurfaceCopyRequest(src_rect, output_size, callback,
-                           preferred_color_type);
-}
-
-void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
-    const gfx::Rect& src_subrect,
-    const gfx::Size& output_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
-  // TODO(crbug.com/812059): Need a "copy from surface" VIZ API.
-  if (enable_viz_) {
-    callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
-    return;
-  }
-
-  DCHECK(IsSurfaceAvailableForCopy());
-  DCHECK(support_);
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(&CopyFromCompositingSurfaceHasResult, gfx::Size(),
-                         preferred_color_type, callback));
+          base::BindOnce(
+              [](base::OnceCallback<void(const SkBitmap&)> callback,
+                 std::unique_ptr<viz::CopyOutputResult> result) {
+                std::move(callback).Run(result->AsSkBitmap());
+              },
+              std::move(callback)));
 
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(current_surface_size_));

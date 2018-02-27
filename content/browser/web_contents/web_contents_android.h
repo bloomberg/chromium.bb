@@ -228,8 +228,7 @@ class CONTENT_EXPORT WebContentsAndroid
 
   void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
                                 const base::android::JavaRef<jobject>& callback,
-                                const SkBitmap& bitmap,
-                                ReadbackResponse response);
+                                const SkBitmap& bitmap);
 
   void OnFinishDownloadImage(const base::android::JavaRef<jobject>& obj,
                              const base::android::JavaRef<jobject>& callback,

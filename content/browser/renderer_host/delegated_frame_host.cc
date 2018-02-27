@@ -130,25 +130,22 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
-  // TODO(crbug/759310): Only NavigationEntryScreenshotManager needs grayscale.
-  // Move that transformation to there; and then remove |preferred_color_type|
-  // from this API and the end-to-end code path.
-  DCHECK(preferred_color_type == kN32_SkColorType ||
-         preferred_color_type == kAlpha_8_SkColorType);
-
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   if (!CanCopyFromCompositingSurface() ||
       current_frame_size_in_dip_.IsEmpty()) {
-    callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(&CopyFromCompositingSurfaceHasResult, gfx::Size(),
-                         preferred_color_type, callback));
+          base::BindOnce(
+              [](base::OnceCallback<void(const SkBitmap&)> callback,
+                 std::unique_ptr<viz::CopyOutputResult> result) {
+                std::move(callback).Run(result->AsSkBitmap());
+              },
+              std::move(callback)));
 
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(current_frame_size_in_dip_));

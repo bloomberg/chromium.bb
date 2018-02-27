@@ -11,7 +11,6 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/page_transition_types.h"
@@ -87,9 +86,7 @@ class ThumbnailTabHelper
   void StartThumbnailCaptureIfNecessary(TriggerReason trigger);
 
   // Creates a thumbnail from the web contents bitmap.
-  void ProcessCapturedBitmap(TriggerReason trigger,
-                             const SkBitmap& bitmap,
-                             content::ReadbackResponse response);
+  void ProcessCapturedBitmap(TriggerReason trigger, const SkBitmap& bitmap);
 
   // Passes the thumbnail to the thumbnail service.
   void StoreThumbnail(const SkBitmap& thumbnail);

@@ -224,7 +224,7 @@ class CustomTabObserver extends EmptyTabObserver {
         if (tab.getWebContents() == null) return;
 
         tab.getWebContents().getContentBitmapAsync(
-                mContentBitmapWidth, mContentBitmapHeight, (Bitmap bitmap, int response) -> {
+                mContentBitmapWidth, mContentBitmapHeight, (Bitmap bitmap) -> {
                     if (TextUtils.isEmpty(tab.getTitle()) && bitmap == null) return;
                     mCustomTabsConnection.sendNavigationInfo(
                             mSession, tab.getUrl(), tab.getTitle(), bitmap);

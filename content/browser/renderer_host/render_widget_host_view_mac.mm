@@ -1193,10 +1193,9 @@ bool RenderWidgetHostViewMac::IsPopup() const {
 void RenderWidgetHostViewMac::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   browser_compositor_->GetDelegatedFrameHost()->CopyFromCompositingSurface(
-      src_subrect, dst_size, callback, preferred_color_type);
+      src_subrect, dst_size, std::move(callback));
 }
 
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
