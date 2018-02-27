@@ -160,10 +160,7 @@ const char* Http2DecoderAdapter::SpdyFramerErrorToString(
   return "UNKNOWN_ERROR";
 }
 
-Http2DecoderAdapter::Http2DecoderAdapter() : Http2DecoderAdapter(false) {}
-
-Http2DecoderAdapter::Http2DecoderAdapter(bool h2_on_stream_pad_length)
-    : h2_on_stream_pad_length_(h2_on_stream_pad_length) {
+Http2DecoderAdapter::Http2DecoderAdapter() {
   DVLOG(1) << "Http2DecoderAdapter ctor";
   ResetInternal();
 }
@@ -441,11 +438,7 @@ void Http2DecoderAdapter::OnPadLength(size_t trailing_length) {
   opt_pad_length_ = trailing_length;
   DCHECK_LT(trailing_length, 256u);
   if (frame_header_.type == Http2FrameType::DATA) {
-    if (h2_on_stream_pad_length_) {
-      visitor()->OnStreamPadLength(stream_id(), trailing_length);
-    } else {
-      visitor()->OnStreamPadding(stream_id(), 1);
-    }
+    visitor()->OnStreamPadLength(stream_id(), trailing_length);
   }
 }
 

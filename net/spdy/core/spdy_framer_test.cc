@@ -238,7 +238,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   explicit TestSpdyVisitor(SpdyFramer::CompressionOption option)
       : framer_(option),
-        deframer_(GetSpdyReloadableFlag(h2_on_stream_pad_length)),
         error_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
@@ -585,8 +584,7 @@ class SpdyFramerTest : public ::testing::TestWithParam<Output> {
  public:
   SpdyFramerTest()
       : output_(output_buffer, kSize),
-        framer_(SpdyFramer::ENABLE_COMPRESSION),
-        deframer_(GetSpdyReloadableFlag(h2_on_stream_pad_length)) {}
+        framer_(SpdyFramer::ENABLE_COMPRESSION) {}
 
  protected:
   void SetUp() override {
@@ -797,11 +795,7 @@ TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
   {
     testing::InSequence seq;
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
-    if (GetSpdyReloadableFlag(h2_on_stream_pad_length)) {
-      EXPECT_CALL(visitor, OnStreamPadLength(1, 4));
-    } else {
-      EXPECT_CALL(visitor, OnStreamPadding(1, 1));
-    }
+    EXPECT_CALL(visitor, OnStreamPadLength(1, 4));
     EXPECT_CALL(visitor, OnError(_)).Times(0);
     // Note that OnStreamFrameData(1, _, 1)) is never called
     // since there is no data, only padding
@@ -3108,11 +3102,7 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   bytes_consumed += kDataFrameMinimumSize;
 
   // Send the padding length field.
-  if (GetSpdyReloadableFlag(h2_on_stream_pad_length)) {
-    EXPECT_CALL(visitor, OnStreamPadLength(1, kPaddingLen - 1));
-  } else {
-    EXPECT_CALL(visitor, OnStreamPadding(1, 1));
-  }
+  EXPECT_CALL(visitor, OnStreamPadLength(1, kPaddingLen - 1));
   CHECK_EQ(1u, deframer_.ProcessInput(frame.data() + bytes_consumed, 1));
   CHECK_EQ(deframer_.state(), Http2DecoderAdapter::SPDY_FORWARD_STREAM_FRAME);
   CHECK_EQ(deframer_.spdy_framer_error(), Http2DecoderAdapter::SPDY_NO_ERROR);

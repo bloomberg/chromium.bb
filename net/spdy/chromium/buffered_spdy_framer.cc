@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
-#include "net/spdy/platform/api/spdy_flags.h"
 
 namespace net {
 
@@ -24,7 +23,6 @@ size_t kGoAwayDebugDataMaxSize = 1024;
 BufferedSpdyFramer::BufferedSpdyFramer(uint32_t max_header_list_size,
                                        const NetLogWithSource& net_log)
     : spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
-      deframer_(GetSpdyReloadableFlag(h2_on_stream_pad_length)),
       visitor_(NULL),
       frames_received_(0),
       max_header_list_size_(max_header_list_size),

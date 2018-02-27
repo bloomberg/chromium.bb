@@ -77,7 +77,6 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
   static const char* SpdyFramerErrorToString(SpdyFramerError spdy_framer_error);
 
   Http2DecoderAdapter();
-  explicit Http2DecoderAdapter(bool h2_on_stream_pad_length);
   ~Http2DecoderAdapter() override;
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
@@ -315,9 +314,6 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
   bool handling_extension_payload_ = false;
 
   bool process_single_input_frame_ = false;
-
-  // Flag value latched at construction.
-  const bool h2_on_stream_pad_length_ : 1;
 };
 
 // Http2DecoderAdapter will use the given visitor implementing this

@@ -54,7 +54,6 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   static const char* StateToString(int state);
 
   QuicHttpDecoderAdapter();
-  explicit QuicHttpDecoderAdapter(bool h2_on_stream_pad_length);
   ~QuicHttpDecoderAdapter() override;
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
@@ -291,9 +290,6 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   bool handling_extension_payload_ = false;
 
   bool process_single_input_frame_ = false;
-
-  // Flag value latched at construction.
-  const bool h2_on_stream_pad_length_ : 1;
 };
 
 }  // namespace net
