@@ -38,17 +38,12 @@
 
 # These tests are occasionally flaking. See https://crbug.com/738275. Please be
 # pretty confident you've fixed their rarely-flakiness before re-enabling.
-#AllModes/TaskSchedulerSingleThreadTaskRunnerManagerCommonTest.*
 -AllocationRegisterTest.InsertRemoveRandomOrder
 -ConditionVariableTest.MultiThreadConsumerTest
 -MemoryPeakDetectorTest.StdDev
 -MemoryPeakDetectorTest.Throttle
 -ObserverListThreadSafeTest.CrossThreadObserver
-#OneTraitsExecutionModePair/TaskSchedulerImplTest.*
-#ProcessUtilTest.DelayedTermination
-#ProcessUtilTest.ImmediateTermination
 -TraceCategoryTest.ThreadRaces
-#MemoryDumpManagerTest.PostTaskForSequencedTaskRunner
 
 # This test expects a task to complete no later than 250ms after it's expected
 # to, but that's easily a poor assumption when running on QEMU without hardware
@@ -65,12 +60,6 @@
 # https://crbug.com/779645 - requires ability to set address-space limits.
 -PartitionAllocTest.RepeatedReturnNull
 -PartitionAllocTest.RepeatedReturnNullDirect
-
-# https://crbug.com/801353 - takes 50x-100x the normal time to execute on bots.
--PersistentMemoryAllocatorTest.ParallelismTest
-
-# Times out on ARM64: https://crbug.com/809660.
--AddressSpaceRandomizationTest.Random
 
 # Flaky, https://crbug.com/768436, https://crbug.com/792310.
 -TaskSchedulerWorkerPoolBlockingTest.MaximumWorkersTest

@@ -19,7 +19,9 @@
 
 #if defined(OS_POSIX)
 #include <sys/mman.h>
+#if !defined(OS_FUCHSIA)
 #include <sys/resource.h>
+#endif
 #include <sys/time.h>
 #endif  // defined(OS_POSIX)
 

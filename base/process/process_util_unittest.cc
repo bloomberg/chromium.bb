@@ -48,7 +48,9 @@
 #include <fcntl.h>
 #include <sched.h>
 #include <signal.h>
+#if !defined(OS_FUCHSIA)
 #include <sys/resource.h>
+#endif
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>

@@ -9,7 +9,6 @@
 #include <sched.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -30,6 +29,8 @@
 
 #if defined(OS_FUCHSIA)
 #include <zircon/process.h>
+#else
+#include <sys/resource.h>
 #endif
 
 namespace base {

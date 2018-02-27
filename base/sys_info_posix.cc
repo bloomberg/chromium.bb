@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/param.h>
-#include <sys/resource.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -20,6 +19,10 @@
 #include "base/sys_info_internal.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+
+#if !defined(OS_FUCHSIA)
+#include <sys/resource.h>
+#endif
 
 #if defined(OS_ANDROID)
 #include <sys/vfs.h>
