@@ -15,7 +15,7 @@ DesktopLinuxBrowserFrameView::DesktopLinuxBrowserFrameView(
     std::unique_ptr<views::NavButtonProvider> nav_button_provider)
     : OpaqueBrowserFrameView(frame, browser_view, layout),
       nav_button_provider_(std::move(nav_button_provider)) {
-  profile_switcher_.set_nav_button_provider(nav_button_provider_.get());
+  profile_switcher()->set_nav_button_provider(nav_button_provider_.get());
 }
 
 DesktopLinuxBrowserFrameView::~DesktopLinuxBrowserFrameView() {}

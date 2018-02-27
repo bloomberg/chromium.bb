@@ -88,7 +88,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
  protected:
   // BrowserNonClientFrameView:
-  void UpdateProfileIcons() override;
+  AvatarButtonStyle GetAvatarButtonStyle() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,

@@ -32,7 +32,6 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
-  views::View* GetProfileSwitcherView() const override;
 
   // views::View:
   void Layout() override;
@@ -43,11 +42,9 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void OnPaint(gfx::Canvas* canvas) override;
 
   // BrowserNonClientFrameView:
-  void UpdateProfileIcons() override;
+  AvatarButtonStyle GetAvatarButtonStyle() const override;
 
  private:
-  // Wrapper around the in-frame avatar switcher.
-  AvatarButtonManager profile_switcher_;
   void PaintThemedFrame(gfx::Canvas* canvas);
   int GetTabStripRightInset() const;
 

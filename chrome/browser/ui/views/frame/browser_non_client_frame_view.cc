@@ -29,6 +29,10 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/background.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
 #endif
@@ -37,6 +41,7 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
+      profile_switcher_(this),
       profile_indicator_icon_(nullptr) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
@@ -78,7 +83,7 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
 }
 
 views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
-  return nullptr;
+  return profile_switcher_.view();
 }
 
 views::View* BrowserNonClientFrameView::GetHostedAppMenuView() {
@@ -156,10 +161,17 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage() const {
   return GetFrameOverlayImage(ShouldPaintAsActive());
 }
 
-void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
-  // TODO(afakhry): Unify all platform-specific logic from callers to this
-  // function here. https://crbug.com/815031.
-  const Profile* profile = browser_view()->browser()->profile();
+void BrowserNonClientFrameView::UpdateProfileIcons() {
+  const AvatarButtonStyle avatar_button_style = GetAvatarButtonStyle();
+  if (avatar_button_style != AvatarButtonStyle::NONE &&
+      browser_view()->IsRegularOrGuestSession()) {
+    // Platform supports a profile switcher that will be shown. Skip the rest.
+    profile_switcher_.Update(avatar_button_style);
+    return;
+  }
+
+  Browser* browser = browser_view()->browser();
+  const Profile* profile = browser->profile();
   const bool is_incognito =
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
 
@@ -167,8 +179,19 @@ void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
   // frame. It's instead shown in the new tab button. However, we still show an
   // avatar icon for the teleported browser windows between multi-user sessions
   // (Chrome OS only). Note that you can't teleport an incognito window.
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() && is_incognito)
+  if (is_incognito && ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     return;
+
+#if defined(OS_CHROMEOS)
+  // Ash and MUS specific.
+  if (!browser->is_type_tabbed() && !browser->is_app())
+    return;
+
+  if (!is_incognito && !MultiUserWindowManager::ShouldShowAvatar(
+                           browser_view()->GetNativeWindow())) {
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   if (!profile_indicator_icon_) {
     profile_indicator_icon_ = new ProfileIndicatorIcon();
