@@ -50,7 +50,7 @@ namespace {
 const char* const kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 
-MemoryDumpManager* g_instance_for_testing = nullptr;
+MemoryDumpManager* g_memory_dump_manager_for_testing = nullptr;
 
 // Temporary (until peak detector and scheduler are moved outside of here)
 // trampoline function to match the |request_dump_function| passed to Initialize
@@ -162,8 +162,8 @@ const char* const MemoryDumpManager::kSystemAllocatorPoolName =
 
 // static
 MemoryDumpManager* MemoryDumpManager::GetInstance() {
-  if (g_instance_for_testing)
-    return g_instance_for_testing;
+  if (g_memory_dump_manager_for_testing)
+    return g_memory_dump_manager_for_testing;
 
   return Singleton<MemoryDumpManager,
                    LeakySingletonTraits<MemoryDumpManager>>::get();
@@ -172,9 +172,9 @@ MemoryDumpManager* MemoryDumpManager::GetInstance() {
 // static
 std::unique_ptr<MemoryDumpManager>
 MemoryDumpManager::CreateInstanceForTesting() {
-  DCHECK(!g_instance_for_testing);
+  DCHECK(!g_memory_dump_manager_for_testing);
   std::unique_ptr<MemoryDumpManager> instance(new MemoryDumpManager());
-  g_instance_for_testing = instance.get();
+  g_memory_dump_manager_for_testing = instance.get();
   return instance;
 }
 
@@ -197,7 +197,7 @@ MemoryDumpManager::~MemoryDumpManager() {
   }
   AutoLock lock(lock_);
   dump_thread_.reset();
-  g_instance_for_testing = nullptr;
+  g_memory_dump_manager_for_testing = nullptr;
 }
 
 // static
