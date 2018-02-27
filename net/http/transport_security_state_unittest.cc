@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
@@ -2447,30 +2448,81 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
                 SignedCertificateTimestampAndStatusList(),
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+}
 
-  // And the emergency field trial should disable the requirement, if
-  // necessary.
-  hashes.clear();
-  hashes.push_back(HashValue(symantec_hash_value));
+// Tests that CAs can enable CT for testing their issuance practices, prior
+// to CT becoming mandatory.
+TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
+  // Test certificates before and after the 1 June 2016 deadline.
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "dec_2017.pem");
+  ASSERT_TRUE(cert);
+
+  // The hashes here do not matter, but add some dummy values to simulate
+  // a 'real' chain.
+  HashValueVector hashes;
+  const SHA256HashValue hash_a = {{0xAA, 0xAA}};
+  hashes.push_back(HashValue(hash_a));
+  const SHA256HashValue hash_b = {{0xBB, 0xBB}};
+  hashes.push_back(HashValue(hash_b));
+
+  TransportSecurityState state;
+
+  // CT should not be required for this pre-existing certificate.
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+
+  // However, simulating a Field Trial in which CT is required for certificates
+  // after 2017-12-01 should cause CT to be required for this certificate, as
+  // it was issued 2017-12-20.
+  const char kTrialName[] = "EnforceCTForNewCertsTrial";
+  const char kGroupName[] = "Unused";  // Value not used.
+  const char kFeatureName[] = "EnforceCTForNewCerts";
+
+  base::test::ScopedFeatureList scoped_feature_list;
   base::FieldTrialList field_trial_list(
       std::make_unique<base::MockEntropyProvider>());
-  base::FieldTrialList::CreateFieldTrial("EnforceCTForProblematicRoots",
-                                         "disabled");
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+  std::map<std::string, std::string> params;
+  // Set the enforcement date to 2017-12-01 00:00:00;
+  params["date"] = "1512086400";
+  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+      kTrialName, kGroupName, params);
 
-  EXPECT_EQ(
-      TransportSecurityState::CT_NOT_REQUIRED,
-      state.CheckCTRequirements(
-          HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
-          before_cert.get(), SignedCertificateTimestampAndStatusList(),
-          TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
-  EXPECT_EQ(
-      TransportSecurityState::CT_NOT_REQUIRED,
-      state.CheckCTRequirements(
-          HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
-          after_cert.get(), SignedCertificateTimestampAndStatusList(),
-          TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+  std::unique_ptr<base::FeatureList> feature_list(
+      std::make_unique<base::FeatureList>());
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  // It should fail if it doesn't comply with policy...
+  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+
+  // ... and succeed if it does comply with policy ...
+  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
+
+  // ... or if the build is outdated.
+  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+            state.CheckCTRequirements(
+                HostPortPair("www.example.com", 443), true, hashes, cert.get(),
+                cert.get(), SignedCertificateTimestampAndStatusList(),
+                TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+                ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY));
 }
 
 // Tests that Certificate Transparency is required for all of the Symantec
