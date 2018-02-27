@@ -18,11 +18,12 @@
 #include "base/win/scoped_variant.h"
 #include "media/base/timestamp_constants.h"
 #include "media/capture/video/blob_utils.h"
+#include "media/capture/video/win/metrics.h"
 #include "media/capture/video/win/video_capture_device_utils_win.h"
 
-using Microsoft::WRL::ComPtr;
 using base::win::ScopedCoMem;
 using base::win::ScopedVariant;
+using Microsoft::WRL::ComPtr;
 
 namespace media {
 
@@ -407,6 +408,15 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
 
   if (capture_graph_builder_.Get())
     capture_graph_builder_.Reset();
+
+  if (!take_photo_callbacks_.empty()) {
+    for (size_t k = 0; k < take_photo_callbacks_.size(); k++) {
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kDirectShow,
+          ImageCaptureOutcome::kFailedUsingVideoStream,
+          IsHighResolution(capture_format_));
+    }
+  }
 }
 
 bool VideoCaptureDeviceWin::Init() {
@@ -856,8 +866,18 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
     take_photo_callbacks_.pop();
 
     mojom::BlobPtr blob = Blobify(buffer, length, format);
-    if (blob)
+    if (blob) {
       std::move(cb).Run(std::move(blob));
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kDirectShow,
+          ImageCaptureOutcome::kSucceededUsingVideoStream,
+          IsHighResolution(format));
+    } else {
+      LogWindowsImageCaptureOutcome(
+          VideoCaptureWinBackend::kDirectShow,
+          ImageCaptureOutcome::kFailedUsingVideoStream,
+          IsHighResolution(format));
+    }
   }
 }
 

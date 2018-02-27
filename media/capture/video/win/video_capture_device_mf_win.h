@@ -23,6 +23,7 @@
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/win/capability_list_win.h"
+#include "media/capture/video/win/metrics.h"
 
 interface IMFSourceReader;
 
@@ -91,7 +92,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
 
  private:
   HRESULT ExecuteHresultCallbackWithRetries(
-      base::RepeatingCallback<HRESULT()> callback);
+      base::RepeatingCallback<HRESULT()> callback,
+      MediaFoundationFunctionRequiringRetry which_function);
   HRESULT GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count);
   HRESULT GetDeviceStreamCategory(
       IMFCaptureSource* source,

@@ -22476,6 +22476,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Some stored passwords from IE7 found."/>
 </enum>
 
+<enum name="ImageCaptureOutcome">
+  <int value="0" label="Succeeded using video stream"/>
+  <int value="1" label="Succeeded using photo stream"/>
+  <int value="2" label="Failed using video stream"/>
+  <int value="3" label="Failed using photo stream"/>
+</enum>
+
 <enum name="IMECommitType">
   <obsolete>
     Deprecated 03/2015, and replaced by IMECommitType2.
@@ -44588,6 +44595,12 @@ Called by update_traffic_annotation_histograms.py.-->
       label="Browser closing connection to video capture service after video
              capture session"/>
   <int value="9" label="Video capture service timeout canceled"/>
+</enum>
+
+<enum name="VideoCaptureWinBackendUsed">
+  <int value="0" label="Using DirectShow as default"/>
+  <int value="1" label="Using MediaFoundation as default"/>
+  <int value="2" label="Using DirectShow as fallback"/>
 </enum>
 
 <enum name="VideoCodec">
