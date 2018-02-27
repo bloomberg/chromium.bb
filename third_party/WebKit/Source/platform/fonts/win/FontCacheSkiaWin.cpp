@@ -135,18 +135,18 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   }
 
   UScriptCode script;
-  const wchar_t* family = GetFallbackFamily(
+  const UChar* family = GetFallbackFamily(
       character, font_description.GenericFamily(), font_description.Locale(),
       &script, fallback_priority, font_manager_.get());
-  FontPlatformData* data = nullptr;
   if (family) {
-    FontFaceCreationParams create_by_family(
-        AtomicString(family, wcslen(family)));
-    data = GetFontPlatformData(font_description, create_by_family);
+    FontFaceCreationParams create_by_family(family);
+    FontPlatformData* data =
+        GetFontPlatformData(font_description, create_by_family);
+    if (data && data->FontContainsCharacter(character))
+      return FontDataFromFontPlatformData(data, kDoNotRetain);
   }
 
-  if ((!data || !data->FontContainsCharacter(character)) &&
-      use_skia_font_fallback_) {
+  if (use_skia_font_fallback_) {
     const char* bcp47_locale = nullptr;
     int locale_count = 0;
     // If the font description has a locale, use that. Otherwise, Skia will
@@ -167,7 +167,10 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       SkString skia_family;
       typeface->getFamilyName(&skia_family);
       FontFaceCreationParams create_by_family(ToAtomicString(skia_family));
-      data = GetFontPlatformData(font_description, create_by_family);
+      FontPlatformData* data =
+          GetFontPlatformData(font_description, create_by_family);
+      if (data && data->FontContainsCharacter(character))
+        return FontDataFromFontPlatformData(data, kDoNotRetain);
     }
   }
 
@@ -219,23 +222,14 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   // because it's based on script to font mapping. This problem is
   // critical enough for non-Latin scripts (especially Han) to
   // warrant an additional (real coverage) check with fontCotainsCharacter.
-  int i;
-  for (i = 0;
-       (!data || !data->FontContainsCharacter(character)) && i < num_fonts;
-       ++i) {
+  for (int i = 0; i < num_fonts; ++i) {
     family = pan_uni_fonts[i];
-    FontFaceCreationParams create_by_family(
-        AtomicString(family, wcslen(family)));
-    data = GetFontPlatformData(font_description, create_by_family);
+    FontFaceCreationParams create_by_family(family);
+    FontPlatformData* data =
+        GetFontPlatformData(font_description, create_by_family);
+    if (data && data->FontContainsCharacter(character))
+      return FontDataFromFontPlatformData(data, kDoNotRetain);
   }
-
-  // When i-th font (0-base) in |panUniFonts| contains a character and
-  // we get out of the loop, |i| will be |i + 1|. That is, if only the
-  // last font in the array covers the character, |i| will be numFonts.
-  // So, we have to use '<=" rather than '<' to see if we found a font
-  // covering the character.
-  if (i <= num_fonts)
-    return FontDataFromFontPlatformData(data, kDoNotRetain);
 
   return nullptr;
 }
