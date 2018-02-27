@@ -18,7 +18,11 @@ source_set("download") {
     "pass_kit_coordinator.mm",
   ]
   deps = [
+    "resources:download_done",
+    "resources:download_error",
+    "resources:download_file",
     "resources:download_manager_controller_xib",
+    "resources:download_progress",
     "resources:error_icon",
     "resources:file_icon_body",
     "resources:file_icon_fold",
