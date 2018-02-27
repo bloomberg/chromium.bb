@@ -56,8 +56,10 @@ class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
   // The |callback| is fired when the final reference of this instance
   // is released. If release policy is DELETE_ON_FINAL_RELEASE the
   // callback task(s) is/are posted before the deletion is scheduled.
-  // The callbacks are posted in reverse of the order they were added, as LIFO
-  // generally makes most sense for cleanup work.
+  // The callbacks are posted in reverse of the order they were added, because
+  // LIFO order makes it possible for later cleanup callbacks to restore state
+  // earlier added callbacks might rely on (this is relied on by for example
+  // code in BlobMemoryController, when shrinking file allocations).
   void AddFinalReleaseCallback(FinalReleaseCallback callback);
 
  private:
