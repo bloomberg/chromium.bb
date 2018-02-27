@@ -101,13 +101,12 @@ template("pkg_config") {
     }
 
     pkgresult = exec_script(pkg_config_script, args, "value")
-    include_dirs = pkgresult[0]
-    cflags = pkgresult[1]
+    cflags = pkgresult[0]
 
     if (!defined(invoker.ignore_libs) || !invoker.ignore_libs) {
-      libs = pkgresult[2]
-      lib_dirs = pkgresult[3]
-      ldflags = pkgresult[4]
+      libs = pkgresult[1]
+      lib_dirs = pkgresult[2]
+      ldflags = pkgresult[3]
     }
 
     forward_variables_from(invoker,
