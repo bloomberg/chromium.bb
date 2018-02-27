@@ -211,6 +211,10 @@ class UserManagerProfileDialogDelegate
     webContentsDelegate_.reset(new UserManagerProfileDialogDelegate());
     dialogWebContents_->SetDelegate(webContentsDelegate_.get());
 
+    // Load the url for the WebContents before constrained window creation so
+    // that the dialog can get focus properly.
+    [self show];
+
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
        [[CustomConstrainedWindowSheet alloc]
            initWithCustomWindow:[self window]]);
@@ -224,7 +228,6 @@ class UserManagerProfileDialogDelegate
     auto closeButton = [window standardWindowButton:NSWindowCloseButton];
     [closeButton setTarget:self];
     [closeButton setAction:@selector(closeButtonClicked:)];
-    [self show];
   }
 
   return self;
