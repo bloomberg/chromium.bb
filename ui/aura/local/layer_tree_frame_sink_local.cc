@@ -23,8 +23,7 @@ LayerTreeFrameSinkLocal::LayerTreeFrameSinkLocal(
     const std::string& debug_label)
     : cc::LayerTreeFrameSink(nullptr, nullptr, nullptr, nullptr, nullptr),
       frame_sink_id_(frame_sink_id),
-      host_frame_sink_manager_(host_frame_sink_manager),
-      weak_factory_(this) {
+      host_frame_sink_manager_(host_frame_sink_manager) {
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_, debug_label);
 }
@@ -52,10 +51,6 @@ void LayerTreeFrameSinkLocal::SetSurfaceChangedCallback(
     const SurfaceChangedCallback& callback) {
   DCHECK(!surface_changed_callback_);
   surface_changed_callback_ = callback;
-}
-
-base::WeakPtr<LayerTreeFrameSinkLocal> LayerTreeFrameSinkLocal::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void LayerTreeFrameSinkLocal::DetachFromClient() {
