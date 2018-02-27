@@ -7,7 +7,6 @@
 
 #include "base/sequence_checker.h"
 #include "media/filters/vp8_parser.h"
-#include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vp8_decoder.h"
 
 namespace media {
@@ -17,7 +16,7 @@ class VaapiDecodeSurface;
 class VaapiVideoDecodeAccelerator;
 class VaapiWrapper;
 
-class MEDIA_GPU_EXPORT VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
+class VaapiVP8Accelerator : public VP8Decoder::VP8Accelerator {
  public:
   VaapiVP8Accelerator(VaapiVideoDecodeAccelerator* vaapi_dec,
                       scoped_refptr<VaapiWrapper> vaapi_wrapper);
