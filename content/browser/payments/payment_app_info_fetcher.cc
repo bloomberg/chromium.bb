@@ -14,6 +14,7 @@
 #include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/common/console_message_level.h"
 #include "ui/gfx/image/image.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -83,17 +84,29 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     if (!render_frame_host)
       continue;
 
-    WebContentsImpl* web_content = static_cast<WebContentsImpl*>(
+    WebContentsImpl* context_web_content = static_cast<WebContentsImpl*>(
         WebContents::FromRenderFrameHost(render_frame_host));
-    if (!web_content || web_content->IsHidden() ||
-        context_url.spec().compare(web_content->GetLastCommittedURL().spec()) !=
-            0) {
+    if (!context_web_content || context_web_content->IsHidden() ||
+        context_url.spec().compare(
+            context_web_content->GetLastCommittedURL().spec()) != 0) {
       continue;
     }
 
-    web_contents_helper_ = std::make_unique<WebContentsHelper>(web_content);
+    // Get the main frame since web app manifest is only available in the main
+    // frame's document by definition. The main frame's document must come from
+    // the same origin.
+    WebContentsImpl* top_level_web_content = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderFrameHost(context_web_content->GetMainFrame()));
+    if (!top_level_web_content || top_level_web_content->IsHidden() ||
+        !url::IsSameOriginWith(context_url,
+                               top_level_web_content->GetLastCommittedURL())) {
+      continue;
+    }
 
-    web_content->GetManifest(
+    web_contents_helper_ =
+        std::make_unique<WebContentsHelper>(top_level_web_content);
+
+    top_level_web_content->GetManifest(
         base::Bind(&PaymentAppInfoFetcher::SelfDeleteFetcher::
                        FetchPaymentAppManifestCallback,
                    base::Unretained(this)));
