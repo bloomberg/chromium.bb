@@ -52,7 +52,9 @@ message MouseEvent {
     BUTTON_LEFT = 1;
     BUTTON_MIDDLE = 2;
     BUTTON_RIGHT = 3;
-    BUTTON_MAX = 4;
+    BUTTON_BACK = 4;
+    BUTTON_FORWARD = 5;
+    BUTTON_MAX = 6;
   }
 
   // Mouse absolute position information. When using WebRTC-based protocol the

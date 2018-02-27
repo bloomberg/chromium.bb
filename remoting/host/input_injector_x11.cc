@@ -144,8 +144,8 @@ class InputInjectorX11 : public InputInjector {
     Window root_window_;
 
     // Number of buttons we support.
-    // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
-    static const int kNumPointerButtons = 7;
+    // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right, back, forward.
+    static const int kNumPointerButtons = 9;
 
     int pointer_button_map_[kNumPointerButtons];
 
@@ -605,13 +605,14 @@ int InputInjectorX11::Core::MouseButtonToX11ButtonNumber(
   switch (button) {
     case MouseEvent::BUTTON_LEFT:
       return pointer_button_map_[0];
-
     case MouseEvent::BUTTON_RIGHT:
       return pointer_button_map_[2];
-
     case MouseEvent::BUTTON_MIDDLE:
       return pointer_button_map_[1];
-
+    case MouseEvent::BUTTON_BACK:
+      return pointer_button_map_[7];
+    case MouseEvent::BUTTON_FORWARD:
+      return pointer_button_map_[8];
     case MouseEvent::BUTTON_UNDEFINED:
     default:
       return -1;
