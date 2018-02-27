@@ -122,7 +122,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     /**
      * Thread-safe way to get the one and only WebViewChromiumFactoryProvider.
      */
-    public static WebViewChromiumFactoryProvider getSingleton() {
+    static WebViewChromiumFactoryProvider getSingleton() {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
                 throw new RuntimeException("WebViewChromiumFactoryProvider has not been set!");
