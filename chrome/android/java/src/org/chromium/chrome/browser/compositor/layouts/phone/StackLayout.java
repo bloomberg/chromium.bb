@@ -950,18 +950,12 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         float fullDistance = getFullScrollDistance();
         mScrollIndexOffset += MathUtils.flipSignIf(delta / fullDistance,
                 getOrientation() == Orientation.PORTRAIT && LocalizationUtils.isLayoutRtl());
-        if (canScrollLinearly(getTabStackIndex())) {
-            mRenderedScrollOffset = mScrollIndexOffset;
-        } else {
-            mRenderedScrollOffset = (int) MathUtils.clamp(
-                    mScrollIndexOffset, 0, mStacks[1].isDisplayable() ? -1 : 0);
-        }
+        mRenderedScrollOffset = MathUtils.clamp(mScrollIndexOffset, 0, -1);
         requestStackUpdate();
     }
 
     private void flingStacks(boolean toIncognito) {
         // velocityX is measured in pixel per second.
-        if (!canScrollLinearly(toIncognito ? 0 : 1)) return;
         setActiveStackState(toIncognito);
         finishScrollStacks();
         requestStackUpdate();
@@ -1103,22 +1097,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     private void resetScrollData() {
         mScrollIndexOffset = -getTabStackIndex();
         mRenderedScrollOffset = mScrollIndexOffset;
-    }
-
-    /**
-     *  Based on the current position, determine if we will map mScrollDistance linearly to
-     *  mRenderedScrollDistance. The logic is, if there is only stack, we will not map linearly;
-     *  if we are scrolling two the boundary of either of the stacks, we will not map linearly;
-     *  otherwise yes.
-     */
-    private boolean canScrollLinearly(int fromStackIndex) {
-        int count = mStacks.length;
-        if (!(mScrollIndexOffset <= 0 && -mScrollIndexOffset <= (count - 1))) {
-            return false;
-        }
-        // since we only have two stacks now, we have a shortcut to calculate
-        // empty stacks
-        return mStacks[fromStackIndex ^ 0x01].isDisplayable();
     }
 
     private float getFullScrollDistance() {
