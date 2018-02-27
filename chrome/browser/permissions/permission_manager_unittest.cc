@@ -34,7 +34,9 @@ using content::PermissionType;
 
 namespace {
 
+#if defined(OS_ANDROID)
 int kNoPendingOperation = -1;
+#endif
 
 class PermissionManagerTestingProfile final : public TestingProfile {
  public:
@@ -430,6 +432,7 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   vr::VrTabHelper* vr_tab_helper = vr::VrTabHelper::FromWebContents(contents);
+#if defined(OS_ANDROID)
   vr_tab_helper->SetIsInVr(true);
   EXPECT_EQ(
       kNoPendingOperation,
@@ -439,7 +442,7 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
                      base::Unretained(this))));
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::DENIED, callback_result());
-
+#endif
   vr_tab_helper->SetIsInVr(false);
   GetPermissionManager()->RequestPermission(
       PermissionType::NOTIFICATIONS, main_rfh(), url(), false,
