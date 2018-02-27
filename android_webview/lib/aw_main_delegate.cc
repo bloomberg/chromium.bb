@@ -34,7 +34,7 @@
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
-#include "components/spellcheck/common/spellcheck_features.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +50,10 @@
 #include "media/media_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "components/spellcheck/common/spellcheck_features.h"
+#endif  // ENABLE_SPELLCHECK
 
 namespace android_webview {
 
@@ -144,8 +148,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   CommandLineHelper::AddEnabledFeature(
       *cl, spellcheck::kAndroidSpellCheckerNonLowEnd.name);
+#endif  // ENABLE_SPELLCHECK
 
   CommandLineHelper::AddDisabledFeature(*cl, features::kWebPayments.name);
 
