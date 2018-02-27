@@ -6,13 +6,16 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -42,6 +45,35 @@ constexpr BrowsingDataRemoveMask kRemoveMask =
     BrowsingDataRemoveMask::REMOVE_VISITED_LINKS |
     BrowsingDataRemoveMask::REMOVE_LAST_USER_ACCOUNT;
 
+// Observer used to validate that BrowsingDataRemoverImpl notifies its
+// observers.
+class TestBrowsingDataRemoverObserver : public BrowsingDataRemoverObserver {
+ public:
+  TestBrowsingDataRemoverObserver() = default;
+  ~TestBrowsingDataRemoverObserver() override = default;
+
+  // BrowsingDataRemoverObserver implementation.
+  void OnBrowsingDataRemoved(BrowsingDataRemover* remover,
+                             BrowsingDataRemoveMask mask) override;
+
+  // Returns the |mask| value passed to the last call of OnBrowsingDataRemoved.
+  // Returns BrowsingDataRemoveMask::REMOVE_NOTHING if it has not been called.
+  BrowsingDataRemoveMask last_remove_mask() const { return last_remove_mask_; }
+
+ private:
+  BrowsingDataRemoveMask last_remove_mask_ =
+      BrowsingDataRemoveMask::REMOVE_NOTHING;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowsingDataRemoverObserver);
+};
+
+void TestBrowsingDataRemoverObserver::OnBrowsingDataRemoved(
+    BrowsingDataRemover* remover,
+    BrowsingDataRemoveMask mask) {
+  DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
+  last_remove_mask_ = mask;
+}
+
 }  // namespace
 
 class BrowsingDataRemoverImplTest : public PlatformTest {
@@ -68,6 +100,27 @@ class BrowsingDataRemoverImplTest : public PlatformTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverImplTest);
 };
+
+// Tests that BrowsingDataRemoverImpl::Remove() invokes the observers.
+TEST_F(BrowsingDataRemoverImplTest, InvokesObservers) {
+  TestBrowsingDataRemoverObserver observer;
+  ASSERT_TRUE(observer.last_remove_mask() != kRemoveMask);
+
+  ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>
+      scoped_observer(&observer);
+  scoped_observer.Add(&browsing_data_remover_);
+
+  browsing_data_remover_.Remove(browsing_data::TimePeriod::ALL_TIME,
+                                kRemoveMask, base::DoNothing());
+
+  TestBrowsingDataRemoverObserver* observer_ptr = &observer;
+  EXPECT_TRUE(
+      testing::WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
+        // Spin the RunLoop as WaitUntilConditionOrTimeout doesn't.
+        base::RunLoop().RunUntilIdle();
+        return observer_ptr->last_remove_mask() == kRemoveMask;
+      }));
+}
 
 // Tests that BrowsingDataRemoverImpl::Remove() can be called multiple times.
 TEST_F(BrowsingDataRemoverImplTest, SerializeRemovals) {
