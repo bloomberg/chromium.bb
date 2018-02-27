@@ -381,7 +381,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     private OverlayPanelContent createNewOverlayPanelContentInternal() {
         OverlayPanelContent content = mContentFactory.createNewOverlayPanelContent();
-        content.setContentViewSize(getContentViewWidthPx(), getContentViewHeightPx());
+        content.setContentViewSize(
+                getContentViewWidthPx(), getContentViewHeightPx(), isFullWidthSizePanel());
         return content;
     }
 
