@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "media/media_features.h"
+#include "media/mojo/interfaces/cdm_service.mojom.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -16,12 +17,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-
-#if defined(OS_MACOSX)
-#include "media/mojo/interfaces/cdm_service_mac.mojom.h"
-#else
-#include "media/mojo/interfaces/cdm_service.mojom.h"
-#endif  // defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"

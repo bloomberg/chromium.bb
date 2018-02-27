@@ -35,13 +35,11 @@
 #include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
+#include "media/mojo/interfaces/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #if defined(OS_MACOSX)
-#include "media/mojo/interfaces/cdm_service_mac.mojom.h"
 #include "sandbox/mac/seatbelt_extension.h"
-#else
-#include "media/mojo/interfaces/cdm_service.mojom.h"
 #endif  // defined(OS_MACOSX)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
