@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -936,7 +937,14 @@ class WillProcessResponseObserver : public content::WebContentsObserver {
 // Note: This test couldn't be a content_browsertests, since there would be
 // not handler defined for the "ftp" protocol in
 // URLRequestJobFactoryImpl::protocol_handler_map_.
-IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
+// Flaky on Mac only.  http://crbug.com/816646
+#if defined(OS_MACOSX)
+#define MAYBE_BlockLegacySubresources DISABLED_BlockLegacySubresources
+#else
+#define MAYBE_BlockLegacySubresources BlockLegacySubresources
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       MAYBE_BlockLegacySubresources) {
   net::SpawnedTestServer ftp_server(
       net::SpawnedTestServer::TYPE_FTP,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
