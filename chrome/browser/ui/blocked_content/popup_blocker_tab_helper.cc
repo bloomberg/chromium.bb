@@ -43,11 +43,15 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupBlockerTabHelper);
 
 struct PopupBlockerTabHelper::BlockedRequest {
   BlockedRequest(const NavigateParams& params,
-                 const blink::mojom::WindowFeatures& window_features)
-      : params(params), window_features(window_features) {}
+                 const blink::mojom::WindowFeatures& window_features,
+                 PopupBlockType block_type)
+      : params(params),
+        window_features(window_features),
+        block_type(block_type) {}
 
   NavigateParams params;
   blink::mojom::WindowFeatures window_features;
+  PopupBlockType block_type;
 };
 
 PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
@@ -144,6 +148,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
     return false;
   }
 
+  PopupBlockType block_type = PopupBlockType::kNoGesture;
   if (user_gesture) {
     auto* safe_browsing_blocker =
         popup_blocker->safe_browsing_triggered_popup_blocker_.get();
@@ -152,15 +157,17 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
             open_url_params)) {
       return false;
     }
+    block_type = PopupBlockType::kAbusive;
   }
 
-  popup_blocker->AddBlockedPopup(params, window_features);
+  popup_blocker->AddBlockedPopup(params, window_features, block_type);
   return true;
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(
     const NavigateParams& params,
-    const blink::mojom::WindowFeatures& window_features) {
+    const blink::mojom::WindowFeatures& window_features,
+    PopupBlockType block_type) {
   LogAction(Action::kBlocked);
   if (blocked_popups_.size() >= kMaximumNumberOfPopups)
     return;
@@ -168,7 +175,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   int id = next_id_;
   next_id_++;
   blocked_popups_[id] =
-      std::make_unique<BlockedRequest>(params, window_features);
+      std::make_unique<BlockedRequest>(params, window_features, block_type);
   TabSpecificContentSettings::FromWebContents(web_contents())->
       OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
   for (auto& observer : observers_)
@@ -214,10 +221,18 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
     }
   }
 
+  switch (popup->block_type) {
+    case PopupBlockType::kNoGesture:
+      LogAction(Action::kClickedThroughNoGesture);
+      break;
+    case PopupBlockType::kAbusive:
+      LogAction(Action::kClickedThroughAbusive);
+      break;
+  }
+
   blocked_popups_.erase(id);
   if (blocked_popups_.empty())
     PopupNotificationVisibilityChanged(false);
-  LogAction(Action::kClickedThrough);
 }
 
 size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {
