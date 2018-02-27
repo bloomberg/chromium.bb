@@ -70,7 +70,7 @@ TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
 }
 
 TEST_F(CrOSComponentInstallerTest, CompatibilityOK) {
-  ComponentConfig config("a", "2.1", "");
+  ComponentConfig config{"a", "2.1", ""};
   MockCrOSComponentInstallerPolicy policy(config);
   EXPECT_CALL(policy, IsCompatible(testing::_, testing::_)).Times(1);
   base::Version version;
@@ -82,7 +82,7 @@ TEST_F(CrOSComponentInstallerTest, CompatibilityOK) {
 }
 
 TEST_F(CrOSComponentInstallerTest, CompatibilityMissingManifest) {
-  ComponentConfig config("a", "2.1", "");
+  ComponentConfig config{"a", "2.1", ""};
   MockCrOSComponentInstallerPolicy policy(config);
   EXPECT_CALL(policy, IsCompatible(testing::_, testing::_)).Times(0);
   base::Version version;
@@ -93,7 +93,7 @@ TEST_F(CrOSComponentInstallerTest, CompatibilityMissingManifest) {
 }
 
 TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
-  ComponentConfig config("", "", "");
+  ComponentConfig config{"", "", ""};
   CrOSComponentInstallerPolicy policy(config);
   EXPECT_TRUE(policy.IsCompatible("1.0", "1.0"));
   EXPECT_TRUE(policy.IsCompatible("1.1", "1.0"));
@@ -107,9 +107,9 @@ TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
 TEST_F(CrOSComponentInstallerTest, RegisterComponent) {
   std::unique_ptr<CrOSMockComponentUpdateService> cus(
       new CrOSMockComponentUpdateService());
-  ComponentConfig config(
+  ComponentConfig config{
       "star-cups-driver", "1.1",
-      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466");
+      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"};
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(1);
   component_updater::CrOSComponentManager cros_component_manager;
   cros_component_manager.Register(cus.get(), config, base::OnceClosure());

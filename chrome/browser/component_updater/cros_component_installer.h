@@ -20,14 +20,9 @@ namespace component_updater {
 class ComponentUpdateService;
 
 struct ComponentConfig {
-  ComponentConfig(const std::string& name,
-                  const std::string& env_version,
-                  const std::string& sha2hashstr);
-  ~ComponentConfig();
-
-  std::string name;
-  std::string env_version;
-  std::string sha2hashstr;
+  const char* name;
+  const char* env_version;
+  const char* sha2hash;
 };
 
 class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
