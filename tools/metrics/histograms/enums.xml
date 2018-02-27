@@ -37403,6 +37403,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Increment"/>
 </enum>
 
+<enum name="RelaunchNotificationShowResult">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Not shown for unknown reason"/>
+  <int value="2" label="Not shown due to background mode with no windows"/>
+</enum>
+
 <enum name="RemoteHungProcessTerminateReason">
   <int value="1" label="Terminate accepted by user"/>
   <int value="2" label="No visible windows found"/>

@@ -35,6 +35,9 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // Returns the global instance.
   static UpgradeDetectorImpl* GetInstance();
 
+  // UpgradeDetector:
+  base::TimeDelta GetHighAnnoyanceLevelDelta() override;
+
  protected:
   UpgradeDetectorImpl();
 
@@ -65,6 +68,9 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // enough time has elapsed to update the severity (which maps to visual
   // badging) of the notification.
   void StartUpgradeNotificationTimer();
+
+  // Lazy-initialization for the various threshold deltas (idempotent).
+  void InitializeThresholds();
 
   // Sends out a notification and starts a one shot timer to wait until
   // notifying the user.
@@ -101,6 +107,13 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   // True if auto update is turned on.
   bool is_auto_update_enabled_;
+
+  // The various deltas from detection time to the different annoyance levels;
+  // lazy-initialized by InitializeThresholds.
+  base::TimeDelta severe_threshold_;
+  base::TimeDelta high_threshold_;
+  base::TimeDelta elevated_threshold_;
+  base::TimeDelta low_threshold_;
 
   // The date the binaries were built.
   base::Time build_date_;

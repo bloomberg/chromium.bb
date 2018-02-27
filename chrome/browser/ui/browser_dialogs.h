@@ -268,6 +268,7 @@ enum class DialogIdentifier {
   ZOOM = 79,
   LOCK_SCREEN_NOTE_APP_TOAST = 80,
   PWA_CONFIRMATION = 81,
+  RELAUNCH_RECOMMENDED = 82,
   MAX_VALUE
 };
 

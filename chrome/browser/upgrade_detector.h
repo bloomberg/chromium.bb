@@ -94,6 +94,9 @@ class UpgradeDetector {
     return upgrade_notification_stage_;
   }
 
+  // Returns the delta between "elevated" and "high" annoyance levels.
+  virtual base::TimeDelta GetHighAnnoyanceLevelDelta() = 0;
+
   void AddObserver(UpgradeObserver* observer);
 
   void RemoveObserver(UpgradeObserver* observer);

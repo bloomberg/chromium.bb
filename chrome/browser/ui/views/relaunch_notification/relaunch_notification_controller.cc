@@ -6,9 +6,20 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+#include "chrome/browser/background/background_mode_manager.h"
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 namespace {
 
@@ -36,13 +47,49 @@ RelaunchNotificationSetting ReadPreference() {
   return RelaunchNotificationSetting::kChromeMenuOnly;
 }
 
+// The result of an attempt to show a relaunch notification dialog. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class ShowResult {
+  kShown = 0,
+  kUnknownNotShownReason = 1,
+  kBackgroundModeNoWindows = 2,
+  kCount
+};
+
+// Returns the reason why a dialog was not shown when the conditions were ripe
+// for such.
+ShowResult GetNotShownReason() {
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+  BackgroundModeManager* background_mode_manager =
+      g_browser_process->background_mode_manager();
+  if (background_mode_manager &&
+      background_mode_manager->IsBackgroundWithoutWindows()) {
+    return ShowResult::kBackgroundModeNoWindows;
+  }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
+  return ShowResult::kUnknownNotShownReason;
+}
+
+// Returns the last active tabbed browser.
+Browser* FindLastActiveTabbedBrowser() {
+  BrowserList* browser_list = BrowserList::GetInstance();
+  const auto end = browser_list->end_last_active();
+  for (auto scan = browser_list->begin_last_active(); scan != end; ++scan) {
+    if ((*scan)->is_type_tabbed())
+      return *scan;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 RelaunchNotificationController::RelaunchNotificationController(
     UpgradeDetector* upgrade_detector)
     : upgrade_detector_(upgrade_detector),
       last_notification_style_(NotificationStyle::kNone),
-      last_level_(UpgradeDetector::UPGRADE_ANNOYANCE_NONE) {
+      last_level_(UpgradeDetector::UPGRADE_ANNOYANCE_NONE),
+      recommended_widget_(nullptr) {
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     pref_change_registrar_.Init(local_state);
@@ -81,9 +128,11 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      ShowRelaunchNotification();
+      ShowRelaunchNotification(current_level);
       break;
+    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+      // Severe neither triggers new behavior, nor changes last_level_.
+      return;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
       // Critical notifications are handled by ToolbarView.
       // TODO(grt): Reconsider this when implementing the relaunch required
@@ -96,6 +145,22 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
   }
 
   last_level_ = current_level;
+}
+
+void RelaunchNotificationController::OnWidgetClosing(views::Widget* widget) {
+  widget->RemoveObserver(this);
+
+  if (widget == recommended_widget_)
+    recommended_widget_ = nullptr;
+}
+
+std::string RelaunchNotificationController::GetSuffixedHistogramName(
+    base::StringPiece base_name) {
+  DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
+  return base_name.as_string().append(last_notification_style_ ==
+                                              NotificationStyle::kRecommended
+                                          ? ".Recommneded"
+                                          : ".Required");
 }
 
 void RelaunchNotificationController::HandleCurrentStyle() {
@@ -151,13 +216,29 @@ void RelaunchNotificationController::StopObservingUpgrades() {
   upgrade_detector_->RemoveObserver(this);
 }
 
-void RelaunchNotificationController::ShowRelaunchNotification() {
+void RelaunchNotificationController::ShowRelaunchNotification(
+    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
   DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
 
-  if (last_notification_style_ == NotificationStyle::kRecommended)
+  if (last_notification_style_ == NotificationStyle::kRecommended) {
+    // If this is the final showing (the one at the "high" level), start the
+    // timer to reshow the bubble at each "elevated to high" interval.
+    if (level == UpgradeDetector::UPGRADE_ANNOYANCE_HIGH) {
+      if (!reshow_bubble_timer_.IsRunning()) {
+        reshow_bubble_timer_.Start(
+            FROM_HERE, upgrade_detector_->GetHighAnnoyanceLevelDelta(), this,
+            &RelaunchNotificationController::ShowRelaunchRecommendedBubble);
+      }
+    } else {
+      // Make sure the timer isn't running following a drop down from HIGH to a
+      // lower level.
+      reshow_bubble_timer_.Stop();
+    }
+
     ShowRelaunchRecommendedBubble();
-  else
+  } else {
     ShowRelaunchRequiredDialog();
+  }
 }
 
 void RelaunchNotificationController::CloseRelaunchNotification() {
@@ -169,18 +250,42 @@ void RelaunchNotificationController::CloseRelaunchNotification() {
     return;
   }
 
-  if (last_notification_style_ == NotificationStyle::kRecommended)
+  if (last_notification_style_ == NotificationStyle::kRecommended) {
+    // Explicit closure cancels repeatedly reshowing the bubble.
+    reshow_bubble_timer_.Stop();
     CloseRelaunchRecommendedBubble();
-  else
+  } else {
     CloseRelaunchRequiredDialog();
+  }
 }
 
 void RelaunchNotificationController::ShowRelaunchRecommendedBubble() {
-  // TODO(grt): implement.
+  static constexpr char kShowResultHistogramPrefix[] =
+      "RelaunchNotification.ShowResult";
+
+  // Nothing to do if the bubble is visible.
+  if (recommended_widget_)
+    return;
+
+  // Show the bubble in the most recently active browser.
+  Browser* browser = FindLastActiveTabbedBrowser();
+  base::UmaHistogramEnumeration(
+      GetSuffixedHistogramName(kShowResultHistogramPrefix),
+      browser ? ShowResult::kShown : GetNotShownReason(), ShowResult::kCount);
+  if (!browser)
+    return;
+
+  recommended_widget_ = RelaunchRecommendedBubbleView::ShowBubble(
+      browser, upgrade_detector_->upgrade_detected_time(),
+      base::BindRepeating(&chrome::AttemptRestart));
+
+  // Monitor the widget so that |recommended_widget_| can be cleared on close.
+  recommended_widget_->AddObserver(this);
 }
 
 void RelaunchNotificationController::CloseRelaunchRecommendedBubble() {
-  // TODO(grt): implement.
+  if (recommended_widget_)
+    recommended_widget_->Close();
 }
 
 void RelaunchNotificationController::ShowRelaunchRequiredDialog() {

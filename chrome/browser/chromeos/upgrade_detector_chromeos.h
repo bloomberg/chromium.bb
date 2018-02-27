@@ -32,6 +32,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // update engine.
   void Shutdown();
 
+  // UpgradeDetector:
+  base::TimeDelta GetHighAnnoyanceLevelDelta() override;
+
  private:
   friend struct base::DefaultSingletonTraits<UpgradeDetectorChromeos>;
   class ChannelsRequester;

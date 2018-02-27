@@ -10955,6 +10955,12 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <message name="IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON" desc="Button title confirming to upload multiple files to the site.">
       Upload
     </message>
+    <!-- Relaunch notification bubble and dialog. -->
+    <if expr="not is_android and not chromeos">
+      <message name="IDS_RELAUNCH_ACCEPT_BUTTON" desc="The text in the accept button of the relaunch bubble or dialog shown to users when an administrator has configured such notifications.">
+        Relaunch now
+      </message>
+    </if>
   </messages>
  </release>
 </grit>
