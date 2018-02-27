@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_storage_context.h"
 
+#include <inttypes.h>
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -21,9 +22,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
@@ -54,15 +57,24 @@ std::vector<base::Time> GetModificationTimes(
 
 BlobStorageContext::BlobStorageContext()
     : memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()),
-      ptr_factory_(this) {}
+      ptr_factory_(this) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
+}
 
 BlobStorageContext::BlobStorageContext(
     base::FilePath storage_directory,
     scoped_refptr<base::TaskRunner> file_runner)
     : memory_controller_(std::move(storage_directory), std::move(file_runner)),
-      ptr_factory_(this) {}
+      ptr_factory_(this) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
+}
 
-BlobStorageContext::~BlobStorageContext() = default;
+BlobStorageContext::~BlobStorageContext() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+}
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
     const std::string& uuid) {
@@ -644,6 +656,29 @@ void BlobStorageContext::ClearAndFreeMemory(BlobEntry* entry) {
   entry->ClearItems();
   entry->ClearOffsets();
   entry->set_size(0);
+}
+
+bool BlobStorageContext::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+
+  auto* mad = pmd->CreateAllocatorDump(base::StringPrintf(
+      "blob_storage/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this)));
+  mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                 memory_controller().memory_usage());
+  mad->AddScalar("disk_usage",
+                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                 memory_controller().disk_usage());
+  mad->AddScalar("blob_count",
+                 base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                 blob_count());
+  if (system_allocator_name)
+    pmd->AddSuballocation(mad->guid(), system_allocator_name);
+  return true;
 }
 
 }  // namespace storage

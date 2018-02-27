@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_memory_controller.h"
@@ -43,7 +44,8 @@ class BlobDataSnapshot;
 // This class handles the logistics of blob storage within the browser process.
 // This class is not threadsafe, access on IO thread. In Chromium there is one
 // instance per profile.
-class STORAGE_EXPORT BlobStorageContext {
+class STORAGE_EXPORT BlobStorageContext
+    : public base::trace_event::MemoryDumpProvider {
  public:
   using TransportAllowedCallback = BlobEntry::TransportAllowedCallback;
 
@@ -52,7 +54,7 @@ class STORAGE_EXPORT BlobStorageContext {
   // Disk support is enabled if |file_runner| isn't null.
   BlobStorageContext(base::FilePath storage_directory,
                      scoped_refptr<base::TaskRunner> file_runner);
-  ~BlobStorageContext();
+  ~BlobStorageContext() override;
 
   std::unique_ptr<BlobDataHandle> GetBlobDataFromUUID(const std::string& uuid);
   std::unique_ptr<BlobDataHandle> GetBlobDataFromPublicURL(const GURL& url);
@@ -219,6 +221,10 @@ class STORAGE_EXPORT BlobStorageContext {
                                BlobStatus reason);
 
   void ClearAndFreeMemory(BlobEntry* entry);
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   BlobStorageRegistry registry_;
   BlobMemoryController memory_controller_;

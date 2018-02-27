@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -85,7 +86,14 @@ class InMemoryDownloadTest : public testing::Test {
     io_thread_->StartWithOptions(options);
     request_context_getter_ =
         new net::TestURLRequestContextGetter(io_thread_->task_runner());
-    blob_storage_context_ = std::make_unique<storage::BlobStorageContext>();
+    base::RunLoop loop;
+    io_thread_->task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          blob_storage_context_ =
+              std::make_unique<storage::BlobStorageContext>();
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
   void TearDown() override {
