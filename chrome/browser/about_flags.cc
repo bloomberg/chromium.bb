@@ -3504,7 +3504,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-v8-context-snapshot", flag_descriptions::kV8ContextSnapshotName,
      flag_descriptions::kV8ContextSnapshotDescription,
-     kOsDesktop,  // TODO(peria): Add Android support.
+     kOsMac | kOsWin | kOsLinux | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kV8ContextSnapshot)},
 
 #if defined(OS_CHROMEOS)
