@@ -106,7 +106,6 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/event_client_impl.h"
@@ -846,7 +845,6 @@ Shell::~Shell() {
   // Needs to happen right before |instance_| is reset.
   shell_port_.reset();
   session_controller_->RemoveObserver(this);
-  wallpaper_delegate_.reset();
   // BluetoothPowerController depends on the PrefService and must be destructed
   // before it.
   bluetooth_power_controller_ = nullptr;
@@ -874,8 +872,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
     night_light_controller_ = std::make_unique<NightLightController>();
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
   bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
-
-  wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Connector can be null in tests.
   if (shell_delegate_->GetShellConnector()) {

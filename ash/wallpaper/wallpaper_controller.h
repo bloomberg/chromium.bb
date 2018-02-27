@@ -223,6 +223,8 @@ class ASH_EXPORT WallpaperController
   // no wallpaper.
   wallpaper::WallpaperType GetWallpaperType() const;
 
+  base::TimeDelta animation_duration() const { return animation_duration_; }
+
   // Returns true if the slower initial animation should be shown (as opposed to
   // the faster animation that's used e.g. when switching between different
   // wallpapers at login screen).
@@ -381,6 +383,7 @@ class ASH_EXPORT WallpaperController
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
+  void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
@@ -599,6 +602,9 @@ class ASH_EXPORT WallpaperController
   int wallpaper_reload_delay_;
 
   bool is_wallpaper_blurred_ = false;
+
+  // The wallpaper animation duration. An empty value disables the animation.
+  base::TimeDelta animation_duration_;
 
   // Whether the device wallpaper policy is enforced on this device.
   bool is_device_wallpaper_policy_enforced_ = false;

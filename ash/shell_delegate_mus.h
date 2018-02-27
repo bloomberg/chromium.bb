@@ -32,7 +32,6 @@ class ShellDelegateMus : public ShellDelegate {
   void OpenUrlFromArc(const GURL& url) override;
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
-  std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 

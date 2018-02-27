@@ -9,7 +9,6 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/screenshot_delegate.h"
-#include "ash/wallpaper/wallpaper_delegate_mus.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -94,10 +93,6 @@ NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
 std::unique_ptr<ScreenshotDelegate>
 ShellDelegateMus::CreateScreenshotDelegate() {
   return std::make_unique<ScreenshotDelegateMash>();
-}
-
-std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
-  return std::make_unique<WallpaperDelegateMus>();
 }
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {

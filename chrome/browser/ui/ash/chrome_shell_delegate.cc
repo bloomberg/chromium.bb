@@ -15,7 +15,6 @@
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
-#include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
@@ -261,11 +259,6 @@ ChromeShellDelegate::GetNetworkingConfigDelegate() {
 std::unique_ptr<ash::ScreenshotDelegate>
 ChromeShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<ChromeScreenshotGrabber>();
-}
-
-std::unique_ptr<ash::WallpaperDelegate>
-ChromeShellDelegate::CreateWallpaperDelegate() {
-  return base::WrapUnique(chromeos::CreateWallpaperDelegate());
 }
 
 ui::InputDeviceControllerClient*

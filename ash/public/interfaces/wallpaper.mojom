@@ -7,6 +7,7 @@ module ash.mojom;
 import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/file_path.mojom";
+import "mojo/common/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
@@ -156,6 +157,10 @@ interface WallpaperController {
   // |user_info|: The user's information related to wallpaper.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemovePolicyWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
+
+  // Sets wallpaper animation duration. Passing an empty value disables the
+  // animation.
+  SetAnimationDuration(mojo.common.mojom.TimeDelta animation_duration);
 
   // Opens the wallpaper picker if the active user is not controlled by policy
   // and it's allowed to change wallpaper per the user type and the login state.

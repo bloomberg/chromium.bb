@@ -98,6 +98,11 @@ void TestWallpaperController::RemovePolicyWallpaper(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::SetAnimationDuration(
+    base::TimeDelta animation_duration) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::OpenWallpaperPickerIfAllowed() {
   NOTIMPLEMENTED();
 }

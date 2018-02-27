@@ -23,7 +23,6 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_transform_setter_mus.h"
 #include "ash/virtual_keyboard_controller.h"
-#include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/window_manager.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/mru_window_tracker.h"
