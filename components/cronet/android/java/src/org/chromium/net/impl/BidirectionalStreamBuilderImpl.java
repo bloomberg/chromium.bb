@@ -44,6 +44,11 @@ public class BidirectionalStreamBuilderImpl extends ExperimentalBidirectionalStr
     // Request reporting annotations.
     private Collection<Object> mRequestAnnotations;
 
+    private boolean mTrafficStatsTagSet;
+    private int mTrafficStatsTag;
+    private boolean mTrafficStatsUidSet;
+    private int mTrafficStatsUid;
+
     /**
      * Creates a builder for {@link BidirectionalStream} objects. All callbacks for
      * generated {@code BidirectionalStream} objects will be invoked on
@@ -127,10 +132,25 @@ public class BidirectionalStreamBuilderImpl extends ExperimentalBidirectionalStr
     }
 
     @Override
+    public ExperimentalBidirectionalStream.Builder setTrafficStatsTag(int tag) {
+        mTrafficStatsTagSet = true;
+        mTrafficStatsTag = tag;
+        return this;
+    }
+
+    @Override
+    public ExperimentalBidirectionalStream.Builder setTrafficStatsUid(int uid) {
+        mTrafficStatsUidSet = true;
+        mTrafficStatsUid = uid;
+        return this;
+    }
+
+    @Override
     @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
     public ExperimentalBidirectionalStream build() {
         return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
                 mRequestHeaders, mPriority, mDelayRequestHeadersUntilFirstFlush,
-                mRequestAnnotations);
+                mRequestAnnotations, mTrafficStatsTagSet, mTrafficStatsTag, mTrafficStatsUidSet,
+                mTrafficStatsUid);
     }
 }

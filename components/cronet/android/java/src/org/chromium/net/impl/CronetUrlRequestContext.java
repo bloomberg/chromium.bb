@@ -239,12 +239,15 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     protected ExperimentalBidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders, @StreamPriority int priority,
-            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations) {
+            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid) {
         synchronized (mLock) {
             checkHaveAdapter();
             return new CronetBidirectionalStream(this, url, priority, callback, executor,
                     httpMethod, requestHeaders, delayRequestHeadersUntilFirstFlush,
-                    requestAnnotations);
+                    requestAnnotations, trafficStatsTagSet, trafficStatsTag, trafficStatsUidSet,
+                    trafficStatsUid);
         }
     }
 
