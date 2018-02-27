@@ -31,6 +31,7 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 
 #include <memory>
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -82,8 +83,12 @@ void ServiceWorker::postMessage(ScriptState* script_state,
       WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()));
 }
 
-void ServiceWorker::InternalsTerminate() {
-  handle_->ServiceWorker()->TerminateForTesting();
+ScriptPromise ServiceWorker::InternalsTerminate(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  handle_->ServiceWorker()->TerminateForTesting(
+      std::make_unique<CallbackPromiseAdapter<void, void>>(resolver));
+  return promise;
 }
 
 void ServiceWorker::DispatchStateChangeEvent() {

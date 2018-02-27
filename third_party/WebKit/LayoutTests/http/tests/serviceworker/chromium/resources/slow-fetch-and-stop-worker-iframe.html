@@ -2,8 +2,8 @@
 <script>
 addEventListener('message', e => {
     fetch('./slow-response.php')
-      .then(response => {
-          internals.terminateServiceWorker(navigator.serviceWorker.controller);
+      .then(async response => {
+          await internals.terminateServiceWorker(navigator.serviceWorker.controller);
           return response.text();
         })
       .then(() => {

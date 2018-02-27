@@ -83,7 +83,7 @@ class MODULES_EXPORT ServiceWorker final
   // AbstractWorker overrides.
   const AtomicString& InterfaceName() const override;
 
-  void InternalsTerminate();
+  ScriptPromise InternalsTerminate(ScriptState*);
 
  private:
   static ServiceWorker* GetOrCreate(ExecutionContext*,

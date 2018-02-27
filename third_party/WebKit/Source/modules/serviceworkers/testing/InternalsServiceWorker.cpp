@@ -8,9 +8,11 @@
 
 namespace blink {
 
-void InternalsServiceWorker::terminateServiceWorker(Internals& internals,
-                                                    ServiceWorker* worker) {
-  worker->InternalsTerminate();
+ScriptPromise InternalsServiceWorker::terminateServiceWorker(
+    ScriptState* script_state,
+    Internals& internals,
+    ServiceWorker* worker) {
+  return worker->InternalsTerminate(script_state);
 }
 
 }  // namespace blink
