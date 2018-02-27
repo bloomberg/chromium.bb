@@ -29,6 +29,9 @@
     return testRunner.fail('cannot find myEventListener node');
 
   var retainers = helper.firstRetainingPath(node).map(node => node.name());
+  // Limit to the retainers until the Window object to keep the test robust
+  // against root node name changes.
+  retainers = retainers.slice(0, retainers.indexOf('Window'));
   var actual = retainers.join(', ');
   testRunner.log(`SUCCESS: retaining path = [${actual}]`);
   testRunner.completeTest();
