@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
 
-  <!-- Titles and buttons which are title-cased on certain platforms. Make sure to keep the title-cased and sentence-cased variants in sync. -->
+  <!-- Dialog titles, sentence-cased -->
+  <message name="IDS_PAYMENTS_TITLE" desc="Title of the dialog that presents a request for payment for some good or service. Sentence-cased.">
+    Review your payment
+  </message>
+  <message name="IDS_PAYMENTS_ERROR_MESSAGE_DIALOG_TITLE" desc="The title of the dialog that informs the user that there is error in verifying and charging the payment.">
+    Payment not completed
+  </message>
 
+  <!-- Section labels and buttons which are title-cased on certain platforms. Make sure to keep the title-cased and sentence-cased variants in sync. -->
 
   <!-- General titles, sentence-cased -->
   <if expr="not use_titlecase">
-    <message name="IDS_PAYMENTS_TITLE" desc="Title of the dialog that presents a request for payment for some good or service. Sentence-cased.">
-      Your payment
-    </message>
     <message name="IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL" desc="The title for the section that lets the user select the method of payment. Sentence-cased." formatter_data="android_java">
       Payment method
     </message>
@@ -75,9 +79,6 @@
   </if>  <!-- not use_titlecase -->
   <!-- General Titles, Title-Cased -->
   <if expr="use_titlecase">
-    <message name="IDS_PAYMENTS_TITLE" desc="Title of the dialog that presents a request for payment for some good or service. Title-Cased.">
-      Your Payment
-    </message>
     <message name="IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL" desc="The title for the section that lets the user select the method of payment. Title-Cased.">
       Payment Method
     </message>
@@ -286,9 +287,6 @@
     <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that payment is being processed. Sentence-cased.">
       Processing
     </message>
-    <message name="IDS_PAYMENTS_ERROR_MESSAGE_DIALOG_TITLE" desc="The title of the dialog that informs the user that there is error in verifying and charging the payment. Sentence-cased.">
-      Payment not completed
-    </message>
      <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified. Sentence-cased." formatter_data="android_java">
       Checking
     </message>
@@ -339,9 +337,6 @@
     </message>
     <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that payment is being processed. Title-Cased.">
       Processing
-    </message>
-    <message name="IDS_PAYMENTS_ERROR_MESSAGE_DIALOG_TITLE" desc="The title of the dialog that informs the user that there is error in verifying and charging the payment. Title-Cased.">
-      Payment Not Completed
     </message>
      <message name="IDS_PAYMENTS_CHECKING_OPTION" desc="Text explaining that the option the user selected is being checked and verified. Title-Cased." formatter_data="android_java">
       Checking
