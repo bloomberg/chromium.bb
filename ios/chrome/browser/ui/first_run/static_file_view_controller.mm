@@ -69,7 +69,11 @@
                                 UIViewAutoresizingFlexibleHeight];
 
   // Loads terms of service into the web view.
-  [_webView loadRequest:[NSURLRequest requestWithURL:_URL]];
+  NSURLRequest* request =
+      [[NSURLRequest alloc] initWithURL:_URL
+                            cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                        timeoutInterval:60.0];
+  [_webView loadRequest:request];
   [_webView setBackgroundColor:[UIColor whiteColor]];
   _webView.navigationDelegate = self;
   [self.view addSubview:_webView];
