@@ -249,7 +249,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 cm->reduced_tx_set_used);
   }
 
-#if CONFIG_TXK_SEL
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   if (args->cpi->oxcf.aq_mode != NO_AQ && p->eobs[block] == 0 && plane == 0) {
@@ -263,7 +262,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       assert(xd->mi[0]->mbmi.txk_type[txk_type_idx] == DCT_DCT);
     }
   }
-#endif  // CONFIG_TXK_SEL
 
 #if CONFIG_MISMATCH_DEBUG
   if (dry_run == OUTPUT_ENABLED) {
@@ -524,7 +522,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
-#if CONFIG_TXK_SEL
   const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   if (x->blk_skip[plane][blk_row * bw + blk_col] && plane == 0) {
     *eob = 0;
@@ -540,7 +537,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_CFL
     return;
   }
-#endif
 
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
@@ -551,26 +547,21 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                     AV1_XFORM_QUANT_FP);
     av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                    tx_size, a, l, 1, &dummy_rate_cost);
-
-#if CONFIG_TXK_SEL
     if (plane == 0 && p->eobs[block] == 0) {
       assert(xd->mi[0]->mbmi.txk_type[av1_get_txk_type_index(
                  plane_bsize, blk_row, blk_col)] == DCT_DCT);
     }
-#endif  // CONFIG_TXK_SEL
   } else {
     av1_xform_quant(
         cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
         USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
   }
 
-#if CONFIG_TXK_SEL
   if (args->cpi->oxcf.aq_mode != NO_AQ && !*eob && plane == 0) {
     const int txk_type_idx =
         av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
     xd->mi[0]->mbmi.txk_type[txk_type_idx] = DCT_DCT;
   }
-#endif
 
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                               dst_stride, *eob, cm->reduced_tx_set_used);

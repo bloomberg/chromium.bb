@@ -223,9 +223,7 @@ typedef struct {
 } INTERINTER_COMPOUND_DATA;
 
 #define INTER_TX_SIZE_BUF_LEN 16
-#if CONFIG_TXK_SEL
 #define TXK_TYPE_BUF_LEN 64
-#endif
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
@@ -250,10 +248,9 @@ typedef struct MB_MODE_INFO {
   // Only for INTER blocks
   InterpFilters interp_filters;
   MV_REFERENCE_FRAME ref_frame[2];
+
   TX_TYPE tx_type;
-#if CONFIG_TXK_SEL
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
-#endif
 
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
 
@@ -854,7 +851,6 @@ static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
   return index;
 }
 
-#if CONFIG_TXK_SEL
 static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
                                          int blk_col) {
   TX_SIZE txs = max_txsize_rect_lookup[bsize];
@@ -868,7 +864,6 @@ static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
   assert(index < TXK_TYPE_BUF_LEN);
   return index;
 }
-#endif  // CONFIG_TXK_SEL
 
 static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
                                       const MACROBLOCKD *xd, int blk_row,
@@ -881,7 +876,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   const TxSetType tx_set_type = get_ext_tx_set_type(
       tx_size, plane_bsize, is_inter_block(mbmi), reduced_tx_set);
 
-#if CONFIG_TXK_SEL
   TX_TYPE tx_type;
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
     tx_type = DCT_DCT;
@@ -906,32 +900,6 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   assert(tx_type < TX_TYPES);
   if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
   return tx_type;
-#else
-  (void)blk_row;
-  (void)blk_col;
-#endif  // CONFIG_TXK_SEL
-
-  if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
-    return DCT_DCT;
-
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
-      (txsize_sqr_map[tx_size] >= TX_32X32 && !is_inter_block(mbmi)))
-    return DCT_DCT;
-  if (plane_type == PLANE_TYPE_Y) {
-    return mbmi->tx_type;
-  }
-
-  if (is_inter_block(mbmi)) {
-    // UV Inter only
-    return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
-               ? DCT_DCT
-               : mbmi->tx_type;
-  }
-
-  // UV Intra only
-  const TX_TYPE intra_type = intra_mode_to_tx_type_context(mbmi, PLANE_TYPE_UV);
-  if (!av1_ext_tx_used[tx_set_type][intra_type]) return DCT_DCT;
-  return intra_type;
 }
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y,

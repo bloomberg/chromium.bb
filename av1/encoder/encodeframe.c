@@ -473,10 +473,8 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       mbmi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
       reset_tx_size(xd, mbmi, cm->tx_mode);
-#if CONFIG_TXK_SEL
       memset(mbmi->txk_type, DCT_DCT,
              sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
-#endif
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
     // and then update the quantizer.
@@ -484,10 +482,8 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       av1_cyclic_refresh_update_segment(cpi, mbmi, mi_row, mi_col, bsize,
                                         ctx->rate, ctx->dist, x->skip);
       reset_tx_size(xd, mbmi, cm->tx_mode);
-#if CONFIG_TXK_SEL
       memset(mbmi->txk_type, DCT_DCT,
              sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
-#endif
     }
   }
 
@@ -4770,9 +4766,7 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 }
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
-#if CONFIG_TXK_SEL
                               int blk_row, int blk_col, int plane,
-#endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,
                               FRAME_COUNTS *counts, uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -4782,14 +4776,10 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)counts;
 #endif  // !CONFIG_ENTROPY_STATS
 
-#if !CONFIG_TXK_SEL
-  TX_TYPE tx_type = mbmi->tx_type;
-#else
   // Only y plane's tx_type is updated
   if (plane > 0) return;
   TX_TYPE tx_type = av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
-#endif
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -4971,11 +4961,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       mbmi->min_tx_size = intra_tx_size;
       if (intra_tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
     }
-
-#if !CONFIG_TXK_SEL
-    av1_update_tx_type_count(cm, xd, bsize, tx_size, td->counts,
-                             tile_data->allow_update_cdf);
-#endif
   }
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type) &&

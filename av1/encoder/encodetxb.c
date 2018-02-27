@@ -414,18 +414,14 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   aom_write_symbol(w, eob == 0,
                    ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2);
-#if CONFIG_TXK_SEL
   if (plane == 0 && eob == 0) {
     assert(tx_type == DCT_DCT);
   }
-#endif
   if (eob == 0) return;
 
   av1_txb_init_levels(tcoeff, width, height, levels);
 
-#if CONFIG_TXK_SEL
   av1_write_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, w);
-#endif
 
   int eob_extra, dummy;
   const int eob_pt = get_eob_pos_token(eob, &eob_extra);
@@ -646,9 +642,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 
   av1_txb_init_levels(qcoeff, width, height, levels);
 
-#if CONFIG_TXK_SEL
   cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
-#endif
 
   const int seg_eob = av1_get_max_eob(tx_size);
   int eob_cost = get_eob_cost(eob, seg_eob, eob_costs, coeff_costs, tx_type);
@@ -2188,15 +2182,10 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   av1_txb_init_levels(tcoeff, width, height, levels);
-
-#if CONFIG_TXK_SEL
   av1_update_tx_type_count(cm, xd, blk_row, blk_col, plane, mbmi->sb_type,
                            tx_size, td->counts, allow_update_cdf);
-#endif
-
   av1_update_eob_context(eob, seg_eob, tx_size, tx_type, plane_type, ec_ctx,
                          td->counts, allow_update_cdf);
-
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_type, coeff_contexts);
 
   for (c = eob - 1; c >= 0; --c) {

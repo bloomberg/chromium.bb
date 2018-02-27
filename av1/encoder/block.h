@@ -107,9 +107,7 @@ typedef struct {
   TX_SIZE min_tx_size;
   TX_SIZE inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-#if CONFIG_TXK_SEL
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
-#endif  // CONFIG_TXK_SEL
   RD_STATS rd_stats;
   uint32_t hash_value;
 } TX_RD_INFO;
@@ -127,9 +125,7 @@ typedef struct {
   int64_t sse;
   int rate;
   uint16_t eob;
-#if CONFIG_TXK_SEL
   TX_TYPE tx_type;
-#endif
   uint16_t entropy_context;
   uint8_t txb_entropy_ctx;
   uint8_t valid;
@@ -139,11 +135,7 @@ typedef struct {
 #define TX_SIZE_RD_RECORD_BUFFER_LEN 256
 typedef struct {
   uint32_t hash_vals[TX_SIZE_RD_RECORD_BUFFER_LEN];
-#if CONFIG_TXK_SEL
   TX_SIZE_RD_INFO tx_rd_info[TX_SIZE_RD_RECORD_BUFFER_LEN];
-#else
-  TX_SIZE_RD_INFO tx_rd_info[TX_SIZE_RD_RECORD_BUFFER_LEN][TX_TYPES];
-#endif
   int index_start;
   int num;
 } TX_SIZE_RD_RECORD;

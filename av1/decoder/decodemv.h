@@ -29,10 +29,7 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
 }  // extern "C"
 #endif
 
-void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-#if CONFIG_TXK_SEL
-                      int blk_row, int blk_col, int plane, TX_SIZE tx_size,
-#endif
-                      aom_reader *r);
+void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
+                      int blk_col, int plane, TX_SIZE tx_size, aom_reader *r);
 
 #endif  // AV1_DECODER_DECODEMV_H_

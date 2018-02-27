@@ -129,32 +129,23 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int cul_level = 0;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-
   const int all_zero = aom_read_symbol(
       r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
-  // printf("txb_skip: %d %2d\n", txs_ctx, txb_ctx->txb_skip_ctx);
   *eob = 0;
   if (all_zero) {
     *max_scan_line = 0;
-#if CONFIG_TXK_SEL
     if (plane == 0) {
       const int txk_type_idx =
           av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
       mbmi->txk_type[txk_type_idx] = DCT_DCT;
     }
-#endif
     return 0;
   }
 
   memset(levels_buf, 0,
          sizeof(*levels_buf) *
              ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
-
-  (void)blk_row;
-  (void)blk_col;
-#if CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, r);
-#endif
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);

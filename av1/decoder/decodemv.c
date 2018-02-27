@@ -658,30 +658,17 @@ static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
   return sym - MAX_ANGLE_DELTA;
 }
 
-void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-#if CONFIG_TXK_SEL
-                      int blk_row, int blk_col, int plane, TX_SIZE tx_size,
-#endif
-                      aom_reader *r) {
+void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
+                      int blk_col, int plane, TX_SIZE tx_size, aom_reader *r) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
-#if !CONFIG_TXK_SEL
-  const TX_SIZE mtx_size = get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type);
-  const TX_SIZE tx_size =
-      inter_block ? AOMMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
-                  : mbmi->tx_size;
-#endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-#if !CONFIG_TXK_SEL
-  TX_TYPE *tx_type = &mbmi->tx_type;
-#else
   // only y plane's tx_type is transmitted
   if (plane > 0) return;
   const int txk_type_idx =
       av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
   TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
-#endif
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
   if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block,
@@ -780,9 +767,6 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // Intra bc motion vectors are not valid - signal corrupt frame
       aom_merge_corrupted_flag(&xd->corrupted, 1);
     }
-#if !CONFIG_TXK_SEL
-    av1_read_tx_type(cm, xd, r);
-#endif  // !CONFIG_TXK_SEL
   }
 }
 
@@ -913,10 +897,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, mi_row, mi_col, r);
-
-#if !CONFIG_TXK_SEL
-  av1_read_tx_type(cm, xd, r);
-#endif  // !CONFIG_TXK_SEL
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
@@ -1920,13 +1900,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     read_inter_block_mode_info(pbi, xd, mi, mi_row, mi_col, r);
   else
     read_intra_block_mode_info(cm, mi_row, mi_col, xd, mi, r);
-
-#if !CONFIG_TXK_SEL
-#if CONFIG_EXT_SKIP
-  if (!mbmi->skip_mode)
-#endif  // CONFIG_EXT_SKIP
-    av1_read_tx_type(cm, xd, r);
-#endif  // !CONFIG_TXK_SEL
 }
 
 static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,

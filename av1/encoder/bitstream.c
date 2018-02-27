@@ -844,29 +844,17 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
-#if CONFIG_TXK_SEL
                        int blk_row, int blk_col, int plane, TX_SIZE tx_size,
-#endif
                        aom_writer *w) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
-#if !CONFIG_TXK_SEL
-  const TX_SIZE mtx_size = get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type);
-  const TX_SIZE tx_size =
-      is_inter ? TXSIZEMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
-               : mbmi->tx_size;
-#endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-#if !CONFIG_TXK_SEL
-  TX_TYPE tx_type = mbmi->tx_type;
-#else
   // Only y plane's tx_type is transmitted
   if (plane > 0) return;
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
                                     cm->reduced_tx_set_used);
-#endif
 
   const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -1314,10 +1302,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     write_mb_interp_filter(cpi, xd, w);
   }
-
-#if !CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, w);
-#endif  // !CONFIG_TXK_SEL
 }
 
 static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -1334,9 +1318,6 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
     assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
     int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
-#if !CONFIG_TXK_SEL
-    av1_write_tx_type(cm, xd, w);
-#endif  // !CONFIG_TXK_SEL
   }
 }
 
@@ -1438,10 +1419,6 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
-
-#if !CONFIG_TXK_SEL
-  av1_write_tx_type(cm, xd, w);
-#endif  // !CONFIG_TXK_SEL
 }
 
 #if CONFIG_RD_DEBUG
