@@ -80,7 +80,8 @@ BuildInfo* BuildInfo::GetInstance() {
 
 void BuildInfo::SetJavaExceptionInfo(const std::string& info) {
   DCHECK(!java_exception_info_) << "info should be set only once.";
-  java_exception_info_ = strndup(info.c_str(), 4096);
+  // Java stacks can be really long!
+  java_exception_info_ = strndup(info.c_str(), 5 * 4096);
 }
 
 void BuildInfo::ClearJavaExceptionInfo() {
