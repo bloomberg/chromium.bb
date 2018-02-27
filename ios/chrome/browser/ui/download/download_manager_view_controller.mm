@@ -95,14 +95,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 
   AddNamedGuide(kActionButtonGuide, self.view);
   ConstrainNamedGuideToView(kActionButtonGuide, self.actionButton);
-
-  if (@available(iOS 11, *)) {
-    self.view.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
-        kElementMargin, kElementMargin, kElementMargin, kElementMargin);
-  } else {
-    self.view.layoutMargins = UIEdgeInsetsMake(kElementMargin, kElementMargin,
-                                               kElementMargin, kElementMargin);
-  }
 }
 
 - (void)updateViewConstraints {
@@ -132,13 +124,16 @@ NSString* GetSizeString(long long size_in_bytes) {
   // download controls row constraints.
   UIView* downloadRow = self.downloadControlsRow;
   UIButton* actionButton = self.actionButton;
+  // Account for bottom white pixel on shadow image.
+  CGFloat shadowHeight = CGRectGetHeight(shadow.frame) - 1;
   [NSLayoutConstraint activateConstraints:@[
     [downloadRow.leadingAnchor
         constraintEqualToAnchor:view.layoutMarginsGuide.leadingAnchor],
     [downloadRow.trailingAnchor
         constraintEqualToAnchor:view.layoutMarginsGuide.trailingAnchor],
     [downloadRow.topAnchor
-        constraintEqualToAnchor:view.layoutMarginsGuide.topAnchor],
+        constraintEqualToAnchor:view.layoutMarginsGuide.topAnchor
+                       constant:shadowHeight],
     [downloadRow.heightAnchor
         constraintEqualToAnchor:actionButton.heightAnchor],
   ]];
