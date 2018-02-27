@@ -20,6 +20,7 @@ class Keyboard : public UiElement {
   ~Keyboard() override;
 
   void SetKeyboardDelegate(KeyboardDelegate* keyboard_delegate);
+  void OnTouchStateUpdated(bool is_touching, const gfx::PointF& touch_position);
   void HitTest(const HitTestRequest& request,
                HitTestResult* result) const final;
   void NotifyClientFloatAnimated(float value,

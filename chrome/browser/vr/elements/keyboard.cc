@@ -22,6 +22,14 @@ void Keyboard::SetKeyboardDelegate(KeyboardDelegate* keyboard_delegate) {
   UpdateDelegateVisibility();
 }
 
+void Keyboard::OnTouchStateUpdated(bool is_touching,
+                                   const gfx::PointF& touch_position) {
+  if (!delegate_)
+    return;
+
+  delegate_->OnTouchStateUpdated(is_touching, touch_position);
+}
+
 void Keyboard::HitTest(const HitTestRequest& request,
                        HitTestResult* result) const {
   if (!delegate_)
