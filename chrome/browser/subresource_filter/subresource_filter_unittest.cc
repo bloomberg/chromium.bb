@@ -208,7 +208,7 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   EXPECT_FALSE(GetClient()->did_show_ui_for_navigation());
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
   histogram_tester.ExpectBucketCount(
-      actions_histogram, kActionForcedActivationNoUIResourceBlocked, 1);
+      "SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad", true, 1);
 
   // Simulate closing devtools.
   GetClient()->ToggleForceActivationInCurrentWebContents(false);
@@ -218,6 +218,21 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   histogram_tester.ExpectBucketCount(actions_histogram,
                                      kActionForcedActivationEnabled, 1);
+}
+
+TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
+  base::HistogramTester histogram_tester;
+  GetClient()->ToggleForceActivationInCurrentWebContents(true);
+  const GURL url("https://example.test/");
+  SimulateNavigateAndCommit(url, main_rfh());
+  GetClient()->ToggleForceActivationInCurrentWebContents(false);
+
+  // Resource should be disallowed, since navigation commit had activation.
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  // UI should not have shown though.
+  histogram_tester.ExpectBucketCount("SubresourceFilter.Actions",
+                                     kActionUIShown, 0);
 }
 
 TEST_F(SubresourceFilterTest, UIShown_LogsRappor) {

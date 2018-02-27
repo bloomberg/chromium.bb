@@ -83,6 +83,7 @@ enum SubresourceFilterAction {
 
   // Logged when we are forcing activation (e.g. via devtools) and resources
   // have been blocked. Note that in these cases the UI is suppressed.
+  // DEPRECATED: See SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad.
   kActionForcedActivationNoUIResourceBlocked,
 
   // Logged when a popup is blocked due to subresource filter logic.

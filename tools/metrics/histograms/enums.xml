@@ -41723,8 +41723,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="Content setting: allowed while UI suppressed"/>
   <int value="12" label="Forced filtering toggled on via devtools"/>
   <int value="13"
-      label="UI suppressed and resources blocked (Forced Activation)"/>
-  <int value="14" label="Blocked popup (Strong Popup Blocker)"/>
+      label="UI suppressed and resources blocked (Forced Activation)
+             (Deprecated)"/>
+  <int value="14" label="Blocked popup (Strong Popup Blocker) (Deprecated)"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision">
