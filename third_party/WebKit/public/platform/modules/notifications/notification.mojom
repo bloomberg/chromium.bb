@@ -30,7 +30,7 @@ struct NotificationAction {
   string action;
 
   // Title of the action button.
-  string title;
+  mojo_base.mojom.String16 title;
 
   // URL of the icon for the button. May be empty if no url was specified.
   url.mojom.Url icon;

@@ -31,7 +31,7 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
   void SetCompositionText(const ui::CompositionText& composition) override;
   void ConfirmCompositionText() override;
   void ClearCompositionText() override;
-  void InsertText(const std::string& text) override;
+  void InsertText(const base::string16& text) override;
   void InsertChar(std::unique_ptr<ui::Event> event) override;
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,

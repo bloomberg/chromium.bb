@@ -6,6 +6,7 @@ module autofill.mojom;
 
 import "mojo/common/text_direction.mojom";
 import "mojo/common/time.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -101,14 +102,14 @@ enum LabelSource {
 
 // autofill::FormFieldData
 struct FormFieldData {
-  string label;
-  string name;
-  string id;
-  string value;
+  mojo_base.mojom.String16 label;
+  mojo_base.mojom.String16 name;
+  mojo_base.mojom.String16 id;
+  mojo_base.mojom.String16 value;
   string form_control_type;
   string autocomplete_attribute;
-  string placeholder;
-  string css_classes;
+  mojo_base.mojom.String16 placeholder;
+  mojo_base.mojom.String16 css_classes;
   uint32 properties_mask;
 
   uint64 max_length;
@@ -119,15 +120,15 @@ struct FormFieldData {
   RoleAttribute role;
   mojo.common.mojom.TextDirection text_direction;
 
-  array<string> option_values;
-  array<string> option_contents;
+  array<mojo_base.mojom.String16> option_values;
+  array<mojo_base.mojom.String16> option_contents;
 
   LabelSource label_source;
 };
 
 // autofill::FormData
 struct FormData {
-  string name;
+  mojo_base.mojom.String16 name;
   // TODO(crbug.com/788181): Either change type to Origin or rename to URL.
   url.mojom.Url origin;
   url.mojom.Url action;
@@ -156,20 +157,19 @@ struct FormDataPredictions {
 
 // autofill::PasswordAndRealm
 struct PasswordAndRealm {
-  string password;
+  mojo_base.mojom.String16 password;
   string realm;
 };
 
-
 // autofill::PasswordFormFillData
 struct PasswordFormFillData {
-  string name;
+  mojo_base.mojom.String16 name;
   url.mojom.Url origin;
   url.mojom.Url action;
   FormFieldData username_field;
   FormFieldData password_field;
   string preferred_realm;
-  map<string, PasswordAndRealm> additional_logins;
+  map<mojo_base.mojom.String16, PasswordAndRealm> additional_logins;
   bool wait_for_username;
   bool is_possible_change_password_form;
 };
@@ -184,8 +184,8 @@ struct PasswordFormGenerationData {
 
 // autofill::PossibleUsernamePair
 struct PossibleUsernamePair {
-  string value;
-  string field_name;
+  mojo_base.mojom.String16 value;
+  mojo_base.mojom.String16 field_name;
 };
 
 // autofill::PasswordForm
@@ -195,21 +195,21 @@ struct PasswordForm {
   url.mojom.Url origin_with_path;
   url.mojom.Url action;
   string affiliated_web_realm;
-  string submit_element;
-  string username_element;
+  mojo_base.mojom.String16 submit_element;
+  mojo_base.mojom.String16 username_element;
   bool username_marked_by_site;
-  string username_value;
+  mojo_base.mojom.String16 username_value;
   array<PossibleUsernamePair> other_possible_usernames;
-  array<string> all_possible_passwords;
+  array<mojo_base.mojom.String16> all_possible_passwords;
   bool form_has_autofilled_value;
-  string password_element;
-  string password_value;
+  mojo_base.mojom.String16 password_element;
+  mojo_base.mojom.String16 password_value;
   bool password_value_is_default;
-  string new_password_element;
-  string new_password_value;
+  mojo_base.mojom.String16 new_password_element;
+  mojo_base.mojom.String16 new_password_value;
   bool new_password_value_is_default;
   bool new_password_marked_by_site;
-  string confirmation_password_element;
+  mojo_base.mojom.String16 confirmation_password_element;
   bool preferred;
   mojo.common.mojom.Time date_created;
   mojo.common.mojom.Time date_synced;
@@ -218,7 +218,7 @@ struct PasswordForm {
   int32 times_used;
   FormData form_data;
   GenerationUploadStatus generation_upload_status;
-  string display_name;
+  mojo_base.mojom.String16 display_name;
   url.mojom.Url icon_url;
   url.mojom.Origin federation_origin;
   bool skip_zero_click;

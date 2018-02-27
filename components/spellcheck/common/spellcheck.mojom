@@ -85,5 +85,5 @@ struct SpellCheckResult {
   Decoration decoration;
   int32 location;
   int32 length;
-  array<string> replacements;
+  array<mojo_base.mojom.String16> replacements;
 };

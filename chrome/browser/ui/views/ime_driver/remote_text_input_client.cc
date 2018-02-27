@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
-#include "base/strings/utf_string_conversions.h"
-
 RemoteTextInputClient::RemoteTextInputClient(
     ui::mojom::TextInputClientPtr remote_client,
     ui::TextInputType text_input_type,
@@ -45,7 +43,7 @@ void RemoteTextInputClient::ClearCompositionText() {
 }
 
 void RemoteTextInputClient::InsertText(const base::string16& text) {
-  remote_client_->InsertText(base::UTF16ToUTF8(text));
+  remote_client_->InsertText(text);
 }
 
 void RemoteTextInputClient::InsertChar(const ui::KeyEvent& event) {
