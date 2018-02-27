@@ -3702,6 +3702,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [self.dispatcher closeCurrentTab];
       break;
     case OverscrollAction::REFRESH:
+      // Instruct the SnapshotTabHelper to ignore the next load event.
+      // Attempting to snapshot while the overscroll "bounce back" animation is
+      // occurring will cut the animation short.
+      DCHECK(self.currentWebState);
+      SnapshotTabHelper::FromWebState(self.currentWebState)->IgnoreNextLoad();
       [self reload];
       break;
     case OverscrollAction::NONE:

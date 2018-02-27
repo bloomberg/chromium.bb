@@ -67,6 +67,9 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // Requests deletion of the current page snapshot from disk and memory.
   void RemoveSnapshot();
 
+  // Instructs the helper not to snapshot content for the next page load event.
+  void IgnoreNextLoad();
+
   // Returns an image to use as replacement of a missing snapshot.
   static UIImage* GetDefaultSnapshotImage();
 
@@ -82,6 +85,7 @@ class SnapshotTabHelper : public web::WebStateObserver,
   web::WebState* web_state_ = nullptr;
   SnapshotGenerator* snapshot_generator_ = nil;
   std::unique_ptr<infobars::InfoBarManager::Observer> infobar_observer_;
+  bool ignore_next_load_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotTabHelper);
 };
