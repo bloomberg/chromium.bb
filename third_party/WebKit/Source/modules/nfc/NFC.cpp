@@ -20,7 +20,7 @@
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
 namespace {
 const char kJsonMimePostfix[] = "+json";

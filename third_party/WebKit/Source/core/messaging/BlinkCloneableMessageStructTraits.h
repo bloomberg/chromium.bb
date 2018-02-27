@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "platform/blob/SerializedBlobStructTraits.h"
-#include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/message_port/message_port.mojom-blink.h"
 
 namespace mojo {
 

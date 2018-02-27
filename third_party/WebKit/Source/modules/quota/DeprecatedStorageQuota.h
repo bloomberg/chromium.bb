@@ -34,7 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "third_party/WebKit/common/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
 
 namespace blink {
 

@@ -4,7 +4,6 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/Document.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/html/HTMLScriptElement.h"
@@ -17,6 +16,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -13,7 +13,7 @@
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/storage_common_export.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
+#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/WebFileError.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 

@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/scoped_web_frame.h"
 
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
+#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace extensions {

@@ -11,7 +11,6 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -35,6 +34,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "v8/include/v8.h"
 

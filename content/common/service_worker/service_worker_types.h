@@ -19,7 +19,7 @@
 #include "content/public/common/request_context_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
+#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"

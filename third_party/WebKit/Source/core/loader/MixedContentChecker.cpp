@@ -28,7 +28,6 @@
 
 #include "core/loader/MixedContentChecker.h"
 
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/Document.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Frame.h"
@@ -46,6 +45,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebSecurityOrigin.h"

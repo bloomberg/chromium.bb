@@ -18,7 +18,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
+#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 using std::swap;

@@ -46,7 +46,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "third_party/WebKit/Source/core/dom/AXObjectCache.h"
-#include "third_party/WebKit/common/loader/prefetch_url_loader_service.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
 
 namespace service_manager {
 class InterfaceProvider;

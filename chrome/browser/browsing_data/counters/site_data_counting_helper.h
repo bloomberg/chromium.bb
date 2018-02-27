@@ -9,7 +9,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/ssl/channel_id_store.h"
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
+#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
 
 class Profile;
 class BrowsingDataFlashLSOHelper;

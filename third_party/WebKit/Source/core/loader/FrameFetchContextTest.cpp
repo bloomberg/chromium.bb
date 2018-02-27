@@ -31,7 +31,6 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include <memory>
-#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
@@ -55,6 +54,7 @@
 #include "platform/testing/HistogramTester.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "public/platform/WebClientHintsType.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"

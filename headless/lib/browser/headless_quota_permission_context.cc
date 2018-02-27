@@ -4,7 +4,7 @@
 
 #include "headless/lib/browser/headless_quota_permission_context.h"
 
-#include "third_party/WebKit/common/quota/quota_types.mojom.h"
+#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
 
 namespace headless {
 

@@ -129,7 +129,7 @@
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollIntoViewParams.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
+#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
 // If arg evaluates to true, the program will continue. If arg evaluates to
