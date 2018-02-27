@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/stl_util.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -418,10 +419,9 @@ TEST_F(SplitViewControllerTest, EnterOverviewTest) {
   ToggleOverview();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
-  std::vector<aura::Window*> windows = GetWindowsInOverviewGrids();
-  auto iter = std::find(windows.begin(), windows.end(),
-                        split_view_controller()->GetDefaultSnappedWindow());
-  EXPECT_TRUE(iter == windows.end());
+  EXPECT_FALSE(
+      base::ContainsValue(GetWindowsInOverviewGrids(),
+                          split_view_controller()->GetDefaultSnappedWindow()));
 }
 
 // Tests that the split divider was created when the split view mode is active

@@ -41,6 +41,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
@@ -3594,8 +3595,7 @@ TEST_F(SplitViewWindowSelectorTest,
   std::vector<aura::Window*> window_list =
       window_selector_controller()->GetWindowsListInOverviewGridsForTesting();
   EXPECT_EQ(2u, window_list.size());
-  EXPECT_TRUE(std::find(window_list.begin(), window_list.end(),
-                        window1.get()) == window_list.end());
+  EXPECT_FALSE(base::ContainsValue(window_list, window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
 
   // Drag the divider to the left edge.
@@ -3611,8 +3611,7 @@ TEST_F(SplitViewWindowSelectorTest,
   window_list =
       window_selector_controller()->GetWindowsListInOverviewGridsForTesting();
   EXPECT_EQ(3u, window_list.size());
-  EXPECT_TRUE(std::find(window_list.begin(), window_list.end(),
-                        window1.get()) != window_list.end());
+  EXPECT_TRUE(base::ContainsValue(window_list, window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 

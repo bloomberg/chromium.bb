@@ -26,6 +26,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
@@ -813,15 +814,9 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   aura::Window::Windows switchable_window_list =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   EXPECT_EQ(3u, switchable_window_list.size());
-  EXPECT_NE(switchable_window_list.end(),
-            std::find(switchable_window_list.begin(),
-                      switchable_window_list.end(), w1.get()));
-  EXPECT_NE(switchable_window_list.end(),
-            std::find(switchable_window_list.begin(),
-                      switchable_window_list.end(), w2.get()));
-  EXPECT_NE(switchable_window_list.end(),
-            std::find(switchable_window_list.begin(),
-                      switchable_window_list.end(), w3.get()));
+  EXPECT_TRUE(base::ContainsValue(switchable_window_list, w1.get()));
+  EXPECT_TRUE(base::ContainsValue(switchable_window_list, w2.get()));
+  EXPECT_TRUE(base::ContainsValue(switchable_window_list, w3.get()));
 
   SetShelfVisibilityState(Shell::GetPrimaryRootWindow(), SHELF_VISIBLE);
   RunAllPendingInMessageLoop();
