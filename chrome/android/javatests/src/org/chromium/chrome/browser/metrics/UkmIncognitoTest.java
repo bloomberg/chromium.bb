@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -12,12 +13,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.PageTransition;
 
@@ -38,24 +41,105 @@ public class UkmIncognitoTest {
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    public String getUkmState(Tab normalTab) throws Exception {
+    public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mActivityTestRule.loadUrlInTab(
                 DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 normalTab.getContentViewCore().getWebContents(),
-                "document.getElementById('state').textContent");
+                "document.getElementById('" + elementId + "').textContent");
+    }
+
+    public boolean isUkmEnabled(Tab normalTab) throws Exception {
+        String state = getElementContent(normalTab, "state");
+        Assert.assertTrue(
+                "UKM state: " + state, state.equals("\"True\"") || state.equals("\"False\""));
+        return state.equals("\"True\"");
+    }
+
+    public String getUkmClientId(Tab normalTab) throws Exception {
+        return getElementContent(normalTab, "clientid");
+    }
+
+    /**
+     * Closes the current tab.
+     * @param incognito Whether to close an incognito or non-incognito tab.
+     */
+    protected void closeCurrentTab(final boolean incognito) throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mActivityTestRule.getActivity().getTabModelSelector().selectModel(incognito);
+            }
+        });
+        ChromeTabUtils.closeCurrentTab(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+    }
+
+    protected void closeRegularTab() throws InterruptedException {
+        closeCurrentTab(false);
+    }
+
+    protected void closeIncognitoTab() throws InterruptedException {
+        closeCurrentTab(true);
     }
 
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testUkmIncognito() throws Exception {
+    public void testRegularPlusIncognitoCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.RegularPlusIncognitoCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
         Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
-        Assert.assertEquals("UKM State:", "\"True\"", getUkmState(normalTab));
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        String clientId = getUkmClientId(normalTab);
+        Assert.assertFalse("Non empty client id: " + clientId, clientId.isEmpty());
 
         mActivityTestRule.newIncognitoTabFromMenu();
 
-        Assert.assertEquals("UKM State:", "\"False\"", getUkmState(normalTab));
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Opening another regular tab mustn't enable UKM.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Opening and closing another Incognito tab mustn't enable UKM.
+        mActivityTestRule.newIncognitoTabFromMenu();
+        closeIncognitoTab();
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        closeRegularTab();
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        closeIncognitoTab();
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Client ID should not have been reset.
+        Assert.assertEquals("Client id:", clientId, getUkmClientId(normalTab));
+    }
+
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testIncognitoPlusRegularCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.IncognitoPlusRegularCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
+
+        // Start by closing all tabs.
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+
+        mActivityTestRule.newIncognitoTabFromMenu();
+
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
+
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        closeIncognitoTab();
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
     }
 }
