@@ -709,4 +709,69 @@ TEST(AXEventGeneratorTest, MenuItemSelected) {
       DumpEvents(&event_generator));
 }
 
+TEST(AXEventGeneratorTest, NodeBecomesIgnored) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kArticle;
+  initial_state.nodes[1].child_ids.push_back(3);
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[2].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[2].child_ids.push_back(4);
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[3].child_ids.push_back(5);
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kStaticText;
+
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[3].AddState(ax::mojom::State::kIgnored);
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "CHILDREN_CHANGED on 2, "
+      "STATE_CHANGED on 4",
+      DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, NodeBecomesUnignored) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kArticle;
+  initial_state.nodes[1].child_ids.push_back(3);
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[2].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[2].child_ids.push_back(4);
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[3].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[3].child_ids.push_back(5);
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kStaticText;
+
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[3].state = 0;
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "CHILDREN_CHANGED on 2, "
+      "STATE_CHANGED on 4",
+      DumpEvents(&event_generator));
+}
+
 }  // namespace ui

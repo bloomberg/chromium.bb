@@ -1318,4 +1318,34 @@ TEST(AXTreeTest, IntListReverseRelations) {
   EXPECT_TRUE(base::ContainsKey(reverse_labelled_by, 1));
 }
 
+TEST(AXTreeTest, SkipIgnoredNodes) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].child_ids = {4, 5};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[4].id = 5;
+
+  AXTree tree(tree_update);
+  AXNode* root = tree.root();
+  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(2, root->ChildAtIndex(0)->id());
+  ASSERT_EQ(3, root->ChildAtIndex(1)->id());
+
+  EXPECT_EQ(3, root->GetUnignoredChildCount());
+  EXPECT_EQ(4, root->GetUnignoredChildAtIndex(0)->id());
+  EXPECT_EQ(5, root->GetUnignoredChildAtIndex(1)->id());
+  EXPECT_EQ(3, root->GetUnignoredChildAtIndex(2)->id());
+  EXPECT_EQ(0, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
+
+  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
+}
+
 }  // namespace ui

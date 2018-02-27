@@ -126,28 +126,39 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
   DCHECK_EQ(tree_, tree);
 
   AddEvent(node, Event::STATE_CHANGED);
-  if (state == ax::mojom::State::kExpanded) {
-    AddEvent(node, new_value ? Event::EXPANDED : Event::COLLAPSED);
+  switch (state) {
+    case ax::mojom::State::kExpanded:
+      AddEvent(node, new_value ? Event::EXPANDED : Event::COLLAPSED);
 
-    // TODO(accessibility): tree in the midst of updates. Disallow access to
-    // |node|.
-    if (node->data().role == ax::mojom::Role::kRow ||
-        node->data().role == ax::mojom::Role::kTreeItem) {
+      // TODO(accessibility): tree in the midst of updates. Disallow access to
+      // |node|.
+      if (node->data().role == ax::mojom::Role::kRow ||
+          node->data().role == ax::mojom::Role::kTreeItem) {
+        ui::AXNode* container = node;
+        while (container && !ui::IsRowContainer(container->data().role))
+          container = container->parent();
+        if (container)
+          AddEvent(container, Event::ROW_COUNT_CHANGED);
+      }
+      break;
+    case ax::mojom::State::kSelected: {
+      AddEvent(node, Event::SELECTED_CHANGED);
       ui::AXNode* container = node;
-      while (container && !ui::IsRowContainer(container->data().role))
+      while (container &&
+             !ui::IsContainerWithSelectableChildrenRole(container->data().role))
         container = container->parent();
       if (container)
-        AddEvent(container, Event::ROW_COUNT_CHANGED);
+        AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
+      break;
     }
-  }
-  if (state == ax::mojom::State::kSelected) {
-    AddEvent(node, Event::SELECTED_CHANGED);
-    ui::AXNode* container = node;
-    while (container &&
-           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
-      container = container->parent();
-    if (container)
-      AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
+    case ax::mojom::State::kIgnored: {
+      ui::AXNode* unignored_parent = node->GetUnignoredParent();
+      if (unignored_parent)
+        AddEvent(unignored_parent, Event::CHILDREN_CHANGED);
+      break;
+    }
+    default:
+      break;
   }
 }
 

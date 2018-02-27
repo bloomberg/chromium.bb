@@ -208,6 +208,7 @@
     haspopup,
     horizontal,
     hovered,
+    ignored,
     invisible,
     linked,
     multiline,

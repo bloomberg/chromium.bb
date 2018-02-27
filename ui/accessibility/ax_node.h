@@ -33,6 +33,12 @@ class AX_EXPORT AXNode {
   // Get the child at the given index.
   AXNode* ChildAtIndex(int index) const { return children_[index]; }
 
+  // Walking the tree skipping ignored nodes.
+  int GetUnignoredChildCount() const;
+  AXNode* GetUnignoredChildAtIndex(int index) const;
+  AXNode* GetUnignoredParent() const;
+  int GetUnignoredIndexInParent() const;
+
   // Returns true if the node has any of the text related roles.
   bool IsTextNode() const;
 

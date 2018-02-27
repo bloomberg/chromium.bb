@@ -768,6 +768,8 @@ const char* ToString(ax::mojom::State state) {
       return "horizontal";
     case ax::mojom::State::kHovered:
       return "hovered";
+    case ax::mojom::State::kIgnored:
+      return "ignored";
     case ax::mojom::State::kInvisible:
       return "invisible";
     case ax::mojom::State::kLinked:
@@ -814,6 +816,8 @@ ax::mojom::State ParseState(const char* state) {
     return ax::mojom::State::kHorizontal;
   if (0 == strcmp(state, "hovered"))
     return ax::mojom::State::kHovered;
+  if (0 == strcmp(state, "ignored"))
+    return ax::mojom::State::kIgnored;
   if (0 == strcmp(state, "invisible"))
     return ax::mojom::State::kInvisible;
   if (0 == strcmp(state, "linked"))
