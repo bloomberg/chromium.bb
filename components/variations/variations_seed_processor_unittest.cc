@@ -26,7 +26,11 @@
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::ElementsAre;
+using testing::IsEmpty;
 
 namespace variations {
 namespace {
@@ -412,35 +416,37 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudySingleFeature) {
   EXPECT_TRUE(processed_study.Init(&study, false));
   EXPECT_EQ(400, processed_study.total_probability());
 
-  EXPECT_EQ(std::string(), processed_study.single_feature_name());
+  EXPECT_THAT(processed_study.associated_features(), IsEmpty());
 
   const char kFeature1Name[] = "Feature1";
   const char kFeature2Name[] = "Feature2";
 
   exp1->mutable_feature_association()->add_enable_feature(kFeature1Name);
   EXPECT_TRUE(processed_study.Init(&study, false));
-  EXPECT_EQ(kFeature1Name, processed_study.single_feature_name());
+  EXPECT_THAT(processed_study.associated_features(),
+              ElementsAre(kFeature1Name));
 
   exp1->clear_feature_association();
   exp1->mutable_feature_association()->add_enable_feature(kFeature1Name);
   exp1->mutable_feature_association()->add_enable_feature(kFeature2Name);
   EXPECT_TRUE(processed_study.Init(&study, false));
-  // Since there's multiple different features, |single_feature_name| should be
+  // Since there's multiple different features, |associated_features| should be
   // unset.
-  EXPECT_EQ(std::string(), processed_study.single_feature_name());
+  EXPECT_THAT(processed_study.associated_features(), IsEmpty());
 
   exp1->clear_feature_association();
   exp1->mutable_feature_association()->add_enable_feature(kFeature1Name);
   exp2->mutable_feature_association()->add_enable_feature(kFeature1Name);
   exp3->mutable_feature_association()->add_disable_feature(kFeature1Name);
   EXPECT_TRUE(processed_study.Init(&study, false));
-  EXPECT_EQ(kFeature1Name, processed_study.single_feature_name());
+  EXPECT_THAT(processed_study.associated_features(),
+              ElementsAre(kFeature1Name));
 
-  // Setting a different feature name on exp2 should cause |single_feature_name|
+  // Setting a different feature name on exp2 should cause |associated_features|
   // to be not set.
   exp2->mutable_feature_association()->set_enable_feature(0, kFeature2Name);
   EXPECT_TRUE(processed_study.Init(&study, false));
-  EXPECT_EQ(std::string(), processed_study.single_feature_name());
+  EXPECT_THAT(processed_study.associated_features(), IsEmpty());
 }
 
 TEST_F(VariationsSeedProcessorTest, ProcessedStudyAllAssignmentsToOneGroup) {
