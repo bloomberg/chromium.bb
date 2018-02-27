@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/stl_util.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
@@ -266,9 +267,7 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
 }
 
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
-  auto iter =
-      std::find(observed_windows_.begin(), observed_windows_.end(), window);
-  if (iter == observed_windows_.end()) {
+  if (!base::ContainsValue(observed_windows_, window)) {
     window->AddObserver(this);
     observed_windows_.push_back(window);
   }
@@ -290,9 +289,7 @@ void SplitViewDivider::OnWindowDestroying(aura::Window* window) {
 void SplitViewDivider::OnWindowActivated(ActivationReason reason,
                                          aura::Window* gained_active,
                                          aura::Window* lost_active) {
-  auto iter = std::find(observed_windows_.begin(), observed_windows_.end(),
-                        gained_active);
-  if (iter != observed_windows_.end()) {
+  if (base::ContainsValue(observed_windows_, gained_active)) {
     divider_widget_->SetAlwaysOnTop(true);
   } else {
     divider_widget_->SetAlwaysOnTop(false);

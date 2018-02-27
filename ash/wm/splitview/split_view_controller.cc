@@ -31,6 +31,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -531,10 +532,11 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   }
 
   // Only window in MRU list can be snapped.
-  aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  if (std::find(windows.begin(), windows.end(), gained_active) == windows.end())
+  if (!base::ContainsValue(
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(),
+          gained_active)) {
     return;
+  }
 
   // Snap the window on the non-default side of the screen if split view mode
   // is active.
