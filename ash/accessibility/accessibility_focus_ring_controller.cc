@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/accessibility/focus_ring_layer.h"
@@ -96,9 +98,19 @@ void AccessibilityFocusRingController::ResetFocusRingColor() {
 void AccessibilityFocusRingController::SetFocusRing(
     const std::vector<gfx::Rect>& rects,
     AccessibilityFocusRingController::FocusRingBehavior focus_ring_behavior) {
+  std::vector<gfx::Rect> clean_rects(rects);
+  // Remove duplicates
+  if (rects.size() > 1) {
+    std::set<gfx::Rect> rects_set(rects.begin(), rects.end());
+    clean_rects.assign(rects_set.begin(), rects_set.end());
+  }
+  // If there is no change, don't do any work.
+  if (focus_ring_behavior_ == focus_ring_behavior &&
+      clean_rects == focus_rects_)
+    return;
   focus_ring_behavior_ = focus_ring_behavior;
   OnLayerChange(&focus_animation_info_);
-  focus_rects_ = rects;
+  focus_rects_ = clean_rects;
   UpdateFocusRingsFromFocusRects();
   if (focus_ring_observer_for_testing_)
     focus_ring_observer_for_testing_.Run();
