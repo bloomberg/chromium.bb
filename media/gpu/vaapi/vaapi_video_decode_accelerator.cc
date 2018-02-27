@@ -284,10 +284,9 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
         BindToCurrentLoop(
             base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_)));
     input_buffers_.push(std::move(input_buffer));
-
-    TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
   }
 
+  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
   input_ready_.Signal();
 
   switch (state_) {
@@ -316,7 +315,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   }
 }
 
-bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
+bool VaapiVideoDecodeAccelerator::GetCurrInputBuffer_Locked() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
@@ -325,9 +324,8 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
 
   // Will only wait if it is expected that in current state new buffers will
   // be queued from the client via Decode(). The state can change during wait.
-  while (input_buffers_.empty() && (state_ == kDecoding || state_ == kIdle)) {
+  while (input_buffers_.empty() && (state_ == kDecoding || state_ == kIdle))
     input_ready_.Wait();
-  }
 
   // We could have got woken up in a different state or never got to sleep
   // due to current state.
@@ -337,13 +335,14 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
   DCHECK(!input_buffers_.empty());
   curr_input_buffer_ = std::move(input_buffers_.front());
   input_buffers_.pop();
+  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
 
   if (curr_input_buffer_->IsFlushRequest()) {
     VLOGF(4) << "New flush buffer";
     return true;
   }
 
-  VLOGF(4) << "New current input buffer, id: " << curr_input_buffer_->id()
+  VLOGF(4) << "New |curr_input_buffer_|, id: " << curr_input_buffer_->id()
            << " size: " << curr_input_buffer_->shm()->size() << "B";
   decoder_->SetStream(
       static_cast<uint8_t*>(curr_input_buffer_->shm()->memory()),
@@ -357,8 +356,6 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   lock_.AssertAcquired();
   DCHECK(curr_input_buffer_.get());
   curr_input_buffer_.reset();
-
-  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
 }
 
 // TODO(posciak): refactor the whole class to remove sleeping in wait for
@@ -381,13 +378,11 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
   if (state_ != kDecoding)
     return;
-
-  // Main decode task.
   VLOGF(4) << "Decode task";
 
   // Try to decode what stream data is (still) in the decoder until we run out
   // of it.
-  while (GetInputBuffer_Locked()) {
+  while (GetCurrInputBuffer_Locked()) {
     DCHECK(curr_input_buffer_.get());
 
     if (curr_input_buffer_->IsFlushRequest()) {
@@ -689,7 +684,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
 void VaapiVideoDecodeAccelerator::FlushTask() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  DCHECK(curr_input_buffer_.get() && curr_input_buffer_->IsFlushRequest());
+  DCHECK(curr_input_buffer_ && curr_input_buffer_->IsFlushRequest());
 
   curr_input_buffer_.reset();
 
@@ -759,7 +754,7 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
   base::AutoLock auto_lock(lock_);
 
   // Return current input buffer, if present.
-  if (curr_input_buffer_.get())
+  if (curr_input_buffer_)
     ReturnCurrInputBuffer_Locked();
 
   // And let client know that we are done with reset.
