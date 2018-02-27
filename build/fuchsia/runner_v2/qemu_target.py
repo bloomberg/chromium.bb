@@ -51,8 +51,6 @@ class QemuTarget(target.Target):
       self.Shutdown()
 
   def Start(self):
-    boot_data_path = boot_data.CreateBootdata(
-        self._output_dir, self._GetTargetSdkArch())
     qemu_path = os.path.join(
         common.SDK_ROOT, 'qemu', 'bin',
         'qemu-system-' + self._GetTargetSdkArch())
@@ -61,9 +59,22 @@ class QemuTarget(target.Target):
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
         '-nographic',
-        '-kernel', boot_data.GetKernelPath(self._GetTargetSdkArch()),
-        '-initrd', boot_data_path,
+        '-kernel', boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                           'zircon.bin'),
+        '-initrd', boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                           'bootdata-blobstore.bin'),
         '-smp', '4',
+
+        # Attach the blobstore and data volumes.
+        '-drive', 'file=%s,format=qcow2,if=none,id=data' %
+            self._MakeQcowDisk(
+                boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                        'fvm.blk')),
+        '-drive', 'file=%s,format=qcow2,if=none,id=blobstore' %
+            self._MakeQcowDisk(boot_data.ConfigureDataFVM(self._output_dir,
+                                                          False)),
+        '-device', 'virtio-blk-pci,drive=data',
+        '-device', 'virtio-blk-pci,drive=blobstore',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
         # monitor.
@@ -132,3 +143,14 @@ class QemuTarget(target.Target):
 
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
+
+  def _MakeQcowDisk(self, disk_path):
+    """Creates a QEMU copy-on-write version of |disk_path| in the output
+    directory."""
+
+    qimg_path = os.path.join(common.SDK_ROOT, 'qemu', 'bin', 'qemu-img')
+    output_path = os.path.join(self._output_dir,
+                               os.path.basename(disk_path) + '.qcow2')
+    subprocess.check_call([qimg_path, 'create', '-q', '-f', 'qcow2',
+                           '-b', disk_path, output_path])
+    return output_path

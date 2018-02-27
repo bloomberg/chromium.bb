@@ -20,7 +20,6 @@ template("package") {
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
   _manifest_file = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
   _archive_file = "$_pkg_out_dir/${pkg.package_name}.far"
-  _write_archive_target = "${pkg.package_name}__write_archive"
   _write_manifest_target = "${pkg.package_name}__write_manifest"
 
   # Generates a manifest file based on the GN runtime deps
@@ -58,7 +57,7 @@ template("package") {
 
   # Packages an executable target and its dependencies into a Fuchsia archive
   # file (.far).
-  action(_write_archive_target) {
+  action(target_name) {
     forward_variables_from(invoker, [ "testonly" ])
 
     far_tool_path = "//third_party/fuchsia-sdk/tools/far"
@@ -81,13 +80,6 @@ template("package") {
       "create",
       "--archive=" + rebase_path(_archive_file),
       "--manifest=" + rebase_path(_manifest_file),
-    ]
-  }
-
-  group(target_name) {
-    forward_variables_from(invoker, [ "testonly" ])
-    deps = [
-      ":$_write_archive_target",
     ]
   }
 }
