@@ -23,15 +23,13 @@ function tearDown() {
 function testSyncCustomWallpaperSet() {
   var mockSetCustomWallpaper = mockController.createFunctionMock(
       chrome.wallpaperPrivate, 'setCustomWallpaper');
-  mockSetCustomWallpaper.addExpectation(TestConstants.FILESTRING,
-                                        'dummy',
-                                        true,
-                                        'dummy');
+  mockSetCustomWallpaper.addExpectation(
+      TestConstants.FILESTRING, 'dummy', true, TestConstants.wallpaperUrl);
   var syncFSChanges = {};
   syncFSChanges.status = 'synced';
   syncFSChanges.direction = 'remote_to_local';
   syncFSChanges.action = 'added';
-  syncFSChanges.fileEntry = mockSyncFS.mockTestFile('dummy');
+  syncFSChanges.fileEntry = mockSyncFS.mockTestFile(TestConstants.wallpaperUrl);
   chrome.syncFileSystem.onFileStatusChanged.dispatch(syncFSChanges);
 }
 
@@ -98,7 +96,7 @@ function testSyncOnlineWallpaper() {
   var changes = {};
   changes[Constants.AccessSyncWallpaperInfoKey] = {};
   changes[Constants.AccessSyncWallpaperInfoKey].newValue = {
-    'url': TestConstants.wallpaperURL,
+    'url': TestConstants.wallpaperUrl,
     'layout': 'custom',
     'source': Constants.WallpaperSourceEnum.Online
   };
@@ -126,8 +124,7 @@ function testSurpriseWallpaper() {
   var mockSetWallpaperIfExists = mockController.createFunctionMock(
       chrome.wallpaperPrivate, 'setWallpaperIfExists');
   mockSetWallpaperIfExists.addExpectation(
-      'dummy_high_resolution.jpg',
-      'dummy');
+      TestConstants.wallpaperUrl + TestConstants.highResolutionSuffix, 'dummy');
   mockSetWallpaperIfExists.callbackData = [true];
 
   var mockRecordWallpaperUMA = mockController.createFunctionMock(
@@ -141,7 +138,8 @@ function testSurpriseWallpaper() {
   // stats is also recorded correctly.
   TestConstants.isUsingNewWallpaperPicker = true;
   mockSetWallpaperIfExists.addExpectation(
-      TestConstants.wallpaperURL, 'CENTER_CROPPED');
+      TestConstants.wallpaperUrl + TestConstants.highResolutionSuffix,
+      'CENTER_CROPPED');
   mockRecordWallpaperUMA.addExpectation(Constants.WallpaperSourceEnum.Daily);
 
   var dateString = new Date().toDateString();

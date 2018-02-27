@@ -6,7 +6,8 @@
 var TestConstants = {
   isPowerwashed: 0,
   isUsingNewWallpaperPicker: false,
-  wallpaperURL: 'https://test.com/test.jpg',
+  wallpaperUrl: 'https://test.com/test.jpg',
+  highResolutionSuffix: 'suffix',
   // A dummy string which is used to mock an image.
   IMAGE: '*#*@#&',
   // A dummy array which is used to mock the file content.
@@ -211,7 +212,7 @@ var chrome = {
               items[Constants.AccessLocalWallpaperInfoKey] = null;
             } else {
               items[Constants.AccessLocalWallpaperInfoKey] = {
-                'url': 'dummy',
+                'url': TestConstants.wallpaperUrl,
                 'layout': 'dummy',
                 'source': Constants.WallpaperSourceEnum.Custom
               };
@@ -219,13 +220,11 @@ var chrome = {
             break;
           case Constants.AccessLocalManifestKey:
             items[Constants.AccessLocalManifestKey] = {
-              'wallpaper_list': [
-                {
-                  'available_for_surprise_me': true,
-                  'base_url': 'dummy',
-                  'default_layout': 'dummy'
-                }
-              ]
+              'wallpaper_list': [{
+                'available_for_surprise_me': true,
+                'base_url': TestConstants.wallpaperUrl,
+                'default_layout': 'dummy'
+              }]
             };
             break;
         }
@@ -269,7 +268,10 @@ var chrome = {
   alarms: {onAlarm: {addListener: function(listener) {}}},
   wallpaperPrivate: {
     getStrings: function(callback) {
-      callback({isExperimental: false});
+      callback({
+        useNewWallpaperPicker: TestConstants.isUsingNewWallpaperPicker,
+        highResolutionSuffix: TestConstants.highResolutionSuffix
+      });
     },
     setCustomWallpaper: function(
         data, layout, isGenerateThumbnail, fileName, callback) {},
@@ -283,7 +285,7 @@ var chrome = {
       callback([{collectionId: 'dummyId'}]);
     },
     getImagesInfo: function(collectionId, callback) {
-      callback([{imageUrl: TestConstants.wallpaperURL}]);
+      callback([{imageUrl: TestConstants.wallpaperUrl}]);
     }
   },
   runtime: {lastError: null},

@@ -43,11 +43,6 @@
   AccessSyncSurpriseMeEnabledKey: 'sync-surprise-me-enabled-key',
 
   /**
-   * Suffix to append to baseURL if requesting high resoultion wallpaper.
-   */
-  HighResolutionSuffix: '_high_resolution.jpg',
-
-  /**
    * URL to get latest wallpaper RSS feed.
    */
   WallpaperRssURL: 'https://storage.googleapis.com/' +

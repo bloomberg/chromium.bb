@@ -490,8 +490,7 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
         for (var i = 0; i < thumbnails.length; i++) {
           var thumbnail = thumbnails[i];
           var url = this.wallpaperGrid_.dataModel.item(i).baseURL;
-          var fileName = getBaseName(url) +
-              WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
+          var fileName = getBaseName(url) + str('highResolutionSuffix');
           if (this.downloadedListMap_ &&
               this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
             thumbnail.offline = true;
@@ -594,8 +593,7 @@ WallpaperManager.prototype.presetCategory_ = function() {
   // time (e.g., 13006377367586070).
   if (!this.enableOnlineWallpaper_ ||
       (this.currentWallpaper_ &&
-       this.currentWallpaper_.indexOf(
-           WallpaperUtil.getOnlineWallpaperHighResolutionSuffix()) == -1)) {
+       this.currentWallpaper_.indexOf(str('highResolutionSuffix')) == -1)) {
     // Custom is the last one in the categories list.
     this.categoriesList_.selectionModel.selectedIndex =
         this.categoriesList_.dataModel.length - 1;
@@ -610,7 +608,7 @@ WallpaperManager.prototype.presetCategory_ = function() {
     if (self.currentWallpaper_) {
       for (var key in self.manifest_.wallpaper_list) {
         var url = self.manifest_.wallpaper_list[key].base_url +
-            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
+            str('highResolutionSuffix');
         if (url.indexOf(self.currentWallpaper_) != -1 &&
             self.manifest_.wallpaper_list[key].categories.length > 0) {
           presetCategory = self.manifest_.wallpaper_list[key].categories[0] +
@@ -841,14 +839,13 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
     this.wallpaperRequest_ = null;
   }
 
-  var wallpaperURL = selectedItem.baseURL +
-      WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
+  var wallpaperUrl = selectedItem.baseURL + str('highResolutionSuffix');
   var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
 
   chrome.wallpaperPrivate.setWallpaperIfExists(
-      wallpaperURL, selectedItem.layout, exists => {
+      wallpaperUrl, selectedItem.layout, exists => {
         if (exists) {
-          this.onWallpaperChanged_(selectedItem, wallpaperURL);
+          this.onWallpaperChanged_(selectedItem, wallpaperUrl);
           return;
         }
 
@@ -860,7 +857,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
             xhr => {
               var image = xhr.response;
               chrome.wallpaperPrivate.setWallpaper(
-                  image, selectedItem.layout, wallpaperURL, () => {
+                  image, selectedItem.layout, wallpaperUrl, () => {
                     this.progressManager_.hideProgressBar(selectedGridItem);
 
                     if (chrome.runtime.lastError != undefined &&
@@ -868,7 +865,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
                             str('canceledWallpaper')) {
                       this.showError_(chrome.runtime.lastError.message);
                     } else {
-                      this.onWallpaperChanged_(selectedItem, wallpaperURL);
+                      this.onWallpaperChanged_(selectedItem, wallpaperUrl);
                     }
                   });
               this.wallpaperRequest_ = null;
@@ -879,7 +876,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
           this.wallpaperRequest_ = null;
         };
         WallpaperUtil.fetchURL(
-            wallpaperURL, 'arraybuffer', onSuccess, onFailure,
+            wallpaperUrl, 'arraybuffer', onSuccess, onFailure,
             this.wallpaperRequest_);
       });
 };
@@ -1418,15 +1415,15 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           authorWebsite: this.manifest_.wallpaper_list[i].author_website,
           dynamicURL: this.manifest_.wallpaper_list[i].dynamic_url
         };
-        var fileName = getBaseName(wallpaperInfo.baseURL) +
-            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
+        var fileName =
+            getBaseName(wallpaperInfo.baseURL) + str('highResolutionSuffix');
         if (this.downloadedListMap_ &&
             this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
           wallpaperInfo.availableOffline = true;
         }
         wallpapersDataModel.push(wallpaperInfo);
         var url = this.manifest_.wallpaper_list[i].base_url +
-            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
+            str('highResolutionSuffix');
         if (url == this.currentWallpaper_) {
           selectedItem = wallpaperInfo;
         }

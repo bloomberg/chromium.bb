@@ -83,6 +83,9 @@ constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
 constexpr char kJpgFilePattern[] = "*.[jJ][pP][gG]";
 constexpr char kJpegFilePattern[] = "*.[jJ][pP][eE][gG]";
 
+// The url suffix used by the old wallpaper picker.
+constexpr char kHighResolutionSuffix[] = "_high_resolution.jpg";
+
 #if defined(GOOGLE_CHROME_BUILD)
 const char kWallpaperManifestBaseURL[] =
     "https://storage.googleapis.com/chromeos-wallpaper-public/manifest_";
@@ -96,6 +99,17 @@ bool IsOEMDefaultWallpaper() {
 bool IsUsingNewWallpaperPicker() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kNewWallpaperPicker);
+}
+
+// Returns a suffix to be appended to the base url of Backdrop wallpapers.
+std::string GetBackdropWallpaperSuffix() {
+  // FIFE url is used for Backdrop wallpapers and the desired image size should
+  // be specified. Currently we are using two times the display size. This is
+  // determined by trial and error and is subject to change.
+  const gfx::Size& display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  return "=w" + std::to_string(
+                    2 * std::max(display_size.width(), display_size.height()));
 }
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
@@ -266,9 +280,9 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 #endif
   dict->SetBoolean("showBackdropWallpapers", show_backdrop_wallpapers);
 
-  dict->SetInteger(
-      "primaryDisplayWidth",
-      display::Screen::GetScreen()->GetPrimaryDisplay().size().width());
+  dict->SetString("highResolutionSuffix", IsUsingNewWallpaperPicker()
+                                              ? GetBackdropWallpaperSuffix()
+                                              : kHighResolutionSuffix);
 
   return RespondNow(OneArgument(std::move(dict)));
 }

@@ -158,11 +158,12 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
         });
   };
 
-  chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', result => {
-    if (result)
-      this.setRandomWallpaperFromServer_(onSuccess);
+  chrome.wallpaperPrivate.getStrings(strings => {
+    var suffix = strings['highResolutionSuffix'];
+    if (strings['useNewWallpaperPicker'])
+      this.setRandomWallpaperFromServer_(onSuccess, suffix);
     else
-      this.setRandomWallpaperFromManifest_(onSuccess);
+      this.setRandomWallpaperFromManifest_(onSuccess, suffix);
   });
 };
 
@@ -170,11 +171,12 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
  * Sets wallpaper to be a random one found in the stored manifest file. If the
  * wallpaper download fails, retry one hour later. Wallpapers that are disabled
  * for surprise me are excluded.
- * @param {function} onSuccess The success callback
+ * @param {function} onSuccess The success callback.
+ * @param {string} suffix The url suffix for high resolution wallpaper.
  * @private
  */
 SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
-    onSuccess) {
+    onSuccess, suffix) {
   Constants.WallpaperLocalStorage.get(
       Constants.AccessLocalManifestKey, items => {
         var manifest = items[Constants.AccessLocalManifestKey];
@@ -187,13 +189,10 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
           });
           var index = Math.floor(Math.random() * filtered.length);
           var wallpaper = filtered[index];
-          // TODO(crbug.com/800945): |getOnlineWallpaperHighResolutionSuffix|
-          // should be used here.
-          var wallpaperURL =
-              wallpaper.base_url + Constants.HighResolutionSuffix;
+          var wallpaperUrl = wallpaper.base_url + suffix;
           WallpaperUtil.setOnlineWallpaper(
-              wallpaperURL, wallpaper.default_layout,
-              onSuccess.bind(null, wallpaperURL, wallpaper.default_layout),
+              wallpaperUrl, wallpaper.default_layout,
+              onSuccess.bind(null, wallpaperUrl, wallpaper.default_layout),
               this.retryLater_.bind(this));
         }
       });
@@ -202,11 +201,12 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
 /**
  * Sets wallpaper to be a random one retrieved from the backend service. If the
  * wallpaper download fails, retry one hour later.
- * @param {function} onSuccess The success callback
+ * @param {function} onSuccess The success callback.
+ * @param {string} suffix The url suffix for high resolution wallpaper.
  * @private
  */
 SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
-    onSuccess) {
+    onSuccess, suffix) {
   // The first step is to get the list of wallpaper collections (ie. categories)
   // and randomly select one.
   chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
@@ -237,12 +237,12 @@ SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
         return;
       }
       var randomImageIndex = Math.floor(Math.random() * imagesInfo.length);
-      var url = imagesInfo[randomImageIndex]['imageUrl'];
+      var wallpaperUrl = imagesInfo[randomImageIndex]['imageUrl'] + suffix;
       // The backend service doesn't specify the desired layout. Use the default
       // layout here.
       var layout = Constants.WallpaperThumbnailDefaultLayout;
       WallpaperUtil.setOnlineWallpaper(
-          url, layout, onSuccess.bind(null, url, layout),
+          wallpaperUrl, layout, onSuccess.bind(null, wallpaperUrl, layout),
           this.retryLater_.bind(this));
     });
   });
