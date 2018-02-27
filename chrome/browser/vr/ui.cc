@@ -390,6 +390,9 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                         std::unique_ptr<Assets> assets,
                         const base::Version& component_version) {
   if (status != AssetsLoadStatus::kSuccess) {
+    // If we already loaded assets successfully keep using them. Otherwise, show
+    // fallback.
+    model_->background_available = model_->background_loaded;
     return;
   }
 
@@ -402,6 +405,7 @@ void Ui::OnAssetsLoaded(AssetsLoadStatus status,
                                 std::move(assets->fullscreen_gradient));
 
   ColorScheme::UpdateForComponent(component_version);
+  model_->background_available = true;
   model_->background_loaded = true;
 }
 
