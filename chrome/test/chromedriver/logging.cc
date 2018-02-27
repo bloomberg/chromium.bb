@@ -253,11 +253,32 @@ bool InitLogging() {
       return false;
     }
   }
-  if (cmd_line->HasSwitch("silent"))
-    g_log_level = Log::kOff;
 
-  if (cmd_line->HasSwitch("verbose"))
+  int num_level_switches = 0;
+
+  if (cmd_line->HasSwitch("silent")) {
+    g_log_level = Log::kOff;
+    num_level_switches++;
+  }
+
+  if (cmd_line->HasSwitch("verbose")) {
     g_log_level = Log::kAll;
+    num_level_switches++;
+  }
+
+  if (cmd_line->HasSwitch("log-level")) {
+    if (!WebDriverLog::NameToLevel(cmd_line->GetSwitchValueASCII("log-level"),
+                                   &g_log_level)) {
+      printf("Invalid --log-level value.\n");
+      return false;
+    }
+    num_level_switches++;
+  }
+
+  if (num_level_switches > 1) {
+    printf("Only one of --log-level, --verbose, or --silent is allowed.\n");
+    return false;
+  }
 
   // Turn on VLOG for chromedriver. This is parsed during logging::InitLogging.
   cmd_line->AppendSwitchASCII("vmodule", "*/chrome/test/chromedriver/*=3");
