@@ -19,7 +19,8 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   static NavigationStateImpl* CreateBrowserInitiated(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params);
+      const RequestNavigationParams& request_params,
+      base::TimeTicks time_commit_requested);
 
   static NavigationStateImpl* CreateContentInitiated();
 
@@ -42,9 +43,14 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
     common_params_.transition = transition;
   }
 
+  base::TimeTicks time_commit_requested() const {
+    return time_commit_requested_;
+  }
+
  private:
   NavigationStateImpl(const CommonNavigationParams& common_params,
                       const RequestNavigationParams& request_params,
+                      base::TimeTicks time_commit_requested,
                       bool is_content_initiated);
 
   bool request_committed_;
@@ -67,6 +73,9 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
   // http://crbug.com/178380).
   const RequestNavigationParams request_params_;
+
+  // Time when RenderFrameImpl::CommitNavigation() is called.
+  base::TimeTicks time_commit_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationStateImpl);
 };

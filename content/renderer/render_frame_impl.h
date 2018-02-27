@@ -176,7 +176,7 @@ struct FileChooserFileInfo;
 struct FileChooserParams;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct NavigationParams;
+struct PendingNavigationParams;
 struct RequestNavigationParams;
 struct ScreenInfo;
 
@@ -789,11 +789,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   blink::mojom::ManifestManager& GetManifestManager();
 
-  // TODO(creis): Remove when the only caller, the HistoryController, is no
-  // more.
-  void SetPendingNavigationParams(
-      std::unique_ptr<NavigationParams> navigation_params);
-
   media::MediaPermission* GetMediaPermission();
 
   // Sends the current frame's navigation state to the browser.
@@ -1315,8 +1310,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebComputedAXTree* GetOrCreateWebComputedAXTree() override;
 
   // Updates the state of this frame when asked to commit a navigation.
-  void PrepareFrameForCommit(const CommonNavigationParams& common_params,
-                             const RequestNavigationParams& request_params);
+  void PrepareFrameForCommit();
 
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for
@@ -1417,7 +1411,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Temporarily holds state pertaining to a navigation that has been initiated
   // until the NavigationState corresponding to the new navigation is created in
   // DidCreateDocumentLoader().
-  std::unique_ptr<NavigationParams> pending_navigation_params_;
+  std::unique_ptr<PendingNavigationParams> pending_navigation_params_;
 
   // Keeps track of which future subframes the browser process has history items
   // for during a history navigation, as well as whether those items are for

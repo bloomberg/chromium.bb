@@ -317,17 +317,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
 #endif
 };
 
-// Helper struct keeping track in one place of all the parameters the browser
-// needs to provide to the renderer.
-struct NavigationParams {
-  NavigationParams(const CommonNavigationParams& common_params,
-                   const RequestNavigationParams& request_params);
-  ~NavigationParams();
-
-  CommonNavigationParams common_params;
-  RequestNavigationParams request_params;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_NAVIGATION_PARAMS_H_

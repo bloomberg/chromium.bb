@@ -300,6 +300,24 @@ using blink::WebFloatRect;
 
 namespace content {
 
+// Helper struct keeping track in one place of all the parameters the browser
+// provided to the renderer to commit a navigation.
+struct PendingNavigationParams {
+  PendingNavigationParams(const CommonNavigationParams& common_params,
+                          const RequestNavigationParams& request_params,
+                          base::TimeTicks time_commit_requested)
+      : common_params(common_params),
+        request_params(request_params),
+        time_commit_requested(time_commit_requested) {}
+  ~PendingNavigationParams() = default;
+
+  CommonNavigationParams common_params;
+  RequestNavigationParams request_params;
+
+  // Time when RenderFrameImpl::CommitNavigation() is called.
+  base::TimeTicks time_commit_requested;
+};
+
 namespace {
 
 const base::Feature kConsumeGestureOnNavigation = {
@@ -382,7 +400,7 @@ GURL GetOriginalRequestURL(WebDocumentLoader* document_loader) {
   return document_loader->OriginalRequest().Url();
 }
 
-bool IsBrowserInitiated(NavigationParams* pending) {
+bool IsBrowserInitiated(PendingNavigationParams* pending) {
   // A navigation resulting from loading a javascript URL should not be treated
   // as a browser initiated event.  Instead, we want it to look as if the page
   // initiated any load resulting from JS execution.
@@ -772,6 +790,25 @@ void RecordSuffixedRendererMemoryMetrics(
   RecordSuffixedMemoryMBHistogram(
       "Memory.Experimental.Renderer.TotalAllocatedPerRenderView", suffix,
       memory_metrics.total_allocated_per_render_view_mb);
+}
+
+// See also LOG_NAVIGATION_TIMING_HISTOGRAM in NavigationHandleImpl.
+void RecordReadyToCommitUntilCommitHistogram(base::TimeDelta delay,
+                                             ui::PageTransition transition) {
+  UMA_HISTOGRAM_TIMES("Navigation.Renderer.ReadyToCommitUntilCommit", delay);
+  if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.Renderer.ReadyToCommitUntilCommit.BackForward", delay);
+  } else if (ui::PageTransitionCoreTypeIs(transition,
+                                          ui::PAGE_TRANSITION_RELOAD)) {
+    UMA_HISTOGRAM_TIMES("Navigation.Renderer.ReadyToCommitUntilCommit.Reload",
+                        delay);
+  } else if (ui::PageTransitionIsNewNavigation(transition)) {
+    UMA_HISTOGRAM_TIMES(
+        "Navigation.Renderer.ReadyToCommitUntilCommit.NewNavigation", delay);
+  } else {
+    NOTREACHED() << "Invalid page transition: " << transition;
+  }
 }
 
 }  // namespace
@@ -1849,11 +1886,6 @@ blink::mojom::ManifestManager& RenderFrameImpl::GetManifestManager() {
   return *manifest_manager_;
 }
 
-void RenderFrameImpl::SetPendingNavigationParams(
-    std::unique_ptr<NavigationParams> navigation_params) {
-  pending_navigation_params_ = std::move(navigation_params);
-}
-
 void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnBeforeUnload",
                "id", routing_id_);
@@ -2636,8 +2668,10 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
   if (!navigation_state->IsContentInitiated()) {
-    pending_navigation_params_.reset(new NavigationParams(
-        navigation_state->common_params(), navigation_state->request_params()));
+    pending_navigation_params_.reset(new PendingNavigationParams(
+        navigation_state->common_params(), navigation_state->request_params(),
+        base::TimeTicks()  // not used for failed navigation.
+        ));
   }
 
   // Load an error page.
@@ -3085,7 +3119,9 @@ void RenderFrameImpl::CommitNavigation(
   if (request_params.is_view_source)
     frame_->EnableViewSourceMode(true);
 
-  PrepareFrameForCommit(common_params, request_params);
+  pending_navigation_params_.reset(new PendingNavigationParams(
+      common_params, request_params, base::TimeTicks::Now()));
+  PrepareFrameForCommit();
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -3174,8 +3210,10 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories));
 
-  pending_navigation_params_.reset(
-      new NavigationParams(common_params, request_params));
+  pending_navigation_params_.reset(new PendingNavigationParams(
+      common_params, request_params,
+      base::TimeTicks()  // Not used for failed navigation.
+      ));
 
   // Send the provisional load failure.
   WebURLError error(
@@ -3285,7 +3323,11 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
       common_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
                                      : nullptr);
 
-  PrepareFrameForCommit(common_params, request_params);
+  pending_navigation_params_.reset(new PendingNavigationParams(
+      common_params, request_params,
+      base::TimeTicks()  // Not used for same-document navigation.
+      ));
+  PrepareFrameForCommit();
 
   blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
       common_params.navigation_type, common_params.should_replace_current_entry,
@@ -4162,6 +4204,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       frame_->GetDocumentLoader()->GetResponse();
   WebURLResponseExtraDataImpl* extra_data =
       GetExtraDataFromResponse(web_url_response);
+
   // Only update the PreviewsState and effective connection type states for new
   // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
@@ -4249,6 +4292,15 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   DidCommitNavigationInternal(item, commit_type,
                               false /* was_within_same_document */,
                               std::move(remote_interface_provider_request));
+
+  // Record time between receiving the message to commit the navigation until it
+  // has committed. Only successful cross-document navigation handled by the
+  // browser process are taken into account.
+  if (!navigation_state->time_commit_requested().is_null()) {
+    RecordReadyToCommitUntilCommitHistogram(
+        base::TimeTicks::Now() - navigation_state->time_commit_requested(),
+        navigation_state->GetTransitionType());
+  }
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
@@ -5588,20 +5640,17 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   }
 }
 
-void RenderFrameImpl::PrepareFrameForCommit(
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
+void RenderFrameImpl::PrepareFrameForCommit() {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
 
   GetContentClient()->SetActiveURL(
-      common_params.url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
+      pending_navigation_params_->common_params.url,
+      frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
-                                                  request_params);
-
-  pending_navigation_params_.reset(
-      new NavigationParams(common_params, request_params));
+  RenderFrameImpl::PrepareRenderViewForNavigation(
+      pending_navigation_params_->common_params.url,
+      pending_navigation_params_->request_params);
 
   // Lower bound for browser initiated navigation start time.
   base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
@@ -5609,8 +5658,9 @@ void RenderFrameImpl::PrepareFrameForCommit(
   // Sanitize navigation start and store in |pending_navigation_params_|.
   // It will be picked up in UpdateNavigationState.
   pending_navigation_params_->common_params.navigation_start =
-      SanitizeNavigationTiming(common_params.navigation_start,
-                               renderer_navigation_start);
+      SanitizeNavigationTiming(
+          pending_navigation_params_->common_params.navigation_start,
+          renderer_navigation_start);
 }
 
 blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
@@ -6919,7 +6969,8 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     return NavigationStateImpl::CreateBrowserInitiated(
         pending_navigation_params_->common_params,
-        pending_navigation_params_->request_params);
+        pending_navigation_params_->request_params,
+        pending_navigation_params_->time_commit_requested);
   }
   return NavigationStateImpl::CreateContentInitiated();
 }
