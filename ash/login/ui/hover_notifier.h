@@ -17,6 +17,7 @@ class View;
 namespace ash {
 
 // Runs a callback whenever a view has gained or lost mouse hover.
+// TODO(jdufault): see if we can replace this class with views::MouseWatcher.
 class HoverNotifier : public ui::EventHandler {
  public:
   using OnHover = base::RepeatingCallback<void(bool has_hover)>;

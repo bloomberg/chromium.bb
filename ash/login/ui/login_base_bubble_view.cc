@@ -9,9 +9,6 @@
 namespace ash {
 namespace {
 
-// Spacing between the child view inside the bubble view.
-constexpr int kBubbleBetweenChildSpacing = 6;
-
 // Total width of the bubble view.
 constexpr int kBubbleTotalWidthDp = 178;
 
@@ -28,9 +25,6 @@ constexpr int kBubbleBottomMarginDp = 18;
 
 LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::NONE) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kBubbleBetweenChildSpacing));
-
   set_margins(gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
                           kBubbleBottomMarginDp, kBubbleHorizontalMarginDp));
   set_color(SK_ColorBLACK);
@@ -49,7 +43,7 @@ int LoginBaseBubbleView::GetDialogButtons() const {
 }
 
 gfx::Size LoginBaseBubbleView::CalculatePreferredSize() const {
-  gfx::Size size = views::View::CalculatePreferredSize();
+  gfx::Size size = views::BubbleDialogDelegateView::CalculatePreferredSize();
   size.set_width(kBubbleTotalWidthDp);
   return size;
 }

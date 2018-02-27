@@ -66,6 +66,14 @@ class LoginBubbleTest : public LoginTestBase {
     LoginTestBase::TearDown();
   }
 
+  void ShowUserMenu(base::OnceClosure on_remove) {
+    bool show_remove_user = !on_remove.is_null();
+    bubble_->ShowUserMenu(
+        base::string16() /*username*/, base::string16() /*email*/,
+        user_manager::UserType::USER_TYPE_REGULAR, false /*is_owner*/,
+        container_, bubble_opener_, show_remove_user, std::move(on_remove));
+  }
+
   // Owned by test widget view hierarchy.
   views::View* container_ = nullptr;
   // Owned by test widget view hierarchy.
@@ -83,8 +91,7 @@ class LoginBubbleTest : public LoginTestBase {
 
 // Verifies the base bubble settings.
 TEST_F(LoginBubbleTest, BaseBubbleSettings) {
-  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
-                        bubble_opener_, false /*show_remove_user*/);
+  bubble_->ShowTooltip(base::string16(), bubble_opener_);
   EXPECT_TRUE(bubble_->IsVisible());
 
   LoginBaseBubbleView* bubble_view = bubble_->bubble_view_for_test();
@@ -108,8 +115,7 @@ TEST_F(LoginBubbleTest, BubbleKeyEventHandling) {
   EXPECT_FALSE(bubble_->IsVisible());
 
   // Verifies that key event on the bubble opener view won't close the bubble.
-  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
-                        bubble_opener_, false /*show_remove_user*/);
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   bubble_opener_->RequestFocus();
   generator.PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
@@ -132,8 +138,7 @@ TEST_F(LoginBubbleTest, BubbleMouseEventHandling) {
   EXPECT_FALSE(bubble_->IsVisible());
 
   // Verifies that mouse event on the bubble opener view won't close the bubble.
-  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
-                        bubble_opener_, false /*show_remove_user*/);
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   generator.MoveMouseTo(bubble_opener_->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
@@ -162,8 +167,7 @@ TEST_F(LoginBubbleTest, BubbleGestureEventHandling) {
 
   // Verifies that gesture event on the bubble opener view won't close the
   // bubble.
-  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
-                        bubble_opener_, false /*show_remove_user*/);
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   generator.GestureTapAt(bubble_opener_->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(bubble_->IsVisible());
@@ -185,8 +189,7 @@ TEST_F(LoginBubbleTest, LoginButtonRipple) {
             views::InkDropHostView::InkDropMode::ON);
 
   // Show the bubble to activate the ripple effect.
-  bubble_->ShowUserMenu(base::string16(), base::string16(), container_,
-                        bubble_opener_, false /*show_remove_user*/);
+  ShowUserMenu(base::OnceClosure());
   EXPECT_TRUE(bubble_->IsVisible());
   EXPECT_TRUE(ink_drop_api.HasInkDrop());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
@@ -204,6 +207,33 @@ TEST_F(LoginBubbleTest, LoginButtonRipple) {
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
             views::InkDropState::HIDDEN);
   EXPECT_FALSE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
+}
+
+// Verifies that clicking remove user requires two clicks before firing the
+// callback.
+TEST_F(LoginBubbleTest, RemoveUserRequiresTwoActivations) {
+  // Show the user menu.
+  bool remove_called = false;
+  ShowUserMenu(base::BindOnce(
+      [](bool* remove_called) { *remove_called = true; }, &remove_called));
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  // Focus the remove user button.
+  views::View* remove_user_button =
+      bubble_->bubble_view_for_test()->GetViewByID(
+          LoginBubble::kUserMenuRemoveUserButtonIdForTest);
+  remove_user_button->RequestFocus();
+  EXPECT_TRUE(remove_user_button->HasFocus());
+
+  // Click it twice. Verify only the second click fires the callback.
+  auto click = [&]() {
+    EXPECT_TRUE(remove_user_button->HasFocus());
+    GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  };
+  EXPECT_NO_FATAL_FAILURE(click());
+  EXPECT_FALSE(remove_called);
+  EXPECT_NO_FATAL_FAILURE(click());
+  EXPECT_TRUE(remove_called);
 }
 
 }  // namespace ash

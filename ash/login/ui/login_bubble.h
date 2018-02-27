@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_base_bubble_view.h"
 #include "base/strings/string16.h"
+#include "components/user_manager/user_type.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -26,6 +27,8 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
                                public ui::EventHandler,
                                public ui::LayerAnimationObserver {
  public:
+  static const int kUserMenuRemoveUserButtonIdForTest;
+
   LoginBubble();
   ~LoginBubble() override;
 
@@ -38,11 +41,14 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // |bubble_opener| is a view that could open/close the bubble.
   // |show_remove_user| indicate whether or not we show the
   // "Remove this user" action.
-  void ShowUserMenu(const base::string16& message,
-                    const base::string16& sub_message,
+  void ShowUserMenu(const base::string16& username,
+                    const base::string16& email,
+                    user_manager::UserType type,
+                    bool is_owner,
                     views::View* anchor_view,
                     LoginButton* bubble_opener,
-                    bool show_remove_user);
+                    bool show_remove_user,
+                    base::OnceClosure do_remove_user);
 
   // Shows a tooltip.
   void ShowTooltip(const base::string16& message, views::View* anchor_view);

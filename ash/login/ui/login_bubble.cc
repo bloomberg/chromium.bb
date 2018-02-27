@@ -4,35 +4,67 @@
 
 #include "ash/login/ui/login_bubble.h"
 
+#include "ash/ash_constants.h"
+#include "ash/focus_cycler.h"
+#include "ash/login/ui/layout_util.h"
+#include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_button.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
 
+constexpr char kLegacySupervisedUserManagementDisplayURL[] =
+    "www.chrome.com/manage";
+
+// Spacing between the child view inside the bubble view.
+constexpr int kBubbleBetweenChildSpacingDp = 6;
+
 // The size of the alert icon in the error bubble.
 constexpr int kAlertIconSizeDp = 20;
-
-// Vertical spacing between the anchor view and error bubble.
-constexpr int kAnchorViewErrorBubbleVerticalSpacingDp = 48;
 
 // An alpha value for the sub message in the user menu.
 constexpr SkAlpha kSubMessageColorAlpha = 0x89;
 
+// Color of the "Remove user" text.
+constexpr SkColor kRemoveUserInitialColor = SkColorSetRGB(0x7B, 0xAA, 0xF7);
+constexpr SkColor kRemoveUserConfirmColor = SkColorSetRGB(0xE6, 0x7C, 0x73);
+
+// Margin/inset of the entries for the user menu.
+constexpr int kUserMenuMarginWidth = 14;
+constexpr int kUserMenuMarginHeight = 18;
+// Distance above/below the separator.
+constexpr int kUserMenuMarginAroundSeparatorDp = 18;
+// Distance between labels.
+constexpr int kUserMenuVerticalDistanceBetweenLabelsDp = 18;
+// Margin around remove user button.
+constexpr int kUserMenuMarginAroundRemoveUserButtonDp = 4;
+
+// Vertical spacing between the anchor view and error bubble.
+constexpr int kAnchorViewErrorBubbleVerticalSpacingDp = 48;
+
 // Horizontal spacing with the anchor view.
-constexpr int kAnchorViewHorizontalSpacingDp = 105;
+constexpr int kAnchorViewUserMenuHorizontalSpacingDp = 98;
 
 // Vertical spacing between the anchor view and user menu.
 constexpr int kAnchorViewUserMenuVerticalSpacingDp = 4;
@@ -56,12 +88,15 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
   LoginErrorBubbleView(views::StyledLabel* label, views::View* anchor_view)
       : LoginBaseBubbleView(anchor_view) {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical, gfx::Insets(),
+        kBubbleBetweenChildSpacingDp));
     set_anchor_view_insets(
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
-    views::View* alert_view = new views::View();
-    alert_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets()));
+    auto* alert_view = new NonAccessibleView("AlertIconContainer");
+    alert_view->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
     views::ImageView* alert_icon = new views::ImageView();
     alert_icon->SetPreferredSize(gfx::Size(kAlertIconSizeDp, kAlertIconSizeDp));
     alert_icon->SetImage(
@@ -85,30 +120,207 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
   DISALLOW_COPY_AND_ASSIGN(LoginErrorBubbleView);
 };
 
-class LoginUserMenuView : public LoginBaseBubbleView {
+// A button that holds a child view.
+class ButtonWithContent : public views::Button {
  public:
-  LoginUserMenuView(const base::string16& message,
-                    const base::string16& sub_message,
-                    views::View* anchor_view,
-                    bool show_remove_user)
-      : LoginBaseBubbleView(anchor_view) {
-    views::Label* label = CreateLabel(message, SK_ColorWHITE);
-    views::Label* sub_label = CreateLabel(
-        sub_message, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha));
-    AddChildView(label);
-    AddChildView(sub_label);
-    set_anchor_view_insets(gfx::Insets(kAnchorViewUserMenuVerticalSpacingDp,
-                                       kAnchorViewHorizontalSpacingDp));
+  ButtonWithContent(views::ButtonListener* listener, views::View* content)
+      : views::Button(listener) {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    AddChildView(content);
 
-    // TODO: Show remove user in the menu in login screen.
+    // Increase the size of the button so that the focus is not rendered next to
+    // the text.
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kUserMenuMarginAroundRemoveUserButtonDp,
+                    kUserMenuMarginAroundRemoveUserButtonDp)));
+    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+  }
+
+  ~ButtonWithContent() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ButtonWithContent);
+};
+
+class LoginUserMenuView : public LoginBaseBubbleView,
+                          public views::ButtonListener {
+ public:
+  LoginUserMenuView(LoginBubble* bubble,
+                    const base::string16& username,
+                    const base::string16& email,
+                    user_manager::UserType type,
+                    bool is_owner,
+                    views::View* anchor_view,
+                    bool show_remove_user,
+                    base::OnceClosure do_remove_user)
+      : LoginBaseBubbleView(anchor_view),
+        bubble_(bubble),
+        do_remove_user_(std::move(do_remove_user)) {
+    // This view has content the user can interact with if the remove user
+    // button is displayed.
+    set_can_activate(show_remove_user);
+
+    set_anchor_view_insets(gfx::Insets(kAnchorViewUserMenuVerticalSpacingDp,
+                                       kAnchorViewUserMenuHorizontalSpacingDp));
+
+    // LoginUserMenuView does not use the parent margins. Further, because the
+    // splitter spans the entire view set_margins cannot be used.
+    set_margins(gfx::Insets());
+    // The bottom margin is less the margin around the remove user button, which
+    // is always visible.
+    gfx::Insets margins(
+        kUserMenuMarginHeight, kUserMenuMarginWidth,
+        kUserMenuMarginHeight - kUserMenuMarginAroundRemoveUserButtonDp,
+        kUserMenuMarginWidth);
+    auto create_and_add_horizontal_margin_container = [&]() {
+      auto* container = new NonAccessibleView("MarginContainer");
+      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical,
+          gfx::Insets(0, margins.left(), 0, margins.right())));
+      AddChildView(container);
+      return container;
+    };
+
+    // Add vertical whitespace.
+    auto add_space = [](views::View* root, int amount) {
+      auto* spacer = new NonAccessibleView("Whitespace");
+      spacer->SetPreferredSize(gfx::Size(1, amount));
+      root->AddChildView(spacer);
+    };
+
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(margins.top(), 0, margins.bottom(), 0)));
+
+    // User information.
+    {
+      base::string16 display_username =
+          is_owner ? l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_POD_OWNER_USER,
+                                                username)
+                   : username;
+
+      views::View* container = create_and_add_horizontal_margin_container();
+      container->AddChildView(CreateLabel(display_username, SK_ColorWHITE));
+      add_space(container, kBubbleBetweenChildSpacingDp);
+      container->AddChildView(CreateLabel(
+          email, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha)));
+    }
+
+    // Remove user.
+    if (show_remove_user) {
+      DCHECK(!is_owner);
+
+      // Add separator.
+      add_space(this, kUserMenuMarginAroundSeparatorDp);
+      auto* separator = new views::Separator();
+      separator->SetColor(SkColorSetA(SK_ColorWHITE, 0x2B));
+      AddChildView(separator);
+      // The space below the separator is less the margin around remove user;
+      // this is readded if showing confirmation.
+      add_space(this, kUserMenuMarginAroundSeparatorDp -
+                          kUserMenuMarginAroundRemoveUserButtonDp);
+
+      auto make_label = [this](const base::string16& text) {
+        views::Label* label = CreateLabel(text, SK_ColorWHITE);
+        label->SetMultiLine(true);
+        // Make sure to set a maximum label width, otherwise text wrapping will
+        // significantly increase width and layout may not work correctly if
+        // the input string is very long.
+        label->SetMaximumWidth(GetPreferredSize().width());
+        return label;
+      };
+
+      remove_user_confirm_data_ = create_and_add_horizontal_margin_container();
+      remove_user_confirm_data_->SetVisible(false);
+      base::string16 part1 = l10n_util::GetStringUTF16(
+          IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_1);
+      if (type == user_manager::UserType::USER_TYPE_SUPERVISED) {
+        part1 = l10n_util::GetStringFUTF16(
+            IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
+            base::UTF8ToUTF16(ash::kLegacySupervisedUserManagementDisplayURL));
+      }
+
+      // Account for margin that was removed below the separator for the add
+      // user button.
+      add_space(remove_user_confirm_data_,
+                kUserMenuMarginAroundRemoveUserButtonDp);
+      remove_user_confirm_data_->AddChildView(make_label(part1));
+      add_space(remove_user_confirm_data_,
+                kUserMenuVerticalDistanceBetweenLabelsDp);
+      remove_user_confirm_data_->AddChildView(
+          make_label(l10n_util::GetStringFUTF16(
+              IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2, email)));
+      // Reduce margin since the remove user button comes next.
+      add_space(remove_user_confirm_data_,
+                kUserMenuVerticalDistanceBetweenLabelsDp -
+                    kUserMenuMarginAroundRemoveUserButtonDp);
+
+      auto* container = create_and_add_horizontal_margin_container();
+      remove_user_label_ =
+          CreateLabel(l10n_util::GetStringUTF16(
+                          IDS_ASH_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME),
+                      kRemoveUserInitialColor);
+      remove_user_button_ = new ButtonWithContent(this, remove_user_label_);
+      remove_user_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+      remove_user_button_->set_id(
+          LoginBubble::kUserMenuRemoveUserButtonIdForTest);
+      container->AddChildView(remove_user_button_);
+    }
+
+    // The user menu is focusable so that the we can detect when to refocus the
+    // lock window from tab navigation, otherwise focus will be trapped inside
+    // of the bubble.
+    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   }
 
   ~LoginUserMenuView() override = default;
 
   // views::View:
   const char* GetClassName() const override { return "LoginUserMenuView"; }
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size = LoginBaseBubbleView::CalculatePreferredSize();
+    // We don't use margins() directly which means that we need to account for
+    // the margin width here. Margin height is accounted for by the layout code.
+    size.Enlarge(kUserMenuMarginWidth, 0);
+    return size;
+  }
+  void OnFocus() override {
+    // This view has no actual interesting contents to focus, so immediately
+    // forward to the button.
+    remove_user_button_->RequestFocus();
+  }
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
+    // Redirect the focus event to the lock screen.
+    Shell::Get()->focus_cycler()->FocusWidget(LockScreen::Get()->window());
+    LockScreen::Get()->window()->GetFocusManager()->AdvanceFocus(reverse);
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    // Show confirmation warning. The user has to click the button again before
+    // we actually allow the exit.
+    if (!remove_user_confirm_data_->visible()) {
+      remove_user_confirm_data_->SetVisible(true);
+      remove_user_label_->SetEnabledColor(kRemoveUserConfirmColor);
+      SizeToContents();
+      GetWidget()->SetSize(size());
+      Layout();
+      return;
+    }
+
+    if (do_remove_user_)
+      std::move(do_remove_user_).Run();
+    bubble_->Close();
+  }
 
  private:
+  LoginBubble* bubble_ = nullptr;
+  base::OnceClosure do_remove_user_;
+  views::View* remove_user_confirm_data_ = nullptr;
+  views::Label* remove_user_label_ = nullptr;
+  ButtonWithContent* remove_user_button_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(LoginUserMenuView);
 };
 
@@ -116,6 +328,8 @@ class LoginTooltipView : public LoginBaseBubbleView {
  public:
   LoginTooltipView(const base::string16& message, views::View* anchor_view)
       : LoginBaseBubbleView(anchor_view) {
+    SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     views::Label* text = CreateLabel(message, SK_ColorWHITE);
     text->SetMultiLine(true);
     AddChildView(text);
@@ -131,6 +345,9 @@ class LoginTooltipView : public LoginBaseBubbleView {
 };
 
 }  // namespace
+
+// static
+const int LoginBubble::kUserMenuRemoveUserButtonIdForTest = 1;
 
 LoginBubble::LoginBubble() {
   Shell::Get()->AddPreTargetHandler(this);
@@ -153,18 +370,29 @@ void LoginBubble::ShowErrorBubble(views::StyledLabel* label,
   Show();
 }
 
-void LoginBubble::ShowUserMenu(const base::string16& message,
-                               const base::string16& sub_message,
+void LoginBubble::ShowUserMenu(const base::string16& username,
+                               const base::string16& email,
+                               user_manager::UserType type,
+                               bool is_owner,
                                views::View* anchor_view,
                                LoginButton* bubble_opener,
-                               bool show_remove_user) {
+                               bool show_remove_user,
+                               base::OnceClosure do_remove_user) {
   if (bubble_view_)
     CloseImmediately();
 
   bubble_opener_ = bubble_opener;
-  bubble_view_ = new LoginUserMenuView(message, sub_message, anchor_view,
-                                       show_remove_user);
+  bubble_view_ =
+      new LoginUserMenuView(this, username, email, type, is_owner, anchor_view,
+                            show_remove_user, std::move(do_remove_user));
+  bool had_focus = bubble_opener_->HasFocus();
+
   Show();
+
+  if (had_focus) {
+    // Try to focus the bubble view only if the tooltip was focused.
+    bubble_view_->RequestFocus();
+  }
 }
 
 void LoginBubble::ShowTooltip(const base::string16& message,
@@ -213,6 +441,10 @@ void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
   // If current focus view is the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
   if (bubble_opener_ && bubble_opener_->HasFocus())
+    return;
+
+  // If |bubble_view_| is interactive do not close it.
+  if (bubble_view_->GetWidget()->IsActive())
     return;
 
   Close();
