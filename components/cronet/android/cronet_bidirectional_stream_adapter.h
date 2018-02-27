@@ -71,7 +71,11 @@ class CronetBidirectionalStreamAdapter
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jbidi_stream,
       bool jsend_request_headers_automatically,
-      bool enable_metrics);
+      bool enable_metrics,
+      bool traffic_stats_tag_set,
+      int32_t traffic_stats_tag,
+      bool traffic_stats_uid_set,
+      int32_t traffic_stats_uid);
   ~CronetBidirectionalStreamAdapter() override;
 
   // Validates method and headers, initializes and starts the request. If
@@ -163,6 +167,14 @@ class CronetBidirectionalStreamAdapter
   const bool send_request_headers_automatically_;
   // Whether metrics collection is enabled when |this| is created.
   const bool enable_metrics_;
+  // Whether |traffic_stats_tag_| should be applied.
+  const bool traffic_stats_tag_set_;
+  // TrafficStats tag to apply to URLRequest.
+  const int32_t traffic_stats_tag_;
+  // Whether |traffic_stats_uid_| should be applied.
+  const bool traffic_stats_uid_set_;
+  // UID to be applied to URLRequest.
+  const int32_t traffic_stats_uid_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   std::unique_ptr<PendingWriteData> pending_write_data_;

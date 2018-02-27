@@ -83,12 +83,20 @@ public abstract class CronetEngineBase extends ExperimentalCronetEngine {
      *         with the next data frame.
      * @param requestAnnotations Objects to pass on to
      *       {@link org.chromium.net.RequestFinishedInfo.Listener}.
+     * @param trafficStatsTagSet {@code true} if {@code trafficStatsTag} represents a TrafficStats
+     *         tag to apply to sockets used to perform this request.
+     * @param trafficStatsTag TrafficStats tag to apply to sockets used to perform this request.
+     * @param trafficStatsUidSet {@code true} if {@code trafficStatsUid} represents a UID to
+     *         attribute traffic used to perform this request.
+     * @param trafficStatsUid UID to attribute traffic used to perform this request.
      * @return a new stream.
      */
     protected abstract ExperimentalBidirectionalStream createBidirectionalStream(String url,
             BidirectionalStream.Callback callback, Executor executor, String httpMethod,
             List<Map.Entry<String, String>> requestHeaders, @StreamPriority int priority,
-            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations);
+            boolean delayRequestHeadersUntilFirstFlush, Collection<Object> requestAnnotations,
+            boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
+            int trafficStatsUid);
 
     @Override
     public ExperimentalUrlRequest.Builder newUrlRequestBuilder(
