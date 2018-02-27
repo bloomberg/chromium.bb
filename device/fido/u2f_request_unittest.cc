@@ -15,6 +15,7 @@
 using ::testing::_;
 
 namespace device {
+
 namespace {
 
 constexpr char kTestRelyingPartyId[] = "google.com";
@@ -24,7 +25,10 @@ class FakeU2fRequest : public U2fRequest {
   explicit FakeU2fRequest(std::string relying_party_id)
       : U2fRequest(std::move(relying_party_id),
                    nullptr /* connector */,
-                   base::flat_set<U2fTransportProtocol>()) {}
+                   base::flat_set<U2fTransportProtocol>(),
+                   std::vector<uint8_t>(),
+                   std::vector<uint8_t>(),
+                   std::vector<std::vector<uint8_t>>()) {}
   ~FakeU2fRequest() override = default;
 
   void TryDevice() override {
@@ -335,6 +339,20 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
     request.Transition();
     EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
   }
+}
+
+TEST_F(U2fRequestTest, TestEncodeVersionRequest) {
+  constexpr uint8_t kEncodedU2fVersionRequest[] = {0x00, 0x03, 0x00, 0x00,
+                                                   0x00, 0x00, 0x00};
+  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(false)->GetEncodedCommand(),
+              testing::ElementsAreArray(kEncodedU2fVersionRequest));
+
+  // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
+  // format.
+  constexpr uint8_t kEncodedU2fLegacyVersionRequest[] = {
+      0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  EXPECT_THAT(U2fRequest::GetU2fVersionApduCommand(true)->GetEncodedCommand(),
+              testing::ElementsAreArray(kEncodedU2fLegacyVersionRequest));
 }
 
 }  // namespace device

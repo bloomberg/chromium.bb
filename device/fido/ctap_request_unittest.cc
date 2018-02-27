@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/ctap_authenticator_request_param.h"
-#include "device/fido/ctap_get_assertion_request_param.h"
-#include "device/fido/ctap_make_credential_request_param.h"
+#include "device/fido/ctap_constants.h"
+#include "device/fido/ctap_empty_authenticator_request.h"
+#include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,8 +108,8 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       // clang-format on
   };
 
-  PublicKeyCredentialRPEntity rp("acme.com");
-  rp.SetRPName("Acme");
+  PublicKeyCredentialRpEntity rp("acme.com");
+  rp.SetRpName("Acme");
 
   PublicKeyCredentialUserEntity user(
       std::vector<uint8_t>(kUserId, std::end(kUserId)));
@@ -116,15 +117,14 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       .SetDisplayName("John P. Smith")
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
-  CTAPMakeCredentialRequestParam make_credential_param(
+  CtapMakeCredentialRequest make_credential_param(
       std::vector<uint8_t>(kClientDataHash, std::end(kClientDataHash)),
       std::move(rp), std::move(user),
       PublicKeyCredentialParams({{"public-key", 7}, {"public-key", 257}}));
-  auto serialized_data = make_credential_param.SetResidentKey(true)
+  auto serialized_data = make_credential_param.SetResidentKeySupported(true)
                              .SetUserVerificationRequired(true)
-                             .Encode();
-  ASSERT_TRUE(serialized_data);
-  EXPECT_THAT(*serialized_data, testing::ElementsAreArray(kSerializedRequest));
+                             .EncodeAsCBOR();
+  EXPECT_THAT(serialized_data, testing::ElementsAreArray(kSerializedRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
@@ -196,7 +196,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       // clang-format on
   };
 
-  CTAPGetAssertionRequestParam get_assertion_req(
+  CtapGetAssertionRequest get_assertion_req(
       "acme.com",
       std::vector<uint8_t>(kClientDataHash, std::end(kClientDataHash)));
 
@@ -221,9 +221,8 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       .SetUserPresenceRequired(true)
       .SetUserVerificationRequired(true);
 
-  auto serialized_data = get_assertion_req.Encode();
-  ASSERT_TRUE(serialized_data);
-  EXPECT_THAT(*serialized_data, testing::ElementsAreArray(kSerializedRequest));
+  auto serialized_data = get_assertion_req.EncodeAsCBOR();
+  EXPECT_THAT(serialized_data, testing::ElementsAreArray(kSerializedRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
@@ -232,24 +231,14 @@ TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
   static constexpr uint8_t kSerializedCancelCmd = 0x03;
   static constexpr uint8_t kSerializedResetCmd = 0x07;
 
-  auto get_info_cmd =
-      CTAPAuthenticatorRequestParam::CreateGetInfoParam().Encode();
-  ASSERT_TRUE(get_info_cmd);
-  EXPECT_THAT(*get_info_cmd, testing::ElementsAre(kSerializedGetInfoCmd));
-
-  auto get_next_assertion_cmd =
-      CTAPAuthenticatorRequestParam::CreateGetNextAssertionParam().Encode();
-  ASSERT_TRUE(get_next_assertion_cmd);
-  EXPECT_THAT(*get_next_assertion_cmd,
+  EXPECT_THAT(AuthenticatorGetInfoRequest().Serialize(),
+              testing::ElementsAre(kSerializedGetInfoCmd));
+  EXPECT_THAT(AuthenticatorGetNextAssertionRequest().Serialize(),
               testing::ElementsAre(kSerializedGetNextAssertionCmd));
-
-  auto cancel_cmd = CTAPAuthenticatorRequestParam::CreateCancelParam().Encode();
-  ASSERT_TRUE(cancel_cmd);
-  EXPECT_THAT(*cancel_cmd, testing::ElementsAre(kSerializedCancelCmd));
-
-  auto reset_cmd = CTAPAuthenticatorRequestParam::CreateResetParam().Encode();
-  ASSERT_TRUE(reset_cmd);
-  EXPECT_THAT(*reset_cmd, testing::ElementsAre(kSerializedResetCmd));
+  EXPECT_THAT(AuthenticatorCancelRequest().Serialize(),
+              testing::ElementsAre(kSerializedCancelCmd));
+  EXPECT_THAT(AuthenticatorResetRequest().Serialize(),
+              testing::ElementsAre(kSerializedResetCmd));
 }
 
 }  // namespace device

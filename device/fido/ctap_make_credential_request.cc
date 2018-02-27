@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/ctap_make_credential_request_param.h"
+#include "device/fido/ctap_make_credential_request.h"
 
 #include <utility>
 
@@ -12,31 +12,30 @@
 
 namespace device {
 
-CTAPMakeCredentialRequestParam::CTAPMakeCredentialRequestParam(
+CtapMakeCredentialRequest::CtapMakeCredentialRequest(
     std::vector<uint8_t> client_data_hash,
-    PublicKeyCredentialRPEntity rp,
+    PublicKeyCredentialRpEntity rp,
     PublicKeyCredentialUserEntity user,
     PublicKeyCredentialParams public_key_credential_params)
     : client_data_hash_(std::move(client_data_hash)),
       rp_(std::move(rp)),
       user_(std::move(user)),
-      public_key_credentials_(std::move(public_key_credential_params)) {}
+      public_key_credential_params_(std::move(public_key_credential_params)) {}
 
-CTAPMakeCredentialRequestParam::CTAPMakeCredentialRequestParam(
-    CTAPMakeCredentialRequestParam&& that) = default;
+CtapMakeCredentialRequest::CtapMakeCredentialRequest(
+    CtapMakeCredentialRequest&& that) = default;
 
-CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::operator=(
-    CTAPMakeCredentialRequestParam&& that) = default;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
+    CtapMakeCredentialRequest&& that) = default;
 
-CTAPMakeCredentialRequestParam::~CTAPMakeCredentialRequestParam() = default;
+CtapMakeCredentialRequest::~CtapMakeCredentialRequest() = default;
 
-base::Optional<std::vector<uint8_t>> CTAPMakeCredentialRequestParam::Encode()
-    const {
+std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
   cbor::CBORValue::MapValue cbor_map;
   cbor_map[cbor::CBORValue(1)] = cbor::CBORValue(client_data_hash_);
   cbor_map[cbor::CBORValue(2)] = rp_.ConvertToCBOR();
   cbor_map[cbor::CBORValue(3)] = user_.ConvertToCBOR();
-  cbor_map[cbor::CBORValue(4)] = public_key_credentials_.ConvertToCBOR();
+  cbor_map[cbor::CBORValue(4)] = public_key_credential_params_.ConvertToCBOR();
   if (exclude_list_) {
     cbor::CBORValue::ArrayValue exclude_list_array;
     for (const auto& descriptor : *exclude_list_) {
@@ -55,16 +54,14 @@ base::Optional<std::vector<uint8_t>> CTAPMakeCredentialRequestParam::Encode()
 
   cbor::CBORValue::MapValue option_map;
   option_map[cbor::CBORValue(kResidentKeyMapKey)] =
-      cbor::CBORValue(resident_key_);
+      cbor::CBORValue(resident_key_supported_);
   option_map[cbor::CBORValue(kUserVerificationMapKey)] =
       cbor::CBORValue(user_verification_required_);
   cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
 
   auto serialized_param =
       cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
-
-  if (!serialized_param)
-    return base::nullopt;
+  DCHECK(serialized_param);
 
   std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
       CtapRequestCommand::kAuthenticatorMakeCredential)});
@@ -73,32 +70,32 @@ base::Optional<std::vector<uint8_t>> CTAPMakeCredentialRequestParam::Encode()
   return cbor_request;
 }
 
-CTAPMakeCredentialRequestParam&
-CTAPMakeCredentialRequestParam::SetUserVerificationRequired(
+CtapMakeCredentialRequest&
+CtapMakeCredentialRequest::SetUserVerificationRequired(
     bool user_verification_required) {
   user_verification_required_ = user_verification_required;
   return *this;
 }
 
-CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetResidentKey(
-    bool resident_key) {
-  resident_key_ = resident_key;
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeySupported(
+    bool resident_key_supported) {
+  resident_key_supported_ = resident_key_supported;
   return *this;
 }
 
-CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetExcludeList(
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetExcludeList(
     std::vector<PublicKeyCredentialDescriptor> exclude_list) {
   exclude_list_ = std::move(exclude_list);
   return *this;
 }
 
-CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetPinAuth(
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetPinAuth(
     std::vector<uint8_t> pin_auth) {
   pin_auth_ = std::move(pin_auth);
   return *this;
 }
 
-CTAPMakeCredentialRequestParam& CTAPMakeCredentialRequestParam::SetPinProtocol(
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetPinProtocol(
     uint8_t pin_protocol) {
   pin_protocol_ = pin_protocol;
   return *this;

@@ -8,30 +8,30 @@
 
 namespace device {
 
-PublicKeyCredentialRPEntity::PublicKeyCredentialRPEntity(std::string rp_id)
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
     : rp_id_(std::move(rp_id)) {}
 
-PublicKeyCredentialRPEntity::PublicKeyCredentialRPEntity(
-    PublicKeyCredentialRPEntity&& other) = default;
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
+    PublicKeyCredentialRpEntity&& other) = default;
 
-PublicKeyCredentialRPEntity& PublicKeyCredentialRPEntity::operator=(
-    PublicKeyCredentialRPEntity&& other) = default;
+PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
+    PublicKeyCredentialRpEntity&& other) = default;
 
-PublicKeyCredentialRPEntity::~PublicKeyCredentialRPEntity() = default;
+PublicKeyCredentialRpEntity::~PublicKeyCredentialRpEntity() = default;
 
-PublicKeyCredentialRPEntity& PublicKeyCredentialRPEntity::SetRPName(
+PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::SetRpName(
     std::string rp_name) {
   rp_name_ = std::move(rp_name);
   return *this;
 }
 
-PublicKeyCredentialRPEntity& PublicKeyCredentialRPEntity::SetRPIconUrl(
+PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::SetRpIconUrl(
     GURL icon_url) {
   rp_icon_url_ = std::move(icon_url);
   return *this;
 }
 
-cbor::CBORValue PublicKeyCredentialRPEntity::ConvertToCBOR() const {
+cbor::CBORValue PublicKeyCredentialRpEntity::ConvertToCBOR() const {
   cbor::CBORValue::MapValue rp_map;
   rp_map[cbor::CBORValue("id")] = cbor::CBORValue(rp_id_);
   if (rp_name_)

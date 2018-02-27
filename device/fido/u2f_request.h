@@ -12,6 +12,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
+#include "base/optional.h"
 #include "device/fido/u2f_device.h"
 #include "device/fido/u2f_discovery.h"
 #include "device/fido/u2f_transport_protocol.h"
@@ -30,7 +31,10 @@ class U2fRequest : public U2fDiscovery::Observer {
   // is servicified.
   U2fRequest(std::string relying_party_id,
              service_manager::Connector* connector,
-             const base::flat_set<U2fTransportProtocol>& protocols);
+             const base::flat_set<U2fTransportProtocol>& protocols,
+             std::vector<uint8_t> app_id_digest,
+             std::vector<uint8_t> challenge_digest,
+             std::vector<std::vector<uint8_t>> registered_keys);
   ~U2fRequest() override;
 
   void Start();
@@ -39,6 +43,22 @@ class U2fRequest : public U2fDiscovery::Observer {
   // MockU2fDiscovery.
   void SetDiscoveriesForTesting(
       std::vector<std::unique_ptr<U2fDiscovery>> discoveries);
+
+  // Returns bogus application parameter and challenge to be used to verify user
+  // presence.
+  static const std::vector<uint8_t>& GetBogusAppParam();
+  static const std::vector<uint8_t>& GetBogusChallenge();
+  // Returns APDU formatted U2F version request command. If |is_legacy_version|
+  // is set to true, suffix {0x00, 0x00} is added at the end.
+  static std::unique_ptr<U2fApduCommand> GetU2fVersionApduCommand(
+      bool is_legacy_version);
+  // Returns APDU U2F request commands. Nullptr is returned for
+  // incorrectly formatted parameter.
+  std::unique_ptr<U2fApduCommand> GetU2fSignApduCommand(
+      const std::vector<uint8_t>& key_handle,
+      bool is_check_only_sign = false) const;
+  std::unique_ptr<U2fApduCommand> GetU2fRegisterApduCommand(
+      bool is_individual_attestation) const;
 
  protected:
   enum class State {
@@ -50,12 +70,8 @@ class U2fRequest : public U2fDiscovery::Observer {
     COMPLETE,
   };
 
-  // Returns bogus application parameter and challenge to be used to verify user
-  // presence.
-  static const std::vector<uint8_t>& GetBogusAppParam();
-  static const std::vector<uint8_t>& GetBogusChallenge();
-
   void Transition();
+
   virtual void TryDevice() = 0;
 
   // Hold handles to the devices known to the system. Known devices are
@@ -69,10 +85,12 @@ class U2fRequest : public U2fDiscovery::Observer {
   U2fDevice* current_device_ = nullptr;
   std::list<U2fDevice*> devices_;
   std::list<U2fDevice*> attempted_devices_;
-
   State state_;
   const std::string relying_party_id_;
   std::vector<std::unique_ptr<U2fDiscovery>> discoveries_;
+  std::vector<uint8_t> app_id_digest_;
+  std::vector<uint8_t> challenge_digest_;
+  std::vector<std::vector<uint8_t>> registered_keys_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestIterateDevice);

@@ -9,7 +9,10 @@
 #include <tuple>
 #include <vector>
 
+#include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_values.h"
+#include "device/fido/ctap_constants.h"
 
 namespace device {
 
@@ -18,16 +21,25 @@ namespace device {
 // request parameter for AuthenticatorMakeCredential.
 class PublicKeyCredentialParams {
  public:
+  struct CredentialInfo {
+    std::string type;
+    int algorithm =
+        base::strict_cast<int>(kCoseAlgorithmIdentifier::kCoseEs256);
+  };
+
   explicit PublicKeyCredentialParams(
-      std::vector<std::tuple<std::string, int>> credential_params);
+      std::vector<CredentialInfo> credential_params);
   PublicKeyCredentialParams(PublicKeyCredentialParams&& other);
   PublicKeyCredentialParams& operator=(PublicKeyCredentialParams&& other);
   ~PublicKeyCredentialParams();
 
   cbor::CBORValue ConvertToCBOR() const;
+  const std::vector<CredentialInfo>& public_key_credential_params() const {
+    return public_key_credential_params_;
+  }
 
  private:
-  std::vector<std::tuple<std::string, int>> public_key_credential_params_;
+  std::vector<CredentialInfo> public_key_credential_params_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicKeyCredentialParams);
 };

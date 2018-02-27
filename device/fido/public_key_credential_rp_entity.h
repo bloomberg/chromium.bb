@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
 #include "url/gurl.h"
@@ -17,23 +18,28 @@ namespace device {
 // Data structure containing information about relying party that invoked
 // WebAuth API. Includes a relying party id, an optional relying party name,,
 // and optional relying party display image url.
-class PublicKeyCredentialRPEntity {
+class PublicKeyCredentialRpEntity {
  public:
-  explicit PublicKeyCredentialRPEntity(std::string rp_id);
-  PublicKeyCredentialRPEntity(PublicKeyCredentialRPEntity&& other);
-  PublicKeyCredentialRPEntity& operator=(PublicKeyCredentialRPEntity&& other);
-  ~PublicKeyCredentialRPEntity();
+  explicit PublicKeyCredentialRpEntity(std::string rp_id);
+  PublicKeyCredentialRpEntity(PublicKeyCredentialRpEntity&& other);
+  PublicKeyCredentialRpEntity& operator=(PublicKeyCredentialRpEntity&& other);
+  ~PublicKeyCredentialRpEntity();
 
-  PublicKeyCredentialRPEntity& SetRPName(std::string rp_name);
-  PublicKeyCredentialRPEntity& SetRPIconUrl(GURL icon_url);
   cbor::CBORValue ConvertToCBOR() const;
+
+  PublicKeyCredentialRpEntity& SetRpName(std::string rp_name);
+  PublicKeyCredentialRpEntity& SetRpIconUrl(GURL icon_url);
+
+  const std::string& rp_id() const { return rp_id_; }
+  const base::Optional<std::string>& rp_name() const { return rp_name_; }
+  const base::Optional<GURL>& rp_icon_url() const { return rp_icon_url_; }
 
  private:
   std::string rp_id_;
   base::Optional<std::string> rp_name_;
   base::Optional<GURL> rp_icon_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(PublicKeyCredentialRPEntity);
+  DISALLOW_COPY_AND_ASSIGN(PublicKeyCredentialRpEntity);
 };
 
 }  // namespace device

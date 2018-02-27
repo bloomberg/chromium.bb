@@ -8,57 +8,60 @@
 
 #include "base/stl_util.h"
 #include "device/fido/register_response_data.h"
+#include "device/fido/u2f_apdu_command.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
-
-U2fRegister::U2fRegister(
-    std::string relying_party_id,
-    service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& protocols,
-    const std::vector<std::vector<uint8_t>>& registered_keys,
-    const std::vector<uint8_t>& challenge_hash,
-    const std::vector<uint8_t>& app_param,
-    bool individual_attestation_ok,
-    RegisterResponseCallback completion_callback)
-    : U2fRequest(std::move(relying_party_id), connector, protocols),
-      registered_keys_(registered_keys),
-      challenge_hash_(challenge_hash),
-      app_param_(app_param),
-      individual_attestation_ok_(individual_attestation_ok),
-      completion_callback_(std::move(completion_callback)),
-      weak_factory_(this) {}
-
-U2fRegister::~U2fRegister() = default;
 
 // static
 std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
     std::string relying_party_id,
     service_manager::Connector* connector,
     const base::flat_set<U2fTransportProtocol>& protocols,
-    const std::vector<std::vector<uint8_t>>& registered_keys,
-    const std::vector<uint8_t>& challenge_hash,
-    const std::vector<uint8_t>& app_param,
+    std::vector<std::vector<uint8_t>> registered_keys,
+    std::vector<uint8_t> challenge_digest,
+    std::vector<uint8_t> app_id_digest,
     bool individual_attestation_ok,
     RegisterResponseCallback completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fRegister>(
-      std::move(relying_party_id), connector, protocols, registered_keys,
-      challenge_hash, app_param, individual_attestation_ok,
+      std::move(relying_party_id), connector, protocols,
+      std::move(registered_keys), std::move(challenge_digest),
+      std::move(app_id_digest), individual_attestation_ok,
       std::move(completion_callback));
   request->Start();
   return request;
 }
 
+U2fRegister::U2fRegister(std::string relying_party_id,
+                         service_manager::Connector* connector,
+                         const base::flat_set<U2fTransportProtocol>& protocols,
+                         std::vector<std::vector<uint8_t>> registered_keys,
+                         std::vector<uint8_t> challenge_digest,
+                         std::vector<uint8_t> app_id_digest,
+                         bool individual_attestation_ok,
+                         RegisterResponseCallback completion_callback)
+    : U2fRequest(std::move(relying_party_id),
+                 connector,
+                 protocols,
+                 std::move(app_id_digest),
+                 std::move(challenge_digest),
+                 std::move(registered_keys)),
+      individual_attestation_ok_(individual_attestation_ok),
+      completion_callback_(std::move(completion_callback)),
+      weak_factory_(this) {}
+
+U2fRegister::~U2fRegister() = default;
+
 void U2fRegister::TryDevice() {
   DCHECK(current_device_);
   if (registered_keys_.size() > 0 && !CheckedForDuplicateRegistration()) {
     auto it = registered_keys_.cbegin();
-    current_device_->Sign(app_param_, challenge_hash_, *it,
+    current_device_->Sign(app_id_digest_, challenge_digest_, *it,
                           base::Bind(&U2fRegister::OnTryCheckRegistration,
                                      weak_factory_.GetWeakPtr(), it),
                           true);
   } else {
-    current_device_->Register(app_param_, challenge_hash_,
+    current_device_->Register(app_id_digest_, challenge_digest_,
                               individual_attestation_ok_,
                               base::Bind(&U2fRegister::OnTryDevice,
                                          weak_factory_.GetWeakPtr(), false));
@@ -85,7 +88,7 @@ void U2fRegister::OnTryCheckRegistration(
       // Continue to iterate through the provided key handles in the exclude
       // list and check for already registered keys.
       if (++it != registered_keys_.end()) {
-        current_device_->Sign(app_param_, challenge_hash_, *it,
+        current_device_->Sign(app_id_digest_, challenge_digest_, *it,
                               base::Bind(&U2fRegister::OnTryCheckRegistration,
                                          weak_factory_.GetWeakPtr(), it),
                               true);
