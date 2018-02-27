@@ -433,10 +433,9 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(personal_data_manager(), LoadProfiles());
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());
 
-    personal_data_manager_->Init(
-        web_data_service_, profile_sync_service_bundle()->pref_service(),
-        profile_sync_service_bundle()->account_tracker(),
-        profile_sync_service_bundle()->signin_manager(), false);
+    personal_data_manager_->Init(web_data_service_,
+                                 profile_sync_service_bundle()->pref_service(),
+                                 nullptr, false);
 
     web_data_service_->StartSyncableService();
 

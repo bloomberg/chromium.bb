@@ -29,11 +29,9 @@
 #include "components/prefs/pref_member.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
-class AccountTrackerService;
 class Browser;
 class PrefService;
 class RemoveAutofillTester;
-class SigninManagerBase;
 
 namespace autofill {
 class AutofillInteractiveTest;
@@ -45,6 +43,10 @@ namespace autofill_helper {
 void SetProfiles(int, std::vector<autofill::AutofillProfile>*);
 void SetCreditCards(int, std::vector<autofill::CreditCard>*);
 }  // namespace autofill_helper
+
+namespace identity {
+class IdentityManager;
+}
 
 namespace syncer {
 class SyncService;
@@ -72,8 +74,7 @@ class PersonalDataManager : public KeyedService,
   // context.
   void Init(scoped_refptr<AutofillWebDataService> database,
             PrefService* pref_service,
-            AccountTrackerService* account_tracker,
-            SigninManagerBase* signin_manager,
+            identity::IdentityManager* identity_manager,
             bool is_off_the_record);
 
   // Called once the sync service is known to be instantiated. Note that it may
@@ -424,14 +425,6 @@ class PersonalDataManager : public KeyedService,
     database_ = database;
   }
 
-  void set_account_tracker(AccountTrackerService* account_tracker) {
-    account_tracker_ = account_tracker;
-  }
-
-  void set_signin_manager(SigninManagerBase* signin_manager) {
-    signin_manager_ = signin_manager;
-  }
-
   // The backing database that this PersonalDataManager uses.
   scoped_refptr<AutofillWebDataService> database_;
 
@@ -581,12 +574,8 @@ class PersonalDataManager : public KeyedService,
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_;
 
-  // The AccountTrackerService that this instance uses. Must outlive this
-  // instance.
-  AccountTrackerService* account_tracker_;
-
-  // The signin manager that this instance uses. Must outlive this instance.
-  SigninManagerBase* signin_manager_;
+  // The identity manager that this instance uses. Must outlive this instance.
+  identity::IdentityManager* identity_manager_;
 
   // Whether the user is currently operating in an off-the-record context.
   // Default value is false.

@@ -2434,7 +2434,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(true);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), nullptr, nullptr, false);
+                       autofill_client_.GetPrefs(), nullptr, false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
 
@@ -2443,7 +2443,7 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(false);
   personal_data_->Init(autofill_client_.GetDatabase(),
-                       autofill_client_.GetPrefs(), nullptr, nullptr, false);
+                       autofill_client_.GetPrefs(), nullptr, false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }
 
