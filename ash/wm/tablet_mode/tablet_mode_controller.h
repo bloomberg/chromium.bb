@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -61,13 +62,16 @@ class ASH_EXPORT TabletModeController
       public SessionObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
-  // clamshell/tabletmode regardless of hardware orientation.
+  // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
   enum class UiMode {
     NONE = 0,
     CLAMSHELL,
     TABLETMODE,
   };
+
+  // Public so it can be used by unit tests.
+  constexpr static char kLidAngleHistogramName[] = "Ash.TouchView.LidAngle";
 
   TabletModeController();
   ~TabletModeController() override;
@@ -109,6 +113,10 @@ class ASH_EXPORT TabletModeController
 
   // Flushes the mojo message pipe to chrome.
   void FlushForTesting();
+
+  // If |record_lid_angle_timer_| is running, invokes its task and returns true.
+  // Otherwise, returns false.
+  bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -173,10 +181,14 @@ class ASH_EXPORT TabletModeController
 
   // Record UMA stats tracking TabletMode usage. If |type| is
   // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
-  // inactive from |tabletmode_usage_interval_start_time_| until now.
+  // inactive from |tablet_mode_usage_interval_start_time_| until now.
   // Similarly, record that TabletMode has been active if |type| is
   // TABLET_MODE_INTERVAL_ACTIVE.
   void RecordTabletModeUsageInterval(TabletModeIntervalType type);
+
+  // Reports an UMA histogram containing the value of |lid_angle_|.
+  // Called periodically by |record_lid_angle_timer_|.
+  void RecordLidAngle();
 
   // Returns TABLET_MODE_INTERVAL_ACTIVE if TabletMode is currently active,
   // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
@@ -198,15 +210,15 @@ class ASH_EXPORT TabletModeController
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> event_blocker_;
 
   // Whether we have ever seen accelerometer data.
-  bool have_seen_accelerometer_data_;
+  bool have_seen_accelerometer_data_ = false;
 
   // Whether both accelerometers are available.
-  bool can_detect_lid_angle_;
+  bool can_detect_lid_angle_ = false;
 
-  // Tracks time spent in (and out of) tabletmode mode.
-  base::Time tabletmode_usage_interval_start_time_;
-  base::TimeDelta total_tabletmode_time_;
-  base::TimeDelta total_non_tabletmode_time_;
+  // Tracks time spent in (and out of) tablet mode.
+  base::Time tablet_mode_usage_interval_start_time_;
+  base::TimeDelta total_tablet_mode_time_;
+  base::TimeDelta total_non_tablet_mode_time_;
 
   // Tracks the first time the lid angle was unstable. This is used to suppress
   // erroneous accelerometer readings as the lid is nearly opened or closed but
@@ -220,13 +232,16 @@ class ASH_EXPORT TabletModeController
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Set when tablet mode switch is on. This is used to force tablet mode.
-  bool tablet_mode_switch_is_on_;
+  bool tablet_mode_switch_is_on_ = false;
 
   // Tracks when the lid is closed. Used to prevent entering tablet mode.
-  bool lid_is_closed_;
+  bool lid_is_closed_ = false;
+
+  // Last computed lid angle.
+  double lid_angle_ = 0.0f;
 
   // Whether title bars should be shown be auto hidden in tablet mode.
-  const bool auto_hide_title_bars_;
+  const bool auto_hide_title_bars_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
@@ -242,6 +257,9 @@ class ASH_EXPORT TabletModeController
 
   // Tracks whether a flag is used to force ui mode.
   UiMode force_ui_mode_ = UiMode::NONE;
+
+  // Calls RecordLidAngle() periodically.
+  base::RepeatingTimer record_lid_angle_timer_;
 
   ScopedSessionObserver scoped_session_observer_;
 

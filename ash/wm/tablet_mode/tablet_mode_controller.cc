@@ -15,6 +15,8 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
@@ -71,6 +73,10 @@ const float kHingeVerticalSmoothingMaximum = 8.7f;
 // the same physical device and so should be under the same acceleration.
 const float kNoisyMagnitudeDeviation = 1.0f;
 
+// Interval between calls to RecordLidAngle().
+constexpr base::TimeDelta kRecordLidAngleInterval =
+    base::TimeDelta::FromHours(1);
+
 // The angle between chromeos::AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
 // between the screen and keyboard accelerometers is too high.
@@ -111,13 +117,11 @@ CreateScopedDisableInternalMouseAndKeyboard() {
 
 }  // namespace
 
+constexpr char TabletModeController::kLidAngleHistogramName[];
+
 TabletModeController::TabletModeController()
-    : have_seen_accelerometer_data_(false),
-      can_detect_lid_angle_(false),
-      tabletmode_usage_interval_start_time_(base::Time::Now()),
-      tick_clock_(new base::DefaultTickClock()),
-      tablet_mode_switch_is_on_(false),
-      lid_is_closed_(false),
+    : tablet_mode_usage_interval_start_time_(base::Time::Now()),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       auto_hide_title_bars_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTabletAutohideTitlebars)),
       binding_(this),
@@ -232,9 +236,11 @@ void TabletModeController::OnAccelerometerUpdated(
   can_detect_lid_angle_ =
       update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
       update->has(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD);
-
-  if (!can_detect_lid_angle_)
+  if (!can_detect_lid_angle_) {
+    if (record_lid_angle_timer_.IsRunning())
+      record_lid_angle_timer_.Stop();
     return;
+  }
 
   if (!display::Display::HasInternalDisplay())
     return;
@@ -303,7 +309,7 @@ void TabletModeController::SuspendImminent(
 
 void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   // We do not want TabletMode usage metrics to include time spent in suspend.
-  tabletmode_usage_interval_start_time_ = base::Time::Now();
+  tablet_mode_usage_interval_start_time_ = base::Time::Now();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -349,13 +355,13 @@ void TabletModeController::HandleHingeRotation(
   lid_flattened.set_x(0.0f);
 
   // Compute the angle between the base and the lid.
-  float lid_angle = 180.0f - gfx::ClockwiseAngleBetweenVectorsInDegrees(
-                                 base_flattened, lid_flattened, hinge_vector);
-  if (lid_angle < 0.0f)
-    lid_angle += 360.0f;
+  lid_angle_ = 180.0f - gfx::ClockwiseAngleBetweenVectorsInDegrees(
+                            base_flattened, lid_flattened, hinge_vector);
+  if (lid_angle_ < 0.0f)
+    lid_angle_ += 360.0f;
 
-  bool is_angle_stable = is_angle_reliable && lid_angle >= kMinStableAngle &&
-                         lid_angle <= kMaxStableAngle;
+  bool is_angle_stable = is_angle_reliable && lid_angle_ >= kMinStableAngle &&
+                         lid_angle_ <= kMaxStableAngle;
 
   if (is_angle_stable) {
     // Reset the timestamp of first unstable lid angle because we get a stable
@@ -367,12 +373,20 @@ void TabletModeController::HandleHingeRotation(
 
   // Toggle tablet mode on or off when corresponding thresholds are passed.
   if (IsTabletModeWindowManagerEnabled() && is_angle_stable &&
-      lid_angle <= kExitTabletModeAngle) {
+      lid_angle_ <= kExitTabletModeAngle) {
     LeaveTabletMode();
   } else if (!IsTabletModeWindowManagerEnabled() && !lid_is_closed_ &&
-             lid_angle >= kEnterTabletModeAngle &&
+             lid_angle_ >= kEnterTabletModeAngle &&
              (is_angle_stable || CanUseUnstableLidAngle())) {
     EnterTabletMode();
+  }
+
+  // Start reporting the lid angle if we aren't already doing so.
+  if (!record_lid_angle_timer_.IsRunning()) {
+    record_lid_angle_timer_.Start(
+        FROM_HERE, kRecordLidAngleInterval,
+        base::BindRepeating(&TabletModeController::RecordLidAngle,
+                            base::Unretained(this)));
   }
 }
 
@@ -396,6 +410,14 @@ void TabletModeController::LeaveTabletMode() {
 
 void TabletModeController::FlushForTesting() {
   binding_.FlushForTesting();
+}
+
+bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
+  if (!record_lid_angle_timer_.IsRunning())
+    return false;
+
+  record_lid_angle_timer_.user_task().Run();
+  return true;
 }
 
 void TabletModeController::OnShellInitialized() {
@@ -425,19 +447,27 @@ void TabletModeController::RecordTabletModeUsageInterval(
     return;
 
   base::Time current_time = base::Time::Now();
-  base::TimeDelta delta = current_time - tabletmode_usage_interval_start_time_;
+  base::TimeDelta delta = current_time - tablet_mode_usage_interval_start_time_;
   switch (type) {
     case TABLET_MODE_INTERVAL_INACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewInactive", delta);
-      total_non_tabletmode_time_ += delta;
+      total_non_tablet_mode_time_ += delta;
       break;
     case TABLET_MODE_INTERVAL_ACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewActive", delta);
-      total_tabletmode_time_ += delta;
+      total_tablet_mode_time_ += delta;
       break;
   }
 
-  tabletmode_usage_interval_start_time_ = current_time;
+  tablet_mode_usage_interval_start_time_ = current_time;
+}
+
+void TabletModeController::RecordLidAngle() {
+  DCHECK(can_detect_lid_angle_);
+  base::LinearHistogram::FactoryGet(
+      kLidAngleHistogramName, 1 /* minimum */, 360 /* maximum */,
+      50 /* bucket_count */, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(std::round(lid_angle_));
 }
 
 TabletModeController::TabletModeIntervalType
@@ -463,17 +493,17 @@ void TabletModeController::OnChromeTerminating() {
 
   if (CanEnterTabletMode()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
-                                total_tabletmode_time_.InMinutes(), 1,
+                                total_tablet_mode_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
-                                total_non_tabletmode_time_.InMinutes(), 1,
+                                total_non_tablet_mode_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
     base::TimeDelta total_runtime =
-        total_tabletmode_time_ + total_non_tabletmode_time_;
+        total_tablet_mode_time_ + total_non_tablet_mode_time_;
     if (total_runtime.InSeconds() > 0) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Ash.TouchView.TouchViewActivePercentage",
-          100 * total_tabletmode_time_.InSeconds() / total_runtime.InSeconds());
+      UMA_HISTOGRAM_PERCENTAGE("Ash.TouchView.TouchViewActivePercentage",
+                               100 * total_tablet_mode_time_.InSeconds() /
+                                   total_runtime.InSeconds());
     }
   }
 }
