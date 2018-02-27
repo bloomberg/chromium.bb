@@ -1175,7 +1175,15 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 // Verify the Open All functionality on multiple url selection.
-- (void)testContextMenuForMultipleURLOpenAll {
+// TODO(crbug.com/816699): Re-enable this test on simulators.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  testContextMenuForMultipleURLOpenAll
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  FLAKY_testContextMenuForMultipleURLOpenAll
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAll {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -1217,7 +1225,15 @@ id<GREYMatcher> CloseToolsMenuButton() {
 }
 
 // Verify the Open All in Incognito functionality on multiple url selection.
-- (void)testContextMenuForMultipleURLOpenAllInIncognito {
+// TODO(crbug.com/816699): Re-enable this test on simulators.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  testContextMenuForMultipleURLOpenAllInIncognito
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  FLAKY_testContextMenuForMultipleURLOpenAllInIncognito
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAllInIncognito {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
