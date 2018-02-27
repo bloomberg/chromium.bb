@@ -43,6 +43,10 @@ ScriptPromise UnderlyingSourceBase::Cancel(ScriptState* script_state,
   return ScriptPromise::CastUndefined(script_state);
 }
 
+ScriptValue UnderlyingSourceBase::type(ScriptState* script_state) const {
+  return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+}
+
 void UnderlyingSourceBase::notifyLockAcquired() {
   is_stream_locked_ = true;
 }
