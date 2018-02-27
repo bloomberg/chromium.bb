@@ -359,6 +359,7 @@ cast_source_set("unittests") {
 
   sources = [
     "cast_media_blocker_unittest.cc",
+    "cast_touch_device_manager_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
   ]
 
@@ -368,6 +369,7 @@ cast_source_set("unittests") {
     "//chromecast/base",
     "//content/public/browser",
     "//content/test:test_support",
+    "//ui/events/devices:devices",
     "//ui/gl:test_support",
   ]
 }
