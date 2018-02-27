@@ -995,7 +995,7 @@ enum CellType {
 }
 
 - (void)signinDidFinish {
-  [self.delegate refreshSessionsViewRecentTabsTableViewController:self];
+  [self.delegate refreshSessionsView];
 }
 
 #pragma mark - SyncPresenter

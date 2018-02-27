@@ -7,7 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller_interface.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_consumer.h"
+
+namespace ios {
+class ChromeBrowserState;
+}
+
+@protocol ApplicationCommands;
+@protocol LegacyRecentTabsTableViewControllerDelegate;
+@protocol RecentTabsHandsetViewControllerCommand;
+@protocol UrlLoader;
 
 // Controls the content of a UITableView.
 //
@@ -28,7 +37,7 @@
 // presented.
 @interface LegacyRecentTabsTableViewController
     : UITableViewController<UIGestureRecognizerDelegate,
-                            RecentTabsTableViewControllerInterface>
+                            RecentTabsTableConsumer>
 
 // Designated initializer. The controller opens link with |loader|.
 // |browserState|
@@ -36,6 +45,14 @@
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader
                           dispatcher:(id<ApplicationCommands>)dispatcher;
+
+// RecentTabsTableViewControllerDelegate delegate.
+@property(nonatomic, weak) id<LegacyRecentTabsTableViewControllerDelegate>
+    delegate;
+
+// RecentTabsHandsetViewControllerCommand delegate.
+@property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
+    handsetCommandHandler;
 
 @end
 

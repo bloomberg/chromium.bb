@@ -19,12 +19,8 @@ class ChromeBrowserState;
 @class LegacyRecentTabsTableViewController;
 @protocol UrlLoader;
 
-// LegacyRecentTabsTableCoordinator controls the RecentTabTableViewDataSource,
-// based on the user's signed-in and chrome-sync states.
-//
-// LegacyRecentTabsTableCoordinator listens for notifications about Chrome Sync
-// and ChromeToDevice and changes/updates the view accordingly.
-//
+// LegacyRecentTabsTableCoordinator manages the connection between a
+// RecentTabsMediator and LegacyRecentTabsTableViewController.
 @interface LegacyRecentTabsTableCoordinator : ChromeCoordinator
 
 // Command handler for the command sent when the device is a handset. Nil
