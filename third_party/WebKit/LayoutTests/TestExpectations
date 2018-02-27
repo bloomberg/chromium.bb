@@ -3404,7 +3404,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 ################################################################################
 # Root Layer Scrolling expectations
 
-crbug.com/417782 css3/filters/effect-reference-subregion-nested.html [ Failure ]
 crbug.com/417782 fast/frames/iframe-scaling-with-scroll.html [ Failure ]
 crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
@@ -3421,8 +3420,6 @@ crbug.com/417782 [ Mac ] paint/invalidation/forms/checkbox-focus-by-mouse-then-k
 crbug.com/417782 [ Mac ] paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Failure Pass ]
 crbug.com/417782 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 crbug.com/417782 virtual/disable-spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Skip ]
-crbug.com/417782 [ Linux ] paint/overflow/fixed-background-scroll-window.html [ Failure ]
-crbug.com/417782 [ Linux ] virtual/disable-spv175/paint/overflow/fixed-background-scroll-window.html [ Skip ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
