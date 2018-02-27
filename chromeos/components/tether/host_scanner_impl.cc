@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/tether/connection_preserver.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"
 #include "chromeos/components/tether/gms_core_notifications_state_tracker_impl.h"
@@ -34,6 +35,7 @@ HostScannerImpl::HostScannerImpl(
     NotificationPresenter* notification_presenter,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
+    ConnectionPreserver* connection_preserver,
     base::Clock* clock)
     : network_state_handler_(network_state_handler),
       session_manager_(session_manager),
@@ -46,6 +48,7 @@ HostScannerImpl::HostScannerImpl(
       notification_presenter_(notification_presenter),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
+      connection_preserver_(connection_preserver),
       clock_(clock),
       weak_ptr_factory_(this) {
   session_manager_->AddObserver(this);
@@ -85,7 +88,7 @@ void HostScannerImpl::OnTetherHostsFetched(
 
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
       tether_hosts, connection_manager_, host_scan_device_prioritizer_,
-      tether_host_response_recorder_);
+      tether_host_response_recorder_, connection_preserver_);
   // Add |gms_core_notifications_state_tracker_| as the first observer. When the
   // final change event is emitted, this class will destroy
   // |host_scanner_operation_|, so |gms_core_notifications_state_tracker_| must

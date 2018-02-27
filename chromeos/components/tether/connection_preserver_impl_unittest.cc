@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/connection_preserver.h"
+#include "chromeos/components/tether/connection_preserver_impl.h"
 
 #include <memory>
 
@@ -51,9 +51,9 @@ std::string CreateConfigurationJsonString(const std::string& guid,
 
 }  // namespace
 
-class ConnectionPreserverTest : public NetworkStateTest {
+class ConnectionPreserverImplTest : public NetworkStateTest {
  protected:
-  ConnectionPreserverTest() {}
+  ConnectionPreserverImplTest() {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -68,9 +68,9 @@ class ConnectionPreserverTest : public NetworkStateTest {
     ON_CALL(*mock_tether_host_response_recorder_,
             GetPreviouslyConnectedHostIds())
         .WillByDefault(Invoke(
-            this, &ConnectionPreserverTest::GetPreviouslyConnectedHostIds));
+            this, &ConnectionPreserverImplTest::GetPreviouslyConnectedHostIds));
 
-    connection_preserver_ = std::make_unique<ConnectionPreserver>(
+    connection_preserver_ = std::make_unique<ConnectionPreserverImpl>(
         fake_ble_connection_manager_.get(), network_state_handler(),
         fake_active_host_.get(), mock_tether_host_response_recorder_.get());
 
@@ -120,20 +120,20 @@ class ConnectionPreserverTest : public NetworkStateTest {
       mock_tether_host_response_recorder_;
   base::MockTimer* mock_timer_;
 
-  std::unique_ptr<ConnectionPreserver> connection_preserver_;
+  std::unique_ptr<ConnectionPreserverImpl> connection_preserver_;
 
   std::vector<std::string> previously_connected_host_ids_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionPreserverTest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionPreserverImplTest);
 };
 
-TEST_F(ConnectionPreserverTest,
+TEST_F(ConnectionPreserverImplTest,
        TestHandleSuccessfulTetherAvailabilityResponse_NoPreservedConnection) {
   SimulateSuccessfulHostScan(kDeviceId1, true /* should_remain_registered */);
 }
 
-TEST_F(ConnectionPreserverTest,
+TEST_F(ConnectionPreserverImplTest,
        TestHandleSuccessfulTetherAvailabilityResponse_HasInternet) {
   ConnectToWifi();
 
@@ -141,14 +141,14 @@ TEST_F(ConnectionPreserverTest,
 }
 
 TEST_F(
-    ConnectionPreserverTest,
+    ConnectionPreserverImplTest,
     TestHandleSuccessfulTetherAvailabilityResponse_PreservedConnectionExists_NoPreviouslyConnectedHosts) {
   SimulateSuccessfulHostScan(kDeviceId1, true /* should_remain_registered */);
   SimulateSuccessfulHostScan(kDeviceId2, true /* should_remain_registered */);
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(kDeviceId1));
 }
 
-TEST_F(ConnectionPreserverTest,
+TEST_F(ConnectionPreserverImplTest,
        TestHandleSuccessfulTetherAvailabilityResponse_TimesOut) {
   SimulateSuccessfulHostScan(kDeviceId1, true /* should_remain_registered */);
 
@@ -156,7 +156,7 @@ TEST_F(ConnectionPreserverTest,
   EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(kDeviceId1));
 }
 
-TEST_F(ConnectionPreserverTest,
+TEST_F(ConnectionPreserverImplTest,
        TestHandleSuccessfulTetherAvailabilityResponse_PreserverDestroyed) {
   SimulateSuccessfulHostScan(kDeviceId1, true /* should_remain_registered */);
 
@@ -165,7 +165,7 @@ TEST_F(ConnectionPreserverTest,
 }
 
 TEST_F(
-    ConnectionPreserverTest,
+    ConnectionPreserverImplTest,
     TestHandleSuccessfulTetherAvailabilityResponse_ActiveHostBecomesConnected) {
   // FakeActiveHost internally expects a Base64 encoded string.
   std::string encoded_device_id;
@@ -182,7 +182,7 @@ TEST_F(
 }
 
 TEST_F(
-    ConnectionPreserverTest,
+    ConnectionPreserverImplTest,
     TestHandleSuccessfulTetherAvailabilityResponse_PreviouslyConnectedHostsExist) {
   // |kDeviceId1| is the most recently connected device, and should be preferred
   // over any other device.

@@ -19,6 +19,7 @@ namespace chromeos {
 
 namespace tether {
 
+class ConnectionPreserver;
 class HostScanDevicePrioritizer;
 class MessageWrapper;
 class TetherHostResponseRecorder;
@@ -36,7 +37,8 @@ class HostScannerOperation : public MessageTransferOperation {
         const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
-        TetherHostResponseRecorder* tether_host_response_recorder);
+        TetherHostResponseRecorder* tether_host_response_recorder,
+        ConnectionPreserver* connection_preserver);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -45,7 +47,8 @@ class HostScannerOperation : public MessageTransferOperation {
         const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
-        TetherHostResponseRecorder* tether_host_response_recorder);
+        TetherHostResponseRecorder* tether_host_response_recorder,
+        ConnectionPreserver* connection_preserver);
 
    private:
     static Factory* factory_instance_;
@@ -88,7 +91,8 @@ class HostScannerOperation : public MessageTransferOperation {
       const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
-      TetherHostResponseRecorder* tether_host_response_recorder);
+      TetherHostResponseRecorder* tether_host_response_recorder,
+      ConnectionPreserver* connection_preserver);
 
   void NotifyObserversOfScannedDeviceList(bool is_final_scan_result);
 
@@ -110,6 +114,7 @@ class HostScannerOperation : public MessageTransferOperation {
   void RecordTetherAvailabilityResponseDuration(const std::string device_id);
 
   TetherHostResponseRecorder* tether_host_response_recorder_;
+  ConnectionPreserver* connection_preserver_;
   std::unique_ptr<base::Clock> clock_;
   base::ObserverList<Observer> observer_list_;
 

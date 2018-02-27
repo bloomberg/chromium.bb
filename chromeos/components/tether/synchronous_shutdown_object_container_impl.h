@@ -30,6 +30,7 @@ namespace tether {
 class ActiveHost;
 class ActiveHostNetworkStateUpdater;
 class AsynchronousShutdownObjectContainer;
+class ConnectionPreserver;
 class NetworkConnectionHandlerTetherDelegate;
 class DeviceIdTetherNetworkGuidMap;
 class GmsCoreNotificationsStateTrackerImpl;
@@ -128,6 +129,7 @@ class SynchronousShutdownObjectContainerImpl
   std::unique_ptr<KeepAliveScheduler> keep_alive_scheduler_;
   std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<HotspotUsageDurationTracker> hotspot_usage_duration_tracker_;
+  std::unique_ptr<ConnectionPreserver> connection_preserver_;
   std::unique_ptr<HostScanner> host_scanner_;
   std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
   std::unique_ptr<HostConnectionMetricsLogger> host_connection_metrics_logger_;
