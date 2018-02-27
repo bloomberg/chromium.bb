@@ -2210,7 +2210,7 @@ TEST_P(GpuImageDecodeCacheTest,
   cache->UnrefImage(draw_image);
 }
 
-TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
+TEST_P(GpuImageDecodeCacheTest, NonLazyImageUpload) {
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -2226,33 +2226,6 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
-  // For non-lazy images used at the original scale, no cpu component should be
-  // cached
-  EXPECT_FALSE(cache->GetSWImageDecodeForTesting(draw_image));
-}
-
-TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
-  auto cache = CreateCache();
-  bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
-
-  PaintImage image = CreateBitmapImage(gfx::Size(10, 10));
-  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
-                       quality,
-                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
-  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
-  DecodedDrawImage decoded_draw_image =
-      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
-  EXPECT_TRUE(decoded_draw_image.image());
-  EXPECT_TRUE(decoded_draw_image.is_budgeted());
-  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
-  // For non-lazy images which are downscaled, the scaled image should be
-  // cached.
-  auto sw_image = cache->GetSWImageDecodeForTesting(draw_image);
-  EXPECT_TRUE(sw_image);
-  EXPECT_EQ(sw_image->width(), 5);
-  EXPECT_EQ(sw_image->height(), 5);
 }
 
 INSTANTIATE_TEST_CASE_P(
