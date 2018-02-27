@@ -302,6 +302,9 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
   if (upgrade_notification_timer_.IsRunning())
     return;
 
+  // Ensure that the thresholds used by NotifyOnUpgrade have been initialized.
+  InitializeThresholds();
+
   set_upgrade_detected_time(base::TimeTicks::Now());
 
   // Start the repeating timer for notifying the user after a certain period.
@@ -312,6 +315,30 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
   upgrade_notification_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(cycle_time_ms),
       this, &UpgradeDetectorImpl::NotifyOnUpgrade);
+}
+
+void UpgradeDetectorImpl::InitializeThresholds() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!low_threshold_.is_zero())
+    return;
+
+  // Intervals are drastically shortened when test switches are used.
+  const bool is_testing = IsTesting();
+  const base::TimeDelta multiplier = is_testing
+                                         ? base::TimeDelta::FromSeconds(10)
+                                         : base::TimeDelta::FromDays(1);
+  severe_threshold_ = 14 * multiplier;
+  high_threshold_ = 7 * multiplier;
+  elevated_threshold_ = 4 * multiplier;
+
+  if (is_unstable_channel_) {
+    // Canary and dev channels reach "low" annoyance after one hour (one second
+    // in testing) and never advance beyond that.
+    low_threshold_ = is_testing ? base::TimeDelta::FromSeconds(1)
+                                : base::TimeDelta::FromHours(1);
+  } else {
+    low_threshold_ = 2 * multiplier;
+  }
 }
 
 void UpgradeDetectorImpl::CheckForUpgrade() {
@@ -410,15 +437,10 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
       upgrade_available() > UPGRADE_AVAILABLE_REGULAR ||
       critical_experiment_updates_available();
   if (is_unstable_channel_) {
-    // There's only one threat level for unstable channels like dev and
-    // canary, and it hits after one hour. During testing, it hits after one
-    // second.
-    const base::TimeDelta unstable_threshold = IsTesting() ?
-        base::TimeDelta::FromSeconds(1) : base::TimeDelta::FromHours(1);
-
+    // There's only one threat level for dev and canary channels.
     if (is_critical_or_outdated) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
-    } else if (time_passed >= unstable_threshold) {
+    } else if (time_passed >= low_threshold_) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
 
       // That's as high as it goes.
@@ -427,28 +449,19 @@ void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
       return;  // Not ready to recommend upgrade.
     }
   } else {
-    const base::TimeDelta multiplier = IsTesting() ?
-        base::TimeDelta::FromSeconds(10) : base::TimeDelta::FromDays(1);
-
-    // 14 days when not testing, otherwise 140 seconds.
-    const base::TimeDelta severe_threshold = 14 * multiplier;
-    const base::TimeDelta high_threshold = 7 * multiplier;
-    const base::TimeDelta elevated_threshold = 4 * multiplier;
-    const base::TimeDelta low_threshold = 2 * multiplier;
-
     // These if statements must be sorted (highest interval first).
-    if (time_passed >= severe_threshold || is_critical_or_outdated) {
+    if (time_passed >= severe_threshold_ || is_critical_or_outdated) {
       set_upgrade_notification_stage(
           is_critical_or_outdated ? UPGRADE_ANNOYANCE_CRITICAL :
                                     UPGRADE_ANNOYANCE_SEVERE);
 
       // We can't get any higher, baby.
       upgrade_notification_timer_.Stop();
-    } else if (time_passed >= high_threshold) {
+    } else if (time_passed >= high_threshold_) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-    } else if (time_passed >= elevated_threshold) {
+    } else if (time_passed >= elevated_threshold_) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-    } else if (time_passed >= low_threshold) {
+    } else if (time_passed >= low_threshold_) {
       set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
     } else {
       return;  // Not ready to recommend upgrade.
@@ -478,6 +491,12 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
 UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
   static auto* const instance = new UpgradeDetectorImpl();
   return instance;
+}
+
+base::TimeDelta UpgradeDetectorImpl::GetHighAnnoyanceLevelDelta() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  InitializeThresholds();
+  return high_threshold_ - elevated_threshold_;
 }
 
 // static

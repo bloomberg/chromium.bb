@@ -18,7 +18,12 @@ namespace {
 
 // How long to wait (each cycle) before checking which severity level we should
 // be at. Once we reach the highest severity, the timer will stop.
-const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
+constexpr base::TimeDelta kNotifyCycleDelta = base::TimeDelta::FromMinutes(20);
+
+constexpr int kSevereDaysThreshold = 7;
+constexpr int kHighDaysThreshold = 4;
+constexpr int kElevatedDaysThreshold = 2;
+constexpr int kLowDaysThreshold = 0;
 
 }  // namespace
 
@@ -90,6 +95,10 @@ void UpgradeDetectorChromeos::Shutdown() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 
+base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
+  return base::TimeDelta::FromDays(kHighDaysThreshold - kElevatedDaysThreshold);
+}
+
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
@@ -113,24 +122,19 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   base::TimeDelta delta = base::TimeTicks::Now() - upgrade_detected_time();
-  int64_t time_passed = delta.InDays();
-
-  const int kSevereThreshold = 7;
-  const int kHighThreshold = 4;
-  const int kElevatedThreshold = 2;
-  const int kLowThreshold = 0;
+  int64_t days_passed = delta.InDays();
 
   // These if statements must be sorted (highest interval first).
-  if (time_passed >= kSevereThreshold) {
+  if (days_passed >= kSevereDaysThreshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_SEVERE);
 
     // We can't get any higher, baby.
     upgrade_notification_timer_.Stop();
-  } else if (time_passed >= kHighThreshold) {
+  } else if (days_passed >= kHighDaysThreshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-  } else if (time_passed >= kElevatedThreshold) {
+  } else if (days_passed >= kElevatedDaysThreshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-  } else if (time_passed >= kLowThreshold) {
+  } else if (days_passed >= kLowDaysThreshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
   } else {
     return;  // Not ready to recommend upgrade.
@@ -152,11 +156,8 @@ void UpgradeDetectorChromeos::OnChannelsReceived(
   NotifyOnUpgrade();
 
   // Setup timer to to move along the upgrade advisory system.
-  upgrade_notification_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kNotifyCycleTimeMs),
-      this,
-      &UpgradeDetectorChromeos::NotifyOnUpgrade);
+  upgrade_notification_timer_.Start(FROM_HERE, kNotifyCycleDelta, this,
+                                    &UpgradeDetectorChromeos::NotifyOnUpgrade);
 }
 
 // static

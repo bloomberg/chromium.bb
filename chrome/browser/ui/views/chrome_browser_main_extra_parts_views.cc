@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"

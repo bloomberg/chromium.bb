@@ -3314,7 +3314,15 @@ split_static_library("ui") {
       sources += [
         "views/relaunch_notification/relaunch_notification_controller.cc",
         "views/relaunch_notification/relaunch_notification_controller.h",
+        "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
+        "views/relaunch_notification/relaunch_recommended_bubble_view.h",
       ]
+      if (is_mac) {
+        sources += [
+          "views/relaunch_notification/get_app_menu_anchor_point.h",
+          "views/relaunch_notification/get_app_menu_anchor_point.mm",
+        ]
+      }
     }
   }
 

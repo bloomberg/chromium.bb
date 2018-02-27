@@ -1228,6 +1228,18 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           Go to Chromium notification settings
         </message>
       </if>
+      <!-- Relaunch notification bubble and dialog. -->
+      <if expr="not is_android and not chromeos">
+        <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of the relaunch recommended bubble shown to users when an administrator has configured such notifications.">
+          {0, plural,
+           =0 {A Chromium update is available}
+           =1 {A Chromium update is available}
+           other {A Chromium update has been available for # days}}
+        </message>
+        <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of the relaunch recommended bubble shown to users when an administrator has configured such notifications.">
+          Your administrator asks that you relaunch Chromium to apply this update
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

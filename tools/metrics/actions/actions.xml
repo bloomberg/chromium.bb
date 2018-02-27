@@ -15904,6 +15904,30 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="RelaunchRecommendedShown">
+  <owner>grt@chromium.org</owner>
+  <description>
+    A bubble was shown to the user to indicate that their administrator
+    recommends that Chrome be relaunched.
+  </description>
+</action>
+
+<action name="RelaunchRecommended_Accept">
+  <owner>grt@chromium.org</owner>
+  <description>
+    The user accepted to relaunch Chrome in response to a bubble indicating that
+    their administrator recommended that Chrome be relaunched.
+  </description>
+</action>
+
+<action name="RelaunchRecommended_Close">
+  <owner>grt@chromium.org</owner>
+  <description>
+    The bubble indicating to the user that their administrator recommends a
+    browser relaunch was closed by the user.
+  </description>
+</action>
+
 <action name="Reload">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
@@ -74,6 +76,10 @@ class FakeUpgradeDetector : public UpgradeDetector {
  public:
   FakeUpgradeDetector() = default;
 
+  base::TimeDelta GetHighAnnoyanceLevelDelta() override {
+    return base::TimeDelta();  // No delay.
+  }
+
   // Sets the annoyance level to |level| and broadcasts the change to all
   // observers.
   void BroadcastLevelChange(UpgradeNotificationAnnoyanceLevel level) {
@@ -92,7 +98,10 @@ class FakeUpgradeDetector : public UpgradeDetector {
 class RelaunchNotificationControllerTest : public ::testing::Test {
  protected:
   RelaunchNotificationControllerTest()
-      : scoped_local_state_(TestingBrowserProcess::GetGlobal()) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+        scoped_local_state_(TestingBrowserProcess::GetGlobal()) {}
   UpgradeDetector* upgrade_detector() { return &upgrade_detector_; }
   FakeUpgradeDetector& fake_upgrade_detector() { return upgrade_detector_; }
 
@@ -103,7 +112,11 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
         prefs::kRelaunchNotification, std::make_unique<base::Value>(value));
   }
 
+  // Runs tasks until the queues are empty.
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingLocalState scoped_local_state_;
   FakeUpgradeDetector upgrade_detector_;
 
@@ -174,24 +187,22 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
+
+  // The timer should be running to reshow at the detector's delta. Expect this
+  // to happen once, at which point we drop the annoyance to break out of the
+  // loop. Show will be invoked a second time to handle the drop to elevated.
+  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble())
+      .Times(2)
+      .WillOnce(::testing::InvokeWithoutArgs([this]() {
+        this->fake_upgrade_detector().BroadcastLevelChange(
+            UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
+      }));
+  RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  // Severe is ignored.
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And closed if the level drops back to none.
@@ -244,20 +255,17 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
-  fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
-  ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+  // Severe is ignored.
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
   fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
   fake_upgrade_detector().BroadcastLevelChange(
-      UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
+      UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And closed if the level drops back to none.
