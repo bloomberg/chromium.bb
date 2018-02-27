@@ -847,6 +847,10 @@ test("content_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
     "//build/config/compiler:no_size_t_to_int_warning",
