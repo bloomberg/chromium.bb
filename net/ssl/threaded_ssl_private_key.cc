@@ -18,12 +18,12 @@ namespace net {
 namespace {
 
 void DoCallback(const base::WeakPtr<ThreadedSSLPrivateKey>& key,
-                const ThreadedSSLPrivateKey::SignCallback& callback,
+                SSLPrivateKey::SignCallback callback,
                 std::vector<uint8_t>* signature,
                 Error error) {
   if (!key)
     return;
-  callback.Run(error, *signature);
+  std::move(callback).Run(error, *signature);
 }
 
 }  // anonymous namespace
@@ -62,15 +62,15 @@ std::vector<uint16_t> ThreadedSSLPrivateKey::GetAlgorithmPreferences() {
 
 void ThreadedSSLPrivateKey::Sign(uint16_t algorithm,
                                  base::span<const uint8_t> input,
-                                 const SSLPrivateKey::SignCallback& callback) {
+                                 SSLPrivateKey::SignCallback callback) {
   std::vector<uint8_t>* signature = new std::vector<uint8_t>;
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&ThreadedSSLPrivateKey::Core::Sign, core_, algorithm,
-                 std::vector<uint8_t>(input.begin(), input.end()),
-                 base::Unretained(signature)),
-      base::Bind(&DoCallback, weak_factory_.GetWeakPtr(), callback,
-                 base::Owned(signature)));
+      base::BindOnce(&ThreadedSSLPrivateKey::Core::Sign, core_, algorithm,
+                     std::vector<uint8_t>(input.begin(), input.end()),
+                     base::Unretained(signature)),
+      base::BindOnce(&DoCallback, weak_factory_.GetWeakPtr(),
+                     std::move(callback), base::Owned(signature)));
 }
 
 ThreadedSSLPrivateKey::~ThreadedSSLPrivateKey() = default;

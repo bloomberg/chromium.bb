@@ -30,7 +30,8 @@ namespace net {
 class NET_EXPORT SSLPrivateKey
     : public base::RefCountedThreadSafe<SSLPrivateKey> {
  public:
-  using SignCallback = base::Callback<void(Error, const std::vector<uint8_t>&)>;
+  using SignCallback =
+      base::OnceCallback<void(Error, const std::vector<uint8_t>&)>;
 
   SSLPrivateKey() {}
 
@@ -44,7 +45,7 @@ class NET_EXPORT SSLPrivateKey
   // |callback| with the signature or an error code if the operation failed.
   virtual void Sign(uint16_t algorithm,
                     base::span<const uint8_t> input,
-                    const SignCallback& callback) = 0;
+                    SignCallback callback) = 0;
 
   // Returns the default signature algorithm preferences for the specified key
   // type, which should be a BoringSSL |EVP_PKEY_*| constant. RSA keys which use

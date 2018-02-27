@@ -23,11 +23,11 @@ class SignRequests {
   // Returns the id of the new request. The returned request id is specific to
   // the given extension.
   int AddRequest(const std::string& extension_id,
-                 const net::SSLPrivateKey::SignCallback& callback);
+                 net::SSLPrivateKey::SignCallback callback);
 
   // Returns false if no request with the given id for |extension_id|
   // could be found. Otherwise removes the request and sets |callback| to the
-  // callback that was provided with AddRequest(). |callback| may be a nullptr.
+  // callback that was provided with AddRequest().
   bool RemoveRequest(const std::string& extension_id,
                      int request_id,
                      net::SSLPrivateKey::SignCallback* callback);
@@ -41,7 +41,7 @@ class SignRequests {
   // Holds state of all sign requests to a single extension.
   struct RequestsState {
     RequestsState();
-    RequestsState(const RequestsState& other);
+    RequestsState(RequestsState&& other);
     ~RequestsState();
 
     // Maps from request id to the SignCallback that must be called with the

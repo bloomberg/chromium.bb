@@ -11,8 +11,7 @@ namespace certificate_provider {
 
 SignRequests::RequestsState::RequestsState() {}
 
-SignRequests::RequestsState::RequestsState(const RequestsState& other) =
-    default;
+SignRequests::RequestsState::RequestsState(RequestsState&& other) = default;
 
 SignRequests::RequestsState::~RequestsState() {}
 
@@ -21,10 +20,10 @@ SignRequests::SignRequests() {}
 SignRequests::~SignRequests() {}
 
 int SignRequests::AddRequest(const std::string& extension_id,
-                             const net::SSLPrivateKey::SignCallback& callback) {
+                             net::SSLPrivateKey::SignCallback callback) {
   RequestsState& state = extension_to_requests_[extension_id];
   const int request_id = state.next_free_id++;
-  state.pending_requests[request_id] = callback;
+  state.pending_requests[request_id] = std::move(callback);
   return request_id;
 }
 
@@ -38,8 +37,7 @@ bool SignRequests::RemoveRequest(const std::string& extension_id,
   if (it == pending.end())
     return false;
 
-  if (callback)
-    *callback = it->second;
+  *callback = std::move(it->second);
   pending.erase(it);
   return true;
 }
@@ -47,9 +45,8 @@ bool SignRequests::RemoveRequest(const std::string& extension_id,
 std::vector<net::SSLPrivateKey::SignCallback> SignRequests::RemoveAllRequests(
     const std::string& extension_id) {
   std::vector<net::SSLPrivateKey::SignCallback> callbacks;
-  for (const auto& entry :
-       extension_to_requests_[extension_id].pending_requests) {
-    callbacks.push_back(entry.second);
+  for (auto& entry : extension_to_requests_[extension_id].pending_requests) {
+    callbacks.push_back(std::move(entry.second));
   }
   extension_to_requests_.erase(extension_id);
   return callbacks;

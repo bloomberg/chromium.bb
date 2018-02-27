@@ -61,7 +61,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
   std::vector<uint16_t> GetAlgorithmPreferences() override;
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
-            const SignCallback& callback) override;
+            SignCallback callback) override;
 
  private:
   ~ThreadedSSLPrivateKey() override;

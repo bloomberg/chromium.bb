@@ -4,6 +4,7 @@
 
 #include "net/ssl/ssl_client_auth_cache.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "net/cert/x509_certificate.h"
@@ -25,7 +26,7 @@ class MockSSLPrivateKey : public SSLPrivateKey {
 
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
-            const SignCallback& callback) override {
+            SignCallback callback) override {
     NOTIMPLEMENTED();
   }
 
