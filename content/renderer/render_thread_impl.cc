@@ -2481,10 +2481,8 @@ void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
 void RenderThreadImpl::ClearMemory() {
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
-    // Purge Skia font cache, by setting it to 0 and then again to the
-    // previous limit.
-    size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
-    SkGraphics::SetFontCacheLimit(font_cache_limit);
+    // Purge Skia font cache, resource cache, and image filter.
+    SkGraphics::PurgeAllCaches();
   }
 }
 
