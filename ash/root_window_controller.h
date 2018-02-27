@@ -230,11 +230,15 @@ class ASH_EXPORT RootWindowController {
   // Shows a context menu at the |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
+  void HideContextMenu();
 
   // Called when the login status changes after login (such as lock/unlock).
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RootWindowControllerTest,
+                           ContextMenuDisappearsInTabletMode);
+
   // TODO(sky): remove this. Temporary during ash-mus unification.
   // http://crbug.com/671246.
   friend class WindowManager;

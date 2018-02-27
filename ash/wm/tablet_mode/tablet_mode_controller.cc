@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
@@ -169,6 +170,12 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
   bool is_enabled = !!tablet_mode_window_manager_.get();
   if (should_enable == is_enabled)
     return;
+
+  // Hide the context menu on entering tablet mode to prevent users from
+  // accessing forbidden options. Hide the context menu on exiting tablet mode
+  // to match behaviors.
+  for (auto* root_window : Shell::Get()->GetAllRootWindows())
+    RootWindowController::ForWindow(root_window)->HideContextMenu();
 
   if (should_enable) {
     tablet_mode_window_manager_.reset(new TabletModeWindowManager());
