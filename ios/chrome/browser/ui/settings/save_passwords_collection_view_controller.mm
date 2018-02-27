@@ -165,9 +165,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
   ReauthenticationModule* reauthenticationModule_;
-  // Boolean containing whether the export button and functionality are enabled
-  // or not.
-  BOOL exportEnabled_;
+  // Boolean containing whether the export operation is ready. This implies that
+  // the exporter is idle and there is at least one saved passwords to export.
+  BOOL exportReady_;
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* preparingPasswordsAlert_;
@@ -500,13 +500,24 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     return;
   if (!savedForms_.empty() &&
       self.passwordExporter.exportState == ExportState::IDLE) {
+    exportReady_ = YES;
+    if (![self.editor isEditing]) {
+      [self setExportPasswordsButtonEnabled:YES];
+    }
+  } else {
+    exportReady_ = NO;
+    [self setExportPasswordsButtonEnabled:NO];
+  }
+}
+
+- (void)setExportPasswordsButtonEnabled:(BOOL)enabled {
+  if (enabled) {
+    DCHECK(exportReady_ && ![self.editor isEditing]);
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint900];
     exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitButton;
-    exportEnabled_ = YES;
   } else {
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint500];
     exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitNotEnabled;
-    exportEnabled_ = NO;
   }
   [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
 }
@@ -588,7 +599,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                 [model sectionIdentifierForSection:indexPath.section]);
       DCHECK(base::FeatureList::IsEnabled(
           password_manager::features::kPasswordExport));
-      if (exportEnabled_) {
+      if (exportReady_) {
         [self startPasswordsExportFlow];
       }
       break;
@@ -612,12 +623,16 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:NO];
+  [self setExportPasswordsButtonEnabled:NO];
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:YES];
+  if (exportReady_) {
+    [self setExportPasswordsButtonEnabled:YES];
+  }
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
