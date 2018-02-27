@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_client.h"
 
@@ -93,8 +94,22 @@ void FakeGCMDriverForInstanceID::DeleteToken(
     const std::string& authorized_entity,
     const std::string& scope,
     const DeleteTokenCallback& callback) {
-  std::string key = app_id + authorized_entity + scope;
-  tokens_.erase(key);
+  std::string key_prefix = app_id;
+
+  // Calls to InstanceID::DeleteID() will end up deleting the token for a given
+  // |app_id| with both |authorized_entity| and |scope| set to "*", meaning that
+  // all data has to be deleted. Do a prefix search to emulate this behaviour.
+  if (authorized_entity != "*")
+    key_prefix += authorized_entity;
+  if (scope != "*")
+    key_prefix += scope;
+
+  for (auto iter = tokens_.begin(); iter != tokens_.end();) {
+    if (base::StartsWith(iter->first, key_prefix, base::CompareCase::SENSITIVE))
+      iter = tokens_.erase(iter);
+    else
+      iter++;
+  }
 
   last_deletetoken_app_id_ = app_id;
 

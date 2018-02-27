@@ -119,7 +119,7 @@ bool GCMRegistrationInfo::Deserialize(const std::string& serialized_key,
     return false;
   // Note that it's valid for pos_hash to be std::string::npos.
   size_t pos_hash = serialized_value.find(kSerializedValidationTimeSeparator);
-  bool has_timestamp = (pos_hash != std::string::npos);
+  bool has_timestamp = pos_hash != std::string::npos;
 
   std::string senders = serialized_value.substr(0, pos_equals);
   std::string registration_id_str, last_validated_str;

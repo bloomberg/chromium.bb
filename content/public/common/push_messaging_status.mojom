@@ -137,12 +137,17 @@ enum PushRegistrationStatus {
   // Registration failed because the renderer was shut down.
   RENDERER_SHUTDOWN = 15,
 
+  // Registration was successful for a subscription that was already known by
+  // the cache, but the push service returned a new subscription. This may
+  // happen when a subscription is invalidated by the push service.
+  SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE = 16,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update LAST below.
 
-  LAST = RENDERER_SHUTDOWN
+  LAST = SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
 };
 
 // Push unregistration reason for reporting in UMA. Enum values can be added,

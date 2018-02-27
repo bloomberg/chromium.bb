@@ -36875,6 +36875,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Mismatched sender id"/>
   <int value="14" label="Storage corrupt"/>
   <int value="15" label="Renderer shutdown"/>
+  <int value="16" label="Successful - cached, but invalidated on server"/>
 </enum>
 
 <enum name="PushUnregistrationReason">

@@ -28,6 +28,8 @@ const char* PushRegistrationStatusToString(
     mojom::PushRegistrationStatus status) {
   switch (status) {
     case mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE:
+    case mojom::PushRegistrationStatus::
+        SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE:
       return "Registration successful - from push service";
 
     case mojom::PushRegistrationStatus::NO_SERVICE_WORKER:
@@ -108,6 +110,8 @@ blink::WebPushError PushRegistrationStatusToWebPushError(
       error_type = blink::WebPushError::kErrorTypeInvalidState;
       break;
     case mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE:
+    case mojom::PushRegistrationStatus::
+        SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE:
     case mojom::PushRegistrationStatus::NO_SERVICE_WORKER:
     case mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE:
     case mojom::PushRegistrationStatus::LIMIT_REACHED:
@@ -211,6 +215,8 @@ void PushProvider::DidSubscribe(
   DCHECK(callbacks);
 
   if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
+      status == mojom::PushRegistrationStatus::
+                    SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
       status == mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
     DCHECK(endpoint);
     DCHECK(options);
