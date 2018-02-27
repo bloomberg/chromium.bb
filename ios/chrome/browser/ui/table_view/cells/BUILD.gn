@@ -6,6 +6,8 @@ source_set("cells") {
   sources = [
     "table_view_item.h",
     "table_view_item.mm",
+    "table_view_text_item.h",
+    "table_view_text_item.mm",
     "table_view_url_item.h",
     "table_view_url_item.mm",
   ]
@@ -22,6 +24,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "table_view_item_unittest.mm",
+    "table_view_text_item_unittest.mm",
     "table_view_url_item_unittest.mm",
   ]
 

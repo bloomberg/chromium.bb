@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
@@ -14,11 +15,13 @@
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierURL = kSectionIdentifierEnumZero,
+  SectionIdentifierText = kSectionIdentifierEnumZero,
+  SectionIdentifierURL,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeURLNoMetadata = kItemTypeEnumZero,
+  ItemTypeText = kItemTypeEnumZero,
+  ItemTypeURLNoMetadata,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
 };
@@ -45,7 +48,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
 
   TableViewModel* model = self.tableViewModel;
+  [model addSectionWithIdentifier:SectionIdentifierText];
   [model addSectionWithIdentifier:SectionIdentifierURL];
+
+  TableViewTextItem* textItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeText];
+  textItem.text = @"Simple Text Cell";
+  [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewURLItem* item =
       [[TableViewURLItem alloc] initWithType:ItemTypeURLNoMetadata];
