@@ -2203,6 +2203,7 @@ test("unit_tests") {
     "../browser/android/shortcut_info_unittest.cc",
     "../browser/android/signin/signin_manager_android_unittest.cc",
     "../browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc",
+    "../browser/android/vr/vr_usage_monitor_unittest.cc",
     "../browser/android/webapk/webapk_icon_hasher_unittest.cc",
     "../browser/android/webapk/webapk_installer_unittest.cc",
     "../browser/android/webapk/webapk_web_manifest_checker_unittest.cc",

@@ -62,7 +62,7 @@ void LogStatus(Mode mode, ComponentStatus status) {
       UMA_HISTOGRAM_ENUMERATION(kStatusVrBrowsing, status,
                                 ComponentStatus::kCount);
       return;
-    case Mode::kWebVr:
+    case Mode::kWebXrVrPresentation:
       UMA_HISTOGRAM_ENUMERATION(kStatusWebVr, status, ComponentStatus::kCount);
       return;
     default:
@@ -77,7 +77,7 @@ void LogLatency(Mode mode, const base::TimeDelta& latency) {
       UMA_HISTOGRAM_CUSTOM_TIMES(kLatencyVrBrowsing, latency, kMinLatency,
                                  kMaxLatency, kLatencyBucketCount);
       return;
-    case Mode::kWebVr:
+    case Mode::kWebXrVrPresentation:
       UMA_HISTOGRAM_CUSTOM_TIMES(kLatencyWebVr, latency, kMinLatency,
                                  kMaxLatency, kLatencyBucketCount);
       return;
@@ -100,7 +100,7 @@ void LogConnectionType(Mode mode,
           kNetworkConnectionTypeVrBrowsing, type,
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
       return;
-    case Mode::kWebVr:
+    case Mode::kWebXrVrPresentation:
       UMA_HISTOGRAM_ENUMERATION(
           kNetworkConnectionTypeWebVr, type,
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
@@ -137,7 +137,7 @@ void MetricsHelper::OnComponentReady(const base::Version& version) {
   component_ready_ = true;
   auto now = base::TimeTicks::Now();
   LogLatencyIfWaited(Mode::kVrBrowsing, now);
-  LogLatencyIfWaited(Mode::kWebVr, now);
+  LogLatencyIfWaited(Mode::kWebXrVrPresentation, now);
   OnComponentUpdated(AssetsComponentUpdateStatus::kSuccess, version);
 
   if (!logged_ready_duration_on_component_register_) {
@@ -199,7 +199,7 @@ base::Optional<base::TimeTicks>& MetricsHelper::GetEnterTime(Mode mode) {
       return enter_vr_time_;
     case Mode::kVrBrowsing:
       return enter_vr_browsing_time_;
-    case Mode::kWebVr:
+    case Mode::kWebXrVrPresentation:
       return enter_web_vr_time_;
     default:
       NOTIMPLEMENTED();

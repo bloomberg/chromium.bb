@@ -2887,6 +2887,14 @@ be describing additional metrics about the same event.
     Records properties of page use in XR, including VR browsing and WebXR
     presentation.
   </summary>
+  <metric name="Duration">
+    <summary>
+      The approximate amount of time the user spends on a page in XR in seconds.
+      Times are reported accurately when low, for example, under a minute, and
+      get rounded to minutes and then hours as they get larger. This is done by
+      SessionTracker::GetRoundedDurationInSeconds.
+    </summary>
+  </metric>
   <metric name="EnteredFullscreen">
     <summary>
       A boolean that is set to 1 if the user requested fullscreen while in XR on
@@ -2895,9 +2903,23 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="TimeOnPage">
     <summary>
-      The aproximate amount of time the user spends on a page in XR in seconds.
+      Deprecated.
+    </summary>
+  </metric>
+</event>
+
+<event name="XR.WebXR.PresentationSession">
+  <owner>offenwanger@chromium.org</owner>
+  <summary>
+    Records data for a presentation session, where WebXR is running an exclusive
+    presentation to some device.
+  </summary>
+  <metric name="Duration">
+    <summary>
+      The approximate amount of time the user spends in presentation in seconds.
       Times are reported accurately when low, for example, under a minute, and
-      get rounded to minutes and then hours as they get larger.
+      get rounded to minutes and then hours as they get larger.  This is done by
+      SessionTracker::GetRoundedDurationInSeconds.
     </summary>
   </metric>
 </event>

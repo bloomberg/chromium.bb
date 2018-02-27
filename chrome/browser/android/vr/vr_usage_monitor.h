@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace vr {
@@ -46,6 +47,53 @@ class SessionTimer {
   DISALLOW_COPY_AND_ASSIGN(SessionTimer);
 };
 
+// SessionTracker tracks UKM data for sessions and sends the data upon request.
+template <class T>
+class SessionTracker {
+ public:
+  explicit SessionTracker(std::unique_ptr<T> entry)
+      : ukm_entry_(std::move(entry)),
+        start_time_(base::Time::Now()),
+        stop_time_(base::Time::Now()) {}
+  virtual ~SessionTracker() {}
+  T* ukm_entry() { return ukm_entry_.get(); }
+  void SetSessionEnd(base::Time stop_time) { stop_time_ = stop_time; }
+
+  int GetRoundedDurationInSeconds() {
+    if (start_time_ > stop_time_) {
+      // Return negative one to indicate an invalid value was recorded.
+      return -1;
+    }
+
+    base::TimeDelta duration = stop_time_ - start_time_;
+
+    if (duration.InHours() > 1) {
+      return duration.InHours() * 3600;
+    } else if (duration.InMinutes() > 10) {
+      return (duration.InMinutes() / 10) * 10 * 60;
+    } else if (duration.InSeconds() > 60) {
+      return duration.InMinutes() * 60;
+    } else {
+      return duration.InSeconds();
+    }
+  }
+
+  void RecordEntry() {
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+    DCHECK(ukm_recorder);
+
+    ukm_entry_->Record(ukm_recorder);
+  }
+
+ protected:
+  std::unique_ptr<T> ukm_entry_;
+
+  base::Time start_time_;
+  base::Time stop_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionTracker);
+};
+
 // This class is not thread-safe and must only be used from the main thread.
 class VrMetricsHelper : public content::WebContentsObserver {
  public:
@@ -79,11 +127,12 @@ class VrMetricsHelper : public content::WebContentsObserver {
   std::unique_ptr<SessionTimer> mode_timer_;
   std::unique_ptr<SessionTimer> session_timer_;
 
-  Mode mode_ = Mode::kNoVr;
+  std::unique_ptr<SessionTracker<ukm::builders::XR_PageSession>>
+      page_session_tracker_;
+  std::unique_ptr<SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>
+      presentation_session_tracker_;
 
-  // The last collected source id
-  ukm::SourceId last_source_id_;
-  base::Time time_on_page_start_;
+  Mode mode_ = Mode::kNoVr;
 
   // state that gets translated into vr_mode:
   bool is_fullscreen_ = false;
