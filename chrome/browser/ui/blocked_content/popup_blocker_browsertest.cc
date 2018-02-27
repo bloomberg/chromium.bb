@@ -370,7 +370,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
 
   tester.ExpectBucketCount(
       kPopupActions,
-      static_cast<int>(PopupBlockerTabHelper::Action::kClickedThrough), 1);
+      static_cast<int>(PopupBlockerTabHelper::Action::kClickedThroughNoGesture),
+      1);
 
   // Whitelist the site and navigate again.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())

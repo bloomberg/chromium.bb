@@ -19,7 +19,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -434,6 +434,46 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   // Popup UI should not be shown.
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
+                       ShowBlockedPopup) {
+  base::HistogramTester tester;
+
+  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  ConfigureAsAbusive(a_url);
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool opened_window = false;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_FALSE(opened_window);
+
+  // Make sure the popup UI was shown.
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  // Click through.
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  popup_blocker->ShowBlockedPopup(
+      popup_blocker->GetBlockedPopupRequests().begin()->first,
+      WindowOpenDisposition::NEW_BACKGROUND_TAB);
+
+  const char kPopupActions[] = "ContentSettings.Popups.BlockerActions";
+  tester.ExpectBucketCount(
+      kPopupActions,
+      static_cast<int>(PopupBlockerTabHelper::Action::kClickedThroughAbusive),
+      1);
+
+  navigation_observer.Wait();
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,

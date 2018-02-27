@@ -35213,7 +35213,8 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PopupBlockerAction">
   <int value="0" label="Popup initiated"/>
   <int value="1" label="Popup blocked"/>
-  <int value="2" label="Popup clicked through"/>
+  <int value="2" label="Popup clicked through (no gesture)"/>
+  <int value="3" label="Popup clicked through (abusive)"/>
 </enum>
 
 <enum name="Ports">
