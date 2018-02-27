@@ -98,15 +98,15 @@ size_t GetDailyQuotaForTrigger(
 
 }  // namespace
 
-TriggerThrottler::TriggerThrottler() : clock_(new base::DefaultClock()) {
+TriggerThrottler::TriggerThrottler()
+    : clock_(base::DefaultClock::GetInstance()) {
   ParseTriggerTypeAndQuotaParam(&trigger_type_and_quota_list_);
 }
 
 TriggerThrottler::~TriggerThrottler() {}
 
-void TriggerThrottler::SetClockForTesting(
-    std::unique_ptr<base::Clock> test_clock) {
-  clock_ = std::move(test_clock);
+void TriggerThrottler::SetClockForTesting(base::Clock* test_clock) {
+  clock_ = test_clock;
 }
 
 bool TriggerThrottler::TriggerCanFire(const TriggerType trigger_type) const {

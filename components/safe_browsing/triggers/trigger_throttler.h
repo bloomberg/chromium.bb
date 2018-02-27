@@ -53,7 +53,7 @@ class TriggerThrottler {
   void TriggerFired(TriggerType trigger_type);
 
  protected:
-  void SetClockForTesting(std::unique_ptr<base::Clock> test_clock);
+  void SetClockForTesting(base::Clock* test_clock);
 
  private:
   friend class TriggerThrottlerTest;
@@ -62,7 +62,7 @@ class TriggerThrottler {
   void CleanupOldEvents();
 
   // Can be set for testing.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Stores each trigger type that fired along with the timestamps of when it
   // fired.

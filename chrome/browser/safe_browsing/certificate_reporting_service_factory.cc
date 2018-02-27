@@ -46,7 +46,7 @@ void CertificateReportingServiceFactory::SetReportEncryptionParamsForTesting(
 }
 
 void CertificateReportingServiceFactory::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
+    base::Clock* clock) {
   clock_ = std::move(clock);
 }
 
@@ -71,7 +71,7 @@ CertificateReportingServiceFactory::CertificateReportingServiceFactory()
           BrowserContextDependencyManager::GetInstance()),
       server_public_key_(nullptr),
       server_public_key_version_(0),
-      clock_(new base::DefaultClock()),
+      clock_(base::DefaultClock::GetInstance()),
       queued_report_ttl_(base::TimeDelta::FromSeconds(kMaxReportAgeInSeconds)),
       max_queued_report_count_(kMaxReportCountInQueue),
       service_reset_callback_(base::DoNothing()) {}
@@ -86,7 +86,7 @@ KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
       safe_browsing_service, safe_browsing_service->url_request_context(),
       static_cast<Profile*>(profile), server_public_key_,
       server_public_key_version_, max_queued_report_count_, queued_report_ttl_,
-      clock_.get(), service_reset_callback_);
+      clock_, service_reset_callback_);
 }
 
 content::BrowserContext*

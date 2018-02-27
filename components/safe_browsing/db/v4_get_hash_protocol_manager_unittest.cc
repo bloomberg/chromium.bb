@@ -103,9 +103,8 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   }
 
   void SetTestClock(base::Time now, V4GetHashProtocolManager* pm) {
-    base::SimpleTestClock* clock = new base::SimpleTestClock();
-    clock->SetNow(now);
-    pm->SetClockForTests(base::WrapUnique(clock));
+    clock_.SetNow(now);
+    pm->SetClockForTests(&clock_);
   }
 
   void ValidateGetV4ApiResults(const ThreatMetadata& expected_md,
@@ -155,6 +154,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   }
 
   bool callback_called_;
+  base::SimpleTestClock clock_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

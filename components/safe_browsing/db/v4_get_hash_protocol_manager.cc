@@ -242,7 +242,7 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0),
-      clock_(new base::DefaultClock()) {
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK(!stores_to_check.empty());
   std::set<PlatformType> platform_types;
   std::set<ThreatEntryType> threat_entry_types;
@@ -708,9 +708,8 @@ void V4GetHashProtocolManager::ResetGetHashErrors() {
   gethash_back_off_mult_ = 1;
 }
 
-void V4GetHashProtocolManager::SetClockForTests(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void V4GetHashProtocolManager::SetClockForTests(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void V4GetHashProtocolManager::UpdateCache(
