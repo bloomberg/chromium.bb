@@ -89,9 +89,7 @@ def arguments_context(arguments):
             'v8_name': 'v8_%s' % argument.name,
         }
 
-    argument_declarations = [
-        'ScriptWrappable* callback_this_value',
-    ]
+    argument_declarations = ['ScriptWrappable* callback_this_value']
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
         for argument in arguments)

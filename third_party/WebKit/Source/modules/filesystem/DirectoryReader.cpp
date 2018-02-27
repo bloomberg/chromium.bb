@@ -41,7 +41,7 @@ namespace blink {
 namespace {
 
 void RunEntriesCallback(V8EntriesCallback* callback, EntryHeapVector* entries) {
-  callback->handleEvent(*entries);
+  callback->InvokeAndReportException(nullptr, *entries);
 }
 
 }  // namespace
@@ -135,7 +135,7 @@ void DirectoryReader::AddEntries(const EntryHeapVector& entries) {
   if (V8EntriesCallback* entries_callback = entries_callback_.Release()) {
     EntryHeapVector entries;
     entries.swap(entries_);
-    entries_callback->handleEvent(entries);
+    entries_callback->InvokeAndReportException(nullptr, entries);
   }
 }
 
@@ -143,7 +143,8 @@ void DirectoryReader::OnError(FileError::ErrorCode error) {
   error_ = error;
   entries_callback_ = nullptr;
   if (V8ErrorCallback* error_callback = error_callback_.Release()) {
-    error_callback->handleEvent(FileError::CreateDOMException(error_));
+    error_callback->InvokeAndReportException(
+        nullptr, FileError::CreateDOMException(error_));
   }
 }
 

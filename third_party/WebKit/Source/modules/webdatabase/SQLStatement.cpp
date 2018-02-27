@@ -49,7 +49,7 @@ void SQLStatement::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
 
 bool SQLStatement::OnSuccessV8Impl::OnSuccess(SQLTransaction* transaction,
                                               SQLResultSet* result_set) {
-  return callback_->handleEvent(transaction, result_set);
+  return callback_->handleEvent(nullptr, transaction, result_set);
 }
 
 void SQLStatement::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
@@ -59,7 +59,7 @@ void SQLStatement::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
 
 bool SQLStatement::OnErrorV8Impl::OnError(SQLTransaction* transaction,
                                           SQLError* error) {
-  return callback_->handleEvent(transaction, error);
+  return callback_->handleEvent(nullptr, transaction, error);
 }
 
 SQLStatement* SQLStatement::Create(Database* database,

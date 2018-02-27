@@ -39,8 +39,10 @@
 
 namespace blink {
 
-bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
-                                              SQLError* error) {
+bool V8SQLStatementErrorCallback::handleEvent(
+    ScriptWrappable* callback_this_value,
+    SQLTransaction* transaction,
+    SQLError* error) {
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return true;
   }
