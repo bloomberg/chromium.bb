@@ -149,7 +149,7 @@ static_library("utility") {
     ]
     deps += [
       "//ash",
-      "//ash/autoclick/mus:lib",
+      "//ash/components/autoclick:lib",
       "//ash/components/quick_launch:lib",
       "//ash/components/quick_launch/public/mojom",
       "//ash/touch_hud/mus:lib",

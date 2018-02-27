@@ -9,7 +9,7 @@
 
 #include "ash/accessibility/accessibility_highlight_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/autoclick/mus/public/mojom/autoclick.mojom.h"
+#include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
@@ -442,7 +442,7 @@ void AccessibilityController::UpdateAutoclickFromPref() {
     if (!connector_)  // Null in tests.
       return;
     mash::mojom::LaunchablePtr launchable;
-    connector_->BindInterface("accessibility_autoclick", &launchable);
+    connector_->BindInterface("autoclick_app", &launchable);
     launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
     return;
   }
@@ -463,7 +463,7 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
     if (!connector_)  // Null in tests.
       return;
     autoclick::mojom::AutoclickControllerPtr autoclick_controller;
-    connector_->BindInterface("accessibility_autoclick", &autoclick_controller);
+    connector_->BindInterface("autoclick_app", &autoclick_controller);
     autoclick_controller->SetAutoclickDelay(autoclick_delay_.InMilliseconds());
     return;
   }

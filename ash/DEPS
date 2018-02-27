@@ -42,6 +42,9 @@ include_rules = [
   # header required to launch the app.
   "-ash/components",
 
+  # Ash can talk to public interfaces for mini-apps.
+  "+ash/components/autoclick/public",
+
   # Ash sits above content. Exceptions live in //ash/content.
   "-content",
 

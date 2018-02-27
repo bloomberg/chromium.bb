@@ -49,8 +49,8 @@
       },
       "requires": {
         "*": [ "accessibility", "app" ],
-        "accessibility_autoclick": [
-          "ash:autoclick",
+        "autoclick_app": [
+          "chromeos:autoclick",
           "mash:launchable"
         ],
         "ash_pref_connector": [ "pref_connector" ],

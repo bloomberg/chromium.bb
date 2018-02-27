@@ -1,12 +1,12 @@
 {
-  "name": "accessibility_autoclick",
+  "name": "autoclick_app",
   "display_name": "Autoclick",
   "sandbox_type": "none",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
         "mash:launchable": [ "mash::mojom::Launchable" ],
-        "ash:autoclick": [ "ash::autoclick::mojom::AutoclickController" ]
+        "chromeos:autoclick": [ "autoclick::mojom::AutoclickController" ]
       },
       "requires": {
         "*": [ "app" ],
