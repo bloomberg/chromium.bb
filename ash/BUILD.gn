@@ -2080,7 +2080,7 @@ source_set("mash_unittests") {
 
   data_deps = [
     ":ash_service",
-    "//ash/components/quick_launch",
+    "//ash/components/quick_launch:quick_launch_app",
     "//services/ui/ime/test_ime_driver",
   ]
 }

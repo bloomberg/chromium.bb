@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/components/quick_launch/quick_launch.h"
+#include "ash/components/quick_launch/quick_launch_application.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -29,11 +29,12 @@
 #include "url/gurl.h"
 
 namespace quick_launch {
+namespace {
 
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(QuickLaunch* quick_launch,
+  QuickLaunchUI(QuickLaunchApplication* quick_launch,
                 service_manager::Connector* connector,
                 catalog::mojom::CatalogPtr catalog)
       : quick_launch_(quick_launch),
@@ -84,6 +85,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     }
     return false;
   }
+
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override {
     // Don't keep making a suggestion if the user didn't like what we offered.
@@ -138,7 +140,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                                   : mash::mojom::LaunchMode::REUSE);
   }
 
-  QuickLaunch* quick_launch_;
+  QuickLaunchApplication* quick_launch_;
   service_manager::Connector* connector_;
   views::Textfield* prompt_;
   catalog::mojom::CatalogPtr catalog_;
@@ -148,25 +150,27 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
 
-QuickLaunch::QuickLaunch() {
-  registry_.AddInterface<::mash::mojom::Launchable>(
-      base::BindRepeating(&QuickLaunch::Create, base::Unretained(this)));
+}  // namespace
+
+QuickLaunchApplication::QuickLaunchApplication() {
+  registry_.AddInterface<::mash::mojom::Launchable>(base::BindRepeating(
+      &QuickLaunchApplication::Create, base::Unretained(this)));
 }
 
-QuickLaunch::~QuickLaunch() {
+QuickLaunchApplication::~QuickLaunchApplication() {
   while (!windows_.empty())
     windows_.front()->CloseNow();
 }
 
-void QuickLaunch::RemoveWindow(views::Widget* window) {
+void QuickLaunchApplication::RemoveWindow(views::Widget* window) {
   auto it = std::find(windows_.begin(), windows_.end(), window);
   DCHECK(it != windows_.end());
   windows_.erase(it);
-  if (windows_.empty() && base::RunLoop::IsRunningOnCurrentThread())
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  if (windows_.empty())
+    context()->QuitNow();
 }
 
-void QuickLaunch::OnStart() {
+void QuickLaunchApplication::OnStart() {
   // If AuraInit was unable to initialize there is no longer a peer connection.
   // The ServiceManager is in the process of shutting down, however we haven't
   // been notified yet. Close our ServiceContext and shutdown.
@@ -183,14 +187,15 @@ void QuickLaunch::OnStart() {
   Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::MAKE_NEW);
 }
 
-void QuickLaunch::OnBindInterface(
+void QuickLaunchApplication::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void QuickLaunch::Launch(uint32_t what, mash::mojom::LaunchMode how) {
+void QuickLaunchApplication::Launch(uint32_t what,
+                                    mash::mojom::LaunchMode how) {
   bool reuse = how == mash::mojom::LaunchMode::REUSE ||
                how == mash::mojom::LaunchMode::DEFAULT;
   if (reuse && !windows_.empty()) {
@@ -208,7 +213,7 @@ void QuickLaunch::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void QuickLaunch::Create(::mash::mojom::LaunchableRequest request) {
+void QuickLaunchApplication::Create(::mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

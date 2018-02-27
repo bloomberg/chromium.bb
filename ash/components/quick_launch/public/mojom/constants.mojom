@@ -4,4 +4,4 @@
 
 module quick_launch.mojom;
 
-const string kServiceName = "quick_launch";
+const string kServiceName = "quick_launch_app";

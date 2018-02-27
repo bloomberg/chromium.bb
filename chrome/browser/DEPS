@@ -203,9 +203,6 @@ specific_include_rules = {
     "+ash/root_window_controller.h",
     "+ash/shell.h",
   ],
-  "mash_service_registry.cc": [
-    "+ash/components/quick_launch/quick_launch.h",
-  ],
   "display_info_provider_chromeos_unittest.cc": [
     "+ui/events/devices/touch_device_transform.h"
   ]

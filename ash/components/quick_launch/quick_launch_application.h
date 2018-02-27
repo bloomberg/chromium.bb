@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_
-#define ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#ifndef ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
+#define ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
 
 #include <memory>
 
@@ -20,11 +20,11 @@ class Widget;
 
 namespace quick_launch {
 
-class QuickLaunch : public service_manager::Service,
-                    public ::mash::mojom::Launchable {
+class QuickLaunchApplication : public service_manager::Service,
+                               public ::mash::mojom::Launchable {
  public:
-  QuickLaunch();
-  ~QuickLaunch() override;
+  QuickLaunchApplication();
+  ~QuickLaunchApplication() override;
 
   void RemoveWindow(views::Widget* window);
 
@@ -51,9 +51,9 @@ class QuickLaunch : public service_manager::Service,
 
   bool running_standalone_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(QuickLaunch);
+  DISALLOW_COPY_AND_ASSIGN(QuickLaunchApplication);
 };
 
 }  // namespace quick_launch
 
-#endif  // ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#endif  // ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_APPLICATION_H_
