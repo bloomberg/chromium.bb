@@ -377,7 +377,9 @@ Status LaunchDesktopChrome(URLRequestContextGetter* context_getter,
 
 #if defined(OS_POSIX)
   base::ScopedFD devnull;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch("verbose") &&
+      cmd_line->GetSwitchValueASCII("log-level") != "ALL") {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
     // users.
     devnull.reset(HANDLE_EINTR(open("/dev/null", O_WRONLY)));

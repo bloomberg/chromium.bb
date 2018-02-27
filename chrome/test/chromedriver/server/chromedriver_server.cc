@@ -256,9 +256,11 @@ int main(int argc, char *argv[]) {
         "adb-port=PORT", "adb server port",
         "log-path=FILE", "write server log to file instead of stderr, "
             "increases log level to INFO",
-        "verbose", "log verbosely",
+        "log-level=LEVEL", "set log level: ALL, DEBUG, INFO, WARNING, "
+            "SEVERE, OFF",
+        "verbose", "log verbosely (equivalent to --log-level=ALL)",
+        "silent", "log nothing (equivalent to --log-level=OFF)",
         "version", "print the version number and exit",
-        "silent", "log nothing",
         "url-base", "base URL path prefix for commands, e.g. wd/url",
         "port-server", "address of server to contact for reserving a port",
         "whitelisted-ips", "comma-separated whitelist of remote IPv4 addresses "
@@ -321,7 +323,8 @@ int main(int argc, char *argv[]) {
     whitelisted_ips = base::SplitString(
         whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
-  if (!cmd_line->HasSwitch("silent")) {
+  if (!cmd_line->HasSwitch("silent") &&
+      cmd_line->GetSwitchValueASCII("log-level") != "OFF") {
     printf("Starting ChromeDriver %s on port %u\n", kChromeDriverVersion, port);
     if (!allow_remote) {
       printf("Only local connections are allowed.\n");
