@@ -1383,7 +1383,8 @@ String InspectorDOMAgent::DocumentBaseURLString(Document* document) {
   return document->BaseURL().GetString();
 }
 
-static protocol::DOM::ShadowRootType GetShadowRootType(
+// static
+protocol::DOM::ShadowRootType InspectorDOMAgent::GetShadowRootType(
     ShadowRoot* shadow_root) {
   switch (shadow_root->GetType()) {
     case ShadowRootType::kUserAgent:

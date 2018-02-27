@@ -585,7 +585,8 @@ Tests DOMSnapshot.getSnapshot method.
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n    ",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "open"
     },
     {
       "nodeType": 1,
@@ -600,13 +601,15 @@ Tests DOMSnapshot.getSnapshot method.
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n      :host {\n        color: red;\n      }\n    ",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "open"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n    ",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "open"
     },
     {
       "nodeType": 1,
@@ -639,13 +642,15 @@ Tests DOMSnapshot.getSnapshot method.
       "nodeName": "#text",
       "nodeValue": "Hi!",
       "backendNodeId": "<number>",
-      "layoutNodeIndex": 30
+      "layoutNodeIndex": 30,
+      "shadowRootType": "open"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n  ",
-      "backendNodeId": "<number>"
+      "backendNodeId": "<number>",
+      "shadowRootType": "open"
     },
     {
       "nodeType": 3,
