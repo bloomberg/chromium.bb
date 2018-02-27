@@ -6,15 +6,19 @@
 
 #include <memory>
 
+#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/public/mojom/launchable.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
@@ -64,8 +68,11 @@ void FlagWarningTray::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   DCHECK_EQ(button_, sender);
 
-  // TODO(jamescook): Use NewWindowController to open about:flags. This will
-  // require a new mojo interface to chrome.
+  // Open the quick launch mojo mini-app to demonstrate that mini-apps work.
+  mash::mojom::LaunchablePtr launchable;
+  Shell::Get()->shell_delegate()->GetShellConnector()->BindInterface(
+      quick_launch::mojom::kServiceName, &launchable);
+  launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
 }
 
 void FlagWarningTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
