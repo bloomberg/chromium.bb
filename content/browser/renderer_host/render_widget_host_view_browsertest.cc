@@ -107,13 +107,10 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
   // Callback when using CopyFromSurface() API.
   void FinishCopyFromSurface(const base::Closure& quit_closure,
-                             const SkBitmap& bitmap,
-                             ReadbackResponse response) {
+                             const SkBitmap& bitmap) {
     ++callback_invoke_count_;
-    if (response == READBACK_SUCCESS) {
+    if (!bitmap.drawsNothing())
       ++frames_captured_;
-      EXPECT_FALSE(bitmap.empty());
-    }
     if (!quit_closure.is_null())
       quit_closure.Run();
   }
@@ -290,11 +287,8 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
     base::RunLoop run_loop;
     GetRenderWidgetHostView()->CopyFromSurface(
         gfx::Rect(), frame_size(),
-        // TODO(crbug/759310): This should be a OnceCallback.
-        base::BindRepeating(
-            &RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
-            base::Unretained(this), run_loop.QuitClosure()),
-        kN32_SkColorType);
+        base::BindOnce(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
 
     if (frames_captured())
@@ -322,9 +316,8 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
   base::RunLoop run_loop;
   GetRenderWidgetHostView()->CopyFromSurface(
       gfx::Rect(), frame_size(),
-      base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
-                 base::Unretained(this), run_loop.QuitClosure()),
-      kN32_SkColorType);
+      base::BindOnce(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
+                     base::Unretained(this), run_loop.QuitClosure()));
   shell()->web_contents()->Close();
   run_loop.Run();
 
@@ -335,18 +328,17 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     : public CompositingRenderWidgetHostViewBrowserTest {
  public:
   CompositingRenderWidgetHostViewBrowserTestTabCapture()
-      : readback_response_(READBACK_NO_RESPONSE),
+      : readback_result_(READBACK_NO_RESPONSE),
         allowable_error_(0),
         test_url_("data:text/html,<!doctype html>") {}
 
-  void ReadbackRequestCallbackTest(base::Closure quit_callback,
-                                   const SkBitmap& bitmap,
-                                   ReadbackResponse response) {
-    readback_response_ = response;
-    if (response != READBACK_SUCCESS) {
-      quit_callback.Run();
+  void VerifyResult(base::OnceClosure quit_callback, const SkBitmap& bitmap) {
+    if (bitmap.drawsNothing()) {
+      readback_result_ = READBACK_FAILED;
+      std::move(quit_callback).Run();
       return;
     }
+    readback_result_ = READBACK_SUCCESS;
 
     // Check that the |bitmap| contains cyan and/or yellow pixels.  This is
     // needed because the compositor will read back "blank" frames until the
@@ -375,8 +367,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       }
     }
     if (!contains_a_test_color) {
-      readback_response_ = READBACK_NO_TEST_COLORS;
-      quit_callback.Run();
+      readback_result_ = READBACK_NO_TEST_COLORS;
+      std::move(quit_callback).Run();
       return;
     }
 
@@ -387,8 +379,8 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     EXPECT_EQ(expected_bitmap.height(), bitmap.height());
     if (expected_bitmap.width() != bitmap.width() ||
         expected_bitmap.height() != bitmap.height()) {
-      readback_response_ = READBACK_INCORRECT_RESULT_SIZE;
-      quit_callback.Run();
+      readback_result_ = READBACK_INCORRECT_RESULT_SIZE;
+      std::move(quit_callback).Run();
       return;
     }
     EXPECT_EQ(expected_bitmap.colorType(), bitmap.colorType());
@@ -432,7 +424,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     }
     EXPECT_LT(fails, 10);
 
-    quit_callback.Run();
+    std::move(quit_callback).Run();
   }
 
   void SetAllowableError(int amount) { allowable_error_ = amount; }
@@ -511,7 +503,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 
       // Request readback.  The callbacks will examine the pixels in the
       // SkBitmap result if readback was successful.
-      readback_response_ = READBACK_NO_RESPONSE;
+      readback_result_ = READBACK_NO_RESPONSE;
       // Skia rendering can cause color differences, particularly in the
       // middle two columns.
       SetAllowableError(2);
@@ -519,20 +511,18 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
           gfx::Rect(output_size.width() / 2 - 1, 0, 2, output_size.height()));
 
       base::RunLoop run_loop;
-      const ReadbackRequestCallback callback =
-          // TODO(crbug/807843): This should be BindOnce.
-          base::BindRepeating(
-              &CompositingRenderWidgetHostViewBrowserTestTabCapture::
-                  ReadbackRequestCallbackTest,
-              base::Unretained(this), run_loop.QuitClosure());
-      rwhv->CopyFromSurface(copy_rect, output_size, callback, kN32_SkColorType);
+      rwhv->CopyFromSurface(
+          copy_rect, output_size,
+          base::BindOnce(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+                             VerifyResult,
+                         base::Unretained(this), run_loop.QuitClosure()));
       run_loop.Run();
 
       // If the readback operation did not provide a frame, log the reason
       // to aid in future debugging.  This information will also help determine
       // whether the implementation is broken, or a test bot is in a bad state.
       // clang-format off
-      switch (readback_response_) {
+      switch (readback_result_) {
         case READBACK_SUCCESS:
           break;
         #define CASE_LOG_READBACK_WARNING(enum_value)                    \
@@ -541,17 +531,15 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                          << attempt_count << ").  Reason: " #enum_value; \
             break
         CASE_LOG_READBACK_WARNING(READBACK_FAILED);
-        CASE_LOG_READBACK_WARNING(READBACK_SURFACE_UNAVAILABLE);
-        CASE_LOG_READBACK_WARNING(READBACK_BITMAP_ALLOCATION_FAILURE);
         CASE_LOG_READBACK_WARNING(READBACK_NO_TEST_COLORS);
         CASE_LOG_READBACK_WARNING(READBACK_INCORRECT_RESULT_SIZE);
         default:
           LOG(ERROR)
-              << "Invalid readback response value: " << readback_response_;
+              << "Invalid readback response value: " << readback_result_;
           NOTREACHED();
       }
       // clang-format on
-    } while (readback_response_ != READBACK_SUCCESS &&
+    } while (readback_result_ != READBACK_SUCCESS &&
              !testing::Test::HasFailure());
   }
 
@@ -571,10 +559,11 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   }
 
  protected:
-  // Additional ReadbackResponse enum values only used within this test module,
-  // to distinguish readback exception cases further.
-  enum ExtraReadbackResponsesForTest {
-    READBACK_NO_RESPONSE = -1337,
+  // An enum to distinguish between reasons for result verify failures.
+  enum ReadbackResult {
+    READBACK_NO_RESPONSE,
+    READBACK_SUCCESS,
+    READBACK_FAILED,
     READBACK_NO_TEST_COLORS,
     READBACK_INCORRECT_RESULT_SIZE,
   };
@@ -584,9 +573,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   }
 
  private:
-  // |readback_response_| is always a content::ReadbackResponse or
-  // ExtraReadbackResponsesForTest enum value.
-  int readback_response_;
+  ReadbackResult readback_result_;
   SkBitmap expected_copy_from_compositing_surface_bitmap_;
   int allowable_error_;
   gfx::Rect exclude_rect_;

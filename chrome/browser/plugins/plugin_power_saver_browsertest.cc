@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -28,7 +29,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/zoom/zoom_controller.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -226,11 +226,10 @@ bool SnapshotMatches(const base::FilePath& reference, const SkBitmap& bitmap) {
 void CompareSnapshotToReference(const base::FilePath& reference,
                                 bool* snapshot_matches,
                                 const base::Closure& done_cb,
-                                const SkBitmap& bitmap,
-                                content::ReadbackResponse response) {
+                                const SkBitmap& bitmap) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   DCHECK(snapshot_matches);
-  ASSERT_EQ(content::READBACK_SUCCESS, response);
+  ASSERT_FALSE(bitmap.drawsNothing());
 
   *snapshot_matches = SnapshotMatches(reference, bitmap);
 
@@ -387,13 +386,12 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     }
 
     bool snapshot_matches = false;
+    base::RunLoop run_loop;
     rwh->GetView()->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
-        base::Bind(&CompareSnapshotToReference, reference, &snapshot_matches,
-                   base::MessageLoop::QuitWhenIdleClosure()),
-        kN32_SkColorType);
-
-    content::RunMessageLoop();
+        base::BindOnce(&CompareSnapshotToReference, reference,
+                       &snapshot_matches, run_loop.QuitClosure()));
+    run_loop.Run();
 
     return snapshot_matches;
   }

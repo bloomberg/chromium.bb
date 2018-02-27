@@ -317,7 +317,7 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
   is_guest_transparent_ = guest->allow_transparency();
   return CaptureAsync(
       guest->web_contents(), image_details.get(),
-      base::Bind(
+      base::BindOnce(
           &WebViewInternalCaptureVisibleRegionFunction::CopyFromSurfaceComplete,
           this));
 }
@@ -346,8 +346,8 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
     FailureReason reason) {
   const char* reason_description = "internal error";
   switch (reason) {
-    case FAILURE_REASON_UNKNOWN:
-      reason_description = "unknown error";
+    case FAILURE_REASON_READBACK_FAILED:
+      reason_description = "image readback failed";
       break;
     case FAILURE_REASON_ENCODING_FAILED:
       reason_description = "encoding failed";

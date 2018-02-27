@@ -805,8 +805,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void OnSnapshotFromSurfaceReceived(int snapshot_id,
                                      int retry_count,
-                                     const SkBitmap& bitmap,
-                                     ReadbackResponse response);
+                                     const SkBitmap& bitmap);
 
   void OnSnapshotReceived(int snapshot_id, gfx::Image image);
 

@@ -48,17 +48,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   // The browser process should be allowed to make a CopyOutputRequest.
   bool did_receive_copy_result = false;
   base::RunLoop run_loop;
-  view->CopyFromSurface(
-      gfx::Rect(), gfx::Size(),
-      // TODO(crbug/759310): This should be a OnceCallback.
-      base::BindRepeating(
-          [](bool* success, base::OnceClosure quit_closure,
-             const SkBitmap& bitmap, ReadbackResponse response) {
-            *success = (response == READBACK_SUCCESS && bitmap.readyToDraw());
-            std::move(quit_closure).Run();
-          },
-          &did_receive_copy_result, run_loop.QuitClosure()),
-      kN32_SkColorType);
+  view->CopyFromSurface(gfx::Rect(), gfx::Size(),
+                        base::BindOnce(
+                            [](bool* success, base::OnceClosure quit_closure,
+                               const SkBitmap& bitmap) {
+                              *success = !bitmap.drawsNothing();
+                              std::move(quit_closure).Run();
+                            },
+                            &did_receive_copy_result, run_loop.QuitClosure()));
   run_loop.Run();
   ASSERT_TRUE(did_receive_copy_result);
 

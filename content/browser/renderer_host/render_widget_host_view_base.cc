@@ -164,10 +164,9 @@ bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
 void RenderWidgetHostViewBase::CopyFromSurface(
     const gfx::Rect& src_rect,
     const gfx::Size& output_size,
-    const ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   NOTIMPLEMENTED();
-  callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
+  std::move(callback).Run(SkBitmap());
 }
 
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {

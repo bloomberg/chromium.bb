@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -24,7 +23,6 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -78,9 +76,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // ProcessCompositorFrame, which is the appropriate time to request pixel
   // readback for the frame that is about to be drawn. Once called, the callback
   // pointer is released.
-  // TODO(wjmaclean): We should consider making this available in other view
-  // types, such as RenderWidgetHostViewAura.
-  void RegisterFrameSwappedCallback(std::unique_ptr<base::Closure> callback);
+  // TODO(crbug.com/787941): This should be removed because it doesn't work when
+  // VIZ display compositing is enabled. The public CopyFromSurface() API does
+  // not make guarantees that it will succeed before the first frame is
+  // composited.
+  void RegisterFrameSwappedCallback(base::OnceClosure callback);
 
   // TouchSelectionControllerClientManager::Observer implementation.
   void OnManagerWillDestroy(
@@ -93,10 +93,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void Focus() override;
   bool HasFocus() const override;
   bool IsSurfaceAvailableForCopy() const override;
-  void CopyFromSurface(const gfx::Rect& src_rect,
-                       const gfx::Size& output_size,
-                       const ReadbackRequestCallback& callback,
-                       const SkColorType color_type) override;
+  void CopyFromSurface(
+      const gfx::Rect& src_rect,
+      const gfx::Size& output_size,
+      base::OnceCallback<void(const SkBitmap&)> callback) override;
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
@@ -294,11 +294,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info);
 
-  void SubmitSurfaceCopyRequest(const gfx::Rect& src_subrect,
-                                const gfx::Size& dst_size,
-                                const ReadbackRequestCallback& callback,
-                                const SkColorType preferred_color_type);
-
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
   void DetachFromTouchSelectionClientManagerIfNecessary();
@@ -310,11 +305,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  using FrameSwappedCallbackList =
-      base::circular_deque<std::unique_ptr<base::Closure>>;
-  // Since frame-drawn callbacks are "fire once", we use base::circular_deque
-  // to make it convenient to swap() when processing the list.
-  FrameSwappedCallbackList frame_swapped_callbacks_;
+  std::vector<base::OnceClosure> frame_swapped_callbacks_;
 
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
   viz::FrameSinkId parent_frame_sink_id_;

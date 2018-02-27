@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.net.GURLUtils;
 
 import java.util.ArrayList;
@@ -201,14 +200,13 @@ public class ShareMenuActionHandler {
         if (blockingUri == null) return;
 
         // Start screenshot capture and notify the provider when it is ready.
-        ContentBitmapCallback callback = (bitmap, response) -> ShareHelper.saveScreenshotToDisk(
-                bitmap, mainActivity,
-                result -> {
-                    // Unblock the file once it is saved to disk.
-                    ChromeFileProvider.notifyFileReady(blockingUri, result);
-                });
+        ContentBitmapCallback callback =
+                (bitmap) -> ShareHelper.saveScreenshotToDisk(bitmap, mainActivity, result -> {
+            // Unblock the file once it is saved to disk.
+            ChromeFileProvider.notifyFileReady(blockingUri, result);
+        });
         if (sScreenshotCaptureSkippedForTesting) {
-            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+            callback.onFinishGetBitmap(null);
         } else {
             webContents.getContentBitmapAsync(0, 0, callback);
         }

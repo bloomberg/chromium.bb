@@ -600,9 +600,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @CalledByNative
-    private void onGetContentBitmapFinished(ContentBitmapCallback callback, Bitmap bitmap,
-            int response) {
-        callback.onFinishGetBitmap(bitmap, response);
+    private void onGetContentBitmapFinished(ContentBitmapCallback callback, Bitmap bitmap) {
+        callback.onFinishGetBitmap(bitmap);
     }
 
     @Override

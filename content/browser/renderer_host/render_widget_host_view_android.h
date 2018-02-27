@@ -27,7 +27,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
@@ -120,10 +119,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Size GetVisibleViewportSize() const override;
   gfx::Size GetPhysicalBackingSize() const override;
   bool IsSurfaceAvailableForCopy() const override;
-  void CopyFromSurface(const gfx::Rect& src_rect,
-                       const gfx::Size& output_size,
-                       const ReadbackRequestCallback& callback,
-                       const SkColorType color_type) override;
+  void CopyFromSurface(
+      const gfx::Rect& src_rect,
+      const gfx::Size& output_size,
+      base::OnceCallback<void(const SkBitmap&)> callback) override;
   bool DoBrowserControlsShrinkBlinkSize() const override;
   float GetTopControlsHeight() const override;
   float GetBottomControlsHeight() const override;
@@ -353,9 +352,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void EvictFrameIfNecessary();
 
   // DevTools ScreenCast support for Android WebView.
-  void SynchronousCopyContents(const gfx::Rect& src_subrect_dip,
-                               const gfx::Size& dst_size_in_pixel,
-                               const ReadbackRequestCallback& callback);
+  void SynchronousCopyContents(
+      const gfx::Rect& src_subrect_dip,
+      const gfx::Size& dst_size_in_pixel,
+      base::OnceCallback<void(const SkBitmap&)> callback);
 
   void DestroyDelegatedContent();
   void OnLostResources();

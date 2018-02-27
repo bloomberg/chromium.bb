@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "headless/lib/browser/headless_window_tree_host.h"
@@ -172,8 +171,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   void SendNeedsBeginFramesEvent(content::DevToolsAgentHostClient* client);
   void PendingFrameReadbackComplete(PendingFrame* pending_frame,
-                                    const SkBitmap& bitmap,
-                                    content::ReadbackResponse response);
+                                    const SkBitmap& bitmap);
 
   uint64_t begin_frame_source_id_ = viz::BeginFrameArgs::kManualSourceId;
   uint64_t begin_frame_sequence_number_ =

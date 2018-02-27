@@ -17,7 +17,6 @@
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -28,16 +27,13 @@ namespace {
 
 static size_t kFrameAreaLimit = 256000;
 
-void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap,
-    ReadbackResponse response) {
-  if (response != READBACK_SUCCESS)
+void FrameCaptured(base::TimeTicks timestamp, const SkBitmap& bitmap) {
+  if (bitmap.drawsNothing())
     return;
   if (DevToolsTraceableScreenshot::GetNumberOfInstances() >=
       DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots) {
     return;
   }
-  if (bitmap.drawsNothing())
-    return;
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
       timestamp,
@@ -68,8 +64,7 @@ void CaptureFrame(RenderFrameHostImpl* host,
   }
 
   view->CopyFromSurface(gfx::Rect(), snapshot_size,
-                        base::Bind(FrameCaptured, base::TimeTicks::Now()),
-                        kN32_SkColorType);
+                        base::BindOnce(FrameCaptured, base::TimeTicks::Now()));
 }
 
 bool ScreenshotCategoryEnabled() {

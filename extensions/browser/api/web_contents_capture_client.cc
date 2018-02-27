@@ -26,7 +26,7 @@ using api::extension_types::ImageDetails;
 bool WebContentsCaptureClient::CaptureAsync(
     WebContents* web_contents,
     const ImageDetails* image_details,
-    const content::ReadbackRequestCallback callback) {
+    base::OnceCallback<void(const SkBitmap&)> callback) {
   if (!web_contents)
     return false;
 
@@ -48,7 +48,7 @@ bool WebContentsCaptureClient::CaptureAsync(
       image_quality_ = *image_details->quality;
   }
 
-  // TODO(miu): Account for fullscreen render widget?  http://crbug.com/419878
+  // TODO(crbug/419878): Account for fullscreen render widget?
   RenderWidgetHostView* const view = web_contents->GetRenderWidgetHostView();
   if (!view) {
     OnCaptureFailure(FAILURE_REASON_VIEW_INVISIBLE);
@@ -56,34 +56,16 @@ bool WebContentsCaptureClient::CaptureAsync(
   }
   view->CopyFromSurface(gfx::Rect(),  // Copy entire surface area.
                         gfx::Size(),  // Result contains device-level detail.
-                        callback, kN32_SkColorType);
+                        std::move(callback));
   return true;
 }
 
-void WebContentsCaptureClient::CopyFromSurfaceComplete(
-    const SkBitmap& bitmap,
-    content::ReadbackResponse response) {
-  if (response == content::READBACK_SUCCESS) {
+void WebContentsCaptureClient::CopyFromSurfaceComplete(const SkBitmap& bitmap) {
+  if (bitmap.drawsNothing()) {
+    OnCaptureFailure(FAILURE_REASON_READBACK_FAILED);
+  } else {
     OnCaptureSuccess(bitmap);
-    return;
   }
-  // TODO(wjmaclean): Improve error reporting. Why aren't we passing more
-  // information here?
-  std::string reason;
-  switch (response) {
-    case content::READBACK_FAILED:
-      reason = "READBACK_FAILED";
-      break;
-    case content::READBACK_SURFACE_UNAVAILABLE:
-      reason = "READBACK_SURFACE_UNAVAILABLE";
-      break;
-    case content::READBACK_BITMAP_ALLOCATION_FAILURE:
-      reason = "READBACK_BITMAP_ALLOCATION_FAILURE";
-      break;
-    default:
-      reason = "<unknown>";
-  }
-  OnCaptureFailure(FAILURE_REASON_UNKNOWN);
 }
 
 // TODO(wjmaclean) can this be static?

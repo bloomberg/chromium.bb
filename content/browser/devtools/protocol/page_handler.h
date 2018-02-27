@@ -23,7 +23,6 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/readback_types.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
@@ -155,8 +154,7 @@ class PageHandler : public DevToolsDomainHandler,
   void InnerSwapCompositorFrame();
   void ScreencastFrameCaptured(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
-      const SkBitmap& bitmap,
-      ReadbackResponse response);
+      const SkBitmap& bitmap);
   void ScreencastFrameEncoded(
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
       const std::string& data);

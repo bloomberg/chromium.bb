@@ -1765,8 +1765,8 @@ bool TabsCaptureVisibleTabFunction::RunAsync() {
 
   return CaptureAsync(
       contents, image_details.get(),
-      base::Bind(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
-                 this));
+      base::BindOnce(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
+                     this));
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
@@ -1783,8 +1783,8 @@ void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
 void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
   const char* reason_description = "internal error";
   switch (reason) {
-    case FAILURE_REASON_UNKNOWN:
-      reason_description = "unknown error";
+    case FAILURE_REASON_READBACK_FAILED:
+      reason_description = "image readback failed";
       break;
     case FAILURE_REASON_ENCODING_FAILED:
       reason_description = "encoding failed";

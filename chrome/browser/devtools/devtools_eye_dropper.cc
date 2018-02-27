@@ -95,8 +95,8 @@ void DevToolsEyeDropper::UpdateFrame() {
   gfx::Size should_be_rendering_size = host_->GetView()->GetViewBounds().size();
   host_->GetView()->CopyFromSurface(
       gfx::Rect(), should_be_rendering_size,
-      base::Bind(&DevToolsEyeDropper::FrameUpdated, weak_factory_.GetWeakPtr()),
-      kN32_SkColorType);
+      base::BindOnce(&DevToolsEyeDropper::FrameUpdated,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsEyeDropper::ResetFrame() {
@@ -105,12 +105,11 @@ void DevToolsEyeDropper::ResetFrame() {
   last_cursor_y_ = -1;
 }
 
-void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap,
-                                      content::ReadbackResponse response) {
-  if (response == content::READBACK_SUCCESS) {
-    frame_ = bitmap;
-    UpdateCursor();
-  }
+void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap) {
+  if (bitmap.drawsNothing())
+    return;
+  frame_ = bitmap;
+  UpdateCursor();
 }
 
 bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {

@@ -2524,9 +2524,8 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   if (!pending_surface_browser_snapshots_.empty()) {
     GetView()->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
-        base::Bind(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
-                   weak_factory_.GetWeakPtr(), snapshot_id, 0),
-        kN32_SkColorType);
+        base::BindOnce(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
+                       weak_factory_.GetWeakPtr(), snapshot_id, 0));
   }
 
   if (!pending_browser_snapshots_.empty()) {
@@ -2556,20 +2555,19 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
 void RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived(
     int snapshot_id,
     int retry_count,
-    const SkBitmap& bitmap,
-    ReadbackResponse response) {
-  static const int kMaxRetries = 5;
-  if (response != READBACK_SUCCESS && retry_count < kMaxRetries) {
+    const SkBitmap& bitmap) {
+  static constexpr int kMaxRetries = 5;
+  if (bitmap.drawsNothing() && retry_count < kMaxRetries) {
     GetView()->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
-        base::Bind(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
-                   weak_factory_.GetWeakPtr(), snapshot_id, retry_count + 1),
-        kN32_SkColorType);
+        base::BindOnce(&RenderWidgetHostImpl::OnSnapshotFromSurfaceReceived,
+                       weak_factory_.GetWeakPtr(), snapshot_id,
+                       retry_count + 1));
     return;
   }
   // If all retries have failed, we return an empty image.
   gfx::Image image;
-  if (response == READBACK_SUCCESS)
+  if (!bitmap.drawsNothing())
     image = gfx::Image::CreateFrom1xBitmap(bitmap);
   // Any pending snapshots with a lower ID than the one received are considered
   // to be implicitly complete, and returned the same snapshot data.
