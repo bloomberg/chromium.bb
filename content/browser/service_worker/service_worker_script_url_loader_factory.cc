@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_installed_script_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_script_url_loader.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -40,9 +41,8 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(loader_factory_getter_);
   if (!ShouldHandleScriptRequest(resource_request)) {
-    // If the request should not be handled by ServiceWorkerScriptURLLoader,
-    // just fallback to the network. This needs a relaying as we use different
-    // associated message pipes.
+    // If the request should not be handled, just fallback to the network.
+    // This needs a relaying as we use different associated message pipes.
     // TODO(kinuko): Record the reason like what we do with netlog in
     // ServiceWorkerContextRequestHandler.
     loader_factory_getter_->GetNetworkFactory()->CreateLoaderAndStart(
@@ -50,6 +50,28 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
         std::move(client), traffic_annotation);
     return;
   }
+
+  // If we get here, the service worker is not installed, so the script is
+  // usually not yet installed. However, there is a special case when an
+  // installing worker that imports the same script twice (e.g.
+  // importScripts('dupe.js'); importScripts('dupe.js');) or if it recursively
+  // imports the main script. In this case, read the installed script from
+  // storage.
+  scoped_refptr<ServiceWorkerVersion> version =
+      provider_host_->running_hosted_version();
+  int64_t resource_id =
+      version->script_cache_map()->LookupResourceId(resource_request.url);
+  if (resource_id != kInvalidServiceWorkerResourceId) {
+    std::unique_ptr<ServiceWorkerResponseReader> response_reader =
+        context_->storage()->CreateResponseReader(resource_id);
+    mojo::MakeStrongBinding(
+        std::make_unique<ServiceWorkerInstalledScriptLoader>(
+            options, std::move(client), std::move(response_reader)),
+        std::move(request));
+    return;
+  }
+
+  // The common case: load the script from network and install it.
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerScriptURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
@@ -108,34 +130,16 @@ bool ServiceWorkerScriptURLLoaderFactory::ShouldHandleScriptRequest(
       return false;
   }
 
-  // TODO: Make sure we don't handle the redirected request.
+  // TODO(falken): Make sure we don't handle a redirected request.
 
   // For installed service workers, typically all the scripts are served via
   // script streaming, so we don't come here. However, we still come here when
   // the service worker is importing a script that was never installed. For now,
   // return false here to fallback to network. Eventually, it should be
   // deprecated (https://crbug.com/719052).
-  //
-  // For service workers that are not installed, we get here even for the main
-  // script. Therefore, ServiceWorkerScriptURLLoader must handle the request
-  // (even though it currently just does a network fetch for now), because it
-  // sets the main script's HTTP Response Info (via
-  // ServiceWorkerVersion::SetMainScriptHttpResponseInfo()) which otherwise
-  // would never be set.
   if (ServiceWorkerVersion::IsInstalled(version->status()))
     return false;
 
-  // TODO: Make sure we come here only for new / unknown scripts
-  // once script streaming manager in the renderer side stops sending
-  // resource requests for the known script URLs, i.e. add DCHECK for
-  // version->script_cache_map()->LookupResourceId(url) ==
-  // kInvalidServiceWorkerResourceId.
-  //
-  // Currently this could be false for the installing worker that imports
-  // the same script twice (e.g. importScripts('dupe.js');
-  // importScripts('dupe.js');).
-
-  // Request should be served by ServiceWorkerScriptURLLoader.
   return true;
 }
 
