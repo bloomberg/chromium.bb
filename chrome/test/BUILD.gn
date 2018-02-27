@@ -30,6 +30,7 @@ import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 } else {
   include_js_tests = !(is_asan || is_msan || is_tsan)
 }
@@ -2804,8 +2805,12 @@ test("unit_tests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//content/public/android:content_java",
-      "//v8:v8_external_startup_data_assets",
     ]
+    if (use_v8_context_snapshot) {
+      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
+    } else {
+      deps += [ "//v8:v8_external_startup_data_assets" ]
+    }
 
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
