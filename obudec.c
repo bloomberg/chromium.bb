@@ -112,7 +112,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
     // Expand the buffer to contain the full OBU and its length.
     const uint8_t *old_buffer = *buffer;
-    *buffer = (uint8_t *)realloc(*buffer, *buffer_size + obu_size);
+    *buffer = (uint8_t *)realloc(*buffer, *buffer_size + (size_t)obu_size);
     if (!*buffer) {
       free((void *)old_buffer);
       warn("OBU buffer alloc failed.\n");
@@ -121,7 +121,7 @@ int obu_read_temporal_unit(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
     data = *buffer + (*buffer_size);
     *buffer_size += obu_size;
-    ret = fread(data, 1, obu_size, infile);
+    ret = fread(data, 1, (size_t)obu_size, infile);
 
     if (ret != obu_size) {
       warn("Failed to read OBU.\n");
