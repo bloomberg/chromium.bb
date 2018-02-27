@@ -785,7 +785,8 @@ static int64_t dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
 static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
                                          const uint8_t *src, int src_stride,
                                          const uint8_t *dst, int dst_stride,
-                                         double *hordist, double *verdist) {
+                                         int need_4th, double *hordist,
+                                         double *verdist) {
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   unsigned int esq[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -860,13 +861,22 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
     hordist[0] = ((double)esq[0] + esq[4] + esq[8] + esq[12]) * e_recip;
     hordist[1] = ((double)esq[1] + esq[5] + esq[9] + esq[13]) * e_recip;
     hordist[2] = ((double)esq[2] + esq[6] + esq[10] + esq[14]) * e_recip;
+    if (need_4th) {
+      hordist[3] = ((double)esq[3] + esq[7] + esq[11] + esq[15]) * e_recip;
+    }
     verdist[0] = ((double)esq[0] + esq[1] + esq[2] + esq[3]) * e_recip;
     verdist[1] = ((double)esq[4] + esq[5] + esq[6] + esq[7]) * e_recip;
     verdist[2] = ((double)esq[8] + esq[9] + esq[10] + esq[11]) * e_recip;
+    if (need_4th) {
+      verdist[3] = ((double)esq[12] + esq[13] + esq[14] + esq[15]) * e_recip;
+    }
   } else {
     hordist[0] = verdist[0] = 0.25;
     hordist[1] = verdist[1] = 0.25;
     hordist[2] = verdist[2] = 0.25;
+    if (need_4th) {
+      hordist[3] = verdist[3] = 0.25;
+    }
   }
 }
 
@@ -876,7 +886,7 @@ static int adst_vs_flipadst(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   int prune_bitmask = 0;
   double svm_proj_h = 0, svm_proj_v = 0;
   double hdist[3] = { 0, 0, 0 }, vdist[3] = { 0, 0, 0 };
-  get_energy_distribution_fine(cpi, bsize, src, src_stride, dst, dst_stride,
+  get_energy_distribution_fine(cpi, bsize, src, src_stride, dst, dst_stride, 0,
                                hdist, vdist);
 
   svm_proj_v = vdist[0] * ADST_FLIP_SVM[0] + vdist[1] * ADST_FLIP_SVM[1] +
@@ -1860,6 +1870,81 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 }
 
+// This macro has 3 possible values:
+// 0: Do not collect any RD stats
+// 1: Collect RD stats for transform units
+// 2: Collect RD stats for partition units
+#define COLLECT_RD_STATS 0
+
+#if COLLECT_RD_STATS == 1
+
+static void get_mean(const int16_t *diff, int stride, int w, int h,
+                     double *mean) {
+  double sum = 0.0;
+  for (int j = 0; j < h; ++j) {
+    for (int i = 0; i < w; ++i) {
+      sum += diff[j * stride + i];
+    }
+  }
+  assert(w > 0 && h > 0);
+  *mean = sum / (w * h);
+}
+
+static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                    const RD_STATS *const rd_stats,
+                                    TX_SIZE tx_size, TX_TYPE tx_type) {
+  const BLOCK_SIZE fake_bsize = txsize_to_bsize[tx_size];
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int plane = 0;
+  struct macroblock_plane *const p = &x->plane[plane];
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int txw = tx_size_wide[tx_size];
+  const int txh = tx_size_high[tx_size];
+  const int dequant_shift =
+      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int q_step = pd->dequant_Q3[1] >> dequant_shift;
+  const double num_samples = txw * txh;
+
+  const double rate_norm = (double)rd_stats->rate / num_samples;
+  const double dist_norm = (double)rd_stats->dist / num_samples;
+
+  unsigned int sse;
+  cpi->fn_ptr[fake_bsize].vf(p->src.buf, p->src.stride, pd->dst.buf,
+                             pd->dst.stride, &sse);
+  const double sse_norm = (double)sse / num_samples;
+
+  const TX_TYPE_1D tx_type_1d_row = htx_tab[tx_type];
+  const TX_TYPE_1D tx_type_1d_col = vtx_tab[tx_type];
+
+  fprintf(stderr, "%g %g %g %d %d %d %d %d", rate_norm, dist_norm, sse_norm,
+          q_step, tx_size_wide[tx_size], tx_size_high[tx_size], tx_type_1d_row,
+          tx_type_1d_col);
+
+  int model_rate;
+  int64_t model_dist;
+  model_rd_from_sse(cpi, xd, fake_bsize, plane, sse, &model_rate, &model_dist);
+  const double model_rate_norm = (double)model_rate / num_samples;
+  const double model_dist_norm = (double)model_dist / num_samples;
+  fprintf(stderr, " %g %g", model_rate_norm, model_dist_norm);
+
+  // TODO(urvang): Check if we need to add an offset to 'src_diff'.
+  double mean;
+  get_mean(p->src_diff, txw, txw, txh, &mean);
+  double hor_corr, vert_corr;
+  get_horver_correlation(p->src_diff, txw, txw, txh, &hor_corr, &vert_corr);
+  fprintf(stderr, " %g %g %g", mean, hor_corr, vert_corr);
+
+  double hdist[4] = { 0 }, vdist[4] = { 0 };
+  get_energy_distribution_fine(cpi, fake_bsize, p->src.buf, p->src.stride,
+                               pd->dst.buf, pd->dst.stride, 1, hdist, vdist);
+  fprintf(stderr, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
+          hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
+
+  fprintf(stderr, "\n");
+}
+
+#endif  // COLLECT_RD_STATS == 1
+
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
@@ -2058,6 +2143,12 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_eob = x->plane[plane].eobs[block];
     }
 
+#if COLLECT_RD_STATS == 1
+    if (plane == 0) {
+      PrintTransformUnitStats(cpi, x, &this_rd_stats, tx_size, tx_type);
+    }
+#endif  // COLLECT_RD_STATS == 1
+
     if (cpi->sf.adaptive_txb_search)
       if ((best_rd - (best_rd >> 2)) > ref_best_rd) break;
 
@@ -2124,6 +2215,8 @@ RECON_INTRA:
 
   return best_rd;
 }
+
+#undef COLLECT_RD_STATS
 
 static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
