@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_CHROME_SCREENSHOT_GRABBER_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/screenshot_delegate.h"
 #include "base/macros.h"
@@ -69,6 +70,8 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate {
                         const base::Optional<int>& display_num,
                         ui::ScreenshotResult result,
                         scoped_refptr<base::RefCountedMemory> png_data);
+
+  void set_screenshots_allowed(bool value) { screenshots_allowed_ = value; }
 
  private:
   friend class ash::ChromeScreenshotGrabberTest;
@@ -143,10 +146,15 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate {
 
   Profile* GetProfile();
 
+  bool ScreenshotsAllowed() const;
+
   std::unique_ptr<ui::ScreenshotGrabber> screenshot_grabber_;
 
   // Forwards OnScreenshotCompleted() events to a test.
   ChromeScreenshotGrabberTestObserver* test_observer_ = nullptr;
+
+  // Flag used to disallow screenshots, set in some special modes.
+  bool screenshots_allowed_ = true;
 
   base::WeakPtrFactory<ChromeScreenshotGrabber> weak_factory_;
 
