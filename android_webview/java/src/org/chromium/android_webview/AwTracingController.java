@@ -59,22 +59,10 @@ public class AwTracingController {
                     CATEGORIES_FRAME_VIEWER_LIST // CATEGORIES_FRAME_VIEWER
                     ));
 
-    // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
-    private AwTracingOutputStream mOutputStream;
-
-    private OutputStream mOutputStreamNew;
+    private OutputStream mOutputStream;
 
     // TODO(timvolodine): consider caching a mIsTracing value for efficiency.
     // boolean mIsTracing;
-
-    /**
-     * Interface for the callbacks to return tracing data.
-     */
-    // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
-    public interface AwTracingOutputStream {
-        public void write(byte[] chunk);
-        public void complete();
-    }
 
     public AwTracingController() {
         mNativeAwTracingController = nativeInit();
@@ -91,30 +79,10 @@ public class AwTracingController {
         nativeStart(mNativeAwTracingController, categoryFilter, mode);
     }
 
-    // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
-    // Start tracing.
-    public boolean start(String categoryFilter, int mode) {
-        if (isTracing()) {
-            return false;
-        }
-
-        boolean result = nativeStart(mNativeAwTracingController, categoryFilter, mode);
-        return result;
-    }
-
-    // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
-    // Stop tracing and flush tracing data.
-    public boolean stopAndFlush(@Nullable AwTracingOutputStream outputStream) {
-        if (!isTracing()) return false;
-        mOutputStream = outputStream;
-        nativeStopAndFlush(mNativeAwTracingController);
-        return true;
-    }
-
     // Stop tracing and flush tracing data.
     public boolean stopAndFlush(@Nullable OutputStream outputStream) {
         if (!isTracing()) return false;
-        mOutputStreamNew = outputStream;
+        mOutputStream = outputStream;
         nativeStopAndFlush(mNativeAwTracingController);
         return true;
     }
@@ -152,23 +120,15 @@ public class AwTracingController {
 
     @CalledByNative
     private void onTraceDataChunkReceived(byte[] data) throws IOException {
-        // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
         if (mOutputStream != null) {
             mOutputStream.write(data);
-        }
-        if (mOutputStreamNew != null) {
-            mOutputStreamNew.write(data);
         }
     }
 
     @CalledByNative
     private void onTraceDataComplete() throws IOException {
-        // TODO(timvolodine): remove once glue layer is updated, crbug.com/812289.
         if (mOutputStream != null) {
-            mOutputStream.complete();
-        }
-        if (mOutputStreamNew != null) {
-            mOutputStreamNew.close();
+            mOutputStream.close();
         }
     }
 
