@@ -10954,8 +10954,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     </message>
     <!-- Relaunch notification bubble and dialog. -->
     <if expr="not is_android and not chromeos">
-      <message name="IDS_RELAUNCH_ACCEPT_BUTTON" desc="The text in the accept button of the relaunch bubble or dialog shown to users when an administrator has configured such notifications.">
+      <message name="IDS_RELAUNCH_ACCEPT_BUTTON" desc="The text in the accept button of a dialog that causes the browser to be relaunched immediately.">
         Relaunch now
+      </message>
+      <message name="IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON" desc="The text in the cancel button that dismisses a dialog telling users the browser must be relaunched.">
+        Got it
       </message>
     </if>
   </messages>
