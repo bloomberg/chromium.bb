@@ -16,7 +16,7 @@ enum class Mode : int {
   kVrBrowsing,  // Both kVrBrowsingRegular and kVrBrowsingFullscreen.
   kVrBrowsingRegular,
   kVrBrowsingFullscreen,  // Cinema mode.
-  kWebVr,
+  kWebXrVrPresentation,
 };
 
 }  // namespace vr

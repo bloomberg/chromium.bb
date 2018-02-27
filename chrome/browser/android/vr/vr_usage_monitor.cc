@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace vr {
 
@@ -119,7 +118,7 @@ void SendRapporEnteredVideoMode(const GURL& origin, Mode mode) {
       rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
                                               "VR.Video.Browser", origin);
       break;
-    case Mode::kWebVr:
+    case Mode::kWebXrVrPresentation:
       rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
                                               "VR.Video.WebVR", origin);
       break;
@@ -129,19 +128,6 @@ void SendRapporEnteredVideoMode(const GURL& origin, Mode mode) {
       break;
     default:
       break;
-  }
-}
-
-int GetRoundedDurationInSeconds(base::Time start, base::Time end) {
-  base::TimeDelta duration = end - start;
-  if (duration.InHours() > 2) {
-    return duration.InHours() * 3600;
-  } else if (duration.InMinutes() > 10) {
-    return (duration.InMinutes() / 10) * 10 * 60;
-  } else if (duration.InSeconds() > 60) {
-    return duration.InMinutes() * 60;
-  } else {
-    return duration.InSeconds();
   }
 }
 
@@ -212,7 +198,7 @@ void VrMetricsHelper::UpdateMode() {
   if (!is_vr_enabled_) {
     mode = Mode::kNoVr;
   } else if (is_webvr_) {
-    mode = Mode::kWebVr;
+    mode = Mode::kWebXrVrPresentation;
   } else {
     mode =
         is_fullscreen_ ? Mode::kVrBrowsingFullscreen : Mode::kVrBrowsingRegular;
@@ -257,7 +243,7 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
   // start the new modes
   if (new_mode != Mode::kNoVr) {
     switch (new_mode) {
-      case Mode::kWebVr:
+      case Mode::kWebXrVrPresentation:
         if (started_with_autopresentation_) {
           mode_timer_ = std::make_unique<SessionTimerImpl<MODE_WEBVR_DLA>>(
               kMaximumHeadsetSessionGap, kMinimumHeadsetSessionDuration);
@@ -306,8 +292,8 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
     SendRapporEnteredMode(origin_, new_mode);
   }
 
-  // stop the old session
-  if (mode_ != Mode::kNoVr && new_mode == Mode::kNoVr) {
+  // If we are switching out of VR, stop all the session timers and record.
+  if (new_mode == Mode::kNoVr) {
     if (num_videos_playing_ > 0)
       session_video_timer_->StopSession(false, switch_time);
 
@@ -320,25 +306,32 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
     UMA_HISTOGRAM_COUNTS_100("VR.Session.VoiceSearch.StartedCount",
                              num_voice_search_started_);
 
-    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    DCHECK(ukm_recorder);
-    DCHECK(!time_on_page_start_.is_null());
-    DCHECK(time_on_page_start_ <= base::Time::Now());
-
-    // It's possible if the user started a navigation that is incomplete at this
-    // point that this will double log the value. However, in that case the
-    // value should be the same, so whichever lands in the UKM will be fine.
-    // TODO(offenwanger): Add a check to ensure that the value is only submitted
-    // once.
-    ukm::builders::XR_PageSession(last_source_id_)
-        .SetTimeOnPage(
-            GetRoundedDurationInSeconds(time_on_page_start_, base::Time::Now()))
-        .Record(ukm_recorder);
+    // Do not assume page_session_tracker_ is set because it's possible that it
+    // is null if DidStartNavigation has already submitted and cleared
+    // page_session_tracker and DidFinishNavigation has not yet created the new
+    // one.
+    if (page_session_tracker_) {
+      page_session_tracker_->SetSessionEnd(base::Time::Now());
+      page_session_tracker_->ukm_entry()->SetDuration(
+          page_session_tracker_->GetRoundedDurationInSeconds());
+      page_session_tracker_->RecordEntry();
+      page_session_tracker_ = nullptr;
+    }
   }
 
-  // start the new session
-  if (mode_ == Mode::kNoVr && new_mode != Mode::kNoVr) {
-    // we are entering a vr mode from non-vr mode - start the vr session
+  // If we are switching off WebVR presentation, then the presentation session
+  // is done. As above, do not assume presentation_session_track_ is valid.
+  if (mode_ == Mode::kWebXrVrPresentation && presentation_session_tracker_) {
+    presentation_session_tracker_->SetSessionEnd(base::Time::Now());
+    presentation_session_tracker_->ukm_entry()->SetDuration(
+        presentation_session_tracker_->GetRoundedDurationInSeconds());
+    presentation_session_tracker_->RecordEntry();
+    presentation_session_tracker_ = nullptr;
+  }
+
+  // If we are switching from no VR to any kind of VR, start the new VR session
+  // timers.
+  if (mode_ == Mode::kNoVr) {
     session_timer_->StartSession(switch_time);
     num_session_video_playback_ = 0;
     num_session_navigation_ = 0;
@@ -349,21 +342,23 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
       num_session_video_playback_ = num_videos_playing_;
     }
 
-    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    DCHECK(ukm_recorder);
-
-    last_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents());
-    time_on_page_start_ = base::Time::Now();
+    page_session_tracker_ =
+        std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
+            std::make_unique<ukm::builders::XR_PageSession>(
+                ukm::GetSourceIdForWebContentsDocument(web_contents())));
   }
 
-  if (new_mode == Mode::kVrBrowsingFullscreen && mode_ != Mode::kNoVr) {
-    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    DCHECK(ukm_recorder);
+  if (new_mode == Mode::kVrBrowsingFullscreen && page_session_tracker_) {
+    page_session_tracker_->ukm_entry()->SetEnteredFullscreen(1);
+  }
 
-    ukm::builders::XR_PageSession(
-        ukm::GetSourceIdForWebContentsDocument(web_contents()))
-        .SetEnteredFullscreen(1)
-        .Record(ukm_recorder);
+  // If we are switching to WebVR presentation, start the new presentation
+  // session.
+  if (new_mode == Mode::kWebXrVrPresentation) {
+    presentation_session_tracker_ = std::make_unique<
+        SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
+        std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
+            ukm::GetSourceIdForWebContentsDocument(web_contents())));
   }
 
   mode_ = new_mode;
@@ -372,7 +367,7 @@ void VrMetricsHelper::SetVrMode(Mode new_mode) {
 VrMetricsHelper::VrMetricsHelper(content::WebContents* contents,
                                  Mode initial_mode,
                                  bool started_with_autopresentation)
-    : is_webvr_(initial_mode == Mode::kWebVr),
+    : is_webvr_(initial_mode == Mode::kWebXrVrPresentation),
       is_vr_enabled_(initial_mode != Mode::kNoVr),
       started_with_autopresentation_(started_with_autopresentation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -380,8 +375,6 @@ VrMetricsHelper::VrMetricsHelper(content::WebContents* contents,
   num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
   is_fullscreen_ = contents->IsFullscreen();
   origin_ = contents->GetLastCommittedURL();
-  last_source_id_ = ukm::GetSourceIdForWebContentsDocument(contents);
-  time_on_page_start_ = base::Time::Now();
 
   Observe(contents);
   if (started_with_autopresentation) {
@@ -446,12 +439,21 @@ void VrMetricsHelper::MediaStoppedPlaying(
 
 void VrMetricsHelper::DidStartNavigation(content::NavigationHandle* handle) {
   if (handle && handle->IsInMainFrame() && !handle->IsSameDocument()) {
-    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-    DCHECK(ukm_recorder);
-    ukm::builders::XR_PageSession(last_source_id_)
-        .SetTimeOnPage(
-            GetRoundedDurationInSeconds(time_on_page_start_, base::Time::Now()))
-        .Record(ukm_recorder);
+    if (page_session_tracker_) {
+      page_session_tracker_->SetSessionEnd(base::Time::Now());
+      page_session_tracker_->ukm_entry()->SetDuration(
+          page_session_tracker_->GetRoundedDurationInSeconds());
+      page_session_tracker_->RecordEntry();
+      page_session_tracker_ = nullptr;
+    }
+
+    if (presentation_session_tracker_) {
+      presentation_session_tracker_->SetSessionEnd(base::Time::Now());
+      presentation_session_tracker_->ukm_entry()->SetDuration(
+          presentation_session_tracker_->GetRoundedDurationInSeconds());
+      presentation_session_tracker_->RecordEntry();
+      presentation_session_tracker_ = nullptr;
+    }
   }
 }
 
@@ -471,9 +473,17 @@ void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
     // Get the ukm::SourceId from the handle so that we don't wind up with a
     // wrong ukm::SourceId from this WebContentObserver perhaps executing after
     // another which changes the SourceId.
-    last_source_id_ = ukm::ConvertToSourceId(handle->GetNavigationId(),
-                                             ukm::SourceIdType::NAVIGATION_ID);
-    time_on_page_start_ = base::Time::Now();
+    page_session_tracker_ =
+        std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
+            std::make_unique<ukm::builders::XR_PageSession>(
+                ukm::GetSourceIdForWebContentsDocument(web_contents())));
+
+    if (mode_ == Mode::kWebXrVrPresentation) {
+      presentation_session_tracker_ = std::make_unique<
+          SessionTracker<ukm::builders::XR_WebXR_PresentationSession>>(
+          std::make_unique<ukm::builders::XR_WebXR_PresentationSession>(
+              ukm::GetSourceIdForWebContentsDocument(web_contents())));
+    }
 
     num_session_navigation_++;
   }

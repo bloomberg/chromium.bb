@@ -224,7 +224,7 @@ void VrShell::SwapContents(JNIEnv* env,
   // tabs. https://crbug.com/684661
   metrics_helper_ = std::make_unique<VrMetricsHelper>(
       GetNonNativePageWebContents(),
-      webvr_mode_ ? Mode::kWebVr : Mode::kVrBrowsingRegular,
+      webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular,
       web_vr_autopresentation_expected_);
 }
 
@@ -450,7 +450,8 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
     AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);
   } else {
-    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kWebVr);
+    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
+        Mode::kWebXrVrPresentation);
   }
 }
 
