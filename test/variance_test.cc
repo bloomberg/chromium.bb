@@ -229,10 +229,10 @@ static uint32_t jnt_subpel_avg_variance_ref(
     for (int x = 0; x < w; x++) {
       // bilinear interpolation at a 16th pel step
       if (!use_high_bit_depth) {
-        const int a1 = ref[(w + 1) * (y + 0) + x + 0];
-        const int a2 = ref[(w + 1) * (y + 0) + x + 1];
-        const int b1 = ref[(w + 1) * (y + 1) + x + 0];
-        const int b2 = ref[(w + 1) * (y + 1) + x + 1];
+        const int a1 = ref[(w + 0) * (y + 0) + x + 0];
+        const int a2 = ref[(w + 0) * (y + 0) + x + 1];
+        const int b1 = ref[(w + 0) * (y + 1) + x + 0];
+        const int b2 = ref[(w + 0) * (y + 1) + x + 1];
         const int a = a1 + (((a2 - a1) * xoff + 8) >> 4);
         const int b = b1 + (((b2 - b1) * xoff + 8) >> 4);
         const int r = a + (((b - a) * yoff + 8) >> 4);
@@ -248,10 +248,10 @@ static uint32_t jnt_subpel_avg_variance_ref(
         const uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
         const uint16_t *sec16 = CONVERT_TO_SHORTPTR(second_pred);
-        const int a1 = ref16[(w + 1) * (y + 0) + x + 0];
-        const int a2 = ref16[(w + 1) * (y + 0) + x + 1];
-        const int b1 = ref16[(w + 1) * (y + 1) + x + 0];
-        const int b2 = ref16[(w + 1) * (y + 1) + x + 1];
+        const int a1 = ref16[(w + 0) * (y + 0) + x + 0];
+        const int a2 = ref16[(w + 0) * (y + 0) + x + 1];
+        const int b1 = ref16[(w + 0) * (y + 1) + x + 0];
+        const int b2 = ref16[(w + 0) * (y + 1) + x + 1];
         const int a = a1 + (((a2 - a1) * xoff + 8) >> 4);
         const int b = b1 + (((b2 - b1) * xoff + 8) >> 4);
         const int r = a + (((b - a) * yoff + 8) >> 4);
@@ -769,7 +769,7 @@ void SubpelVarianceTest<JntSubpixAvgVarMxNFunc>::RefTest() {
           uint32_t var1, var2;
           jcp_param_.fwd_offset = quant_dist_lookup_table[x0][y0][0];
           jcp_param_.bck_offset = quant_dist_lookup_table[x0][y0][1];
-          ASM_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 1, x, y,
+          ASM_REGISTER_STATE_CHECK(var1 = params_.func(ref_, width() + 0, x, y,
                                                        src_, width(), &sse1,
                                                        sec_, &jcp_param_));
           var2 = jnt_subpel_avg_variance_ref(
