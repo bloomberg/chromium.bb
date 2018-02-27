@@ -18,6 +18,10 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
+namespace net {
+class AuthChallengeInfo;
+class URLRequest;
+}
 
 namespace network {
 struct ResourceResponse;
@@ -28,6 +32,7 @@ namespace content {
 class AppCacheService;
 class NavigationData;
 class ResourceContext;
+class ResourceDispatcherHostLoginDelegate;
 class ResourceThrottle;
 struct StreamInfo;
 
@@ -35,8 +40,6 @@ struct StreamInfo;
 // observing and modifying requests.
 class CONTENT_EXPORT ResourceDispatcherHostDelegate {
  public:
-  virtual ~ResourceDispatcherHostDelegate();
-
   // Called when a request begins. Return false to abort the request.
   virtual bool ShouldBeginRequest(const std::string& method,
                                   const GURL& url,
@@ -64,6 +67,12 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       bool must_download,
       bool is_new_request,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles);
+
+  // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
+  // username and password.
+  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request);
 
   // Launches the url for the given tab. Returns true if an attempt to handle
   // the url was made, e.g. by launching an app. Note that this does not
@@ -125,6 +134,9 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Asks the embedder for NavigationData related to this request. It is only
   // called for navigation requests.
   virtual NavigationData* GetNavigationData(net::URLRequest* request) const;
+
+ protected:
+  virtual ~ResourceDispatcherHostDelegate();
 };
 
 }  // namespace content

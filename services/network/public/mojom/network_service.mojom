@@ -17,12 +17,6 @@ import "url/mojom/url.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 
-[Native]
-struct AuthChallengeInfo;
-
-[Native]
-struct AuthCredentials;
-
 // Parameters for constructing a network context.
 struct NetworkContextParams {
   // Name used by memory tools to identify the context.
@@ -188,14 +182,6 @@ interface SSLPrivateKey {
 
 // Network service interface to the browser.
 interface NetworkServiceClient {
-  // Called when we receive an authentication failure.
-  // The |credentials| output parameter is given to URLRequest::SetAuth()
-  // through this mojo interface.
-  OnAuthRequired(uint32 process_id,
-                 uint32 routing_id,
-                 url.mojom.Url url,
-                 bool first_auth_attempt,
-                 AuthChallengeInfo auth_info) => (AuthCredentials credentials);
   // Called when an SSL certificate requested message is received for client
   // authentication.
   // The |algorithm_preferences| parameter corresponds to the return value

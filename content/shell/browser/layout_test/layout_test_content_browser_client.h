@@ -36,6 +36,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       RenderProcessHost* render_process_host) override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
+  void ResourceDispatcherHostCreated() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   BrowserMainParts* CreateBrowserMainParts(
@@ -67,14 +68,6 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   void ExposeInterfacesToFrame(
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
           registry) override;
-  ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      bool is_main_frame,
-      const GURL& url,
-      bool first_auth_attempt,
-      const base::Callback<void(const net::AuthCredentials&)>&
-          auth_required_callback) override;
 
  private:
   std::unique_ptr<LayoutTestNotificationManager>

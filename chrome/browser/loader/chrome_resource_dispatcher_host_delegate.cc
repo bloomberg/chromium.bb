@@ -40,6 +40,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -612,6 +613,12 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
         request, info->GetWebContentsGetterForRequest()));
   }
 #endif
+}
+
+ResourceDispatcherHostLoginDelegate*
+    ChromeResourceDispatcherHostDelegate::CreateLoginDelegate(
+        net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
+  return CreateLoginPrompt(auth_info, request);
 }
 
 bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(

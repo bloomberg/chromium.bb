@@ -66,6 +66,9 @@ class ChromeResourceDispatcherHostDelegate
                         bool is_new_request,
                         std::vector<std::unique_ptr<content::ResourceThrottle>>*
                             throttles) override;
+  content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request) override;
   bool HandleExternalProtocol(const GURL& url,
                               content::ResourceRequestInfo* info) override;
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,

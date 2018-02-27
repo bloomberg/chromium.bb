@@ -22,7 +22,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -33,9 +32,9 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_login_dialog.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
+#include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
@@ -290,7 +289,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
-      new ResourceDispatcherHostDelegate());
+      new ShellResourceDispatcherHostDelegate);
   ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
 }
@@ -347,28 +346,6 @@ void ShellContentBrowserClient::OpenURL(
                                       params.url,
                                       nullptr,
                                       gfx::Size())->web_contents());
-}
-
-ResourceDispatcherHostLoginDelegate*
-ShellContentBrowserClient::CreateLoginDelegate(
-    net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool is_main_frame,
-    const GURL& url,
-    bool first_auth_attempt,
-    const base::Callback<void(const net::AuthCredentials&)>&
-        auth_required_callback) {
-  if (!login_request_callback_.is_null()) {
-    std::move(login_request_callback_).Run();
-    return nullptr;
-  }
-
-#if !defined(OS_MACOSX)
-  // TODO: implement ShellLoginDialog for other platforms, drop this #if
-  return nullptr;
-#else
-  return new ShellLoginDialog(auth_info, auth_required_callback);
-#endif
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

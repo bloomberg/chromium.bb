@@ -10,8 +10,6 @@
 
 namespace content {
 
-ResourceDispatcherHostDelegate::~ResourceDispatcherHostDelegate() {}
-
 bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
     const std::string& method,
     const GURL& url,
@@ -34,6 +32,13 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     bool must_download,
     bool is_new_request,
     std::vector<std::unique_ptr<ResourceThrottle>>* throttles) {}
+
+ResourceDispatcherHostLoginDelegate*
+    ResourceDispatcherHostDelegate::CreateLoginDelegate(
+        net::AuthChallengeInfo* auth_info,
+        net::URLRequest* request) {
+  return nullptr;
+}
 
 bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
@@ -83,6 +88,9 @@ PreviewsState ResourceDispatcherHostDelegate::DetermineEnabledPreviews(
 NavigationData* ResourceDispatcherHostDelegate::GetNavigationData(
     net::URLRequest* request) const {
   return nullptr;
+}
+
+ResourceDispatcherHostDelegate::~ResourceDispatcherHostDelegate() {
 }
 
 }  // namespace content

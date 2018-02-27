@@ -106,7 +106,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const std::vector<uint16_t>& algorithm_preferences,
       mojom::SSLPrivateKeyPtr ssl_private_key,
       bool cancel_certificate_selection);
-  void OnAuthRequiredResponse(const net::AuthCredentials& credentials);
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
@@ -165,8 +164,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojom::SSLPrivateKeyPtr ssl_private_key_;
 
   base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder_;
-
-  bool first_auth_attempt_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

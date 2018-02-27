@@ -25,14 +25,11 @@
 // excluded in a Mac Cocoa build: definitions under chrome/browser/ui/cocoa may
 // select at runtime whether to show a Cocoa dialog, or the toolkit-views dialog
 // provided by browser_dialogs.h.
+
 // static
-LoginHandler* LoginHandler::Create(
-    net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const base::Callback<void(const net::AuthCredentials&)>&
-        auth_required_callback) {
-  return chrome::CreateLoginHandlerViews(auth_info, web_contents_getter,
-                                         auth_required_callback);
+LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
+                                   net::URLRequest* request) {
+  return chrome::CreateLoginHandlerViews(auth_info, request);
 }
 
 // static
