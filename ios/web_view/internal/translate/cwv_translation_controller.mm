@@ -12,7 +12,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
-#import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -66,29 +65,19 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
 @synthesize delegate = _delegate;
 @synthesize supportedLanguagesByCode = _supportedLanguagesByCode;
-@synthesize webState = _webState;
 
 #pragma mark - Internal Methods
 
-- (void)setWebState:(web::WebState*)webState {
-  _webState = webState;
+- (instancetype)initWithTranslateClient:
+    (ios_web_view::WebViewTranslateClient*)translateClient {
+  self = [super init];
+  if (self) {
+    _translateClient = translateClient;
+    _translateClient->set_translation_controller(self);
 
-  ios_web_view::WebViewTranslateClient::CreateForWebState(_webState);
-  language::IOSLanguageDetectionTabHelper::CreateForWebState(
-      _webState,
-      ios_web_view::WebViewTranslateClient::FromWebState(_webState)
-          ->GetTranslateDriver()
-          ->CreateLanguageDetectionCallback(),
-      ios_web_view::WebViewUrlLanguageHistogramFactory::GetForBrowserState(
-          ios_web_view::WebViewBrowserState::FromBrowserState(
-              _webState->GetBrowserState())));
-
-  _translateClient =
-      ios_web_view::WebViewTranslateClient::FromWebState(_webState);
-  _translateClient->set_translation_controller(self);
-  _translatePrefs = _translateClient->translate_manager()
-                        ->translate_client()
-                        ->GetTranslatePrefs();
+    _translatePrefs = _translateClient->GetTranslatePrefs();
+  }
+  return self;
 }
 
 - (void)updateTranslateStep:(translate::TranslateStep)step

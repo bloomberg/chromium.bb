@@ -52,6 +52,8 @@ CWV_EXPORT
 @property(nonatomic, readonly)
     NSSet<CWVTranslationLanguage*>* supportedLanguages;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 // Begins translation on the current page from |sourceLanguage| to
 // |targetLanguage|. These language parameters must be chosen from
 // |supportedLanguages|. Set |userInitiated| to YES if translation
