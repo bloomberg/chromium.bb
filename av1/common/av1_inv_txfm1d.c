@@ -760,12 +760,10 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   s4 = range_check_value(sinpi[1] * x2, stage_range[1] + bit);
   s5 = range_check_value(sinpi[2] * x3, stage_range[1] + bit);
   s6 = range_check_value(sinpi[4] * x3, stage_range[1] + bit);
-  s7 = x0 - x2;
-  if (stage_range[1] <= 16) s7 = clamp_value(s7, 16);
+  s7 = x0 - x2;  // no range check here. Range is checked in stage 3
 
   // stage 2
-  s7 = s7 + x3;
-  if (stage_range[2] <= 16) s7 = clamp_value(s7, 16);
+  s7 = s7 + x3;  // no range check here. Range is checked in stage 3
 
   // stage 3
   s0 = range_check_value(s0 + s3, stage_range[3] + bit);
@@ -786,10 +784,6 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   // stage 6
   x3 = range_check_value(x3 - s3, stage_range[6] + bit);
 
-  // 1-D transform scaling factor is sqrt(2).
-  // The overall dynamic range is 14b (input) + 14b (multiplication scaling)
-  // + 1b (addition) = 29b.
-  // Hence the output bit depth is 15b.
   output[0] = round_shift(x0, bit);
   output[1] = round_shift(x1, bit);
   output[2] = round_shift(x2, bit);
