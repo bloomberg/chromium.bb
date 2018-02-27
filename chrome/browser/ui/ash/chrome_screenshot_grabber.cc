@@ -259,11 +259,6 @@ void EnsureDirectoryExistsCallback(
   }
 }
 
-bool ScreenshotsDisabled() {
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kDisableScreenshots);
-}
-
 bool ShouldUse24HourClock() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (profile)
@@ -398,7 +393,7 @@ ChromeScreenshotGrabber* ChromeScreenshotGrabber::Get() {
 }
 
 void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
-  if (ScreenshotsDisabled()) {
+  if (!ScreenshotsAllowed()) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -430,7 +425,7 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
 void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
     aura::Window* window,
     const gfx::Rect& rect) {
-  if (ScreenshotsDisabled()) {
+  if (!ScreenshotsAllowed()) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -444,7 +439,7 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
 }
 
 void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
-  if (ScreenshotsDisabled()) {
+  if (!ScreenshotsAllowed()) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -472,7 +467,7 @@ void ChromeScreenshotGrabber::OnTookScreenshot(
     return;
   }
 
-  if (ScreenshotsDisabled()) {
+  if (!ScreenshotsAllowed()) {
     OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
     return;
   }
@@ -705,4 +700,15 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
 
 Profile* ChromeScreenshotGrabber::GetProfile() {
   return ProfileManager::GetActiveUserProfile();
+}
+
+bool ChromeScreenshotGrabber::ScreenshotsAllowed() const {
+  // Have two ways to disable screenshots:
+  // - local state pref whose value is set from policy;
+  // - simple flag which is set/unset when entering/exiting special modes where
+  // screenshots should be disabled (pref is problematic because it's kept
+  // across reboots, hence if the device crashes it may get stuck with the wrong
+  // value).
+  return screenshots_allowed_ && !g_browser_process->local_state()->GetBoolean(
+      prefs::kDisableScreenshots);
 }

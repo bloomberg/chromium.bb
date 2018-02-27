@@ -118,3 +118,19 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   EXPECT_TRUE(clipboard_changed_);
   EXPECT_TRUE(IsImageClipboardAvailable());
 }
+
+IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest,
+                       ScreenshotsDisallowed) {
+  ChromeScreenshotGrabber* chrome_screenshot_grabber =
+      ChromeScreenshotGrabber::Get();
+  chrome_screenshot_grabber->set_screenshots_allowed(false);
+  SetTestObserver(chrome_screenshot_grabber, this);
+
+  chrome_screenshot_grabber->HandleTakeWindowScreenshot(
+      ash::Shell::GetPrimaryRootWindow());
+  RunLoop();
+
+  EXPECT_TRUE(notification_added_);
+  EXPECT_TRUE(display_service_->GetNotification(std::string("screenshot")));
+  EXPECT_EQ(ui::ScreenshotResult::DISABLED, screenshot_result_);
+}

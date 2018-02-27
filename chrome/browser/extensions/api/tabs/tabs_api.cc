@@ -95,9 +95,12 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "chrome/browser/chromeos/ash_config.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/aura/window.h"
@@ -264,16 +267,22 @@ bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
       APIPermission::kLockWindowFullscreenPrivate);
 }
 
-void SetLockedFullscreenState(Browser* browser, bool enabled) {
+void SetLockedFullscreenState(Browser* browser, bool locked) {
   aura::Window* window = browser->window()->GetNativeWindow();
   // TRUSTED_PINNED is used here because that one locks the window fullscreen
   // without allowing the user to exit (as opposed to regular PINNED).
   window->SetProperty(ash::kWindowPinTypeKey,
-                      enabled ? ash::mojom::WindowPinType::TRUSTED_PINNED
-                              : ash::mojom::WindowPinType::NONE);
+                      locked ? ash::mojom::WindowPinType::TRUSTED_PINNED
+                             : ash::mojom::WindowPinType::NONE);
 
   // Update the set of available browser commands.
   browser->command_controller()->LockedFullscreenStateChanged();
+
+  // Disallow screenshots in locked fullscreen mode.
+  // TODO(isandrk, 816900): ChromeScreenshotGrabber isn't implemented in Mash
+  // yet, remove this conditional when it becomes available.
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
+    ChromeScreenshotGrabber::Get()->set_screenshots_allowed(!locked);
 
   // Reset the clipboard and kill dev tools when entering or exiting locked
   // fullscreen (security concerns).
