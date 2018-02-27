@@ -89,7 +89,7 @@ void WebstoreProvider::Start(const base::string16& query) {
     webstore_search_.reset(new JSONResponseFetcher(
         base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
                    base::Unretained(this)),
-        profile_->GetRequestContext()));
+        profile_));
   }
 
   query_pending_ = true;

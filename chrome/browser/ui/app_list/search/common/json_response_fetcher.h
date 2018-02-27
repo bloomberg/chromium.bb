@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 
@@ -20,9 +19,12 @@ class DictionaryValue;
 class Value;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace content {
+class BrowserContext;
+}
+
+namespace network {
+class SimpleURLLoader;
 }
 
 namespace app_list {
@@ -31,15 +33,15 @@ namespace app_list {
 // sandboxed utility process to parse it to a DictionaryValue.
 // TODO(rkc): Add the ability to give control of handling http failures to
 // the consumers of this class.
-class JSONResponseFetcher : public net::URLFetcherDelegate {
+class JSONResponseFetcher {
  public:
   // Callback to pass back the parsed json dictionary returned from the server.
   // Invoked with NULL if there is an error.
   typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)> Callback;
 
   JSONResponseFetcher(const Callback& callback,
-                      net::URLRequestContextGetter* context_getter);
-  ~JSONResponseFetcher() override;
+                      content::BrowserContext* browser_context);
+  ~JSONResponseFetcher();
 
   // Starts to fetch results for the given |query_url|.
   void Start(const GURL& query_url);
@@ -50,13 +52,12 @@ class JSONResponseFetcher : public net::URLFetcherDelegate {
   void OnJsonParseSuccess(std::unique_ptr<base::Value> parsed_json);
   void OnJsonParseError(const std::string& error);
 
-  // net::URLFetcherDelegate overrides:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Invoked from SimpleURLLoader after download is complete.
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   Callback callback_;
-  net::URLRequestContextGetter* context_getter_;
-
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  content::BrowserContext* browser_context_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   base::WeakPtrFactory<JSONResponseFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JSONResponseFetcher);
