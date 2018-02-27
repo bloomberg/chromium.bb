@@ -71,7 +71,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.yahoo.com',
       'http://www.quora.com',
       'https://www.macys.com',
-      'https://www.reddit.com',
       'http://infomoney.com.br',
       'http://www.listindiario.com',
     ]
