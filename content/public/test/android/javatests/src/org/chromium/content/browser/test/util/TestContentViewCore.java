@@ -197,12 +197,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public void setBackgroundOpaque(boolean opaque) {}
-
-    @Override
-    public void setFullscreenRequiredForOrientationLock(boolean value) {}
-
-    @Override
     public int getTopControlsShrinkBlinkHeightForTesting() {
         return 0;
     }

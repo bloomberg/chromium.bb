@@ -332,18 +332,6 @@ public interface ContentViewCore {
      */
     boolean getIsMobileOptimizedHint();
 
-    /**
-     * Set the background color mode.
-     * @param opaque {@code true} if the background should be set to default opaque mode.
-     */
-    void setBackgroundOpaque(boolean opaque);
-
-    /**
-     * Set whether the ContentViewCore requires the WebContents to be fullscreen in order to lock
-     * the screen orientation.
-     */
-    void setFullscreenRequiredForOrientationLock(boolean value);
-
     // Test-only methods
 
     /**

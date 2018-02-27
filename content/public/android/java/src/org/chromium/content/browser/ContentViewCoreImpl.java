@@ -188,10 +188,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // True if we want to disable Android native event batching and use compositor event queue.
     private boolean mShouldRequestUnbufferedDispatch;
 
-    // Whether the ContentViewCore requires the WebContents to be fullscreen in order to lock the
-    // screen orientation.
-    private boolean mFullscreenRequiredForOrientationLock = true;
-
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
 
@@ -1007,13 +1003,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return mIsMobileOptimizedHint;
     }
 
-    @Override
-    public void setBackgroundOpaque(boolean opaque) {
-        if (mNativeContentViewCore != 0) {
-            nativeSetBackgroundOpaque(mNativeContentViewCore, opaque);
-        }
-    }
-
     /**
      * Offer a long press gesture to the embedding View, primarily for WebView compatibility.
      *
@@ -1084,16 +1073,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         nativeSetDIPScale(mNativeContentViewCore, dipScale);
     }
 
-    @Override
-    public void setFullscreenRequiredForOrientationLock(boolean value) {
-        mFullscreenRequiredForOrientationLock = value;
-    }
-
-    @CalledByNative
-    private boolean isFullscreenRequiredForOrientationLock() {
-        return mFullscreenRequiredForOrientationLock;
-    }
-
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             WindowAndroid window, float dipScale);
     private static native ContentViewCoreImpl nativeFromWebContentsAndroid(WebContents webContents);
@@ -1123,10 +1102,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private native void nativeSelectPopupMenuItems(
             long nativeContentViewCore, long nativeSelectPopupSourceFrame, int[] indices);
     private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
-    private native void nativeWasResized(long nativeContentViewCore);
     private native void nativeSetTextTrackSettings(long nativeContentViewCore,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
             String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
             String textTrackTextShadow, String textTrackTextSize);
-    private native void nativeSetBackgroundOpaque(long nativeContentViewCore, boolean opaque);
 }
