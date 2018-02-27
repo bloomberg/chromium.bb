@@ -16,15 +16,29 @@
 
 namespace cryptohome {
 
+// Returns a MountError code from the MountEx |reply| returning
+// MOUNT_ERROR_NONE if the reply is well-formed and there is no error.
+CHROMEOS_EXPORT MountError
+MountExReplyToMountError(const base::Optional<BaseReply>& reply);
+
 // Returns a MountError code from |reply|, returning MOUNT_ERROR_NONE
 // if the reply is well-formed and there is no error.
 CHROMEOS_EXPORT MountError
 BaseReplyToMountError(const base::Optional<BaseReply>& reply);
 
-// Returns a MountError code from the MountEx |reply| returning
+// Returns a MountError code from the GetKeyDataEx |reply| returning
 // MOUNT_ERROR_NONE if the reply is well-formed and there is no error.
 CHROMEOS_EXPORT MountError
-MountExReplyToMountError(const base::Optional<BaseReply>& reply);
+GetKeyDataReplyToMountError(const base::Optional<BaseReply>& reply);
+
+CHROMEOS_EXPORT std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
+    const base::Optional<BaseReply>& reply);
+
+// Extracts the account's disk usage size from |reply|.
+// If |reply| is malformed, returns -1.
+CHROMEOS_EXPORT
+int64_t AccountDiskUsageReplyToUsageSize(
+    const base::Optional<BaseReply>& reply);
 
 // Extracts the mount hash from |reply|.
 // This method assumes |reply| is well-formed. To check if a reply
@@ -32,12 +46,6 @@ MountExReplyToMountError(const base::Optional<BaseReply>& reply);
 // MOUNT_ERROR_NONE.
 CHROMEOS_EXPORT const std::string& MountExReplyToMountHash(
     const BaseReply& reply);
-
-// Extracts the account's disk usage size from |reply|.
-// If |reply| is malformed, returns -1.
-CHROMEOS_EXPORT
-int64_t AccountDiskUsageReplyToUsageSize(
-    const base::Optional<BaseReply>& reply);
 
 // Creates an AuthorizationRequest from the given secret and label.
 CHROMEOS_EXPORT AuthorizationRequest

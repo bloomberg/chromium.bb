@@ -21,9 +21,6 @@ MockHomedirMethods::~MockHomedirMethods() = default;
 void MockHomedirMethods::SetUp(bool success, MountError return_code) {
   success_ = success;
   return_code_ = return_code;
-  ON_CALL(*this, GetKeyDataEx(_, _, _, _))
-      .WillByDefault(
-          WithArgs<3>(Invoke(this, &MockHomedirMethods::DoGetDataCallback)));
   ON_CALL(*this, CheckKeyEx(_, _, _, _))
       .WillByDefault(
           WithArgs<3>(Invoke(this, &MockHomedirMethods::DoCallback)));
@@ -39,10 +36,6 @@ void MockHomedirMethods::SetUp(bool success, MountError return_code) {
 
 void MockHomedirMethods::DoCallback(const Callback& callback) {
   callback.Run(success_, return_code_);
-}
-
-void MockHomedirMethods::DoGetDataCallback(const GetKeyDataCallback& callback) {
-  callback.Run(success_, return_code_, std::vector<KeyDefinition>());
 }
 
 void MockHomedirMethods::DoAddKeyCallback(const Callback& callback) {

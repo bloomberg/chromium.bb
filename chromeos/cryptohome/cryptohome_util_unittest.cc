@@ -14,6 +14,14 @@
 
 namespace cryptohome {
 
+constexpr char kKeyLabel[] = "key_label";
+
+constexpr int64_t kKeyRevision = 123;
+constexpr char kProviderData1Name[] = "data_1";
+constexpr int64_t kProviderData1Number = 12345;
+constexpr char kProviderData2Name[] = "data_2";
+constexpr char kProviderData2Bytes[] = "data_2 bytes";
+
 TEST(CryptohomeUtilTest, CreateAuthorizationRequestEmptyLabel) {
   const std::string kExpectedSecret = "secret";
 
@@ -382,6 +390,90 @@ TEST(CryptohomeUtilTest, AccountDiskUsageReplyToUsageSizeValidReply) {
   int64_t size = AccountDiskUsageReplyToUsageSize(reply);
 
   ASSERT_EQ(size, expected_size);
+}
+
+TEST(CryptohomeUtilTest, GetKeyDataReplyToMountErrorNullOptional) {
+  const base::Optional<BaseReply> reply = base::nullopt;
+
+  MountError actual_error = GetKeyDataReplyToMountError(reply);
+
+  ASSERT_EQ(actual_error, MOUNT_ERROR_FATAL);
+}
+
+TEST(CryptohomeUtilTest, GetKeyDataReplyToMountErrorEmptyReply) {
+  const base::Optional<BaseReply> reply(base::in_place);
+
+  MountError actual_error = GetKeyDataReplyToMountError(reply);
+
+  ASSERT_EQ(actual_error, MOUNT_ERROR_FATAL);
+}
+
+TEST(CryptohomeUtilTest, GetKeyDataReplyToMountErrorNoExtension) {
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_NOT_SET);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  MountError actual_error = GetKeyDataReplyToMountError(reply);
+
+  ASSERT_EQ(actual_error, MOUNT_ERROR_FATAL);
+}
+
+TEST(CryptohomeUtilTest, GetKeyDataReplyToMountErrorErrorInReply) {
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_KEY_NOT_FOUND);
+  result.MutableExtension(GetKeyDataReply::reply);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  MountError actual_error = GetKeyDataReplyToMountError(reply);
+
+  ASSERT_EQ(actual_error, MOUNT_ERROR_KEY_FAILURE);
+}
+
+TEST(CryptohomeUtilTest, GetKeyDataReplyToKeyDefinitionsTwoEntries) {
+  BaseReply result;
+  result.set_error(CRYPTOHOME_ERROR_NOT_SET);
+  GetKeyDataReply* get_key_data_reply =
+      result.MutableExtension(GetKeyDataReply::reply);
+  KeyData* key_data = get_key_data_reply->add_key_data();
+  key_data->set_type(KeyData::KEY_TYPE_PASSWORD);
+  key_data->set_label(kKeyLabel);
+  key_data->mutable_privileges()->set_update(false);
+  key_data->set_revision(kKeyRevision);
+  key_data->add_authorization_data()->set_type(
+      KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256);
+  KeyProviderData* data = key_data->mutable_provider_data();
+  KeyProviderData::Entry* entry1 = data->add_entry();
+  entry1->set_name(kProviderData1Name);
+  entry1->set_number(kProviderData1Number);
+  KeyProviderData::Entry* entry2 = data->add_entry();
+  entry2->set_name(kProviderData2Name);
+  entry2->set_bytes(kProviderData2Bytes);
+  const base::Optional<BaseReply> reply = std::move(result);
+
+  std::vector<KeyDefinition> key_definitions =
+      GetKeyDataReplyToKeyDefinitions(reply);
+
+  // Verify that the call was successful and the result was correctly parsed.
+  ASSERT_EQ(1u, key_definitions.size());
+  const KeyDefinition& key_definition = key_definitions.front();
+  EXPECT_EQ(KeyDefinition::TYPE_PASSWORD, key_definition.type);
+  EXPECT_EQ(PRIV_MOUNT | PRIV_ADD | PRIV_REMOVE, key_definition.privileges);
+  EXPECT_EQ(kKeyRevision, key_definition.revision);
+  ASSERT_EQ(1u, key_definition.authorization_data.size());
+  EXPECT_EQ(KeyDefinition::AuthorizationData::TYPE_HMACSHA256,
+            key_definition.authorization_data.front().type);
+  ASSERT_EQ(2u, key_definition.provider_data.size());
+  const KeyDefinition::ProviderData* provider_data =
+      &key_definition.provider_data[0];
+  EXPECT_EQ(kProviderData1Name, provider_data->name);
+  ASSERT_TRUE(provider_data->number);
+  EXPECT_EQ(kProviderData1Number, *provider_data->number.get());
+  EXPECT_FALSE(provider_data->bytes);
+  provider_data = &key_definition.provider_data[1];
+  EXPECT_EQ(kProviderData2Name, provider_data->name);
+  EXPECT_FALSE(provider_data->number);
+  ASSERT_TRUE(provider_data->bytes);
+  EXPECT_EQ(kProviderData2Bytes, *provider_data->bytes.get());
 }
 
 }  // namespace cryptohome

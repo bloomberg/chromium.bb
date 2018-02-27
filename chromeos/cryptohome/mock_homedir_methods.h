@@ -22,11 +22,6 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
 
   void SetUp(bool success, MountError return_code);
 
-  MOCK_METHOD4(GetKeyDataEx,
-               void(const Identification& id,
-                    const AuthorizationRequest& auth,
-                    const GetKeyDataRequest& request,
-                    const GetKeyDataCallback& callback));
   MOCK_METHOD4(CheckKeyEx,
                void(const Identification& id,
                     const AuthorizationRequest& auth,
@@ -54,7 +49,6 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
 
  private:
   void DoCallback(const Callback& callback);
-  void DoGetDataCallback(const GetKeyDataCallback& callback);
   void DoAddKeyCallback(const Callback& callback);
 
   bool success_ = false;

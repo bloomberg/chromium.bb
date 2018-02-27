@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chromeos/cryptohome/homedir_methods.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -39,10 +41,7 @@ class EasyUnlockGetKeysOperation {
 
   // Callback for GetKeyData(). Updates |devices_|, increments |key_index_|, and
   // calls GetKeyData() again.
-  void OnGetKeyData(
-      bool success,
-      cryptohome::MountError return_code,
-      const std::vector<cryptohome::KeyDefinition>& key_definitions);
+  void OnGetKeyData(base::Optional<cryptohome::BaseReply> reply);
 
   UserContext user_context_;
   GetKeysCallback callback_;
