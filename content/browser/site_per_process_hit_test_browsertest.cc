@@ -1112,10 +1112,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
 // pointer-events: none.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        SurfaceHitTestPointerEventsNone) {
-  // TODO(riajiang): Fix Viz hit-test for pointer-events:none. crbug.com/812012.
-  if (GetParam())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1153,7 +1149,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   child_event.click_count = 1;
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
+  InputEventAckWaiter waiter(root->current_frame_host()->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseDown);
   router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
+  waiter.Wait();
 
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
   EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x, 2);
