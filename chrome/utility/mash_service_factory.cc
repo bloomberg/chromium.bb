@@ -9,8 +9,8 @@
 #include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch.h"
+#include "ash/components/touch_hud/touch_hud_application.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/touch_hud/mus/touch_hud_application.h"
 #include "ash/window_manager_service.h"
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -75,8 +75,8 @@ std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
   return std::make_unique<quick_launch::QuickLaunch>();
 }
 
-std::unique_ptr<service_manager::Service> CreateTouchHud() {
-  return std::make_unique<ash::touch_hud::TouchHudApplication>();
+std::unique_ptr<service_manager::Service> CreateTouchHudApp() {
+  return std::make_unique<touch_hud::TouchHudApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateFontService() {
@@ -97,7 +97,7 @@ void MashServiceFactory::RegisterOutOfProcessServices(
                       &CreateQuickLaunch);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, "autoclick_app", &CreateAutoclickApp);
-  RegisterMashService(services, "touch_hud", &CreateTouchHud);
+  RegisterMashService(services, "touch_hud_app", &CreateTouchHudApp);
   RegisterMashService(services, font_service::mojom::kServiceName,
                       &CreateFontService);
 }

@@ -152,7 +152,7 @@ static_library("utility") {
       "//ash/components/autoclick:lib",
       "//ash/components/quick_launch:lib",
       "//ash/components/quick_launch/public/mojom",
-      "//ash/touch_hud/mus:lib",
+      "//ash/components/touch_hud:lib",
       "//chrome/services/file_util:lib",
       "//components/font_service:lib",
       "//components/font_service/public/interfaces",

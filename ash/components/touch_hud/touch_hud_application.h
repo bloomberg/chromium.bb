@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TOUCH_HUD_MUS_TOUCH_HUD_APPLICATION_H_
-#define ASH_TOUCH_HUD_MUS_TOUCH_HUD_APPLICATION_H_
-
-#include <map>
+#ifndef ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
+#define ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
 
 #include "base/macros.h"
 #include "mash/public/mojom/launchable.mojom.h"
@@ -16,9 +14,8 @@
 namespace views {
 class AuraInit;
 class Widget;
-}
+}  // namespace views
 
-namespace ash {
 namespace touch_hud {
 
 class TouchHudApplication : public service_manager::Service,
@@ -53,6 +50,5 @@ class TouchHudApplication : public service_manager::Service,
 };
 
 }  // namespace touch_hud
-}  // namespace ash
 
-#endif  // ASH_TOUCH_HUD_MUS_TOUCH_HUD_APPLICATION_H_
+#endif  // ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_

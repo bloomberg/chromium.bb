@@ -444,8 +444,8 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
     packaged_services += [
       "//ash/components/autoclick:manifest",
       "//ash/components/quick_launch:manifest",
+      "//ash/components/touch_hud:manifest",
       "//ash:manifest",
-      "//ash/touch_hud/mus:manifest",
       "//components/font_service:manifest",
     ]
   }

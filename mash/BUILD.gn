@@ -28,8 +28,8 @@ group("all") {
     deps += [
       "//ash/components/autoclick:autoclick_app",
       "//ash/components/quick_launch",
+      "//ash/components/touch_hud:touch_hud_app",
       "//ash/standalone:ash_standalone",
-      "//ash/touch_hud/mus:touch_hud",
       "//mash:mash_unittests",
     ]
   }

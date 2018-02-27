@@ -1149,7 +1149,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
   if (config == Config::MASH && shell_delegate_->GetShellConnector() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
     mash::mojom::LaunchablePtr launchable;
-    shell_delegate_->GetShellConnector()->BindInterface("touch_hud",
+    shell_delegate_->GetShellConnector()->BindInterface("touch_hud_app",
                                                         &launchable);
     launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
   }

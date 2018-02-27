@@ -1,5 +1,5 @@
 {
-  "name": "touch_hud",
+  "name": "touch_hud_app",
   "display_name": "Touch Hud",
   "sandbox_type": "none",
   "interface_provider_specs": {
