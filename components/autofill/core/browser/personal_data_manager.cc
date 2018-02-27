@@ -41,12 +41,10 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 
@@ -358,22 +356,20 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pending_server_creditcards_query_(0),
       app_locale_(app_locale),
       pref_service_(nullptr),
-      account_tracker_(nullptr),
+      identity_manager_(nullptr),
       is_off_the_record_(false),
       has_logged_stored_profile_metrics_(false),
       has_logged_stored_credit_card_metrics_(false) {}
 
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
-                               AccountTrackerService* account_tracker,
-                               SigninManagerBase* signin_manager,
+                               identity::IdentityManager* identity_manager,
                                bool is_off_the_record) {
   CountryNames::SetLocaleString(app_locale_);
 
   database_ = database;
   SetPrefService(pref_service);
-  account_tracker_ = account_tracker;
-  signin_manager_ = signin_manager;
+  identity_manager_ = identity_manager;
   is_off_the_record_ = is_off_the_record;
 
   if (!is_off_the_record_)
@@ -1992,9 +1988,8 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
 
     // Wallet addresses don't have an email address, use the one from the
     // currently signed-in account.
-    std::string account_id = signin_manager_->GetAuthenticatedAccountId();
     base::string16 email =
-        base::UTF8ToUTF16(account_tracker_->GetAccountInfo(account_id).email);
+        base::UTF8ToUTF16(identity_manager_->GetPrimaryAccountInfo().email);
     if (!email.empty())
       existing_profiles->back().SetRawInfo(EMAIL_ADDRESS, email);
 

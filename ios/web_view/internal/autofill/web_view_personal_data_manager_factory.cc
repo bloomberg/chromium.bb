@@ -13,8 +13,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
-#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 
@@ -38,8 +37,7 @@ WebViewPersonalDataManagerFactory::WebViewPersonalDataManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "PersonalDataManager",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
-  DependsOn(WebViewSigninManagerFactory::GetInstance());
+  DependsOn(WebViewIdentityManagerFactory::GetInstance());
   DependsOn(WebViewWebDataServiceWrapperFactory::GetInstance());
 }
 
@@ -57,8 +55,8 @@ WebViewPersonalDataManagerFactory::BuildServiceInstanceFor(
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       browser_state->GetPrefs(),
-      WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state),
-      WebViewSigninManagerFactory::GetForBrowserState(browser_state),
+      WebViewIdentityManagerFactory::GetInstance()->GetForBrowserState(
+          browser_state),
       browser_state->IsOffTheRecord());
   return service;
 }
