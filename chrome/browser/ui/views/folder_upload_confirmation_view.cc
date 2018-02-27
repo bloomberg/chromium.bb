@@ -12,8 +12,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/window/dialog_client_view.h"
 
 FolderUploadConfirmationView::FolderUploadConfirmationView(
     const base::FilePath& path,
@@ -57,15 +59,15 @@ base::string16 FolderUploadConfirmationView::GetWindowTitle() const {
       base::saturated_cast<int>(selected_files_.size()));
 }
 
-int FolderUploadConfirmationView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 FolderUploadConfirmationView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_CONFIRM_FILE_UPLOAD_OK_BUTTON);
   return DialogDelegateView::GetDialogButtonLabel(button);
+}
+
+views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
+  return GetDialogClientView()->cancel_button();
 }
 
 bool FolderUploadConfirmationView::ShouldShowCloseButton() const {
