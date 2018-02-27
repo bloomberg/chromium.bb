@@ -1095,7 +1095,8 @@ Polymer({
   /** @private */
   getPropertiesToSet_: function() {
     var propertiesToSet = Object.assign({}, this.configProperties_);
-    propertiesToSet.GUID = this.guid;
+    if (this.guid)
+      propertiesToSet.GUID = this.guid;
     var eap = this.getEap_(propertiesToSet);
     if (eap)
       this.setEapProperties_(eap);

@@ -93,14 +93,14 @@ bool VPNRequiresCredentials(const std::string& service_path,
     provider_properties.GetStringWithoutPathExpansion(
         shill::kOpenVPNUserProperty, &username);
     if (username.empty()) {
-      NET_LOG_EVENT("OpenVPN: No username", service_path);
+      NET_LOG(ERROR) << "OpenVPN: No username for: " << service_path;
       return true;
     }
     bool passphrase_required = false;
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG_EVENT("OpenVPN: Passphrase Required", service_path);
+      NET_LOG(ERROR) << "OpenVPN: Passphrase Required for: " << service_path;
       return true;
     }
     NET_LOG_EVENT("OpenVPN Is Configured", service_path);
@@ -109,16 +109,16 @@ bool VPNRequiresCredentials(const std::string& service_path,
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kL2tpIpsecPskRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG_EVENT("VPN: PSK Required", service_path);
+      NET_LOG(ERROR) << "VPN: PSK Required for: " << service_path;
       return true;
     }
     provider_properties.GetBooleanWithoutPathExpansion(
         shill::kPassphraseRequiredProperty, &passphrase_required);
     if (passphrase_required) {
-      NET_LOG_EVENT("VPN: Passphrase Required", service_path);
+      NET_LOG(ERROR) << "VPN: Passphrase Required for: " << service_path;
       return true;
     }
-    NET_LOG_EVENT("VPN Is Configured", service_path);
+    NET_LOG(EVENT) << "VPN Is Configured: " << service_path;
   }
   return false;
 }
@@ -448,6 +448,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
           shill::kL2tpIpsecClientCertIdProperty, &vpn_client_cert_id);
     }
     if (vpn_provider_type.empty() || vpn_provider_host.empty()) {
+      NET_LOG(ERROR) << "VPN Provider missing for: " << service_path;
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -544,7 +545,6 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     DCHECK(provider_properties);
     if (VPNRequiresCredentials(service_path, vpn_provider_type,
                                *provider_properties)) {
-      NET_LOG_USER("VPN Requires Credentials", service_path);
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -572,6 +572,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
   if (type != shill::kTypeVPN && check_error_state) {
     // For non VPNs, 'Connectable' must be false here, so fail immediately if
     // |check_error_state| is true. (For VPNs 'Connectable' is not reliable).
+    NET_LOG(ERROR) << "Non VPN is unconfigured: " << service_path;
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
     return;
   }
