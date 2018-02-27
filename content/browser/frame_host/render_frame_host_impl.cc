@@ -2725,10 +2725,8 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   // BeforeUnload or Unload event.
   // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
   // refactored in Blink. See crbug.com/466089
-  if (!is_loading_) {
-    LOG(WARNING) << "OnDidStopLoading was called twice.";
+  if (!is_loading_)
     return;
-  }
 
   is_loading_ = false;
   navigation_request_.reset();
