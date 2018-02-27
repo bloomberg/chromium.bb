@@ -13,6 +13,8 @@
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using google::protobuf::RepeatedPtrField;
+
 namespace cryptohome {
 
 namespace {
@@ -90,6 +92,87 @@ MountError BaseReplyToMountError(const base::Optional<BaseReply>& reply) {
     return MOUNT_ERROR_FATAL;
 
   return CryptohomeErrorToMountError(reply->error());
+}
+
+MountError GetKeyDataReplyToMountError(const base::Optional<BaseReply>& reply) {
+  if (IsEmpty(reply))
+    return MOUNT_ERROR_FATAL;
+
+  if (!reply->HasExtension(GetKeyDataReply::reply)) {
+    LOGIN_LOG(ERROR)
+        << "GetKeyDataEx failed with no GetKeyDataReply extension in reply.";
+    return MOUNT_ERROR_FATAL;
+  }
+  return CryptohomeErrorToMountError(reply->error());
+}
+
+// TODO(crbug.com/797848): Finish testing this method.
+std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
+    const base::Optional<BaseReply>& reply) {
+  const RepeatedPtrField<KeyData>& key_data =
+      reply->GetExtension(GetKeyDataReply::reply).key_data();
+  std::vector<KeyDefinition> key_definitions;
+  for (RepeatedPtrField<KeyData>::const_iterator it = key_data.begin();
+       it != key_data.end(); ++it) {
+    // Extract |type|, |label| and |revision|.
+    DCHECK_EQ(KeyData::KEY_TYPE_PASSWORD, it->type());
+    key_definitions.push_back(KeyDefinition(std::string() /* secret */,
+                                            it->label(), 0 /* privileges */));
+    KeyDefinition& key_definition = key_definitions.back();
+    key_definition.revision = it->revision();
+
+    // Extract |privileges|.
+    const KeyPrivileges& privileges = it->privileges();
+    if (privileges.mount())
+      key_definition.privileges |= PRIV_MOUNT;
+    if (privileges.add())
+      key_definition.privileges |= PRIV_ADD;
+    if (privileges.remove())
+      key_definition.privileges |= PRIV_REMOVE;
+    if (privileges.update())
+      key_definition.privileges |= PRIV_MIGRATE;
+    if (privileges.authorized_update())
+      key_definition.privileges |= PRIV_AUTHORIZED_UPDATE;
+
+    // Extract |authorization_data|.
+    for (RepeatedPtrField<KeyAuthorizationData>::const_iterator auth_it =
+             it->authorization_data().begin();
+         auth_it != it->authorization_data().end(); ++auth_it) {
+      key_definition.authorization_data.push_back(
+          KeyDefinition::AuthorizationData());
+      KeyAuthorizationDataToAuthorizationData(
+          *auth_it, &key_definition.authorization_data.back());
+    }
+
+    // Extract |provider_data|.
+    for (RepeatedPtrField<KeyProviderData::Entry>::const_iterator
+             provider_data_it = it->provider_data().entry().begin();
+         provider_data_it != it->provider_data().entry().end();
+         ++provider_data_it) {
+      // Extract |name|.
+      key_definition.provider_data.push_back(
+          KeyDefinition::ProviderData(provider_data_it->name()));
+      KeyDefinition::ProviderData& provider_data =
+          key_definition.provider_data.back();
+
+      int data_items = 0;
+
+      // Extract |number|.
+      if (provider_data_it->has_number()) {
+        provider_data.number.reset(new int64_t(provider_data_it->number()));
+        ++data_items;
+      }
+
+      // Extract |bytes|.
+      if (provider_data_it->has_bytes()) {
+        provider_data.bytes.reset(new std::string(provider_data_it->bytes()));
+        ++data_items;
+      }
+
+      DCHECK_EQ(1, data_items);
+    }
+  }
+  return key_definitions;
 }
 
 int64_t AccountDiskUsageReplyToUsageSize(

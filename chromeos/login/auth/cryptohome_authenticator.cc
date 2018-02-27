@@ -296,15 +296,15 @@ void OnGetSystemSalt(const base::WeakPtr<AuthAttemptState>& attempt,
 //   |attempt->user_context| can be transformed with Chrome's default hashing
 //   algorithm and the system salt.
 // The resulting key is then passed to cryptohome's MountEx().
-void OnGetKeyDataEx(
-    const base::WeakPtr<AuthAttemptState>& attempt,
-    scoped_refptr<CryptohomeAuthenticator> resolver,
-    bool ephemeral,
-    bool create_if_nonexistent,
-    bool success,
-    cryptohome::MountError return_code,
-    const std::vector<cryptohome::KeyDefinition>& key_definitions) {
-  if (success) {
+void OnGetKeyDataEx(const base::WeakPtr<AuthAttemptState>& attempt,
+                    scoped_refptr<CryptohomeAuthenticator> resolver,
+                    bool ephemeral,
+                    bool create_if_nonexistent,
+                    base::Optional<cryptohome::BaseReply> reply) {
+  if (cryptohome::GetKeyDataReplyToMountError(reply) ==
+      cryptohome::MOUNT_ERROR_NONE) {
+    std::vector<cryptohome::KeyDefinition> key_definitions =
+        cryptohome::GetKeyDataReplyToKeyDefinitions(reply);
     if (key_definitions.size() == 1) {
       const cryptohome::KeyDefinition& key_definition = key_definitions.front();
       DCHECK_EQ(kCryptohomeGAIAKeyLabel, key_definition.label);
@@ -385,11 +385,11 @@ void StartMount(const base::WeakPtr<AuthAttemptState>& attempt,
 
   cryptohome::GetKeyDataRequest request;
   request.mutable_key()->mutable_data()->set_label(kCryptohomeGAIAKeyLabel);
-  cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
+  DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
       cryptohome::Identification(attempt->user_context.GetAccountId()),
       cryptohome::AuthorizationRequest(), request,
-      base::Bind(&OnGetKeyDataEx, attempt, resolver, ephemeral,
-                 create_if_nonexistent));
+      base::BindOnce(&OnGetKeyDataEx, attempt, resolver, ephemeral,
+                     create_if_nonexistent));
 }
 
 // Calls cryptohome's mount method for guest and also get the user hash from
