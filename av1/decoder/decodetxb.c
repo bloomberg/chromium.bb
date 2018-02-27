@@ -286,7 +286,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       } else {
         sign = aom_read_bit(r, ACCT_STR);
       }
-      if (level > NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+      if (level >= MAX_BASE_BR_RANGE) {
         level += read_golomb(xd, r);
       }
       cul_level += level;
