@@ -63,8 +63,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_removal_controller.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
@@ -361,9 +362,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Registrar for pref changes notifications to the local state.
   PrefChangeRegistrar _localStatePrefChangeRegistrar;
 
-  // Clears browsing data from ChromeBrowserStates.
-  BrowsingDataRemovalController* _browsingDataRemovalController;
-
   // The class in charge of showing/hiding the memory debugger when the
   // appropriate pref changes.
   MemoryDebuggerManager* _memoryDebuggerManager;
@@ -517,8 +515,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleShowPromo;
 // Crashes the application if requested.
 - (void)crashIfRequested;
-// Returns the BrowsingDataRemovalController. Lazily creates one if necessary.
-- (BrowsingDataRemovalController*)browsingDataRemovalController;
 // Clears incognito data that is specific to iOS and won't be cleared by
 // deleting the browser state.
 - (void)clearIOSSpecificIncognitoData;
@@ -864,24 +860,18 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [_tabSwitcher setOtrTabModel:self.otrTabModel];
 }
 
-- (BrowsingDataRemovalController*)browsingDataRemovalController {
-  if (!_browsingDataRemovalController) {
-    _browsingDataRemovalController =
-        [[BrowsingDataRemovalController alloc] init];
-  }
-  return _browsingDataRemovalController;
-}
-
 - (void)activateBVCAndMakeCurrentBVCPrimary {
   // If there are pending removal operations, the activation will be deferred
-  // until the callback for |removeBrowsingDataFromBrowserState:| is received.
-  if (![self.browsingDataRemovalController
-          hasPendingRemovalOperations:self.currentBrowserState]) {
-    [self.mainBVC setActive:YES];
-    [self.otrBVC setActive:YES];
+  // until the callback is received.
+  BrowsingDataRemover* browsingDataRemover =
+      BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
+          self.currentBrowserState);
+  if (browsingDataRemover && browsingDataRemover->IsRemoving())
+    return;
 
-    [self.currentBVC setPrimary:YES];
-  }
+  [self.mainBVC setActive:YES];
+  [self.otrBVC setActive:YES];
+  [self.currentBVC setPrimary:YES];
 }
 
 #pragma mark - Property implementation.
@@ -2051,21 +2041,18 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self.otrBVC setActive:NO];
   }
 
-  [self.browsingDataRemovalController
-      removeBrowsingDataFromBrowserState:browserState
-                                    mask:removeMask
-                              timePeriod:timePeriod
-                       completionHandler:^{
-                         // Activates browsing and enables web views.
-                         // Must be called only on the main thread.
-                         DCHECK([NSThread isMainThread]);
-                         [self.mainBVC setActive:YES];
-                         [self.otrBVC setActive:YES];
-                         [self.currentBVC setPrimary:YES];
+  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
+      ->Remove(timePeriod, removeMask, base::BindBlockArc(^{
+                 // Activates browsing and enables web views.
+                 // Must be called only on the main thread.
+                 DCHECK([NSThread isMainThread]);
+                 [self.mainBVC setActive:YES];
+                 [self.otrBVC setActive:YES];
+                 [self.currentBVC setPrimary:YES];
 
-                         if (completionBlock)
-                           completionBlock();
-                       }];
+                 if (completionBlock)
+                   completionBlock();
+               }));
 }
 
 #pragma mark - Navigation Controllers

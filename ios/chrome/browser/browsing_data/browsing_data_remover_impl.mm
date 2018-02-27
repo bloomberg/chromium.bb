@@ -13,10 +13,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/files/file_path.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -44,7 +46,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/sessions/session_util.h"
+#import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
 #include "ios/chrome/browser/ui/external_file_remover.h"
@@ -168,20 +170,32 @@ BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
 BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() = default;
 
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
-    ios::ChromeBrowserState* browser_state)
+    ios::ChromeBrowserState* browser_state,
+    SessionServiceIOS* session_service)
     : browser_state_(browser_state),
+      session_service_(session_service),
       context_getter_(browser_state->GetRequestContext()),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(browser_state);
+  DCHECK(browser_state_);
 }
 
 BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!is_removing_);
+}
+
+void BrowsingDataRemoverImpl::Shutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  browser_state_ = nullptr;
+
   if (is_removing_) {
     VLOG(1) << "BrowsingDataRemoverImpl shuts down with "
             << removal_queue_.size() << " pending tasks"
             << (pending_tasks_count_ ? " (including one in progress)" : "");
+
+    SetRemoving(false);
   }
 
   UMA_HISTOGRAM_EXACT_LINEAR("History.ClearBrowsingData.TaskQueueAtShutdown",
@@ -196,17 +210,12 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   // add a success flag.
   while (!removal_queue_.empty()) {
     RemovalTask task = std::move(removal_queue_.front());
+    removal_queue_.pop();
+
     if (!task.callback.is_null()) {
       current_task_runner->PostTask(FROM_HERE, std::move(task.callback));
     }
-    removal_queue_.pop();
   }
-}
-
-void BrowsingDataRemoverImpl::Shutdown() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  browser_state_ = nullptr;
 }
 
 bool BrowsingDataRemoverImpl::IsRemoving() const {
@@ -224,6 +233,7 @@ void BrowsingDataRemoverImpl::Remove(browsing_data::TimePeriod time_period,
                                      BrowsingDataRemoveMask mask,
                                      base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(browser_state_);
 
   // Should always remove something.
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
@@ -285,10 +295,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
   // Note: Before adding any method below, make sure that it can finish clearing
   // browsing data even if |browser_state)| is destroyed after this method call.
 
-  // If deleting history, clear visited links.
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
-    session_util::DeleteLastSession(browser_state_,
-                                    CreatePendingTaskCompletionClosure());
+    if (session_service_) {
+      NSString* state_path = base::SysUTF8ToNSString(
+          browser_state_->GetStatePath().AsUTF8Unsafe());
+      [session_service_
+          deleteLastSessionFileInDirectory:state_path
+                                completion:
+                                    CreatePendingTaskCompletionClosure()];
+    }
 
     // Remove the screenshots taken by the system when backgrounding the
     // application. Partial removal based on timePeriod is not required.
@@ -459,7 +474,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cache"));
-    ClearHttpCache(browser_state_->GetRequestContext(),
+    ClearHttpCache(context_getter_,
                    web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
                    delete_begin, delete_end,
                    AdaptCallbackForRepeating(
@@ -669,14 +684,15 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
     account_consistency_service->OnBrowsingDataRemoved();
   }
 
-  // Call the task callback. As this may cause |this| instance to be deleted,
-  // post the task to be executed asynchronously to ensure the object survive
-  // this method call.
   {
     RemovalTask task = std::move(removal_queue_.front());
-    if (!task.callback.is_null())
-      current_task_runner->PostTask(FROM_HERE, std::move(task.callback));
     removal_queue_.pop();
+
+    // Schedule the task to be executed soon. This ensure that the IsRemoving()
+    // value is correct when the callback is invoked.
+    if (!task.callback.is_null()) {
+      current_task_runner->PostTask(FROM_HERE, std::move(task.callback));
+    }
   }
 
   if (removal_queue_.empty()) {
@@ -684,8 +700,7 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
     return;
   }
 
-  // Yield execution before executing the next removal task. This ensure that
-  // RunNextTask() is not called before the callback has been invoked.
+  // Yield execution before executing the next removal task.
   current_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));

@@ -434,7 +434,6 @@ source_set("ui_internal") {
     "//url",
 
     # Fake dependencies to break cycles
-    "//ios/chrome/browser/browsing_data:browsing_data_internal",
     "//ios/chrome/browser/ui/settings",
   ]
   public_deps = [
@@ -443,7 +442,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/toolbar",
   ]
   allow_circular_includes_from = [
-    "//ios/chrome/browser/browsing_data:browsing_data_internal",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings",

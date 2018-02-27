@@ -12,8 +12,8 @@ source_set("browsing_data_remove_mask") {
 source_set("browsing_data") {
   sources = [
     "browsing_data_remover.h",
-    "browsing_data_remover_factory.cc",
     "browsing_data_remover_factory.h",
+    "browsing_data_remover_factory.mm",
     "browsing_data_remover_impl.h",
     "browsing_data_remover_impl.mm",
   ]
@@ -68,11 +68,10 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "browsing_data_removal_controller_unittest.mm",
+    "browsing_data_remover_impl_unittest.mm",
   ]
   deps = [
     ":browsing_data",
-    ":browsing_data_internal",
     "//base",
     "//base/test:test_support",
     "//components/browsing_data/core",
@@ -84,32 +83,12 @@ source_set("unit_tests") {
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/sessions:serialisation",
+    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",
     "//testing/gtest",
   ]
-}
-
-source_set("browsing_data_internal") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "browsing_data_removal_controller.h",
-    "browsing_data_removal_controller.mm",
-  ]
-  deps = [
-    ":browsing_data",
-    "//base",
-    "//components/browsing_data/core",
-    "//components/open_from_clipboard",
-    "//components/signin/ios/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/sessions:serialisation",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/snapshots",
-    "//ios/web",
-    "//net",
-  ]
-  libs = [ "WebKit.framework" ]
 }

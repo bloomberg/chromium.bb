@@ -20,6 +20,8 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 
+@class SessionServiceIOS;
+
 namespace ios {
 class ChromeBrowserState;
 }
@@ -34,7 +36,8 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
  public:
   // Creates a BrowsingDataRemoverImpl to remove browser data from the
   // specified ChromeBrowserstate. Use Remove to initiate the removal.
-  explicit BrowsingDataRemoverImpl(ios::ChromeBrowserState* browser_state);
+  BrowsingDataRemoverImpl(ios::ChromeBrowserState* browser_state,
+                          SessionServiceIOS* session_service);
   ~BrowsingDataRemoverImpl() override;
 
   // KeyedService implementation.
@@ -107,6 +110,9 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
 
   // ChromeBrowserState we're to remove from.
   ios::ChromeBrowserState* browser_state_ = nullptr;
+
+  // SessionService to use (allow injection of a specific instance for testing).
+  SessionServiceIOS* session_service_ = nil;
 
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
