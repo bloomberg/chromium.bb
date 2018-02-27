@@ -2564,6 +2564,9 @@ bool QuicConnection::SendConnectivityProbingPacket(
     QuicPacketWriter* probing_writer,
     const QuicSocketAddress& peer_address) {
   DCHECK(peer_address.IsInitialized());
+  // TODO(zhongyi): remove this histogram once the cause of the INTERNAL_ERROR
+  // increase is determined.
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SentConnectivityProbe", true);
   if (perspective_ == Perspective::IS_SERVER && probing_writer == nullptr) {
     // Server can use default packet writer to write probing packet.
     probing_writer = writer_;
