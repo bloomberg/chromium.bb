@@ -85,6 +85,8 @@ if (prebuilt_instrumented_libraries_available) {
       # DSOs before system-installed versions in library search path.
       "-Wl,-R,\$ORIGIN/instrumented_libraries_prebuilt/$sanitizer_type/lib",
       "-Wl,-z,origin",
+      # Add some padding to allow RPATHs to be modified later.
+      "-Wl,-R,________________________________________________________________PADDING________________________________________________________________"
     ]
   }
 }
@@ -173,6 +175,8 @@ if (use_locally_built_instrumented_libraries) {
       # DSOs before system-installed versions in library search path.
       "-Wl,-R,\$ORIGIN/instrumented_libraries/${sanitizer_type}/lib",
       "-Wl,-z,origin",
+      # Add some padding to allow RPATHs to be modified later.
+      "-Wl,-R,________________________________________________________________PADDING________________________________________________________________"
     ]
   }
 
