@@ -316,6 +316,18 @@ interface IApp : IDispatch {
 [
   object,
   dual,
+  uuid(084D78A8-B084-4E14-A629-A2C419B0E3D9),
+  helpstring("IApp2 Interface"),
+  pointer_default(unique)
+]
+interface IApp2 : IApp {
+  [propget] HRESULT untrustedData([out, retval] BSTR*);
+  [propput] HRESULT untrustedData([in] BSTR);
+};
+
+[
+  object,
+  dual,
   uuid(4DE778FE-F195-4ee3-9DAB-FE446C239221),
   helpstring("IAppCommand Interface"),
   pointer_default(unique)
@@ -334,6 +346,17 @@ interface IAppCommand : IDispatch {
                   [in, optional] VARIANT arg7,
                   [in, optional] VARIANT arg8,
                   [in, optional] VARIANT arg9);
+};
+
+[
+  object,
+  dual,
+  uuid(3D05F64F-71E3-48A5-BF6B-83315BC8AE1F),
+  helpstring("IAppCommand2 Interface"),
+  pointer_default(unique)
+]
+interface IAppCommand2 : IAppCommand {
+  [propget] HRESULT output([out, retval] BSTR*);
 };
 
 [
@@ -582,15 +605,20 @@ interface IAppWeb : IDispatch {
                             [out, retval] IDispatch** command);
 
   HRESULT cancel();
+
   [propget] HRESULT currentState([out, retval] IDispatch** current_state);
+
   HRESULT launch();
   HRESULT uninstall();
+
+  [propget] HRESULT serverInstallDataIndex([out, retval] BSTR*);
+  [propput] HRESULT serverInstallDataIndex([in] BSTR);
 };
 
 [
   object,
   dual,
-  uuid(68D6C2BD-712E-4c96-93E8-49CB8A9AAEED),
+  uuid(8476CE12-AE1F-4198-805C-BA0F9B783F57),
   helpstring("IAppCommandWeb Interface"),
   pointer_default(unique)
 ]
@@ -598,6 +626,7 @@ interface IAppCommandWeb : IDispatch {
   // Use values from the AppCommandStatus enum.
   [propget] HRESULT status([out, retval] UINT*);
   [propget] HRESULT exitCode([out, retval] DWORD*);
+  [propget] HRESULT output([out, retval] BSTR*);
   HRESULT execute([in, optional] VARIANT arg1,
                   [in, optional] VARIANT arg2,
                   [in, optional] VARIANT arg3,
@@ -720,6 +749,29 @@ interface IProcessLauncher : IUnknown {
 [
   object,
   oleautomation,
+  uuid(D106AB5F-A70E-400E-A21B-96208C1D8DBB),
+  helpstring("Google Update IProcessLauncher2 Interface"),
+  pointer_default(unique)
+]
+interface IProcessLauncher2 : IProcessLauncher {
+  // Launches the command line, returning the COM server's process ID and
+  // handles to the launched process and its stdout. The caller is responsible
+  // for closing the returned handles (by passing DUPLICATE_CLOSE_SOURCE to
+  // DuplicateHandle, for instance).
+  // @param cmd_line The full command line to execute.
+  // @param server_proc_id The process id of the IProcessLauncher2 COM server.
+  // @param proc_handle The process handle valid in the server's context
+  // @param stdout_handle The child process's stdout handle valid in the
+  //                      server's context.
+  HRESULT LaunchCmdLineEx([in, string] const WCHAR* cmd_line,
+                          [out] DWORD* server_proc_id,
+                          [out] ULONG_PTR* proc_handle,
+                          [out] ULONG_PTR* stdout_handle);
+};
+
+[
+  object,
+  oleautomation,
   uuid(5CCCB0EF-7073-4516-8028-4C628D0C8AAB),
   helpstring("Google Update IOneClickProcessLauncher Interface"),
   pointer_default(unique)
@@ -795,6 +847,20 @@ interface IJobObserver : IUnknown {
 [
   object,
   oleautomation,
+  uuid(19692F10-ADD2-4EFF-BE54-E61C62E40D13),
+  helpstring("IJobObserver2 Interface"),
+  pointer_default(unique)
+]
+interface IJobObserver2 : IUnknown {
+  // @param time_remaining_ms Remaining install time.
+  // @param pos Current install progress in percentage from 0 to 100. -1
+  //     indicates unknown.
+  HRESULT OnInstalling2([in] int time_remaining_ms, [in] int pos);
+};
+
+[
+  object,
+  oleautomation,
   uuid(31AC3F11-E5EA-4a85-8A3D-8E095A39C27B),
   helpstring("IGoogleUpdate Interface"),
   pointer_default(unique)
@@ -849,7 +915,9 @@ library GoogleUpdate3Lib {
   interface IGoogleUpdate3;
   interface IAppBundle;
   interface IApp;
+  interface IApp2;
   interface IAppCommand;
+  interface IAppCommand2;
   interface IAppVersion;
   interface IPackage;
   interface ICurrentState;
