@@ -116,6 +116,43 @@ static INLINE void transpose_32(int txfm_size, const __m128i *input,
     out1 = av1_round_shift_32_sse4_1(out1, bit);               \
   } while (0)
 
+// out0 = in0*w0 + in1*w1
+// out1 = -in1*w0 + in0*w1
+#define btf_32_type0_sse4_1_new(ww0, ww1, in0, in1, out0, out1, r, bit) \
+  do {                                                                  \
+    __m128i in0_w0, in1_w1, in0_w1, in1_w0;                             \
+    in0_w0 = _mm_mullo_epi32(in0, ww0);                                 \
+    in1_w1 = _mm_mullo_epi32(in1, ww1);                                 \
+    out0 = _mm_add_epi32(in0_w0, in1_w1);                               \
+    out0 = _mm_add_epi32(out0, r);                                      \
+    out0 = _mm_srai_epi32(out0, bit);                                   \
+    in0_w1 = _mm_mullo_epi32(in0, ww1);                                 \
+    in1_w0 = _mm_mullo_epi32(in1, ww0);                                 \
+    out1 = _mm_sub_epi32(in0_w1, in1_w0);                               \
+    out1 = _mm_add_epi32(out1, r);                                      \
+    out1 = _mm_srai_epi32(out1, bit);                                   \
+  } while (0)
+
+// out0 = in0*w0 + in1*w1
+// out1 = in1*w0 - in0*w1
+#define btf_32_type1_sse4_1_new(ww0, ww1, in0, in1, out0, out1, r, bit) \
+  do {                                                                  \
+    __m128i in0_w0, in1_w1, in0_w1, in1_w0;                             \
+    in0_w0 = _mm_mullo_epi32(in0, ww0);                                 \
+    in1_w1 = _mm_mullo_epi32(in1, ww1);                                 \
+    out0 = _mm_add_epi32(in0_w0, in1_w1);                               \
+    out0 = _mm_add_epi32(out0, r);                                      \
+    out0 = _mm_srai_epi32(out0, bit);                                   \
+    in0_w1 = _mm_mullo_epi32(in0, ww1);                                 \
+    in1_w0 = _mm_mullo_epi32(in1, ww0);                                 \
+    out1 = _mm_sub_epi32(in1_w0, in0_w1);                               \
+    out1 = _mm_add_epi32(out1, r);                                      \
+    out1 = _mm_srai_epi32(out1, bit);                                   \
+  } while (0)
+
+void fdct64_new_sse4_1(const __m128i *input, __m128i *output, int8_t cos_bit);
+void av1_fdct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
+                    const int8_t *stage_range);
 #ifdef __cplusplus
 }
 #endif
