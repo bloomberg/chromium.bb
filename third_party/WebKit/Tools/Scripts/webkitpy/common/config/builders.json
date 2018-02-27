@@ -43,6 +43,10 @@
         "port_name": "android-kitkat",
         "specifiers": ["KitKat", "Release"]
     },
+    "Fuchsia": {
+        "port_name": "fuchsia",
+        "specifiers": ["Fuchsia", "Release"]
+    },
     "linux_trusty_blink_rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
