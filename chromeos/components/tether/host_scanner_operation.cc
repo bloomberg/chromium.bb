@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/tether/connection_preserver.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
@@ -83,13 +84,14 @@ HostScannerOperation::Factory::NewInstance(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
-    TetherHostResponseRecorder* tether_host_response_recorder) {
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    ConnectionPreserver* connection_preserver) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(
       devices_to_connect, connection_manager, host_scan_device_prioritizer,
-      tether_host_response_recorder);
+      tether_host_response_recorder, connection_preserver);
 }
 
 // static
@@ -102,10 +104,11 @@ HostScannerOperation::Factory::BuildInstance(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
-    TetherHostResponseRecorder* tether_host_response_recorder) {
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    ConnectionPreserver* connection_preserver) {
   return base::WrapUnique(new HostScannerOperation(
       devices_to_connect, connection_manager, host_scan_device_prioritizer,
-      tether_host_response_recorder));
+      tether_host_response_recorder, connection_preserver));
 }
 
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
@@ -130,11 +133,13 @@ HostScannerOperation::HostScannerOperation(
     const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
-    TetherHostResponseRecorder* tether_host_response_recorder)
+    TetherHostResponseRecorder* tether_host_response_recorder,
+    ConnectionPreserver* connection_preserver)
     : MessageTransferOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
+      connection_preserver_(connection_preserver),
       clock_(std::make_unique<base::DefaultClock>()) {}
 
 HostScannerOperation::~HostScannerOperation() = default;
@@ -206,6 +211,11 @@ void HostScannerOperation::OnMessageReceived(
 
     tether_host_response_recorder_->RecordSuccessfulTetherAvailabilityResponse(
         remote_device);
+
+    // Only attempt to preserve the BLE connection to this device if the
+    // response indicated that the device can serve as a host.
+    connection_preserver_->HandleSuccessfulTetherAvailabilityResponse(
+        remote_device.GetDeviceId());
 
     scanned_device_list_so_far_.push_back(ScannedDeviceInfo(
         remote_device, response->device_status(), setup_required));

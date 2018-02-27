@@ -30,6 +30,7 @@ namespace chromeos {
 namespace tether {
 
 class BleConnectionManager;
+class ConnectionPreserver;
 class DeviceIdTetherNetworkGuidMap;
 class GmsCoreNotificationsStateTrackerImpl;
 class HostScanCache;
@@ -63,6 +64,7 @@ class HostScannerImpl : public HostScanner,
       NotificationPresenter* notification_presenter,
       DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
       HostScanCache* host_scan_cache,
+      ConnectionPreserver* connection_preserver,
       base::Clock* clock);
   ~HostScannerImpl() override;
 
@@ -114,6 +116,7 @@ class HostScannerImpl : public HostScanner,
   NotificationPresenter* notification_presenter_;
   DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
   HostScanCache* host_scan_cache_;
+  ConnectionPreserver* connection_preserver_;
   base::Clock* clock_;
 
   bool is_fetching_hosts_ = false;
