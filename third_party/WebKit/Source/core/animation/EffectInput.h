@@ -22,7 +22,6 @@ class CORE_EXPORT EffectInput {
   STATIC_ONLY(EffectInput);
 
  public:
-  // TODO(alancutter): Replace Element* parameter with Document&.
   static KeyframeEffectModelBase* Convert(Element*,
                                           const ScriptValue& keyframes,
                                           EffectModel::CompositeOperation,

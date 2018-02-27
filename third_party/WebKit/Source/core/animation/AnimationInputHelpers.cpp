@@ -83,9 +83,9 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
 
 CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
     const String& property,
-    const Element& element) {
-  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() ||
-      !element.IsSVGElement() || !IsSVGPrefixed(property))
+    const Element* element) {
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !element ||
+      !element->IsSVGElement() || !IsSVGPrefixed(property))
     return CSSPropertyInvalid;
 
   String unprefixed_property = RemoveSVGPrefix(property);
@@ -215,12 +215,12 @@ QualifiedName SvgAttributeName(const String& property) {
 
 const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
     const String& property,
-    Element& element) {
-  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() ||
-      !element.IsSVGElement() || !IsSVGPrefixed(property))
+    Element* element) {
+  if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !element ||
+      !element->IsSVGElement() || !IsSVGPrefixed(property))
     return nullptr;
 
-  SVGElement& svg_element = ToSVGElement(element);
+  SVGElement* svg_element = ToSVGElement(element);
   if (IsSVGSMILElement(svg_element))
     return nullptr;
 
@@ -229,7 +229,7 @@ const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
   const AttributeNameMap& supported_attributes = GetSupportedAttributes();
   auto iter = supported_attributes.find(attribute_name);
   if (iter == supported_attributes.end() ||
-      !svg_element.PropertyFromAttribute(*iter->value))
+      !svg_element->PropertyFromAttribute(*iter->value))
     return nullptr;
 
   return iter->value;
