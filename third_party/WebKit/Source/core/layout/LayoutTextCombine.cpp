@@ -85,6 +85,10 @@ void LayoutTextCombine::TransformToInlineCoordinates(GraphicsContext& context,
   DCHECK_EQ(needs_font_update_, false);
   DCHECK(is_combined_);
 
+  // No transform needed if we don't have a font.
+  if (!StyleRef().GetFont().PrimaryFont())
+    return;
+
   // On input, the |boxRect| is:
   // 1. Horizontal flow, rotated from the main vertical flow coordinate using
   //    TextPainter::rotation().
