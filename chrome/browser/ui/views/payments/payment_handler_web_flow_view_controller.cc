@@ -188,11 +188,14 @@ PaymentHandlerWebFlowViewController::GetHeaderBackground() {
 void PaymentHandlerWebFlowViewController::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  if (web_contents() &&
-      sender->tag() ==
-          static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG)) {
-    chrome::ShowSiteSettings(dialog()->GetProfile(),
-                             web_contents()->GetLastCommittedURL());
+  if (sender->tag() ==
+      static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG)) {
+    if (web_contents()) {
+      chrome::ShowSiteSettings(dialog()->GetProfile(),
+                               web_contents()->GetLastCommittedURL());
+    }
+  } else {
+    PaymentRequestSheetController::ButtonPressed(sender, event);
   }
 }
 
