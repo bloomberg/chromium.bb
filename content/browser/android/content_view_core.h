@@ -144,7 +144,6 @@ class ContentViewCore : public WebContentsObserver {
                    jfloat dipScale);
 
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
-  void WasResized(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void SetTextTrackSettings(
       JNIEnv* env,
@@ -204,8 +203,6 @@ class ContentViewCore : public WebContentsObserver {
   // Returns the context with which the ContentViewCore was created, typically
   // the Activity context.
   base::android::ScopedJavaLocalRef<jobject> GetContext() const;
-
-  bool IsFullscreenRequiredForOrientationLock() const;
 
   // --------------------------------------------------------------------------
   // Methods called from native code

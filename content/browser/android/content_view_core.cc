@@ -708,11 +708,6 @@ void ContentViewCore::OnTouchDown(
   Java_ContentViewCoreImpl_onTouchDown(env, obj, event);
 }
 
-void ContentViewCore::WasResized(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {
-  SendScreenRectsAndResizeWidget();
-}
-
 void ContentViewCore::SetTextTrackSettings(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -742,15 +737,6 @@ void ContentViewCore::SetTextTrackSettings(
   web_contents_->GetMainFrame()->SetTextTrackSettings(params);
 }
 
-bool ContentViewCore::IsFullscreenRequiredForOrientationLock() const {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return true;
-  return Java_ContentViewCoreImpl_isFullscreenRequiredForOrientationLock(env,
-                                                                         obj);
-}
-
 void ContentViewCore::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
@@ -763,17 +749,6 @@ jboolean ContentViewCore::UsingSynchronousCompositing(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return content::GetContentClient()->UsingSynchronousCompositing();
-}
-
-void ContentViewCore::SetBackgroundOpaque(JNIEnv* env,
-                                          const JavaParamRef<jobject>& jobj,
-                                          jboolean opaque) {
-  if (GetRenderWidgetHostViewAndroid()) {
-    if (opaque)
-      GetRenderWidgetHostViewAndroid()->SetBackgroundColorToDefault();
-    else
-      GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
 }
 
 void ContentViewCore::HidePopupsAndPreserveSelection() {
