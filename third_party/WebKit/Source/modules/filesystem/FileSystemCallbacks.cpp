@@ -126,7 +126,8 @@ void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
 }
 
 void ScriptErrorCallback::Invoke(FileError::ErrorCode error) {
-  callback_->handleEvent(FileError::CreateDOMException(error));
+  callback_->InvokeAndReportException(nullptr,
+                                      FileError::CreateDOMException(error));
 };
 
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
@@ -140,7 +141,7 @@ void EntryCallbacks::OnDidGetEntryV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 void EntryCallbacks::OnDidGetEntryV8Impl::OnSuccess(Entry* entry) {
-  callback_->handleEvent(entry);
+  callback_->InvokeAndReportException(nullptr, entry);
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> EntryCallbacks::Create(
@@ -236,7 +237,7 @@ void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Trace(
 
 void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::OnSuccess(
     DOMFileSystem* file_system) {
-  callback_->handleEvent(file_system);
+  callback_->InvokeAndReportException(nullptr, file_system);
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::Create(
@@ -320,7 +321,7 @@ void MetadataCallbacks::OnDidReadMetadataV8Impl::Trace(
 }
 
 void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
-  callback_->handleEvent(metadata);
+  callback_->InvokeAndReportException(nullptr, metadata);
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::Create(
@@ -360,7 +361,8 @@ void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::Trace(
 void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
     FileWriterBase* file_writer) {
   // The call sites must pass a FileWriter in |file_writer|.
-  callback_->handleEvent(static_cast<FileWriter*>(file_writer));
+  callback_->InvokeAndReportException(nullptr,
+                                      static_cast<FileWriter*>(file_writer));
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> FileWriterCallbacks::Create(
@@ -403,7 +405,7 @@ void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Trace(
 
 void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::OnSuccess(
     File* file) {
-  callback_->handleEvent(file);
+  callback_->InvokeAndReportException(nullptr, file);
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> SnapshotFileCallback::Create(
@@ -457,7 +459,7 @@ void VoidCallbacks::OnDidSucceedV8Impl::Trace(blink::Visitor* visitor) {
 
 void VoidCallbacks::OnDidSucceedV8Impl::OnSuccess(
     ExecutionContext* dummy_arg_for_sync_helper) {
-  callback_->handleEvent();
+  callback_->InvokeAndReportException(nullptr);
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> VoidCallbacks::Create(

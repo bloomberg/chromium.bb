@@ -20,11 +20,9 @@
 
 namespace blink {
 
-void V8TestCallbackInterface::voidMethod() {
+void V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_this_value) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -114,11 +112,9 @@ void V8TestCallbackInterface::voidMethod() {
   return;
 }
 
-bool V8TestCallbackInterface::booleanMethod() {
+bool V8TestCallbackInterface::booleanMethod(ScriptWrappable* callback_this_value) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return true;
@@ -217,11 +213,9 @@ bool V8TestCallbackInterface::booleanMethod() {
   }
 }
 
-void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
+void V8TestCallbackInterface::voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -312,11 +306,9 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
   return;
 }
 
-void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
+void V8TestCallbackInterface::voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -407,11 +399,9 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
   return;
 }
 
-void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
+void V8TestCallbackInterface::voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -502,11 +492,9 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
   return;
 }
 
-void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) {
+void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -597,11 +585,9 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
   return;
 }
 
-void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
+void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;
@@ -693,11 +679,9 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
   return;
 }
 
-void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) {
+void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-
-  ScriptWrappable* callback_this_value = nullptr;
 
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return;

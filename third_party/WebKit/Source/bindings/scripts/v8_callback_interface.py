@@ -166,13 +166,14 @@ def method_context(operation):
 def arguments_context(arguments, call_with_this_handle):
     def argument_context(argument):
         return {
-            'handle': '%sHandle' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
                 argument.name, isolate='GetIsolate()',
                 creation_context='argument_creation_context'),
+            'handle': '%sHandle' % argument.name,
+            'name': argument.name,
         }
 
-    argument_declarations = ['ScriptValue thisValue'] if call_with_this_handle else []
+    argument_declarations = ['ScriptWrappable* callback_this_value']
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
         for argument in arguments)

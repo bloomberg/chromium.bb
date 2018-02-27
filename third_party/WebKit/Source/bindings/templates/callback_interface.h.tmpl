@@ -24,9 +24,6 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
   ~{{v8_class}}() override = default;
 
 {% for method in methods %}
-  {# TODO(yukishiino): Add |ScriptWrappable* callback_this_value| as the first
-     argument of the IDL operations. The callsites must pass callback_this_value
-     explicitly. #}
   {# TODO(yukishiino): Change the return type to v8::Maybe<T> so that the
      function returns a return value or throws an exception. #}
   // Performs "call a user object's operation".
@@ -34,6 +31,12 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
   {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
 
 {% endfor %}
+
+{% if methods|length == 1 and methods[0].idl_type == 'void' %}
+  // Performs "call a user object's operation", and then reports an exception,
+  // if any, to the global error handler such as DevTools' console.
+  void InvokeAndReportException({{methods[0].argument_declarations | join(', ')}});
+{% endif %}
 
  private:
 {% set single_operation_enum_value =

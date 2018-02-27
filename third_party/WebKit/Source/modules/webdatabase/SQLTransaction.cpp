@@ -53,7 +53,7 @@ void SQLTransaction::OnProcessV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 bool SQLTransaction::OnProcessV8Impl::OnProcess(SQLTransaction* transaction) {
-  return callback_->handleEvent(transaction);
+  return callback_->handleEvent(nullptr, transaction);
 }
 
 void SQLTransaction::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
@@ -62,7 +62,7 @@ void SQLTransaction::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 void SQLTransaction::OnSuccessV8Impl::OnSuccess() {
-  callback_->handleEvent();
+  callback_->InvokeAndReportException(nullptr);
 }
 
 void SQLTransaction::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
@@ -71,7 +71,7 @@ void SQLTransaction::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 bool SQLTransaction::OnErrorV8Impl::OnError(SQLError* error) {
-  return callback_->handleEvent(error);
+  return callback_->handleEvent(nullptr, error);
 }
 
 SQLTransaction* SQLTransaction::Create(Database* db,

@@ -21,11 +21,6 @@ namespace blink {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
 
-  {# TODO(yukishiino): Add |ScriptWrappable* callback_this_value| as the first
-     argument of the IDL operations. The callsites must pass callback_this_value
-     explicitly. #}
-  ScriptWrappable* callback_this_value = nullptr;
-
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     {{return_success}};
   }
@@ -159,6 +154,20 @@ namespace blink {
 }
 
 {% endfor %}
+
+{% if methods|length == 1 and methods[0].idl_type == 'void' %}
+void {{v8_class}}::InvokeAndReportException({{methods[0].argument_declarations | join(', ')}}) {
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  {{methods[0].name}}(
+    {{
+       (['callback_this_value'] +
+        (methods[0].arguments|map(attribute='name')|list)
+       )|join(', ')
+    }});
+}
+{% endif %}
 
 }  // namespace blink
 
