@@ -201,19 +201,20 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
-            const net::SSLPrivateKey::SignCallback& callback) override {
+            net::SSLPrivateKey::SignCallback callback) override {
     std::vector<uint8_t> input_vector(input.begin(), input.end());
     if (ssl_private_key_.encountered_error()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::BindOnce(callback, net::ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY,
+          base::BindOnce(std::move(callback),
+                         net::ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY,
                          input_vector));
       return;
     }
 
-    ssl_private_key_->Sign(
-        algorithm, input_vector,
-        base::BindOnce(&SSLPrivateKeyInternal::Callback, this, callback));
+    ssl_private_key_->Sign(algorithm, input_vector,
+                           base::BindOnce(&SSLPrivateKeyInternal::Callback,
+                                          this, std::move(callback)));
   }
 
  private:
@@ -221,12 +222,12 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 
   void HandleSSLPrivateKeyError() { ssl_private_key_.reset(); }
 
-  void Callback(const net::SSLPrivateKey::SignCallback& callback,
+  void Callback(net::SSLPrivateKey::SignCallback callback,
                 int32_t net_error,
                 const std::vector<uint8_t>& input) {
     DCHECK_LE(net_error, 0);
     DCHECK_NE(net_error, net::ERR_IO_PENDING);
-    callback.Run(static_cast<net::Error>(net_error), input);
+    std::move(callback).Run(static_cast<net::Error>(net_error), input);
   }
 
   std::vector<uint16_t> algorithm_perferences_;

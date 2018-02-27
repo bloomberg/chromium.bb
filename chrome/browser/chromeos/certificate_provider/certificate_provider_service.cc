@@ -31,11 +31,11 @@ namespace {
 
 void PostSignResultToTaskRunner(
     const scoped_refptr<base::TaskRunner>& target_task_runner,
-    const net::SSLPrivateKey::SignCallback& callback,
+    net::SSLPrivateKey::SignCallback callback,
     net::Error error,
     const std::vector<uint8_t>& signature) {
-  target_task_runner->PostTask(FROM_HERE,
-                               base::Bind(callback, error, signature));
+  target_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), error, signature));
 }
 
 void PostIdentitiesToTaskRunner(
@@ -93,7 +93,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
   std::vector<uint16_t> GetAlgorithmPreferences() override;
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
-            const SignCallback& callback) override;
+            SignCallback callback) override;
 
  private:
   ~SSLPrivateKey() override;
@@ -104,9 +104,9 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
       const scoped_refptr<net::X509Certificate>& certificate,
       uint16_t algorithm,
       base::span<const uint8_t> input,
-      const SignCallback& callback);
+      SignCallback callback);
 
-  void DidSignDigest(const SignCallback& callback,
+  void DidSignDigest(SignCallback callback,
                      net::Error error,
                      const std::vector<uint8_t>& signature);
 
@@ -250,20 +250,20 @@ void CertificateProviderService::SSLPrivateKey::SignDigestOnServiceTaskRunner(
     const scoped_refptr<net::X509Certificate>& certificate,
     uint16_t algorithm,
     base::span<const uint8_t> input,
-    const SignCallback& callback) {
+    SignCallback callback) {
   if (!service) {
     const std::vector<uint8_t> no_signature;
-    callback.Run(net::ERR_FAILED, no_signature);
+    std::move(callback).Run(net::ERR_FAILED, no_signature);
     return;
   }
   service->RequestSignatureFromExtension(extension_id, certificate, algorithm,
-                                         input, callback);
+                                         input, std::move(callback));
 }
 
 void CertificateProviderService::SSLPrivateKey::Sign(
     uint16_t algorithm,
     base::span<const uint8_t> input,
-    const SignCallback& callback) {
+    SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const scoped_refptr<base::TaskRunner> source_task_runner =
       base::ThreadTaskRunnerHandle::Get();
@@ -275,27 +275,28 @@ void CertificateProviderService::SSLPrivateKey::Sign(
   if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
                          nullptr)) {
     source_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(callback, net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
-                   std::vector<uint8_t>()));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
+                                  std::vector<uint8_t>()));
     return;
   }
 
-  const SignCallback bound_callback =
+  SignCallback bound_callback =
       // The CertificateProviderService calls back on another thread, so post
       // back to the current thread.
-      base::Bind(&PostSignResultToTaskRunner, source_task_runner,
-                 // Drop the result and don't call back if this key handle is
-                 // destroyed in the meantime.
-                 base::Bind(&SSLPrivateKey::DidSignDigest,
-                            weak_factory_.GetWeakPtr(), callback));
+      base::BindOnce(
+          &PostSignResultToTaskRunner, source_task_runner,
+          // Drop the result and don't call back if this key handle is destroyed
+          // in the meantime.
+          base::BindOnce(&SSLPrivateKey::DidSignDigest,
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
 
   service_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SSLPrivateKey::SignDigestOnServiceTaskRunner, service_,
-                 extension_id_, cert_info_.certificate, algorithm,
-                 std::vector<uint8_t>(digest, digest + digest_len),
-                 bound_callback));
+      base::BindOnce(&SSLPrivateKey::SignDigestOnServiceTaskRunner, service_,
+                     extension_id_, cert_info_.certificate, algorithm,
+                     std::vector<uint8_t>(digest, digest + digest_len),
+                     std::move(bound_callback)));
 }
 
 CertificateProviderService::SSLPrivateKey::~SSLPrivateKey() {
@@ -303,11 +304,11 @@ CertificateProviderService::SSLPrivateKey::~SSLPrivateKey() {
 }
 
 void CertificateProviderService::SSLPrivateKey::DidSignDigest(
-    const SignCallback& callback,
+    SignCallback callback,
     net::Error error,
     const std::vector<uint8_t>& signature) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  callback.Run(error, signature);
+  std::move(callback).Run(error, signature);
 }
 
 CertificateProviderService::CertificateProviderService()
@@ -363,7 +364,7 @@ void CertificateProviderService::ReplyToSignRequest(
   }
 
   const net::Error error_code = signature.empty() ? net::ERR_FAILED : net::OK;
-  callback.Run(error_code, signature);
+  std::move(callback).Run(error_code, signature);
 }
 
 bool CertificateProviderService::LookUpCertificate(
@@ -400,8 +401,8 @@ void CertificateProviderService::OnExtensionUnloaded(
 
   certificate_map_.RemoveExtension(extension_id);
 
-  for (auto callback : sign_requests_.RemoveAllRequests(extension_id))
-    callback.Run(net::ERR_FAILED, std::vector<uint8_t>());
+  for (auto& callback : sign_requests_.RemoveAllRequests(extension_id))
+    std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
 
   pin_dialog_manager_.ExtensionUnloaded(extension_id);
 }
@@ -470,15 +471,15 @@ void CertificateProviderService::RequestSignatureFromExtension(
     const scoped_refptr<net::X509Certificate>& certificate,
     uint16_t algorithm,
     base::span<const uint8_t> digest,
-    const net::SSLPrivateKey::SignCallback& callback) {
+    net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const int sign_request_id = sign_requests_.AddRequest(extension_id, callback);
+  const int sign_request_id =
+      sign_requests_.AddRequest(extension_id, std::move(callback));
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
-    sign_requests_.RemoveRequest(extension_id, sign_request_id,
-                                 nullptr /* callback */);
-    callback.Run(net::ERR_FAILED, std::vector<uint8_t>());
+    sign_requests_.RemoveRequest(extension_id, sign_request_id, &callback);
+    std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
   }
 }
 

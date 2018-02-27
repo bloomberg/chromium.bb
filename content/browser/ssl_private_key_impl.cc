@@ -23,8 +23,8 @@ void SSLPrivateKeyImpl::Sign(
   base::span<const uint8_t> input_span(input);
   ssl_private_key_->Sign(
       algorithm, input_span,
-      base::Bind(&SSLPrivateKeyImpl::Callback, base::Unretained(this),
-                 base::Passed(&callback)));
+      base::BindOnce(&SSLPrivateKeyImpl::Callback, base::Unretained(this),
+                     std::move(callback)));
 }
 
 void SSLPrivateKeyImpl::Callback(

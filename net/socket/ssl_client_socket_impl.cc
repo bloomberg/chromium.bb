@@ -1776,8 +1776,8 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->Sign(
       algorithm, base::make_span(in, in_len),
-      base::Bind(&SSLClientSocketImpl::OnPrivateKeyComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SSLClientSocketImpl::OnPrivateKeyComplete,
+                     weak_factory_.GetWeakPtr()));
   return ssl_private_key_retry;
 }
 

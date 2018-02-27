@@ -67,8 +67,8 @@ Error DoKeySigningWithWrapper(SSLPrivateKey* key,
   Error error;
   base::RunLoop loop;
   key->Sign(algorithm, input,
-            base::Bind(OnSignComplete, base::Unretained(&loop),
-                       base::Unretained(&error), base::Unretained(result)));
+            base::BindOnce(OnSignComplete, base::Unretained(&loop),
+                           base::Unretained(&error), base::Unretained(result)));
   loop.Run();
   return error;
 }

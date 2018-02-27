@@ -191,7 +191,7 @@ class CertificateProviderService : public KeyedService {
       const scoped_refptr<net::X509Certificate>& certificate,
       uint16_t algorithm,
       base::span<const uint8_t> digest,
-      const net::SSLPrivateKey::SignCallback& callback);
+      net::SSLPrivateKey::SignCallback callback);
 
   std::unique_ptr<Delegate> delegate_;
 

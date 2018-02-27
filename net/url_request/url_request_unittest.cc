@@ -10021,15 +10021,15 @@ class TestSSLPrivateKey : public SSLPrivateKey {
   }
   void Sign(uint16_t algorithm,
             base::span<const uint8_t> input,
-            const SignCallback& callback) override {
+            SignCallback callback) override {
     sign_count_++;
     if (fail_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
-                         std::vector<uint8_t>()));
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
+                                    std::vector<uint8_t>()));
     } else {
-      key_->Sign(algorithm, input, callback);
+      key_->Sign(algorithm, input, std::move(callback));
     }
   }
 
