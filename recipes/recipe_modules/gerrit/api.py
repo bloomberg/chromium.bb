@@ -120,7 +120,7 @@ class GerritApi(recipe_api.RecipeApi):
             host, change, patchset))
 
   def get_changes(self, host, query_params, start=None, limit=None,
-                  o_params=None, **kwargs):
+                  o_params=None, step_test_data=None, **kwargs):
     """
     Query changes for the given host.
 
@@ -133,6 +133,7 @@ class GerritApi(recipe_api.RecipeApi):
       limit: Maximum number of results to return.
       o_params: A list of additional output specifiers, as documented here:
           https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+      step_test_data: Optional mock test data for the underlying gerrit client.
     Returns:
       A list of change dicts as documented here:
           https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
@@ -150,10 +151,12 @@ class GerritApi(recipe_api.RecipeApi):
       args += ['-p', '%s=%s' % (k, v)]
     for v in (o_params or []):
       args += ['-o', v]
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_one_change_response_data()
 
     return self(
         kwargs.pop('name', 'changes'),
         args,
-        step_test_data=lambda: self.test_api.get_one_change_response_data(),
+        step_test_data=step_test_data,
         **kwargs
     ).json.output
