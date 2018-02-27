@@ -4,6 +4,8 @@
 
 #include "components/arc/usb/usb_host_bridge.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -12,6 +14,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/usb/usb_host_ui_delegate.h"
 #include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device_handle.h"
@@ -105,6 +108,10 @@ ArcUsbHostBridge::~ArcUsbHostBridge() {
     usb_service_->RemoveObserver(this);
   arc_bridge_service_->usb_host()->RemoveObserver(this);
   arc_bridge_service_->usb_host()->SetHost(nullptr);
+}
+
+BrowserContextKeyedServiceFactory* ArcUsbHostBridge::GetFactory() {
+  return ArcUsbHostBridgeFactory::GetInstance();
 }
 
 void ArcUsbHostBridge::RequestPermission(const std::string& guid,
@@ -202,6 +209,9 @@ void ArcUsbHostBridge::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
 
 void ArcUsbHostBridge::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
+  if (ui_delegate_)
+    ui_delegate_->DeviceRemoved(device.get()->guid());
+
   mojom::UsbHostInstance* usb_host_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->usb_host(), OnDeviceAdded);
 
@@ -229,6 +239,19 @@ void ArcUsbHostBridge::OnConnectionReady() {
                                      weak_factory_.GetWeakPtr())));
 }
 
+void ArcUsbHostBridge::OnConnectionClosed() {
+  if (ui_delegate_)
+    ui_delegate_->ClearPermissionRequests();
+}
+
+void ArcUsbHostBridge::Shutdown() {
+  ui_delegate_ = nullptr;
+}
+
+void ArcUsbHostBridge::SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate) {
+  ui_delegate_ = ui_delegate;
+}
+
 void ArcUsbHostBridge::OnDeviceChecked(const std::string& guid, bool allowed) {
   if (!base::FeatureList::IsEnabled(arc::kUsbHostFeature)) {
     VLOG(1) << "AndroidUSBHost: feature is disabled; ignoring";
@@ -251,13 +274,31 @@ void ArcUsbHostBridge::DoRequestUserAuthorization(
     const std::string& guid,
     const std::string& package,
     RequestPermissionCallback callback) {
-  // TODO: implement the UI dialog
-  // fail close for now
-  std::move(callback).Run(false);
+  if (!ui_delegate_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!usb_service_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  scoped_refptr<device::UsbDevice> device = usb_service_->GetDevice(guid);
+  if (!device.get()) {
+    LOG(WARNING) << "Unknown USB device " << guid;
+    std::move(callback).Run(false);
+    return;
+  }
+
+  ui_delegate_->RequestUsbAccessPermission(
+      package, guid, device->serial_number(), device->manufacturer_string(),
+      device->product_string(), device->vendor_id(), device->product_id(),
+      std::move(callback));
 }
 
 bool ArcUsbHostBridge::HasPermissionForDevice(const std::string& guid) {
-  // TODO: implement permission settings
+  // TODO(lgcheng): implement permission settings
   // fail close for now
   return false;
 }

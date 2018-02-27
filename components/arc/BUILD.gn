@@ -58,6 +58,7 @@ static_library("arc") {
     "timer/create_timer_request.h",
     "usb/usb_host_bridge.cc",
     "usb/usb_host_bridge.h",
+    "usb/usb_host_ui_delegate.h",
     "volume_mounter/arc_volume_mounter_bridge.cc",
     "volume_mounter/arc_volume_mounter_bridge.h",
   ]
