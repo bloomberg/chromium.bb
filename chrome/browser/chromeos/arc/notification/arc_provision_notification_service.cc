@@ -93,7 +93,7 @@ void ArcProvisionNotificationService::ShowNotification() {
       gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION)),
       l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
-      notifier_id, optional_fields, nullptr);
+      notifier_id, optional_fields, new message_center::NotificationDelegate());
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, notification);
