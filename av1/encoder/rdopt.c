@@ -9963,8 +9963,8 @@ PALETTE_EXIT:
       memset(best_mbmode.inter_tx_size, best_mbmode.tx_size,
              sizeof(best_mbmode.inter_tx_size));
       best_mbmode.min_tx_size = best_mbmode.tx_size;
-      set_txfm_ctxs(best_mbmode.tx_size, xd->n8_w, xd->n8_h, best_mbmode.skip,
-                    xd);
+      set_txfm_ctxs(best_mbmode.tx_size, xd->n8_w, xd->n8_h,
+                    best_mbmode.skip && is_inter_block(mbmi), xd);
 
       // Set up color-related variables for skip mode.
       best_mbmode.uv_mode = UV_DC_PRED;

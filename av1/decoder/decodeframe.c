@@ -674,7 +674,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     mbmi->min_tx_size = mbmi->tx_size;
-    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h,
+                  mbmi->skip && is_inter_block(mbmi), xd);
   }
 
   if (!inter_block_tx) read_filter_intra_mode_info(xd, r);
