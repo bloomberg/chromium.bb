@@ -91,9 +91,8 @@ public class DownloadUtils {
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
-    public static final String EXTRA_DOWNLOAD_HOME_URL =
-            "org.chromium.chrome.browser.download.DOWNLOAD_HOME_URL";
-    public static final String SHOW_PREFETCHED_CONTENT = "ShowPrefetchedContent";
+    public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
+            "org.chromium.chrome.browser.download.SHOW_PREFETCHED_CONTENT";
 
     @VisibleForTesting
     static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
@@ -143,11 +142,10 @@ public class DownloadUtils {
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        String downloadHomeUrl = buildDownloadHomeUrl(showPrefetchedContent);
 
         if (DeviceFormFactor.isTablet()) {
             // Download Home shows up as a tab on tablets.
-            LoadUrlParams params = new LoadUrlParams(downloadHomeUrl);
+            LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
             if (tab == null || !tab.isInitialized()) {
                 // Open a new tab, which pops Chrome into the foreground.
                 TabDelegate delegate = new TabDelegate(false);
@@ -168,8 +166,8 @@ public class DownloadUtils {
             // Download Home shows up as a new Activity on phones.
             Intent intent = new Intent();
             intent.setClass(appContext, DownloadActivity.class);
+            intent.putExtra(EXTRA_SHOW_PREFETCHED_CONTENT, showPrefetchedContent);
             if (tab != null) intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
-            intent.putExtra(EXTRA_DOWNLOAD_HOME_URL, downloadHomeUrl);
             if (activity == null) {
                 // Stands alone in its own task.
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -202,15 +200,11 @@ public class DownloadUtils {
     }
 
     /**
-     * Helper method to build the URL for downloads home. The URL can be leveraged for passing extra
-     * parameters to download home.
-     * @return The URL for download home.
+     * @return Whether or not the prefetched content section should be expanded on launch of the
+     * DownloadActivity.
      */
-    private static String buildDownloadHomeUrl(boolean showPrefetchedContent) {
-        Uri.Builder builder = Uri.parse(UrlConstants.DOWNLOADS_URL).buildUpon();
-        builder.appendQueryParameter(
-                SHOW_PREFETCHED_CONTENT, Boolean.toString(showPrefetchedContent));
-        return builder.build().toString();
+    public static boolean shouldShowPrefetchContent(Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(intent, EXTRA_SHOW_PREFETCHED_CONTENT, false);
     }
 
     /**
