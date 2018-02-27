@@ -707,6 +707,12 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    @UrlBar.ScrollType
+    public int getScrollType() {
+        return UrlBar.SCROLL_TO_TLD;
+    }
+
+    @Override
     public void setUrlBarFocus(boolean shouldBeFocused) {}
 
     @Override
