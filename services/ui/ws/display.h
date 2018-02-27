@@ -99,13 +99,6 @@ class Display : public PlatformDisplayDelegate,
   ServerWindow* root_window() { return root_.get(); }
   const ServerWindow* root_window() const { return root_.get(); }
 
-  // Returns the ServerWindow whose id is |id|. This does not do a search over
-  // all windows, rather just the display and window manager root windows.
-  //
-  // In general you shouldn't use this, rather use WindowServer::GetWindow(),
-  // which calls this as necessary.
-  ServerWindow* GetRootWithId(const WindowId& id);
-
   WindowManagerDisplayRoot* GetWindowManagerDisplayRootWithRoot(
       const ServerWindow* window);
   WindowManagerDisplayRoot* GetWindowManagerDisplayRootForUser(

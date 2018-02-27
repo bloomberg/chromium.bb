@@ -74,8 +74,10 @@ std::unique_ptr<ui::Event> CoalesceEvents(std::unique_ptr<ui::Event> first,
 const ServerWindow* GetEmbedRoot(const ServerWindow* window) {
   DCHECK(window);
   const ServerWindow* embed_root = window->parent();
-  while (embed_root && embed_root->id().client_id == window->id().client_id)
+  while (embed_root &&
+         embed_root->owning_tree_id() == window->owning_tree_id()) {
     embed_root = embed_root->parent();
+  }
   return embed_root;
 }
 
@@ -315,14 +317,6 @@ void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
   OnEventAck(in_flight_event_dispatch_details_->tree,
              tree == window_tree_ ? mojom::EventResult::HANDLED
                                   : mojom::EventResult::UNHANDLED);
-}
-
-ServerWindow* WindowManagerState::GetOrphanedRootWithId(const WindowId& id) {
-  for (auto& display_root_ptr : orphaned_window_manager_display_roots_) {
-    if (display_root_ptr->root()->id() == id)
-      return display_root_ptr->root();
-  }
-  return nullptr;
 }
 
 bool WindowManagerState::IsActive() const {
@@ -576,7 +570,8 @@ void WindowManagerState::HandleDebugAccelerator(DebugAcceleratorType type,
   }
   ServerWindow* focused_window = GetFocusedWindowForEventDispatcher(display_id);
   LOG(ERROR) << "Focused window: "
-             << (focused_window ? focused_window->id().ToString() : "(null)");
+             << (focused_window ? focused_window->frame_sink_id().ToString()
+                                : "(null)");
 #endif
 }
 
@@ -863,7 +858,7 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
   WindowTree* tree = window_server()->GetTreeWithRoot(window);
   if (!tree) {
     // Window is not an embed root, event goes to owner of the window.
-    tree = window_server()->GetTreeWithId(window->id().client_id);
+    tree = window_server()->GetTreeWithId(window->owning_tree_id());
   }
   DCHECK(tree);
 
@@ -872,7 +867,7 @@ ClientSpecificId WindowManagerState::GetEventTargetClientId(
       tree->HasRoot(window) ? window : GetEmbedRoot(window);
   while (tree && tree->embedder_intercepts_events()) {
     DCHECK(tree->HasRoot(embed_root));
-    tree = window_server()->GetTreeWithId(embed_root->id().client_id);
+    tree = window_server()->GetTreeWithId(embed_root->owning_tree_id());
     embed_root = GetEmbedRoot(embed_root);
   }
   DCHECK(tree);

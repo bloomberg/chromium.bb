@@ -266,7 +266,7 @@ bool DefaultAccessPolicy::CanSetWindowManager() const {
 
 bool DefaultAccessPolicy::WasCreatedByThisClient(
     const ServerWindow* window) const {
-  return window->id().client_id == client_id_;
+  return window->owning_tree_id() == client_id_;
 }
 
 bool DefaultAccessPolicy::IsValidIdForNewWindow(

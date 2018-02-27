@@ -86,7 +86,6 @@ class WindowServer : public ServerWindowDelegate,
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
   ServerWindow* CreateServerWindow(
-      const WindowId& id,
       const viz::FrameSinkId& frame_sink_id,
       const std::map<std::string, std::vector<uint8_t>>& properties);
 
@@ -120,9 +119,6 @@ class WindowServer : public ServerWindowDelegate,
   WindowTree* GetTreeWithClientName(const std::string& client_name);
 
   size_t num_trees() const { return tree_map_.size(); }
-
-  // Returns the Window identified by |id|.
-  ServerWindow* GetWindow(const WindowId& id);
 
   OperationType current_operation_type() const {
     return current_operation_ ? current_operation_->type()

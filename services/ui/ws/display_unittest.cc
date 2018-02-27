@@ -373,9 +373,9 @@ TEST_F(DisplayTest, MultipleDisplays) {
   ASSERT_EQ(2u, tree->roots().size());
   std::set<const ServerWindow*> roots = tree->roots();
   auto it = roots.begin();
-  ServerWindow* root1 = tree->GetWindow((*it)->id());
+  ServerWindow* root1 = const_cast<ServerWindow*>(*it);
   ++it;
-  ServerWindow* root2 = tree->GetWindow((*it)->id());
+  ServerWindow* root2 = const_cast<ServerWindow*>(*it);
   ASSERT_NE(root1, root2);
   Display* display1 = tree->GetDisplay(root1);
   WindowManagerState* display1_wms =

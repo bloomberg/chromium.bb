@@ -45,7 +45,6 @@ DisplayManager::DisplayManager(WindowServer* window_server,
     // 0 as invalid.
     : window_server_(window_server),
       user_id_tracker_(user_id_tracker),
-      next_root_id_(0),
       internal_display_id_(display::kInvalidDisplayId) {
 #if defined(OS_CHROMEOS)
   // TODO: http://crbug.com/701468 fix function key preferences and sticky keys.
@@ -337,11 +336,10 @@ bool DisplayManager::InUnifiedDisplayMode() const {
   return GetDisplayById(display::kUnifiedDisplayId) != nullptr;
 }
 
-WindowId DisplayManager::GetAndAdvanceNextRootId() {
-  // TODO(sky): handle wrapping!
-  const uint16_t id = next_root_id_++;
-  DCHECK_LT(id, next_root_id_);
-  return RootWindowId(id);
+ClientWindowId DisplayManager::GetAndAdvanceNextRootId() {
+  const ClientSpecificId id = next_root_id_++;
+  CHECK_NE(0u, next_root_id_);
+  return ClientWindowId(kWindowServerClientId, id);
 }
 
 void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {

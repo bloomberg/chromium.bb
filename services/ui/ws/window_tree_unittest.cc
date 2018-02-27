@@ -1264,22 +1264,17 @@ TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
 
-  TestServerWindowDelegate delegate(window_server()->GetVizHostProxy());
-  WindowId window_id(42, 1337);
-  ServerWindow unknown_window(&delegate, window_id);
-  const float new_opacity = 0.5f;
-  ASSERT_NE(new_opacity, unknown_window.opacity());
+  const ClientWindowId root_id = FirstRootId(tree);
 
   EXPECT_FALSE(tree->SetWindowOpacity(
-      ClientWindowId(window_id.client_id, window_id.window_id), new_opacity));
-  EXPECT_NE(new_opacity, unknown_window.opacity());
+      ClientWindowId(root_id.client_id(), root_id.sink_id() + 10), .5f));
 }
 
 TEST_F(WindowTreeTest, SetCaptureTargetsRightConnection) {
   ServerWindow* window = window_event_targeting_helper_.CreatePrimaryTree(
       gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
   WindowTree* owning_tree =
-      window_server()->GetTreeWithId(window->id().client_id);
+      window_server()->GetTreeWithId(window->owning_tree_id());
   WindowTree* embed_tree = window_server()->GetTreeWithRoot(window);
   ASSERT_NE(owning_tree, embed_tree);
   ASSERT_TRUE(
@@ -1561,7 +1556,7 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
       gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
   TestWindowTreeClient* embed_client = last_window_tree_client();
   WindowTree* owning_tree =
-      window_server()->GetTreeWithId(window->id().client_id);
+      window_server()->GetTreeWithId(window->owning_tree_id());
   WindowTree* embed_tree = window_server()->GetTreeWithRoot(window);
   ASSERT_NE(owning_tree, embed_tree);
 
@@ -1838,7 +1833,8 @@ TEST_F(WindowTreeManualDisplayTest, MoveDisplayRootToNewDisplay) {
                   .ProcessSetDisplayRoot(display1, metrics, is_primary_display,
                                          display_root_id));
   ASSERT_TRUE(display_root->parent());
-  const WindowId display1_parent_id = display_root->parent()->id();
+  const viz::FrameSinkId display1_parent_id =
+      display_root->parent()->frame_sink_id();
   EXPECT_TRUE(window_server_delegate()
                   ->last_binding()
                   ->client()
@@ -1855,7 +1851,7 @@ TEST_F(WindowTreeManualDisplayTest, MoveDisplayRootToNewDisplay) {
                   .ProcessSetDisplayRoot(display2, metrics, is_primary_display,
                                          display_root_id));
   ASSERT_TRUE(display_root->parent());
-  EXPECT_NE(display1_parent_id, display_root->parent()->id());
+  EXPECT_NE(display1_parent_id, display_root->parent()->frame_sink_id());
   EXPECT_TRUE(window_server_delegate()
                   ->last_binding()
                   ->client()

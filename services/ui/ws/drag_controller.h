@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS_DRAG_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/memory/weak_ptr.h"
@@ -13,6 +14,7 @@
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/server_window_tracker.h"
 
 namespace gfx {
 class Point;
@@ -104,9 +106,12 @@ class DragController : public ServerWindowObserver {
   void DispatchOperation(ServerWindow* window, WindowState* state);
   void OnRespondToOperation(ServerWindow* window);
 
-  // Callback methods.
-  void OnDragStatusCompleted(const WindowId& id, DropEffectBitmask bitmask);
-  void OnDragDropCompleted(const WindowId& id, DropEffect action);
+  // Callback methods. |tracker| contains the window being queried and is null
+  // if the window was destroyed while waiting for client.
+  void OnDragStatusCompleted(std::unique_ptr<ServerWindowTracker> tracker,
+                             DropEffectBitmask bitmask);
+  void OnDragDropCompleted(std::unique_ptr<ServerWindowTracker> tracker,
+                           DropEffect action);
 
   // ServerWindowObserver:
   void OnWindowDestroying(ServerWindow* window) override;

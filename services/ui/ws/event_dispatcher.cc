@@ -205,7 +205,7 @@ const ServerWindow* EventDispatcher::GetWindowForMouseCursor() const {
   const ClientSpecificId target_client_id = delegate_->GetEventTargetClientId(
       mouse_cursor_source_window_, mouse_cursor_in_non_client_area_);
   const ServerWindow* window = mouse_cursor_source_window_;
-  while (window && window->id().client_id == target_client_id)
+  while (window && window->owning_tree_id() == target_client_id)
     window = window->parent();
   return window;
 }

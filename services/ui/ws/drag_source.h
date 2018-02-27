@@ -10,7 +10,6 @@ namespace ws {
 
 class DragTargetConnection;
 class ServerWindow;
-struct WindowId;
 
 // An interface implemented by the object that caused a DragController to
 // exist, and which acts as a delegate to it.
@@ -26,8 +25,6 @@ class DragSource {
   // cases where a drag was aborted at any step in the process. |action_taken|
   // is one of the kDropEffect constants in window_tree_constants.mojom.
   virtual void OnDragCompleted(bool success, uint32_t action_taken) = 0;
-
-  virtual ServerWindow* GetWindowById(const WindowId& id) = 0;
 
   // Returns the client connection that created |window|.
   virtual DragTargetConnection* GetDragTargetForWindow(

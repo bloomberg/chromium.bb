@@ -10,7 +10,7 @@ namespace ui {
 namespace ws {
 
 std::string DebugWindowId(const ServerWindow* window) {
-  return window ? window->id().ToString() : "null";
+  return window ? window->frame_sink_id().ToString() : "null";
 }
 
 }  // namespace ws
