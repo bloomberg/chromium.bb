@@ -16,6 +16,8 @@ blink_modules_sources("background_fetch") {
     "BackgroundFetchFailEvent.h",
     "BackgroundFetchFetch.cpp",
     "BackgroundFetchFetch.h",
+    "BackgroundFetchIconLoader.cpp",
+    "BackgroundFetchIconLoader.h",
     "BackgroundFetchManager.cpp",
     "BackgroundFetchManager.h",
     "BackgroundFetchRegistration.cpp",
