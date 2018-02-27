@@ -38,6 +38,9 @@
 // TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* omniboxBorderColor;
 
+// Tint color of the buttons.
+@property(nonatomic, readonly) UIColor* buttonsTintColor;
+
 // Color of the title of the buttons for the normal state.
 @property(nonatomic, readonly) UIColor* buttonTitleNormalColor;
 

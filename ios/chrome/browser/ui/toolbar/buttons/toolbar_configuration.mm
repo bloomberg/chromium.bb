@@ -86,6 +86,16 @@
   }
 }
 
+- (UIColor*)buttonsTintColor {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
+    case INCOGNITO:
+      return [UIColor colorWithWhite:1 alpha:1];
+  }
+}
+
 - (UIColor*)buttonTitleNormalColor {
   switch (self.style) {
     case NORMAL:

@@ -43,6 +43,7 @@ extern const CGFloat kProgressBarHeight;
 
 // Toolbar Buttons.
 extern const CGFloat kToolsMenuButtonWidth;
+extern const CGFloat kAdaptiveToolbarButtonWidth;
 extern const CGFloat kToolbarButtonWidth;
 extern const CGFloat kLeadingLocationBarButtonWidth;
 extern const CGFloat kToolbarButtonTitleNormalColor;
@@ -53,6 +54,9 @@ extern const CGFloat kBackButtonImageInset;
 extern const CGFloat kForwardButtonImageInset;
 extern const CGFloat kLeadingLocationBarButtonImageInset;
 extern const CGFloat kCancelButtonHorizontalInset;
+
+// Alpha for the tint color of the buttons.
+extern const CGFloat kToolbarButtonTintColorAlpha;
 
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;

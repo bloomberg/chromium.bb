@@ -45,6 +45,9 @@ class BrandedImageProvider {
   // Returns the 24pt x 24pt image corresponding to the given icon |type|.
   virtual UIImage* GetWhatsNewIconImage(WhatsNewIcon type);
 
+  // Returns the image to use for the "search the web" button.
+  virtual UIImage* GetToolbarSearchButtonImage();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrandedImageProvider);
 };

@@ -32,6 +32,11 @@
 + (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
                             imageForHighlightedState:(UIImage*)highlightedImage
                                imageForDisabledState:(UIImage*)disabledImage;
+
+// Returns a ToolbarButton with a type system, using the |image| as image for
+// normal state.
++ (instancetype)toolbarButtonWithImage:(UIImage*)image;
+
 // Checks if the ToolbarButton should be visible in the current SizeClass,
 // afterwards it calls setHiddenForCurrentStateAndSizeClass if needed.
 - (void)updateHiddenInCurrentSizeClass;
