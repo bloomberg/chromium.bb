@@ -25,6 +25,17 @@ ExtensionNavigationUIData::ExtensionNavigationUIData(
   // FrameData that works both for navigations and subresources loads.
 }
 
+ExtensionNavigationUIData::ExtensionNavigationUIData(
+    content::RenderFrameHost* frame_host,
+    int tab_id,
+    int window_id)
+    : ExtensionNavigationUIData(
+          content::WebContents::FromRenderFrameHost(frame_host),
+          tab_id,
+          window_id,
+          ExtensionApiFrameIdMap::GetFrameId(frame_host),
+          ExtensionApiFrameIdMap::GetParentFrameId(frame_host)) {}
+
 // static
 std::unique_ptr<ExtensionNavigationUIData>
 ExtensionNavigationUIData::CreateForMainFrameNavigation(

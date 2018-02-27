@@ -484,6 +484,21 @@ ChromeExtensionsBrowserClient::GetExtensionNavigationUIData(
   return navigation_data->GetExtensionNavigationUIData();
 }
 
+void ChromeExtensionsBrowserClient::GetTabAndWindowIdForWebContents(
+    content::WebContents* web_contents,
+    int* tab_id,
+    int* window_id) {
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(web_contents);
+  if (session_tab_helper) {
+    *tab_id = session_tab_helper->session_id().id();
+    *window_id = session_tab_helper->window_id().id();
+  } else {
+    *tab_id = -1;
+    *window_id = -1;
+  }
+}
+
 KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {
   if (!kiosk_delegate_)
     kiosk_delegate_.reset(new ChromeKioskDelegate());

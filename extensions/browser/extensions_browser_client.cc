@@ -52,6 +52,14 @@ ExtensionsBrowserClient::GetExtensionNavigationUIData(
   return nullptr;
 }
 
+void ExtensionsBrowserClient::GetTabAndWindowIdForWebContents(
+    content::WebContents* web_contents,
+    int* tab_id,
+    int* window_id) {
+  *tab_id = -1;
+  *window_id = -1;
+}
+
 bool ExtensionsBrowserClient::IsExtensionEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {

@@ -24,6 +24,9 @@ class ExtensionNavigationUIData {
   ExtensionNavigationUIData(content::NavigationHandle* navigation_handle,
                             int tab_id,
                             int window_id);
+  ExtensionNavigationUIData(content::RenderFrameHost* frame_host,
+                            int tab_id,
+                            int window_id);
 
   static std::unique_ptr<ExtensionNavigationUIData>
   CreateForMainFrameNavigation(content::WebContents* web_contents,

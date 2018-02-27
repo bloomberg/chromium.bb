@@ -142,6 +142,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsActivityLoggingEnabled(content::BrowserContext* context) override;
   extensions::ExtensionNavigationUIData* GetExtensionNavigationUIData(
       net::URLRequest* request) override;
+  void GetTabAndWindowIdForWebContents(content::WebContents* web_contents,
+                                       int* tab_id,
+                                       int* window_id) override;
   KioskDelegate* GetKioskDelegate() override;
   bool IsLockScreenContext(content::BrowserContext* context) override;
   std::string GetApplicationLocale() override;
