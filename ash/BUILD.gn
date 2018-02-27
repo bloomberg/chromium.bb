@@ -1144,7 +1144,7 @@ component("ash") {
 
   data_deps = [
     "//ash/components/autoclick:autoclick_app",
-    "//ash/touch_hud/mus:touch_hud",
+    "//ash/components/touch_hud:touch_hud_app",
   ]
 
   # Usage of content should be in ash_content_unittests.

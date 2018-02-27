@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/touch_hud/mus/touch_hud_application.h"
+#include "ash/components/touch_hud/touch_hud_application.h"
 
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -23,7 +22,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ash {
 namespace touch_hud {
 
 // TouchHudUI handles events on the widget of the touch-hud app. After
@@ -33,7 +31,7 @@ class TouchHudUI : public views::WidgetDelegateView,
                    public views::PointerWatcher {
  public:
   explicit TouchHudUI(views::Widget* widget)
-      : touch_hud_renderer_(new TouchHudRenderer(widget)) {
+      : touch_hud_renderer_(new ash::TouchHudRenderer(widget)) {
     views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
         this, true /* want_moves */);
   }
@@ -58,14 +56,15 @@ class TouchHudUI : public views::WidgetDelegateView,
       touch_hud_renderer_->HandleTouchEvent(event);
   }
 
-  TouchHudRenderer* touch_hud_renderer_;
+  // TODO(jamescook): Don't leak this.
+  ash::TouchHudRenderer* touch_hud_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudUI);
 };
 
 TouchHudApplication::TouchHudApplication() : binding_(this) {
-  registry_.AddInterface<mash::mojom::Launchable>(
-      base::Bind(&TouchHudApplication::Create, base::Unretained(this)));
+  registry_.AddInterface<mash::mojom::Launchable>(base::BindRepeating(
+      &TouchHudApplication::Create, base::Unretained(this)));
 }
 TouchHudApplication::~TouchHudApplication() = default;
 
@@ -103,15 +102,13 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     widget_->Show();
   } else {
     widget_->Close();
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    context()->QuitNow();
   }
 }
 
-void TouchHudApplication::Create(
-    mash::mojom::LaunchableRequest request) {
+void TouchHudApplication::Create(mash::mojom::LaunchableRequest request) {
   binding_.Close();
   binding_.Bind(std::move(request));
 }
 
 }  // namespace touch_hud
-}  // namespace ash

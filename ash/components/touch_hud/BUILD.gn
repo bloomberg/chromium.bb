@@ -28,7 +28,7 @@ source_set("lib") {
   ]
 }
 
-service("touch_hud") {
+service("touch_hud_app") {
   sources = [
     "main.cc",
   ]
@@ -45,6 +45,6 @@ service("touch_hud") {
 }
 
 service_manifest("manifest") {
-  name = "touch_hud"
+  name = "touch_hud_app"
   source = "manifest.json"
 }

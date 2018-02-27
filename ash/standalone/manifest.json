@@ -29,7 +29,7 @@
         "*": [ "accessibility", "app" ],
         "preferences_forwarder": [ "pref_client" ],
         "ui": [ "display_dev", "window_manager" ],
-        "touch_hud": [ "mash:launchable" ]
+        "touch_hud_app": [ "mash:launchable" ]
       }
     }
   }
