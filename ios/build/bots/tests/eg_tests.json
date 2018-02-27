@@ -6,7 +6,6 @@
     {
       "app": "ios_chrome_ui_egtests",
       "shard size": 8,
-      "shards": 2,
       "xctest": true
     },
     {
