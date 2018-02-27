@@ -10,7 +10,6 @@ static_library("common") {
 
   deps = [
     "//base",
-    "//components/variations",
   ]
 }
 
@@ -22,7 +21,7 @@ source_set("unit_tests") {
   deps = [
     ":common",
     "//base",
-    "//components/variations",
+    "//components/variations:test_support",
     "//testing/gtest",
   ]
 }
