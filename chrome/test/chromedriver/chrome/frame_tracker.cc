@@ -8,10 +8,15 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
-FrameTracker::FrameTracker(DevToolsClient* client) {
+FrameTracker::FrameTracker(DevToolsClient* client,
+                           WebView* web_view,
+                           const BrowserInfo* browser_info)
+    : web_view_(web_view), browser_info_(browser_info) {
   client->AddListener(this);
 }
 
@@ -27,8 +32,45 @@ Status FrameTracker::GetContextIdForFrame(
   return Status(kOk);
 }
 
+WebView* FrameTracker::GetTargetForFrame(const std::string& frame_id) {
+  // Context in the current target, return current target.
+  if (frame_to_context_map_.count(frame_id) != 0)
+    return web_view_;
+  // Child target of the current target, return that child target.
+  if (frame_to_target_map_.count(frame_id) != 0)
+    return frame_to_target_map_[frame_id].get();
+  // Frame unknown, recursively search all child targets.
+  for (auto it = frame_to_target_map_.begin(); it != frame_to_target_map_.end();
+       ++it) {
+    FrameTracker* child = it->second->GetFrameTracker();
+    if (child != nullptr) {
+      WebView* child_result = child->GetTargetForFrame(frame_id);
+      if (child_result != nullptr)
+        return child_result;
+    }
+  }
+  return nullptr;
+}
+
 Status FrameTracker::OnConnected(DevToolsClient* client) {
   frame_to_context_map_.clear();
+  frame_to_target_map_.clear();
+  // Enable target events to allow tracking iframe targets creation.
+  if (browser_info_->major_version == 65) {
+    base::DictionaryValue params;
+    params.SetBoolean("value", true);
+    Status status = client->SendCommand("Target.setAttachToFrames", params);
+    if (status.IsError())
+      return status;
+  }
+  if (browser_info_->major_version >= 65) {
+    base::DictionaryValue params;
+    params.SetBoolean("autoAttach", true);
+    params.SetBoolean("waitForDebuggerOnStart", false);
+    Status status = client->SendCommand("Target.setAutoAttach", params);
+    if (status.IsError())
+      return status;
+  }
   // Enable runtime events to allow tracking execution context creation.
   base::DictionaryValue params;
   Status status = client->SendCommand("Runtime.enable", params);
@@ -107,6 +149,30 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value))
       frame_to_context_map_.clear();
+  } else if (method == "Target.attachedToTarget") {
+    std::string type, target_id, session_id;
+    if (!params.GetString("targetInfo.type", &type))
+      return Status(kUnknownError,
+                    "missing target type in Target.attachedToTarget event");
+    if (type == "iframe") {
+      if (!params.GetString("targetInfo.targetId", &target_id))
+        return Status(kUnknownError,
+                      "missing target ID in Target.attachedToTarget event");
+      if (!params.GetString("sessionId", &session_id))
+        return Status(kUnknownError,
+                      "missing session ID in Target.attachedToTarget event");
+      std::unique_ptr<WebView> child(
+          static_cast<WebViewImpl*>(web_view_)->CreateChild(session_id,
+                                                            target_id));
+      frame_to_target_map_[target_id] = std::move(child);
+      frame_to_target_map_[target_id]->ConnectIfNecessary();
+    }
+  } else if (method == "Target.detachedFromTarget") {
+    std::string target_id;
+    if (!params.GetString("targetId", &target_id))
+      return Status(kUnknownError,
+                    "missing target ID in Target.detachedFromTarget event");
+    frame_to_target_map_.erase(target_id);
   }
   return Status(kOk);
 }

@@ -210,3 +210,11 @@ Status StubWebView::SetScreenOrientation(std::string orientation) {
 Status StubWebView::DeleteScreenOrientation() {
   return Status(kOk);
 }
+
+bool StubWebView::IsOOPIF(const std::string& frame_id) {
+  return false;
+}
+
+FrameTracker* StubWebView::GetFrameTracker() const {
+  return nullptr;
+}

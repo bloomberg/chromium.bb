@@ -65,6 +65,8 @@ class DevToolsClientImpl : public DevToolsClient {
                      const std::string& id,
                      const FrontendCloserFunc& frontend_closer_func);
 
+  DevToolsClientImpl(DevToolsClientImpl* parent, const std::string& session_id);
+
   typedef base::Callback<bool(
       const std::string&,
       int,
@@ -143,6 +145,7 @@ class DevToolsClientImpl : public DevToolsClient {
       bool wait_for_response,
       const Timeout* timeout);
   Status ProcessNextMessage(int expected_id, const Timeout& timeout);
+  Status HandleMessage(int expected_id, const std::string& message);
   Status ProcessEvent(const internal::InspectorEvent& event);
   Status ProcessCommandResponse(
       const internal::InspectorCommandResponse& response);
@@ -152,6 +155,9 @@ class DevToolsClientImpl : public DevToolsClient {
 
   std::unique_ptr<SyncWebSocket> socket_;
   GURL url_;
+  DevToolsClientImpl* parent_;
+  const std::string session_id_;
+  std::map<std::string, DevToolsClientImpl*> children_;
   bool crashed_;
   const std::string id_;
   FrontendCloserFunc frontend_closer_func_;

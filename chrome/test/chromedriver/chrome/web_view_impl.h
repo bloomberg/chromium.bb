@@ -43,6 +43,8 @@ class WebViewImpl : public WebView {
               const DeviceMetrics* device_metrics,
               std::string page_load_strategy);
   ~WebViewImpl() override;
+  WebView* CreateChild(const std::string& session_id,
+                       const std::string& target_id) const;
 
   // Overridden from WebView:
   std::string GetId() override;
@@ -127,7 +129,8 @@ class WebViewImpl : public WebView {
   Status GetScreenOrientation(std::string* orientation) override;
   Status SetScreenOrientation(std::string orientation) override;
   Status DeleteScreenOrientation() override;
-
+  bool IsOOPIF(const std::string& frame_id) override;
+  FrameTracker* GetFrameTracker() const override;
 
  private:
   Status TraverseHistoryWithJavaScript(int delta);
@@ -147,6 +150,9 @@ class WebViewImpl : public WebView {
   std::string id_;
   bool w3c_compliant_;
   const BrowserInfo* browser_info_;
+  // Many trackers hold pointers to DevToolsClient, so client_ must be declared
+  // before the trackers, to ensured trackers are destructed before client_.
+  std::unique_ptr<DevToolsClient> client_;
   std::unique_ptr<DomTracker> dom_tracker_;
   std::unique_ptr<FrameTracker> frame_tracker_;
   std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
@@ -158,7 +164,6 @@ class WebViewImpl : public WebView {
       network_conditions_override_manager_;
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   std::unique_ptr<DebuggerTracker> debugger_;
-  std::unique_ptr<DevToolsClient> client_;
 };
 
 namespace internal {

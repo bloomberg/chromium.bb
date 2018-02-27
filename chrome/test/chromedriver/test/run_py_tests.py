@@ -73,14 +73,10 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1882
     'PerfTest.testColdExecuteScript',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
-    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2144
     'MobileEmulationCapabilityTest.testClickElement',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
-    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -97,6 +93,10 @@ _VERSION_SPECIFIC_FILTER['64'] = [
     'HeadlessInvalidCertificateTest.*',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
     'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
+    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _VERSION_SPECIFIC_FILTER['63'] = [
@@ -106,6 +106,10 @@ _VERSION_SPECIFIC_FILTER['63'] = [
     'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
     'ChromeDriverPageLoadTimeoutTest.testHistoryNavigationWithPageLoadTimeout',
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
+    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 
