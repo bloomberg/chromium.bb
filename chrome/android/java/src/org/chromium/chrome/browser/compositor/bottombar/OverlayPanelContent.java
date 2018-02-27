@@ -94,6 +94,7 @@ public class OverlayPanelContent {
     /** The desired size of the {@link ContentView} associated with this panel content. */
     private int mContentViewWidth;
     private int mContentViewHeight;
+    private boolean mSubtractBarHeight;
 
     /** The height of the bar at the top of the OverlayPanel in pixels. */
     private int mBarHeightPx;
@@ -240,10 +241,12 @@ public class OverlayPanelContent {
      * by the {@link OverlayPanel} before the creation of the content view.
      * @param width The width of the content view.
      * @param height The height of the content view.
+     * @param subtractBarHeight if {@code true} view height should be smaller by {@code mBarHeight}.
      */
-    void setContentViewSize(int width, int height) {
+    void setContentViewSize(int width, int height, boolean subtractBarHeight) {
         mContentViewWidth = width;
         mContentViewHeight = height;
+        mSubtractBarHeight = subtractBarHeight;
     }
 
     /**
@@ -362,7 +365,8 @@ public class OverlayPanelContent {
 
         mContentDelegate.onContentViewCreated();
         onPhysicalBackingSizeChanged(mContentViewWidth, mContentViewHeight);
-        panelWebContents.setSize(mContentViewWidth, mContentViewHeight);
+        int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
+        panelWebContents.setSize(mContentViewWidth, viewHeight);
     }
 
     /**
