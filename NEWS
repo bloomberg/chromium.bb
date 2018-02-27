@@ -20,6 +20,13 @@ issues]].
 - Updates to the Urdu tables thanks to Jake Kyle from Compass Braille
 - Updates to the Chinese braille table (~zh-tw.ctb~) thanks to
   Bo-Cheng Jhan
+- ~IPA.utb~ now contains a more complete list of phonetic symbols,
+  including some that might conflict with other tables. For this
+  reason it is not suitable for inclusion in other tables. A separate
+  table ~IPA-unicode-range.uti~ has been added for this
+  purpose. Thanks to Ludovic Oger.
+- The Mongolian table has been improved and there is now also support
+  for grade 2 thanks to Tsengel Maidar.
 
 ** Other changes
 *** Improved documentation
@@ -46,8 +53,12 @@ issues]].
 
 ** New, renamed or removed tables
 *** New
+- IPA-unicode-range.uti
+- mn-MN-g2.ctb
 *** Renamed
+- mn-MN.utb -> mn-MN-g1.utb
 *** Removed
+None
 
 * Noteworthy changes in release 3.4.0 (2017-12-04)
 This release brings together a lot of work by lots of different

@@ -201,6 +201,7 @@ table_files = \
 	hyph_ru.dic \
 	hyph_sv_SE.dic \
 	hy.tbl \
+	IPA-unicode-range.uti \
 	IPA.utb \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
@@ -251,7 +252,9 @@ table_files = \
 	ml.tbl \
 	mn-in-g1.utb \
 	mni.tbl \
-	mn-MN.utb \
+	mn-MN-common.cti \
+	mn-MN-g1.utb \
+	mn-MN-g2.ctb \
 	mr-in-g1.utb \
 	mr.tbl \
 	mt.ctb \
