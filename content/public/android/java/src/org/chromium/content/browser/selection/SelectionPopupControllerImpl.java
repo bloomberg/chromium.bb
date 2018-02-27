@@ -47,6 +47,7 @@ import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
+import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -63,7 +64,8 @@ import java.util.List;
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.M)
 public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
-        implements SelectionPopupController, WindowEventObserver, WindowAndroidChangedObserver {
+        implements ImeEventObserver, SelectionPopupController, WindowEventObserver,
+                   WindowAndroidChangedObserver {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -268,6 +270,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         destroyPastePopup();
 
         mView = view;
+    }
+
+    // ImeEventObserver
+
+    @Override
+    public void onNodeAttributeUpdated(boolean editable, boolean password) {
+        updateSelectionState(editable, password);
     }
 
     @Override

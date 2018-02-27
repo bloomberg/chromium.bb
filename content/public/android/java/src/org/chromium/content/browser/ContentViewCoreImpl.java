@@ -39,7 +39,6 @@ import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
@@ -60,9 +59,8 @@ import java.util.List;
  * Implementation of the interface {@ContentViewCore}.
  */
 @JNINamespace("content")
-public class ContentViewCoreImpl
-        implements ContentViewCore, DisplayAndroidObserver,
-                   SystemCaptioningBridge.SystemCaptioningBridgeListener, ImeEventObserver {
+public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObserver,
+                                            SystemCaptioningBridge.SystemCaptioningBridgeListener {
     private static final String TAG = "cr_ContentViewCore";
 
     /**
@@ -302,7 +300,8 @@ public class ContentViewCoreImpl
 
         ImeAdapterImpl imeAdapter = ImeAdapterImpl.create(mWebContents, mContainerView,
                 ImeAdapterImpl.createDefaultInputMethodManagerWrapper(mContext));
-        imeAdapter.addEventObserver(this);
+        imeAdapter.addEventObserver(controller);
+        imeAdapter.addEventObserver(getJoystick());
         imeAdapter.addEventObserver(TapDisambiguator.create(mContext, mWebContents, containerView));
         TextSuggestionHost textSuggestionHost =
                 TextSuggestionHost.create(mContext, mWebContents, windowAndroid, containerView);
@@ -912,14 +911,6 @@ public class ContentViewCoreImpl
         }
 
         TraceEvent.end("ContentViewCore:updateFrameInfo");
-    }
-
-    // ImeEventObserver
-
-    @Override
-    public void onNodeAttributeUpdated(boolean editable, boolean password) {
-        getJoystick().setScrollEnabled(!editable);
-        getSelectionPopupController().updateSelectionState(editable, password);
     }
 
     /**
