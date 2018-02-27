@@ -38,6 +38,8 @@ std::string ConnectionReasonToString(const ConnectionReason& reason) {
       return "[KeepAliveTickle]";
     case ConnectionReason::DISCONNECT_TETHERING_REQUEST:
       return "[DisconnectTetheringRequest]";
+    case ConnectionReason::PRESERVE_CONNECTION:
+      return "[PreserveConnection]";
     default:
       return "[invalid ConnectionReason]";
   }

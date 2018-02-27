@@ -19,7 +19,10 @@ enum class ConnectionReason {
   TETHER_AVAILABILITY_REQUEST,
   CONNECT_TETHERING_REQUEST,
   KEEP_ALIVE_TICKLE,
-  DISCONNECT_TETHERING_REQUEST
+  DISCONNECT_TETHERING_REQUEST,
+  // Indicates a connection should live beyond its immediately useful lifetime;
+  // does not indicate that a particular message should be sent.
+  PRESERVE_CONNECTION
 };
 
 ConnectionReason MessageTypeToConnectionReason(const MessageType& reason);
