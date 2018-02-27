@@ -515,10 +515,12 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
   gfx::Rect backdrop_bounds() const { return backdrop_bounds_; }
 
   void SetCloseButtonVisibility(bool visible) {
+    DCHECK(close_button_->layer());
     AnimateLayerOpacity(close_button_->layer(), visible);
   }
 
   void SetTitleLabelVisibility(bool visible) {
+    DCHECK(background_->layer());
     AnimateLayerOpacity(background_->layer(), visible);
   }
 
@@ -789,12 +791,16 @@ void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
 }
 
 void WindowSelectorItem::OnSelectorItemDragStarted(WindowSelectorItem* item) {
+  if (!IsNewOverviewUi())
+    return;
   caption_container_view_->SetCloseButtonVisibility(false);
   if (item == this)
     caption_container_view_->SetTitleLabelVisibility(false);
 }
 
 void WindowSelectorItem::OnSelectorItemDragEnded() {
+  if (!IsNewOverviewUi())
+    return;
   caption_container_view_->SetCloseButtonVisibility(true);
   caption_container_view_->SetTitleLabelVisibility(true);
 }
@@ -937,6 +943,7 @@ void WindowSelectorItem::ActivateDraggedWindow(
 
 void WindowSelectorItem::ResetDraggedWindowGesture() {
   OnSelectorItemDragEnded();
+
   if (tap_down_event_on_title_)
     return;
 
