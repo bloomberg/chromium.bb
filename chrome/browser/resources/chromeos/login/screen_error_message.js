@@ -253,7 +253,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     },
 
     /**
-     * Event handler that is invoked just before the screen in shown.
+     * Event handler that is invoked just before the screen is shown.
      * @param {Object} data Screen init payload.
      */
     onBeforeShow: function(data) {
@@ -261,6 +261,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       cr.ui.DropDown.show('offline-networks-list', false);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ERROR;
       this.cancelable = $('pod-row').pods.length;
+      $('error-message-back-button').disabled = !this.cancelable;
     },
 
     /**
