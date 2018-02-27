@@ -90,18 +90,20 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
   MessagePumpLibevent();
   ~MessagePumpLibevent() override;
 
-  // Have the current thread's message loop watch for a a situation in which
-  // reading/writing to the FD can be performed without blocking.
-  // Callers must provide a preallocated FileDescriptorWatcher object which
-  // can later be used to manage the lifetime of this event.
-  // If a FileDescriptorWatcher is passed in which is already attached to
-  // an event, then the effect is cumulative i.e. after the call |controller|
-  // will watch both the previous event and the new one.
-  // If an error occurs while calling this method in a cumulative fashion, the
-  // event previously attached to |controller| is aborted.
-  // Returns true on success.
-  // Must be called on the same thread the message_pump is running on.
-  // TODO(dkegel): switch to edge-triggered readiness notification
+  // Registers |delegate| with the current thread's message loop so that its
+  // methods are invoked when file descriptor |fd| becomes ready for reading or
+  // writing (or both) without blocking.  |mode| selects ready for reading, for
+  // writing, or both.  (See "enum Mode" above. TODO(unknown): nuke the
+  // plethora of equivalent "enum Mode" declarations.)  |controller| manages
+  // the lifetime of registrations. ("Registrations" are also ambiguously
+  // called "events" in many places, for instance in libevent.)  It is an error
+  // to use the same |controller| for different file descriptors; however, the
+  // same controller can be reused to add registrations with a different
+  // |mode|.  If |controller| is already attached to one or more registrations,
+  // the new registration is added on to those.  If an error occurs while
+  // calling this method, any registration previously attached to |controller|
+  // is removed.  Returns true on success.  Must be called on the same thread
+  // the message_pump is running on.
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            int mode,
