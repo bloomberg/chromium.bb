@@ -19,6 +19,8 @@ source_set("lib") {
     "debug_recording.h",
     "in_process_audio_manager_accessor.cc",
     "in_process_audio_manager_accessor.h",
+    "output_stream.cc",
+    "output_stream.h",
     "service.cc",
     "service.h",
     "service_factory.cc",
@@ -40,15 +42,19 @@ source_set("tests") {
 
   sources = [
     "debug_recording_unittest.cc",
+    "output_stream_unittest.cc",
     "test/audio_system_to_service_adapter_test.cc",
     "test/debug_recording_session_unittest.cc",
     "test/in_process_service_test.cc",
+    "test/mock_log.cc",
+    "test/mock_log.h",
   ]
 
   deps = [
     ":lib",
     "//base/test:test_support",
     "//media:test_support",
+    "//mojo/edk/system:system",
     "//services/audio/public/cpp",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
