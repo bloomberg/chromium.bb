@@ -73,6 +73,8 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
 
   PositionTemplate(const PositionTemplate&);
 
+  explicit operator bool() const { return IsNotNull(); }
+
   PositionAnchorType AnchorType() const { return anchor_type_; }
   bool IsAfterAnchor() const {
     return anchor_type_ == PositionAnchorType::kAfterAnchor;
