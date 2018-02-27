@@ -19,8 +19,8 @@
 class ModuleListFilter;
 class PrefRegistrySimple;
 
-// A feature that controls whether Chrome keeps track of problematic programs.
-extern const base::Feature kThirdPartyConflictsWarning;
+// A feature that controls whether Chrome warns about incompatible software.
+extern const base::Feature kIncompatibleSoftwareWarning;
 
 // Maintains a list of problematic programs that are installed on the machine.
 // These programs cause unwanted DLLs to be loaded into Chrome.
@@ -29,9 +29,9 @@ extern const base::Feature kThirdPartyConflictsWarning;
 // file so that it is available at startup, albeit somewhat out-of-date. To
 // remove stale elements from the list, use TrimCache().
 //
-// When kThirdPartyConflictsWarning is disabled, this class always behaves as-if
-// there are no problematic programs on the computer. This makes it safe to use
-// all of the class' static functions unconditionally.
+// When kIncompatibleSoftwareWarning is disabled, this class always behaves
+// as-if there are no problematic programs on the computer. This makes it safe
+// to use all of the class' static functions unconditionally.
 class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
  public:
   ~ProblematicProgramsUpdater() override;
@@ -39,7 +39,7 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Creates an instance of the updater. Returns nullptr if the
-  // kThirdPartyConflictsWarning experiment is disabled.
+  // kIncompatibleSoftwareWarning experiment is disabled.
   //
   // |installed_programs| must outlive the lifetime of this class.
   static std::unique_ptr<ProblematicProgramsUpdater> MaybeCreate(

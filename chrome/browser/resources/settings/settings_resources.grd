@@ -325,6 +325,26 @@
                    file="chrome_cleanup_page/items_to_remove_list.js"
                    type="chrome_html"/>
       </if>
+      <if expr="is_win and _google_chrome">
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_PAGE_HTML"
+                   file="incompatible_software_page/incompatible_software_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_PAGE_JS"
+                   file="incompatible_software_page/incompatible_software_page.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_BROWSER_PROXY_HTML"
+                   file="incompatible_software_page/incompatible_software_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_BROWSER_PROXY_JS"
+                   file="incompatible_software_page/incompatible_software_browser_proxy.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_INCOMPATIBLE_SOFTWARE_ITEM_HTML"
+                   file="incompatible_software_page/incompatible_software_item.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INCOMPATIBLE_SOFTWARE_INCOMPATIBLE_SOFTWARE_ITEM_JS"
+                   file="incompatible_software_page/incompatible_software_item.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_BROWSER_PROXY_HTML"
                  file="clear_browsing_data_dialog/clear_browsing_data_browser_proxy.html"
                  type="chrome_html" />

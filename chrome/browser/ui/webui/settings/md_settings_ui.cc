@@ -54,6 +54,8 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 #if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/problematic_programs_updater_win.h"
+#include "chrome/browser/ui/webui/settings/incompatible_software_handler_win.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif
 #endif  // defined(OS_WIN)
@@ -224,6 +226,19 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("userInitiatedCleanupsEnabled",
                           userInitiatedCleanupsEnabled);
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  ProblematicProgramsUpdater::TrimCache();
+  bool has_incompatible_software =
+      ProblematicProgramsUpdater::HasCachedPrograms();
+  html_source->AddBoolean("showIncompatibleSoftware",
+                          has_incompatible_software);
+  // TODO(pmonette): Implement a function to determine hasAdminRights.
+  html_source->AddBoolean("hasAdminRights", false);
+
+  if (has_incompatible_software)
+    AddSettingsPageUIHandler(base::MakeUnique<IncompatibleSoftwareHandler>());
+#endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
 
   bool password_protection_available = false;
 #if defined(SAFE_BROWSING_DB_LOCAL)

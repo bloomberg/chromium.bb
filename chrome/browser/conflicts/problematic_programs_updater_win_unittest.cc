@@ -96,7 +96,7 @@ class ProblematicProgramsUpdaterTest : public testing::Test {
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
-    scoped_feature_list_.InitAndEnableFeature(kThirdPartyConflictsWarning);
+    scoped_feature_list_.InitAndEnableFeature(kIncompatibleSoftwareWarning);
   }
 
   enum class Option {

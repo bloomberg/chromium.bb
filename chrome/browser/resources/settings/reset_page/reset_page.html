@@ -17,6 +17,7 @@
 
 <if expr="_google_chrome and is_win">
 <link rel="import" href="../chrome_cleanup_page/chrome_cleanup_page.html">
+<link rel="import" href="../incompatible_software_page/incompatible_software_page.html">
 </if>
 
 <dom-module id="settings-reset-page">
@@ -71,6 +72,19 @@
                 aria-describedby="chromeCleanupSecondary"></button>
           </div>
         </template>
+        <template is="dom-if" if="[[showIncompatibleSoftware_]]" restamp>
+          <div class="settings-box"
+              id="incompatibleSoftwareSubpageTrigger"
+              on-click="onIncompatibleSoftwareTap_" actionable>
+            <div class="start">
+              $i18n{incompatibleSoftwareResetCardTitle}
+            </div>
+            <button is="paper-icon-button-light"
+                class="subpage-arrow"
+                aria-label="$i18n{incompatibleSoftwareResetCardTitle}"
+                aria-describedby="incompatibleSoftwareSecondary"></button>
+          </div>
+        </template>
 </if>
       </neon-animatable>
 <if expr="_google_chrome and is_win">
@@ -81,6 +95,16 @@
               page-title="$i18n{resetCleanupComputerTrigger}"
               learn-more-url="$i18n{chromeCleanupLearnMoreUrl}">
             <settings-chrome-cleanup-page></settings-chrome-cleanup-page>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if" if="[[showIncompatibleSoftware_]]">
+        <template is="dom-if" route-path="/incompatibleSoftware">
+          <settings-subpage id="incompatibleSoftwareSubpage"
+              associated-control="[[$$('#incompatibleSoftwareSubpageTrigger')]]"
+              page-title="$i18n{incompatibleSoftwareResetCardTitle}">
+            <settings-incompatible-software-page>
+            </settings-incompatible-software-page>
           </settings-subpage>
         </template>
       </template>
