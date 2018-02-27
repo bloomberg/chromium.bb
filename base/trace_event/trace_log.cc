@@ -74,7 +74,7 @@ const size_t kEchoToConsoleTraceEventBufferChunks = 256;
 const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 const int kThreadFlushTimeoutMs = 3000;
 
-TraceLog* g_instance_for_testing = nullptr;
+TraceLog* g_instance_for_trace_log_testing = nullptr;
 
 #define MAX_TRACE_EVENT_FILTERS 32
 
@@ -335,11 +335,11 @@ TraceLog* TraceLog::GetInstance() {
 
 // static
 void TraceLog::ResetForTesting() {
-  if (!g_instance_for_testing)
+  if (!g_instance_for_trace_log_testing)
     return;
   CategoryRegistry::ResetForTesting();
-  g_instance_for_testing->~TraceLog();
-  new (g_instance_for_testing) TraceLog;
+  g_instance_for_trace_log_testing->~TraceLog();
+  new (g_instance_for_trace_log_testing) TraceLog;
 }
 
 TraceLog::TraceLog()
@@ -376,7 +376,7 @@ TraceLog::TraceLog()
 
   MemoryDumpManager::GetInstance()->RegisterDumpProvider(this, "TraceLog",
                                                          nullptr);
-  g_instance_for_testing = this;
+  g_instance_for_trace_log_testing = this;
 }
 
 TraceLog::~TraceLog() = default;
