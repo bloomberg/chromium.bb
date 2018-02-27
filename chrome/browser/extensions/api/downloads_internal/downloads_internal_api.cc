@@ -19,21 +19,21 @@ DownloadsInternalDetermineFilenameFunction::
 typedef extensions::api::downloads_internal::DetermineFilename::Params
     DetermineFilenameParams;
 
-bool DownloadsInternalDetermineFilenameFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+DownloadsInternalDetermineFilenameFunction::Run() {
   std::unique_ptr<DetermineFilenameParams> params(
       DetermineFilenameParams::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   base::FilePath::StringType filename;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filename));
-  return ExtensionDownloadsEventRouter::DetermineFilename(
-      GetProfile(),
-      include_incognito(),
-      extension()->id(),
-      params->download_id,
-      base::FilePath(filename),
+  std::string error;
+  bool result = ExtensionDownloadsEventRouter::DetermineFilename(
+      browser_context(), include_incognito(), extension()->id(),
+      params->download_id, base::FilePath(filename),
       extensions::api::downloads::ParseFilenameConflictAction(
           params->conflict_action),
-      &error_);
+      &error);
+  return RespondNow(result ? NoArguments() : Error(error));
 }
 
 }  // namespace extensions

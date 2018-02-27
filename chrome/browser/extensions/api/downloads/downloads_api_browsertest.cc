@@ -26,6 +26,7 @@
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
+#include "chrome/browser/extensions/api/downloads_internal/downloads_internal_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -2864,6 +2865,51 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          "    \"previous\": \"in_progress\","
                          "    \"current\": \"complete\"}}]",
                          result_id)));
+}
+
+// Tests downloadsInternal.determineFilename.
+// Regression test for https://crbug.com/815362.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadsInternalDetermineFilename) {
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  AddFilenameDeterminer();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  std::string download_url = embedded_test_server()->GetURL("/slow?0").spec();
+
+  // Start downloading a file.
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      base::StringPrintf(R"([{"url": "%s"}])", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = result->GetInt();
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  // Wait for the onCreated and onDeterminingFilename events.
+  ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
+                      base::StringPrintf(R"([{
+                                               "danger": "safe",
+                                               "incognito": false,
+                                               "id": %d,
+                                               "mime": "text/plain",
+                                               "paused": false,
+                                               "url": "%s"
+                                             }])",
+                                         result_id, download_url.c_str())));
+  ASSERT_TRUE(
+      WaitFor(downloads::OnDeterminingFilename::kEventName,
+              base::StringPrintf(
+                  R"([{"id": %d, "filename": "slow.txt"}])", result_id)));
+  ASSERT_TRUE(item->GetTargetFilePath().empty());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+
+  std::unique_ptr<base::Value> determine_result(RunFunctionAndReturnResult(
+      new DownloadsInternalDetermineFilenameFunction(),
+      base::StringPrintf(R"([%d, "", "uniquify"])", result_id)));
+  EXPECT_FALSE(determine_result.get());  // No return value.
 }
 
 IN_PROC_BROWSER_TEST_F(
