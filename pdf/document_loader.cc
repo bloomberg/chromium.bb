@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
@@ -51,8 +52,6 @@ bool IsValidContentType(const std::string& type) {
 }
 
 }  // namespace
-
-DocumentLoader::Client::~Client() = default;
 
 DocumentLoader::Chunk::Chunk() = default;
 

@@ -27,6 +27,7 @@
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/var_array.h"
+#include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
@@ -637,8 +638,8 @@ class PDFiumEngine : public PDFEngine,
   std::string url_;
   std::string headers_;
   pp::CompletionCallbackFactory<PDFiumEngine> find_factory_;
-
   pp::CompletionCallbackFactory<PDFiumEngine> password_factory_;
+
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.
   bool getting_password_ = false;

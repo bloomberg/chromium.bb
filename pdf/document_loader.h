@@ -8,14 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <memory>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "pdf/chunk_stream.h"
 #include "ppapi/utility/completion_callback_factory.h"
+
+namespace pp {
+class Instance;
+}
 
 namespace chrome_pdf {
 
@@ -28,7 +29,7 @@ class DocumentLoader {
 
   class Client {
    public:
-    virtual ~Client();
+    virtual ~Client() = default;
 
     // Gets the pp::Instance object.
     virtual pp::Instance* GetPluginInstance() = 0;
@@ -51,13 +52,13 @@ class DocumentLoader {
 
   bool Init(std::unique_ptr<URLLoaderWrapper> loader, const std::string& url);
 
-  // Data access interface. Return true is successful.
+  // Data access interface. Return true if successful.
   bool GetBlock(uint32_t position, uint32_t size, void* buf) const;
 
-  // Data availability interface. Return true data available.
+  // Data availability interface. Return true if data is available.
   bool IsDataAvailable(uint32_t position, uint32_t size) const;
 
-  // Data availability interface. Return true data available.
+  // Data request interface.
   void RequestData(uint32_t position, uint32_t size);
 
   bool IsDocumentComplete() const;
@@ -67,8 +68,8 @@ class DocumentLoader {
   // Clear pending requests from the queue.
   void ClearPendingRequests();
 
+  // Exposed for unit tests.
   void SetPartialLoadingEnabled(bool enabled);
-
   bool is_partial_loader_active() const { return is_partial_loader_active_; }
 
  private:
