@@ -113,9 +113,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // It also stores the list of notifications which are blocked by |blockers|
   // to |blocked|. |blocked| can be NULL if the caller doesn't care which
   // notifications are blocked.
-  PopupNotifications GetPopupNotifications(
-      const NotificationBlockers& blockers,
-      std::list<const Notification*>* blocked);
+  PopupNotifications GetPopupNotifications(const NotificationBlockers& blockers,
+                                           std::list<std::string>* blocked);
 
   // Marks a specific popup item as shown. Set |mark_notification_as_read| to
   // true in case marking the notification as read too.
