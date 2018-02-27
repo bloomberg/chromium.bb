@@ -1230,7 +1230,6 @@ void av1_highbd_convolve_x_sr_c(const uint16_t *src, int src_stride,
   const int bits = FILTER_BITS - conv_params->round_0;
   (void)filter_params_y;
   (void)subpel_y_q4;
-  (void)conv_params;
 
   assert(bits >= 0);
   assert((FILTER_BITS - conv_params->round_1) >= 0 ||
@@ -1262,7 +1261,6 @@ void av1_highbd_convolve_y_sr_c(const uint16_t *src, int src_stride,
   (void)filter_params_x;
   (void)subpel_x_q4;
   (void)conv_params;
-  (void)bd;
 
   assert(conv_params->round_0 <= FILTER_BITS);
   assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
