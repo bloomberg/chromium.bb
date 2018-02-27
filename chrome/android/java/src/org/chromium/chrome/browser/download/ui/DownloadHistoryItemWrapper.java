@@ -200,6 +200,9 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return Whether the download is currently paused. */
     abstract boolean isPaused();
 
+    /** @return Whether the download is currently pending. */
+    abstract boolean isPending();
+
     /** Called when the user wants to open the file. */
     abstract void open();
 
@@ -432,6 +435,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public boolean isPending() {
+            return DownloadUtils.isDownloadPending(mItem);
+        }
+
+        @Override
         boolean isVisibleToUser(@DownloadFilter.Type int filter) {
             if (!super.isVisibleToUser(filter)) return false;
 
@@ -617,6 +625,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public boolean isPaused() {
             return mItem.state == OfflineItemState.PAUSED;
+        }
+
+        @Override
+        public boolean isPending() {
+            return mItem.state == OfflineItemState.PENDING;
         }
     }
 }

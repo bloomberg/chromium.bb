@@ -652,13 +652,7 @@ public class DownloadUtils {
             return context.getString(R.string.download_notification_completed);
         }
 
-        DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
-        DownloadSharedPreferenceEntry entry =
-                helper.getDownloadSharedPreferenceEntry(item.getContentId());
-        boolean isDownloadPending =
-                entry != null && state == DownloadState.INTERRUPTED && entry.isAutoResumable;
-
-        if (isDownloadPending) {
+        if (isDownloadPending(item)) {
             // All pending, non-offline page downloads are by default waiting for network.
             // The other pending reason (i.e. waiting for another download to complete) applies
             // only to offline page requests because offline pages download one at a time.
@@ -734,6 +728,19 @@ public class DownloadUtils {
                 return item.getDownloadInfo().state() == DownloadState.INTERRUPTED;
             }
         }
+    }
+
+    /**
+     * Return whether a download is pending.
+     * @param item Download to check the status of.
+     * @return Whether the download is pending or not.
+     */
+    public static boolean isDownloadPending(DownloadItem item) {
+        DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
+        DownloadSharedPreferenceEntry entry =
+                helper.getDownloadSharedPreferenceEntry(item.getContentId());
+        return entry != null && item.getDownloadInfo().state() == DownloadState.INTERRUPTED
+                && entry.isAutoResumable;
     }
 
     /**
