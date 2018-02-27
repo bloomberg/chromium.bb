@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL WebAuthn Secure Context Tests Uncaught TypeError: Cannot read property 'create' of undefined
-Harness: the test ran to completion.
-
