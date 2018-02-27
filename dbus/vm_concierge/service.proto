@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
 
 // This file defines messages used for starting, stopping, and managing VMs.
 package vm_tools.concierge;
