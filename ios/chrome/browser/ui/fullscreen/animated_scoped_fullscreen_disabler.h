@@ -10,6 +10,7 @@
 
 class FullscreenController;
 class AnimatedScopedFullscreenDisablerObserver;
+@class AnimatedScopedFullscreenDisablerObserverListContainer;
 
 // A helper object that increments FullscrenController's disabled counter for
 // its entire lifetime after calling StartAnimation().  Any UI updates resulting
@@ -29,13 +30,11 @@ class AnimatedScopedFullscreenDisabler {
   void StartAnimation();
 
  private:
-  // Called when the fullscreen disabling animation has finished.
-  void OnAnimationFinished();
-
   // The FullscreenController being disabled by this object.
   FullscreenController* controller_;
-  // The AnimatedScopedFullscreenDisablerObservers.
-  base::ObserverList<AnimatedScopedFullscreenDisablerObserver> observers_;
+  // A container object for the list of observers.
+  __strong AnimatedScopedFullscreenDisablerObserverListContainer*
+      observer_list_container_;
   // Whether this disabler is contributing to |controller_|'s disabled counter.
   bool disabling_ = false;
 
@@ -51,11 +50,16 @@ class AnimatedScopedFullscreenDisablerObserver {
   // Called when the fullscreen disabling animation begins and ends.  If
   // AnimatedScopedFullscreenDisabler::StartAnimation() is called and for a
   // FullscreenController that is already disabled, these callbacks will not be
-  // sent.
+  // sent.  If the disabler is destroyed before the animation can finish,
+  // FullscreenDisablingAnimationDidFinish() will not be received.
   virtual void FullscreenDisablingAnimationDidStart(
-      AnimatedScopedFullscreenDisabler* disabler){};
+      AnimatedScopedFullscreenDisabler* disabler) {}
   virtual void FullscreenDisablingAnimationDidFinish(
-      AnimatedScopedFullscreenDisabler* disabler){};
+      AnimatedScopedFullscreenDisabler* disabler) {}
+
+  // Called before the disabler is destructed.
+  virtual void AnimatedFullscreenDisablerDestroyed(
+      AnimatedScopedFullscreenDisabler* disabler) {}
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_ANIMATED_SCOPED_FULLSCREEN_DISABLER_H_
