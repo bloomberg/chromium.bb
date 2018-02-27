@@ -78,6 +78,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -470,16 +471,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   loaders_to_cancel.clear();
 }
 
-void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(
-    net::URLRequest* request) {
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
-  if (info) {
-    ResourceLoader* loader = GetLoader(info->GetGlobalRequestID());
-    if (loader)
-      loader->ClearLoginDelegate();
-  }
-}
-
 void ResourceDispatcherHostImpl::RegisterInterceptor(
     const std::string& http_header,
     const std::string& starts_with,
@@ -574,7 +565,25 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
   if (!delegate_)
     return nullptr;
 
-  return delegate_->CreateLoginDelegate(auth_info, loader->request());
+  net::URLRequest* request = loader->request();
+
+  ResourceRequestInfoImpl* resource_request_info =
+      ResourceRequestInfoImpl::ForRequest(request);
+  DCHECK(resource_request_info);
+  bool is_main_frame = resource_request_info->IsMainFrame();
+
+  GURL url = request->url();
+
+  ResourceDispatcherHostLoginDelegate* login_delegate =
+      GetContentClient()->browser()->CreateLoginDelegate(
+          auth_info, resource_request_info->GetWebContentsGetterForRequest(),
+          is_main_frame, url, resource_request_info->first_auth_attempt(),
+          base::Bind(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
+                     base::Unretained(this), request));
+
+  resource_request_info->set_first_auth_attempt(false);
+
+  return login_delegate;
 }
 
 bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
@@ -2601,6 +2610,25 @@ bool ResourceDispatcherHostImpl::HasRequestsFromMultipleActiveTabs() {
     }
   }
   return false;
+}
+
+void ResourceDispatcherHostImpl::RunAuthRequiredCallback(
+    net::URLRequest* url_request,
+    const net::AuthCredentials& credentials) {
+  if (credentials.Empty()) {
+    url_request->CancelAuth();
+  } else {
+    url_request->SetAuth(credentials);
+  }
+
+  // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(url_request);
+  if (info) {
+    ResourceLoader* loader = GetLoader(info->GetGlobalRequestID());
+    if (loader)
+      loader->ClearLoginDelegate();
+  }
 }
 
 // static

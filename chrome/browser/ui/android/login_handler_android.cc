@@ -19,14 +19,16 @@
 #include "ui/android/window_android.h"
 
 using content::BrowserThread;
-using net::URLRequest;
 using net::AuthChallengeInfo;
 
 class LoginHandlerAndroid : public LoginHandler {
  public:
-  LoginHandlerAndroid(AuthChallengeInfo* auth_info, URLRequest* request)
-      : LoginHandler(auth_info, request) {
-  }
+  LoginHandlerAndroid(
+      net::AuthChallengeInfo* auth_info,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      const base::Callback<void(const net::AuthCredentials&)>&
+          auth_required_callback)
+      : LoginHandler(auth_info, web_contents_getter, auth_required_callback) {}
 
   // LoginHandler methods:
 
@@ -90,7 +92,11 @@ class LoginHandlerAndroid : public LoginHandler {
 };
 
 // static
-LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
-                                   net::URLRequest* request) {
-  return new LoginHandlerAndroid(auth_info, request);
+LoginHandler* LoginHandler::Create(
+    net::AuthChallengeInfo* auth_info,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const base::Callback<void(const net::AuthCredentials&)>&
+        auth_required_callback) {
+  return new LoginHandlerAndroid(auth_info, web_contents_getter,
+                                 auth_required_callback);
 }
