@@ -574,14 +574,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // Flaky: crbug.com/807638
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_VideoInIFrameAndCloseInSuccessCb \
-  DISABLED_VideoInIFrameAndCloseInSuccessCb
-#else
-#define MAYBE_VideoInIFrameAndCloseInSuccessCb VideoInIFrameAndCloseInSuccessCb
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_VideoInIFrameAndCloseInSuccessCb) {
+                       DISABLED_VideoInIFrameAndCloseInSuccessCb) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
