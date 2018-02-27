@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
@@ -126,6 +127,11 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
+  if (matched_configuration_.activation_conditions.forced_activation) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad", true);
+    return;
+  }
   if (activation_options().should_suppress_notifications)
     return;
   // This shouldn't happen normally, but in the rare case that an IPC from a
