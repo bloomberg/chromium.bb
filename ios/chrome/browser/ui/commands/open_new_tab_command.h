@@ -7,18 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-
 // Command sent to open a new tab, optionally including a point (in UIWindow
 // coordinates).
-@interface OpenNewTabCommand : GenericChromeCommand
+@interface OpenNewTabCommand : NSObject
 
 - (instancetype)initWithIncognito:(BOOL)incognito
                       originPoint:(CGPoint)originPoint
     NS_DESIGNATED_INITIALIZER;
 
 // Mark inherited initializer as unavailable to prevent calling it by mistake.
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Convenience initializers
 

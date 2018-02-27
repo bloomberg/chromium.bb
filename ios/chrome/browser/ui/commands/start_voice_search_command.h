@@ -7,15 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-
 // Command sent to start a voice search, optionally including the view from
 // which the voice search present and dismiss animations will occur.
-@interface StartVoiceSearchCommand : GenericChromeCommand
+@interface StartVoiceSearchCommand : NSObject
 
 - (instancetype)initWithOriginView:(UIView*)view NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, readonly) UIView* originView;
 

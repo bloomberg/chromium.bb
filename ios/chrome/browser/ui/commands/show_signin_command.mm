@@ -18,18 +18,13 @@
 @synthesize promoAction = _promoAction;
 @synthesize callback = _callback;
 
-- (instancetype)initWithTag:(NSInteger)tag {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
                          identity:(ChromeIdentity*)identity
                       accessPoint:(signin_metrics::AccessPoint)accessPoint
                       promoAction:(signin_metrics::PromoAction)promoAction
                          callback:
                              (ShowSigninCommandCompletionCallback)callback {
-  if ((self = [super initWithTag:0])) {
+  if ((self = [super init])) {
     DCHECK(operation == AUTHENTICATION_OPERATION_SIGNIN || identity == nil);
     _operation = operation;
     _identity = identity;

@@ -10,7 +10,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
-@class GenericChromeCommand;
 @class Tab;
 @protocol SyncPresenter;
 

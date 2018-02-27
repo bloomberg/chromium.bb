@@ -13,7 +13,7 @@
 @synthesize originView = _originView;
 
 - (instancetype)initWithOriginView:(UIView*)originView {
-  if ((self = [super initWithTag:0])) {
+  if ((self = [super init])) {
     _originView = originView;
   }
   return self;

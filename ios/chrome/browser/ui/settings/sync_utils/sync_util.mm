@@ -12,8 +12,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #include "ios/chrome/browser/ui/settings/sync_utils/sync_error_infobar_delegate.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
