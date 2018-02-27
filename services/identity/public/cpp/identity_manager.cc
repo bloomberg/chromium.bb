@@ -95,11 +95,21 @@ void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
     std::string gaia_id,
     std::string email_address,
     std::string refresh_token) {
+  DCHECK(!refresh_token.empty());
+  SetPrimaryAccountSynchronously(gaia_id, email_address, refresh_token);
+}
+
+void IdentityManager::SetPrimaryAccountSynchronously(
+    std::string gaia_id,
+    std::string email_address,
+    std::string refresh_token) {
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
 
-  token_service_->UpdateCredentials(primary_account_info_.account_id,
-                                    refresh_token);
+  if (!refresh_token.empty()) {
+    token_service_->UpdateCredentials(primary_account_info_.account_id,
+                                      refresh_token);
+  }
 }
 
 #if !defined(OS_CHROMEOS)

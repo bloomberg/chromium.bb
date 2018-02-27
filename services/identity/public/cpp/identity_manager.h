@@ -16,6 +16,11 @@
 #endif
 
 // Necessary to declare this class as a friend.
+namespace chromeos {
+class ChromeSessionManager;
+}
+
+// Necessary to declare this class as a friend.
 class ProfileSyncServiceHarness;
 
 // Necessary to declare functions in identity_test_utils.h as friends.
@@ -107,7 +112,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
  private:
-  // This function calls the below test function.
+  // These clients need to call SetPrimaryAccountSynchronouslyForTests().
   friend void MakePrimaryAccountAvailable(
       SigninManagerForTest* signin_manager,
       ProfileOAuth2TokenService* token_service,
@@ -115,11 +120,26 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& email);
   friend ProfileSyncServiceHarness;
 
+  // This client needs to call SetPrimaryAccountSynchronously().
+  friend chromeos::ChromeSessionManager;
+
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.
+  // Prefer using the methods in identity_test_{environment, utils}.h to using
+  // this method directly.
   void SetPrimaryAccountSynchronouslyForTests(std::string gaia_id,
                                               std::string email_address,
                                               std::string refresh_token);
+
+  // Sets the primary account info synchronously with both the IdentityManager
+  // and its backing SigninManager instance. If |refresh_token| is not empty,
+  // sets the refresh token with the backing ProfileOAuth2TokenService
+  // instance. This method should not be used directly; it exists only to serve
+  // one legacy use case at this point.
+  // TODO(https://crbug.com/814787): Eliminate the need for this method.
+  void SetPrimaryAccountSynchronously(std::string gaia_id,
+                                      std::string email_address,
+                                      std::string refresh_token);
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
