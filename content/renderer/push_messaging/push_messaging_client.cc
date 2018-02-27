@@ -135,6 +135,8 @@ void PushMessagingClient::DidSubscribe(
   DCHECK(callbacks);
 
   if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE ||
+      status == mojom::PushRegistrationStatus::
+                    SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
       status == mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
     DCHECK(endpoint);
     DCHECK(options);

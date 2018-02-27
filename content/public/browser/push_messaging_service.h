@@ -58,7 +58,9 @@ class CONTENT_EXPORT PushMessagingService {
 
   // Subscribe the given |options.sender_info| with the push messaging service
   // in a document context. The frame is known and a permission UI may be
-  // displayed to the user.
+  // displayed to the user. It's safe to call this method multiple times for
+  // the same registration information, in which case the existing subscription
+  // will be returned by the server.
   virtual void SubscribeFromDocument(const GURL& requesting_origin,
                                      int64_t service_worker_registration_id,
                                      int renderer_id,
@@ -69,7 +71,9 @@ class CONTENT_EXPORT PushMessagingService {
 
   // Subscribe the given |options.sender_info| with the push messaging service.
   // The frame is not known so if permission was not previously granted by the
-  // user this request should fail.
+  // user this request should fail. It's safe to call this method multiple times
+  // for the same registration information, in which case the existing
+  // subscription will be returned by the server.
   virtual void SubscribeFromWorker(const GURL& requesting_origin,
                                    int64_t service_worker_registration_id,
                                    const PushSubscriptionOptions& options,

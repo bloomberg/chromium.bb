@@ -596,6 +596,37 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
             script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWithInvalidation) {
+  std::string token1, token2, token3;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token1));
+  ASSERT_FALSE(token1.empty());
+
+  // Repeated calls to |subscribe()| should yield the same token.
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token2));
+  ASSERT_EQ(token1, token2);
+
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), https_server()->GetURL("/").GetOrigin(),
+          0LL /* service_worker_registration_id */);
+
+  ASSERT_FALSE(app_identifier.is_null());
+  EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_gettoken_app_id());
+
+  // Delete the InstanceID. This captures two scenarios: either the database was
+  // corrupted, or the subscription was invalidated by the server.
+  ASSERT_NO_FATAL_FAILURE(
+      DeleteInstanceIDAsIfGCMStoreReset(app_identifier.app_id()));
+
+  EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());
+
+  // Repeated calls to |subscribe()| will now (silently) result in a new token.
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token3));
+  ASSERT_FALSE(token3.empty());
+  EXPECT_NE(token1, token3);
+}
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
   std::string script_result;
 
@@ -990,10 +1021,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   // Now test that the Service Worker registration IDs and push subscription IDs
   // generated above were persisted to SW storage, by checking that they are
   // unchanged despite requesting them in a different order.
-  // TODO(johnme): Ideally we would restart the browser at this point to check
-  // they were persisted to disk, but that's not currently possible since the
-  // test server uses random port numbers for each test (even PRE_Foo and Foo),
-  // so we wouldn't be able to load the test pages with the same origin.
 
   LoadTestPage("/push_messaging/subscope1/test.html");
   std::string token4;
@@ -1005,13 +1032,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   std::string token5;
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token5));
   EXPECT_EQ(token2, token5);
-  EXPECT_EQ(sw1_identifier.app_id(), gcm_driver_->last_gettoken_app_id());
+  EXPECT_EQ(sw2_identifier.app_id(), gcm_driver_->last_gettoken_app_id());
 
   LoadTestPage();
   std::string token6;
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token6));
   EXPECT_EQ(token1, token6);
-  EXPECT_EQ(sw1_identifier.app_id(), gcm_driver_->last_gettoken_app_id());
+  EXPECT_EQ(sw0_identifier.app_id(), gcm_driver_->last_gettoken_app_id());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, AppHandlerOnlyIfSubscribed) {
@@ -1943,53 +1970,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
           GetBrowser()->profile(), origin,
           0LL /* service_worker_registration_id */);
   EXPECT_TRUE(app_identifier3.is_null());
-}
-
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, InvalidSubscribeUnsubscribes) {
-  std::string script_result;
-
-  std::string token1;
-  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token1));
-
-  GURL origin = https_server()->GetURL("/").GetOrigin();
-  PushMessagingAppIdentifier app_identifier1 =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          GetBrowser()->profile(), origin,
-          0LL /* service_worker_registration_id */);
-  ASSERT_FALSE(app_identifier1.is_null());
-
-  ASSERT_NO_FATAL_FAILURE(
-      DeleteInstanceIDAsIfGCMStoreReset(app_identifier1.app_id()));
-
-  // Push messaging should not yet be aware of the InstanceID being deleted.
-  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 0);
-  // We should still be able to look up the app id.
-  PushMessagingAppIdentifier app_identifier2 =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          GetBrowser()->profile(), origin,
-          0LL /* service_worker_registration_id */);
-  EXPECT_FALSE(app_identifier2.is_null());
-  EXPECT_EQ(app_identifier1.app_id(), app_identifier2.app_id());
-
-  // Now call PushManager.subscribe() again. It should succeed, but with a
-  // *different* token, indicating that it unsubscribed and re-subscribed.
-  std::string token2;
-  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token2));
-  EXPECT_NE(token1, token2);
-
-  // This should have unsubscribed the original push subscription.
-  histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.UnregistrationReason",
-      static_cast<int>(
-          content::mojom::PushUnregistrationReason::SUBSCRIBE_STORAGE_CORRUPT),
-      1);
-  // Looking up the app id should return a different id.
-  PushMessagingAppIdentifier app_identifier3 =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          GetBrowser()->profile(), origin,
-          0LL /* service_worker_registration_id */);
-  EXPECT_FALSE(app_identifier3.is_null());
-  EXPECT_NE(app_identifier2.app_id(), app_identifier3.app_id());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

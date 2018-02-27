@@ -64,7 +64,7 @@ class PushMessagingManager : public mojom::PushMessaging {
 
   void DidCheckForExistingRegistration(
       RegisterData data,
-      const std::vector<std::string>& push_registration_id,
+      const std::vector<std::string>& subscription_id_and_sender_id,
       ServiceWorkerStatusCode service_worker_status);
 
   void DidGetSenderIdFromStorage(RegisterData data,
@@ -73,15 +73,17 @@ class PushMessagingManager : public mojom::PushMessaging {
 
   // Called via PostTask from UI thread.
   void PersistRegistrationOnIO(RegisterData data,
-                               const std::string& push_registration_id,
+                               const std::string& push_subscription_id,
                                const std::vector<uint8_t>& p256dh,
-                               const std::vector<uint8_t>& auth);
+                               const std::vector<uint8_t>& auth,
+                               mojom::PushRegistrationStatus status);
 
   void DidPersistRegistrationOnIO(
       RegisterData data,
-      const std::string& push_registration_id,
+      const std::string& push_subscription_id,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
+      mojom::PushRegistrationStatus push_registration_status,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.

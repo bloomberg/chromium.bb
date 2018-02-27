@@ -106,12 +106,6 @@ const char* PushUnregistrationStatusToString(
   return "";
 }
 
-void UnregisterCallbackToClosure(const base::Closure& closure,
-                                 mojom::PushUnregistrationStatus status) {
-  DCHECK(!closure.is_null());
-  closure.Run();
-}
-
 // Returns whether |sender_info| contains a valid application server key, that
 // is, a NIST P-256 public key in uncompressed format.
 bool IsApplicationServerKey(const std::string& sender_info) {
@@ -141,11 +135,15 @@ std::string FixSenderInfo(const std::string& sender_info,
 struct PushMessagingManager::RegisterData {
   RegisterData();
   RegisterData(RegisterData&& other) = default;
+
   bool FromDocument() const;
+
   GURL requesting_origin;
   int64_t service_worker_registration_id;
+  std::string existing_subscription_id;
   PushSubscriptionOptions options;
   SubscribeCallback callback;
+
   // The following member should only be read if FromDocument() is true.
   int render_frame_id;
 
@@ -160,14 +158,6 @@ class PushMessagingManager::Core {
        int render_process_id);
 
   // Public Register methods on UI thread --------------------------------------
-
-  // Callback called on UI thread.
-  void SubscribeDidGetInfoOnUI(RegisterData data,
-                               const std::string& push_subscription_id,
-                               const std::string& sender_id,
-                               bool is_valid,
-                               const std::vector<uint8_t>& p256dh,
-                               const std::vector<uint8_t>& auth);
 
   // Called via PostTask from IO thread.
   void RegisterOnUI(RegisterData data);
@@ -230,7 +220,7 @@ class PushMessagingManager::Core {
                                        blink::mojom::PermissionStatus status);
 
   void DidRegister(RegisterData data,
-                   const std::string& push_registration_id,
+                   const std::string& push_subscription_id,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    mojom::PushRegistrationStatus status);
@@ -351,13 +341,18 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
 
 void PushMessagingManager::DidCheckForExistingRegistration(
     RegisterData data,
-    const std::vector<std::string>& push_registration_id_and_sender_id,
+    const std::vector<std::string>& subscription_id_and_sender_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Validate the stored subscription against the subscription request made by
+  // the developer. The authorized entity must match.
   if (service_worker_status == SERVICE_WORKER_OK) {
-    DCHECK_EQ(2u, push_registration_id_and_sender_id.size());
-    const auto& push_subscription_id = push_registration_id_and_sender_id[0];
-    const auto& stored_sender_id = push_registration_id_and_sender_id[1];
+    DCHECK_EQ(2u, subscription_id_and_sender_id.size());
+
+    const std::string& subscription_id = subscription_id_and_sender_id[0];
+    const std::string& stored_sender_id = subscription_id_and_sender_id[1];
+
     std::string fixed_sender_id =
         FixSenderInfo(data.options.sender_info, stored_sender_id);
     if (fixed_sender_id.empty()) {
@@ -365,97 +360,33 @@ void PushMessagingManager::DidCheckForExistingRegistration(
                             mojom::PushRegistrationStatus::NO_SENDER_ID);
       return;
     }
+
     if (fixed_sender_id != stored_sender_id) {
       SendSubscriptionError(std::move(data),
                             mojom::PushRegistrationStatus::SENDER_ID_MISMATCH);
       return;
     }
 
-    GURL requesting_origin = data.requesting_origin;
-    int64_t registration_id = data.service_worker_registration_id;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&Core::GetSubscriptionInfoOnUI,
-                       base::Unretained(ui_core_.get()), requesting_origin,
-                       registration_id, fixed_sender_id, push_subscription_id,
-                       base::Bind(&Core::SubscribeDidGetInfoOnUI,
-                                  ui_core_weak_ptr_, base::Passed(&data),
-                                  push_subscription_id, fixed_sender_id)));
-    return;
+    data.existing_subscription_id = subscription_id;
   }
-  // TODO(johnme): The spec allows the register algorithm to reject with an
-  // AbortError when accessing storage fails. Perhaps we should do that if
-  // service_worker_status != SERVICE_WORKER_ERROR_NOT_FOUND instead of
-  // attempting to do a fresh registration?
-  // https://w3c.github.io/push-api/#widl-PushRegistrationManager-register-Promise-PushRegistration
+
+  // TODO(peter): Handle failures other than SERVICE_WORKER_ERROR_NOT_FOUND by
+  // rejecting the subscription algorithm instead of trying to subscribe.
+
   if (!data.options.sender_info.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
                        std::move(data)));
   } else {
-    // There is no existing registration and the sender_info passed in was
-    // empty, but perhaps there is a stored sender id we can use.
+    // No |sender_info| was provided by the developer. Fall back to checking
+    // whether a previous subscription did identify a sender.
     int64_t registration_id = data.service_worker_registration_id;
     service_worker_context_->GetRegistrationUserData(
         registration_id, {kPushSenderIdServiceWorkerKey},
         base::BindOnce(&PushMessagingManager::DidGetSenderIdFromStorage,
                        weak_factory_io_to_io_.GetWeakPtr(),
                        base::Passed(&data)));
-  }
-}
-
-void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
-    RegisterData data,
-    const std::string& push_subscription_id,
-    const std::string& sender_id,
-    bool is_valid,
-    const std::vector<uint8_t>& p256dh,
-    const std::vector<uint8_t>& auth) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (is_valid) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&PushMessagingManager::SendSubscriptionSuccess,
-                       io_parent_, std::move(data),
-                       mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE,
-                       push_subscription_id, p256dh, auth));
-  } else {
-    PushMessagingService* push_service = service();
-    if (!push_service) {
-      // Shouldn't be possible to have a stored push subscription in a profile
-      // with no push service, but this case can occur when the renderer is
-      // shutting down.
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&PushMessagingManager::SendSubscriptionError,
-                         io_parent_, std::move(data),
-                         mojom::PushRegistrationStatus::RENDERER_SHUTDOWN));
-      return;
-    }
-
-    // Uh-oh! Although there was a cached subscription in the Service Worker
-    // database, it did not have matching counterparts in the
-    // PushMessagingAppIdentifier map and/or GCM Store. Unsubscribe and
-    // re-subscribe to fix this inconsistency.
-
-    // Consider this subscription attempt to have failed. The re-subscribe will
-    // be logged to UMA as a separate subscription attempt.
-    RecordRegistrationStatus(mojom::PushRegistrationStatus::STORAGE_CORRUPT);
-
-    int64_t registration_id = data.service_worker_registration_id;
-    GURL requesting_origin = data.requesting_origin;
-    auto try_again_on_io = base::Bind(
-        &PushMessagingManager::DidCheckForExistingRegistration, io_parent_,
-        base::Passed(&data),
-        std::vector<std::string>() /* push_registration_id_and_sender_id */,
-        SERVICE_WORKER_ERROR_NOT_FOUND);
-    push_service->Unsubscribe(
-        mojom::PushUnregistrationReason::SUBSCRIBE_STORAGE_CORRUPT,
-        requesting_origin, registration_id, sender_id,
-        base::Bind(&UnregisterCallbackToClosure,
-                   base::Bind(IgnoreResult(&BrowserThread::PostTask),
-                              BrowserThread::IO, FROM_HERE, try_again_on_io)));
   }
 }
 
@@ -494,7 +425,6 @@ void PushMessagingManager::Core::RegisterOnUI(
     if (!is_incognito()) {
       // This might happen if InstanceIDProfileService::IsInstanceIDEnabled
       // returns false because the Instance ID kill switch was enabled.
-      // TODO(johnme): Might be better not to expose the API in this case.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&PushMessagingManager::SendSubscriptionError,
@@ -585,17 +515,28 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
 
 void PushMessagingManager::Core::DidRegister(
     RegisterData data,
-    const std::string& push_registration_id,
+    const std::string& push_subscription_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(nator): Handle the case where |push_subscription_id| and
+  // |data.existing_subscription_id| are not the same. Right now we just
+  // override the old subscription ID and encryption information.
+  const bool subscription_changed =
+      push_subscription_id != data.existing_subscription_id;
+
   if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&PushMessagingManager::PersistRegistrationOnIO,
-                       io_parent_, std::move(data), push_registration_id,
-                       p256dh, auth));
+        base::BindOnce(
+            &PushMessagingManager::PersistRegistrationOnIO, io_parent_,
+            std::move(data), push_subscription_id, p256dh, auth,
+            subscription_changed
+                ? mojom::PushRegistrationStatus::
+                      SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
+                : mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -606,34 +547,35 @@ void PushMessagingManager::Core::DidRegister(
 
 void PushMessagingManager::PersistRegistrationOnIO(
     RegisterData data,
-    const std::string& push_registration_id,
+    const std::string& push_subscription_id,
     const std::vector<uint8_t>& p256dh,
-    const std::vector<uint8_t>& auth) {
+    const std::vector<uint8_t>& auth,
+    mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GURL requesting_origin = data.requesting_origin;
   int64_t registration_id = data.service_worker_registration_id;
   std::string sender_info = data.options.sender_info;
+
   service_worker_context_->StoreRegistrationUserData(
       registration_id, requesting_origin,
-      {{kPushRegistrationIdServiceWorkerKey, push_registration_id},
+      {{kPushRegistrationIdServiceWorkerKey, push_subscription_id},
        {kPushSenderIdServiceWorkerKey, sender_info}},
       base::Bind(&PushMessagingManager::DidPersistRegistrationOnIO,
                  weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data),
-                 push_registration_id, p256dh, auth));
+                 push_subscription_id, p256dh, auth, status));
 }
 
 void PushMessagingManager::DidPersistRegistrationOnIO(
     RegisterData data,
-    const std::string& push_registration_id,
+    const std::string& push_subscription_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
+    mojom::PushRegistrationStatus push_registration_status,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
-    SendSubscriptionSuccess(
-        std::move(data),
-        mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE,
-        push_registration_id, p256dh, auth);
+    SendSubscriptionSuccess(std::move(data), push_registration_status,
+                            push_subscription_id, p256dh, auth);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendSubscriptionError(std::move(data),

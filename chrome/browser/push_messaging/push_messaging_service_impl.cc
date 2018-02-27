@@ -466,8 +466,15 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     bool user_gesture,
     const RegisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::Generate(requesting_origin,
-                                           service_worker_registration_id);
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          profile_, requesting_origin, service_worker_registration_id);
+
+  // If there is no existing app identifier for the given Service Worker,
+  // generate a new one. This will create a new subscription on the server.
+  if (app_identifier.is_null()) {
+    app_identifier = PushMessagingAppIdentifier::Generate(
+        requesting_origin, service_worker_registration_id);
+  }
 
   if (push_subscription_count_ + pending_push_subscription_count_ >=
       kMaxRegistrations) {
@@ -507,8 +514,15 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     const content::PushSubscriptionOptions& options,
     const RegisterCallback& register_callback) {
   PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::Generate(requesting_origin,
-                                           service_worker_registration_id);
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          profile_, requesting_origin, service_worker_registration_id);
+
+  // If there is no existing app identifier for the given Service Worker,
+  // generate a new one. This will create a new subscription on the server.
+  if (app_identifier.is_null()) {
+    app_identifier = PushMessagingAppIdentifier::Generate(
+        requesting_origin, service_worker_registration_id);
+  }
 
   if (push_subscription_count_ + pending_push_subscription_count_ >=
       kMaxRegistrations) {
