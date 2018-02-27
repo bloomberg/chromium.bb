@@ -16,15 +16,13 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import manifest_version
-from chromite.lib import tree_status
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gclient
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import retry_util
+from chromite.lib import tree_status
 
 
 class LKGMNotValid(Exception):
@@ -38,10 +36,8 @@ class LKGMNotCommitted(Exception):
 class ChromeLKGMCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
-  _COMMIT_MSG_TEMPLATE = ('Automated Commit: Committing new LKGM version '
-                          '%(version)s for chromeos.')
-  _SLEEP_TIMEOUT = 30
-  _TREE_TIMEOUT = 7200
+  _COMMIT_MSG_TEMPLATE = ('Automated Commit: New LKGM version '
+                          '%(version)s for chromeos.\n\nBUG=762641')
 
   def __init__(self, checkout_dir, lkgm, dryrun, user_email):
     self._checkout_dir = checkout_dir
@@ -53,11 +49,26 @@ class ChromeLKGMCommitter(object):
     self._commit_msg = ''
     self._old_lkgm = None
 
+    logging.info('lkgm=%s', lkgm)
+    logging.info('user_email=%s', user_email)
+    logging.info('checkout_dir=%s', checkout_dir)
+
+  def Run(self):
+    try:
+      self.CheckoutChromeLKGM()
+      self.CommitNewLKGM()
+      self.UploadNewLKGM()
+    except LKGMNotCommitted as e:
+      # TODO(stevenjb): Do not catch exceptions (i.e. fail) once this works.
+      logging.warning('LKGM Commit failed: %r' % e)
+    finally:
+      self.Cleanup()
+
   def CheckoutChromeLKGM(self):
     """Checkout CHROMEOS_LKGM file for chrome into tmp checkout dir."""
     # TODO(stevenjb): if checkout_dir exists, use 'fetch --depth 1' and
     # 'checkout -f origin/master' instead of 'clone --depth 1'.
-    osutils.RmDir(self._checkout_dir, ignore_missing=True)
+    self.Cleanup()
 
     cros_build_lib.RunCommand(
         ['git', 'clone', '--depth', '1', constants.CHROMIUM_GOB_URL,
@@ -107,69 +118,45 @@ class ChromeLKGMCommitter(object):
     try:
       # Run 'git cl upload' with --bypass-hooks to skip running scripts that are
       # not part of the shallow checkout, -f to skip editing the CL message,
-      # --send-mail to mark the CL as ready, and --tbrs to +1 the CL.
       upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
                      '--bypass-hooks', '-f']
       if not self._dryrun:
-        upload_args += ['--send-mail', '--tbrs=chrome-os-gardeners@google.com']
+        # Add the gardener(s) as TBR; fall-back to tbr-owners.
+        gardeners = tree_status.GetSheriffEmailAddresses('chrome')
+        if gardeners:
+          for tbr in gardeners:
+            upload_args += ['--tbrs', tbr]
+        else:
+          upload_args += ['--tbr-owners']
+        # Marks CL as ready.
+        upload_args += ['--send-mail']
       git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
+                 print_cmd=True, redirect_stderr=True, capture_output=False)
+
+      # Flip the CQ commit bit.
+      submit_args = ['cl', 'set-commit', '-v']
+      if self._dryrun:
+        submit_args += ['--dry-run']
+      git.RunGit(self._checkout_dir, submit_args,
                  print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # Log the change for debugging.
       cros_build_lib.RunCommand(['git', 'log', '--pretty=full'],
                                 cwd=self._checkout_dir)
-      raise LKGMNotCommitted('Could not submit LKGM: upload failed: %r' % e)
-
-  def _TryLandNewLKGM(self):
-    """Fetches latest, rebases the CL, and lands the rebased CL."""
-    git.RunGit(self._checkout_dir, ['fetch', 'origin', 'master'])
-
-    try:
-      git.RunGit(self._checkout_dir, ['rebase'], retry=False)
-    except cros_build_lib.RunCommandError as e:
-      # A rebase failure was unexpected, so raise a custom LKGMNotCommitted
-      # error to avoid further retries.
-      git.RunGit(self._checkout_dir, ['rebase', '--abort'])
-      raise LKGMNotCommitted('Could not submit LKGM: rebase failed: %r' % e)
-
-    if self._dryrun:
-      logging.info('Dry run; rebase succeeded, exiting.')
-      return
-
-    git.RunGit(self._checkout_dir, ['cl', 'land', '-f', '--bypass-hooks'])
-
-  def LandNewLKGM(self, max_retry=10):
-    """Lands the change after fetching and rebasing."""
-    if not tree_status.IsTreeOpen(status_url=gclient.STATUS_URL,
-                                  period=self._SLEEP_TIMEOUT,
-                                  timeout=self._TREE_TIMEOUT):
-      raise LKGMNotCommitted('Chromium Tree is closed')
-
-    logging.info('Landing LKGM commit.')
-
-    # git cl land refuses to land a change that isn't relative to ToT, so any
-    # new commits since the last fetch will cause this to fail. Retries should
-    # make this edge case ultimately unlikely.
-    try:
-      retry_util.RetryCommand(self._TryLandNewLKGM,
-                              max_retry,
-                              sleep=self._SLEEP_TIMEOUT,
-                              log_all_retries=True)
-    except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
 
-    logging.info('git cl land succeeded.')
+    logging.info('LKGM submitted to CQ.')
 
-  def Cleanup(self, checkout_dir):
-    """Remove chrome checkout.
+  def Cleanup(self):
+    """Remove chrome checkout."""
+    osutils.RmDir(self._checkout_dir, ignore_missing=True)
 
-    Args:
-      checkout_dir: chrome checkout directory.
-    """
-    cros_build_lib.RunCommand(['rm', '-rf', checkout_dir])
+def GetArgs(argv):
+  """Returns parsed command line args.
 
-def _GetParser():
-  """Returns the parser to use for this module."""
+  Args:
+    argv: command line.
+  """
   parser = commandline.ArgumentParser(usage=__doc__, caching=True)
   parser.add_argument('--dryrun', action='store_true', default=False,
                       help="Find the next LKGM but don't commit it.")
@@ -182,28 +169,12 @@ def _GetParser():
                       default=os.path.join(os.getcwd(), 'chrome_src'),
                       help=('Path to a checkout of the chrome src. '
                             'Defaults to PWD/chrome_src'))
-  return parser
+  return parser.parse_args(argv)
 
 def main(argv):
-  parser = _GetParser()
-  args = parser.parse_args(argv)
-
-  logging.info('lkgm=%s', args.lkgm)
-  logging.info('user_email=%s', args.user_email)
-  logging.info('workdir=%s', args.workdir)
-
+  args = GetArgs(argv)
   committer = ChromeLKGMCommitter(args.workdir, lkgm=args.lkgm,
                                   dryrun=args.dryrun,
                                   user_email=args.user_email)
-  try:
-    committer.CheckoutChromeLKGM()
-    committer.CommitNewLKGM()
-    committer.UploadNewLKGM()
-    committer.LandNewLKGM()
-  except LKGMNotCommitted as e:
-    # TODO(stevenjb): Do not catch exceptions (i.e. fail) once this works.
-    logging.warning('LKGM Commit failed: %r' % e)
-  finally:
-    committer.Cleanup(args.workdir)
-
+  committer.Run()
   return 0

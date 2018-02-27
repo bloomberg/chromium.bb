@@ -68,26 +68,6 @@ class ChromeLKGMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.assertEqual(osutils.ReadFile(self.lkgm_file), self.committer._lkgm)
     self.assertCommandContains(['git', 'commit'])
 
-  def testLandNewLKGM(self):
-    """Tests that we try to execute git cl land if the tree is open."""
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
-
-    self.committer.LandNewLKGM()
-
-    self.assertCommandContains(['git', 'cl', 'land'])
-
-  def testLandNewLKGMWithRetry(self):
-    """Tests that we try to rebase if landing fails."""
-    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
-
-    self.rc.AddCmdResult(partial_mock.In('land'), returncode=1)
-    self.assertRaises(chrome_chromeos_lkgm.LKGMNotCommitted,
-                      self.committer.LandNewLKGM)
-
-    self.assertCommandContains(['git', 'cl', 'land'])
-    self.assertCommandContains(['git', 'fetch', 'origin', 'master'])
-    self.assertCommandContains(['git', 'rebase'])
-
   def testOlderLKGMFails(self):
     """Tests that trying to update to an older lkgm version fails."""
     self.old_lkgm = '1002.0.0'
