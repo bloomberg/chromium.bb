@@ -355,6 +355,47 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
   EXPECT_NE(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
 }
 
+// Tests that the "Export Passwords..." button is greyed out in edit mode.
+TEST_P(SavePasswordsCollectionViewControllerTest,
+       TestExportButtonDisabledEditMode) {
+  if (!GetParam().export_enabled)
+    return;
+  AddSavedForm1();
+
+  CollectionViewTextItem* exportButton = GetCollectionViewItem(3, 0);
+  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+
+  SavePasswordsCollectionViewController* save_passwords_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+  [save_passwords_controller
+      collectionViewWillBeginEditing:save_passwords_controller.collectionView];
+
+  EXPECT_NSEQ([[MDCPalette greyPalette] tint500], exportButton.textColor);
+  EXPECT_EQ(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+}
+
+// Tests that the "Export Passwords..." button is enabled after exiting
+// edit mode.
+TEST_P(SavePasswordsCollectionViewControllerTest,
+       TestExportButtonEnabledWhenEdittingFinished) {
+  if (!GetParam().export_enabled)
+    return;
+  AddSavedForm1();
+
+  CollectionViewTextItem* exportButton = GetCollectionViewItem(3, 0);
+  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+
+  SavePasswordsCollectionViewController* save_passwords_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+  [save_passwords_controller
+      collectionViewWillBeginEditing:save_passwords_controller.collectionView];
+  [save_passwords_controller
+      collectionViewWillEndEditing:save_passwords_controller.collectionView];
+
+  EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
+  EXPECT_NE(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+}
+
 TEST_P(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
   SavePasswordsCollectionViewController* save_password_controller =
       static_cast<SavePasswordsCollectionViewController*>(controller());
