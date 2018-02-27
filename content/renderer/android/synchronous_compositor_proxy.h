@@ -20,9 +20,7 @@
 #include "ui/gfx/geometry/size_f.h"
 
 namespace viz {
-namespace cc {
 class CompositorFrame;
-}  // namespace cc
 }  // namespace viz
 
 namespace content {
