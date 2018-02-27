@@ -35,7 +35,6 @@
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/animatable/AnimatableDouble.h"
-#include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Element.h"
 #include "core/testing/PageTestBase.h"
@@ -90,11 +89,6 @@ class AnimationKeyframeEffectModel : public PageTestBase {
 };
 
 const double kDuration = 1.0;
-
-scoped_refptr<AnimatableValue> UnknownAnimatableValue(double n) {
-  return AnimatableUnknown::Create(
-      CSSPrimitiveValue::Create(n, CSSPrimitiveValue::UnitType::kUnknown));
-}
 
 StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
                                            const String& zero_value,
