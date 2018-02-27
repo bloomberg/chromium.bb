@@ -1164,6 +1164,18 @@ mr.ProviderManager = class extends mr.Module {
   }
 
   /**
+   * Gets current status of media sink service from browser.
+   * @return {!Promise<!{status: string}>}
+   */
+  getMediaSinkServiceStatus() {
+    if (typeof this.mediaRouterService_.getMediaSinkServiceStatus !=
+        'function') {
+      return Promise.resolve(/** @type {{status: string}} */ ({status: ''}));
+    }
+    return this.mediaRouterService_.getMediaSinkServiceStatus();
+  }
+
+  /**
    * Exports methods for Mojo handler.
    * @param {!mr.ProviderManager} providerManager
    * @private

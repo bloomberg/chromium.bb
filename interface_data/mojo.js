@@ -185,6 +185,14 @@ mr.MediaRouterService.prototype.onMediaRemoterCreated;
 
 
 /**
+ * Gets current status of media sink service from browser.
+ * @return {!Promise<!{status: string}>}
+ * @export
+ */
+mr.MediaRouterService.prototype.getMediaSinkServiceStatus;
+
+
+/**
  * @interface
  */
 mr.MediaRouterRequestHandler = function() {};
