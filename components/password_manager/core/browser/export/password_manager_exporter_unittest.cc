@@ -176,6 +176,29 @@ TEST_F(PasswordManagerExporterTest, WriteFileFailed) {
       ExportPasswordsResult::WRITE_FAILED, 1);
 }
 
+// A partial write should be considered a failure and be cleaned up.
+TEST_F(PasswordManagerExporterTest, WriteFileFailedHalfway) {
+  const std::string serialised(
+      password_manager::PasswordCSVWriter::SerializePasswords(password_list_));
+  const std::string destination_folder_name(
+      destination_path_.DirName().BaseName().AsUTF8Unsafe());
+
+  EXPECT_CALL(mock_write_file_, Run(_, _, _))
+      .WillOnce(Return(serialised.size() / 2));
+  EXPECT_CALL(mock_delete_file_, Run(destination_path_, false));
+  EXPECT_CALL(
+      mock_on_progress_,
+      Run(password_manager::ExportProgressStatus::IN_PROGRESS, IsEmpty()));
+  EXPECT_CALL(mock_on_progress_,
+              Run(password_manager::ExportProgressStatus::FAILED_WRITE_FAILED,
+                  StrEq(destination_folder_name)));
+
+  exporter_.PreparePasswordsForExport();
+  exporter_.SetDestination(destination_path_);
+
+  scoped_task_environment_.RunUntilIdle();
+}
+
 // Test that GetProgressStatus() returns the last ExportProgressStatus sent
 // to the callback.
 TEST_F(PasswordManagerExporterTest, GetProgressReturnsLastCallbackStatus) {
