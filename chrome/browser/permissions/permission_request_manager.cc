@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
+#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -24,10 +25,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "url/origin.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_feature_list.h"
+#else  // !defined(OS_ANDROID)
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "extensions/common/constants.h"
-#endif  // !defined(OS_ANDROID)
+#endif
 
 namespace {
 
@@ -95,7 +98,11 @@ PermissionRequestManager::~PermissionRequestManager() {
 }
 
 void PermissionRequestManager::AddRequest(PermissionRequest* request) {
-  DCHECK(!vr::VrTabHelper::IsInVr(web_contents()));
+#if defined(OS_ANDROID)
+  DCHECK(!vr::VrTabHelper::IsInVr(web_contents()) ||
+         base::FeatureList::IsEnabled(
+             chrome::android::kVrBrowsingNativeAndroidUi));
+#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {

@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -140,7 +141,9 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   // TODO(crbug.com/736568): Re-enable dialog in VR.
-  if (vr::VrTabHelper::IsInVr(initiator())) {
+  if (vr::VrTabHelper::IsInVr(initiator()) &&
+      !base::FeatureList::IsEnabled(
+          chrome::android::kVrBrowsingNativeAndroidUi)) {
     CancelPresentationRequest();
     return;
   }
