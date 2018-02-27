@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
@@ -36,30 +37,32 @@ class UserActivityLoggerDelegateUkmTest
     // These values are arbitrary but must correspond with the values
     // in |user_activity_values_|.
     UserActivityEvent::Event* event = user_activity_event_.mutable_event();
-    event->set_type(UserActivityEvent::Event::REACTIVATE);
-    event->set_reason(UserActivityEvent::Event::USER_ACTIVITY);
     event->set_log_duration_sec(395);
+    event->set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+    event->set_type(UserActivityEvent::Event::REACTIVATE);
+
+    // In the order of metrics names in ukm.
     UserActivityEvent::Features* features =
         user_activity_event_.mutable_features();
-    features->set_on_to_dim_sec(100);
-    features->set_dim_to_screen_off_sec(200);
-    features->set_last_activity_time_sec(7300);
-    features->set_last_user_activity_time_sec(3800);
-    features->set_last_activity_day(UserActivityEvent::Features::MON);
-    features->set_time_since_last_mouse_sec(100);
-    features->set_recent_time_active_sec(10);
-    features->set_device_type(UserActivityEvent::Features::CHROMEBOOK);
-    features->set_device_mode(UserActivityEvent::Features::CLAMSHELL);
     features->set_battery_percent(96.0);
     features->set_device_management(UserActivityEvent::Features::UNMANAGED);
+    features->set_device_mode(UserActivityEvent::Features::CLAMSHELL);
+    features->set_device_type(UserActivityEvent::Features::CHROMEBOOK);
+    features->set_last_activity_day(UserActivityEvent::Features::MON);
+    features->set_last_activity_time_sec(7300);
+    features->set_last_user_activity_time_sec(3800);
+    features->set_recent_time_active_sec(10);
+    features->set_on_to_dim_sec(100);
+    features->set_dim_to_screen_off_sec(200);
+    features->set_time_since_last_mouse_sec(100);
   }
 
   void UpdateOpenTabsURLs() {
     user_activity_logger_delegate_ukm_.UpdateOpenTabsURLs();
   }
 
-  void LogActivity() {
-    user_activity_logger_delegate_ukm_.LogActivity(user_activity_event_);
+  void LogActivity(const UserActivityEvent& event) {
+    user_activity_logger_delegate_ukm_.LogActivity(event);
   }
 
   // Creates a test browser window and sets its visibility, activity and
@@ -96,9 +99,13 @@ class UserActivityLoggerDelegateUkmTest
 
   // Adds a tab with specified url to the tab strip model. Also optionally sets
   // the tab to be the active one in the tab strip model.
+  // If |mime_type| is an empty string, the content has a default text type.
+  // TODO(jiameng): there doesn't seem to be a way to set form entry (via
+  // page importance signal). Check if there's some other way to set it.
   void CreateTestWebContents(TabStripModel* const tab_strip_model,
                              const GURL& url,
-                             bool is_active) {
+                             bool is_active,
+                             const std::string& mime_type = "") {
     DCHECK(tab_strip_model);
     DCHECK(!url.is_empty());
     content::WebContents* contents =
@@ -106,10 +113,14 @@ class UserActivityLoggerDelegateUkmTest
     if (is_active) {
       tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1, false);
     }
+    if (!mime_type.empty())
+      WebContentsTester::For(contents)->SetMainFrameMimeType(mime_type);
+
     WebContentsTester::For(contents)->TestSetIsLoading(false);
   }
 
  protected:
+  UserActivityEvent user_activity_event_;
   UkmEntryChecker ukm_entry_checker_;
   TabActivitySimulator tab_activity_simulator_;
 
@@ -119,24 +130,26 @@ class UserActivityLoggerDelegateUkmTest
   const GURL url4_ = GURL("https://example4.com/");
 
   const UkmMetricMap user_activity_values_ = {
-      {UserActivity::kEventTypeName, 1},    // REACTIVATE
-      {UserActivity::kEventReasonName, 1},  // USER_ACTIVITY
       {UserActivity::kEventLogDurationName, 380},
-      {UserActivity::kScreenDimDelayName, 100},
-      {UserActivity::kScreenDimToOffDelayName, 200},
+      {UserActivity::kEventReasonName, UserActivityEvent::Event::USER_ACTIVITY},
+      {UserActivity::kEventTypeName, UserActivityEvent::Event::REACTIVATE},
+      {UserActivity::kBatteryPercentName, 95},
+      {UserActivity::kDeviceManagementName,
+       UserActivityEvent::Features::UNMANAGED},
+      {UserActivity::kDeviceModeName, UserActivityEvent::Features::CLAMSHELL},
+      {UserActivity::kDeviceTypeName, UserActivityEvent::Features::CHROMEBOOK},
+      {UserActivity::kLastActivityDayName, UserActivityEvent::Features::MON},
       {UserActivity::kLastActivityTimeName, 2},
       {UserActivity::kLastUserActivityTimeName, 1},
-      {UserActivity::kLastActivityDayName, 1},  // MON
-      {UserActivity::kTimeSinceLastMouseName, 100},
+      {UserActivity::kOnBatteryName, base::nullopt},
       {UserActivity::kRecentTimeActiveName, 10},
-      {UserActivity::kDeviceTypeName, 1},  // CHROMEBOOK
-      {UserActivity::kDeviceModeName, 2},  // CLAMSHELL
-      {UserActivity::kBatteryPercentName, 95},
-      {UserActivity::kDeviceManagementName, 2}  // UNMANAGED
-  };
+      {UserActivity::kScreenDimDelayName, 100},
+      {UserActivity::kScreenDimToOffDelayName, 200},
+      {UserActivity::kSequenceIdName, 1},
+      {UserActivity::kTimeSinceLastKeyName, base::nullopt},
+      {UserActivity::kTimeSinceLastMouseName, 100}};
 
  private:
-  UserActivityEvent user_activity_event_;
   UserActivityLoggerDelegateUkm user_activity_logger_delegate_ukm_;
   DISALLOW_COPY_AND_ASSIGN(UserActivityLoggerDelegateUkmTest);
 };
@@ -169,29 +182,31 @@ TEST_F(UserActivityLoggerDelegateUkmTest, Basic) {
   BrowserList::GetInstance()->SetLastActive(browser.get());
   TabStripModel* tab_strip_model = browser->tab_strip_model();
 
-  CreateTestWebContents(tab_strip_model, url1_, true /* is_active */);
+  CreateTestWebContents(tab_strip_model, url1_, true /* is_active */,
+                        "application/pdf");
+
+  // Set engagement score to 95, which will be rounded down to 90 when it's
+  // logged to UKM.
+  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(url1_, 95);
+
   const ukm::SourceId source_id1 = ukm_entry_checker_.GetSourceIdForUrl(url1_);
 
   CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
   const ukm::SourceId source_id2 = ukm_entry_checker_.GetSourceIdForUrl(url2_);
 
   UpdateOpenTabsURLs();
-  LogActivity();
+  LogActivity(user_activity_event_);
 
   EXPECT_EQ(1,
             ukm_entry_checker_.NumNewEntriesRecorded(UserActivity::kEntryName));
   EXPECT_EQ(
       2, ukm_entry_checker_.NumNewEntriesRecorded(UserActivityId::kEntryName));
 
-  ukm_entry_checker_.ExpectNewEntry(UserActivity::kEntryName, GURL(""),
-                                    user_activity_values_);
+  ukm_entry_checker_.ExpectNewEntries(UserActivity::kEntryName,
+                                      {user_activity_values_});
 
   const ukm::mojom::UkmEntry* last_activity_entry =
       ukm_entry_checker_.LastUkmEntry(UserActivity::kEntryName);
-
-  // Explicitly check kTimeSinceLastKeyName is not recorded.
-  ASSERT_FALSE(ukm::TestUkmRecorder::FindMetric(
-      last_activity_entry, UserActivity::kTimeSinceLastKeyName));
 
   const ukm::SourceId kSourceId = last_activity_entry->source_id;
 
@@ -200,14 +215,22 @@ TEST_F(UserActivityLoggerDelegateUkmTest, Basic) {
        {UserActivityId::kIsActiveName, 1},
        {UserActivityId::kIsBrowserFocusedName, 1},
        {UserActivityId::kIsBrowserVisibleName, 1},
-       {UserActivityId::kIsTopmostBrowserName, 1}});
+       {UserActivityId::kIsTopmostBrowserName, 1},
+       {UserActivityId::kSiteEngagementScoreName, 90},
+       {UserActivityId::kContentTypeName,
+        metrics::TabMetricsEvent::CONTENT_TYPE_APPLICATION},
+       {UserActivityId::kHasFormEntryName, 0}});
 
   const UkmMetricMap kUserActivityIdValues2(
       {{UserActivityId::kActivityIdName, kSourceId},
        {UserActivityId::kIsActiveName, 0},
        {UserActivityId::kIsBrowserFocusedName, 1},
        {UserActivityId::kIsBrowserVisibleName, 1},
-       {UserActivityId::kIsTopmostBrowserName, 1}});
+       {UserActivityId::kIsTopmostBrowserName, 1},
+       {UserActivityId::kSiteEngagementScoreName, 0},
+       {UserActivityId::kContentTypeName,
+        metrics::TabMetricsEvent::CONTENT_TYPE_TEXT_HTML},
+       {UserActivityId::kHasFormEntryName, 0}});
 
   const std::map<ukm::SourceId, std::pair<GURL, UkmMetricMap>> expected_data({
       {source_id1, std::make_pair(url1_, kUserActivityIdValues1)},
@@ -250,15 +273,15 @@ TEST_F(UserActivityLoggerDelegateUkmTest, MultiBrowsersAndTabs) {
   const ukm::SourceId source_id4 = ukm_entry_checker_.GetSourceIdForUrl(url4_);
 
   UpdateOpenTabsURLs();
-  LogActivity();
+  LogActivity(user_activity_event_);
 
   EXPECT_EQ(1,
             ukm_entry_checker_.NumNewEntriesRecorded(UserActivity::kEntryName));
   EXPECT_EQ(
       4, ukm_entry_checker_.NumNewEntriesRecorded(UserActivityId::kEntryName));
 
-  ukm_entry_checker_.ExpectNewEntry(UserActivity::kEntryName, GURL(""),
-                                    user_activity_values_);
+  ukm_entry_checker_.ExpectNewEntries(UserActivity::kEntryName,
+                                      {user_activity_values_});
 
   const ukm::mojom::UkmEntry* last_activity_entry =
       ukm_entry_checker_.LastUkmEntry(UserActivity::kEntryName);
@@ -318,15 +341,15 @@ TEST_F(UserActivityLoggerDelegateUkmTest, Incognito) {
   CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
 
   UpdateOpenTabsURLs();
-  LogActivity();
+  LogActivity(user_activity_event_);
 
   EXPECT_EQ(1,
             ukm_entry_checker_.NumNewEntriesRecorded(UserActivity::kEntryName));
   EXPECT_EQ(
       0, ukm_entry_checker_.NumNewEntriesRecorded(UserActivityId::kEntryName));
 
-  ukm_entry_checker_.ExpectNewEntry(UserActivity::kEntryName, GURL(""),
-                                    user_activity_values_);
+  ukm_entry_checker_.ExpectNewEntries(UserActivity::kEntryName,
+                                      {user_activity_values_});
 
   tab_strip_model->CloseAllTabs();
 }
@@ -336,15 +359,73 @@ TEST_F(UserActivityLoggerDelegateUkmTest, NoOpenTabs) {
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
 
   UpdateOpenTabsURLs();
-  LogActivity();
+  LogActivity(user_activity_event_);
 
   EXPECT_EQ(1,
             ukm_entry_checker_.NumNewEntriesRecorded(UserActivity::kEntryName));
   EXPECT_EQ(
       0, ukm_entry_checker_.NumNewEntriesRecorded(UserActivityId::kEntryName));
 
-  ukm_entry_checker_.ExpectNewEntry(UserActivity::kEntryName, GURL(""),
-                                    user_activity_values_);
+  ukm_entry_checker_.ExpectNewEntries(UserActivity::kEntryName,
+                                      {user_activity_values_});
+}
+
+TEST_F(UserActivityLoggerDelegateUkmTest, TwoUserActivityEvents) {
+  std::unique_ptr<Browser> browser =
+      CreateTestBrowser(true /* is_visible */, true /* is_focused */);
+
+  // A second event will be logged.
+  UserActivityEvent user_activity_event2;
+  UserActivityEvent::Event* event = user_activity_event2.mutable_event();
+  event->set_log_duration_sec(35);
+  event->set_reason(UserActivityEvent::Event::IDLE_SLEEP);
+  event->set_type(UserActivityEvent::Event::TIMEOUT);
+
+  UserActivityEvent::Features* features =
+      user_activity_event2.mutable_features();
+  features->set_battery_percent(86.0);
+  features->set_device_management(UserActivityEvent::Features::MANAGED);
+  features->set_device_mode(UserActivityEvent::Features::CLAMSHELL);
+  features->set_device_type(UserActivityEvent::Features::CHROMEBOOK);
+  features->set_last_activity_day(UserActivityEvent::Features::TUE);
+  features->set_last_activity_time_sec(7300);
+  features->set_last_user_activity_time_sec(3800);
+  features->set_recent_time_active_sec(20);
+  features->set_on_to_dim_sec(10);
+  features->set_dim_to_screen_off_sec(20);
+  features->set_time_since_last_mouse_sec(200);
+
+  const UkmMetricMap user_activity_values2 = {
+      {UserActivity::kEventLogDurationName, 35},
+      {UserActivity::kEventTypeName, UserActivityEvent::Event::TIMEOUT},
+      {UserActivity::kEventReasonName, UserActivityEvent::Event::IDLE_SLEEP},
+      {UserActivity::kBatteryPercentName, 85},
+      {UserActivity::kDeviceManagementName,
+       UserActivityEvent::Features::MANAGED},
+      {UserActivity::kDeviceModeName, UserActivityEvent::Features::CLAMSHELL},
+      {UserActivity::kDeviceTypeName, UserActivityEvent::Features::CHROMEBOOK},
+      {UserActivity::kLastActivityDayName, UserActivityEvent::Features::TUE},
+      {UserActivity::kLastActivityTimeName, 2},
+      {UserActivity::kLastUserActivityTimeName, 1},
+      {UserActivity::kOnBatteryName, base::nullopt},
+      {UserActivity::kRecentTimeActiveName, 20},
+      {UserActivity::kScreenDimDelayName, 10},
+      {UserActivity::kScreenDimToOffDelayName, 20},
+      {UserActivity::kSequenceIdName, 2},
+      {UserActivity::kTimeSinceLastKeyName, base::nullopt},
+      {UserActivity::kTimeSinceLastMouseName, 200}};
+
+  UpdateOpenTabsURLs();
+  LogActivity(user_activity_event_);
+  LogActivity(user_activity_event2);
+
+  EXPECT_EQ(2,
+            ukm_entry_checker_.NumNewEntriesRecorded(UserActivity::kEntryName));
+  EXPECT_EQ(
+      0, ukm_entry_checker_.NumNewEntriesRecorded(UserActivityId::kEntryName));
+
+  ukm_entry_checker_.ExpectNewEntries(
+      UserActivity::kEntryName, {user_activity_values_, user_activity_values2});
 }
 
 }  // namespace ml

@@ -7,12 +7,14 @@
 
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_logger_delegate_ukm.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_importance_signals.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
@@ -90,9 +92,15 @@ void UserActivityLoggerDelegateUkm::UpdateOpenTabsURLs() {
       if (source_id == ukm::kInvalidSourceId)
         continue;
 
-      const TabProperty tab_property = {i == active_tab_index,
-                                        is_browser_focused, is_browser_visible,
-                                        is_topmost_browser};
+      const TabProperty tab_property = {
+          i == active_tab_index,
+          is_browser_focused,
+          is_browser_visible,
+          is_topmost_browser,
+          TabMetricsLogger::GetSiteEngagementScore(contents),
+          TabMetricsLogger::GetContentTypeFromMimeType(
+              contents->GetContentsMimeType()),
+          contents->GetPageImportanceSignals().had_form_interaction};
 
       source_ids_.insert(
           std::pair<ukm::SourceId, TabProperty>(source_id, tab_property));
@@ -107,16 +115,17 @@ void UserActivityLoggerDelegateUkm::LogActivity(
 
   ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
   ukm::builders::UserActivity user_activity(source_id);
-  user_activity.SetEventType(event.event().type())
-      .SetEventReason(event.event().reason())
+  user_activity.SetSequenceId(next_sequence_id_++)
+      .SetDeviceMode(event.features().device_mode())
+      .SetDeviceType(event.features().device_type())
       .SetEventLogDuration(
           ExponentiallyBucketTimestamp(event.event().log_duration_sec()))
+      .SetEventReason(event.event().reason())
+      .SetEventType(event.event().type())
+      .SetLastActivityDay(event.features().last_activity_day())
       .SetLastActivityTime(
           std::floor(event.features().last_activity_time_sec() / 3600))
-      .SetLastActivityDay(event.features().last_activity_day())
-      .SetRecentTimeActive(event.features().recent_time_active_sec())
-      .SetDeviceType(event.features().device_type())
-      .SetDeviceMode(event.features().device_mode());
+      .SetRecentTimeActive(event.features().recent_time_active_sec());
 
   if (event.features().has_on_to_dim_sec()) {
     user_activity.SetScreenDimDelay(event.features().on_to_dim_sec());
@@ -156,13 +165,18 @@ void UserActivityLoggerDelegateUkm::LogActivity(
   for (const std::pair<ukm::SourceId, TabProperty>& kv : source_ids_) {
     const ukm::SourceId& id = kv.first;
     const TabProperty& tab_property = kv.second;
-    ukm::builders::UserActivityId(id)
-        .SetActivityId(source_id)
+    ukm::builders::UserActivityId user_activity_id(id);
+    user_activity_id.SetActivityId(source_id)
+        .SetContentType(tab_property.content_type)
+        .SetHasFormEntry(tab_property.has_form_entry)
         .SetIsActive(tab_property.is_active)
         .SetIsBrowserFocused(tab_property.is_browser_focused)
         .SetIsBrowserVisible(tab_property.is_browser_visible)
-        .SetIsTopmostBrowser(tab_property.is_topmost_browser)
-        .Record(ukm_recorder_);
+        .SetIsTopmostBrowser(tab_property.is_topmost_browser);
+    if (tab_property.engagement_score >= 0) {
+      user_activity_id.SetSiteEngagementScore(tab_property.engagement_score);
+    }
+    user_activity_id.Record(ukm_recorder_);
   }
 }
 

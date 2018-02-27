@@ -2674,6 +2674,11 @@ be describing additional metrics about the same event.
       of inactivity.
     </summary>
   </metric>
+  <metric name="SequenceId">
+    <summary>
+      The ID of this event in the current session.
+    </summary>
+  </metric>
   <metric name="TimeSinceLastKey">
     <summary>
       Time from last key event in seconds.
@@ -2696,6 +2701,17 @@ be describing additional metrics about the same event.
       The ID of the activity that happened while a page was open.
     </summary>
   </metric>
+  <metric name="ContentType">
+    <summary>
+      Enumeration for the MIME type of the page. Values are enumerated in
+      metrics::TabMetricsEvent::ContentType.
+    </summary>
+  </metric>
+  <metric name="HasFormEntry">
+    <summary>
+      Boolean value indicating whether the page has any user-input text.
+    </summary>
+  </metric>
   <metric name="IsActive">
     <summary>
       Boolean value representing whether this tab is selected in its containing
@@ -2716,6 +2732,12 @@ be describing additional metrics about the same event.
     <summary>
       Boolean value representing whether the containing browser is the topmost
       one on the screen.
+    </summary>
+  </metric>
+  <metric name="SiteEngagementScore">
+    <summary>
+      Site engagement score in the range [0, 100], rounded down to a multiple of
+      10 to limit granularity.
     </summary>
   </metric>
 </event>
