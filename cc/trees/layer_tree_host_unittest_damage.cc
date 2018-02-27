@@ -87,8 +87,8 @@ class LayerTreeHostDamageTestSetNeedsRedraw
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestSetNeedsRedraw);
 
-// LayerTreeHost::SetViewportSize should damage the whole viewport.
-class LayerTreeHostDamageTestSetViewportSize
+// LayerTreeHost::SetViewportSizeAndScale should damage the whole viewport.
+class LayerTreeHostDamageTestSetViewportSizeAndScale
     : public LayerTreeHostDamageTest {
   void SetupTree() override {
     // Viewport is 10x10.
@@ -108,7 +108,8 @@ class LayerTreeHostDamageTestSetViewportSize
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        layer_tree_host()->SetViewportSize(gfx::Size(15, 15));
+        layer_tree_host()->SetViewportSizeAndScale(gfx::Size(15, 15), 1.f,
+                                                   viz::LocalSurfaceId());
         break;
     }
   }
@@ -148,7 +149,7 @@ class LayerTreeHostDamageTestSetViewportSize
   FakeContentLayerClient client_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestSetViewportSize);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestSetViewportSizeAndScale);
 
 class LayerTreeHostDamageTestNoDamageDoesNotSwap
     : public LayerTreeHostDamageTest {

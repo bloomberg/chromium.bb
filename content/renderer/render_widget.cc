@@ -623,7 +623,9 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
   popup_screen_origin_for_emulation_ =
       emulator->original_screen_rect().origin();
   screen_info_ = emulator->original_screen_info();
-  device_scale_factor_ = screen_info_.device_scale_factor;
+  // TODO(ccameron): This likely violates surface invariants.
+  UpdateCompositorSurface(local_surface_id_, physical_backing_size_,
+                          screen_info_.device_scale_factor);
 }
 
 gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
@@ -648,8 +650,6 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
   bool screen_info_changed = screen_info_ != screen_info;
 
   screen_info_ = screen_info;
-  device_scale_factor_ = screen_info_.device_scale_factor;
-  OnDeviceScaleFactorChanged();
 
   if (screen_info_changed) {
     for (auto& observer : render_frame_proxies_)
@@ -662,10 +662,18 @@ void RenderWidget::SetLocalSurfaceIdForAutoResize(
 
   // If the given LocalSurfaceId was generated before navigation, don't use it.
   // We should receive a new LocalSurfaceId later.
-  if (content_source_id != current_content_source_id_)
-    AutoResizeCompositor(viz::LocalSurfaceId());
-  else
-    AutoResizeCompositor(local_surface_id);
+  viz::LocalSurfaceId new_local_surface_id =
+      content_source_id != current_content_source_id_ ? viz::LocalSurfaceId()
+                                                      : local_surface_id;
+  float new_device_scale_factor = screen_info_.device_scale_factor;
+
+  // TODO(ccameron): If there is a meaningful distinction between |size_| and
+  // |physical_backing_size_| is it okay to ignore that distinction here, and
+  // assume that |physical_backing_size_| is just |size_| in pixels?
+  UpdateCompositorSurface(
+      new_local_surface_id,
+      gfx::ScaleToCeiledSize(size_, new_device_scale_factor),
+      new_device_scale_factor);
 }
 
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
@@ -1370,7 +1378,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   bool orientation_changed =
       screen_info_.orientation_angle != params.screen_info.orientation_angle ||
       screen_info_.orientation_type != params.screen_info.orientation_type;
-
   bool screen_info_changed = screen_info_ != params.screen_info;
 
   screen_info_ = params.screen_info;
@@ -1381,12 +1388,11 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (params.needs_resize_ack)
     did_commit_after_resize_ = false;
 
+  // Inform the rendering thread of the color space indicate the presence of HDR
+  // capabilities.
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread)
     render_thread->SetRenderingColorSpace(screen_info_.color_space);
-
-  device_scale_factor_ = screen_info_.device_scale_factor;
-  OnDeviceScaleFactorChanged();
 
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
     // A resize ack shouldn't be requested if we have not ACK'd the previous
@@ -1403,11 +1409,14 @@ void RenderWidget::Resize(const ResizeParams& params) {
   // |current_content_source_id_|, then the given LocalSurfaceId was generated
   // before the navigation. Continue with the resize but don't use the
   // LocalSurfaceId until the right one comes.
+  viz::LocalSurfaceId new_local_surface_id = local_surface_id_;
   if (params.local_surface_id &&
       params.content_source_id == current_content_source_id_) {
-    local_surface_id_ = *params.local_surface_id;
+    new_local_surface_id = *params.local_surface_id;
   }
 
+  UpdateCompositorSurface(new_local_surface_id, params.physical_backing_size,
+                          screen_info_.device_scale_factor);
   if (compositor_) {
     // If surface synchronization is enabled, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
@@ -1416,8 +1425,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
     // synchronization is disabled.
     DCHECK(!compositor_->IsSurfaceSynchronizationEnabled() ||
            !params.needs_resize_ack || params.local_surface_id->is_valid());
-    compositor_->SetViewportSize(params.physical_backing_size,
-                                 local_surface_id_);
     compositor_->SetBrowserControlsHeight(
         params.top_controls_height, params.bottom_controls_height,
         params.browser_controls_shrink_blink_size);
@@ -1434,7 +1441,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   display_mode_ = params.display_mode;
 
   size_ = params.new_size;
-  physical_backing_size_ = params.physical_backing_size;
 
   ResizeWebWidget();
 
@@ -1509,14 +1515,6 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
-void RenderWidget::AutoResizeCompositor(
-    const viz::LocalSurfaceId& local_surface_id) {
-  physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
-  local_surface_id_ = local_surface_id;
-  if (compositor_)
-    compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
-}
-
 blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   DCHECK(!host_closing_);
 
@@ -1539,8 +1537,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
     reset_next_paint_is_resize_ack();
   }
 
-  compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
-  OnDeviceScaleFactorChanged();
+  UpdateCompositorSurface(local_surface_id_, physical_backing_size_,
+                          device_scale_factor_);
   compositor_->SetRasterColorSpace(
       screen_info_.color_space.GetRasterColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
@@ -1958,14 +1956,31 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
-void RenderWidget::OnDeviceScaleFactorChanged() {
+void RenderWidget::UpdateCompositorSurface(
+    viz::LocalSurfaceId new_local_surface_id,
+    const gfx::Size& new_physical_backing_size,
+    float new_device_scale_factor) {
+  bool device_scale_factor_changed =
+      device_scale_factor_ != new_device_scale_factor;
+
+  local_surface_id_ = new_local_surface_id;
+  physical_backing_size_ = new_physical_backing_size;
+  device_scale_factor_ = new_device_scale_factor;
+
   if (!compositor_)
     return;
-  if (IsUseZoomForDSFEnabled())
+
+  if (IsUseZoomForDSFEnabled()) {
+    compositor_->SetViewportSizeAndScale(physical_backing_size_, 1.f,
+                                         local_surface_id_);
     compositor_->SetPaintedDeviceScaleFactor(GetOriginalDeviceScaleFactor());
-  else
-    compositor_->SetDeviceScaleFactor(device_scale_factor_);
-  UpdateWebViewWithDeviceScaleFactor();
+  } else {
+    compositor_->SetViewportSizeAndScale(
+        physical_backing_size_, device_scale_factor_, local_surface_id_);
+  }
+
+  if (device_scale_factor_changed)
+    UpdateWebViewWithDeviceScaleFactor();
 }
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
@@ -2376,7 +2391,11 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       window_screen_rect_ = new_pos;
     }
 
-    AutoResizeCompositor(viz::LocalSurfaceId());
+    // Note that this destroys any information about differentiating |size_|
+    // from |physical_backing_size_|.
+    UpdateCompositorSurface(viz::LocalSurfaceId(),
+                            gfx::ScaleToCeiledSize(size_, device_scale_factor_),
+                            device_scale_factor_);
 
     if (!resizing_mode_selector_->is_synchronous_mode()) {
       need_resize_ack_for_auto_resize_ = true;
@@ -2689,8 +2708,10 @@ void RenderWidget::DidNavigate() {
   if (!compositor_)
     return;
   compositor_->SetContentSourceId(++current_content_source_id_);
-  local_surface_id_ = viz::LocalSurfaceId();
-  compositor_->SetViewportSize(physical_backing_size_, local_surface_id_);
+
+  UpdateCompositorSurface(viz::LocalSurfaceId(), physical_backing_size_,
+                          device_scale_factor_);
+
   // If surface synchronization is on, navigation implicitly acks any resize
   // that has happened so far so we can get the next ResizeParams containing the
   // LocalSurfaceId that should be used after navigation.

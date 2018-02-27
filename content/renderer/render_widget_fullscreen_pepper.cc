@@ -339,7 +339,6 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
     InitializeLayerTreeView();
   layer_->SetBounds(blink::WebSize(size()));
   layer_->SetDrawsContent(true);
-  compositor_->SetDeviceScaleFactor(device_scale_factor_);
   compositor_->SetRootLayer(*layer_);
 }
 
@@ -383,11 +382,6 @@ void RenderWidgetFullscreenPepper::OnResize(const ResizeParams& params) {
 
 GURL RenderWidgetFullscreenPepper::GetURLForGraphicsContext3D() {
   return active_url_;
-}
-
-void RenderWidgetFullscreenPepper::OnDeviceScaleFactorChanged() {
-  if (compositor_)
-    compositor_->SetDeviceScaleFactor(device_scale_factor_);
 }
 
 }  // namespace content

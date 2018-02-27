@@ -571,9 +571,6 @@ class CONTENT_EXPORT RenderWidget
   // Request from browser to show context menu.
   virtual void OnShowContextMenu(ui::MenuSourceType source_type,
                                  const gfx::Point& location);
-  // Called when the device scale factor is changed, or the layer tree is
-  // initialized.
-  virtual void OnDeviceScaleFactorChanged();
 
   void OnRepaint(gfx::Size size_to_paint);
   void OnSetTextDirection(blink::WebTextDirection direction);
@@ -606,11 +603,6 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
-
-  // Notify the compositor about a change in viewport size. This should be
-  // used only with auto resize mode WebWidgets, as normal WebWidgets should
-  // go through OnResize.
-  void AutoResizeCompositor(const viz::LocalSurfaceId& local_surface_id);
 
   void OnOrientationChange();
 
@@ -713,13 +705,16 @@ class CONTENT_EXPORT RenderWidget
   // messages.
   WebCursor current_cursor_;
 
-  // The size of the RenderWidget.
+  // The size of the RenderWidget in DIPs. This may differ from
+  // |physical_backing_size_| in the following (and possibly other) cases:
+  // * On Android, for top and bottom controls
+  // * On OOPIF, due to rounding
   gfx::Size size_;
 
-  // The size of the view's backing surface in non-DPI-adjusted pixels.
+  // The size of the compositor's surface in pixels.
   gfx::Size physical_backing_size_;
 
-  // The size of the visible viewport in DPI-adjusted pixels.
+  // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
 
   // Flags for the next ViewHostMsg_ResizeOrRepaint_ACK message.
@@ -890,6 +885,10 @@ class CONTENT_EXPORT RenderWidget
   bool CreateWidget(int32_t opener_id,
                     blink::WebPopupType popup_type,
                     int32_t* routing_id);
+
+  void UpdateCompositorSurface(viz::LocalSurfaceId new_local_surface_id,
+                               const gfx::Size& new_physical_backing_size,
+                               float new_device_scale_factor);
 
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will

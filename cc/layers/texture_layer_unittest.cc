@@ -169,7 +169,8 @@ class TextureLayerTest : public testing::Test {
     layer_tree_host_ = MockLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
-    layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
+    layer_tree_host_->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                              viz::LocalSurfaceId());
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 
@@ -617,7 +618,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportSize(bounds);
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceId());
     SetMailbox('1');
     EXPECT_EQ(0, callback_count_);
 
@@ -687,7 +689,8 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
 
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportSize(bounds);
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceId());
     SetMailbox('1');
 
     PostSetNeedsCommitToMainThread();
@@ -1215,7 +1218,8 @@ class TextureLayerWithResourceMainThreadDeleted : public LayerTreeTest {
 
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportSize(bounds);
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceId());
   }
 
   void BeginTest() override {
@@ -1284,7 +1288,8 @@ class TextureLayerWithResourceImplThreadDeleted : public LayerTreeTest {
 
     root_->AddChild(layer_);
     layer_tree_host()->SetRootLayer(root_);
-    layer_tree_host()->SetViewportSize(bounds);
+    layer_tree_host()->SetViewportSizeAndScale(bounds, 1.f,
+                                               viz::LocalSurfaceId());
   }
 
   void BeginTest() override {

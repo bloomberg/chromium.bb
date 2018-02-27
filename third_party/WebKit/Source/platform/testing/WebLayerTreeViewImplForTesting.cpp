@@ -57,7 +57,10 @@ void WebLayerTreeViewImplForTesting::SetViewportSize(
     const WebSize& device_viewport_size) {
   gfx::Size gfx_size(std::max(0, device_viewport_size.width),
                      std::max(0, device_viewport_size.height));
-  layer_tree_host_->SetViewportSize(gfx_size);
+  // TODO(ccameron): This likely causes surface invariant violations.
+  layer_tree_host_->SetViewportSizeAndScale(
+      gfx_size, layer_tree_host_->device_scale_factor(),
+      layer_tree_host_->local_surface_id());
 }
 
 void WebLayerTreeViewImplForTesting::SetRootLayer(const blink::WebLayer& root) {
@@ -80,7 +83,10 @@ WebSize WebLayerTreeViewImplForTesting::GetViewportSize() const {
 
 void WebLayerTreeViewImplForTesting::SetDeviceScaleFactor(
     float device_scale_factor) {
-  layer_tree_host_->SetDeviceScaleFactor(device_scale_factor);
+  // TODO(ccameron): This likely causes surface invariant violations.
+  layer_tree_host_->SetViewportSizeAndScale(
+      layer_tree_host_->device_viewport_size(), device_scale_factor,
+      layer_tree_host_->local_surface_id());
 }
 
 void WebLayerTreeViewImplForTesting::SetBackgroundColor(WebColor color) {

@@ -1046,15 +1046,19 @@ void LayerTreeHost::SetEventListenerProperties(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetViewportSize(
+void LayerTreeHost::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
+    float device_scale_factor,
     const viz::LocalSurfaceId& local_surface_id) {
+  // TODO(ccameron): Add CHECKs here for surface invariants violations.
   if (settings_.enable_surface_synchronization)
     SetLocalSurfaceId(local_surface_id);
-  if (device_viewport_size_ == device_viewport_size)
+  if (device_viewport_size_ == device_viewport_size &&
+      device_scale_factor_ == device_scale_factor)
     return;
 
   device_viewport_size_ = device_viewport_size;
+  device_scale_factor_ = device_scale_factor;
 
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
@@ -1118,15 +1122,6 @@ void LayerTreeHost::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
 
 bool LayerTreeHost::HasPendingPageScaleAnimation() const {
   return !!pending_page_scale_animation_.get();
-}
-
-void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
-  if (device_scale_factor_ == device_scale_factor)
-    return;
-  device_scale_factor_ = device_scale_factor;
-
-  property_trees_.needs_rebuild = true;
-  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetRecordingScaleFactor(float recording_scale_factor) {

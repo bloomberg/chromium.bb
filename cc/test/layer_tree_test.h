@@ -105,6 +105,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   std::unique_ptr<LayerTreeFrameSink>
   ReleaseLayerTreeFrameSinkOnLayerTreeHost();
   void SetVisibleOnLayerTreeHost(bool visible);
+  void SetInitialDeviceScaleFactor(float initial_device_scale_factor) {
+    initial_device_scale_factor_ = initial_device_scale_factor;
+  }
 
   virtual void AfterTest() = 0;
   virtual void WillBeginTest();
@@ -182,6 +185,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchNextCommitWaitsForActivation();
 
   LayerTreeSettings settings_;
+  float initial_device_scale_factor_ = 1.f;
 
   CompositorMode mode_;
 

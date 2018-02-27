@@ -292,9 +292,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
-  void SetViewportSize(
-      const gfx::Size& device_viewport_size,
-      const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId());
+  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
+                               float device_scale_factor,
+                               const viz::LocalSurfaceId& local_surface_id);
+
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
   void SetBrowserControlsHeight(float top_height,
@@ -319,7 +320,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                base::TimeDelta duration);
   bool HasPendingPageScaleAnimation() const;
 
-  void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
   void SetRecordingScaleFactor(float recording_scale_factor);

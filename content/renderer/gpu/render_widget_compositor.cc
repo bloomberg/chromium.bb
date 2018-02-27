@@ -772,10 +772,12 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-void RenderWidgetCompositor::SetViewportSize(
+void RenderWidgetCompositor::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
+    float device_scale_factor,
     const viz::LocalSurfaceId& local_surface_id) {
-  layer_tree_host_->SetViewportSize(device_viewport_size, local_surface_id);
+  layer_tree_host_->SetViewportSizeAndScale(
+      device_viewport_size, device_scale_factor, local_surface_id);
 }
 
 viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
@@ -805,7 +807,11 @@ WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
 }
 
 void RenderWidgetCompositor::SetDeviceScaleFactor(float device_scale) {
-  layer_tree_host_->SetDeviceScaleFactor(device_scale);
+  // TODO(ccameron): This causes transient (if not real) surface invariants
+  // violations.
+  layer_tree_host_->SetViewportSizeAndScale(
+      layer_tree_host_->device_viewport_size(), device_scale,
+      layer_tree_host_->local_surface_id());
 }
 
 void RenderWidgetCompositor::SetBackgroundColor(blink::WebColor color) {

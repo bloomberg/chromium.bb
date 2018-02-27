@@ -806,9 +806,10 @@ void LayerTreeTest::SetupTree() {
   }
 
   gfx::Size root_bounds = layer_tree_host()->root_layer()->bounds();
-  gfx::Size device_root_bounds = gfx::ScaleToCeiledSize(
-      root_bounds, layer_tree_host()->device_scale_factor());
-  layer_tree_host()->SetViewportSize(device_root_bounds);
+  gfx::Size device_root_bounds =
+      gfx::ScaleToCeiledSize(root_bounds, initial_device_scale_factor_);
+  layer_tree_host()->SetViewportSizeAndScale(
+      device_root_bounds, initial_device_scale_factor_, viz::LocalSurfaceId());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
