@@ -331,6 +331,7 @@ jumbo_source_set("unit_tests") {
     "LocalCaretRectTest.cpp",
     "PositionIteratorTest.cpp",
     "PositionTest.cpp",
+    "PositionWithAffinityTest.cpp",
     "RelocatablePositionTest.cpp",
     "RenderedPositionTest.cpp",
     "SelectionControllerTest.cpp",
