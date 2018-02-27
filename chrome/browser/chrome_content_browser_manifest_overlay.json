@@ -15,7 +15,6 @@
           "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
           "safe_browsing::mojom::SafeBrowsing",
-          "safe_browsing::mojom::PhishingDetectorClient",
           "translate::mojom::ContentTranslateDriver"
         ],
         "gpu": [
@@ -87,6 +86,7 @@
           "media_router::mojom::MediaRouter",
           "page_load_metrics::mojom::PageLoadMetrics",
           "password_manager::mojom::CredentialManager",
+          "safe_browsing::mojom::PhishingDetectorClient",
           "translate::mojom::ContentTranslateDriver",
 
           // TODO(beng): These should be moved to a separate capability.
