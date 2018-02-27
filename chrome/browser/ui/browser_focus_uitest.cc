@@ -208,7 +208,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
 };
 
 // Flaky on Mac (http://crbug.com/67301).
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
 #else
 // If this flakes, disable and log details in http://crbug.com/523255.
