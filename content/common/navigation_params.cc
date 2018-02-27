@@ -116,13 +116,4 @@ RequestNavigationParams::RequestNavigationParams(
 
 RequestNavigationParams::~RequestNavigationParams() = default;
 
-NavigationParams::NavigationParams(
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params)
-    : common_params(common_params),
-      request_params(request_params) {
-}
-
-NavigationParams::~NavigationParams() = default;
-
 }  // namespace content
