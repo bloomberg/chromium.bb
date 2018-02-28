@@ -83,6 +83,9 @@ class PasswordsPrivateDelegate : public KeyedService {
       base::OnceCallback<void(const std::string&)> callback,
       content::WebContents* web_contents) = 0;
 
+  // Cancel any ongoing export.
+  virtual void CancelExportPasswords() = 0;
+
   // Get the most recent progress status.
   virtual api::passwords_private::ExportProgressStatus
   GetExportProgressStatus() = 0;

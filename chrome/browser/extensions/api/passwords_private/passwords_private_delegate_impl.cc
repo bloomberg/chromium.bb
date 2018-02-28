@@ -301,6 +301,10 @@ void PasswordsPrivateDelegateImpl::ExportPasswords(
   std::move(callback).Run(accepted ? std::string() : kExportInProgress);
 }
 
+void PasswordsPrivateDelegateImpl::CancelExportPasswords() {
+  password_manager_porter_->CancelStore();
+}
+
 api::passwords_private::ExportProgressStatus
 PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
   return ConvertStatus(password_manager_porter_->GetExportProgressStatus());

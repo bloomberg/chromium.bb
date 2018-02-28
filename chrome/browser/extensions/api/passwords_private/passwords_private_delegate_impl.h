@@ -55,6 +55,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void ImportPasswords(content::WebContents* web_contents) override;
   void ExportPasswords(base::OnceCallback<void(const std::string&)> accepted,
                        content::WebContents* web_contents) override;
+  void CancelExportPasswords() override;
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
 

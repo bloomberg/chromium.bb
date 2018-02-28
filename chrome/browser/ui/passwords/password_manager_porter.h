@@ -49,6 +49,7 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
 
   // password_manager::ExportFlow
   bool Store() override;
+  void CancelStore() override;
   password_manager::ExportProgressStatus GetExportProgressStatus() override;
 
   // The next export will use |exporter|, instead of creating a new instance.

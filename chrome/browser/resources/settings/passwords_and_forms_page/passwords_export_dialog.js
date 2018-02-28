@@ -229,5 +229,15 @@ Polymer({
   onCancelButtonTap_: function() {
     this.close();
   },
+
+  /**
+   * Handler for tapping the 'cancel' button on the progress dialog. It should
+   * cancel the export and dismiss the dialog.
+   * @private
+   */
+  onCancelProgressButtonTap_: function() {
+    this.passwordManager_.cancelExportPasswords();
+    this.close();
+  },
 });
 })();

@@ -160,6 +160,23 @@ class PasswordsPrivateExportPasswordsFunction
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateExportPasswordsFunction);
 };
 
+class PasswordsPrivateCancelExportPasswordsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateCancelExportPasswordsFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.cancelExportPasswords",
+                             PASSWORDSPRIVATE_CANCELEXPORTPASSWORDS);
+
+ protected:
+  ~PasswordsPrivateCancelExportPasswordsFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateCancelExportPasswordsFunction);
+};
+
 class PasswordsPrivateRequestExportProgressStatusFunction
     : public UIThreadExtensionFunction {
  public:

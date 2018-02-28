@@ -151,6 +151,12 @@ chrome.passwordsPrivate.importPasswords = function() {};
 chrome.passwordsPrivate.exportPasswords = function(callback) {};
 
 /**
+ * Triggers the cancelling of a password export flow.
+ * @see https://developer.chrome.com/extensions/passwordsPrivate#method-cancelExportPasswords
+ */
+chrome.passwordsPrivate.cancelExportPasswords = function() {};
+
+/**
  * Triggers the Password Manager password export status query functionality.
  * @param {function(!chrome.passwordsPrivate.ExportProgressStatus):void}
  *     callback Called with the status of the current export.

@@ -790,6 +790,37 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       mockTimer.uninstall();
     });
 
+    // Test that canceling the dialog while exporting will also cancel the
+    // export on the browser.
+    test('cancelExport', function(done) {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const progressCallback = passwordManager.progressCallback;
+
+      passwordManager.cancelExportPasswords = () => {
+        done();
+      };
+
+      let mockTimer = new MockTimer();
+      mockTimer.install();
+
+      // The initial dialog remains open for 100ms after export enters the
+      // in-progress state.
+      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      // The progress bar only appears after 100ms.
+      mockTimer.tick(100);
+      assertTrue(exportDialog.$.dialog_progress.open);
+      MockInteractions.tap(exportDialog.$.cancel_progress_button);
+
+      // The dialog should be dismissed entirely.
+      assertFalse(exportDialog.$.dialog_progress.open);
+      assertFalse(exportDialog.$.dialog_start.open);
+      assertFalse(exportDialog.$.dialog_error.open);
+
+      mockTimer.uninstall();
+    });
+
     // The export dialog is dismissable.
     test('exportDismissable', function(done) {
       const exportDialog = createExportPasswordsDialog(passwordManager);
@@ -800,7 +831,6 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       done();
     });
-
   });
 
   mocha.run();

@@ -264,6 +264,22 @@ TEST_F(PasswordManagerPorterTest, CancelExportFileSelection) {
   porter.Store();
 }
 
+TEST_F(PasswordManagerPorterTest, CancelStore) {
+  std::unique_ptr<MockPasswordManagerExporter> mock_password_manager_exporter_ =
+      std::make_unique<StrictMock<MockPasswordManagerExporter>>();
+  PasswordManagerPorter porter(nullptr,
+                               PasswordManagerPorter::ProgressCallback());
+
+  EXPECT_CALL(*mock_password_manager_exporter_, PreparePasswordsForExport());
+  EXPECT_CALL(*mock_password_manager_exporter_, SetDestination(_));
+  EXPECT_CALL(*mock_password_manager_exporter_, Cancel());
+
+  porter.set_web_contents(web_contents());
+  porter.SetExporterForTesting(std::move(mock_password_manager_exporter_));
+  porter.Store();
+  porter.CancelStore();
+}
+
 #endif
 
 }  // namespace

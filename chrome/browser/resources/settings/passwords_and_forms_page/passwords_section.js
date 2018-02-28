@@ -91,6 +91,11 @@ class PasswordManager {
   exportPasswords(callback) {}
 
   /**
+   * Cancels the ongoing export of passwords.
+   */
+  cancelExportPasswords(callback) {}
+
+  /**
    * Queries the status of any ongoing export.
    * @param {function(!PasswordManager.ExportProgressStatus):void} callback
    */
@@ -205,6 +210,11 @@ class PasswordManagerImpl {
   /** @override */
   exportPasswords(callback) {
     chrome.passwordsPrivate.exportPasswords(callback);
+  }
+
+  /** @override */
+  cancelExportPasswords() {
+    chrome.passwordsPrivate.cancelExportPasswords();
   }
 
   /** @override */
