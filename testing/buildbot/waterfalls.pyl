@@ -1003,7 +1003,6 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
         },
       },
       'Fuchsia (dbg)': {

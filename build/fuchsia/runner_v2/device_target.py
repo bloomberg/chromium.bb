@@ -31,6 +31,7 @@ class DeviceTarget(target.Target):
 
     self._port = 22
     self._auto = not host or not ssh_config
+    self._new_instance = True
 
     if self._auto:
       self._ssh_config_path = boot_data.GetSSHConfigPath(output_dir)
@@ -62,6 +63,7 @@ class DeviceTarget(target.Target):
       self._host = self.__Discover(node_name)
       if self._host and self._WaitUntilReady(retries=0):
         logging.info('Connected to an already booted device.')
+        self._new_instance = False
         return
 
       logging.info('Netbooting Fuchsia. ' +
@@ -99,6 +101,9 @@ class DeviceTarget(target.Target):
       logging.debug('host=%s, port=%d' % (self._host, self._port))
 
     self._WaitUntilReady();
+
+  def IsNewInstance(self):
+    return self._new_instance
 
   def _GetEndpoint(self):
     return (self._host, self._port)

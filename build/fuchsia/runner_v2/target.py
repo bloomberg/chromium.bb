@@ -38,12 +38,19 @@ class Target(object):
   def Start(self):
     """Handles the instantiation and connection process for the Fuchsia
     target instance."""
+
     pass
 
   def IsStarted(self):
-    """Returns true if the Fuchsia target instance is ready to accept
+    """Returns True if the Fuchsia target instance is ready to accept
     commands."""
+
     return self._started
+
+  def IsNewInstance(self):
+    """Returns True if the connected target instance is newly provisioned."""
+
+    return True
 
   def RunCommandPiped(self, command, **kwargs):
     """Starts a remote command and immediately returns a Popen object for the
@@ -75,27 +82,30 @@ class Target(object):
     return remote_cmd.RunSsh(self._GetSshConfigPath(), host, port, command,
                              silent)
 
-  def PutFile(self, source, dest):
+  def PutFile(self, source, dest, recursive=False):
     """Copies a file from the local filesystem to the target filesystem.
 
     source: The path of the file being copied.
-    dest: The path on the remote filesystem which will be copied to."""
+    dest: The path on the remote filesystem which will be copied to.
+    recursive: If true, performs a recursive copy."""
 
     assert type(source) is str
-    self.PutFiles([source], dest)
+    self.PutFiles([source], dest, recursive)
 
-  def PutFiles(self, sources, dest):
+  def PutFiles(self, sources, dest, recursive=False):
     """Copies files from the local filesystem to the target filesystem.
 
     sources: List of local file paths to copy from, or a single path.
-    dest: The path on the remote filesystem which will be copied to."""
+    dest: The path on the remote filesystem which will be copied to.
+    recursive: If true, performs a recursive copy."""
 
     assert type(sources) is tuple or type(sources) is list
     self._AssertIsStarted()
     host, port = self._GetEndpoint()
     logging.debug('copy local:%s => remote:%s' % (sources, dest))
     command = remote_cmd.RunScp(self._GetSshConfigPath(), host, port,
-                                sources, dest, remote_cmd.COPY_TO_TARGET)
+                                sources, dest, remote_cmd.COPY_TO_TARGET,
+                                recursive)
 
   def GetFile(self, source, dest):
     """Copies a file from the target filesystem to the local filesystem.

@@ -65,12 +65,13 @@ class QemuTarget(target.Target):
                                            'bootdata-blobstore.bin'),
         '-smp', '4',
 
-        # Attach the blobstore and data volumes.
-        '-drive', 'file=%s,format=qcow2,if=none,id=data' %
-            self._MakeQcowDisk(
-                boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                        'fvm.blk')),
-        '-drive', 'file=%s,format=qcow2,if=none,id=blobstore' %
+        # Attach the blobstore and data volumes. Use snapshot mode to discard
+        # any changes.
+        '-snapshot',
+        '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
+            boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                    'fvm.blk.qcow2'),
+        '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
             self._MakeQcowDisk(boot_data.ConfigureDataFVM(self._output_dir,
                                                           False)),
         '-device', 'virtio-blk-pci,drive=data',

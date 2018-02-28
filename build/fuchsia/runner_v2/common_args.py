@@ -4,6 +4,7 @@
 
 import logging
 import os
+import sys
 
 from device_target import DeviceTarget
 from qemu_target import QemuTarget
@@ -33,24 +34,35 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--port', '-p', type=int, default=22,
                            help='The port of the SSH service running on the ' +
                                 'device. Optional.')
-  common_args.add_argument('--ssh_config', '-F',
+  common_args.add_argument('--ssh-config', '-F',
                            help='The path to the SSH configuration used for '
                                 'connecting to the target device.')
   common_args.add_argument('--verbose', '-v', default=False, action='store_true',
                            help='Show more logging information.')
+  common_args.add_argument('--really-verbose', '-vv', default=False,
+                           action='store_true',
+                           help='Show even more logging information, ' +
+                                'including SCP logs.')
 
 
 def ConfigureLogging(args):
   """Configures the logging level based on command line |args|."""
 
-  logging.basicConfig(level=(logging.DEBUG if args.verbose else logging.INFO))
+  if args.really_verbose:
+    args.verbose = True
+
+  logging.basicConfig(level=(logging.DEBUG if args.verbose else logging.INFO),
+                      format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 
   # The test server spawner is too noisy with INFO level logging, so tweak
   # its verbosity a bit by adjusting its logging level.
-  if args.verbose:
-    logging.getLogger('chrome_test_server_spawner').setLevel(logging.DEBUG)
-  else:
-    logging.getLogger('chrome_test_server_spawner').setLevel(logging.WARN)
+  logging.getLogger('chrome_test_server_spawner').setLevel(
+      logging.DEBUG if args.verbose else logging.WARN)
+
+  # Verbose SCP output can be useful at times but oftentimes is just too noisy.
+  # Only enable it if -vv is passed.
+  logging.getLogger('ssh').setLevel(
+      logging.DEBUG if args.really_verbose else logging.WARN)
 
 
 def GetDeploymentTargetForArgs(args):

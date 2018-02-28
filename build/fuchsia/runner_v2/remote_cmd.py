@@ -12,6 +12,7 @@ import sys
 
 _SSH = ['ssh']
 _SCP = ['scp', '-C']  # Use gzip compression.
+_SSH_LOGGER = logging.getLogger('ssh')
 
 COPY_TO_TARGET = 0
 COPY_FROM_TARGET = 1
@@ -35,7 +36,7 @@ def RunSsh(config_path, host, port, command, silent):
   ssh_command = _SSH + ['-F', config_path,
                         host,
                         '-p', str(port)] + command
-  logging.debug('ssh exec: ' + ' '.join(ssh_command))
+  _SSH_LOGGER.debug('ssh exec: ' + ' '.join(ssh_command))
   if silent:
     devnull = open(os.devnull, 'w')
     return subprocess.call(ssh_command, stderr=devnull, stdout=devnull)
@@ -66,11 +67,11 @@ def RunPipedSsh(config_path, host, port, command = None, ssh_args = None,
   ssh_command = _SSH + ['-F', config_path,
                         host,
                         '-p', str(port)] + ssh_args + ['--'] + command
-  logging.debug(' '.join(ssh_command))
+  _SSH_LOGGER.debug(' '.join(ssh_command))
   return subprocess.Popen(ssh_command, **kwargs)
 
 
-def RunScp(config_path, host, port, sources, dest, direction):
+def RunScp(config_path, host, port, sources, dest, direction, recursive=False):
   """Copies a file to or from a remote host using SCP and blocks until
   completion.
 
@@ -82,6 +83,7 @@ def RunScp(config_path, host, port, sources, dest, direction):
   direction: Indicates whether the file should be copied to
              or from the remote side.
              Valid values are COPY_TO_TARGET or COPY_FROM_TARGET.
+  recursive: If true, performs a recursive copy.
 
   Function will raise an assertion if a failure occurred."""
 
@@ -89,8 +91,10 @@ def RunScp(config_path, host, port, sources, dest, direction):
   if ':' in host:
     scp_command.append('-6')
     host = '[' + host + ']'
-  if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+  if _SSH_LOGGER.getEffectiveLevel() == logging.DEBUG:
     scp_command.append('-v')
+  if recursive:
+    scp_command.append('-r')
 
   if direction == COPY_TO_TARGET:
     dest = "%s:%s" % (host, dest)
@@ -101,5 +105,5 @@ def RunScp(config_path, host, port, sources, dest, direction):
   scp_command += sources
   scp_command += [dest]
 
-  logging.debug(' '.join(scp_command))
+  _SSH_LOGGER.debug(' '.join(scp_command))
   subprocess.check_call(scp_command, stdout=open(os.devnull, 'w'))
