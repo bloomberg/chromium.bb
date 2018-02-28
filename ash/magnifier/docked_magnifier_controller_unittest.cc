@@ -116,6 +116,32 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
 
+// Tests that the Fullscreen and Docked Magnifiers are mutually exclusive.
+// TODO(afakhry): Update this test to use ash::MagnificationController once
+// refactored. https://crbug.com/817157.
+TEST_F(DockedMagnifierTest, MutuallyExclusiveMagnifiers) {
+  // Start with both magnifiers disabled.
+  EXPECT_FALSE(controller()->GetEnabled());
+  EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
+
+  // Enabling one disables the other.
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->GetEnabled());
+  EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
+
+  controller()->SetFullscreenMagnifierEnabled(true);
+  EXPECT_FALSE(controller()->GetEnabled());
+  EXPECT_TRUE(controller()->GetFullscreenMagnifierEnabled());
+
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->GetEnabled());
+  EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
+
+  controller()->SetEnabled(false);
+  EXPECT_FALSE(controller()->GetEnabled());
+  EXPECT_FALSE(controller()->GetFullscreenMagnifierEnabled());
+}
+
 // Tests the changes in the magnifier's status, user switches and the
 // interaction with the client.
 TEST_F(DockedMagnifierTest, TestEnableAndDisable) {
