@@ -40,7 +40,7 @@
 #if __cplusplus >= 201103L
 #include <google/protobuf/stubs/type_traits.h>
 #endif
-#if defined(_MSC_VER) && !_HAS_EXCEPTIONS
+#if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
 #include <typeinfo>
