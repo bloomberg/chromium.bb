@@ -129,7 +129,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
   if (key.proxy_server().is_direct()) {
     IPEndPoint address;
     if (available_session->GetPeerAddress(&address) == OK)
-      aliases_[address] = key;
+      aliases_.insert(AliasMap::value_type(address, key));
   }
 
   return available_session;
@@ -186,54 +186,56 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
   for (AddressList::const_iterator address_it = addresses.begin();
        address_it != addresses.end();
        ++address_it) {
-    AliasMap::const_iterator alias_it = aliases_.find(*address_it);
-    if (alias_it == aliases_.end())
-      continue;
+    auto range = aliases_.equal_range(*address_it);
+    for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
+      // We found an alias.
+      const SpdySessionKey& alias_key = alias_it->second;
 
-    // We found an alias.
-    const SpdySessionKey& alias_key = alias_it->second;
+      // We can reuse this session only if the proxy and privacy
+      // settings and socket tag match.
+      if (!(alias_key.proxy_server() == key.proxy_server()) ||
+          !(alias_key.privacy_mode() == key.privacy_mode()) ||
+          !(alias_key.socket_tag() == key.socket_tag())) {
+        continue;
+      }
 
-    // We can reuse this session only if the proxy and privacy
-    // settings and socket tag match.
-    if (!(alias_key.proxy_server() == key.proxy_server()) ||
-        !(alias_key.privacy_mode() == key.privacy_mode()) ||
-        !(alias_key.socket_tag() == key.socket_tag())) {
-      continue;
+      AvailableSessionMap::iterator available_session_it =
+          LookupAvailableSessionByKey(alias_key);
+      if (available_session_it == available_sessions_.end()) {
+        NOTREACHED();  // It shouldn't be in the aliases table if we can't get
+                       // it!
+        continue;
+      }
+
+      const base::WeakPtr<SpdySession>& available_session =
+          available_session_it->second;
+      DCHECK(base::ContainsKey(sessions_, available_session.get()));
+
+      if (is_websocket && !available_session->support_websocket())
+        continue;
+
+      // If the session is a secure one, we need to verify that the
+      // server is authenticated to serve traffic for |host_port_proxy_pair|
+      // too.
+      if (!available_session->VerifyDomainAuthentication(
+              key.host_port_pair().host())) {
+        UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 0, 2);
+        continue;
+      }
+
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 1, 2);
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
+                                FOUND_EXISTING_FROM_IP_POOL,
+                                SPDY_SESSION_GET_MAX);
+      net_log.AddEvent(
+          NetLogEventType::
+              HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
+          available_session->net_log().source().ToEventParametersCallback());
+      // Add this session to the map so that we can find it next time.
+      MapKeyToAvailableSession(key, available_session);
+      available_session->AddPooledAlias(key);
+      return available_session;
     }
-
-    AvailableSessionMap::iterator available_session_it =
-        LookupAvailableSessionByKey(alias_key);
-    if (available_session_it == available_sessions_.end()) {
-      NOTREACHED();  // It shouldn't be in the aliases table if we can't get it!
-      continue;
-    }
-
-    const base::WeakPtr<SpdySession>& available_session =
-        available_session_it->second;
-    DCHECK(base::ContainsKey(sessions_, available_session.get()));
-
-    if (is_websocket && !available_session->support_websocket())
-      continue;
-
-    // If the session is a secure one, we need to verify that the
-    // server is authenticated to serve traffic for |host_port_proxy_pair| too.
-    if (!available_session->VerifyDomainAuthentication(
-            key.host_port_pair().host())) {
-      UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 0, 2);
-      continue;
-    }
-
-    UMA_HISTOGRAM_ENUMERATION("Net.SpdyIPPoolDomainMatch", 1, 2);
-    UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
-                              FOUND_EXISTING_FROM_IP_POOL,
-                              SPDY_SESSION_GET_MAX);
-    net_log.AddEvent(
-        NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
-        available_session->net_log().source().ToEventParametersCallback());
-    // Add this session to the map so that we can find it next time.
-    MapKeyToAvailableSession(key, available_session);
-    available_session->AddPooledAlias(key);
-    return available_session;
   }
 
   return base::WeakPtr<SpdySession>();

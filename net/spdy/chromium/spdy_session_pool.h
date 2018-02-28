@@ -203,7 +203,7 @@ class NET_EXPORT SpdySessionPool
   typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;
   typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
-  typedef std::map<IPEndPoint, SpdySessionKey> AliasMap;
+  typedef std::multimap<IPEndPoint, SpdySessionKey> AliasMap;
 
   // Returns true iff |session| is in |available_sessions_|.
   bool IsSessionAvailable(const base::WeakPtr<SpdySession>& session) const;

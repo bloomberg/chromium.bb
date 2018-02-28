@@ -1436,7 +1436,6 @@ int GetSpdySessionCount(HttpNetworkSession* session) {
   return session_list->GetSize();
 }
 
-#if defined(OS_ANDROID)
 // Return count of sockets handed out by a given socket pool.
 int GetHandedOutSocketCount(ClientSocketPool* pool) {
   int count = 0;
@@ -1448,6 +1447,7 @@ int GetHandedOutSocketCount(ClientSocketPool* pool) {
   return count;
 }
 
+#if defined(OS_ANDROID)
 // Return count of distinct QUIC sessions.
 int GetQuicSessionCount(HttpNetworkSession* session) {
   std::unique_ptr<base::DictionaryValue> dict(
@@ -2896,6 +2896,170 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   EXPECT_EQ(2, GetQuicSessionCount(session()));
 }
 #endif
+
+// Test that when creating a stream all sessions that alias an IP are tried,
+// not just one.  This is important because there can be multiple sessions
+// that could satisfy a stream request and they should all be tried.
+TEST_F(HttpStreamFactoryTest, MultiIPAliases) {
+  SpdySessionDependencies session_deps;
+
+  // Prepare for two HTTPS connects.
+  MockRead mock_read1(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data1(&mock_read1, 1, nullptr, 0);
+  socket_data1.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data1);
+  MockRead mock_read2(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data2(&mock_read2, 1, nullptr, 0);
+  socket_data2.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data2);
+  SSLSocketDataProvider ssl_socket_data1(ASYNC, OK);
+  // Load cert for *.example.org
+  ssl_socket_data1.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ssl_socket_data1.next_proto = kProtoHTTP2;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data1);
+  SSLSocketDataProvider ssl_socket_data2(ASYNC, OK);
+  // Load cert for *.example.org
+  ssl_socket_data2.ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+  ssl_socket_data2.next_proto = kProtoHTTP2;
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data2);
+
+  HostPortPair host_port_pair("example.org", 443);
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Create two HttpRequestInfos, differing only in host name.
+  // Both will resolve to 127.0.0.1 and hence be IP aliases.
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = GURL("https://a.example.org");
+  request_info1.privacy_mode = PRIVACY_MODE_DISABLED;
+  HttpRequestInfo request_info1_alias = request_info1;
+  request_info1.url = GURL("https://b.example.org");
+
+  // Create two more HttpRequestInfos but with different privacy_mode.
+  HttpRequestInfo request_info2;
+  request_info2.method = "GET";
+  request_info2.url = GURL("https://a.example.org");
+  request_info2.privacy_mode = PRIVACY_MODE_ENABLED;
+  HttpRequestInfo request_info2_alias = request_info2;
+  request_info2.url = GURL("https://b.example.org");
+
+  // Open one session.
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter1;
+  std::unique_ptr<HttpStreamRequest> request1(
+      session->http_stream_factory()->RequestStream(
+          request_info1, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter1.WaitForStream();
+  EXPECT_TRUE(waiter1.stream_done());
+  EXPECT_FALSE(waiter1.websocket_stream());
+  ASSERT_TRUE(waiter1.stream());
+
+  // Verify just one session created.
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+
+  // Open another session to same IP but with different privacy mode.
+  StreamRequestWaiter waiter2;
+  std::unique_ptr<HttpStreamRequest> request2(
+      session->http_stream_factory()->RequestStream(
+          request_info2, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter2,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter2.WaitForStream();
+  EXPECT_TRUE(waiter2.stream_done());
+  EXPECT_FALSE(waiter2.websocket_stream());
+  ASSERT_TRUE(waiter2.stream());
+
+  // Verify two sessions are now open.
+  EXPECT_EQ(2, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+
+  // Open a third session that IP aliases first session.
+  StreamRequestWaiter waiter3;
+  std::unique_ptr<HttpStreamRequest> request3(
+      session->http_stream_factory()->RequestStream(
+          request_info1_alias, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter3,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter3.WaitForStream();
+  EXPECT_TRUE(waiter3.stream_done());
+  EXPECT_FALSE(waiter3.websocket_stream());
+  ASSERT_TRUE(waiter3.stream());
+
+  // Verify the session pool reused the first session and no new session is
+  // created.  This will fail unless the session pool supports multiple
+  // sessions aliasing a single IP.
+  EXPECT_EQ(2, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+
+  // Open a fourth session that IP aliases the second session.
+  StreamRequestWaiter waiter4;
+  std::unique_ptr<HttpStreamRequest> request4(
+      session->http_stream_factory()->RequestStream(
+          request_info2_alias, DEFAULT_PRIORITY, ssl_config, ssl_config,
+          &waiter4,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter4.WaitForStream();
+  EXPECT_TRUE(waiter4.stream_done());
+  EXPECT_FALSE(waiter4.websocket_stream());
+  ASSERT_TRUE(waiter4.stream());
+
+  // Verify the session pool reused the second session.  This will fail unless
+  // the session pool supports multiple sessions aliasing a single IP.
+  EXPECT_EQ(2, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetTransportSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(2, GetHandedOutSocketCount(session->GetSSLSocketPool(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL)));
+}
 
 }  // namespace
 
