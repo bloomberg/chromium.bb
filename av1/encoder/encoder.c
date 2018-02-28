@@ -4546,7 +4546,7 @@ static void init_ref_frame_bufs(AV1_COMMON *cm) {
     pool->frame_bufs[i].ref_count = 0;
   }
 #if CONFIG_HASH_ME
-  if (av1_use_hash_me(cm)) {
+  if (cm->seq_params.force_screen_content_tools) {
     for (i = 0; i < FRAME_BUFFERS; ++i) {
       av1_hash_table_init(&pool->frame_bufs[i].hash_table);
     }
