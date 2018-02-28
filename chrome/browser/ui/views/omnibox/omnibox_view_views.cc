@@ -547,7 +547,10 @@ bool OmniboxViewViews::UnapplySteadyStateElisions() {
     end += offset;
   }
 
-  SetTextAndSelectedRange(full_url, gfx::Range(start, end));
+  // Update the text to the full unelided URL. The caret is positioned at 0, as
+  // otherwise we will spuriously scroll the text to the end of the new string.
+  SetWindowTextAndCaretPos(full_url, 0, false, false);
+  SelectRange(gfx::Range(start, end));
   return true;
 }
 
