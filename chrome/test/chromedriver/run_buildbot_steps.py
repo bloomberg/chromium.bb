@@ -213,6 +213,15 @@ def _ArchiveGoodBuild(platform, commit_position):
   if slave_utils.GSUtilCopy(zip_path, build_url):
     util.MarkBuildStepError()
 
+  if util.IsWindows():
+    zip_path = util.Zip(os.path.join(
+        chrome_paths.GetBuildDir([server_name + '.pdb']), server_name + '.pdb'))
+    pdb_name = 'chromedriver_%s_pdb_%s.%s.zip' % (
+        platform, _GetVersion(), commit_position)
+    pdb_url = '%s/%s' % (GS_CONTINUOUS_URL, pdb_name)
+    if slave_utils.GSUtilCopy(zip_path, pdb_url):
+      util.MarkBuildStepError()
+
   (latest_fd, latest_file) = tempfile.mkstemp()
   os.write(latest_fd, build_name)
   os.close(latest_fd)
