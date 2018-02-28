@@ -18,7 +18,7 @@ class FilePath;
 }  // namespace base
 
 // Will receive notifications about a new module list being available.
-class ModuleListManager;
+class ThirdPartyConflictsManager;
 
 namespace component_updater {
 
@@ -29,14 +29,14 @@ class ComponentUpdateService;
 // chrome/browser/conflicts/proto/module_list.proto
 //
 // Notifications of a new version of the module list are sent to the
-// ModuleListManager.
+// ThirdPartyConflictsManager.
 class ThirdPartyModuleListComponentInstallerPolicy
     : public ComponentInstallerPolicy {
  public:
   // The |manager| will be notified each time a new module list is available,
   // including once every startup when a component is already installed.
   explicit ThirdPartyModuleListComponentInstallerPolicy(
-      ModuleListManager* manager);
+      ThirdPartyConflictsManager* manager);
   ~ThirdPartyModuleListComponentInstallerPolicy() override;
 
  private:
@@ -66,7 +66,7 @@ class ThirdPartyModuleListComponentInstallerPolicy
   // The manager is not owned by this class, so the code creating it is
   // expected to ensure the manager lives as long as this class does. Typically
   // the manager provided will be a global singleton.
-  ModuleListManager* manager_;
+  ThirdPartyConflictsManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyModuleListComponentInstallerPolicy);
 };

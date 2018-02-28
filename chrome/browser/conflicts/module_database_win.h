@@ -14,16 +14,16 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
-#include "chrome/browser/conflicts/module_list_manager_win.h"
+#include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
+#endif
+
 class ModuleDatabaseObserver;
-class ModuleListFilter;
-class ProblematicProgramsUpdater;
-class ThirdPartyMetricsRecorder;
 
 namespace base {
 class FilePath;
@@ -38,7 +38,7 @@ class FilePath;
 // This is effectively a singleton, but doesn't use base::Singleton. The intent
 // is for the object to be created when Chrome is single-threaded, and for it
 // be set as the process-wide singleton via SetInstance.
-class ModuleDatabase : ModuleListManager::Observer {
+class ModuleDatabase {
  public:
   // Structures for maintaining information about modules.
   using ModuleMap = std::map<ModuleInfoKey, ModuleInfoData>;
@@ -54,7 +54,7 @@ class ModuleDatabase : ModuleListManager::Observer {
   // otherwise noted. For calls from other contexts this task runner is used to
   // bounce the call when appropriate.
   explicit ModuleDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
-  ~ModuleDatabase() override;
+  ~ModuleDatabase();
 
   // Retrieves the singleton global instance of the ModuleDatabase.
   static ModuleDatabase* GetInstance();
@@ -87,10 +87,6 @@ class ModuleDatabase : ModuleListManager::Observer {
   // Indicates that all input method editors have been enumerated.
   void OnImeEnumerationFinished();
 
-  // ModuleListManager::Observer:
-  void OnNewModuleList(const base::Version& version,
-                       const base::FilePath& path) override;
-
   // Indicates that a module has been loaded. The data passed to this function
   // is taken as gospel, so if it originates from a remote process it should be
   // independently validated first. (In practice, see ModuleEventSinkImpl for
@@ -118,9 +114,13 @@ class ModuleDatabase : ModuleListManager::Observer {
   // ModuleDatabase becomes idle ASAP.
   void IncreaseInspectionPriority();
 
-  // Accessor for the module list manager. This is exposed so that the manager
-  // can be wired up to the ThirdPartyModuleListComponentInstaller.
-  ModuleListManager& module_list_manager() { return module_list_manager_; }
+#if defined(GOOGLE_CHROME_BUILD)
+  // Accessor for the third party conflicts manager. This is exposed so that the
+  // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
+  ThirdPartyConflictsManager& third_party_conflicts_manager() {
+    return third_party_conflicts_manager_;
+  }
+#endif
 
  private:
   friend class TestModuleDatabase;
@@ -169,13 +169,6 @@ class ModuleDatabase : ModuleListManager::Observer {
   // OnNewModuleFound().
   void NotifyLoadedModules(ModuleDatabaseObserver* observer);
 
-  // Called when |installed_programs_| finishes its initialization.
-  void OnInstalledProgramsInitialized();
-
-  // Initializes |problematic_programs_updater_| when both the ModuleListFilter
-  // and the InstalledPrograms are available.
-  void InitializeProblematicProgramsUpdater();
-
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -193,30 +186,18 @@ class ModuleDatabase : ModuleListManager::Observer {
   // Indicates if all input method editors have been enumerated.
   bool ime_enumerated_;
 
-  // Indicates if the initial Module List has been received.
-  bool module_list_received_;
-
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
 
   // Holds observers.
   base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
-  // Keeps track of where the most recent module list is located on disk, and
-  // provides notifications when this changes.
-  ModuleListManager module_list_manager_;
-
-  // Filters third-party modules against a whitelist and a blacklist.
-  std::unique_ptr<ModuleListFilter> module_list_filter_;
-
-  // Retrieves the list of installed programs.
-  InstalledPrograms installed_programs_;
+#if defined(GOOGLE_CHROME_BUILD)
+  ThirdPartyConflictsManager third_party_conflicts_manager_;
+#endif
 
   // Records metrics on third-party modules.
-  std::unique_ptr<ThirdPartyMetricsRecorder> third_party_metrics_;
-
-  // Maintains the cache of problematic programs.
-  std::unique_ptr<ProblematicProgramsUpdater> problematic_programs_updater_;
+  ThirdPartyMetricsRecorder third_party_metrics_;
 
   // Weak pointer factory for this object. This is used when bouncing
   // incoming events to |task_runner_|.

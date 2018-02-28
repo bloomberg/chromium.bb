@@ -761,7 +761,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kAbusiveExperienceInterventionEnforce,
     base::Value::Type::BOOLEAN },
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   { key::kThirdPartyBlockingEnabled,
     prefs::kThirdPartyBlockingEnabled,
     base::Value::Type::BOOLEAN },

@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 
 namespace {
@@ -32,16 +31,9 @@ bool IsMicrosoftModule(const ModuleInfoData& module_data) {
       base::CompareCase::SENSITIVE);
 }
 
-// Returns true if |module_data| is a third party module.
-bool IsThirdPartyModule(const ModuleInfoData& module_data) {
-  return !IsGoogleModule(module_data) && !IsMicrosoftModule(module_data);
-}
-
 }  // namespace
 
-ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder(
-    const InstalledPrograms& installed_programs)
-    : installed_programs_(installed_programs) {}
+ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() = default;
 
 ThirdPartyMetricsRecorder::~ThirdPartyMetricsRecorder() = default;
 
@@ -70,14 +62,6 @@ void ThirdPartyMetricsRecorder::OnNewModuleFound(
         ++not_loaded_third_party_module_count_;
       }
     }
-  }
-
-  // The uninstallable metric is only recorded for third party metrics.
-  if (IsThirdPartyModule(module_data)) {
-    std::vector<InstalledPrograms::ProgramInfo> programs;
-    bool uninstallable = installed_programs_.GetInstalledPrograms(
-        module_key.module_path, &programs);
-    UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.Uninstallable", uninstallable);
   }
 }
 

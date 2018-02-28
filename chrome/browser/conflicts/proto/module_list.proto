@@ -44,8 +44,7 @@ message ModuleGroup {
   // The directory in which the modules are found. This may use environment
   // variables such as %LOCALAPPDATA%, %SYSTEMROOT%, etc. This is case
   // insensitive. If not specified then any path will be accepted. On the
-  // client this actually corresponds to the SHA1 of the case-sensitive
-  // publisher information.
+  // client this actually corresponds to the SHA1 of the case-insensitive path.
   optional string directory = 2;
   optional bytes directory_hash = 5;
 

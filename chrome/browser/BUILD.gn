@@ -53,7 +53,6 @@ if (is_win) {
       "netapi32.lib",
       "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
       "pdh.lib",  # Used by browser/private_working_set_snapshot.h
-      "msi.lib",  # Used by browser/conflicts/msi_util_win.h
     ]
     ldflags = [
       "/DELAYLOAD:ndfapi.dll",
@@ -309,14 +308,10 @@ jumbo_split_static_library("browser") {
     "component_updater/supervised_user_whitelist_installer.h",
     "component_updater/sw_reporter_installer_win.cc",
     "component_updater/sw_reporter_installer_win.h",
-    "component_updater/third_party_module_list_component_installer_win.cc",
-    "component_updater/third_party_module_list_component_installer_win.h",
     "conflicts/enumerate_input_method_editors_win.cc",
     "conflicts/enumerate_input_method_editors_win.h",
     "conflicts/enumerate_shell_extensions_win.cc",
     "conflicts/enumerate_shell_extensions_win.h",
-    "conflicts/installed_programs_win.cc",
-    "conflicts/installed_programs_win.h",
     "conflicts/module_database_observer_win.h",
     "conflicts/module_database_win.cc",
     "conflicts/module_database_win.h",
@@ -328,14 +323,6 @@ jumbo_split_static_library("browser") {
     "conflicts/module_info_win.h",
     "conflicts/module_inspector_win.cc",
     "conflicts/module_inspector_win.h",
-    "conflicts/module_list_filter_win.cc",
-    "conflicts/module_list_filter_win.h",
-    "conflicts/module_list_manager_win.cc",
-    "conflicts/module_list_manager_win.h",
-    "conflicts/msi_util_win.cc",
-    "conflicts/msi_util_win.h",
-    "conflicts/problematic_programs_updater_win.cc",
-    "conflicts/problematic_programs_updater_win.h",
     "conflicts/third_party_metrics_recorder_win.cc",
     "conflicts/third_party_metrics_recorder_win.h",
     "consent_auditor/consent_auditor_factory.cc",
@@ -528,8 +515,6 @@ jumbo_split_static_library("browser") {
     "google/google_brand_chromeos.cc",
     "google/google_brand_chromeos.h",
     "google/google_update_settings_posix.cc",
-    "google/google_update_win.cc",
-    "google/google_update_win.h",
     "google/google_url_tracker_factory.cc",
     "google/google_url_tracker_factory.h",
     "gpu/gpu_mode_manager.cc",
@@ -2933,7 +2918,6 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       ":chrome_process_finder",
-      ":conflicts_module_list_proto",
       "//chrome:file_pre_reader",
       "//chrome/chrome_watcher:client",
       "//chrome/common:metrics_constants_util_win",
@@ -2946,7 +2930,6 @@ jumbo_split_static_library("browser") {
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
       "//components/browser_watcher:stability_client",
-      "//google_update",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
@@ -2965,9 +2948,25 @@ jumbo_split_static_library("browser") {
       ]
     }
 
-    if (!is_chrome_branded) {
-      deps -= [ "//google_update" ]
-      sources -= [
+    if (is_chrome_branded) {
+      deps += [
+        ":conflicts_module_list_proto",
+        "//google_update",
+      ]
+      libs += [ "msi.lib" ]
+      sources += [
+        "component_updater/third_party_module_list_component_installer_win.cc",
+        "component_updater/third_party_module_list_component_installer_win.h",
+        "conflicts/installed_programs_win.cc",
+        "conflicts/installed_programs_win.h",
+        "conflicts/module_list_filter_win.cc",
+        "conflicts/module_list_filter_win.h",
+        "conflicts/msi_util_win.cc",
+        "conflicts/msi_util_win.h",
+        "conflicts/problematic_programs_updater_win.cc",
+        "conflicts/problematic_programs_updater_win.h",
+        "conflicts/third_party_conflicts_manager_win.cc",
+        "conflicts/third_party_conflicts_manager_win.h",
         "google/google_update_win.cc",
         "google/google_update_win.h",
       ]
