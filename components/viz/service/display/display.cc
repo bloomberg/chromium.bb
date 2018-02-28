@@ -569,8 +569,8 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   int minimum_draw_occlusion_width =
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
-  // This the minimum size required to apply layer occlusion, set in
-  // |LayerTreeSettings::minimum_occlusion_tracking_size|.
+  // The 160 comes from the LayerTreeSettings::minimum_occlusion_tracking_size
+  // default value, which is not accessible from here.
   gfx::Size layer_occlusion_skip_rect_size(160 * device_scale_factor_,
                                            160 * device_scale_factor_);
 
@@ -629,7 +629,9 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       if (quad->visible_rect.width() <=
               layer_occlusion_skip_rect_size.width() &&
           quad->visible_rect.height() <=
-              layer_occlusion_skip_rect_size.height()) {
+              layer_occlusion_skip_rect_size.height() &&
+          quad->visible_rect.height() >= minimum_draw_occlusion_height &&
+          quad->visible_rect.width() >= minimum_draw_occlusion_width) {
         total_small_quads += 1;
       }
 
@@ -700,6 +702,10 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         } else {
           total_quad_with_complex_transform += 1;
           occlusion_in_quad_content_space = gfx::Rect();
+
+          UMA_HISTOGRAM_COUNTS_1M(
+              "Compositing.Display.Draw.Quads.With.Complex.Transform.Area",
+              quad->visible_rect.height() * quad->visible_rect.width());
         }
       }
 
@@ -763,8 +769,8 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
           ? 0
           : total_area_saved_in_px * 100 /
                 total_quad_area_shown_wo_occlusion_px);
-  UMA_HISTOGRAM_COUNTS_10000(
-      "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved",
+  UMA_HISTOGRAM_COUNTS_1M(
+      "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved2",
       total_area_saved_in_px);
 }
 
