@@ -28,6 +28,7 @@
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -119,7 +120,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
              RequestPriority priority,
              int32_t initial_send_window_size,
              int32_t max_recv_window_size,
-             const NetLogWithSource& net_log);
+             const NetLogWithSource& net_log,
+             const NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~SpdyStream();
 
@@ -384,6 +386,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  const NetworkTrafficAnnotationTag traffic_annotation() const {
+    return traffic_annotation_;
+  }
+
  private:
   class HeadersBufferProducer;
 
@@ -528,6 +534,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // TODO(jgraettinger): Consider removing after crbug.com/35511 is tracked
   // down.
   bool write_handler_guard_;
+
+  const NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<SpdyStream> weak_ptr_factory_;
 

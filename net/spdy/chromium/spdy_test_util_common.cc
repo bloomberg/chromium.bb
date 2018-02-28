@@ -236,7 +236,8 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const NetLogWithSource& net_log) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(type, session, url, priority, net_log,
-                                       CompletionOnceCallback());
+                                       CompletionOnceCallback(),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }

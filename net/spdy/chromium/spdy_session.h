@@ -49,6 +49,7 @@
 #include "net/spdy/platform/api/spdy_string.h"
 #include "net/spdy/platform/api/spdy_string_piece.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -182,7 +183,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
                    const GURL& url,
                    RequestPriority priority,
                    const NetLogWithSource& net_log,
-                   CompletionOnceCallback callback);
+                   CompletionOnceCallback callback,
+                   const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Cancels any pending stream creation request. May be called
   // repeatedly.
@@ -196,6 +198,10 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
+
+  const NetworkTrafficAnnotationTag traffic_annotation() const {
+    return NetworkTrafficAnnotationTag(traffic_annotation_);
+  }
 
  private:
   friend class SpdySession;
@@ -224,6 +230,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   RequestPriority priority_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
+  MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
 
@@ -693,7 +700,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void EnqueueWrite(RequestPriority priority,
                     SpdyFrameType frame_type,
                     std::unique_ptr<SpdyBufferProducer> producer,
-                    const base::WeakPtr<SpdyStream>& stream);
+                    const base::WeakPtr<SpdyStream>& stream,
+                    const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Inserts a newly-created stream into |created_streams_|.
   void InsertCreatedStream(std::unique_ptr<SpdyStream> stream);
@@ -947,6 +955,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The stream to notify when |in_flight_write_| has been written to
   // the socket completely.
   base::WeakPtr<SpdyStream> in_flight_write_stream_;
+
+  // Traffic annotation for the write in progress.
+  MutableNetworkTrafficAnnotationTag in_flight_write_traffic_annotation;
 
   // Spdy Frame state.
   std::unique_ptr<BufferedSpdyFramer> buffered_spdy_framer_;

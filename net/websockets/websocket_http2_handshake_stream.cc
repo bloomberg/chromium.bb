@@ -242,11 +242,13 @@ int WebSocketHttp2HandshakeStream::SendRequest(
 
   callback_ = std::move(callback);
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
+  // TODO(https://crbug.com/656607): Add proper annotation here.
   int rv = spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, session_, request_info_->url, priority_,
       net_log_,
       base::BindOnce(&WebSocketHttp2HandshakeStream::StartRequestCallback,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
   if (rv == OK) {
     StartRequestCallback(rv);
     return ERR_IO_PENDING;

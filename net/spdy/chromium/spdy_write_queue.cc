@@ -22,10 +22,12 @@ SpdyWriteQueue::PendingWrite::PendingWrite() = default;
 SpdyWriteQueue::PendingWrite::PendingWrite(
     SpdyFrameType frame_type,
     std::unique_ptr<SpdyBufferProducer> frame_producer,
-    const base::WeakPtr<SpdyStream>& stream)
+    const base::WeakPtr<SpdyStream>& stream,
+    const MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : frame_type(frame_type),
       frame_producer(std::move(frame_producer)),
       stream(stream),
+      traffic_annotation(traffic_annotation),
       has_stream(stream.get() != nullptr) {}
 
 SpdyWriteQueue::PendingWrite::~PendingWrite() = default;
@@ -52,22 +54,27 @@ bool SpdyWriteQueue::IsEmpty() const {
   return true;
 }
 
-void SpdyWriteQueue::Enqueue(RequestPriority priority,
-                             SpdyFrameType frame_type,
-                             std::unique_ptr<SpdyBufferProducer> frame_producer,
-                             const base::WeakPtr<SpdyStream>& stream) {
+void SpdyWriteQueue::Enqueue(
+    RequestPriority priority,
+    SpdyFrameType frame_type,
+    std::unique_ptr<SpdyBufferProducer> frame_producer,
+    const base::WeakPtr<SpdyStream>& stream,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   CHECK(!removing_writes_);
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
   if (stream.get())
     DCHECK_EQ(stream->priority(), priority);
-  queue_[priority].push_back({frame_type, std::move(frame_producer), stream});
+  queue_[priority].push_back(
+      {frame_type, std::move(frame_producer), stream,
+       MutableNetworkTrafficAnnotationTag(traffic_annotation)});
 }
 
 bool SpdyWriteQueue::Dequeue(
     SpdyFrameType* frame_type,
     std::unique_ptr<SpdyBufferProducer>* frame_producer,
-    base::WeakPtr<SpdyStream>* stream) {
+    base::WeakPtr<SpdyStream>* stream,
+    MutableNetworkTrafficAnnotationTag* traffic_annotation) {
   CHECK(!removing_writes_);
   for (int i = MAXIMUM_PRIORITY; i >= MINIMUM_PRIORITY; --i) {
     if (!queue_[i].empty()) {
@@ -76,6 +83,7 @@ bool SpdyWriteQueue::Dequeue(
       *frame_type = pending_write.frame_type;
       *frame_producer = std::move(pending_write.frame_producer);
       *stream = pending_write.stream;
+      *traffic_annotation = pending_write.traffic_annotation;
       if (pending_write.has_stream)
         DCHECK(stream->get());
       return true;

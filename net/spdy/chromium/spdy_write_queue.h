@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/spdy/core/spdy_protocol.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -38,7 +39,8 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   void Enqueue(RequestPriority priority,
                SpdyFrameType frame_type,
                std::unique_ptr<SpdyBufferProducer> frame_producer,
-               const base::WeakPtr<SpdyStream>& stream);
+               const base::WeakPtr<SpdyStream>& stream,
+               const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Dequeues the frame producer with the highest priority that was
   // enqueued the earliest and its associated stream. Returns true and
@@ -46,7 +48,8 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   // successful -- otherwise, just returns false.
   bool Dequeue(SpdyFrameType* frame_type,
                std::unique_ptr<SpdyBufferProducer>* frame_producer,
-               base::WeakPtr<SpdyStream>* stream);
+               base::WeakPtr<SpdyStream>* stream,
+               MutableNetworkTrafficAnnotationTag* traffic_annotation);
 
   // Removes all pending writes for the given stream, which must be
   // non-NULL.
@@ -68,13 +71,15 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
     SpdyFrameType frame_type;
     std::unique_ptr<SpdyBufferProducer> frame_producer;
     base::WeakPtr<SpdyStream> stream;
+    MutableNetworkTrafficAnnotationTag traffic_annotation;
     // Whether |stream| was non-NULL when enqueued.
     bool has_stream;
 
     PendingWrite();
     PendingWrite(SpdyFrameType frame_type,
                  std::unique_ptr<SpdyBufferProducer> frame_producer,
-                 const base::WeakPtr<SpdyStream>& stream);
+                 const base::WeakPtr<SpdyStream>& stream,
+                 const MutableNetworkTrafficAnnotationTag& traffic_annotation);
     ~PendingWrite();
     PendingWrite(PendingWrite&& other);
     PendingWrite& operator=(PendingWrite&& other);

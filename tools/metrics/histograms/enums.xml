@@ -44155,6 +44155,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="56351037" label="download_web_contents_frame"/>
   <int value="56434025" label="gcm_subscription"/>
   <int value="56866367" label="pdf_plugin_placeholder"/>
+  <int value="57143548" label="spdy_session_control"/>
   <int value="57144960" label="sync_http_bridge"/>
   <int value="57276415" label="chrome_expect_ct_reporter"/>
   <int value="58963098" label="resource_dispather_host"/>
