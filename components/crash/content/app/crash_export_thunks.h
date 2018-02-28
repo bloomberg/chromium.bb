@@ -58,6 +58,11 @@ HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process);
 // Returns the crashpad database path.
 const wchar_t* GetCrashpadDatabasePath_ExportThunk();
 
+// Immediately dump |process| to a crash dump adorned with |ptype|.
+// Takes ownership of |process|, does not kill nor affect the exit code of
+// |process|.
+bool DumpHungProcessWithPtype_ExportThunk(HANDLE process, const char* ptype);
+
 #if defined(ARCH_CPU_X86_64)
 // V8 support functions.
 void RegisterNonABICompliantCodeRange_ExportThunk(void* start,

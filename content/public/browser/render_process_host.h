@@ -487,6 +487,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the current maximum number of renderer process hosts kept by the
   // content module.
   static size_t GetMaxRendererProcessCount();
+
+  // TODO(siggi): Remove once https://crbug.com/806661 is resolved.
+  using AnalyzeHungRendererFunction = void (*)(const base::Process& renderer);
+  static void SetHungRendererAnalysisFunction(
+      AnalyzeHungRendererFunction analyze_hung_renderer);
 };
 
 }  // namespace content

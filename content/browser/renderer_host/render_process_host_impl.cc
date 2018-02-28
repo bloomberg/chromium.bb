@@ -39,6 +39,7 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -279,6 +280,9 @@ namespace {
 
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
+
+RenderProcessHost::AnalyzeHungRendererFunction g_analyze_hung_renderer =
+    nullptr;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 const base::FilePath::CharType kAecDumpFileNameAddition[] =
@@ -3649,6 +3653,12 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
       // TERMINATION_STATUS_STILL_RUNNING, since this will break WebContentsImpl
       // logic.
       status = base::TERMINATION_STATUS_PROCESS_CRASHED;
+
+// TODO(siggi): Remove this once https://crbug.com/806661 is resolved.
+#if defined(OS_WIN)
+      if (exit_code == WAIT_TIMEOUT && g_analyze_hung_renderer)
+        g_analyze_hung_renderer(child_process_launcher_->GetProcess());
+#endif
     }
   }
 
@@ -3725,6 +3735,12 @@ void RenderProcessHost::PostTaskWhenProcessIsReady(base::OnceClosure task) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!task.is_null());
   new RenderProcessHostIsReadyObserver(this, std::move(task));
+}
+
+// static
+void RenderProcessHost::SetHungRendererAnalysisFunction(
+    AnalyzeHungRendererFunction analyze_hung_renderer) {
+  g_analyze_hung_renderer = analyze_hung_renderer;
 }
 
 void RenderProcessHostImpl::ReleaseOnCloseACK(
