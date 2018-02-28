@@ -36,7 +36,7 @@ class TabActivitySimulator {
   // Creates a new WebContents suitable for testing.
   std::unique_ptr<content::WebContents> CreateWebContents(
       content::BrowserContext* browser_context,
-      bool initially_hidden = true);
+      bool initially_visible = false);
 
   // Creates a new WebContents suitable for testing, adds it to the tab strip
   // and commits a navigation to |initial_url|. The WebContents is owned by the

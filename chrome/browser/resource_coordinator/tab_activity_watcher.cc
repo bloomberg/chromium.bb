@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -37,10 +38,53 @@ class TabActivityWatcher::WebContentsData
  public:
   ~WebContentsData() override = default;
 
-  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  // Call when the associated WebContents has been replaced.
+  void WasReplaced() { was_replaced_ = true; }
 
-  const TabMetricsLogger::TabMetrics& tab_metrics() const {
-    return tab_metrics_;
+  // Call when the associated WebContents has replaced the WebContents of
+  // another tab. Copies info from the other WebContentsData so future events
+  // can be logged consistently.
+  void DidReplace(const WebContentsData& replaced_tab) {
+    // Copy background status so ForegroundOrClosed can potentially be logged.
+    backgrounded_time_ = replaced_tab.backgrounded_time_;
+
+    // Copy the replaced tab's stats.
+    tab_metrics_.page_metrics = replaced_tab.tab_metrics_.page_metrics;
+    tab_metrics_.page_transition = replaced_tab.tab_metrics_.page_transition;
+  }
+
+  // Call when the WebContents is detached from its tab. If the tab is later
+  // re-inserted elsewhere, we use the state it had before being detached.
+  void TabDetached() { is_detached_ = true; }
+
+  // Call when the tab is inserted into a tab strip to update state.
+  void TabInserted(bool foreground) {
+    if (is_detached_) {
+      is_detached_ = false;
+
+      // Dragged tabs are normally inserted into their new tab strip in the
+      // "background", then "activated", even though the user perceives the tab
+      // staying active the whole time. So don't update |background_time_| here.
+      //
+      // TODO(michaelpg): If a background tab is dragged (as part of a group)
+      // and inserted, it may be treated as being foregrounded (depending on tab
+      // order). This is a small edge case, but can be fixed by the plan to
+      // merge the ForegroundedOrClosed and TabMetrics events.
+      return;
+    }
+
+    if (!foreground) {
+      // This is a new tab that was opened in the background.
+      backgrounded_time_ = NowTicks();
+    }
+  }
+
+  // Logs TabMetrics for the tab if it is considered to be backgrounded.
+  void LogTabIfBackgrounded() {
+    if (!backgrounded_time_.is_null()) {
+      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogBackgroundTab(
+          ukm_source_id_, tab_metrics_);
+    }
   }
 
  private:
@@ -56,6 +100,43 @@ class TabActivityWatcher::WebContentsData
     ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
   }
 
+  void WasHidden() {
+    // The tab may not be in the tabstrip if it's being moved or replaced.
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (!browser)
+      return;
+
+    DCHECK(!browser->tab_strip_model()->closing_all());
+
+    if (browser->tab_strip_model()->GetActiveWebContents() == web_contents() &&
+        !browser->window()->IsMinimized()) {
+      // The active tab is considered to be in the foreground unless its window
+      // is minimized. It might still get hidden, e.g. when the browser is about
+      // to close, but that shouldn't count as a backgrounded event.
+      //
+      // TODO(michaelpg): On Mac, hiding the application (e.g. via Cmd+H) should
+      // log tabs as backgrounded. Check NSApplication's isHidden property.
+      return;
+    }
+
+    backgrounded_time_ = NowTicks();
+    LogTabIfBackgrounded();
+  }
+
+  void WasShown() {
+    if (backgrounded_time_.is_null())
+      return;
+
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (browser && browser->tab_strip_model()->closing_all())
+      return;
+
+    TabActivityWatcher::GetInstance()
+        ->tab_metrics_logger_->LogBackgroundTabShown(
+            ukm_source_id_, NowTicks() - backgrounded_time_);
+    backgrounded_time_ = base::TimeTicks();
+  }
+
   // content::WebContentsObserver:
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override {
@@ -63,6 +144,7 @@ class TabActivityWatcher::WebContentsData
       old_host->GetWidget()->RemoveInputEventObserver(this);
     new_host->GetWidget()->AddInputEventObserver(this);
   }
+
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
     if (!navigation_handle->HasCommitted() ||
@@ -79,18 +161,25 @@ class TabActivityWatcher::WebContentsData
         << "Expected a unique Source ID for the navigation";
     ukm_source_id_ = new_source_id;
 
+    // Update navigation time for UKM reporting.
+    navigation_time_ = navigation_handle->NavigationStart();
+
     // Reset the per-page data.
     tab_metrics_.page_metrics = {};
 
     // Update navigation info.
     tab_metrics_.page_transition = navigation_handle->GetPageTransition();
   }
+
+  // Logs metrics for the tab when it stops loading instead of immediately
+  // after a navigation commits, so we can have some idea of its status and
+  // contents.
   void DidStopLoading() override {
-    // Log metrics for the tab when it stops loading instead of immediately
-    // after a navigation commits, so we can have some idea of its status and
-    // contents.
-    TabActivityWatcher::GetInstance()->OnDidStopLoading(web_contents());
+    // Ignore load events in foreground tabs. The tab state of a foreground tab
+    // will be logged if/when it is backgrounded.
+    LogTabIfBackgrounded();
   }
+
   void OnVisibilityChanged(content::Visibility visibility) override {
     // Ignore visibility changes while the WebContents is being destroyed.
     if (web_contents()->IsBeingDestroyed())
@@ -99,7 +188,23 @@ class TabActivityWatcher::WebContentsData
     // TODO(michaelpg): Consider tracking occluded tabs, not just background
     // tabs.
     if (visibility == content::Visibility::HIDDEN)
-      TabActivityWatcher::GetInstance()->OnWasHidden(web_contents());
+      WasHidden();
+    else
+      WasShown();
+  }
+
+  void WebContentsDestroyed() override {
+    if (was_replaced_)
+      return;
+
+    TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabLifetime(
+        ukm_source_id_, NowTicks() - navigation_time_);
+
+    if (!backgrounded_time_.is_null()) {
+      TabActivityWatcher::GetInstance()
+          ->tab_metrics_logger_->LogBackgroundTabClosed(
+              ukm_source_id_, NowTicks() - backgrounded_time_);
+    }
   }
 
   // content::RenderWidgetHost::InputEventObserver:
@@ -115,8 +220,21 @@ class TabActivityWatcher::WebContentsData
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
 
+  // The most recent time the tab became backgrounded. This happens when a
+  // different tab in the tabstrip is activated or the tab's window is hidden.
+  base::TimeTicks backgrounded_time_;
+
+  // The last navigation time associated with this tab.
+  base::TimeTicks navigation_time_;
+
   // Stores current stats for the tab.
   TabMetricsLogger::TabMetrics tab_metrics_;
+
+  // Set to true when the WebContents has been detached from its tab.
+  bool is_detached_ = false;
+
+  // If true, future events such as the tab being destroyed won't be logged.
+  bool was_replaced_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -140,76 +258,39 @@ void TabActivityWatcher::TabInsertedAt(TabStripModel* tab_strip_model,
   // Ensure the WebContentsData is created to observe this WebContents since it
   // may represent a newly created tab.
   WebContentsData::CreateForWebContents(contents);
+  WebContentsData::FromWebContents(contents)->TabInserted(foreground);
+}
+
+void TabActivityWatcher::TabDetachedAt(content::WebContents* contents,
+                                       int index) {
+  WebContentsData::FromWebContents(contents)->TabDetached();
 }
 
 void TabActivityWatcher::TabReplacedAt(TabStripModel* tab_strip_model,
                                        content::WebContents* old_contents,
                                        content::WebContents* new_contents,
                                        int index) {
+  WebContentsData* old_web_contents_data =
+      WebContentsData::FromWebContents(old_contents);
+  old_web_contents_data->WasReplaced();
+
   // Ensure the WebContentsData is created to observe this WebContents since it
   // likely hasn't been inserted into a tabstrip before.
   WebContentsData::CreateForWebContents(new_contents);
+
+  WebContentsData::FromWebContents(new_contents)
+      ->DidReplace(*old_web_contents_data);
 }
 
 void TabActivityWatcher::TabPinnedStateChanged(TabStripModel* tab_strip_model,
                                                content::WebContents* contents,
                                                int index) {
-  // We only want UKMs for background tabs.
-  if (tab_strip_model->active_index() == index)
-    return;
-
-  MaybeLogTab(contents);
+  WebContentsData::FromWebContents(contents)->LogTabIfBackgrounded();
 }
 
 bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
   // Don't track incognito browsers. This is also enforced by UKM.
   return !browser->profile()->IsOffTheRecord();
-}
-
-void TabActivityWatcher::OnWasHidden(content::WebContents* web_contents) {
-  DCHECK(web_contents);
-
-  // The tab may not be in the tabstrip if it's being moved.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
-
-  if (browser->tab_strip_model()->GetActiveWebContents() == web_contents &&
-      !browser->window()->IsMinimized()) {
-    // The active tab is considered to be in the foreground unless its window is
-    // minimized. It might still get hidden, e.g. when the browser is about to
-    // close, but that shouldn't count as a backgrounded event.
-    //
-    // TODO(michaelpg): On Mac, hiding the application (e.g. via Cmd+H) should
-    // log tabs as backgrounded. Check NSApplication's isHidden property.
-    return;
-  }
-
-  MaybeLogTab(web_contents);
-}
-
-void TabActivityWatcher::OnDidStopLoading(content::WebContents* web_contents) {
-  // Ignore load events in foreground tabs. The tab state of a foreground tab
-  // will be logged if/when it is backgrounded.
-  if (web_contents->GetVisibility() != content::Visibility::HIDDEN)
-    return;
-  MaybeLogTab(web_contents);
-}
-
-void TabActivityWatcher::MaybeLogTab(content::WebContents* web_contents) {
-  // Don't log when the WebContents is being closed or replaced.
-  if (web_contents->IsBeingDestroyed())
-    return;
-
-  DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
-
-  WebContentsData* web_contents_data =
-      WebContentsData::FromWebContents(web_contents);
-  DCHECK(web_contents_data);
-
-  ukm::SourceId ukm_source_id = web_contents_data->ukm_source_id();
-  tab_metrics_logger_->LogBackgroundTab(ukm_source_id,
-                                        web_contents_data->tab_metrics());
 }
 
 void TabActivityWatcher::ResetForTesting() {

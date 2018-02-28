@@ -110,6 +110,19 @@ void PopulatePageTransitionMetrics(ukm::builders::TabManager_TabMetrics* entry,
       ui::PageTransitionIsRedirect(page_transition));
 }
 
+// Logs the TabManager.Background.ForegroundedOrClosed event.
+void LogBackgroundTabForegroundedOrClosed(ukm::SourceId ukm_source_id,
+                                          base::TimeDelta inactive_duration,
+                                          bool is_foregrounded) {
+  if (!ukm_source_id)
+    return;
+
+  ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
+      .SetTimeFromBackgrounded(inactive_duration.InMilliseconds())
+      .SetIsForegrounded(is_foregrounded)
+      .Record(ukm::UkmRecorder::Get());
+}
+
 }  // namespace
 
 TabMetricsLogger::TabMetricsLogger() = default;
@@ -170,10 +183,6 @@ int TabMetricsLogger::GetSiteEngagementScore(
 void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
                                         const TabMetrics& tab_metrics) {
   if (!ukm_source_id)
-    return;
-
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (!ukm_recorder)
     return;
 
   content::WebContents* web_contents = tab_metrics.web_contents;
@@ -240,5 +249,28 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
       .SetIsPinned(tab_strip_model->IsTabPinned(index))
       .SetNavigationEntryCount(web_contents->GetController().GetEntryCount())
       .SetSequenceId(++sequence_id_)
-      .Record(ukm_recorder);
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void TabMetricsLogger::LogBackgroundTabShown(
+    ukm::SourceId ukm_source_id,
+    base::TimeDelta inactive_duration) {
+  LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
+                                       true /* is_shown */);
+}
+
+void TabMetricsLogger::LogBackgroundTabClosed(
+    ukm::SourceId ukm_source_id,
+    base::TimeDelta inactive_duration) {
+  LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
+                                       false /* is_shown */);
+}
+
+void TabMetricsLogger::LogTabLifetime(ukm::SourceId ukm_source_id,
+                                      base::TimeDelta time_since_navigation) {
+  if (!ukm_source_id)
+    return;
+  ukm::builders::TabManager_TabLifetime(ukm_source_id)
+      .SetTimeSinceNavigation(time_since_navigation.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
 }

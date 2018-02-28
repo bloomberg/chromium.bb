@@ -11,7 +11,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class WebContents;
@@ -58,7 +57,6 @@ class TabManager::WebContentsData
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
   // Called by TabManager::ResourceCoordinatorSignalObserver to notify that a
@@ -172,9 +170,6 @@ class TabManager::WebContentsData
     bool is_hidden;
     // Is the tab playing audio?
     bool is_recently_audible;
-    // The navigation time associated with this tab. Useful as a reference time
-    // from which to measure UKM event timings.
-    base::TimeTicks navigation_time;
     // Last time the tab started or stopped playing audio (we record the
     // transition time).
     base::TimeTicks last_audio_change_time;
@@ -195,9 +190,6 @@ class TabManager::WebContentsData
     bool is_restored_in_foreground;
   };
 
-  void ReportUKMWhenTabIsClosed();
-  void ReportUKMWhenBackgroundTabIsClosedOrForegrounded(bool is_foregrounded);
-
   // Contains all the needed data for the tab.
   Data tab_data_;
 
@@ -206,8 +198,6 @@ class TabManager::WebContentsData
 
   // True if the tab has been purged.
   bool is_purged_;
-
-  ukm::SourceId ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
