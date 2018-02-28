@@ -37,6 +37,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -55,6 +56,9 @@
 namespace {
 
 const char kCacheRandomPath[] = "/cacherandom";
+
+// Path using a ControllableHttpResponse that's part of the test fixture.
+const char kControllablePath[] = "/controllable";
 
 enum class NetworkServiceState {
   kDisabled,
@@ -89,9 +93,10 @@ class NetworkContextConfigurationBrowserTest
   };
 
   NetworkContextConfigurationBrowserTest() {
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&NetworkContextConfigurationBrowserTest::HandleCacheRandom));
-    EXPECT_TRUE(embedded_test_server()->Start());
+    // Have to get a port before setting up the command line, but can only set
+    // up the connection listener after there's a main thread, so can't start
+    // the test server here.
+    EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
   }
 
   // Returns a cacheable response (10 hours) that is some random text.
@@ -116,11 +121,26 @@ class NetworkContextConfigurationBrowserTest
   }
 
   void SetUpOnMainThread() override {
+    controllable_http_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), kControllablePath);
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &NetworkContextConfigurationBrowserTest::HandleCacheRandom));
+    embedded_test_server()->StartAcceptingConnections();
+
     if (GetParam().network_context_type ==
         NetworkContextType::kIncognitoProfile) {
       incognito_ = CreateIncognitoBrowser();
     }
     SimulateNetworkServiceCrashIfNecessary();
+  }
+
+  void TearDownOnMainThread() override {
+    // Have to destroy this before the main message loop is torn down. Need to
+    // leave the embedded test server up for tests that use
+    // |live_during_shutdown_simple_loader_|. It's safe to destroy the
+    // ControllableHttpResponse before the test server.
+    controllable_http_response_.reset();
   }
 
   // Returns, as a string, a PAC script that will use the EmbeddedTestServer as
@@ -251,6 +271,30 @@ class NetworkContextConfigurationBrowserTest
     EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
   }
 
+  // Makes a request that hangs, and will live until browser shutdown.
+  void MakeLongLivedRequestThatHangsUntilShutdown() {
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = embedded_test_server()->GetURL(kControllablePath);
+    live_during_shutdown_simple_loader_ = network::SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    live_during_shutdown_simple_loader_helper_ =
+        std::make_unique<content::SimpleURLLoaderTestHelper>();
+
+    live_during_shutdown_simple_loader_
+        ->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+            loader_factory(),
+            live_during_shutdown_simple_loader_helper_->GetCallback());
+
+    // Don't actually care about controlling the response, just need to wait
+    // until it sees the request, to make sure that a URLRequest has been
+    // created to potentially leak. Since the |controllable_http_response_| is
+    // not used to send a response to the request, the request just hangs until
+    // the NetworkContext is destroyed (Or the test server is shut down, but the
+    // NetworkContext should be destroyed before that happens, in this test).
+    controllable_http_response_->WaitForRequest();
+  }
+
  private:
   void SimulateNetworkServiceCrashIfNecessary() {
     if (GetParam().network_service_state != NetworkServiceState::kRestarted)
@@ -295,6 +339,14 @@ class NetworkContextConfigurationBrowserTest
 
   Browser* incognito_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
+
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      controllable_http_response_;
+
+  // Used in tests that need a live request during browser shutdown.
+  std::unique_ptr<network::SimpleURLLoader> live_during_shutdown_simple_loader_;
+  std::unique_ptr<content::SimpleURLLoaderTestHelper>
+      live_during_shutdown_simple_loader_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationBrowserTest);
 };
@@ -503,6 +555,12 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   SetProxyPref(embedded_test_server()->host_port_pair());
   TestProxyConfigured();
+}
+
+// This test should not end in an AssertNoURLLRequests CHECK.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       ShutdownWithLiveRequest) {
+  MakeLongLivedRequestThatHangsUntilShutdown();
 }
 
 class NetworkContextConfigurationFixedPortBrowserTest

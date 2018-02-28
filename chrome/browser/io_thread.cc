@@ -86,7 +86,6 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/net_features.h"
 #include "net/nqe/network_quality_estimator_params.h"
-//#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_service.h"
@@ -284,21 +283,7 @@ SystemURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
 }
 
-IOThread::Globals::
-SystemRequestContextLeakChecker::SystemRequestContextLeakChecker(
-    Globals* globals)
-    : globals_(globals) {
-  DCHECK(globals_);
-}
-
-IOThread::Globals::
-SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
-  globals_->system_request_context->AssertNoURLRequests();
-}
-
-IOThread::Globals::Globals()
-    : system_request_context(nullptr),
-      system_request_context_leak_checker(this) {}
+IOThread::Globals::Globals() : system_request_context(nullptr) {}
 
 IOThread::Globals::~Globals() {}
 

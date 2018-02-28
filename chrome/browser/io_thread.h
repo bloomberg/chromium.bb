@@ -130,21 +130,21 @@ class IOThread : public content::BrowserThreadDelegate {
 #endif  // defined(OS_ANDROID)
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
+
+    std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
+    std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
+        network_quality_observer;
+
     // When the network service is enabled, this holds on to a
     // content::NetworkContext class that owns |system_request_context|.
     std::unique_ptr<network::mojom::NetworkContext> system_network_context;
     // When the network service is disabled, this owns |system_request_context|.
     network::URLRequestContextOwner system_request_context_owner;
     net::URLRequestContext* system_request_context;
-    SystemRequestContextLeakChecker system_request_context_leak_checker;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
 #endif
-    std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
-    std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
-        network_quality_observer;
-
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
