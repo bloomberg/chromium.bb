@@ -55,6 +55,8 @@ Options:
                       get updated and if it does, 'tools/traffic_annotation/
                       scripts/annotations_xml_downstream_updater.py will
                       be called to update downstream files.
+  --no-missing-error  Optional argument, resulting in just issuing a warning for
+                      functions that miss annotation and not an error.
   --summary-file      Optional path to the output file with all annotations.
   --annotations-file  Optional path to a TSV output file with all annotations.
   --limit             Limit for the maximum number of returned errors.
@@ -334,6 +336,7 @@ int main(int argc, char* argv[]) {
   bool filter_files = !command_line.HasSwitch("no-filtering");
   bool all_files = command_line.HasSwitch("all-files");
   bool test_only = command_line.HasSwitch("test-only");
+  bool no_missing_error = command_line.HasSwitch("no-missing-error");
   base::FilePath summary_file = command_line.GetSwitchValuePath("summary-file");
   base::FilePath annotations_file =
       command_line.GetSwitchValuePath("annotations-file");
@@ -446,7 +449,23 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  const std::vector<AuditorResult>& errors = auditor.errors();
+  const std::vector<AuditorResult>& raw_errors = auditor.errors();
+
+  std::vector<AuditorResult> errors;
+  std::vector<AuditorResult> warnings;
+  std::set<AuditorResult::Type> warning_types;
+
+  if (no_missing_error) {
+    warning_types.insert(AuditorResult::Type::ERROR_MISSING_ANNOTATION);
+    warning_types.insert(AuditorResult::Type::ERROR_NO_ANNOTATION);
+  }
+
+  for (const AuditorResult& result : raw_errors) {
+    if (base::ContainsKey(warning_types, result.type()))
+      warnings.push_back(result);
+    else
+      errors.push_back(result);
+  }
 
   // Update annotations.xml if everything else is OK and the auditor is not
   // run in test-only mode.
@@ -458,17 +477,26 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  // Dump Errors to stdout.
+  // Dump Warnings and Errors to stdout.
+  int remaining_outputs =
+      outputs_limit ? outputs_limit
+                    : static_cast<int>(errors.size() + warnings.size());
   if (errors.size()) {
     printf("[Errors]\n");
-    for (int i = 0; i < static_cast<int>(errors.size()); i++) {
+    for (int i = 0; i < static_cast<int>(errors.size()) && remaining_outputs;
+         i++, remaining_outputs--) {
       printf("  (%i)\t%s\n", i + 1, errors[i].ToText().c_str());
-      if (i + 1 == outputs_limit)
-        break;
     }
-  } else {
-    printf("Traffic annotations are all OK.\n");
   }
+  if (warnings.size() && remaining_outputs) {
+    printf("[Warnings]\n");
+    for (int i = 0; i < static_cast<int>(warnings.size()) && remaining_outputs;
+         i++, remaining_outputs--) {
+      printf("  (%i)\t%s\n", i + 1, warnings[i].ToText().c_str());
+    }
+  }
+  if (warnings.empty() && errors.empty())
+    printf("Traffic annotations are all OK.\n");
 
   return static_cast<int>(errors.size());
 }
