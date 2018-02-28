@@ -278,9 +278,9 @@ cronet_impl_common_java_srcjar_deps = [
 cronet_impl_common_java_deps_to_package =
     [ "//net/android:net_thread_stats_uid_java" ]
 
-# cronet_impl_common_java.jar - common Cronet code that is shared
+# cronet_impl_common_java_base.jar - common Cronet code that is shared
 # by all Cronet engine implementations.
-android_library("cronet_impl_common_java") {
+android_library("cronet_impl_common_java_base") {
   java_files = [
     "java/src/org/chromium/net/impl/CallbackExceptionImpl.java",
     "java/src/org/chromium/net/impl/CronetExceptionImpl.java",
@@ -318,7 +318,7 @@ android_library("cronet_impl_platform_java") {
 
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
@@ -363,7 +363,7 @@ android_library("cronet_impl_native_java") {
 
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
@@ -375,7 +375,7 @@ android_library("cronet_impl_native_java") {
 # Groups all Cronet implementations and the common code into a single Java dependency.
 java_group("cronet_impl_all_java") {
   deps = [
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     ":cronet_impl_native_java",
     ":cronet_impl_platform_java",
   ]
@@ -733,7 +733,7 @@ android_apk("cronet_smoketests_platform_only_apk") {
 
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     ":cronet_impl_platform_java",
     ":cronet_smoketests_platform_only_apk_resources",
   ]
@@ -776,7 +776,7 @@ android_apk("cronet_smoketests_missing_native_library_apk") {
   deps = [
     ":cronet_api_java",
     ":cronet_combine_proguard_flags",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     ":cronet_impl_platform_java",
     ":cronet_test_apk_resources",
   ]
@@ -942,7 +942,7 @@ action("extract_cronet_common_jars") {
   ]
 
   deps = [
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
   ]
   deps += cronet_impl_common_java_deps_to_package
 
@@ -1130,7 +1130,7 @@ jar_src("jar_cronet_api_source") {
 
 jar_src("jar_cronet_impl_common_java_source") {
   src_search_dirs = [ "java/src" ]
-  source_deps = [ ":cronet_impl_common_java" ]
+  source_deps = [ ":cronet_impl_common_java_base" ]
   srcjar_deps = cronet_impl_common_java_srcjar_deps
   jar_path = "$_package_dir/cronet_impl_common_java-src.jar"
 }
@@ -1247,7 +1247,7 @@ copy("cronet_package_copy") {
   deps = [
     ":cronet_api_java",
     ":cronet_combine_proguard_flags",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     ":cronet_impl_platform_java",
   ]
 }
@@ -1447,7 +1447,7 @@ action("api_static_checks") {
         root_build_dir),
     "--impl_jar",
     rebase_path(
-        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_common_java.jar",
+        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_common_java_base.jar",
         root_build_dir),
     "--impl_jar",
     rebase_path(
@@ -1462,7 +1462,7 @@ action("api_static_checks") {
   ]
   deps = [
     ":cronet_api_java",
-    ":cronet_impl_common_java",
+    ":cronet_impl_common_java_base",
     ":cronet_impl_native_java",
     ":cronet_impl_platform_java",
   ]
