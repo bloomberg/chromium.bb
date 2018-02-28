@@ -13,42 +13,16 @@ for protobufs shown below (e.g. adding this file).
 
 Name: Protocol Buffers
 Short Name: protobuf
-Version: 3.1.0
-Revision: a428e42072765993ff674fda72863c9f1aa2d268
+Version: 3.5.1
+Revision: 106ffc04be1abf3ff3399f54ccf149815b287dd9
 Home-page: https://github.com/google/protobuf
 License: New BSD License
 
 Description:
 Protocol Buffers are Google's data interchange format.
 
-Local Modifications:
-- Installed using glyco (see ../README.txt for more info)
-  - run 'python setup.py build' before 'glyco pack ...', to build *_pb.py files.
-- Removed protobuf/internal/*_test.py
-- Added README.swarming
-- Modified __init__.py files as follows:
-
-    diff --git a/__init__.py b/__init__.py
-    index e69de29..de40ea7 100644
-    --- a/__init__.py
-    +++ b/__init__.py
-    @@ -0,0 +1 @@
-    +try:
-    +  __import__('pkg_resources').declare_namespace(__name__)
-    +except ImportError:
-    +  __path__ = __import__('pkgutil').extend_path(__path__, __name__)
-
-    diff --git a/protobuf/__init__.py b/protobuf/__init__.py
-    index 6210a40..4a74785 100644
-    --- a/protobuf/__init__.py
-    +++ b/protobuf/__init__.py
-    @@ -31,9 +31,3 @@
-     # Copyright 2007 Google Inc. All Rights Reserved.
-
-     __version__ = '3.1.0'
-    -
-    -if __name__ != '__main__':
-    -  try:
-    -    __import__('pkg_resources').declare_namespace(__name__)
-    -  except ImportError:
-    -    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
+Reproduce:
+- fetch and unpack https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-python-3.5.1.zip
+- run `python ./python/setup.py build`
+- remove all "*_test.py" from "./python/lib/google/protobuf"
+- copy "./python/lib/google/protobuf" here
