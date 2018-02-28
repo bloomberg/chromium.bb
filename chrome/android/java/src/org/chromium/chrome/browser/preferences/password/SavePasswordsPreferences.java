@@ -203,7 +203,7 @@ public class SavePasswordsPreferences
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.prefs_saved_passwords);
+        getActivity().setTitle(R.string.prefs_saved_passwords_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
 
@@ -705,7 +705,7 @@ public class SavePasswordsPreferences
         if (mSearchQuery == null) {
             PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
             profileCategory.setKey(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
-            profileCategory.setTitle(R.string.section_saved_passwords);
+            profileCategory.setTitle(R.string.prefs_saved_passwords_title);
             profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
             getPreferenceScreen().addPreference(profileCategory);
             passwordParent = profileCategory;
