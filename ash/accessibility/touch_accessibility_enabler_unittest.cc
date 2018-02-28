@@ -62,12 +62,9 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
 
     generator_.reset(new ui::test::EventGenerator(root_window()));
 
-    simulated_clock_ = new base::SimpleTestTickClock();
     // Tests fail if time is ever 0.
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-    // ui takes ownership of the tick clock.
-    ui::SetEventTickClockForTesting(
-        std::unique_ptr<base::TickClock>(simulated_clock_));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+    ui::SetEventTickClockForTesting(&simulated_clock_);
 
     enabler_.reset(new TouchAccessibilityEnabler(root_window(), &delegate_));
   }
@@ -82,12 +79,11 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
   base::TimeTicks Now() {
     // This is the same as what EventTimeForNow() does, but here we do it
     // with our simulated clock.
-    return simulated_clock_->NowTicks();
+    return simulated_clock_.NowTicks();
   }
 
   std::unique_ptr<ui::test::EventGenerator> generator_;
-  // Owned by |ui|.
-  base::SimpleTestTickClock* simulated_clock_ = nullptr;
+  base::SimpleTestTickClock simulated_clock_;
   MockTouchAccessibilityEnablerDelegate delegate_;
   std::unique_ptr<TouchAccessibilityEnabler> enabler_;
   ui::GestureDetector::Config gesture_detector_config_;
@@ -111,7 +107,7 @@ TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
   generator_->set_current_location(gfx::Point(11, 12));
   generator_->PressTouchId(1);
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(500));
 
   generator_->set_current_location(gfx::Point(22, 34));
   generator_->PressTouchId(2);
@@ -160,7 +156,7 @@ TEST_F(TouchAccessibilityEnablerTest, PlaysProgressSound) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(0U, delegate_.feedback_progress_sound_count());
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(3000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(1U, delegate_.feedback_progress_sound_count());
 }
@@ -181,7 +177,7 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_FALSE(delegate_.toggle_spoken_feedback());
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(5000));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(5000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_TRUE(delegate_.toggle_spoken_feedback());
   EXPECT_TRUE(delegate_.started());

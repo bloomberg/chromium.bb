@@ -68,10 +68,9 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   void CreateSearch() {
-    std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-    clock->SetNow(kTestCurrentTime);
-    app_search_.reset(new AppSearchProvider(
-        profile_.get(), nullptr, std::move(clock), model_updater_.get()));
+    clock_.SetNow(kTestCurrentTime);
+    app_search_.reset(new AppSearchProvider(profile_.get(), nullptr, &clock_,
+                                            model_updater_.get()));
   }
 
   std::string RunQuery(const std::string& query) {
@@ -140,6 +139,7 @@ class AppSearchProviderTest : public AppListTestBase {
   ArcAppTest& arc_test() { return arc_test_; }
 
  private:
+  base::SimpleTestClock clock_;
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;

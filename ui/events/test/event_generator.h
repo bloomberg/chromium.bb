@@ -18,10 +18,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace gfx {
 class PointF;
 }
@@ -35,6 +31,7 @@ namespace test {
 typedef base::Callback<void(EventType, const gfx::Vector2dF&)>
         ScrollStepCallback;
 
+class TestTickClock;
 class EventGenerator;
 
 // A delegate interface for EventGenerator to abstract platform-specific event
@@ -488,7 +485,7 @@ class EventGenerator {
 
   Target target_ = Target::WIDGET;
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<TestTickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGenerator);
 };

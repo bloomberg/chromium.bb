@@ -161,7 +161,7 @@ InputHandlerProxy::InputHandlerProxy(
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
       is_first_gesture_scroll_update_(false),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(client);
   input_handler_->BindToClient(this,
                                touchpad_and_wheel_scroll_latching_enabled_);
@@ -1330,9 +1330,8 @@ void InputHandlerProxy::HandleScrollElasticityOverscroll(
                  scroll_result));
 }
 
-void InputHandlerProxy::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+void InputHandlerProxy::SetTickClockForTesting(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void InputHandlerProxy::UpdateCurrentFlingState(

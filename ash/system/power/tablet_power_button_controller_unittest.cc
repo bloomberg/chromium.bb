@@ -48,7 +48,7 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
 
     // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
     // avoid events being ignored.
-    tick_clock_->Advance(
+    tick_clock_.Advance(
         TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
         base::TimeDelta::FromMilliseconds(2));
 
@@ -174,7 +174,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   // Send the power button event after a short delay and check that backlights
   // are not forced off.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
@@ -183,7 +183,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
@@ -209,7 +209,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   // Send the power button event after a short delay and check that backlights
   // are not forced off.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(500));
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
@@ -219,7 +219,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   // Send the power button event after a longer delay and check that backlights
   // are forced off.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1600));
   PressPowerButton();
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
@@ -373,7 +373,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -383,7 +383,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -392,7 +392,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
   tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(3500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -402,7 +402,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(4500));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(4500));
   ReleasePowerButton();
   EXPECT_FALSE(GetLockedState());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -418,7 +418,7 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
 
   // Test that a pressing-releasing operation after a short duration, backlights
   // forced off is stopped since we don't drop request for power button pressed.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   ReleasePowerButton();
@@ -426,13 +426,13 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
 
   // Test that after another short duration, backlights will not be forced off
   // since this immediately following forcing off request needs to be dropped.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Test that after another long duration, backlights should be forced off.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(800));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(800));
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
@@ -448,7 +448,7 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
 
   // A lid closed event is received, we should stop forcing off backlights.
   power_manager_client_->SetLidState(PowerManagerClient::LidState::CLOSED,
-                                     tick_clock_->NowTicks());
+                                     tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Pressing/releasing power button again to set backlights forced off. This is
@@ -461,7 +461,7 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
 
   // A lid open event is received, we should stop forcing off backlights.
   power_manager_client_->SetLidState(PowerManagerClient::LidState::OPEN,
-                                     tick_clock_->NowTicks());
+                                     tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
@@ -471,7 +471,7 @@ TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
   power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::ON,
-                                       tick_clock_->NowTicks());
+                                       tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   AdvanceClockToAvoidIgnoring();
@@ -479,7 +479,7 @@ TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
   power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::OFF,
-                                       tick_clock_->NowTicks());
+                                       tick_clock_.NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
@@ -637,8 +637,8 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Since display could still be off, ignore forcing off.
-  tick_clock_->Advance(TabletPowerButtonController::kScreenStateChangeDelay -
-                       base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(TabletPowerButtonController::kScreenStateChangeDelay -
+                      base::TimeDelta::FromMilliseconds(1));
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -687,7 +687,7 @@ class TabletPowerButtonControllerShowMenuTest : public PowerButtonTestBase {
 
     // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
     // avoid events being ignored.
-    tick_clock_->Advance(
+    tick_clock_.Advance(
         TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
         base::TimeDelta::FromMilliseconds(2));
   }

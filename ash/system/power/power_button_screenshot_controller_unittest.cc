@@ -38,7 +38,7 @@ class PowerButtonScreenshotControllerTest : public PowerButtonTestBase {
 
     // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
     // avoid events being ignored.
-    tick_clock_->Advance(
+    tick_clock_.Advance(
         TabletPowerButtonController::kIgnorePowerButtonAfterResumeDelay +
         base::TimeDelta::FromMilliseconds(2));
   }
@@ -127,22 +127,22 @@ TEST_F(PowerButtonScreenshotControllerTest, ReleaseBeforeAnotherPressed) {
 TEST_F(PowerButtonScreenshotControllerTest,
        PowerButtonPressedFirst_ScreenshotChord) {
   PressPowerButton();
-  tick_clock_->Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
-                       base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
+                      base::TimeDelta::FromMilliseconds(2));
   PressKey(ui::VKEY_VOLUME_DOWN);
   // Verifies screenshot is taken, volume down is consumed.
   EXPECT_EQ(1, GetScreenshotCount());
   EXPECT_TRUE(LastKeyConsumed());
   // Keeps pressing volume down key under screenshot chord condition will not
   // take screenshot again, volume down is also consumed.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
   ResetScreenshotCount();
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_TRUE(LastKeyConsumed());
   // Keeps pressing volume down key off screenshot chord condition will not
   // take screenshot and still consume volume down event.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2));
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_TRUE(LastKeyConsumed());
@@ -161,14 +161,14 @@ TEST_F(PowerButtonScreenshotControllerTest,
 TEST_F(PowerButtonScreenshotControllerTest,
        PowerButtonPressedFirst_NoScreenshotChord) {
   PressPowerButton();
-  tick_clock_->Advance(PowerButtonScreenshotController::kScreenshotChordDelay +
-                       base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay +
+                      base::TimeDelta::FromMilliseconds(1));
   PressKey(ui::VKEY_VOLUME_DOWN);
   // Verifies screenshot is not taken, volume down is not consumed.
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_FALSE(LastKeyConsumed());
   // Keeps pressing volume down key should continue triggerring volume down.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2));
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_FALSE(LastKeyConsumed());
@@ -238,20 +238,20 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_TRUE(LastKeyConsumed());
   // Presses power button under screenshot chord condition, and verifies that
   // screenshot is taken.
-  tick_clock_->Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
-                       base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
+                      base::TimeDelta::FromMilliseconds(2));
   PressPowerButton();
   EXPECT_EQ(1, GetScreenshotCount());
   // Keeps pressing volume down key under screenshot chord condition will not
   // take screenshot again, volume down is also consumed.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
   ResetScreenshotCount();
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_TRUE(LastKeyConsumed());
   // Keeps pressing volume down key off screenshot chord condition will not take
   // screenshot and still consume volume down event.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2));
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_TRUE(LastKeyConsumed());
@@ -276,14 +276,14 @@ TEST_F(PowerButtonScreenshotControllerTest,
   // Advances |tick_clock_| to off screenshot chord point. This will also
   // trigger volume down timer timeout, which will perform a volume down
   // operation.
-  tick_clock_->Advance(PowerButtonScreenshotController::kScreenshotChordDelay +
-                       base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay +
+                      base::TimeDelta::FromMilliseconds(1));
   EXPECT_TRUE(screenshot_test_api_->TriggerVolumeDownTimer());
   // Presses power button would not take screenshot.
   PressPowerButton();
   EXPECT_EQ(0, GetScreenshotCount());
   // Keeps pressing volume down key should continue triggerring volume down.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2));
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(2));
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
   EXPECT_FALSE(LastKeyConsumed());
@@ -379,8 +379,8 @@ TEST_F(ClamshellPowerButtonScreenshotControllerTest,
   // Tests volume down key stops clamshell power button timer.
   PressPowerButton();
   EXPECT_TRUE(screenshot_test_api_->ClamshellPowerButtonTimerIsRunning());
-  tick_clock_->Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
-                       base::TimeDelta::FromMilliseconds(1));
+  tick_clock_.Advance(PowerButtonScreenshotController::kScreenshotChordDelay -
+                      base::TimeDelta::FromMilliseconds(1));
   PressKey(ui::VKEY_VOLUME_DOWN);
   // Under screenshot chord condition, screenshot is taken and volume down key
   // pressed is consumed.

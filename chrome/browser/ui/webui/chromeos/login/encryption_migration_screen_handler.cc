@@ -255,7 +255,7 @@ namespace chromeos {
 
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler()
     : BaseScreenHandler(kScreenId),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
   free_disk_space_fetcher_ = base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
@@ -386,8 +386,8 @@ void EncryptionMigrationScreenHandler::SetFreeDiskSpaceFetcherForTesting(
 }
 
 void EncryptionMigrationScreenHandler::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+    base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void EncryptionMigrationScreenHandler::RegisterMessages() {

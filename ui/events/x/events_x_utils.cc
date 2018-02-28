@@ -819,11 +819,9 @@ bool IsAltPressed() {
   return XModifierStateWatcher::GetInstance()->state() & Mod1Mask;
 }
 
-void ResetTimestampRolloverCountersForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
+void ResetTimestampRolloverCountersForTesting() {
   g_last_seen_timestamp_ms = 0;
   g_rollover_ms = 0;
-  SetEventTickClockForTesting(std::move(tick_clock));
 }
 
 }  // namespace ui

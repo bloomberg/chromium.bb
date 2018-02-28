@@ -67,9 +67,7 @@ void PowerButtonTestBase::ResetPowerButtonController() {
 void PowerButtonTestBase::InitPowerButtonControllerMembers(
     chromeos::PowerManagerClient::TabletMode initial_tablet_mode_switch_state) {
   power_button_controller_ = Shell::Get()->power_button_controller();
-  tick_clock_ = new base::SimpleTestTickClock;
-  power_button_controller_->SetTickClockForTesting(
-      base::WrapUnique(tick_clock_));
+  power_button_controller_->SetTickClockForTesting(&tick_clock_);
 
   if (initial_tablet_mode_switch_state !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
@@ -108,12 +106,12 @@ void PowerButtonTestBase::ForceClamshellPowerButton() {
 
 void PowerButtonTestBase::PressPowerButton() {
   power_button_controller_->PowerButtonEventReceived(true,
-                                                     tick_clock_->NowTicks());
+                                                     tick_clock_.NowTicks());
 }
 
 void PowerButtonTestBase::ReleasePowerButton() {
   power_button_controller_->PowerButtonEventReceived(false,
-                                                     tick_clock_->NowTicks());
+                                                     tick_clock_.NowTicks());
 }
 
 void PowerButtonTestBase::PressKey(ui::KeyboardCode key_code) {
@@ -156,7 +154,7 @@ void PowerButtonTestBase::EnableTabletMode(bool enable) {
 }
 
 void PowerButtonTestBase::AdvanceClockToAvoidIgnoring() {
-  tick_clock_->Advance(
+  tick_clock_.Advance(
       TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay +
       base::TimeDelta::FromMilliseconds(1));
 }

@@ -70,7 +70,7 @@ class ASH_EXPORT ShelfButtonPressedMetricTracker {
   void ResetMinimizedData();
 
   // Time source for performed action times.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Stores the time of the last window minimize action.
   base::TimeTicks time_of_last_minimize_;

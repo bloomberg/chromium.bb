@@ -9,11 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-
-namespace base {
-class SimpleTestTickClock;
-}  // namespace base
 
 namespace ash {
 
@@ -37,8 +34,7 @@ class TaskSwitchTimeTrackerTestAPI {
   bool HasLastActionTime() const;
 
  private:
-  // Owned by |time_tracker_|.
-  base::SimpleTestTickClock* tick_clock_;
+  base::SimpleTestTickClock tick_clock_;
 
   // The TaskSwitchTimeTracker to provide internal access to.
   std::unique_ptr<TaskSwitchTimeTracker> time_tracker_;

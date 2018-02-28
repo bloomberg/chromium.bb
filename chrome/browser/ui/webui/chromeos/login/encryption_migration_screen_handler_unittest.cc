@@ -69,9 +69,7 @@ class TestEncryptionMigrationScreenHandler
     SetFreeDiskSpaceFetcherForTesting(base::BindRepeating(
         &TestEncryptionMigrationScreenHandler::FreeDiskSpaceFetcher,
         base::Unretained(this)));
-    auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
-    testing_tick_clock_ = tick_clock.get();
-    SetTickClockForTesting(std::move(tick_clock));
+    SetTickClockForTesting(&testing_tick_clock_);
   }
 
   // Sets the testing WebUI.
@@ -87,7 +85,7 @@ class TestEncryptionMigrationScreenHandler
   // Returns the SimpleTestTickClock used to simulate time elapsed during
   // migration.
   base::SimpleTestTickClock* testing_tick_clock() {
-    return testing_tick_clock_;
+    return &testing_tick_clock_;
   }
 
   FakeWakeLock* fake_wake_lock() { return &fake_wake_lock_; }
@@ -102,9 +100,8 @@ class TestEncryptionMigrationScreenHandler
 
   FakeWakeLock fake_wake_lock_;
 
-  // Non-owned pointer. Tick clock used to simulate time elapsed during
-  // migration. This is actually owned by the base class.
-  base::SimpleTestTickClock* testing_tick_clock_;
+  // Tick clock used to simulate time elapsed during migration.
+  base::SimpleTestTickClock testing_tick_clock_;
 
   int64_t free_disk_space_;
 };

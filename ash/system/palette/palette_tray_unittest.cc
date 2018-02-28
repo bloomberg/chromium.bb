@@ -247,11 +247,9 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
     // the simulated clock that is being installed below.
     GetEventGenerator();
 
-    simulated_clock_ = new base::SimpleTestTickClock();
     // Tests fail if event time is ever 0.
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-    // ui takes ownership of the tick clock.
-    ui::SetEventTickClockForTesting(base::WrapUnique(simulated_clock_));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+    ui::SetEventTickClockForTesting(&simulated_clock_);
 
     highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
@@ -312,7 +310,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
                                   bool expected,
                                   bool expected_on_press) {
     const int kStrokeGap = 1000;
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(kStrokeGap));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(kStrokeGap));
     DragAndAssertMetalayer(context, origin, event_flags, expected,
                            expected_on_press);
   }
@@ -320,8 +318,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
   std::unique_ptr<HighlighterControllerTestApi> highlighter_test_api_;
 
  private:
-  // Owned by |ui|.
-  base::SimpleTestTickClock* simulated_clock_ = nullptr;
+  base::SimpleTestTickClock simulated_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithVoiceInteraction);
 };

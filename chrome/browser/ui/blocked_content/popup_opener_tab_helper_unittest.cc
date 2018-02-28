@@ -59,10 +59,7 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
-    raw_clock_ = tick_clock.get();
-    PopupOpenerTabHelper::CreateForWebContents(web_contents(),
-                                               std::move(tick_clock));
+    PopupOpenerTabHelper::CreateForWebContents(web_contents(), &raw_clock_);
     InfoBarService::CreateForWebContents(web_contents());
     TabSpecificContentSettings::CreateForWebContents(web_contents());
 #if !defined(OS_ANDROID)
@@ -71,7 +68,7 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     // The tick clock needs to be advanced manually so it isn't set to null,
     // which the code uses to determine if it is set yet.
-    raw_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+    raw_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
 
     EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   }
@@ -106,13 +103,13 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
     return raw_popup;
   }
 
-  base::SimpleTestTickClock* raw_clock() { return raw_clock_; }
+  base::SimpleTestTickClock* raw_clock() { return &raw_clock_; }
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
   base::HistogramTester histogram_tester_;
-  base::SimpleTestTickClock* raw_clock_ = nullptr;
+  base::SimpleTestTickClock raw_clock_;
 
   std::vector<std::unique_ptr<content::WebContents>> popups_;
 

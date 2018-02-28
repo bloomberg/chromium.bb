@@ -206,7 +206,7 @@ class TouchExplorationControllerTestApi {
 
 class TouchExplorationTest : public aura::test::AuraTestBase {
  public:
-  TouchExplorationTest() : simulated_clock_(nullptr) {}
+  TouchExplorationTest() {}
   ~TouchExplorationTest() override {}
 
   void SetUp() override {
@@ -217,12 +217,10 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     root_window()->AddPreTargetHandler(&event_capturer_);
     generator_.reset(new ui::test::EventGenerator(root_window()));
 
-    simulated_clock_ = new base::SimpleTestTickClock();
     // Tests fail if time is ever 0.
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
     // ui takes ownership of the tick clock.
-    ui::SetEventTickClockForTesting(
-        std::unique_ptr<base::TickClock>(simulated_clock_));
+    ui::SetEventTickClockForTesting(&simulated_clock_);
 
     cursor_client()->ShowCursor();
     cursor_client()->DisableMouseEvents();
@@ -279,18 +277,18 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   void ClearCapturedEvents() { event_capturer_.Reset(); }
 
   void AdvanceSimulatedTimePastTapDelay() {
-    simulated_clock_->Advance(gesture_detector_config_.double_tap_timeout);
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
+    simulated_clock_.Advance(gesture_detector_config_.double_tap_timeout);
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     touch_exploration_controller_->CallTapTimerNowForTesting();
   }
 
   void AdvanceSimulatedTimePastPassthroughDelay() {
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1000));
     touch_exploration_controller_->CallPassthroughTimerNowForTesting();
   }
 
   void AdvanceSimulatedTimePastPotentialTapDelay() {
-    simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
+    simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1000));
     touch_exploration_controller_->CallTapTimerNowIfRunningForTesting();
   }
 
@@ -421,8 +419,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
   std::unique_ptr<ui::test::EventGenerator> generator_;
   ui::GestureDetector::Config gesture_detector_config_;
-  // Owned by |ui|.
-  base::SimpleTestTickClock* simulated_clock_;
+  base::SimpleTestTickClock simulated_clock_;
   MockTouchExplorationControllerDelegate delegate_;
 
  private:
@@ -647,7 +644,7 @@ TEST_F(TouchExplorationTest, TimerFiresLateDuringTouchExploration) {
 
   // Send a press, then add another finger after the double-tap timeout.
   generator_->PressTouchId(1);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(1000));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(1000));
   generator_->PressTouchId(2);
   std::vector<ui::LocatedEvent*> events =
       GetCapturedLocatedEventsOfType(ui::ET_MOUSE_MOVED);
@@ -677,7 +674,7 @@ TEST_F(TouchExplorationTest, TimerFiresLateAfterTap) {
   // timer fires.
   gfx::Point location1(33, 34);
   generator_->set_current_location(location1);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(301));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(301));
   generator_->PressTouch();
   generator_->ReleaseTouch();
   AdvanceSimulatedTimePastTapDelay();
@@ -763,10 +760,10 @@ TEST_F(TouchExplorationTest, DoubleTapTiming) {
   generator_->set_current_location(double_tap_location);
   generator_->PressTouch();
   generator_->ReleaseTouch();
-  simulated_clock_->Advance(gesture_detector_config_.double_tap_timeout -
-                            base::TimeDelta::FromMilliseconds(25));
+  simulated_clock_.Advance(gesture_detector_config_.double_tap_timeout -
+                           base::TimeDelta::FromMilliseconds(25));
   generator_->PressTouch();
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(50));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(50));
   generator_->ReleaseTouch();
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
@@ -937,7 +934,7 @@ TEST_F(TouchExplorationTest, DoubleTapLongPress) {
   generator_->PressTouch();
   // Advance to the finger passing through, and then to the longpress timeout.
   AdvanceSimulatedTimePastTapDelay();
-  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
+  simulated_clock_.Advance(gesture_detector_config_.longpress_timeout);
   generator_->ReleaseTouch();
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
@@ -976,7 +973,7 @@ TEST_F(TouchExplorationTest, SingleTap) {
   // tapping again.
   gfx::Point final_location(33, 34);
   generator_->set_current_location(final_location);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(250));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(250));
   generator_->PressTouch();
   generator_->ReleaseTouch();
 
@@ -1152,7 +1149,7 @@ TEST_F(TouchExplorationTest, SplitTapMultiFinger) {
       ui::ET_TOUCH_PRESSED, second_touch_location, Now(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   generator_->Dispatch(&split_tap_press);
-  simulated_clock_->Advance(gesture_detector_config_.longpress_timeout);
+  simulated_clock_.Advance(gesture_detector_config_.longpress_timeout);
 
   // Placing a third finger on the screen should cancel the split tap and
   // enter the wait state.
@@ -1267,13 +1264,13 @@ TEST_F(TouchExplorationTest, EnterGestureInProgressState) {
   gfx::Point touch_exploration_location(20, 21);
 
   generator_->Dispatch(&first_press);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
   // Since we are not out of the touch slop yet, we should not be in gesture in
   // progress.
   generator_->MoveTouch(second_location);
   EXPECT_FALSE(IsInTouchToMouseMode());
   EXPECT_FALSE(IsInGestureInProgressState());
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Once we are out of slop, we should be in GestureInProgress.
   generator_->MoveTouch(third_location);
@@ -1495,7 +1492,7 @@ TEST_F(TouchExplorationTest, GestureAddedFinger) {
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), Now(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   generator_->Dispatch(&first_press);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
   gfx::Point second_location(100 + distance, 200);
   generator_->MoveTouch(second_location);
   EXPECT_TRUE(IsInGestureInProgressState());
@@ -1530,14 +1527,14 @@ TEST_F(TouchExplorationTest, EnterSlideGestureState) {
   gfx::Point fourth_location(window_right, 35);
 
   generator_->Dispatch(&first_press);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Since we haven't moved past slop yet, we should not be in slide gesture.
   generator_->MoveTouch(second_location);
   EXPECT_FALSE(IsInTouchToMouseMode());
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInSlideGestureState());
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Once we are out of slop, we should be in slide gesture since we are along
   // the edge of the screen.
@@ -1590,13 +1587,13 @@ TEST_F(TouchExplorationTest, AvoidEnteringSlideGesture) {
   gfx::Point into_boundaries(window.right() - GetMaxDistanceFromEdge() / 2, 1);
 
   generator_->Dispatch(&first_press);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   generator_->MoveTouch(out_of_slop);
   EXPECT_FALSE(IsInTouchToMouseMode());
   EXPECT_TRUE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInSlideGestureState());
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Since we did not start moving while in the boundaries, we should not be in
   // slide gestures.
@@ -1627,7 +1624,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
       ui::ET_TOUCH_PRESSED, initial_press, Now(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   generator_->Dispatch(&first_press);
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_FALSE(IsInSlideGestureState());
   EXPECT_FALSE(IsInTouchToMouseMode());
@@ -1641,7 +1638,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   EXPECT_FALSE(IsInGestureInProgressState());
   EXPECT_TRUE(IsInSlideGestureState());
   EXPECT_FALSE(IsInTouchToMouseMode());
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Move the touch into slop boundaries. It should still be in slide gestures
   // and adjust the volume.
@@ -1653,7 +1650,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   EXPECT_FALSE(IsInTouchToMouseMode());
 
   // The sound is rate limiting so it only activates every 150ms.
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
 
   size_t num_adjust_sounds = delegate_.NumAdjustSounds();
   ASSERT_EQ(1U, num_adjust_sounds);
@@ -1666,7 +1663,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   EXPECT_TRUE(IsInSlideGestureState());
   EXPECT_FALSE(IsInTouchToMouseMode());
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
   num_adjust_sounds = delegate_.NumAdjustSounds();
   ASSERT_EQ(1U, num_adjust_sounds);
   ASSERT_EQ(1U, delegate_.VolumeChanges().size());
@@ -1681,7 +1678,7 @@ TEST_F(TouchExplorationTest, TestingBoundaries) {
   generator_->MoveTouch(
       gfx::Point(into_slop_boundaries.x() + gesture_detector_config_.touch_slop,
                  into_slop_boundaries.y()));
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(200));
+  simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
 
   num_adjust_sounds = delegate_.NumAdjustSounds();
   ASSERT_EQ(2U, num_adjust_sounds);

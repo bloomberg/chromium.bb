@@ -563,9 +563,8 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
     return input_handler_proxy_->compositor_event_queue_->queue_;
   }
 
-  void SetInputHandlerProxyTickClockForTesting(
-      std::unique_ptr<base::TickClock> tick_clock) {
-    input_handler_proxy_->SetTickClockForTesting(std::move(tick_clock));
+  void SetInputHandlerProxyTickClockForTesting(base::TickClock* tick_clock) {
+    input_handler_proxy_->SetTickClockForTesting(tick_clock);
   }
 
  protected:
@@ -3024,11 +3023,9 @@ TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
 
 TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   base::HistogramTester histogram_tester;
-  std::unique_ptr<base::SimpleTestTickClock> tick_clock =
-      std::make_unique<base::SimpleTestTickClock>();
-  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
-  tick_clock_ptr->SetNowTicks(base::TimeTicks::Now());
-  SetInputHandlerProxyTickClockForTesting(std::move(tick_clock));
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+  SetInputHandlerProxyTickClockForTesting(&tick_clock);
 
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
@@ -3044,17 +3041,17 @@ TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_, true));
 
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
-  tick_clock_ptr->Advance(base::TimeDelta::FromMicroseconds(10));
+  tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
-  tick_clock_ptr->Advance(base::TimeDelta::FromMicroseconds(40));
+  tick_clock.Advance(base::TimeDelta::FromMicroseconds(40));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -40);
-  tick_clock_ptr->Advance(base::TimeDelta::FromMicroseconds(20));
+  tick_clock.Advance(base::TimeDelta::FromMicroseconds(20));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -10);
-  tick_clock_ptr->Advance(base::TimeDelta::FromMicroseconds(10));
+  tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
   HandleGestureEvent(WebInputEvent::kGestureScrollEnd);
 
   // Dispatch all queued events.
-  tick_clock_ptr->Advance(base::TimeDelta::FromMicroseconds(70));
+  tick_clock.Advance(base::TimeDelta::FromMicroseconds(70));
   input_handler_proxy_->DeliverInputForBeginFrame();
   EXPECT_EQ(0ul, event_queue().size());
   EXPECT_EQ(5ul, event_disposition_recorder_.size());

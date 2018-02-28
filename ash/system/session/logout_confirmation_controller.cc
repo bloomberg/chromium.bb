@@ -109,7 +109,7 @@ class LogoutConfirmationController::LastWindowClosedObserver
 };
 
 LogoutConfirmationController::LogoutConfirmationController()
-    : clock_(std::make_unique<base::DefaultTickClock>()),
+    : clock_(base::DefaultTickClock::GetInstance()),
       logout_closure_(base::Bind(&SignOut)),
       logout_timer_(false, false),
       scoped_session_observer_(this) {}
@@ -171,9 +171,8 @@ void LogoutConfirmationController::OnDialogClosed() {
   logout_timer_.Stop();
 }
 
-void LogoutConfirmationController::SetClockForTesting(
-    std::unique_ptr<base::TickClock> clock) {
-  clock_ = std::move(clock);
+void LogoutConfirmationController::SetClockForTesting(base::TickClock* clock) {
+  clock_ = clock;
 }
 
 void LogoutConfirmationController::SetLogoutClosureForTesting(
