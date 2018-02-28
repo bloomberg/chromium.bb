@@ -36,10 +36,6 @@
 
 namespace ui {
 namespace test {
-namespace {
-
-void DummyCallback(EventType, const gfx::Vector2dF&) {
-}
 
 class TestTickClock : public base::TickClock {
  public:
@@ -56,6 +52,10 @@ class TestTickClock : public base::TickClock {
 
   DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };
+
+namespace {
+
+void DummyCallback(EventType, const gfx::Vector2dF&) {}
 
 class TestTouchEvent : public ui::TouchEvent {
  public:
@@ -625,7 +625,8 @@ void EventGenerator::Dispatch(ui::Event* event) {
 
 void EventGenerator::Init(gfx::NativeWindow root_window,
                           gfx::NativeWindow window_context) {
-  ui::SetEventTickClockForTesting(std::make_unique<TestTickClock>());
+  tick_clock_ = std::make_unique<TestTickClock>();
+  ui::SetEventTickClockForTesting(tick_clock_.get());
   delegate()->SetContext(this, root_window, window_context);
   if (window_context)
     current_location_ = delegate()->CenterOfWindow(window_context);

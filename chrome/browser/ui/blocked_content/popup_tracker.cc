@@ -34,8 +34,7 @@ PopupTracker::~PopupTracker() {
 
 PopupTracker::PopupTracker(content::WebContents* contents,
                            content::WebContents* opener)
-    : content::WebContentsObserver(contents),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()) {
+    : content::WebContentsObserver(contents) {
   if (auto* popup_opener = PopupOpenerTabHelper::FromWebContents(opener))
     popup_opener->OnOpenedPopup(this);
 }
@@ -51,7 +50,7 @@ void PopupTracker::DidFinishNavigation(
   // we've committed the first navigation in this WebContents.
   if (!first_load_visibility_tracker_) {
     first_load_visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
-        tick_clock_.get(),
+        base::DefaultTickClock::GetInstance(),
         web_contents()->GetVisibility() != content::Visibility::HIDDEN);
   } else {
     web_contents()->RemoveUserData(UserDataKey());
@@ -69,4 +68,3 @@ void PopupTracker::OnVisibilityChanged(content::Visibility visibility) {
       first_load_visibility_tracker_->OnShown();
   }
 }
-

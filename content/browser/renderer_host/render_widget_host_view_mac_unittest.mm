@@ -353,10 +353,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
       : rwhv_mac_(nullptr),
         wheel_scrolling_mode_(wheel_scrolling_mode),
         scroll_latching_(wheel_scrolling_mode_ != kWheelScrollingModeNone) {
-    std::unique_ptr<base::SimpleTestTickClock> mock_clock(
-        new base::SimpleTestTickClock());
-    mock_clock->Advance(base::TimeDelta::FromMilliseconds(100));
-    ui::SetEventTickClockForTesting(std::move(mock_clock));
+    mock_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+    ui::SetEventTickClockForTesting(&mock_clock_);
     SetFeatureList();
 
     mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
@@ -451,6 +449,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   base::test::ScopedFeatureList mojo_feature_list_;
   base::test::ScopedFeatureList vsync_feature_list_;
   base::test::ScopedFeatureList feature_list_;
+
+  base::SimpleTestTickClock mock_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacTest);
 };

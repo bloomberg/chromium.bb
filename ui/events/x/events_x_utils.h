@@ -89,8 +89,7 @@ EVENTS_X_EXPORT bool GetFlingDataFromXEvent(const XEvent& xev,
 // Uses the XModifierStateWatcher to determine if alt is pressed or not.
 EVENTS_X_EXPORT bool IsAltPressed();
 
-EVENTS_X_EXPORT void ResetTimestampRolloverCountersForTesting(
-    std::unique_ptr<base::TickClock> tick_clock = nullptr);
+EVENTS_X_EXPORT void ResetTimestampRolloverCountersForTesting();
 
 }  // namespace ui
 

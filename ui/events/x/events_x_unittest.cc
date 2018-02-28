@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -548,30 +549,22 @@ base::TimeTicks TimeTicksFromMillis(int64_t millis) {
   return base::TimeTicks() + base::TimeDelta::FromMilliseconds(millis);
 }
 
-class MockTickClock : public base::TickClock {
- public:
-  explicit MockTickClock(int64_t milliseconds)
-      : ticks_(TimeTicksFromMillis(milliseconds)) {}
-  base::TimeTicks NowTicks() override { return ticks_; }
-
- private:
-  base::TimeTicks ticks_;
-};
-
 }  // namespace
 
 TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
   XEvent event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
-  ResetTimestampRolloverCountersForTesting(
-      std::make_unique<MockTickClock>(0x100000001));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(TimeTicksFromMillis(0x100000001));
+  SetEventTickClockForTesting(&clock);
+  ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
 
-  ResetTimestampRolloverCountersForTesting(
-      std::make_unique<MockTickClock>(0x100000007));
+  clock.SetNowTicks(TimeTicksFromMillis(0x100000007));
+  ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 3;
   EXPECT_EQ(TimeTicksFromMillis(0x100000000 + 3),
@@ -582,15 +575,18 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   XEvent event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
-  ResetTimestampRolloverCountersForTesting(std::make_unique<MockTickClock>(10));
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(TimeTicksFromMillis(10));
+  SetEventTickClockForTesting(&clock);
+  ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 6;
   EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromNative(&event));
   event.xbutton.time = 7;
   EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromNative(&event));
 
-  ResetTimestampRolloverCountersForTesting(
-      std::make_unique<MockTickClock>(0x100000005));
+  clock.SetNowTicks(TimeTicksFromMillis(0x100000005));
+  ResetTimestampRolloverCountersForTesting();
 
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));

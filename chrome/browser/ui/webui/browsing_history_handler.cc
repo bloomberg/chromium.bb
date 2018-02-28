@@ -230,7 +230,8 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
 }  // namespace
 
 BrowsingHistoryHandler::BrowsingHistoryHandler()
-    : clock_(new base::DefaultClock()), browsing_history_service_(nullptr) {}
+    : clock_(base::DefaultClock::GetInstance()),
+      browsing_history_service_(nullptr) {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {}
 
@@ -366,9 +367,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // Convert the result vector into a ListValue.
   base::ListValue results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    std::unique_ptr<base::Value> value(
-        HistoryEntryToValue(entry, bookmark_model, supervised_user_service,
-                            sync_service, clock_.get()));
+    std::unique_ptr<base::Value> value(HistoryEntryToValue(
+        entry, bookmark_model, supervised_user_service, sync_service, clock_));
     results_value.Append(std::move(value));
   }
 

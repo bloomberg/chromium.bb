@@ -121,15 +121,12 @@ class TabletModeControllerTest : public AshTestBase {
   // Attaches a SimpleTestTickClock to the TabletModeController with a non
   // null value initial value.
   void AttachTickClockForTest() {
-    std::unique_ptr<base::TickClock> tick_clock(
-        test_tick_clock_ = new base::SimpleTestTickClock());
-    test_tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
-    tablet_mode_controller()->SetTickClockForTest(std::move(tick_clock));
+    test_tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
+    tablet_mode_controller()->SetTickClockForTest(&test_tick_clock_);
   }
 
   void AdvanceTickClock(const base::TimeDelta& delta) {
-    DCHECK(test_tick_clock_);
-    test_tick_clock_->Advance(delta);
+    test_tick_clock_.Advance(delta);
   }
 
   void OpenLidToAngle(float degrees) {
@@ -183,7 +180,7 @@ class TabletModeControllerTest : public AshTestBase {
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
  private:
-  base::SimpleTestTickClock* test_tick_clock_;
+  base::SimpleTestTickClock test_tick_clock_;
 
   // Tracks user action counts.
   base::UserActionTester user_action_tester_;

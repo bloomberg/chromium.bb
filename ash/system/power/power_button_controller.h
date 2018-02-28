@@ -86,7 +86,7 @@ class ASH_EXPORT PowerButtonController
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
   // Overrides the tick clock used by |this| for testing.
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
   // If |display_off_timer_| is running, stops it, runs its task, and returns
   // true. Otherwise, returns false.
@@ -156,7 +156,7 @@ class ASH_EXPORT PowerButtonController
   LockStateController* lock_state_controller_;  // Not owned.
 
   // Time source for performed action times.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Used to interact with the display.
   std::unique_ptr<PowerButtonDisplayController> display_controller_;

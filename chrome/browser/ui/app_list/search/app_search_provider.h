@@ -31,9 +31,13 @@ class AppSearchProvider : public SearchProvider {
   class DataSource;
   using Apps = std::vector<std::unique_ptr<App>>;
 
+  // |clock| should be used by tests that needs to overrides the time.
+  // Otherwise, pass a base::DefaultClock instance. This doesn't take the
+  // ownership of the clock. |clock| must outlive the AppSearchProvider
+  // instance.
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
-                    std::unique_ptr<base::Clock> clock,
+                    base::Clock* clock,
                     AppListModelUpdater* model_updater);
   ~AppSearchProvider() override;
 
@@ -57,7 +61,7 @@ class AppSearchProvider : public SearchProvider {
   base::string16 query_;
   Apps apps_;
   AppListModelUpdater* const model_updater_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 

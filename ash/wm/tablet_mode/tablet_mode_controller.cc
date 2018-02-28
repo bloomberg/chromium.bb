@@ -122,7 +122,7 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 
 TabletModeController::TabletModeController()
     : tablet_mode_usage_interval_start_time_(base::Time::Now()),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       auto_hide_title_bars_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTabletAutohideTitlebars)),
       binding_(this),
@@ -532,10 +532,9 @@ bool TabletModeController::CanUseUnstableLidAngle() const {
   return elapsed_time >= kUnstableLidAngleDuration;
 }
 
-void TabletModeController::SetTickClockForTest(
-    std::unique_ptr<base::TickClock> tick_clock) {
+void TabletModeController::SetTickClockForTest(base::TickClock* tick_clock) {
   DCHECK(tick_clock_);
-  tick_clock_ = std::move(tick_clock);
+  tick_clock_ = tick_clock;
 }
 
 }  // namespace ash

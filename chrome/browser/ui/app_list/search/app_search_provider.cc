@@ -301,11 +301,11 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
-                                     std::unique_ptr<base::Clock> clock,
+                                     base::Clock* clock,
                                      AppListModelUpdater* model_updater)
     : list_controller_(list_controller),
       model_updater_(model_updater),
-      clock_(std::move(clock)),
+      clock_(clock),
       update_results_factory_(this) {
   data_sources_.emplace_back(
       std::make_unique<ExtensionDataSource>(profile, this));

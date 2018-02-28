@@ -74,10 +74,9 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   // Add search providers.
   controller->AddProvider(
-      apps_group_id,
-      std::make_unique<AppSearchProvider>(
-          profile, list_controller, std::make_unique<base::DefaultClock>(),
-          model_updater));
+      apps_group_id, std::make_unique<AppSearchProvider>(
+                         profile, list_controller,
+                         base::DefaultClock::GetInstance(), model_updater));
   controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                 profile, list_controller));
   if (arc::IsWebstoreSearchEnabled()) {

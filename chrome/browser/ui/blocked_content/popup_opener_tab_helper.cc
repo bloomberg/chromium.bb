@@ -19,14 +19,13 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupOpenerTabHelper);
 
 // static
-void PopupOpenerTabHelper::CreateForWebContents(
-    content::WebContents* contents,
-    std::unique_ptr<base::TickClock> tick_clock) {
+void PopupOpenerTabHelper::CreateForWebContents(content::WebContents* contents,
+                                                base::TickClock* tick_clock) {
   DCHECK(contents);
   if (!FromWebContents(contents)) {
-    contents->SetUserData(UserDataKey(),
-                          base::WrapUnique(new PopupOpenerTabHelper(
-                              contents, std::move(tick_clock))));
+    contents->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new PopupOpenerTabHelper(contents, tick_clock)));
   }
 }
 
@@ -62,13 +61,11 @@ void PopupOpenerTabHelper::OnDidTabUnder() {
   visible_time_before_tab_under_ = visibility_tracker_->GetForegroundDuration();
 }
 
-PopupOpenerTabHelper::PopupOpenerTabHelper(
-    content::WebContents* web_contents,
-    std::unique_ptr<base::TickClock> tick_clock)
-    : content::WebContentsObserver(web_contents),
-      tick_clock_(std::move(tick_clock)) {
+PopupOpenerTabHelper::PopupOpenerTabHelper(content::WebContents* web_contents,
+                                           base::TickClock* tick_clock)
+    : content::WebContentsObserver(web_contents), tick_clock_(tick_clock) {
   visibility_tracker_ = std::make_unique<ScopedVisibilityTracker>(
-      tick_clock_.get(),
+      tick_clock_,
       web_contents->GetVisibility() != content::Visibility::HIDDEN);
 }
 

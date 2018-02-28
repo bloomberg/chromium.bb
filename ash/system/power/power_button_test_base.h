@@ -10,11 +10,8 @@
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-
-namespace base {
-class SimpleTestTickClock;
-}  // namespace base
 
 namespace chromeos {
 class FakePowerManagerClient;
@@ -114,7 +111,7 @@ class PowerButtonTestBase : public AshTestBase {
       nullptr;  // Not owned.
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
   std::unique_ptr<TabletPowerButtonControllerTestApi> tablet_test_api_;
-  base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
+  base::SimpleTestTickClock tick_clock_;
 
   // Indicates whether switches::kAshEnableTabletMode is appended.
   bool has_tablet_mode_switch_ = true;

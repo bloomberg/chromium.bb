@@ -25,7 +25,9 @@ class ShelfButtonPressedMetricTrackerTestAPI {
   ~ShelfButtonPressedMetricTrackerTestAPI();
 
   // Set's the |tick_clock_| on the internal ShelfButtonPressedMetricTracker.
-  void SetTickClock(std::unique_ptr<base::TickClock> tick_clock);
+  // This doesn't take the ownership of the clock. |tick_clock| must outlive the
+  // ShelfButtonPressedMetricTracker instance.
+  void SetTickClock(base::TickClock* tick_clock);
 
  private:
   ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker_;
