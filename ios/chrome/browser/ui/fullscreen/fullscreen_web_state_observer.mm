@@ -81,7 +81,7 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
-  web_state->GetWebViewProxy().shouldUseInsetForTopPadding =
+  web_state->GetWebViewProxy().shouldUseViewContentInset =
       web_state->GetContentsMimeType() == "application/pdf";
   // Reset the model so that the toolbar is visible for the new page.
   model_->ResetForNavigation();

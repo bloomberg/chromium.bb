@@ -3887,7 +3887,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)updateForFullscreenProgress:(CGFloat)progress {
   [self updateHeadersForFullscreenProgress:progress];
   [self updateFootersForFullscreenProgress:progress];
-  [self updateContentViewTopPaddingForFullscreenProgress:progress];
+  [self updateContentViewPaddingForFullscreenProgress:progress];
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -3908,8 +3908,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     CRWWebViewScrollViewProxy* scrollProxy = webProxy.scrollViewProxy;
     CGPoint contentOffset = scrollProxy.contentOffset;
     if (contentOffset.y - scrollProxy.contentInset.top <
-        webProxy.topContentPadding) {
-      [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
+        webProxy.contentInset.top) {
+      [self updateContentViewPaddingForFullscreenProgress:finalProgress];
       contentOffset.y = -scrollProxy.contentInset.top;
       scrollProxy.contentOffset = contentOffset;
     }
@@ -3927,7 +3927,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // animator to trigger a rerender in the page's new viewport.
   __weak FullscreenScrollEndAnimator* weakAnimator = animator;
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [weakSelf updateContentViewTopPaddingForFullscreenProgress:
+    [weakSelf updateContentViewPaddingForFullscreenProgress:
                   [weakAnimator progressForAnimatingPosition:finalPosition]];
   }];
 }
@@ -3938,7 +3938,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [animator addAnimations:^{
     [self updateHeadersForFullscreenProgress:finalProgress];
     [self updateFootersForFullscreenProgress:finalProgress];
-    [self updateContentViewTopPaddingForFullscreenProgress:finalProgress];
+    [self updateContentViewPaddingForFullscreenProgress:finalProgress];
   }];
 }
 
@@ -3990,13 +3990,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-// Updates the top padding of the web view proxy.  This either resets the frame
-// of the WKWebView or the contentInsets of the WKWebView's UIScrollView,
-// depending on the the proxy's |shouldUseInsetForTopPadding| property.
-- (void)updateContentViewTopPaddingForFullscreenProgress:(CGFloat)progress {
+// Updates the padding of the web view proxy. This either resets the frame of
+// the WKWebView or the contentInsets of the WKWebView's UIScrollView, depending
+// on the the proxy's |shouldUseViewContentInset| property.
+- (void)updateContentViewPaddingForFullscreenProgress:(CGFloat)progress {
   if (self.currentWebState) {
-    self.currentWebState->GetWebViewProxy().topContentPadding =
-        AlignValueToPixel(progress * [self toolbarHeight]);
+    UIEdgeInsets contentPadding =
+        self.currentWebState->GetWebViewProxy().contentInset;
+    contentPadding.top = AlignValueToPixel(progress * [self toolbarHeight]);
+    contentPadding.bottom =
+        AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
+    self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
   }
 }
 

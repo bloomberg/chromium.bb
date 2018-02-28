@@ -360,11 +360,11 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       UIEdgeInsetsMake(-[self scrollView].contentOffset.y, 0, 0, 0);
   // Start pulling (on top).
   CGFloat contentOffsetFromTheTop = [self scrollView].contentOffset.y;
-  if (![_webViewProxy shouldUseInsetForTopPadding]) {
+  if (![_webViewProxy shouldUseViewContentInset]) {
     // Content offset is shifted for WKWebView when the web view's
-    // |shouldUseInsetForTopPadding| is NO, to workaround bug with
+    // |shouldUseViewContentInset| is NO, to workaround bug with
     // UIScollView.contentInset (rdar://23584409).
-    contentOffsetFromTheTop -= [_webViewProxy topContentPadding];
+    contentOffsetFromTheTop -= _webViewProxy.contentInset.top;
   }
   CGFloat contentOffsetFromExpandedHeader =
       contentOffsetFromTheTop + self.initialHeaderInset;
@@ -825,9 +825,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (CGFloat)initialContentInset {
   // Content inset is not used for displaying header if the web view's
-  // |shouldUseInsetForTopPadding| is NO, instead the whole web view
-  // frame is changed.
-  if (!_scrollview && ![_webViewProxy shouldUseInsetForTopPadding])
+  // |shouldUseViewContentInset| is NO, instead the whole web view frame is
+  // changed.
+  if (!_scrollview && ![_webViewProxy shouldUseViewContentInset])
     return 0;
   return self.initialHeaderInset;
 }

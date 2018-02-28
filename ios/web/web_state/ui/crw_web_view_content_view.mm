@@ -25,20 +25,18 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 
 }  // namespace
 
-@interface CRWWebViewContentView () {
-  // Backs up property of the same name if |_webView| is a WKWebView.
-  CGFloat _topContentPadding;
-}
+@interface CRWWebViewContentView ()
 
 // Changes web view frame to match |self.bounds| and optionally accommodates for
-// |_topContentPadding| (iff |_webView| is a WKWebView).
+// |contentInset|.
 - (void)updateWebViewFrame;
 
 @end
 
 @implementation CRWWebViewContentView
 
-@synthesize shouldUseInsetForTopPadding = _shouldUseInsetForTopPadding;
+@synthesize contentInset = _contentInset;
+@synthesize shouldUseViewContentInset = _shouldUseViewContentInset;
 @synthesize scrollView = _scrollView;
 @synthesize webView = _webView;
 
@@ -111,30 +109,29 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   return YES;
 }
 
-- (CGFloat)topContentPadding {
-  BOOL isSettingWebViewFrame = !self.shouldUseInsetForTopPadding;
-  return isSettingWebViewFrame ? _topContentPadding
-                               : [_scrollView contentInset].top;
+- (UIEdgeInsets)contentInset {
+  return self.shouldUseViewContentInset ? [_scrollView contentInset]
+                                        : _contentInset;
 }
 
-- (void)setTopContentPadding:(CGFloat)newTopPadding {
-  CGFloat delta = std::fabs(_topContentPadding - newTopPadding);
+- (void)setContentInset:(UIEdgeInsets)contentInset {
+  CGFloat delta = std::fabs(_contentInset.top - contentInset.top) +
+                  std::fabs(_contentInset.left - contentInset.left) +
+                  std::fabs(_contentInset.bottom - contentInset.bottom) +
+                  std::fabs(_contentInset.right - contentInset.right);
   if (delta <= std::numeric_limits<CGFloat>::epsilon())
     return;
-  if (self.shouldUseInsetForTopPadding) {
-    UIEdgeInsets inset = [_scrollView contentInset];
-    inset.top = newTopPadding;
-    [_scrollView setContentInset:inset];
+  if (self.shouldUseViewContentInset) {
+    [_scrollView setContentInset:contentInset];
   } else {
     // Update the content offset of the scroll view to match the padding
     // that will be included in the frame.
-    CGFloat paddingChange = newTopPadding - _topContentPadding;
+    CGFloat topPaddingChange = contentInset.top - _contentInset.top;
     CGPoint contentOffset = [_scrollView contentOffset];
-    contentOffset.y += paddingChange;
+    contentOffset.y += topPaddingChange;
     [_scrollView setContentOffset:contentOffset];
-    _topContentPadding = newTopPadding;
-    // Update web view frame immediately to make |topContentPadding|
-    // animatable.
+    _contentInset = contentInset;
+    // Update web view frame immediately to make |contentInset| animatable.
     [self updateWebViewFrame];
     // Setting WKWebView frame can mistakenly reset contentOffset. Change it
     // back to the initial value if necessary.
@@ -146,12 +143,12 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   }
 }
 
-- (void)setShouldUseInsetForTopPadding:(BOOL)shouldUseInsetForTopPadding {
-  if (_shouldUseInsetForTopPadding != shouldUseInsetForTopPadding) {
-    CGFloat oldTopContentPadding = self.topContentPadding;
-    self.topContentPadding = 0.0f;
-    _shouldUseInsetForTopPadding = shouldUseInsetForTopPadding;
-    self.topContentPadding = oldTopContentPadding;
+- (void)setShouldUseViewContentInset:(BOOL)shouldUseViewContentInset {
+  if (_shouldUseViewContentInset != shouldUseViewContentInset) {
+    UIEdgeInsets oldContentInset = self.contentInset;
+    self.contentInset = UIEdgeInsetsZero;
+    _shouldUseViewContentInset = shouldUseViewContentInset;
+    self.contentInset = oldContentInset;
   }
 }
 
@@ -159,8 +156,10 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 
 - (void)updateWebViewFrame {
   CGRect webViewFrame = self.bounds;
-  webViewFrame.size.height -= _topContentPadding;
-  webViewFrame.origin.y += _topContentPadding;
+  webViewFrame.size.height -= _contentInset.top + _contentInset.bottom;
+  webViewFrame.origin.y += _contentInset.top;
+  webViewFrame.size.width -= _contentInset.right + _contentInset.left;
+  webViewFrame.origin.x += _contentInset.left;
 
   self.webView.frame = webViewFrame;
 }
