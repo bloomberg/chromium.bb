@@ -92,7 +92,7 @@ def _NormalizeProcessName(debug_process_name, package_name):
 
 def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
                url=None, apk=None, wait_for_java_debugger=False,
-               debug_process_name=None):
+               debug_process_name=None, nokill=None):
   if argv and command_line_flags_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
@@ -110,20 +110,21 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
   def launch(device):
     # --persistent is required to have Settings.Global.DEBUG_APP be set, which
     # we currently use to allow reading of flags. https://crbug.com/784947
-    cmd = ['am', 'set-debug-app', '--persistent', debug_process_name]
-    if wait_for_java_debugger:
-      cmd[-1:-1] = ['-w']
-    # Ignore error since it will fail if apk is not debuggable.
-    device.RunShellCommand(cmd, check_return=False)
+    if not nokill:
+      cmd = ['am', 'set-debug-app', '--persistent', debug_process_name]
+      if wait_for_java_debugger:
+        cmd[-1:-1] = ['-w']
+      # Ignore error since it will fail if apk is not debuggable.
+      device.RunShellCommand(cmd, check_return=False)
 
-    # The flags are first updated with input args.
-    if command_line_flags_file:
-      changer = flag_changer.FlagChanger(device, command_line_flags_file)
-      flags = []
-      if argv:
-        flags = shlex.split(argv)
-      changer.ReplaceFlags(flags)
-    # Then launch the apk.
+      # The flags are first updated with input args.
+      if command_line_flags_file:
+        changer = flag_changer.FlagChanger(device, command_line_flags_file)
+        flags = []
+        if argv:
+          flags = shlex.split(argv)
+        changer.ReplaceFlags(flags)
+
     if url is None:
       # Simulate app icon click if no url is present.
       cmd = ['monkey', '-p', package_name, '-c',
@@ -890,6 +891,10 @@ class _LaunchCommand(_Command):
     group.add_argument('--debug-process-name',
                        help='Name of the process to debug. '
                             'E.g. "privileged_process0", or "foo.bar:baz"')
+    group.add_argument('--nokill', action='store_true',
+                       help='Do not set the debug-app, nor set command-line '
+                            'flags. Useful to load a URL without having the '
+                             'app restart.')
     group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
@@ -897,7 +902,8 @@ class _LaunchCommand(_Command):
                command_line_flags_file=self.args.command_line_flags_file,
                url=self.args.url, apk=self.apk_helper,
                wait_for_java_debugger=self.args.wait_for_java_debugger,
-               debug_process_name=self.args.debug_process_name)
+               debug_process_name=self.args.debug_process_name,
+               nokill=self.args.nokill)
 
 
 class _StopCommand(_Command):
