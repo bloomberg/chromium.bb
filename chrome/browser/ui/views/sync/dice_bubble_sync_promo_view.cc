@@ -106,7 +106,7 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
 
 void DiceBubbleSyncPromoView::EnableSync(
     const base::Optional<AccountInfo>& account) {
-  delegate_->OnEnableSync(signin_button_->account().value_or(AccountInfo()));
+  delegate_->OnEnableSync(account.value_or(AccountInfo()));
 }
 
 const char* DiceBubbleSyncPromoView::GetClassName() const {
