@@ -44,7 +44,7 @@ class JSONParserTest;
 // next token.
 class BASE_EXPORT JSONParser {
  public:
-  explicit JSONParser(int options);
+  JSONParser(int options, int max_depth = JSONReader::kStackMaxDepth);
   ~JSONParser();
 
   // Parses the input string according to the set options and returns the
@@ -219,6 +219,9 @@ class BASE_EXPORT JSONParser {
 
   // base::JSONParserOptions that control parsing.
   const int options_;
+
+  // Maximum depth to parse.
+  const int max_depth_;
 
   // Pointer to the start of the input data.
   const char* start_pos_;

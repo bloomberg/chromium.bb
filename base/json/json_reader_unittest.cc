@@ -675,4 +675,13 @@ TEST(JSONReaderTest, IllegalTrailingNull) {
   EXPECT_EQ(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, reader.error_code());
 }
 
+TEST(JSONReaderTest, MaxNesting) {
+  std::string json(R"({"outer": { "inner": {"foo": true}}})");
+  std::unique_ptr<Value> root;
+  root = JSONReader::Read(json, JSON_PARSE_RFC, 3);
+  ASSERT_FALSE(root);
+  root = JSONReader::Read(json, JSON_PARSE_RFC, 4);
+  ASSERT_TRUE(root);
+}
+
 }  // namespace base
