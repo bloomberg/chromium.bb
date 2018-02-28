@@ -7,11 +7,7 @@
 #include <windows.h>
 
 #include <tlhelp32.h>
-#include <wincrypt.h>
 #include <wintrust.h>
-
-// This must be after wincrypt and wintrust.
-#include <mscat.h>
 
 #include <limits>
 #include <memory>
@@ -25,6 +21,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
+#include "crypto/wincrypt_shim.h"
+
+// This must be after wincrypt and wintrust.
+#include <mscat.h>
 
 namespace {
 
