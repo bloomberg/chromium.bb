@@ -26102,7 +26102,6 @@ from previous Chrome versions.
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
-  <int value="-833382237" label="ash-enable-docked-magnifier"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-828070439" label="NativeSmb:disabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
@@ -26563,6 +26562,7 @@ from previous Chrome versions.
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="371268743" label="OmniboxUIExperimentVerticalMargin:disabled"/>
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
+  <int value="373177941" label="DockedMagnifier:enabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="378994579" label="Previews:enabled"/>
@@ -27103,6 +27103,7 @@ from previous Chrome versions.
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
   <int value="1697189972" label="WebPaymentsSingleAppUiSkip:disabled"/>
+  <int value="1699182601" label="DockedMagnifier:disabled"/>
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
   <int value="1702090999" label="ClearOldBrowsingData:disabled"/>

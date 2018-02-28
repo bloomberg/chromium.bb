@@ -52,11 +52,6 @@ const char kAshEnableV1AppBackButton[] = "ash-enable-v1-app-back-button";
 const char kAshEnableDisplayMoveWindowAccels[] =
     "ash-enable-display-move-window-accels";
 
-// Enables the docked (a.k.a. picture-in-picture) magnifier.
-// TODO(afakhry): Remove this once the feature is launched.
-// https://crbug.com/709824.
-const char kAshEnableDockedMagnifier[] = "ash-enable-docked-magnifier";
-
 // Enables keyboard shortcut viewer.
 // TODO(wutao): Remove this once the feature is launched. crbug.com/768932.
 const char kAshEnableKeyboardShortcutViewer[] =
@@ -193,11 +188,6 @@ const char kUseIMEService[] = "use-ime-service";
 bool IsDisplayMoveWindowAccelsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableDisplayMoveWindowAccels);
-}
-
-bool IsDockedMagnifierEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kAshEnableDockedMagnifier);
 }
 
 bool IsNightLightEnabled() {

@@ -19,6 +19,7 @@
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_controller.h"
@@ -191,7 +192,7 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
-  if (switches::IsDockedMagnifierEnabled()) {
+  if (features::IsDockedMagnifierEnabled()) {
     registry->AddInterface(
         base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
         main_thread_task_runner);
