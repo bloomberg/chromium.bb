@@ -34,7 +34,7 @@ import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.command_line.CommandLineUtil;
-import org.chromium.android_webview.variations.AwVariationsSeedHandler;
+import org.chromium.android_webview.services.AwVariationsSeedHandler;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -187,7 +187,7 @@ public class WebViewChromiumAwInit {
         boolean enableVariations =
                 CommandLine.getInstance().hasSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
         if (enableVariations) {
-            AwVariationsSeedHandler.bindToVariationsService();
+            AwVariationsSeedHandler.bindToVariationsService(webViewPackageName);
         }
     }
 
