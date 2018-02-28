@@ -150,9 +150,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const url::Origin& source_origin,
       int source_provider_id,
       StatusCallback callback);
-  // |source_service_worker_provider_id| and |source_client_info| are mutually
-  // exclusive. |source_service_worker_provider_id| is passed if the message
-  // source is a service worker, and otherwise |source_client_info| is passed.
+  // A valid |source_service_worker_provider_id| is passed if the message source
+  // is a service worker, and otherwise |source_client_info| is passed.
   void DispatchExtendableMessageEventInternal(
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,

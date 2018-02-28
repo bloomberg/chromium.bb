@@ -335,14 +335,10 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     StatusCallback callback,
     int source_service_worker_provider_id,
     blink::mojom::ServiceWorkerClientInfoPtr source_client_info) {
-  DCHECK(source_service_worker_provider_id != kInvalidServiceWorkerProviderId ||
-         source_client_info);
-  if (source_service_worker_provider_id == kInvalidServiceWorkerProviderId) {
-    DCHECK(source_client_info);
-    if (source_client_info->client_uuid.empty()) {
-      std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED);
-      return;
-    }
+  if (source_service_worker_provider_id == kInvalidServiceWorkerProviderId &&
+      !source_client_info) {
+    std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED);
+    return;
   }
 
   // If not enough time is left to actually process the event don't even

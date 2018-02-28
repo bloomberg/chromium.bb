@@ -424,7 +424,6 @@ void DidClaimClients(
     blink::mojom::ServiceWorkerErrorType error,
     const base::Optional<std::string>& error_msg) {
   if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
-    DCHECK(error_msg);
     callbacks->OnError(blink::WebServiceWorkerError(
         error, blink::WebString::FromUTF8(*error_msg)));
     return;
@@ -437,7 +436,7 @@ void DidGetClient(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
     blink::mojom::ServiceWorkerClientInfoPtr client) {
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client->client_uuid.empty()) {
+  if (client) {
     web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
         ToWebServiceWorkerClientInfo(std::move(client)));
   }
@@ -456,9 +455,10 @@ void DidSkipWaiting(
 
 void DidOpenWindow(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    bool success,
     blink::mojom::ServiceWorkerClientInfoPtr client,
     const base::Optional<std::string>& error_msg) {
-  if (error_msg) {
+  if (!success) {
     DCHECK(!client);
     callbacks->OnError(blink::WebServiceWorkerError(
         blink::mojom::ServiceWorkerErrorType::kNavigation,
@@ -466,9 +466,8 @@ void DidOpenWindow(
     return;
   }
 
-  DCHECK(client);
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client->client_uuid.empty()) {
+  if (client) {
     web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
         ToWebServiceWorkerClientInfo(std::move(client)));
   }
@@ -478,13 +477,12 @@ void DidOpenWindow(
 void DidFocusClient(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
     blink::mojom::ServiceWorkerClientInfoPtr client) {
-  if (!client || client->client_uuid.empty()) {
+  if (!client) {
     callbacks->OnError(blink::WebServiceWorkerError(
         blink::mojom::ServiceWorkerErrorType::kNotFound,
         "The client was not found."));
     return;
   }
-
   auto web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
       ToWebServiceWorkerClientInfo(std::move(client)));
   callbacks->OnSuccess(std::move(web_client));
@@ -492,9 +490,10 @@ void DidFocusClient(
 
 void DidNavigateClient(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    bool success,
     blink::mojom::ServiceWorkerClientInfoPtr client,
     const base::Optional<std::string>& error_msg) {
-  if (error_msg) {
+  if (!success) {
     DCHECK(!client);
     callbacks->OnError(blink::WebServiceWorkerError(
         blink::mojom::ServiceWorkerErrorType::kNavigation,
@@ -502,9 +501,8 @@ void DidNavigateClient(
     return;
   }
 
-  DCHECK(client);
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client->client_uuid.empty()) {
+  if (client) {
     web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
         ToWebServiceWorkerClientInfo(std::move(client)));
   }
