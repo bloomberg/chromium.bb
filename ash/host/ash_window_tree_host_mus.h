@@ -20,7 +20,7 @@ class AshWindowTreeHostMus : public AshWindowTreeHost,
   ~AshWindowTreeHostMus() override;
 
   // AshWindowTreeHost:
-  bool ConfineCursorToRootWindow() override;
+  void ConfineCursorToRootWindow() override;
   void SetRootWindowTransformer(
       std::unique_ptr<RootWindowTransformer> transformer) override;
   gfx::Insets GetHostInsets() const override;
