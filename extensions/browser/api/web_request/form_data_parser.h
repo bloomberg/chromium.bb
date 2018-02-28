@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 // Cannot forward declare StringPiece because it is a typedef.
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 
 namespace net {
 class URLRequest;
@@ -22,20 +24,23 @@ namespace extensions {
 class FormDataParser {
  public:
   // Result encapsulates name-value pairs returned by GetNextNameValue.
+  // Value stored as base::Value, which is string if data is UTF-8 string and
+  // binary blob if value represents form data binary data.
   class Result {
    public:
     Result();
     ~Result();
 
     const std::string& name() const { return name_; }
-    const std::string& value() const { return value_; }
+    base::Value take_value() { return std::move(value_); }
 
     void set_name(base::StringPiece str) { str.CopyToString(&name_); }
-    void set_value(base::StringPiece str) { str.CopyToString(&value_); }
+    void SetBinaryValue(base::StringPiece str);
+    void SetStringValue(std::string str);
 
    private:
     std::string name_;
-    std::string value_;
+    base::Value value_;
 
     DISALLOW_COPY_AND_ASSIGN(Result);
   };

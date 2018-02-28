@@ -43,7 +43,13 @@ bool RunParser(const std::string& content_type_header,
       return false;
     while (parser->GetNextNameValue(&result)) {
       output->push_back(result.name());
-      output->push_back(result.value());
+      base::Value value = result.take_value();
+      if (value.is_string()) {
+        output->push_back(value.GetString());
+      } else {
+        const auto& blob = value.GetBlob();
+        output->push_back(std::string(blob.begin(), blob.end()));
+      }
     }
   }
   return parser->AllDataReadOK();
@@ -64,7 +70,13 @@ bool CheckParserFails(const std::string& content_type_header,
       break;
     while (parser->GetNextNameValue(&result)) {
       output.push_back(result.name());
-      output.push_back(result.value());
+      base::Value value = result.take_value();
+      if (value.is_string()) {
+        output.push_back(value.GetString());
+      } else {
+        const auto& blob = value.GetBlob();
+        output.push_back(std::string(blob.begin(), blob.end()));
+      }
     }
   }
   return !parser->AllDataReadOK();
@@ -127,16 +139,28 @@ TEST(WebRequestFormDataParserTest, Parsing) {
       "\r\n"
       "one\r\n"
       "--" +
+      kBoundary + "\r\n";
+  const std::string kBlockStr3 =
+      "Content-Disposition: form-data; name=\"binary\"\r\n"
+      "Content-Type: application/octet-stream\r\n"
+      "\r\n"
+      "\u0420\u043e\u0434\u0436\u0435\u0440 "
+      "\u0416\u0435\u043b\u044f\u0437\u043d\u044b"
+      "\r\n"
+      "--" +
       kBoundary + "--";
   // POST data input.
-  const std::string kBigBlock = kBlockStr1 + kBlockStr2;
+  const std::string kBigBlock = kBlockStr1 + kBlockStr2 + kBlockStr3;
   const std::string kUrlEncodedBlock =
       "text=test%0Dtext%0Awith+non-CRLF+line+breaks"
       "&file=test&password=test+password&radio=Yes&check=option+A"
-      "&check=option+B&txtarea=Some+text.%0D%0AOther.%0D%0A&select=one";
+      "&check=option+B&txtarea=Some+text.%0D%0AOther.%0D%0A&select=one"
+      "&binary=%D0%A0%D0%BE%D0%B4%D0%B6%D0%B5%D1%80%20%D0%96%D0%B5%D0%BB%D1%8F%"
+      "D0%B7%D0%BD%D1%8B";
   const base::StringPiece kMultipartBytes(kBigBlock);
   const base::StringPiece kMultipartBytesSplit1(kBlockStr1);
   const base::StringPiece kMultipartBytesSplit2(kBlockStr2);
+  const base::StringPiece kMultipartBytesSplit3(kBlockStr3);
   const base::StringPiece kUrlEncodedBytes(kUrlEncodedBlock);
   const std::string kPlainBlock = "abc";
   const base::StringPiece kTextPlainBytes(kPlainBlock);
@@ -146,16 +170,25 @@ TEST(WebRequestFormDataParserTest, Parsing) {
   const std::string kMultipart =
       std::string("multipart/form-data; boundary=") + kBoundary;
   // Expected output.
-  const char* kPairs[] = {
-    "text", "test\rtext\nwith non-CRLF line breaks",
-    "file", "test",
-    "password", "test password",
-    "radio", "Yes",
-    "check", "option A",
-    "check", "option B",
-    "txtarea", "Some text.\r\nOther.\r\n",
-    "select", "one"
-  };
+  const char* kPairs[] = {"text",
+                          "test\rtext\nwith non-CRLF line breaks",
+                          "file",
+                          "test",
+                          "password",
+                          "test password",
+                          "radio",
+                          "Yes",
+                          "check",
+                          "option A",
+                          "check",
+                          "option B",
+                          "txtarea",
+                          "Some text.\r\nOther.\r\n",
+                          "select",
+                          "one",
+                          "binary",
+                          "\u0420\u043e\u0434\u0436\u0435\u0440 "
+                          "\u0416\u0435\u043b\u044f\u0437\u043d\u044b"};
   const std::vector<std::string> kExpected(kPairs, kPairs + arraysize(kPairs));
 
   std::vector<const base::StringPiece*> input;
@@ -170,6 +203,7 @@ TEST(WebRequestFormDataParserTest, Parsing) {
   input.clear();
   input.push_back(&kMultipartBytesSplit1);
   input.push_back(&kMultipartBytesSplit2);
+  input.push_back(&kMultipartBytesSplit3);
   EXPECT_TRUE(RunParser(kMultipart, input, &output));
   EXPECT_EQ(kExpected, output);
 
