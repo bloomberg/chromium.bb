@@ -896,8 +896,8 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
-  EXPECT_EQ(9u, result->NextSafeToBreakOffset(7));    // Before RA ligature.
-  EXPECT_EQ(9u, result->NextSafeToBreakOffset(9));    // Before RA ligature.
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(7));   // At end of string.
+  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));   // At end of string.
   EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));  // At end of string.
 
   // Add zero-width spaces at the safe to break offsets.

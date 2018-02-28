@@ -47,6 +47,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   struct Result {
     STACK_ALLOCATED();
 
+    // Indicates the resulting break offset.
     unsigned break_offset;
 
     // True if the break is hyphenated, either by automatic hyphenation or
@@ -58,10 +59,17 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
 
   // Shapes a line of text by finding a valid and appropriate break opportunity
   // based on the shaping results for the entire paragraph.
-  // The output parameter breakOffset indicates the resulting break offset.
+  // |start_should_be_safe| is true for the beginning of each wrapped line, but
+  // is false for subsequent ShapeResults.
   scoped_refptr<ShapeResult> ShapeLine(unsigned start_offset,
-                                LayoutUnit available_space,
-                                Result* result_out);
+                                       LayoutUnit available_space,
+                                       bool start_should_be_safe,
+                                       Result* result_out);
+  scoped_refptr<ShapeResult> ShapeLine(unsigned start_offset,
+                                       LayoutUnit available_space,
+                                       Result* result_out) {
+    return ShapeLine(start_offset, available_space, true, result_out);
+  }
 
   // Disable breaking at soft hyphens (U+00AD).
   bool IsSoftHyphenEnabled() const { return is_soft_hyphen_enabled_; }
@@ -87,8 +95,8 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
 
   scoped_refptr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
   scoped_refptr<ShapeResult> ShapeToEnd(unsigned start,
-                                 LayoutUnit start_position,
-                                 unsigned range_end);
+                                        unsigned first_safe,
+                                        unsigned range_end);
 
   const HarfBuzzShaper* shaper_;
   const Font* font_;

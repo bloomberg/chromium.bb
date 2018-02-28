@@ -216,6 +216,7 @@ inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direct
 scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
+    bool start_should_be_safe,
     ShapingLineBreaker::Result* result_out) {
   DCHECK_GE(available_space, LayoutUnit(0));
   unsigned range_start = result_->StartIndexForResult();
@@ -239,12 +240,15 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   unsigned candidate_break =
       result_->OffsetForPosition(end_position, false) + range_start;
 
+  unsigned first_safe =
+      start_should_be_safe ? result_->NextSafeToBreakOffset(start) : start;
+  DCHECK_GE(first_safe, start);
   if (candidate_break >= range_end) {
     // The |result_| does not have glyphs to fill the available space,
     // and thus unable to compute. Return the result up to range_end.
     DCHECK_EQ(candidate_break, range_end);
     result_out->break_offset = range_end;
-    return ShapeToEnd(start, start_position, range_end);
+    return ShapeToEnd(start, first_safe, range_end);
   }
 
   // candidate_break should be >= start, but rounding errors can chime in when
@@ -261,7 +265,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     // measure beyond it.
     if (break_opportunity >= range_end) {
       result_out->break_offset = range_end;
-      return ShapeToEnd(start, start_position, range_end);
+      return ShapeToEnd(start, first_safe, range_end);
     }
   }
   DCHECK_GT(break_opportunity, start);
@@ -270,8 +274,6 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   // the start and the next safe-to-break boundary needs to be reshaped and the
   // available space adjusted to take the reshaping into account.
   scoped_refptr<ShapeResult> line_start_result;
-  unsigned first_safe = result_->NextSafeToBreakOffset(start);
-  DCHECK_GE(first_safe, start);
   if (first_safe != start) {
     if (first_safe >= break_opportunity) {
       // There is no safe-to-break, reshape the whole range.
@@ -361,24 +363,27 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
 // Shape from the specified offset to the end of the ShapeResult.
 // If |start| is safe-to-break, this copies the subset of the result.
 scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
-                                                   LayoutUnit start_position,
-                                                   unsigned range_end) {
-  unsigned first_safe = result_->NextSafeToBreakOffset(start);
+                                                          unsigned first_safe,
+                                                          unsigned range_end) {
+  DCHECK_GE(start, result_->StartIndexForResult());
+  DCHECK_LT(start, range_end);
   DCHECK_GE(first_safe, start);
+  DCHECK_EQ(range_end, result_->EndIndexForResult());
 
-  scoped_refptr<ShapeResult> line_result;
-  TextDirection direction = result_->Direction();
+  // If |start| is safe-to-break, no reshape is needed.
   if (first_safe == start) {
-    // If |start| is safe-to-break no reshape is needed.
-    line_result = result_->SubRange(start, range_end);
-  } else if (first_safe < range_end) {
-    // Otherwise reshape to |first_safe|, then copy the rest.
-    line_result = Shape(direction, start, first_safe);
-    result_->CopyRange(first_safe, range_end, line_result.get());
-  } else {
-    // If no safe-to-break offset is found in range, reshape the entire range.
-    line_result = Shape(direction, start, range_end);
+    return result_->SubRange(start, range_end);
   }
+
+  // If no safe-to-break offset is found in range, reshape the entire range.
+  TextDirection direction = result_->Direction();
+  if (first_safe >= range_end) {
+    return Shape(direction, start, range_end);
+  }
+
+  // Otherwise reshape to |first_safe|, then copy the rest.
+  scoped_refptr<ShapeResult> line_result = Shape(direction, start, first_safe);
+  result_->CopyRange(first_safe, range_end, line_result.get());
   return line_result;
 }
 

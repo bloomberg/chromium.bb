@@ -318,21 +318,6 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   NGInlineItemResult* item_result = AddItem(item, item_results);
   LayoutUnit available_width = line_.AvailableWidth();
 
-  // If the start offset is at the item boundary, try to add the entire item.
-  if (offset_ == item.StartOffset()) {
-    item_result->inline_size =
-        item.TextShapeResult()->SnappedWidth().ClampNegativeToZero();
-    LayoutUnit next_position = line_.position + item_result->inline_size;
-    if (!auto_wrap_ || next_position <= available_width) {
-      item_result->shape_result = item.TextShapeResult();
-      item_result->may_break_inside = auto_wrap_;
-      ComputeCanBreakAfter(item_result);
-      line_.position = next_position;
-      MoveToNextOf(item);
-      return state;
-    }
-  }
-
   if (auto_wrap_) {
     // Try to break inside of this text item.
     BreakText(item_result, item, available_width - line_.position, line_info);
@@ -361,7 +346,6 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   // Add the rest of the item if !auto_wrap.
   // Because the start position may need to reshape, run ShapingLineBreaker
   // with max available width.
-  DCHECK_NE(offset_, item.StartOffset());
   BreakText(item_result, item, LayoutUnit::Max(), line_info);
   DCHECK_EQ(item_result->end_offset, item.EndOffset());
   DCHECK(!item_result->may_break_inside);
@@ -392,7 +376,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   available_width = std::max(LayoutUnit(0), available_width);
   ShapingLineBreaker::Result result;
   scoped_refptr<ShapeResult> shape_result =
-      breaker.ShapeLine(item_result->start_offset, available_width, &result);
+      breaker.ShapeLine(item_result->start_offset, available_width,
+                        offset_ == line_info->StartOffset(), &result);
   DCHECK_GT(shape_result->NumCharacters(), 0u);
   if (result.is_hyphenated) {
     AppendHyphen(item, line_info);
