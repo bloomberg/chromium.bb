@@ -117,25 +117,27 @@ void HTMLFormControlElement::UpdateAncestorDisabledState() const {
     return;
   }
   may_have_field_set_ancestor_ = false;
-  HTMLFieldSetElement* highest_disabled_field_set_ancestor = nullptr;
-  ContainerNode* highest_legend_ancestor = nullptr;
+  // <fieldset> element of which |disabled| attribute affects |this| element.
+  HTMLFieldSetElement* disabled_fieldset_ancestor = nullptr;
+  ContainerNode* last_legend_ancestor = nullptr;
   for (HTMLElement* ancestor = Traversal<HTMLElement>::FirstAncestor(*this);
        ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
     if (IsHTMLLegendElement(*ancestor))
-      highest_legend_ancestor = ancestor;
+      last_legend_ancestor = ancestor;
     if (IsHTMLFieldSetElement(*ancestor)) {
       may_have_field_set_ancestor_ = true;
-      if (ancestor->IsDisabledFormControl())
-        highest_disabled_field_set_ancestor = ToHTMLFieldSetElement(ancestor);
+      if (ancestor->IsDisabledFormControl()) {
+        auto* fieldset = ToHTMLFieldSetElement(ancestor);
+        if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
+          continue;
+        disabled_fieldset_ancestor = fieldset;
+        break;
+      }
     }
   }
-  ancestor_disabled_state_ =
-      (highest_disabled_field_set_ancestor &&
-       !(highest_legend_ancestor &&
-         highest_legend_ancestor ==
-             highest_disabled_field_set_ancestor->Legend()))
-          ? kAncestorDisabledStateDisabled
-          : kAncestorDisabledStateEnabled;
+  ancestor_disabled_state_ = disabled_fieldset_ancestor
+                                 ? kAncestorDisabledStateDisabled
+                                 : kAncestorDisabledStateEnabled;
 }
 
 void HTMLFormControlElement::AncestorDisabledStateWasChanged() {
