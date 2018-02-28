@@ -5,6 +5,13 @@
 'use strict';
 
 /**
+ * An array of the latest component data including ID, name, status and
+ * version. This is populated in returnComponentsData() for the convenience of
+ * tests.
+ */
+var currentComponentsData = null;
+
+/**
  * Takes the |componentsData| input argument which represents data about the
  * currently installed components and populates the html jstemplate with
  * that data. It expects an object structure like the above.
@@ -32,7 +39,8 @@ function requestComponentsData() {
 
 /**
  * Called by the WebUI to re-populate the page with data representing the
- * current state of installed components.
+ * current state of installed components. The componentsData will also be
+ * stored in currentComponentsData to be available to JS for testing purposes.
  * @param {Object} componentsData Detailed info about installed components. The
  *     template expects each component's format to match the following
  *     structure to correctly populate the page:
@@ -55,6 +63,10 @@ function returnComponentsData(componentsData) {
 
   bodyContainer.style.visibility = 'hidden';
   body.className = '';
+
+  // Initialize |currentComponentsData|, which can also be updated in
+  // onComponentEvent() later.
+  currentComponentsData = componentsData.components;
 
   renderTemplate(componentsData);
 
@@ -85,12 +97,24 @@ function returnComponentsData(componentsData) {
  * optional.
  */
 function onComponentEvent(eventArgs) {
-  if (eventArgs['id']) {
-    var id = eventArgs['id'];
-    $('status-' + id).textContent = eventArgs['event'];
-  }
+  if (!eventArgs['id'])
+    return;
+
+  var id = eventArgs['id'];
+
+  var filteredComponents = currentComponentsData.filter(function(entry) {
+    return entry.id === id;
+  });
+  var component = filteredComponents[0];
+
+  var status = eventArgs['event'];
+  $('status-' + id).textContent = status;
+  component['status'] = status;
+
   if (eventArgs['version']) {
-    $('version-' + id).textContent = eventArgs['version'];
+    var version = eventArgs['version'];
+    $('version-' + id).textContent = version;
+    component['version'] = version;
   }
 }
 
