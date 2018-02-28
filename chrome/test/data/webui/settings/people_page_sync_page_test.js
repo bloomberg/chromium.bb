@@ -3,42 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_sync_page', function() {
-  /** @implements {settings.SyncBrowserProxy} */
-  class TestSyncBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super([
-        'didNavigateToSyncPage',
-        'didNavigateAwayFromSyncPage',
-        'setSyncDatatypes',
-        'setSyncEncryption',
-      ]);
-
-      /* @type {!settings.PageStatus} */
-      this.encryptionResponse = settings.PageStatus.CONFIGURE;
-    }
-
-    /** @override */
-    didNavigateToSyncPage() {
-      this.methodCalled('didNavigateToSyncPage');
-    }
-
-    /** @override */
-    didNavigateAwayFromSyncPage() {
-      this.methodCalled('didNavigateAwayFromSyncPage');
-    }
-
-    /** @override */
-    setSyncDatatypes(syncPrefs) {
-      this.methodCalled('setSyncDatatypes', syncPrefs);
-      return Promise.resolve(settings.PageStatus.CONFIGURE);
-    }
-
-    /** @override */
-    setSyncEncryption(syncPrefs) {
-      this.methodCalled('setSyncEncryption', syncPrefs);
-      return Promise.resolve(this.encryptionResponse);
-    }
-  }
 
   suite('AdvancedSyncSettingsTests', function() {
     let syncPage = null;

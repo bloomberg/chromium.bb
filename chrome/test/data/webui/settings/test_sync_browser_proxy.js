@@ -6,17 +6,24 @@
 class TestSyncBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'getSyncStatus',
+      'didNavigateAwayFromSyncPage',
+      'didNavigateToSyncPage',
+      'getPromoImpressionCount',
       'getStoredAccounts',
+      'getSyncStatus',
+      'incrementPromoImpressionCount',
+      'setSyncDatatypes',
+      'setSyncEncryption',
       'signOut',
       'startSignIn',
       'startSyncingWithEmail',
-      'getPromoImpressionCount',
-      'incrementPromoImpressionCount',
     ]);
 
     /** @private {number} */
     this.impressionCount_ = 0;
+
+    /** @type {!settings.PageStatus} */
+    this.encryptionResponse = settings.PageStatus.CONFIGURE;
   }
 
   /** @override */
@@ -62,5 +69,27 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   incrementPromoImpressionCount() {
     this.methodCalled('incrementPromoImpressionCount');
+  }
+
+  /** @override */
+  didNavigateToSyncPage() {
+    this.methodCalled('didNavigateToSyncPage');
+  }
+
+  /** @override */
+  didNavigateAwayFromSyncPage() {
+    this.methodCalled('didNavigateAwayFromSyncPage');
+  }
+
+  /** @override */
+  setSyncDatatypes(syncPrefs) {
+    this.methodCalled('setSyncDatatypes', syncPrefs);
+    return Promise.resolve(settings.PageStatus.CONFIGURE);
+  }
+
+  /** @override */
+  setSyncEncryption(syncPrefs) {
+    this.methodCalled('setSyncEncryption', syncPrefs);
+    return Promise.resolve(this.encryptionResponse);
   }
 }
