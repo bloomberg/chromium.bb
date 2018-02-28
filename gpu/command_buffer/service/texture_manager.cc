@@ -3315,6 +3315,36 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
   return format;
 }
 
+// static
+GLenum TextureManager::AdjustTexStorageFormat(
+    const gles2::FeatureInfo* feature_info,
+    GLenum format) {
+  // We need to emulate luminance/alpha on core profile only.
+  if (feature_info->gl_version_info().is_desktop_core_profile) {
+    switch (format) {
+      case GL_ALPHA8_EXT:
+        return GL_R8_EXT;
+      case GL_LUMINANCE8_EXT:
+        return GL_R8_EXT;
+      case GL_LUMINANCE8_ALPHA8_EXT:
+        return GL_RG8_EXT;
+      case GL_ALPHA16F_EXT:
+        return GL_R16F_EXT;
+      case GL_LUMINANCE16F_EXT:
+        return GL_R16F_EXT;
+      case GL_LUMINANCE_ALPHA16F_EXT:
+        return GL_RG16F_EXT;
+      case GL_ALPHA32F_EXT:
+        return GL_R32F_EXT;
+      case GL_LUMINANCE32F_EXT:
+        return GL_R32F_EXT;
+      case GL_LUMINANCE_ALPHA32F_EXT:
+        return GL_RG32F_EXT;
+    }
+  }
+  return format;
+}
+
 void TextureManager::DoTexImage(
     DecoderTextureState* texture_state,
     ContextState* state,
