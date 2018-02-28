@@ -438,6 +438,13 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
   ClearFreeLists();
 }
 
+void NormalPageArena::MakeConsistentForGC() {
+  BaseArena::MakeConsistentForGC();
+
+  // Remove linear allocation area.
+  SetAllocationPoint(nullptr, 0);
+}
+
 void NormalPageArena::ClearFreeLists() {
   SetAllocationPoint(nullptr, 0);
   free_list_.Clear();
