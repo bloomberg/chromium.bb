@@ -5,14 +5,18 @@
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -46,6 +50,14 @@ HostedAppButtonContainer::AppMenuButton::AppMenuButton(
     : views::MenuButton(base::string16(), this, false),
       browser_view_(browser_view) {
   SetInkDropMode(InkDropMode::ON);
+  // This name is guaranteed not to change during the lifetime of this button.
+  // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
+  // because the menu applies to the entire app.
+  base::string16 app_name = base::UTF8ToUTF16(
+      browser_view->browser()->hosted_app_controller()->GetAppShortName());
+  SetAccessibleName(app_name);
+  SetTooltipText(
+      l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
 }
 
 HostedAppButtonContainer::AppMenuButton::~AppMenuButton() {}
