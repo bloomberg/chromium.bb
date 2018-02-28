@@ -972,6 +972,14 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   if (!repaint_ack_pending_ && !resize_ack_pending_)
     return;
 
+  // OnResizeOrRepaintACK posts a task to the default TaskRunner in auto-resize,
+  // which is not the one that we pump in this nested loop, causing unexpected
+  // behavior. It very well may be safe to do that post task to the TaskRunner
+  // from ui::WindowResizeHelperMac (which we pump), but don't do that until
+  // it is known to be safe.
+  if (auto_resize_enabled_)
+    return;
+
   if (!view_)
     return;
 
