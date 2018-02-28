@@ -39,8 +39,11 @@ class CORE_EXPORT PrePaintTreeWalk {
         : paint_invalidator_context(parent_context_accessor),
           ancestor_overflow_paint_layer(
               parent_context.ancestor_overflow_paint_layer) {
-      if (needs_tree_builder_context || DCHECK_IS_ON())
+      if (needs_tree_builder_context || DCHECK_IS_ON()) {
+        // Speculative CHECK to debug crbug.com/816810.
+        CHECK(parent_context.tree_builder_context);
         tree_builder_context.emplace(*parent_context.tree_builder_context);
+      }
 #if DCHECK_IS_ON()
       if (needs_tree_builder_context)
         DCHECK(parent_context.tree_builder_context->is_actually_needed);
