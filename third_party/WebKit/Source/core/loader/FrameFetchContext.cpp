@@ -574,7 +574,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
-    GetLocalFrameClient()->ReportLegacySymantecCert(response.Url());
+    GetLocalFrameClient()->ReportLegacySymantecCert(response.Url(),
+                                                    false /* did_fail */);
   }
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
@@ -645,7 +646,8 @@ void FrameFetchContext::DispatchDidFinishLoading(
   }
 }
 
-void FrameFetchContext::DispatchDidFail(unsigned long identifier,
+void FrameFetchContext::DispatchDidFail(const KURL& url,
+                                        unsigned long identifier,
                                         const ResourceError& error,
                                         int64_t encoded_data_length,
                                         bool is_internal_request) {
@@ -656,6 +658,10 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
     UseCounter::Count(
         GetFrame()->GetDocument(),
         WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
+  }
+
+  if (NetworkUtils::IsLegacySymantecCertError(error.ErrorCode())) {
+    GetLocalFrameClient()->ReportLegacySymantecCert(url, true /* did_fail */);
   }
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);

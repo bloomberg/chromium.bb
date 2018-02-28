@@ -6905,7 +6905,8 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
   }
 
  protected:
-  void SetUpCertVerifier() {
+  void SetUpCertVerifier(const std::string& host_pattern,
+                         bool already_distrusted) {
     net::CertVerifyResult verify_result;
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
@@ -6925,8 +6926,14 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
           GetSPKIHash(intermediate.get()));
     }
 
-    mock_cert_verifier()->AddResultForCert(https_server_.GetCertificate().get(),
-                                           verify_result, net::OK);
+    if (already_distrusted) {
+      verify_result.cert_status = net::CERT_STATUS_SYMANTEC_LEGACY;
+    }
+
+    mock_cert_verifier()->set_default_result(net::OK);
+    mock_cert_verifier()->AddResultForCertAndHost(
+        https_server_.GetCertificate().get(), host_pattern, verify_result,
+        already_distrusted ? net::ERR_CERT_SYMANTEC_LEGACY : net::OK);
   }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
@@ -6941,7 +6948,8 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
 // Tests that the Symantec console message is properly overridden for post-June
 // 2016 certificates.
 IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, PostJune2016) {
-  ASSERT_NO_FATAL_FAILURE(SetUpCertVerifier());
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier("*", false /* already_distrusted */));
   ASSERT_TRUE(https_server()->Start());
   GURL url(https_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -6961,7 +6969,8 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, PostJune2016) {
 // out after many subresource loads.
 IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, ManySubresources) {
   content::SetupCrossSiteRedirector(https_server());
-  ASSERT_NO_FATAL_FAILURE(SetUpCertVerifier());
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier("*", false /* already_distrusted */));
   ASSERT_TRUE(https_server()->Start());
   GURL url(https_server()->GetURL("/ssl/page_with_many_subresources.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -6985,6 +6994,27 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, ManySubresources) {
     EXPECT_TRUE(
         base::MatchPattern(console_observer.message(), "*SSL certificates*"));
   }
+}
+
+// Tests that the Symantec console message is logged for resources with certs
+// that have already been distrusted.
+IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, DistrustedSubresources) {
+  content::SetupCrossSiteRedirector(https_server());
+  // Only distrust subresources on *.test, so that the main resource loads
+  // without an interstitial.
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier("*.test", true /* already_distrusted */));
+  ASSERT_TRUE(https_server()->Start());
+  GURL url(https_server()->GetURL("/ssl/page_with_many_subresources.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::ConsoleObserverDelegate console_observer(tab, "*https://a.test*");
+  tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(IsShowingInterstitial(tab));
+  console_observer.Wait();
+  EXPECT_TRUE(
+      base::MatchPattern(console_observer.message(), "*has been distrusted*"));
 }
 
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes

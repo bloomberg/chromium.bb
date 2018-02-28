@@ -42,6 +42,8 @@ PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 
 PLATFORM_EXPORT bool IsCertificateTransparencyRequiredError(int);
 
+PLATFORM_EXPORT bool IsLegacySymantecCertError(int);
+
 }  // NetworkUtils
 
 }  // namespace blink
