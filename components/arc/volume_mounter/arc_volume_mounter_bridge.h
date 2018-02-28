@@ -28,7 +28,8 @@ class ArcBridgeService;
 class ArcVolumeMounterBridge
     : public KeyedService,
       public chromeos::disks::DiskMountManager::Observer,
-      public ConnectionObserver<mojom::VolumeMounterInstance> {
+      public ConnectionObserver<mojom::VolumeMounterInstance>,
+      public mojom::VolumeMounterHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -61,6 +62,9 @@ class ArcVolumeMounterBridge
   void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
                      chromeos::RenameError error_code,
                      const std::string& device_path) override;
+
+  // mojom::VolumeMounterHost overrides:
+  void RequestAllMountPoints() override;
 
  private:
   void SendAllMountEvents();

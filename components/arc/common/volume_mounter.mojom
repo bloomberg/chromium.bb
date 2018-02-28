@@ -33,13 +33,24 @@ struct MountPointInfo {
   string fs_uuid;
   // The file system label.
   string label;
-  // The device type that contains this mount point. If unknown, the event should be ignored.
+  // The device type that contains this mount point. If unknown, the event
+  // should be ignored.
   DeviceType device_type;
 };
 
+// Next Method ID: 1
+interface VolumeMounterHost {
+  // Requests all recorded MountPointInfos to be sent through a series of
+  // VolumeMounterInstance::OnMountEvent call.
+  [MinVersion=0] RequestAllMountPoints@1();
+};
+
 // Notifies Android about Mounting events.
+// Next Method ID: 2
 interface VolumeMounterInstance {
-  // @0 is reserved for Init().
+  // Establishes full-duplex communication with the host.
+  [MinVersion=1] Init@0(VolumeMounterHost host_ptr) => ();
+
   // Triggers a mount event in Android.
   OnMountEvent@1(MountPointInfo mount_point_info);
 };
