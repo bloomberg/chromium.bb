@@ -33,7 +33,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -101,6 +100,9 @@ public class SavePasswordsPreferences
 
     // The key for saving |mExportState| to instance bundle.
     private static final String SAVED_STATE_EXPORT_STATE = "saved-state-export-state";
+
+    // The key for saving |mEntriesCount| to instance bundle.
+    private static final String SAVED_STATE_ENTRIES_COUNT = "saved-state-entries-count";
 
     // The key for saving |mExportFileUri| to instance bundle.
     private static final String SAVED_STATE_EXPORT_FILE_URI = "saved-state-export-file-uri";
@@ -173,6 +175,10 @@ public class SavePasswordsPreferences
     // this timestamp is assigned the result of System.currentTimeMillis().
     private Long mExportPreparationStart;
 
+    // The number of password entries contained in the most recent serialized data for password
+    // export.
+    private int mEntriesCount;
+
     private MenuItem mHelpItem;
 
     private String mSearchQuery;
@@ -230,6 +236,7 @@ public class SavePasswordsPreferences
             mSearchQuery = savedInstanceState.getString(SAVED_STATE_SEARCH_QUERY);
             mSearchRecorded = mSearchQuery != null; // We record a search when a query is set.
         }
+        mEntriesCount = savedInstanceState.getInt(SAVED_STATE_ENTRIES_COUNT);
     }
 
     @Override
@@ -380,10 +387,11 @@ public class SavePasswordsPreferences
         // they arrive.
         mExportPreparationStart = System.currentTimeMillis();
         PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
-                new Callback<byte[]>() {
+                new ByteArrayIntCallback() {
                     @Override
-                    public void onResult(byte[] serializedPasswords) {
-                        shareSerializedPasswords(serializedPasswords);
+                    public void onResult(byte[] byteArray, int number) {
+                        mEntriesCount = number;
+                        shareSerializedPasswords(byteArray);
                     }
                 });
         if (!ReauthenticationManager.isScreenLockSetUp(getActivity().getApplicationContext())) {
@@ -619,6 +627,8 @@ public class SavePasswordsPreferences
             ContextUtils.getApplicationContext().startActivity(chooser);
             RecordHistogram.recordEnumeratedHistogram("PasswordManager.ExportPasswordsToCSVResult",
                     EXPORT_RESULT_SUCCESS, EXPORT_RESULT_COUNT);
+            RecordHistogram.recordCountHistogram(
+                    "PasswordManager.ExportedPasswordsPerUserInCSV", mEntriesCount);
         } catch (ActivityNotFoundException e) {
             showExportErrorAndAbort(R.string.save_password_preferences_export_no_app, null,
                     R.string.save_password_preferences_export_learn_google_drive,
@@ -817,6 +827,7 @@ public class SavePasswordsPreferences
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SAVED_STATE_EXPORT_STATE, mExportState);
+        outState.putInt(SAVED_STATE_ENTRIES_COUNT, mEntriesCount);
         if (mExportFileUri != null) {
             outState.putString(SAVED_STATE_EXPORT_FILE_URI, mExportFileUri.toString());
         }

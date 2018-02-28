@@ -123,14 +123,15 @@ TEST_F(PasswordUIViewAndroidTest, GetSerializedPasswords) {
   std::unique_ptr<PasswordUIViewAndroid, PasswordUIViewAndroidDestroyDeleter>
       password_ui_view(
           new PasswordUIViewAndroid(env_, JavaParamRef<jobject>(nullptr)));
-  std::string serialized_passwords;
+  PasswordUIViewAndroid::SerializationResult serialized_passwords;
   password_ui_view->set_export_target_for_testing(&serialized_passwords);
   password_ui_view->set_credential_provider_for_testing(&provider);
   password_ui_view->HandleSerializePasswords(
       env_, JavaParamRef<jobject>(nullptr), JavaParamRef<jobject>(nullptr));
 
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ(expected_result, serialized_passwords);
+  EXPECT_EQ(expected_result, serialized_passwords.data);
+  EXPECT_EQ(1, serialized_passwords.entries_count);
 }
 
 // Test that destroying the PasswordUIView when tasks are pending does not lead
@@ -142,7 +143,9 @@ TEST_F(PasswordUIViewAndroidTest, GetSerializedPasswords_Cancelled) {
   std::unique_ptr<PasswordUIViewAndroid, PasswordUIViewAndroidDestroyDeleter>
       password_ui_view(
           new PasswordUIViewAndroid(env_, JavaParamRef<jobject>(nullptr)));
-  std::string serialized_passwords = "this should not get overwritten";
+  PasswordUIViewAndroid::SerializationResult serialized_passwords;
+  serialized_passwords.data = "this should not get overwritten";
+  serialized_passwords.entries_count = 123;
   password_ui_view->set_export_target_for_testing(&serialized_passwords);
   password_ui_view->set_credential_provider_for_testing(&provider);
   password_ui_view->HandleSerializePasswords(
@@ -154,7 +157,8 @@ TEST_F(PasswordUIViewAndroidTest, GetSerializedPasswords_Cancelled) {
   password_ui_view.reset();
   // Now run the background tasks (and the subsequent deletion).
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ("this should not get overwritten", serialized_passwords);
+  EXPECT_EQ("this should not get overwritten", serialized_passwords.data);
+  EXPECT_EQ(123, serialized_passwords.entries_count);
 }
 
 }  //  namespace android

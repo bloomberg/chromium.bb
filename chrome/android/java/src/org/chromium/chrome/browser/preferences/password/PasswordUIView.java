@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
-import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -72,7 +71,7 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
-    public void serializePasswords(Callback<byte[]> callback) {
+    public void serializePasswords(ByteArrayIntCallback callback) {
         nativeHandleSerializePasswords(mNativePasswordUIViewAndroid, callback);
     }
 
@@ -116,5 +115,5 @@ public final class PasswordUIView implements PasswordManagerHandler {
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 
     private native void nativeHandleSerializePasswords(
-            long nativePasswordUIViewAndroid, Callback<byte[]> callback);
+            long nativePasswordUIViewAndroid, ByteArrayIntCallback callback);
 }
