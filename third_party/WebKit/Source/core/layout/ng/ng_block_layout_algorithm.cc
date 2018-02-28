@@ -1557,6 +1557,15 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   NGLogicalSize available_size(child_available_size);
   NGLogicalSize percentage_size(child_percentage_size_);
+  if (percentage_size.block_size == NGSizeIndefinite &&
+      Node().GetDocument().InQuirksMode()) {
+    // Implement percentage height calculation quirk
+    // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
+    if (!Style().IsDisplayTableType() && !Style().HasOutOfFlowPosition()) {
+      percentage_size.block_size =
+          constraint_space_.PercentageResolutionSize().block_size;
+    }
+  }
   space_builder.SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size);
 
@@ -1759,7 +1768,8 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateDefaultBlockSize() {
   if (!Node().GetDocument().InQuirksMode())
     return NGSizeIndefinite;
 
-  if (Node().IsDocumentElement() || Node().IsBody()) {
+  bool is_quirky_element = Node().IsDocumentElement() || Node().IsBody();
+  if (is_quirky_element && !Style().HasOutOfFlowPosition()) {
     LayoutUnit block_size = ConstraintSpace().AvailableSize().block_size;
     block_size -= ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
     return block_size.ClampNegativeToZero();
