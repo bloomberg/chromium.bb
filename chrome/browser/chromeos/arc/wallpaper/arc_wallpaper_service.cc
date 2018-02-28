@@ -142,7 +142,7 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
 
     // TODO(crbug.com/776464): Replace |CanSetUserWallpaper| with mojo callback.
     if (!wallpaper_controller->CanSetUserWallpaper(account.id,
-                                                   !account.is_ephemeral)) {
+                                                   account.is_ephemeral)) {
       // When kiosk app is running or policy is enforced, WallpaperController
       // doesn't process custom wallpaper requests.
       service_->NotifyWallpaperChangedAndReset(android_id_);
