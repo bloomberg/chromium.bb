@@ -354,17 +354,18 @@ void BrowserPluginGuest::InitInternal(
 
   DCHECK(GetWebContents()->GetRenderViewHost());
 
-  // Initialize the device scale factor by calling |NotifyScreenInfoChanged|.
-  auto* render_widget_host = RenderWidgetHostImpl::From(
-      GetWebContents()->GetRenderViewHost()->GetWidget());
-  render_widget_host->NotifyScreenInfoChanged();
-
   // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
   // be reset again the next time preferences are updated.
   WebPreferences prefs =
       GetWebContents()->GetRenderViewHost()->GetWebkitPreferences();
   prefs.navigate_on_drag_drop = false;
   GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  base::Optional<viz::LocalSurfaceId> child_local_surface_id;
+  if (local_surface_id_.is_valid())
+    child_local_surface_id = local_surface_id_;
+  SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_Attach_ACK>(
+      browser_plugin_instance_id(), child_local_surface_id));
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {
@@ -1056,9 +1057,10 @@ void BrowserPluginGuest::OnUpdateResizeParams(
     const ScreenInfo& screen_info,
     uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
-  if ((frame_rect_.size() != frame_rect.size() ||
-       screen_info_ != screen_info) &&
-      local_surface_id_ == local_surface_id) {
+  if (local_surface_id_ > local_surface_id ||
+      ((frame_rect_.size() != frame_rect.size() ||
+        screen_info_ != screen_info) &&
+       local_surface_id_ == local_surface_id)) {
     SiteInstance* owner_site_instance = delegate_->GetOwnerSiteInstance();
     bad_message::ReceivedBadMessage(
         owner_site_instance->GetProcess(),

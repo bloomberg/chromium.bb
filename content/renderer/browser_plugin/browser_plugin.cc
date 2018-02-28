@@ -120,6 +120,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_Attach_ACK, OnAttachACK)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady, OnGuestReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ResizeDueToAutoResize,
@@ -192,8 +193,6 @@ void BrowserPlugin::Attach() {
       browser_plugin_instance_id_,
       attach_params));
 
-  attached_ = true;
-
   // Post an update event to the associated accessibility object.
   auto* render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_routing_id());
@@ -207,7 +206,6 @@ void BrowserPlugin::Attach() {
   }
 
   sent_resize_params_ = base::nullopt;
-  WasResized();
 }
 
 void BrowserPlugin::Detach() {
@@ -220,6 +218,10 @@ void BrowserPlugin::Detach() {
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
+}
+
+const viz::LocalSurfaceId& BrowserPlugin::GetLocalSurfaceId() const {
+  return parent_local_surface_id_allocator_.last_known_local_surface_id();
 }
 
 #if defined(USE_AURA)
@@ -237,8 +239,8 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
   DCHECK(renderer_window_tree_client);
   mus_embedded_frame_ =
       renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
-  if (attached() && local_surface_id_.is_valid()) {
-    mus_embedded_frame_->SetWindowBounds(local_surface_id_,
+  if (attached() && GetLocalSurfaceId().is_valid()) {
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
                                          FrameRectInPixels());
   }
 }
@@ -256,11 +258,12 @@ void BrowserPlugin::WasResized() {
       sent_resize_params_->screen_info != pending_resize_params_.screen_info;
 
   if (synchronized_params_changed)
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
     compositing_helper_->SetPrimarySurfaceId(
-        viz::SurfaceId(frame_sink_id_, local_surface_id_), frame_rect().size());
+        viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
+        frame_rect().size());
   }
 
   bool position_changed =
@@ -273,7 +276,7 @@ void BrowserPlugin::WasResized() {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_UpdateResizeParams(
             browser_plugin_instance_id_, frame_rect(), screen_info(),
-            auto_size_sequence_number(), local_surface_id_));
+            auto_size_sequence_number(), GetLocalSurfaceId()));
   }
 
   if (delegate_ && size_changed)
@@ -284,7 +287,7 @@ void BrowserPlugin::WasResized() {
 
 #if defined(USE_AURA)
   if (features::IsMusEnabled() && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(local_surface_id_,
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
                                          FrameRectInPixels());
   }
 #endif
@@ -298,6 +301,15 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
   if (!render_view)
     return;
   render_view->GetWebView()->AdvanceFocus(reverse);
+}
+
+void BrowserPlugin::OnAttachACK(
+    int browser_plugin_instance_id,
+    const base::Optional<viz::LocalSurfaceId>& child_local_surface_id) {
+  attached_ = true;
+  if (child_local_surface_id)
+    parent_local_surface_id_allocator_.Reset(*child_local_surface_id);
+  WasResized();
 }
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {

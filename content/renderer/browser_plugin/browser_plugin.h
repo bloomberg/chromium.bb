@@ -86,6 +86,9 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // currently attached to, if any.
   void Detach();
 
+  // Returns the last allocated LocalSurfaceId.
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
+
   void WasResized();
 
   // Returns whether a message should be forwarded to BrowserPlugin.
@@ -183,6 +186,9 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
+  void OnAttachACK(
+      int browser_plugin_instance_id,
+      const base::Optional<viz::LocalSurfaceId>& child_local_surface_id);
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
   void OnResizeDueToAutoResize(int browser_plugin_instance_id,
@@ -242,7 +248,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   std::vector<EditCommand> edit_commands_;
 
   viz::FrameSinkId frame_sink_id_;
-  viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;

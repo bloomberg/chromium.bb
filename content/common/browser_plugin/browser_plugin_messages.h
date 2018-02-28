@@ -165,6 +165,14 @@ IPC_MESSAGE_CONTROL5(BrowserPluginHostMsg_UpdateResizeParams,
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
 
+// Indicates that an attach request has completed. The provided
+// |child_local_surface_id| is used as the seed for the
+// ParentLocalSurfaceIdAllocator.
+IPC_MESSAGE_CONTROL2(
+    BrowserPluginMsg_Attach_ACK,
+    int /* browser_plugin_instance_id */,
+    base::Optional<viz::LocalSurfaceId> /* child_local_surface_id */)
+
 // When the guest crashes, the browser process informs the embedder through this
 // message.
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestGone,
