@@ -11,7 +11,6 @@ import("//build/config/locales.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
-import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 declare_args() {
   # Package name of the system_webview_apk target.
@@ -193,12 +192,8 @@ android_assets("pak_file_assets") {
 android_assets("monochrome_webview_assets") {
   deps = [
     "//third_party/icu:icu_assets",
+    "//v8:v8_external_startup_data_assets",
   ]
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
   if (android_64bit_target_cpu && build_apk_secondary_abi) {
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
@@ -401,16 +396,10 @@ if (android_64bit_target_cpu) {
     assert(android_64bit_target_cpu,
            "32-bit targets shouldn't have secondary abi")
     arch_suffix = "32"
-    if (use_v8_context_snapshot) {
-      renaming_sources = [ "$_secondary_abi_out_dir/v8_context_snapshot.bin" ]
-      renaming_destinations = [ "v8_context_snapshot_$arch_suffix.bin" ]
-    } else {
-      renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
-      renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
-    }
+    renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
+    renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
     disable_compression = true
     deps = [
-      "//tools/v8_context_snapshot($android_secondary_abi_toolchain)",
       "//v8($android_secondary_abi_toolchain)",
     ]
   }
@@ -772,10 +761,7 @@ source_set("common") {
     ]
   }
 
-  configs += [
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-    "//v8:external_startup_data",
-  ]
+  configs += [ "//v8:external_startup_data" ]
 
   libs = [ "jnigraphics" ]
 }

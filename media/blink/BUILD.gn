@@ -4,7 +4,6 @@
 
 import("//media/media_options.gni")
 import("//testing/test.gni")
-import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 component("blink") {
   output_name = "media_blink"
@@ -158,11 +157,9 @@ test("media_blink_unittests") {
   ]
 
   if (is_android) {
-    deps += [ "//media/base/android:media_java" ]
-    if (use_v8_context_snapshot) {
-      deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-    } else {
-      deps += [ "//v8:v8_external_startup_data_assets" ]
-    }
+    deps += [
+      "//media/base/android:media_java",
+      "//v8:v8_external_startup_data_assets",
+    ]
   }
 }

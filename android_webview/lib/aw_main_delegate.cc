@@ -134,19 +134,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8NativesDataDescriptor,
         gin::V8Initializer::GetNativesFilePath());
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
-    gin::V8Initializer::V8SnapshotFileType file_type =
-        gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
-#else
-    gin::V8Initializer::V8SnapshotFileType file_type =
-        gin::V8Initializer::V8SnapshotFileType::kDefault;
-#endif
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot32DataDescriptor,
-        gin::V8Initializer::GetSnapshotFilePath(true, file_type));
+        gin::V8Initializer::GetSnapshotFilePath(true));
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
-        gin::V8Initializer::GetSnapshotFilePath(false, file_type));
+        gin::V8Initializer::GetSnapshotFilePath(false));
   }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
