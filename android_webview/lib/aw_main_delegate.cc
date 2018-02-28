@@ -170,8 +170,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(*cl,
                                         media::kMediaDrmPersistentLicense.name);
 
-  CommandLineHelper::AddDisabledFeature(*cl, features::kMojoInputMessages.name);
-
   CommandLineHelper::AddEnabledFeature(
       *cl, autofill::features::kAutofillSkipComparingInferredLabels.name);
 
