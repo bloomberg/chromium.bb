@@ -3755,9 +3755,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enforcement20180102",
+                    "name": "20180123_launch",
                     "params": {
-                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/translate_ranker_autoblacklist_20180102.model"
+                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/translate_ranker_20180123.model"
                     },
                     "enable_features": [
                         "TranslateRankerAutoBlacklistOverride",
