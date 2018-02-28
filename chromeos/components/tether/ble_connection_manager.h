@@ -176,6 +176,7 @@ class BleConnectionManager : public BleScanner::Observer {
     void SetSecureChannel(
         std::unique_ptr<cryptauth::SecureChannel> secure_channel);
     int SendMessage(const std::string& payload);
+    void Disconnect();
 
     // cryptauth::SecureChannel::Observer:
     void OnSecureChannelStatusChanged(

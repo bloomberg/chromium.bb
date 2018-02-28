@@ -452,12 +452,11 @@ TEST_F(CryptAuthSecureChannelTest, AuthenticationFails_Disconnect) {
   });
 
   FailAuthentication(Authenticator::Result::DISCONNECTED);
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange> {
-      {
-        SecureChannel::Status::AUTHENTICATING,
-        SecureChannel::Status::DISCONNECTED
-      }
-  });
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::AUTHENTICATING,
+       SecureChannel::Status::DISCONNECTING},
+      {SecureChannel::Status::DISCONNECTING,
+       SecureChannel::Status::DISCONNECTED}});
 }
 
 TEST_F(CryptAuthSecureChannelTest, AuthenticationFails_Failure) {
@@ -482,12 +481,11 @@ TEST_F(CryptAuthSecureChannelTest, AuthenticationFails_Failure) {
   });
 
   FailAuthentication(Authenticator::Result::FAILURE);
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange> {
-      {
-        SecureChannel::Status::AUTHENTICATING,
-        SecureChannel::Status::DISCONNECTED
-      }
-  });
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::AUTHENTICATING,
+       SecureChannel::Status::DISCONNECTING},
+      {SecureChannel::Status::DISCONNECTING,
+       SecureChannel::Status::DISCONNECTED}});
 }
 
 // Regression test for crbug.com/765810. This test ensures that a crash does not
@@ -556,12 +554,11 @@ TEST_F(
 TEST_F(CryptAuthSecureChannelTest, SendMessage_Failure) {
   ConnectAndAuthenticate();
   StartAndFinishSendingMessage("feature", "payload", /* success */ false);
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange> {
-      {
-        SecureChannel::Status::AUTHENTICATED,
-        SecureChannel::Status::DISCONNECTED
-      }
-  });
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::AUTHENTICATED,
+       SecureChannel::Status::DISCONNECTING},
+      {SecureChannel::Status::DISCONNECTING,
+       SecureChannel::Status::DISCONNECTED}});
 }
 
 TEST_F(CryptAuthSecureChannelTest, SendMessage_Success) {
@@ -601,12 +598,11 @@ TEST_F(CryptAuthSecureChannelTest, SendMessage_MultipleMessages_FirstFails) {
   FinishSendingMessage(sequence_number1, false);
 
   // The connection should have become disconnected.
-  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange> {
-      {
-        SecureChannel::Status::AUTHENTICATED,
-        SecureChannel::Status::DISCONNECTED
-      }
-  });
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::AUTHENTICATED,
+       SecureChannel::Status::DISCONNECTING},
+      {SecureChannel::Status::DISCONNECTING,
+       SecureChannel::Status::DISCONNECTED}});
 
   // The first message failed, so no other ones should be tried afterward.
   VerifyNoMessageBeingSent();

@@ -63,7 +63,13 @@ int FakeSecureChannel::SendMessage(const std::string& feature,
 }
 
 void FakeSecureChannel::Disconnect() {
-  ChangeStatus(Status::DISCONNECTED);
+  if (status() == Status::DISCONNECTING || status() == Status::DISCONNECTED)
+    return;
+
+  if (status() == Status::CONNECTING)
+    ChangeStatus(Status::DISCONNECTED);
+  else
+    ChangeStatus(Status::DISCONNECTING);
 }
 
 void FakeSecureChannel::AddObserver(Observer* observer) {

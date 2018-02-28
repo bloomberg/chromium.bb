@@ -37,12 +37,15 @@ class SecureChannel : public ConnectionObserver {
   //       process of authenticating via a 3-message authentication handshake.
   //   AUTHENTICATED: The connection has been authenticated, and arbitrary
   //       messages can be sent/received to/from the device.
+  //   DISCONNECTING: The connection has started disconnecting but has not yet
+  //       finished.
   enum class Status {
     DISCONNECTED,
     CONNECTING,
     CONNECTED,
     AUTHENTICATING,
     AUTHENTICATED,
+    DISCONNECTING
   };
 
   static std::string StatusToString(const Status& status);

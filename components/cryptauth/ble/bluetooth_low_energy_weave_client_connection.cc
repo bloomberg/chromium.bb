@@ -167,6 +167,19 @@ BluetoothLowEnergyWeaveClientConnection::
 
 BluetoothLowEnergyWeaveClientConnection::
     ~BluetoothLowEnergyWeaveClientConnection() {
+  if (sub_status() != SubStatus::DISCONNECTED) {
+    // Deleting this object without calling Disconnect() may result in the
+    // connection staying active longer than intended, which can lead to errors.
+    // See https://crbug.com/763604.
+    PA_LOG(WARNING) << "Warning: Deleting "
+                    << "BluetoothLowEnergyWeaveClientConnection object with an "
+                    << "active connection to " << GetDeviceInfoLogString()
+                    << ". This may result in disconnection errors; trying to "
+                    << "send uWeave \"connection close\" packet before "
+                    << "deleting.";
+    ClearQueueAndSendConnectionClose();
+  }
+
   DestroyConnection(
       BleWeaveConnectionResult::BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
 }
@@ -233,6 +246,11 @@ void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
 
 void BluetoothLowEnergyWeaveClientConnection::Disconnect() {
   if (IsConnected()) {
+    // If a disconnection is already in progress, there is nothing to do.
+    if (has_triggered_disconnection_)
+      return;
+
+    has_triggered_disconnection_ = true;
     PA_LOG(INFO) << "Disconnection requested; sending \"connection close\" "
                  << "uWeave packet to " << GetDeviceInfoLogString() << ".";
 
@@ -721,6 +739,8 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
       WriteRequestType::CONNECTION_CLOSE) {
     // Once a "connection close" uWeave packet has been sent, the connection
     // is ready to be disconnected.
+    PA_LOG(INFO) << "uWeave \"connection close\" packet sent to "
+                 << GetDeviceInfoLogString() << ". Destroying connection.";
     DestroyConnection(
         BleWeaveConnectionResult::BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY);
     return;
@@ -839,9 +859,11 @@ void BluetoothLowEnergyWeaveClientConnection::
 
   if (pending_write_request_) {
     PA_LOG(WARNING) << "Waiting for current write to complete, then will send "
-                    << "a \"connection close\" uWeave packet.";
+                    << "a \"connection close\" uWeave packet to "
+                    << GetDeviceInfoLogString() << ".";
   } else {
-    PA_LOG(INFO) << "Sending a \"connection close\" uWeave packet.";
+    PA_LOG(INFO) << "Sending a \"connection close\" uWeave packet to "
+                 << GetDeviceInfoLogString() << ".";
   }
 
   ProcessNextWriteRequest();

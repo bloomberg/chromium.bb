@@ -173,6 +173,8 @@ class BluetoothLowEnergyWeaveClientConnection
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                            ConnectSuccessDisconnect);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           DisconnectCalledTwice);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                            ConnectSuccessDisconnect_DoNotSetLowLatency);
   FRIEND_TEST_ALL_PREFIXES(
       CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -357,6 +359,8 @@ class BluetoothLowEnergyWeaveClientConnection
   device::BluetoothDevice* bluetooth_device_;
 
   bool should_set_low_connection_latency_;
+
+  bool has_triggered_disconnection_ = false;
 
   // Tracks if the result of this connection has been recorded (using
   // BleWeaveConnectionResult). The result of a connection should only be
