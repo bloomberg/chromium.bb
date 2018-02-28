@@ -62,6 +62,7 @@ TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestVariousSides) {
   gfx::Rect top_right(900, 0, keyboard_width, keyboard_height);
   gfx::Rect bottom_left(0, 400, keyboard_width, keyboard_height);
   gfx::Rect bottom_right(900, 400, keyboard_width, keyboard_height);
+  gfx::Rect bottomish_center(450, 390, keyboard_width, keyboard_height);
 
   // Save an arbitrary position so that default location will not be used.
   floating_behavior.SavePosition(
@@ -98,6 +99,18 @@ TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequestVariousSides) {
   result = floating_behavior.GetPositionForShowingKeyboard(keyboard_size,
                                                            workspace_tall);
   ASSERT_EQ(gfx::Point(400, 900), result);
+
+  floating_behavior.AdjustSetBoundsRequest(workspace_wide, bottomish_center);
+  result = floating_behavior.GetPositionForShowingKeyboard(keyboard_size,
+                                                           workspace_wide);
+  ASSERT_EQ(gfx::Point(450, 390), result);
+  result = floating_behavior.GetPositionForShowingKeyboard(keyboard_size,
+                                                           workspace_tall);
+
+  // rather than 400:0 for the vertical padding, use 390:10
+  // with 900 pixels available this ratio results in 877.5, which is truncated.
+  // 390 / 400 * 900 = 877.5
+  ASSERT_EQ(gfx::Point(200, 877), result);
 }
 
 TEST(ContainerFloatingBehaviorTest, DontSaveCoordinatesUntilKeyboardMoved) {
