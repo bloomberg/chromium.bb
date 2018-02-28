@@ -51,12 +51,15 @@ class UserActivityLoggerDelegateUkmTest
     features->set_last_activity_day(UserActivityEvent::Features::MON);
     features->set_last_activity_time_sec(7300);
     features->set_last_user_activity_time_sec(3800);
+    features->set_key_events_in_last_hour(20000);
     features->set_recent_time_active_sec(10);
     features->set_video_playing_time_sec(800);
     features->set_time_since_video_ended_sec(400);
+    features->set_mouse_events_in_last_hour(89);
     features->set_on_to_dim_sec(100);
     features->set_dim_to_screen_off_sec(200);
     features->set_time_since_last_mouse_sec(100);
+    features->set_touch_events_in_last_hour(1890);
   }
 
   void UpdateOpenTabsURLs() {
@@ -141,8 +144,10 @@ class UserActivityLoggerDelegateUkmTest
       {UserActivity::kDeviceModeName, UserActivityEvent::Features::CLAMSHELL},
       {UserActivity::kDeviceTypeName, UserActivityEvent::Features::CHROMEBOOK},
       {UserActivity::kLastActivityDayName, UserActivityEvent::Features::MON},
+      {UserActivity::kKeyEventsInLastHourName, 10000},
       {UserActivity::kLastActivityTimeName, 2},
       {UserActivity::kLastUserActivityTimeName, 1},
+      {UserActivity::kMouseEventsInLastHourName, 89},
       {UserActivity::kOnBatteryName, base::nullopt},
       {UserActivity::kRecentTimeActiveName, 10},
       {UserActivity::kRecentVideoPlayingTimeName, 600},
@@ -151,7 +156,8 @@ class UserActivityLoggerDelegateUkmTest
       {UserActivity::kSequenceIdName, 1},
       {UserActivity::kTimeSinceLastKeyName, base::nullopt},
       {UserActivity::kTimeSinceLastMouseName, 100},
-      {UserActivity::kTimeSinceLastVideoEndedName, 360}};
+      {UserActivity::kTimeSinceLastVideoEndedName, 360},
+      {UserActivity::kTouchEventsInLastHourName, 1000}};
 
  private:
   UserActivityLoggerDelegateUkm user_activity_logger_delegate_ukm_;
@@ -160,15 +166,16 @@ class UserActivityLoggerDelegateUkmTest
 
 TEST_F(UserActivityLoggerDelegateUkmTest, BucketEveryFivePercents) {
   const std::vector<int> original_values = {0, 14, 15, 100};
-  const std::vector<int> buckets = {0, 10, 15, 100};
+  const std::vector<int> results = {0, 10, 15, 100};
+  constexpr UserActivityLoggerDelegateUkm::Bucket buckets[] = {{100, 5}};
+
   for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(buckets[i],
-              UserActivityLoggerDelegateUkm::BucketEveryFivePercents(
-                  original_values[i]));
+    EXPECT_EQ(results[i], UserActivityLoggerDelegateUkm::Bucketize(
+                              original_values[i], buckets, arraysize(buckets)));
   }
 }
 
-TEST_F(UserActivityLoggerDelegateUkmTest, ExponentiallyBucketTimestamp) {
+TEST_F(UserActivityLoggerDelegateUkmTest, Bucketize) {
   const std::vector<int> original_values = {0,   18,  59,  60,  62,  69,  72,
                                             299, 300, 306, 316, 599, 600, 602};
   constexpr UserActivityLoggerDelegateUkm::Bucket buckets[] = {
@@ -176,9 +183,8 @@ TEST_F(UserActivityLoggerDelegateUkmTest, ExponentiallyBucketTimestamp) {
   const std::vector<int> results = {0,   18,  59,  60,  60,  60,  70,
                                     290, 300, 300, 300, 580, 600, 600};
   for (size_t i = 0; i < original_values.size(); ++i) {
-    EXPECT_EQ(results[i],
-              UserActivityLoggerDelegateUkm::ExponentiallyBucketTimestamp(
-                  original_values[i], buckets, arraysize(buckets)));
+    EXPECT_EQ(results[i], UserActivityLoggerDelegateUkm::Bucketize(
+                              original_values[i], buckets, arraysize(buckets)));
   }
 }
 

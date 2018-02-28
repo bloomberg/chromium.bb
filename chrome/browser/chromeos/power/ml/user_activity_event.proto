@@ -137,7 +137,12 @@ message UserActivityEvent {
     optional int32 video_playing_time_sec = 16;
     // Duration from the time video ended to the time of idle event.
     optional int32 time_since_video_ended_sec = 17;
-  }  // next id = 18
+
+    // Number of key/mouse/touch events in the past hour.
+    optional int32 key_events_in_last_hour = 18;
+    optional int32 mouse_events_in_last_hour = 19;
+    optional int32 touch_events_in_last_hour = 20;
+  }  // next id = 21
 
   optional ModelParams params = 1;
   optional Event event = 2;
