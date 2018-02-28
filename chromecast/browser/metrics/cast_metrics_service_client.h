@@ -35,9 +35,6 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace chromecast {
-
-class CastService;
-
 namespace metrics {
 
 class ExternalMetrics;
@@ -61,7 +58,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   // thread.
   void ProcessExternalEvents(const base::Closure& cb);
 
-  void Initialize(CastService* cast_service);
+  void Initialize();
   void Finalize();
 
   // ::metrics::MetricsServiceClient:
@@ -96,7 +93,6 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
 
   PrefService* const pref_service_;
-  CastService* cast_service_;
   std::string client_id_;
   std::string force_client_id_;
   bool client_info_loaded_;

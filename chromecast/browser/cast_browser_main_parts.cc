@@ -106,7 +106,9 @@
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-int kSignalsToRunClosure[] = { SIGTERM, SIGINT, };
+int kSignalsToRunClosure[] = {
+    SIGTERM, SIGINT,
+};
 // Closure to run on SIGTERM and SIGINT.
 base::Closure* g_signal_closure = nullptr;
 base::PlatformThreadId g_main_thread_id;
@@ -551,8 +553,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // Initializing metrics service and network delegates must happen after cast
   // service is intialized because CastMetricsServiceClient and
   // CastNetworkDelegate may use components initialized by cast service.
-  cast_browser_process_->metrics_service_client()
-      ->Initialize(cast_browser_process_->cast_service());
+  cast_browser_process_->metrics_service_client()->Initialize();
   url_request_context_factory_->InitializeNetworkDelegates();
 
   cast_browser_process_->cast_service()->Start();
