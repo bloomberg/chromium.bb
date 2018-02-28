@@ -717,6 +717,28 @@ TEST_F(MagnificationControllerTest, MoveMouseToSecondDisplay) {
   EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
 }
 
+TEST_F(MagnificationControllerTest, MoveToSecondDisplayWithTouch) {
+  UpdateDisplay("0+0-500x500, 500+0-500x500");
+  EXPECT_EQ(2ul, display::Screen::GetScreen()->GetAllDisplays().size());
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  GetEventGenerator().GestureTapAt(gfx::Point(250, 250));
+  ASSERT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+  ASSERT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_FALSE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+
+  GetEventGenerator().GestureTapAt(gfx::Point(750, 250));
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_FALSE(root_windows[1]->layer()->transform().IsIdentity());
+
+  GetMagnificationController()->SetEnabled(false);
+  EXPECT_TRUE(root_windows[0]->layer()->transform().IsIdentity());
+  EXPECT_TRUE(root_windows[1]->layer()->transform().IsIdentity());
+}
+
 TEST_F(MagnificationControllerTest, AdjustScaleFromScroll) {
   // 0 to 1 maps to 1 to 20
   EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
