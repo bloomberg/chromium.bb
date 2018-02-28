@@ -2751,6 +2751,17 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     return 0;
   }
 
+  // Increment |touch_down_contexts_| on a pointer down. This variable
+  // is used to debounce the WM_MOUSEACTIVATE events.
+  if (message == WM_POINTERDOWN) {
+    touch_down_contexts_++;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
+                       weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
+  }
+
   size_t mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;
   POINT client_point = pointer_info.ptPixelLocationRaw;
@@ -2792,23 +2803,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
 
   if (event_type == ui::ET_TOUCH_RELEASED)
     id_generator_.ReleaseNumber(pointer_id);
-  if (ref) {
-    bool handled = event.handled();
-
-    // For events that are unhandled, perform a hit test to see if they
-    // are inside the client area. If they are indicate that they've already
-    // been handled because we don't want Windows to dispatch compatibility
-    // events for these since we've already dispatched a ui::Event for them.
-    if (!handled) {
-      LPARAM l_param_ht = MAKELPARAM(pointer_info.ptPixelLocationRaw.x,
-                                     pointer_info.ptPixelLocationRaw.y);
-      LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
-
-      if (hittest == HTCLIENT)
-        handled = true;
-    }
-    SetMsgHandled(handled);
-  }
+  if (ref)
+    SetMsgHandled(event.handled());
   return 0;
 }
 
