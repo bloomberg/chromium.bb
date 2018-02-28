@@ -627,6 +627,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     webrtc::EchoCanceller3Config aec3_config;
     aec3_config.ep_strength.bounded_erl =
         base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
+    aec3_config.echo_removal_control.has_clock_drift =
+        base::FeatureList::IsEnabled(features::kWebRtcAecClockDriftSetup);
 
     ap_builder.SetEchoControlFactory(
         std::unique_ptr<webrtc::EchoControlFactory>(

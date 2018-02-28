@@ -475,6 +475,11 @@ const base::Feature kWebRtcUseEchoCanceller3{"WebRtcUseEchoCanceller3",
 const base::Feature kWebRtcAecBoundedErlSetup{
     "WebRtcAecBoundedErlSetup", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Informs the WebRTC Acoustic Echo Canceler (AEC) that the playout and
+// capture is done using different clocks.
+const base::Feature kWebRtcAecClockDriftSetup{
+    "WebRtcAecClockDriftSetup", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_DISABLED_BY_DEFAULT};
