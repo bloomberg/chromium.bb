@@ -51,7 +51,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -92,7 +91,6 @@ const char kJsApiUserManagerAuthLaunchUser[] = "authenticatedLaunchUser";
 const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
-const char kJsApiUserManagerAttemptUnlock[] = "attemptUnlock";
 const char kJsApiUserManagerLogRemoveUserWarningShown[] =
     "logRemoveUserWarningShown";
 const char kJsApiUserManagerRemoveUserWarningLoadStats[] =
@@ -118,17 +116,6 @@ std::string GetAvatarImage(const ProfileAttributesEntry* entry) {
   gfx::Image resized_image = profiles::GetSizedAvatarIcon(
       avatar_image, is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
   return webui::GetBitmapDataUrl(resized_image.AsBitmap());
-}
-
-extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
-    const std::string& email) {
-  base::FilePath path =
-      profiles::GetPathOfProfileWithEmail(g_browser_process->profile_manager(),
-                                          email);
-  Profile* profile = g_browser_process->profile_manager()
-      ->GetProfileByPath(path);
-  return extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
-      profile);
 }
 
 bool IsGuestModeEnabled() {
@@ -594,14 +581,6 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
       ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
 
-void UserManagerScreenHandler::HandleAttemptUnlock(
-    const base::ListValue* args) {
-  std::string email;
-  CHECK(args->GetString(0, &email));
-  GetScreenlockRouter(email)
-      ->OnAuthAttempted(GetAuthType(AccountId::FromUserEmail(email)), "");
-}
-
 void UserManagerScreenHandler::HandleHardlockUserPod(
     const base::ListValue* args) {
   std::string email;
@@ -707,9 +686,6 @@ void UserManagerScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUser,
       base::Bind(&UserManagerScreenHandler::HandleRemoveUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerAttemptUnlock,
-      base::Bind(&UserManagerScreenHandler::HandleAttemptUnlock,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerLogRemoveUserWarningShown,
       base::Bind(&HandleLogRemoveUserWarningShown));

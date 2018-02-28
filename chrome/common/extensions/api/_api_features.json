@@ -461,7 +461,7 @@
   "screenlockPrivate": {
     "dependencies": ["permission:screenlockPrivate"],
     "extension_types": ["platform_app"],
-    "contexts": ["blessed_extension", "unblessed_extension"]
+    "contexts": ["blessed_extension"]
   },
   "fileManagerPrivate": {
     "dependencies": ["permission:fileManagerPrivate"],
