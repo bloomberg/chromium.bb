@@ -52,6 +52,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -618,7 +619,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
       views::MdTextButton::CreateSecondaryUiButton(
           this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
   accept_button->set_id(BUTTON_ID_TRANSLATE);
-  layout->AddView(accept_button);
+
   accept_button->SetIsDefault(true);
   before_translate_options_button_ =
       views::MdTextButton::CreateSecondaryUiButton(
@@ -626,7 +627,14 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
           l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   before_translate_options_button_->set_id(BUTTON_ID_OPTIONS_MENU);
   before_translate_options_button_->set_request_focus_on_press(true);
-  layout->AddView(before_translate_options_button_);
+
+  if (views::PlatformStyle::kIsOkButtonLeading) {
+    layout->AddView(accept_button);
+    layout->AddView(before_translate_options_button_);
+  } else {
+    layout->AddView(before_translate_options_button_);
+    layout->AddView(accept_button);
+  }
 
   return view;
 }
