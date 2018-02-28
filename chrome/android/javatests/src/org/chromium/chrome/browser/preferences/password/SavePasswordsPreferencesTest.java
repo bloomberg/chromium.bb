@@ -107,7 +107,7 @@ public class SavePasswordsPreferencesTest {
 
         // This is set once {@link #serializePasswords()} is called.
         @Nullable
-        private Callback<String> mExportCallback;
+        private Callback<byte[]> mExportCallback;
 
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
@@ -117,7 +117,7 @@ public class SavePasswordsPreferencesTest {
             mSavedPasswordExeptions = savedPasswordExceptions;
         }
 
-        public Callback<String> getExportCallback() {
+        public Callback<byte[]> getExportCallback() {
             return mExportCallback;
         }
 
@@ -162,7 +162,7 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
-        public void serializePasswords(Callback<String> callback) {
+        public void serializePasswords(Callback<byte[]> callback) {
             mExportCallback = callback;
         }
     }
@@ -738,7 +738,7 @@ public class SavePasswordsPreferencesTest {
         reauthenticateAndRequestExport();
 
         // Pretend that passwords have been serialized to go directly to the intent.
-        mHandler.getExportCallback().onResult("serialized passwords");
+        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -795,7 +795,7 @@ public class SavePasswordsPreferencesTest {
         });
 
         // Pretend that passwords have been serialized to go directly to the intent.
-        mHandler.getExportCallback().onResult("serialized passwords");
+        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -1006,7 +1006,7 @@ public class SavePasswordsPreferencesTest {
                 .check(matches(isDisplayed()));
 
         // Now pretend that passwords have been serialized.
-        mHandler.getExportCallback().onResult("serialized passwords");
+        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
 
         // After simulating the serialized passwords being received, check that the progress bar is
         // hidden.
