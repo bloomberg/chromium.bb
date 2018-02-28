@@ -57,7 +57,7 @@
           "content::mojom::ImageDownloader",
           "content::mojom::FrameInputHandler",
           "content::mojom::FullscreenVideoElementHandler",
-          "content::mojom::MediaStreamDispatcher",
+          "content::mojom::MediaStreamDeviceObserver",
           "content::mojom::Widget",
           "viz::mojom::InputTargetClient"
         ]
