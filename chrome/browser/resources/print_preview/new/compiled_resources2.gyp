@@ -208,7 +208,7 @@
     {
       'target_name': 'destination_list_item',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:search_highlight_utils',
+        'highlight_utils',
         '../data/compiled_resources2.gyp:destination',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -228,6 +228,7 @@
     {
       'target_name': 'advanced_settings_item',
       'dependencies': [
+        'highlight_utils',
         '../compiled_resources2.gyp:print_preview_utils',
         '../data/compiled_resources2.gyp:destination',
         'settings_behavior',
@@ -238,6 +239,13 @@
       'target_name': 'print_preview_search_box',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_search_field/compiled_resources2.gyp:cr_search_field_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'highlight_utils',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:search_highlight_utils',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

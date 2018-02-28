@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/cr_elements/paper_checkbox_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_input_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/search_highlight_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="settings_icons_css.html">
@@ -11,7 +12,7 @@
 <!-- Common styles for Material Design settings. -->
 <dom-module id="settings-shared">
   <template>
-    <style include="settings-icons paper-button-style paper-checkbox-style paper-input-style paper-toggle-style cr-shared-style">
+    <style include="settings-icons paper-button-style paper-checkbox-style paper-input-style paper-toggle-style cr-shared-style search-highlight-style">
       /* Prevent action-links from being selected to avoid accidental
        * selection when trying to click it. */
       a[is=action-link] {
@@ -154,7 +155,7 @@
 
       /* See also: .no-min-width below. */
       .text-elide {
-        @apply --settings-text-elide;
+        @apply --cr-text-elide;
       }
 
       /* By default, flexbox children have min-width calculated to be the width
@@ -356,44 +357,6 @@
         background-size: contain;
         height: 16px;
         width: 16px;
-      }
-
-      .search-bubble {
-        /* RGB value matches var(--paper-yellow-500). */
-        --search-bubble-color: rgba(255, 235, 59, 0.9);
-        position: absolute;
-        z-index: 1;
-      }
-
-      .search-bubble-innards {
-        align-items: center;
-        background-color: var(--search-bubble-color);
-        border-radius: 2px;
-        max-width: 100px;
-        min-width: 64px;
-        padding: 4px 10px;
-        text-align: center;
-      }
-
-      /* Provides the arrow which points at the anchor element. */
-      .search-bubble-innards::after {
-        background-color: var(--search-bubble-color);
-        content: '';
-        height: 10px;
-        left: calc(50% - 5px);
-        position: absolute;
-        top: -5px;
-        transform: rotate(-45deg);
-        width: 10px;
-        z-index: -1;
-      }
-
-      /* Turns the arrow direction downwards, when the bubble is placed above
-       * the anchor element */
-      .search-bubble-innards.above::after {
-        bottom: -5px;
-        top: auto;
-        transform: rotate(-135deg);
       }
 
       .column-header {

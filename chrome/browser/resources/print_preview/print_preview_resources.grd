@@ -281,6 +281,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SEARCH_BOX_JS"
                  file="new/print_preview_search_box.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_HIGHLIGHT_UTILS_HTML"
+                 file="new/highlight_utils.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_HIGHLIGHT_UTILS_JS"
+                 file="new/highlight_utils.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SHARED_CSS_HTML"
                  file="new/print_preview_shared_css.html"
                  type="chrome_html"

@@ -11,9 +11,6 @@ Polymer({
     /** @type {!print_preview.VendorCapability} */
     capability: Object,
 
-    /** @type {?RegExp} */
-    searchQuery: Object,
-
     /** @private {(number | string | boolean)} */
     currentValue_: {
       type: Object,
@@ -24,6 +21,9 @@ Polymer({
   observers: [
     'updateFromSettings_(capability, settings.vendorItems.value)',
   ],
+
+  /** @private {boolean} */
+  highlighted_: false,
 
   /** @private */
   updateFromSettings_: function() {
@@ -87,10 +87,12 @@ Polymer({
    */
   getCapabilityPlaceholder_: function() {
     if (this.capability.type == 'TYPED_VALUE' &&
-        this.capability.typed_value_cap) {
+        this.capability.typed_value_cap &&
+        this.capability.typed_value_cap.default != undefined) {
       return this.capability.typed_value_cap.default.toString() || '';
     }
-    if (this.capability.type == 'RANGE' && this.capability.range_cap)
+    if (this.capability.type == 'RANGE' && this.capability.range_cap &&
+        this.capability.range_cap.default != undefined)
       return this.capability.range_cap.default.toString() || '';
     return '';
   },
@@ -106,6 +108,26 @@ Polymer({
   },
 
   /**
+   * @param {?RegExp} query The current search query.
+   * @return {boolean} Whether the item has a match for the query.
+   */
+  hasMatch: function(query) {
+    if (!query || this.getDisplayName_(this.capability).match(query))
+      return true;
+
+    if (!this.isCapabilityTypeSelect_())
+      return false;
+
+    for (let option of
+         /** @type {!Array<!print_preview.VendorCapabilitySelectOption>} */ (
+             this.capability.select_cap.option)) {
+      if (this.getDisplayName_(option).match(query))
+        return true;
+    }
+    return false;
+  },
+
+  /**
    * @param {!Event} e Event containing the new value.
    * @private
    */
@@ -118,5 +140,15 @@ Polymer({
    */
   getCurrentValue: function() {
     return this.currentValue_;
+  },
+
+  /**
+   * @param {?RegExp} query The current search query.
+   * @return {boolean} Whether the current query is a match for this item.
+   */
+  updateHighlighting: function(query) {
+    this.highlighted_ =
+        print_preview.updateHighlights(this, query, this.highlighted_);
+    return this.highlighted_ || !query;
   },
 });

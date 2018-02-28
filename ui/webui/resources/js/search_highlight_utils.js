@@ -12,6 +12,9 @@ cr.define('cr.search_highlight_utils', function() {
   /** @type {string} */
   const HIT_CSS_CLASS = 'search-highlight-hit';
 
+  /** @type {string} */
+  const SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
+
   /**
    * Applies the highlight UI (yellow rectangle) around all matches in |node|.
    * @param {!Node} node The text node to be highlighted. |node| ends up
@@ -59,18 +62,69 @@ cr.define('cr.search_highlight_utils', function() {
    * @private
    */
   function findAndRemoveHighlights(node) {
-    const wrappers = node.querySelectorAll('* /deep/ .' + WRAPPER_CSS_CLASS);
+    const wrappers = node.querySelectorAll(`* /deep/ .${WRAPPER_CSS_CLASS}`);
 
     for (let i = 0; i < wrappers.length; i++) {
       const wrapper = wrappers[i];
       const originalNode =
-          wrapper.querySelector('.' + ORIGINAL_CONTENT_CSS_CLASS);
+          wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`);
       wrapper.parentElement.replaceChild(originalNode.firstChild, wrapper);
     }
   }
 
+  /**
+   * Finds and removes all previously created yellow search bubbles under
+   * |node| (both within self and children's Shadow DOM).
+   * @param {!Node} node
+   * @private
+   */
+  function findAndRemoveBubbles(node) {
+    const searchBubbles =
+        node.querySelectorAll(`* /deep/ .${SEARCH_BUBBLE_CSS_CLASS}`);
+    for (let bubble of searchBubbles)
+      bubble.remove();
+  }
+
+  /**
+   * Highlights an HTML element by displaying a search bubble. The element
+   * should already be visible or the bubble will render incorrectly.
+   * @param {!HTMLElement} element The element to be highlighted.
+   * @param {string} rawQuery The search query.
+   * @private
+   */
+  function highlightControlWithBubble(element, rawQuery) {
+    let searchBubble = element.querySelector(`.${SEARCH_BUBBLE_CSS_CLASS}`);
+    // If the element has already been highlighted, there is no need to do
+    // anything.
+    if (searchBubble)
+      return;
+
+    searchBubble = document.createElement('div');
+    searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
+    const innards = document.createElement('div');
+    innards.classList.add('search-bubble-innards');
+    innards.textContent = rawQuery;
+    searchBubble.appendChild(innards);
+    element.appendChild(searchBubble);
+
+    const updatePosition = function() {
+      searchBubble.style.top = element.offsetTop +
+          (innards.classList.contains('above') ? -searchBubble.offsetHeight :
+                                                 element.offsetHeight) +
+          'px';
+    };
+    updatePosition();
+
+    searchBubble.addEventListener('mouseover', function() {
+      innards.classList.toggle('above');
+      updatePosition();
+    });
+  }
+
   return {
     highlight: highlight,
+    highlightControlWithBubble: highlightControlWithBubble,
+    findAndRemoveBubbles: findAndRemoveBubbles,
     findAndRemoveHighlights: findAndRemoveHighlights,
   };
 });
