@@ -210,7 +210,7 @@ class CONTENT_EXPORT WebRtcEventLogManager final
 
  protected:
   friend class WebRtcEventLogManagerTest;  // Unit tests inject a frozen clock.
-  friend class WebRTCInternalsForTest;     // Unit tests inject a task runner.
+  friend class WebRtcInternalsTest;        // Unit tests inject a task runner.
 
   WebRtcEventLogManager();
   // This can be used by unit tests to ensure that they would run synchronously.

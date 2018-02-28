@@ -251,6 +251,11 @@ extern const char kWebRtcMaxCpuConsumptionPercentage[];
 CONTENT_EXPORT extern const char kWebRtcStunProbeTrialParameter[];
 #endif
 
+// TODO(eladalon): Move into "#if BUILDFLAG(ENABLE_WEBRTC)" section when
+// WebRTCInternals is excluded from the build for non-WebRTC builds.
+// https://crbug.com/817446
+CONTENT_EXPORT extern const char kWebRtcLocalEventLogging[];
+
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableMediaSessionAPI[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];

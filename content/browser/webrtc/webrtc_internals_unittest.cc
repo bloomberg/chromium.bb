@@ -80,9 +80,7 @@ class WebRTCInternalsForTest : public WebRTCInternals {
  public:
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),
-        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)),
-        synchronous_webrtc_event_log_manager_(
-            base::ThreadTaskRunnerHandle::Get()) {}
+        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)) {}
 
   ~WebRTCInternalsForTest() override {}
 
@@ -90,10 +88,14 @@ class WebRTCInternalsForTest : public WebRTCInternals {
 
  private:
   MockWakeLock mock_wake_lock_;
-  WebRtcEventLogManager synchronous_webrtc_event_log_manager_;
 };
 
 class WebRtcInternalsTest : public testing::Test {
+ public:
+  WebRtcInternalsTest()
+      : synchronous_webrtc_event_log_manager_(
+            base::ThreadTaskRunnerHandle::Get()) {}
+
  protected:
   void VerifyString(const base::DictionaryValue* dict,
                     const std::string& key,
@@ -136,6 +138,9 @@ class WebRtcInternalsTest : public testing::Test {
   }
 
   TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  // Must be constructed before the unit under test.
+  WebRtcEventLogManager synchronous_webrtc_event_log_manager_;
 };
 
 TEST_F(WebRtcInternalsTest, AddRemoveObserver) {

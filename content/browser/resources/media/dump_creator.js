@@ -54,8 +54,9 @@ var DumpCreator = (function() {
         '<p class=audio-diagnostic-dumps-info>It is recommended to choose a' +
         ' new base filename each time the feature is enabled to avoid ending' +
         ' up with partially overwritten or unusable audio files.</p>' +
-        '<p><label><input type=checkbox>' +
-        'Enable diagnostic packet and event recording</label></p>' +
+        '<p><label><input type=checkbox disabled=true>' +
+        'Enable diagnostic packet and event recording' +
+        '<label name="placeholder_for_warning"/></label></p>' +
         '<p class=audio-diagnostic-dumps-info>A diagnostic packet and event' +
         ' recording can be used for analyzing various issues related to' +
         ' thread starvation, jitter buffers or bandwidth estimation. Two' +
@@ -106,6 +107,19 @@ var DumpCreator = (function() {
     // Mark the event log recording checkbox unchecked.
     clearEventLogRecordingsCheckbox: function() {
       this.root_.getElementsByTagName('input')[1].checked = false;
+    },
+
+    // Mark the event log recording checkbox as mutable/immutable.
+    setEventLogRecordingsCheckboxMutability: function(mutable) {
+      // TODO(eladalon): Remove reliance on number and order of elements.
+      // https://crbug.com/817391
+      this.root_.getElementsByTagName('input')[1].disabled = !mutable;
+      if (!mutable) {
+        var label = this.root_.getElementsByTagName('label')[2];
+        label.style = 'color:red;';
+        label.textContent =
+            ' WebRTC event logging\'s state was set by a command line flag.';
+      }
     },
 
     /**
