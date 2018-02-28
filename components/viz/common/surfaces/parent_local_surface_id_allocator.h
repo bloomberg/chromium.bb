@@ -34,6 +34,9 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
   const LocalSurfaceId& UpdateFromChild(
       const LocalSurfaceId& child_allocated_local_surface_id);
 
+  // Resets this allocator with the provided |local_surface_id| as a seed.
+  void Reset(const LocalSurfaceId& local_surface_id);
+
   const LocalSurfaceId& GenerateId();
 
   const LocalSurfaceId& last_known_local_surface_id() const {

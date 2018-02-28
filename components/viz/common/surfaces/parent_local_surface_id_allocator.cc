@@ -23,6 +23,11 @@ const LocalSurfaceId& ParentLocalSurfaceIdAllocator::UpdateFromChild(
   return last_known_local_surface_id_;
 }
 
+void ParentLocalSurfaceIdAllocator::Reset(
+    const LocalSurfaceId& local_surface_id) {
+  last_known_local_surface_id_ = local_surface_id;
+}
+
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
   ++last_known_local_surface_id_.parent_sequence_number_;
   return last_known_local_surface_id_;

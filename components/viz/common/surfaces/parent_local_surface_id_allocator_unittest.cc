@@ -131,6 +131,35 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
             generating_parent_allocator.last_known_local_surface_id());
 }
 
+// This test verifies that calling reset with a LocalSurfaceId updates the
+// last_known_local_surface_id and affects GenerateId.
+TEST(ParentLocalSurfaceIdAllocatorTest, ResetUpdatesComponents) {
+  ParentLocalSurfaceIdAllocator default_constructed_parent_allocator;
+
+  LocalSurfaceId default_local_surface_id =
+      default_constructed_parent_allocator.last_known_local_surface_id();
+  EXPECT_FALSE(default_local_surface_id.is_valid());
+  EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
+  EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
+  EXPECT_FALSE(NonceIsEmpty(default_local_surface_id));
+
+  LocalSurfaceId new_local_surface_id(
+      1u, 1u, base::UnguessableToken::Deserialize(0, 1u));
+
+  default_constructed_parent_allocator.Reset(new_local_surface_id);
+  EXPECT_EQ(new_local_surface_id,
+            default_constructed_parent_allocator.last_known_local_surface_id());
+
+  LocalSurfaceId generated_id =
+      default_constructed_parent_allocator.GenerateId();
+
+  EXPECT_EQ(generated_id.nonce(), new_local_surface_id.nonce());
+  EXPECT_EQ(generated_id.child_sequence_number(),
+            new_local_surface_id.child_sequence_number());
+  EXPECT_EQ(generated_id.parent_sequence_number(),
+            new_local_surface_id.child_sequence_number() + 1);
+}
+
 namespace {
 
 ::testing::AssertionResult ParentSequenceNumberIsNotSet(
