@@ -69,6 +69,17 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tag_name,
   AddToPropertyMap(path_length_);
 }
 
+void SVGGeometryElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+  if (attr_name == SVGNames::pathLengthAttr) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    if (LayoutObject* layout_object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*layout_object);
+    return;
+  }
+
+  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+}
+
 void SVGGeometryElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(path_length_);
   SVGGraphicsElement::Trace(visitor);

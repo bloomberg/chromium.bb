@@ -81,13 +81,6 @@ void SVGPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  if (attr_name == SVGNames::pathLengthAttr) {
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    if (LayoutObject* layout_object = GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(*layout_object);
-    return;
-  }
-
   SVGGeometryElement::SvgAttributeChanged(attr_name);
 }
 

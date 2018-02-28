@@ -66,6 +66,8 @@ class SVGGeometryElement : public SVGGraphicsElement {
                      Document&,
                      ConstructionType = kCreateSVGElement);
 
+  void SvgAttributeChanged(const QualifiedName&) override;
+
   void GeometryAttributeChanged();
   void GeometryPresentationAttributeChanged(const QualifiedName&);
 
