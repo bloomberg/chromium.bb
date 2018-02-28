@@ -178,7 +178,7 @@
     {
       name: "CompositeOpaqueFixedPosition",
       settable_from_internals: true,
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "CompositeOpaqueScrollers",
