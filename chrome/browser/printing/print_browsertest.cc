@@ -102,33 +102,6 @@ class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   base::RepeatingClosure msg_callback_;
 };
 
-class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
- public:
-  explicit KillPrintFrameContentMsgFilter(content::RenderProcessHost* rph)
-      : content::BrowserMessageFilter(PrintMsgStart), rph_(rph) {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    // Only handle PrintHostMsg_DidPrintFrameContent message.
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(KillPrintFrameContentMsgFilter, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintFrameContent, KillRenderProcess)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- private:
-  ~KillPrintFrameContentMsgFilter() override {}
-
-  void KillRenderProcess(int document_cookie,
-                         const PrintHostMsg_DidPrintContent_Params& param) {
-    base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
-    rph_->Shutdown(0, true);
-  }
-
-  content::RenderProcessHost* rph_;
-};
-
 }  // namespace
 
 class PrintBrowserTest : public InProcessBrowserTest {
@@ -196,17 +169,6 @@ class PrintBrowserTest : public InProcessBrowserTest {
   unsigned int num_expected_messages_;
   unsigned int num_received_messages_;
   std::unique_ptr<base::RunLoop> run_loop_;
-};
-
-class SitePerProcessPrintBrowserTest : public PrintBrowserTest {
- public:
-  SitePerProcessPrintBrowserTest() {}
-  ~SitePerProcessPrintBrowserTest() override {}
-
-  // content::BrowserTestBase
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    content::IsolateAllSitesForTesting(command_line);
-  }
 };
 
 class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
@@ -378,58 +340,6 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   // TestPrintFrameContentMsgFilter.
   SetNumExpectedMessages(oopif_enabled ? 3 : 1);
   WaitUntilMessagesReceived();
-}
-
-// Printing a web page with a dead subframe for site per process should succeed.
-// This test passes whenever the print preview is rendered. This should not be
-// a timed out test which indicates the print preview hung.
-IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
-                       SubframeUnavailableBeforePrint) {
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(
-      embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  content::WebContents* original_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(2u, original_contents->GetAllFrames().size());
-  content::RenderFrameHost* test_frame = original_contents->GetAllFrames()[1];
-  ASSERT_TRUE(test_frame);
-  ASSERT_TRUE(test_frame->IsRenderFrameLive());
-  // Wait for the renderer to be down.
-  content::RenderProcessHostWatcher render_process_watcher(
-      test_frame->GetProcess(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  // Shutdown the subframe.
-  ASSERT_TRUE(test_frame->GetProcess()->Shutdown(0, false));
-  render_process_watcher.Wait();
-  ASSERT_FALSE(test_frame->IsRenderFrameLive());
-
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
-}
-
-// If a subframe dies during printing, the page printing should still succeed.
-// This test passes whenever the print preview is rendered. This should not be
-// a timed out test which indicates the print preview hung.
-IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
-                       SubframeUnavailableDuringPrint) {
-  ASSERT_TRUE(embedded_test_server()->Started());
-  GURL url(
-      embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  content::WebContents* original_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(2u, original_contents->GetAllFrames().size());
-  content::RenderFrameHost* subframe = original_contents->GetAllFrames()[1];
-  ASSERT_TRUE(subframe);
-  auto* subframe_rph = subframe->GetProcess();
-
-  auto filter =
-      base::MakeRefCounted<KillPrintFrameContentMsgFilter>(subframe_rph);
-  subframe_rph->AddFilter(filter.get());
-
-  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }
 
 // Printing preview a web page with an iframe from an isolated origin.

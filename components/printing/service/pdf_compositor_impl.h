@@ -33,7 +33,6 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   ~PdfCompositorImpl() override;
 
   // mojom::PdfCompositor
-  void NotifyUnavailableSubframe(uint64_t frame_guid) override;
   void AddSubframeContent(
       uint64_t frame_guid,
       mojo::ScopedSharedBufferHandle serialized_content,
@@ -127,12 +126,6 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
     CompositeToPdfCallback callback;
   };
-
-  // Check whether any request is waiting for the specific subframe, if so,
-  // update its dependecy with the subframe's pending child frames.
-  void UpdateRequestsWithSubframeInfo(
-      uint64_t frame_guid,
-      const std::vector<uint64_t>& pending_subframes);
 
   // Check whether the frame with a list of subframe content is ready to
   // composite. If not, return all unavailable frames' ids in
