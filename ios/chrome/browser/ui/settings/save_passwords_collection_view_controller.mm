@@ -632,15 +632,21 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [super collectionViewWillBeginEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:NO];
-  [self setExportPasswordsButtonEnabled:NO];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    [self setExportPasswordsButtonEnabled:NO];
+  }
 }
 
 - (void)collectionViewWillEndEditing:(UICollectionView*)collectionView {
   [super collectionViewWillEndEditing:collectionView];
 
   [self setSavePasswordsSwitchItemEnabled:YES];
-  if (exportReady_) {
-    [self setExportPasswordsButtonEnabled:YES];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    if (exportReady_) {
+      [self setExportPasswordsButtonEnabled:YES];
+    }
   }
 }
 
