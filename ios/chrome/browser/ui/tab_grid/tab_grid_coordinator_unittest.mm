@@ -15,13 +15,34 @@
 #error "This file requires ARC support."
 #endif
 
+@interface TestTabSwitcherDelegate : NSObject<TabSwitcherDelegate>
+@property(nonatomic) BOOL didEndCalled;
+@end
+
+@implementation TestTabSwitcherDelegate
+@synthesize didEndCalled = _didEndCalled;
+- (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
+    shouldFinishWithActiveModel:(TabModel*)tabModel {
+  // No-op.
+}
+
+- (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
+  self.didEndCalled = YES;
+}
+
+- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
+  return nil;
+}
+@end
+
 namespace {
 
-class TabGridViewCoordinatorTest : public BlockCleanupTest {
+class TabGridCoordinatorTest : public BlockCleanupTest {
  public:
-  TabGridViewCoordinatorTest() {
+  TabGridCoordinatorTest() {
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
-    coordinator_ = [[TabGridCoordinator alloc] initWithWindow:window];
+    coordinator_ = [[TabGridCoordinator alloc] initWithWindow:window
+                                   applicationCommandEndpoint:nil];
     coordinator_.animationsDisabledForTesting = YES;
     // TabGirdCoordinator will make its view controller the root, so stash the
     // original root view controller before starting |coordinator_|.
@@ -30,6 +51,9 @@ class TabGridViewCoordinatorTest : public BlockCleanupTest {
 
     [coordinator_ start];
 
+    delegate_ = [[TestTabSwitcherDelegate alloc] init];
+    coordinator_.tabSwitcher.delegate = delegate_;
+
     normal_tab_view_controller_ = [[UIViewController alloc] init];
     normal_tab_view_controller_.view.frame = CGRectMake(20, 20, 10, 10);
 
@@ -37,7 +61,7 @@ class TabGridViewCoordinatorTest : public BlockCleanupTest {
     incognito_tab_view_controller_.view.frame = CGRectMake(40, 40, 10, 10);
   }
 
-  ~TabGridViewCoordinatorTest() override {}
+  ~TabGridCoordinatorTest() override {}
 
   void TearDown() override {
     if (original_root_view_controller_) {
@@ -52,6 +76,9 @@ class TabGridViewCoordinatorTest : public BlockCleanupTest {
   // this VC as the root VC for the window.
   TabGridCoordinator* coordinator_;
 
+  // Delegate for the coordinator's TabSwitcher interface.
+  TestTabSwitcherDelegate* delegate_;
+
   // The key window's original root view controller, which must be restored at
   // the end of the test.
   UIViewController* original_root_view_controller_;
@@ -64,13 +91,13 @@ class TabGridViewCoordinatorTest : public BlockCleanupTest {
 
 // Tests that the tab grid view controller is the initial active view
 // controller.
-TEST_F(TabGridViewCoordinatorTest, InitialActiveViewController) {
+TEST_F(TabGridCoordinatorTest, InitialActiveViewController) {
   EXPECT_EQ(coordinator_.mainViewController, coordinator_.activeViewController);
 }
 
 // Tests that it is possible to set a TabViewController without first setting a
 // TabSwitcher.
-TEST_F(TabGridViewCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
+TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
@@ -83,7 +110,7 @@ TEST_F(TabGridViewCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
 
 // Tests that it is possible to set a TabViewController after setting a
 // TabSwitcher.
-TEST_F(TabGridViewCoordinatorTest, TabViewControllerAfterTabSwitcher) {
+TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
@@ -99,7 +126,7 @@ TEST_F(TabGridViewCoordinatorTest, TabViewControllerAfterTabSwitcher) {
 }
 
 // Tests swapping between two TabViewControllers.
-TEST_F(TabGridViewCoordinatorTest, SwapTabViewControllers) {
+TEST_F(TabGridCoordinatorTest, SwapTabViewControllers) {
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
@@ -110,7 +137,7 @@ TEST_F(TabGridViewCoordinatorTest, SwapTabViewControllers) {
 }
 
 // Tests calling showTabSwitcher twice in a row with the same VC.
-TEST_F(TabGridViewCoordinatorTest, ShowTabSwitcherTwice) {
+TEST_F(TabGridCoordinatorTest, ShowTabSwitcherTwice) {
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
@@ -121,7 +148,7 @@ TEST_F(TabGridViewCoordinatorTest, ShowTabSwitcherTwice) {
 }
 
 // Tests calling showTabViewController twice in a row with the same VC.
-TEST_F(TabGridViewCoordinatorTest, ShowTabViewControllerTwice) {
+TEST_F(TabGridCoordinatorTest, ShowTabViewControllerTwice) {
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:nil];
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
@@ -133,7 +160,7 @@ TEST_F(TabGridViewCoordinatorTest, ShowTabViewControllerTwice) {
 
 // Tests that setting the active view controller work and that completion
 // handlers are called properly after the new view controller is made active.
-TEST_F(TabGridViewCoordinatorTest, CompletionHandlers) {
+TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
   // Tests that the completion handler is called when showing the switcher.
   __block BOOL completion_handler_was_called = false;
   [coordinator_ showTabSwitcher:coordinator_.tabSwitcher
@@ -146,7 +173,8 @@ TEST_F(TabGridViewCoordinatorTest, CompletionHandlers) {
   ASSERT_TRUE(completion_handler_was_called);
 
   // Tests that the completion handler is called when showing a tab view
-  // controller.
+  // controller. Tests that the delegate 'didEnd' method is also called.
+  delegate_.didEndCalled = NO;
   completion_handler_was_called = NO;
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:^{
@@ -156,9 +184,11 @@ TEST_F(TabGridViewCoordinatorTest, CompletionHandlers) {
     return completion_handler_was_called;
   });
   ASSERT_TRUE(completion_handler_was_called);
+  EXPECT_TRUE(delegate_.didEndCalled);
 
   // Tests that the completion handler is called when replacing an existing tab
-  // view controller.
+  // view controller. Tests that the delegate 'didEnd' method is *not* called.
+  delegate_.didEndCalled = NO;
   completion_handler_was_called = NO;
   [coordinator_ showTabViewController:incognito_tab_view_controller_
                            completion:^{
@@ -168,10 +198,11 @@ TEST_F(TabGridViewCoordinatorTest, CompletionHandlers) {
     return completion_handler_was_called;
   });
   ASSERT_TRUE(completion_handler_was_called);
+  EXPECT_FALSE(delegate_.didEndCalled);
 }
 
 // Test that the tab grid coordinator sizes its view controller to the window.
-TEST_F(TabGridViewCoordinatorTest, SizeTabGridCoordinatorViewController) {
+TEST_F(TabGridCoordinatorTest, SizeTabGridCoordinatorViewController) {
   CGRect rect = [UIScreen mainScreen].bounds;
   [coordinator_ start];
   EXPECT_TRUE(

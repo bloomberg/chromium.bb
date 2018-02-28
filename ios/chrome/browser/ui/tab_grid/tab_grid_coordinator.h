@@ -10,10 +10,18 @@
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 
+@protocol ApplicationCommands;
 @class TabModel;
 @protocol TabSwitcher;
 
 @interface TabGridCoordinator : MainCoordinator<ViewControllerSwapping>
+
+- (instancetype)initWithWindow:(UIWindow*)window
+    applicationCommandEndpoint:
+        (id<ApplicationCommands>)applicationCommandEndpoint
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithWindow:(UIWindow*)window NS_UNAVAILABLE;
 
 @property(nonatomic, readonly) id<TabSwitcher> tabSwitcher;
 

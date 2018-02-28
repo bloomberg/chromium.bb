@@ -5,6 +5,9 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
@@ -16,6 +19,9 @@
 #endif
 
 @interface TabGridCoordinator ()
+// Commad dispatcher used while this coordinator's view controller is active.
+// (for compatibility with the TabSwitcher protocol).
+@property(nonatomic, strong) CommandDispatcher* dispatcher;
 // Object that internally backs the public  TabSwitcher
 @property(nonatomic, strong) TabGridAdaptor* adaptor;
 // Container view controller for the BVC to live in; this class's view
@@ -35,10 +41,24 @@
 @synthesize regularTabModel = _regularTabModel;
 @synthesize incognitoTabModel = _incognitoTabModel;
 // Private properties.
+@synthesize dispatcher = _dispatcher;
 @synthesize adaptor = _adaptor;
 @synthesize bvcContainer = _bvcContainer;
 @synthesize mediator = _mediator;
 @synthesize transitionHandler = _transitionHandler;
+
+- (instancetype)initWithWindow:(nullable UIWindow*)window
+    applicationCommandEndpoint:
+        (id<ApplicationCommands>)applicationCommandEndpoint {
+  if ((self = [super initWithWindow:window])) {
+    _dispatcher = [[CommandDispatcher alloc] init];
+    [_dispatcher startDispatchingToTarget:self
+                              forProtocol:@protocol(BrowserCommands)];
+    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
+                              forProtocol:@protocol(ApplicationCommands)];
+  }
+  return self;
+}
 
 #pragma mark - Public properties
 
@@ -64,10 +84,18 @@
   self.window.rootViewController = self.mainViewController;
   self.adaptor = [[TabGridAdaptor alloc] init];
   self.adaptor.tabGridViewController = self.mainViewController;
+  self.adaptor.adaptedDispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+                     ToolbarCommands>>(self.dispatcher);
 
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.regularTabModel = self.regularTabModel;
   self.mediator.incognitoTabModel = self.incognitoTabModel;
+}
+
+- (void)stop {
+  [self.dispatcher stopDispatchingForProtocol:@protocol(BrowserCommands)];
+  [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
 }
 
 #pragma mark - ViewControllerSwapping
@@ -126,9 +154,32 @@
   self.bvcContainer.currentBVC = viewController;
   self.bvcContainer.transitioningDelegate = self.transitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;
+
+  // Extened |completion| to also signal the tab switcher delegate
+  // that the animated "tab switcher dismissal" (that is, presenting something
+  // on top of the tab switcher) transition has completed.
+  ProceduralBlock extendedCompletion = ^{
+    [self.tabSwitcher.delegate
+        tabSwitcherDismissTransitionDidEnd:self.tabSwitcher];
+    if (completion) {
+      completion();
+    }
+  };
+
   [self.mainViewController presentViewController:self.bvcContainer
                                         animated:animated
-                                      completion:completion];
+                                      completion:extendedCompletion];
+}
+
+#pragma mark - BrowserCommands
+
+- (void)openNewTab:(OpenNewTabCommand*)command {
+}
+
+- (void)closeAllTabs {
+}
+
+- (void)closeAllIncognitoTabs {
 }
 
 @end
