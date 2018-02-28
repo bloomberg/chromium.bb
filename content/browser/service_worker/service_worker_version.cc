@@ -191,17 +191,13 @@ void OnOpenWindowFinished(
     ServiceWorkerStatusCode status,
     blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (status != SERVICE_WORKER_OK) {
-    std::move(callback).Run(
-        nullptr /* client */,
-        std::string("Something went wrong while trying to open the window."));
-    return;
+  const bool success = (status == SERVICE_WORKER_OK);
+  base::Optional<std::string> error_msg;
+  if (!success) {
+    DCHECK(!client_info);
+    error_msg.emplace("Something went wrong while trying to open the window.");
   }
-
-  DCHECK(client_info);
-  std::move(callback).Run(std::move(client_info),
-                          base::nullopt /* error_msg */);
+  std::move(callback).Run(success, std::move(client_info), error_msg);
 }
 
 void DidShowPaymentHandlerWindow(
@@ -218,7 +214,7 @@ void DidShowPaymentHandlerWindow(
         render_process_id, render_frame_id);
   } else {
     OnOpenWindowFinished(std::move(callback), SERVICE_WORKER_ERROR_FAILED,
-                         blink::mojom::ServiceWorkerClientInfo::New());
+                         nullptr /* client_info */);
   }
 }
 
@@ -236,12 +232,13 @@ void DidNavigateClient(
     ServiceWorkerStatusCode status,
     blink::mojom::ServiceWorkerClientInfoPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != SERVICE_WORKER_OK) {
-    std::move(callback).Run(nullptr /* client */,
-                            "Cannot navigate to URL: " + url.spec());
-    return;
+  const bool success = (status == SERVICE_WORKER_OK);
+  base::Optional<std::string> error_msg;
+  if (!success) {
+    DCHECK(!client);
+    error_msg.emplace("Cannot navigate to URL: " + url.spec());
   }
-  std::move(callback).Run(std::move(client), base::nullopt /* error_msg */);
+  std::move(callback).Run(success, std::move(client), error_msg);
 }
 
 }  // namespace
@@ -1119,7 +1116,7 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
                                      GetClientCallback callback) {
   if (!context_) {
     // The promise will be resolved to 'undefined'.
-    std::move(callback).Run(blink::mojom::ServiceWorkerClientInfo::New());
+    std::move(callback).Run(nullptr);
     return;
   }
   ServiceWorkerProviderHost* provider_host =
@@ -1127,7 +1124,7 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
   if (!provider_host ||
       provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
-    std::move(callback).Run(blink::mojom::ServiceWorkerClientInfo::New());
+    std::move(callback).Run(nullptr);
     return;
   }
   service_worker_client_utils::GetClient(provider_host, std::move(callback));
@@ -1145,7 +1142,7 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
   // Just respond failure if we are shutting down.
   if (!context_) {
     std::move(callback).Run(
-        nullptr /* client */,
+        false /* success */, nullptr /* client */,
         std::string("The service worker system is shutting down."));
     return;
   }
@@ -1195,7 +1192,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
                                           NavigateClientCallback callback) {
   if (!context_) {
     std::move(callback).Run(
-        nullptr /* client */,
+        false /* success */, nullptr /* client */,
         std::string("The service worker system is shutting down."));
     return;
   }
@@ -1214,7 +1211,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           embedded_worker_->process_id(), url)) {
     std::move(callback).Run(
-        nullptr /* client */,
+        false /* success */, nullptr /* client */,
         "The service worker is not allowed to access URL: " + url.spec());
     return;
   }
@@ -1222,13 +1219,13 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   ServiceWorkerProviderHost* provider_host =
       context_->GetProviderHostByClientID(client_uuid);
   if (!provider_host) {
-    std::move(callback).Run(nullptr /* client */,
+    std::move(callback).Run(false /* success */, nullptr /* client */,
                             std::string("The client was not found."));
     return;
   }
   if (provider_host->active_version() != this) {
     std::move(callback).Run(
-        nullptr /* client */,
+        false /* success */, nullptr /* client */,
         std::string(
             "This service worker is not the client's active service worker."));
     return;
@@ -1300,7 +1297,7 @@ void ServiceWorkerVersion::OpenWindow(GURL url,
   // Just respond failure if we are shutting down.
   if (!context_) {
     std::move(callback).Run(
-        nullptr /* client */,
+        false /* success */, nullptr /* client */,
         std::string("The service worker system is shutting down."));
     return;
   }
@@ -1323,7 +1320,7 @@ void ServiceWorkerVersion::OpenWindow(GURL url,
   // filtered out by Blink.
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           embedded_worker_->process_id(), url)) {
-    std::move(callback).Run(nullptr /* client */,
+    std::move(callback).Run(false /* success */, nullptr /* client */,
                             url.spec() + " cannot be opened.");
     return;
   }

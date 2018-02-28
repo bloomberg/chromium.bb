@@ -26,25 +26,32 @@ interface ServiceWorkerHost {
     => (array<ServiceWorkerClientInfo> clients);
 
   // Corresponds to Clients#get(id). Gets information of the service worker
-  // client with |client_uuid|.
-  GetClient(string client_uuid) => (ServiceWorkerClientInfo client);
+  // client with |client_uuid|. |client| is null if it was not found or is not
+  // same-origin with this service worker.
+  GetClient(string client_uuid) => (ServiceWorkerClientInfo? client);
 
   // Corresponds to Clients#openWindow(url). Requests the browser to open a tab
   // with |url|.
-  // On success, |client| contains service worker client information of the
-  // newly opened window and |error_msg| is null.
-  // Otherwise, |client| is null and |error_msg| describes the failure.
+  // If the tab was successfully opened, |success| is true. |client| contains
+  // information about the newly opened window, but may be null if that
+  // information could not be obtained (this can happen for a cross-origin
+  // window, or if the browser process could not get the information in time
+  // before the window was closed).
+  // If |success| is false, |error_msg| describes the failure.
   OpenNewTab(url.mojom.Url url)
-    => (ServiceWorkerClientInfo? client, string? error_msg);
+    => (bool success, ServiceWorkerClientInfo? client, string? error_msg);
 
   // Corresponds to PaymentRequestEvent#openWindow(url).
   // Spec: https://w3c.github.io/payment-handler/#openwindow-method
   // Requests the browser to open a payment handler window with |url|.
-  // On success, |client| contains service worker client information of the
-  // newly opened window and |error_msg| is null.
-  // Otherwise, |client| is null and |error_msg| describes the failure.
+  // If the window was successfully opened, |success| is true. |client| contains
+  // information about the newly opened window, but may be null if that
+  // information could not be obtained (this can happen for a cross-origin
+  // window, or if the browser process could not get the information in time
+  // before the window was closed).
+  // If |success| is false, |error_msg| describes the failure.
   OpenPaymentHandlerWindow(url.mojom.Url url)
-    => (ServiceWorkerClientInfo? client, string? error_msg);
+    => (bool success, ServiceWorkerClientInfo? client, string? error_msg);
 
   // TODO(leonhsl): Impl all methods.
   // PostMessageToClient();
@@ -58,11 +65,14 @@ interface ServiceWorkerHost {
 
   // Corresponds to WindowClient#navigate(). Requests the browser to navigate
   // the client with |client_uuid| to |url|.
-  // On success, |client| contains service worker client information of the
-  // navigated window and |error_msg| is null.
-  // Otherwise, |client| is null and |error_msg| describes the failure.
+  // If the navigation was successful, |success| is true. |client| contains
+  // information about the navigated window, but may be null if that
+  // information could not be obtained (this can happen for a cross-origin
+  // window, or if the browser process could not get the information in time
+  // before the window was closed).
+  // If |success| is false, |error_msg| describes the failure.
   NavigateClient(string client_uuid, url.mojom.Url url)
-    => (ServiceWorkerClientInfo? client, string? error_msg);
+    => (bool success, ServiceWorkerClientInfo? client, string? error_msg);
 
   // Corresponds to ServiceWorkerGlobalScope#skipWaiting(). Allows this service
   // worker to progress from the registration's waiting position to active even
