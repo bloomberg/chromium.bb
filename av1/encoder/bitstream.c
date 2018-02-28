@@ -3786,7 +3786,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     const size_t length_field_size = aom_uleb_size_in_bytes(total_size);
     memmove(dst + length_field_size, dst, total_size);
     if (write_uleb_obu_size(total_size, dst) != AOM_CODEC_OK) assert(0);
-    total_size += length_field_size;
+    total_size += (uint32_t)length_field_size;
 #else
     mem_put_le32(dst, total_size);
     total_size += PRE_OBU_SIZE_BYTES;
@@ -3889,8 +3889,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         memmove(data + length_field_size, data, curr_tg_data_size);
         if (write_uleb_obu_size(curr_tg_data_size, data) != AOM_CODEC_OK)
           assert(0);
-        curr_tg_data_size += length_field_size;
-        total_size += length_field_size;
+        curr_tg_data_size += (int)length_field_size;
+        total_size += (uint32_t)length_field_size;
 #else
         mem_put_le32(data, curr_tg_data_size);
 #endif  // CONFIG_OBU_SIZING

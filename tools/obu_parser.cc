@@ -177,7 +177,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     const size_t length_field_size = kObuLengthFieldSizeBytes;
 #endif  // CONFIG_OBU_SIZING
 
-    obu_overhead += length_field_size;
+    obu_overhead += (int)length_field_size;
 
     if (current_obu_length > remaining) {
       fprintf(stderr,
@@ -186,7 +186,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
               consumed, current_obu_length, remaining);
       return false;
     }
-    consumed += length_field_size;
+    consumed += (int)length_field_size;
 
     obu_header = kEmptyObu;
     const uint8_t obu_header_byte = *(data + consumed);
