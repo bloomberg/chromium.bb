@@ -54,7 +54,16 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   // The fraction of the device's storage the browser is willing to
   // use for temporary storage, this is applied after adjusting the
   // total to take os_accomodation into account.
+#if defined(OS_CHROMEOS)
+  // Chrome OS is given a larger fraction, as web content is the considered
+  // the primary use of the platform. Chrome OS itself maintains free space by
+  // starting to evict data (old profiles) when less than 1GB remains,
+  // stopping eviction once 2GB is free.
+  // Prior to M66 this was 1/3, same as other platforms.
+  const double kTemporaryPoolSizeRatio = 2.0 / 3.0;  // 66%
+#else
   const double kTemporaryPoolSizeRatio = 1.0 / 3.0;  // 33%
+#endif
 
   // The amount of the device's storage the browser attempts to
   // keep free. If there is less than this amount of storage free
