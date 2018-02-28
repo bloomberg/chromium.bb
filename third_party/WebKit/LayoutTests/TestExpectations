@@ -2308,14 +2308,6 @@ crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Fai
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-fill-balance-001.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-gap-negative-001.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-overflow-000.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-overflowing-001.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-rule-002.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-rule-shorthand-2.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-rule-stacking-001.xht [ Pass Failure ]
-crbug.com/794136 [ Win ] external/wpt/css/css-multicol/multicol-width-001.xht [ Pass Failure ]
 
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/outline-004.html [ Pass Failure ]
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-001.html [ Pass Failure ]
@@ -3452,15 +3444,6 @@ crbug.com/802835 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tent
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
-
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-columns-004.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-count-non-integer-003.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-gap-000.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-height-block-child-001.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-inherit-003.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-rule-color-inherit-001.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-span-all-margin-nested-firstchild-001.xht [ Failure Pass ]
-crbug.com/812941 [ Win7 ] external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure Pass ]
 
 crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
