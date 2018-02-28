@@ -227,25 +227,23 @@ bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(const WebHTTPHeaderMap& map) {
       map.GetHTTPHeaderMap());
 }
 
-// No-CORS requests are allowed for all these contexts, and plugin contexts when
-// we set skip_service_worker to true in PepperURLLoaderHost.
-bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context,
-                            bool skip_service_worker) {
+// In the spec, https://fetch.spec.whatwg.org/#ref-for-concept-request-mode,
+// No-CORS mode is highly discouraged from using it for new features. Only
+// legacy usages for backward compatibility are allowed except for well-designed
+// usages over the fetch API.
+bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context) {
   switch (context) {
     case WebURLRequest::kRequestContextAudio:
     case WebURLRequest::kRequestContextFavicon:
     case WebURLRequest::kRequestContextFetch:
     case WebURLRequest::kRequestContextImage:
     case WebURLRequest::kRequestContextObject:
+    case WebURLRequest::kRequestContextPlugin:
     case WebURLRequest::kRequestContextScript:
     case WebURLRequest::kRequestContextSharedWorker:
     case WebURLRequest::kRequestContextVideo:
     case WebURLRequest::kRequestContextWorker:
       return true;
-    case WebURLRequest::kRequestContextPlugin:
-      // TODO(toyoshim): |skip_service_worker| must be always true here. Will
-      // change to return always true and add a DCHECK to call sites.
-      return skip_service_worker;
     default:
       return false;
   }
