@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 
 #include <stddef.h>
 #include <sys/types.h>
@@ -12,10 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/common/quarantine/quarantine_constants_linux.h"
+#include "components/download/quarantine/quarantine.h"
+#include "components/download/quarantine/quarantine_constants_linux.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 
 const char kSourceURLExtendedAttrName[] = "user.xdg.origin.url";
 const char kReferrerURLExtendedAttrName[] = "user.xdg.referrer.url";
@@ -96,4 +97,4 @@ bool IsFileQuarantined(const base::FilePath& file,
              referrer_url;
 }
 
-}  // namespace content
+}  // namespace download

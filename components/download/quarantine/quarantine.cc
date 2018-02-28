@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 
 #include "build/build_config.h"
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 
-namespace content {
+namespace download {
 
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
@@ -23,6 +23,6 @@ bool IsFileQuarantined(const base::FilePath& file,
   return false;
 }
 
-}  // namespace content
+}  // namespace download
 
 #endif  // !WIN && !MAC && !LINUX

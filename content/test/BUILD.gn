@@ -1539,9 +1539,6 @@ test("content_unittests") {
     "../common/page_state_serialization_unittest.cc",
     "../common/page_zoom_unittest.cc",
     "../common/plugin_list_unittest.cc",
-    "../common/quarantine/quarantine_linux_unittest.cc",
-    "../common/quarantine/quarantine_mac_unittest.mm",
-    "../common/quarantine/quarantine_win_unittest.cc",
     "../common/sandbox_mac_diraccess_unittest.mm",
     "../common/sandbox_mac_fontloading_unittest.mm",
     "../common/sandbox_mac_system_access_unittest.mm",
@@ -1628,14 +1625,6 @@ test("content_unittests") {
     "run_all_unittests.cc",
     "url_request_context_builder_mojo_unittest.cc",
   ]
-
-  # Chromecasts do not have extended attributes enabled; even if it were
-  # enabled, the devices use tmpfs which restricts the extended attributes that
-  # can be set such that quarantining still would not work. (The platform
-  # specific tests include a runtime guard to skip tests that need xattr.)
-  if (!is_chromecast) {
-    sources += [ "../common/quarantine/quarantine_unittest.cc" ]
-  }
 
   # ChromeOS also defines linux but their memory-monitors conflict.
   if (is_chromeos) {

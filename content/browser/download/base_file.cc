@@ -20,8 +20,8 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
+#include "components/download/quarantine/quarantine.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
-#include "content/public/common/quarantine.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
 
@@ -483,24 +483,24 @@ download::DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
   DCHECK(!full_path_.empty());
 
   CONDITIONAL_TRACE(BEGIN0("download", "DownloadFileAnnotate"));
-  QuarantineFileResult result = QuarantineFile(
+  download::QuarantineFileResult result = download::QuarantineFile(
       full_path_, GetEffectiveAuthorityURL(source_url, referrer_url),
       referrer_url, client_guid);
   CONDITIONAL_TRACE(END0("download", "DownloadFileAnnotate"));
 
   switch (result) {
-    case QuarantineFileResult::OK:
+    case download::QuarantineFileResult::OK:
       return download::DOWNLOAD_INTERRUPT_REASON_NONE;
-    case QuarantineFileResult::VIRUS_INFECTED:
+    case download::QuarantineFileResult::VIRUS_INFECTED:
       return download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED;
-    case QuarantineFileResult::SECURITY_CHECK_FAILED:
+    case download::QuarantineFileResult::SECURITY_CHECK_FAILED:
       return download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED;
-    case QuarantineFileResult::BLOCKED_BY_POLICY:
+    case download::QuarantineFileResult::BLOCKED_BY_POLICY:
       return download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
-    case QuarantineFileResult::ACCESS_DENIED:
+    case download::QuarantineFileResult::ACCESS_DENIED:
       return download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
 
-    case QuarantineFileResult::FILE_MISSING:
+    case download::QuarantineFileResult::FILE_MISSING:
       // Don't have a good interrupt reason here. This return code means that
       // the file at |full_path_| went missing before QuarantineFile got to look
       // at it. Not expected to happen, but we've seen instances where a file
@@ -510,7 +510,7 @@ download::DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
       // SECURITY_CHECK_FAILED in order to distinguish the two.
       return download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 
-    case QuarantineFileResult::ANNOTATION_FAILED:
+    case download::QuarantineFileResult::ANNOTATION_FAILED:
       // This means that the mark-of-the-web couldn't be applied. The file is
       // already on the file system under its final target name.
       //

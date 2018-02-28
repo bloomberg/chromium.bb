@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_file_util.h"
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -260,4 +260,4 @@ TEST(QuarantineWinTest, SuperLongURL) {
   EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
-}  // content
+}  // namespace download

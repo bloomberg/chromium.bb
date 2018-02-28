@@ -14,12 +14,12 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 namespace {
 
 class QuarantineMacTest : public testing::Test {
@@ -119,4 +119,4 @@ TEST_F(QuarantineMacTest, IsFileQuarantined_FullMetadata) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace downlod
