@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_PLATFORM_WINDOW_X11_X11_CURSOR_OZONE_H_
-#define UI_PLATFORM_WINDOW_X11_X11_CURSOR_OZONE_H_
+#ifndef UI_OZONE_PLATFORM_X11_X11_CURSOR_OZONE_H_
+#define UI_OZONE_PLATFORM_X11_X11_CURSOR_OZONE_H_
 
 #include <vector>
 
@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/platform_window/x11/x11_window_export.h"
 
 class SkBitmap;
 
@@ -23,8 +22,7 @@ namespace ui {
 
 // Ref counted class to hold an X11 cursor resource. Handles creating X11 cursor
 // resources from SkBitmap/hotspot and clears the X11 resources on destruction.
-class X11_WINDOW_EXPORT X11CursorOzone
-    : public base::RefCounted<X11CursorOzone> {
+class X11CursorOzone : public base::RefCounted<X11CursorOzone> {
  public:
   X11CursorOzone(const SkBitmap& bitmap, const gfx::Point& hotspot);
   X11CursorOzone(const std::vector<SkBitmap>& bitmaps,
@@ -34,7 +32,7 @@ class X11_WINDOW_EXPORT X11CursorOzone
   // Creates a new cursor that is invisible.
   static scoped_refptr<X11CursorOzone> CreateInvisible();
 
-  ::Cursor xcursor() const { return xcursor_; }
+  XID xcursor() const { return xcursor_; }
 
  private:
   friend class base::RefCounted<X11CursorOzone>;
@@ -42,10 +40,11 @@ class X11_WINDOW_EXPORT X11CursorOzone
   X11CursorOzone();
   ~X11CursorOzone();
 
-  ::Cursor xcursor_ = x11::None;
+  XID xcursor_ = x11::None;
 
   DISALLOW_COPY_AND_ASSIGN(X11CursorOzone);
 };
 
 }  // namespace ui
-#endif  // UI_PLATFORM_WINDOW_X11_X11_CURSOR_OZONE_H_
+
+#endif  // UI_OZONE_PLATFORM_X11_X11_CURSOR_OZONE_H_

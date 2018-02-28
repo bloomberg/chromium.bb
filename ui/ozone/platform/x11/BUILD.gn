@@ -18,14 +18,21 @@ source_set("x11") {
     "ozone_platform_x11.h",
     "x11_cursor_factory_ozone.cc",
     "x11_cursor_factory_ozone.h",
+    "x11_cursor_ozone.cc",
+    "x11_cursor_ozone.h",
     "x11_surface_factory.cc",
     "x11_surface_factory.h",
+    "x11_window_manager_ozone.cc",
+    "x11_window_manager_ozone.h",
+    "x11_window_ozone.cc",
+    "x11_window_ozone.h",
   ]
 
   deps = [
     "//base",
     "//skia",
     "//ui/base",
+    "//ui/base/x",
     "//ui/display/manager",
     "//ui/events",
     "//ui/events/devices",

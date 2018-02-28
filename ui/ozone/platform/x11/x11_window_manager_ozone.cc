@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/platform_window/x11/x11_window_manager_ozone.h"
+#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
+
+#include "ui/ozone/platform/x11/x11_window_ozone.h"
 
 namespace ui {
 

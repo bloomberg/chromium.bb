@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/platform_window/x11/x11_cursor_ozone.h"
 
 namespace ui {
 

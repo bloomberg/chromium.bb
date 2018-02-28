@@ -19,12 +19,12 @@
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
+#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
+#include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/x11/x11_window_manager_ozone.h"
-#include "ui/platform_window/x11/x11_window_ozone.h"
 
 namespace ui {
 
