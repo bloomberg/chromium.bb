@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/settings/password_exporter_for_testing.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/password_test_util.h"
@@ -130,9 +132,11 @@ class PasswordExporterTest : public PlatformTest {
   PasswordExporter* password_exporter_;
   MockReauthenticationModule* mock_reauthentication_module_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::HistogramTester histogram_tester_;
 };
 
-// Tests that the passwords file is written if reauthentication is successful.
+// Tests that when reauthentication is successful, the passwords file is written
+// and showing the activity view is requested.
 TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   mock_reauthentication_module_.shouldSucceed = YES;
   NSURL* passwords_file_url = GetPasswordsFileURL();
@@ -148,6 +152,12 @@ TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
 
   EXPECT_TRUE(PasswordFileExists());
   EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::SUCCESS, 1);
 }
 
 // Tests that the exporter becomes idle after the export finishes.
@@ -177,6 +187,12 @@ TEST_F(PasswordExporterTest, ExportIdleAfterFinishing) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::SUCCESS, 1);
 }
 
 // Tests that if the file writing fails because of not enough disk space
@@ -215,6 +231,12 @@ TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
 
   // Failure to write the passwords file ends the export operation.
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::WRITE_FAILED, 1);
 }
 
 // Tests that if a file write fails with an error other than not having
@@ -252,6 +274,12 @@ TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
 
   // Failure to write the passwords file ends the export operation.
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::WRITE_FAILED, 1);
 }
 
 // Tests that when reauthentication fails the export flow is interrupted.
@@ -291,6 +319,12 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
   // successful, so the file is not written.
   EXPECT_FALSE(PasswordFileExists());
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 // Tests that cancelling the export while serialization is still ongoing
@@ -324,6 +358,12 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
   }
   EXPECT_FALSE(PasswordFileExists());
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 // Tests that if the export is cancelled before writing to file finishes
@@ -356,6 +396,12 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
     GTEST_FAIL();
   }
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 // Tests that if the export is cancelled before writing to file fails
@@ -387,6 +433,12 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFails) {
     GTEST_FAIL();
   }
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
+
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.TimeReadingExportedPasswords", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordManager.ExportPasswordsToCSVResult",
+      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 }  // namespace

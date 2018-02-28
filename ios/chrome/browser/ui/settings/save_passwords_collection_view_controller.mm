@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
@@ -532,7 +534,14 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(
                                          IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON)
                                style:UIAlertActionStyleCancel
-                             handler:nil];
+                             handler:^(UIAlertAction* action) {
+                               UMA_HISTOGRAM_ENUMERATION(
+                                   "PasswordManager.ExportPasswordsToCSVResult",
+                                   password_manager::metrics_util::
+                                       ExportPasswordsResult::USER_ABORTED,
+                                   password_manager::metrics_util::
+                                       ExportPasswordsResult::COUNT);
+                             }];
   [exportConfirmation addAction:cancelAction];
 
   __weak SavePasswordsCollectionViewController* weakSelf = self;
