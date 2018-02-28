@@ -1460,9 +1460,9 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
                              FetchInitiatorTypeNames::internal;
 
   resource->VirtualTimePauser().PauseVirtualTime(false);
-  Context().DispatchDidFail(resource->Identifier(), error,
-                            resource->GetResponse().EncodedDataLength(),
-                            is_internal_request);
+  Context().DispatchDidFail(
+      resource->LastResourceRequest().Url(), resource->Identifier(), error,
+      resource->GetResponse().EncodedDataLength(), is_internal_request);
 
   if (error.IsCancellation())
     RemovePreload(resource);

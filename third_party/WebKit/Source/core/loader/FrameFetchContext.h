@@ -114,7 +114,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                 int64_t encoded_data_length,
                                 int64_t decoded_body_length,
                                 bool blocked_cross_site_document) override;
-  void DispatchDidFail(unsigned long identifier,
+  void DispatchDidFail(const KURL&,
+                       unsigned long identifier,
                        const ResourceError&,
                        int64_t encoded_data_length,
                        bool is_internal_request) override;

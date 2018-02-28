@@ -343,7 +343,8 @@ void WorkerFetchContext::DispatchDidFinishLoading(
                           blocked_cross_site_document);
 }
 
-void WorkerFetchContext::DispatchDidFail(unsigned long identifier,
+void WorkerFetchContext::DispatchDidFail(const KURL& url,
+                                         unsigned long identifier,
                                          const ResourceError& error,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {

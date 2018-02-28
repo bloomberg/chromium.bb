@@ -81,6 +81,7 @@
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/http_names.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
@@ -995,7 +996,8 @@ void DocumentLoader::DidCommitNavigation(
   // Report legacy Symantec certificates after Page::DidCommitLoad, because the
   // latter clears the console.
   if (response_.IsLegacySymantecCert()) {
-    GetLocalFrameClient().ReportLegacySymantecCert(response_.Url());
+    GetLocalFrameClient().ReportLegacySymantecCert(response_.Url(),
+                                                   false /* did_fail */);
   }
 }
 

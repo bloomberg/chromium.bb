@@ -715,7 +715,8 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
     web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url) {
+void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
+                                                    bool did_fail) {
   // To prevent log spam, only log the message once per hostname.
   if (certificate_warning_hosts_.Contains(url.Host()))
     return;
@@ -733,35 +734,60 @@ void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url) {
   WebString console_message;
 
   if (num_certificate_warning_messages_ == kMaxCertificateWarningMessages) {
-    console_message =
-        WebString(String("Additional resources on this page were loaded with "
-                         "SSL certificates that will be "
-                         "distrusted in the future. "
-                         "Once distrusted, users will be prevented from "
-                         "loading these resources. See "
-                         "https://g.co/chrome/symantecpkicerts for "
-                         "more information."));
-  } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
-                 url, &console_message)) {
-    console_message = WebString(
-        String::Format("The SSL certificate used to load resources from %s"
-                       " will be "
-                       "distrusted in the future. "
-                       "Once distrusted, users will be prevented from "
-                       "loading these resources. See "
-                       "https://g.co/chrome/symantecpkicerts for "
-                       "more information.",
-                       SecurityOrigin::Create(url)->ToString().Utf8().data()));
+    if (did_fail) {
+      console_message =
+          WebString(String("Additional resources on this page were loaded with "
+                           "SSL certificates that have been "
+                           "distrusted. See "
+                           "https://g.co/chrome/symantecpkicerts for "
+                           "more information."));
+    } else {
+      console_message =
+          WebString(String("Additional resources on this page were loaded with "
+                           "SSL certificates that will be "
+                           "distrusted in the future. "
+                           "Once distrusted, users will be prevented from "
+                           "loading these resources. See "
+                           "https://g.co/chrome/symantecpkicerts for "
+                           "more information."));
+    }
+  } else {
+    // The embedder is given a chance to override the message for certs that
+    // will be distrusted in future, but not for certs that have already been
+    // distrusted. (This is because there is no embedder-specific release
+    // information in the message for certs that have already been distrusted.)
+    if (did_fail) {
+      console_message = WebString(String::Format(
+          "The SSL certificate used to load resources from %s"
+          " has been distrusted. See "
+          "https://g.co/chrome/symantecpkicerts for "
+          "more information.",
+          SecurityOrigin::Create(url)->ToString().Utf8().data()));
+    } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
+                   url, &console_message)) {
+      console_message = WebString(String::Format(
+          "The SSL certificate used to load resources from %s"
+          " will be "
+          "distrusted in the future. "
+          "Once distrusted, users will be prevented from "
+          "loading these resources. See "
+          "https://g.co/chrome/symantecpkicerts for "
+          "more information.",
+          SecurityOrigin::Create(url)->ToString().Utf8().data()));
+    }
   }
   num_certificate_warning_messages_++;
   certificate_warning_hosts_.insert(url.Host());
   // To avoid spamming the console, use Verbose message level for subframe
-  // resources and only use the warning level for main-frame resources.
+  // resources for certificates that will be distrusted in future, and only use
+  // the warning level for main-frame resources or resources that have already
+  // been distrusted.
   web_frame_->GetFrame()->GetDocument()->AddConsoleMessage(
-      ConsoleMessage::Create(
-          kSecurityMessageSource,
-          web_frame_->Parent() ? kVerboseMessageLevel : kWarningMessageLevel,
-          console_message));
+      ConsoleMessage::Create(kSecurityMessageSource,
+                             (web_frame_->Parent() && !did_fail)
+                                 ? kVerboseMessageLevel
+                                 : kWarningMessageLevel,
+                             console_message));
 }
 
 void LocalFrameClientImpl::DidChangePerformanceTiming() {

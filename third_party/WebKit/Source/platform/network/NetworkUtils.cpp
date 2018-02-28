@@ -123,6 +123,10 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
   return error_code == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
 }
 
+bool IsLegacySymantecCertError(int error_code) {
+  return error_code == net::ERR_CERT_SYMANTEC_LEGACY;
+}
+
 }  // NetworkUtils
 
 }  // namespace blink
