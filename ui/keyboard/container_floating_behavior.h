@@ -23,23 +23,9 @@ namespace keyboard {
 constexpr int kDefaultDistanceFromScreenBottom = 20;
 constexpr int kDefaultDistanceFromScreenRight = 20;
 
-enum class HorizontalAnchorDirection {
-  LEFT,
-  RIGHT,
-};
-
-enum class VerticalAnchorDirection {
-  TOP,
-  BOTTOM,
-};
-
 struct KeyboardPosition {
-  // Whether the keyboard is anchored to the left or right side of the screen.
-  HorizontalAnchorDirection horizontal_anchor_direction;
-  // Whether the keyboard is anchored to the top or bottom side of the screen.
-  VerticalAnchorDirection vertical_anchor_direction;
-  // Distance from the sides of the screen that the keyboard is anchored to.
-  gfx::Point offset;
+  double left_padding_allotment_ratio;
+  double top_padding_allotment_ratio;
 };
 
 class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {

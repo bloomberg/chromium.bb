@@ -93,27 +93,17 @@ void ContainerFloatingBehavior::SavePosition(const gfx::Rect& keyboard_bounds,
   int top_distance = keyboard_bounds.y();
   int bottom_distance = screen_size.height() - (keyboard_bounds.bottom());
 
+  double available_width = left_distance + right_distance;
+  double available_height = top_distance + bottom_distance;
+
   if (!default_position_) {
     default_position_ = std::make_unique<KeyboardPosition>();
   }
 
-  if (left_distance < right_distance) {
-    default_position_->horizontal_anchor_direction =
-        HorizontalAnchorDirection::LEFT;
-    default_position_->offset.set_x(left_distance);
-  } else {
-    default_position_->horizontal_anchor_direction =
-        HorizontalAnchorDirection::RIGHT;
-    default_position_->offset.set_x(right_distance);
-  }
-  if (top_distance < bottom_distance) {
-    default_position_->vertical_anchor_direction = VerticalAnchorDirection::TOP;
-    default_position_->offset.set_y(top_distance);
-  } else {
-    default_position_->vertical_anchor_direction =
-        VerticalAnchorDirection::BOTTOM;
-    default_position_->offset.set_y(bottom_distance);
-  }
+  default_position_->left_padding_allotment_ratio =
+      left_distance / available_width;
+  default_position_->top_padding_allotment_ratio =
+      top_distance / available_height;
 }
 
 gfx::Rect ContainerFloatingBehavior::ContainKeyboardToScreenBounds(
@@ -162,19 +152,12 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
     top_left_offset.set_y(display_bounds.height() - keyboard_size.height() -
                           kDefaultDistanceFromScreenBottom);
   } else {
-    if (position->horizontal_anchor_direction ==
-        HorizontalAnchorDirection::LEFT) {
-      top_left_offset.set_x(position->offset.x());
-    } else {
-      top_left_offset.set_x(display_bounds.width() - position->offset.x() -
-                            keyboard_size.width());
-    }
-    if (position->vertical_anchor_direction == VerticalAnchorDirection::TOP) {
-      top_left_offset.set_y(position->offset.y());
-    } else {
-      top_left_offset.set_y(display_bounds.height() - position->offset.y() -
-                            keyboard_size.height());
-    }
+    double left = (display_bounds.width() - keyboard_size.width()) *
+                  position->left_padding_allotment_ratio;
+    double top = (display_bounds.height() - keyboard_size.height()) *
+                 position->top_padding_allotment_ratio;
+    top_left_offset.set_x((int)left);
+    top_left_offset.set_y((int)top);
   }
 
   // Make sure that this location is valid according to the current size of the
