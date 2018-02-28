@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 
 // An opque adaptor for the TabSwitcher protocol into the TabGrid.
@@ -16,6 +17,12 @@
 // tab grid, and external code shouldn't depend on them.
 @interface TabGridAdaptor : NSObject<TabSwitcher>
 @property(nonatomic, weak) UIViewController* tabGridViewController;
+// Dispatcher object this adaptor will expose as the dispacther for the
+// TabSwitcher protocol.
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>
+        adaptedDispatcher;
+@property(nonatomic, weak) TabGridMediator* mediator;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_ADAPTOR_H_

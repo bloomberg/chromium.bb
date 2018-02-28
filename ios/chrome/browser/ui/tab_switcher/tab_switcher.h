@@ -91,7 +91,7 @@
 // perform an animation from the selected tab in the tab switcher to the
 // newly created tab in the content area. Objects adopting this protocol should
 // call the following delegate methods:
-//   |-tabSwitcher:dismissTransitionWillStartWithActiveModel:|
+//   |-tabSwitcher:shouldFinishWithActiveModel:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel

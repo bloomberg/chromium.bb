@@ -890,7 +890,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // Lazily create the main coordinator.
     if (IsTabSwitcherTabGridEnabled()) {
       TabGridCoordinator* tabGridCoordinator =
-          [[TabGridCoordinator alloc] initWithWindow:self.window];
+          [[TabGridCoordinator alloc] initWithWindow:self.window
+                          applicationCommandEndpoint:self];
       tabGridCoordinator.regularTabModel = self.mainTabModel;
       tabGridCoordinator.incognitoTabModel = self.otrTabModel;
       _mainCoordinator = tabGridCoordinator;
@@ -1913,7 +1914,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-#pragma mark - TabSwitcherDelegate Implementation
+#pragma mark - TabSwitcherDelegate
 
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
     shouldFinishWithActiveModel:(TabModel*)tabModel {
@@ -1923,6 +1924,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
   [self finishDismissingStackView];
 }
+
+- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
+  // Request the view to ensure that the view has been loaded and initialized,
+  // since it may never have been loaded (or have been swapped out).
+  [self.currentBVC loadViewIfNeeded];
+  return self.currentBVC;
+}
+
+#pragma mark - TabSwitcherDelegate helper methods
 
 - (void)beginDismissingStackViewWithCurrentModel:(TabModel*)tabModel {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
@@ -1986,13 +1996,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _tabSwitcherIsActive = NO;
   _dismissingStackView = NO;
-}
-
-- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
-  // Request the view to ensure that the view has been loaded and initialized,
-  // since it may never have been loaded (or have been swapped out).
-  [self.currentBVC loadViewIfNeeded];
-  return self.currentBVC;
 }
 
 #pragma mark - BrowsingDataCommands

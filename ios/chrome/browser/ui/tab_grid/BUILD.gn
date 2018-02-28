@@ -20,6 +20,7 @@ source_set("tab_grid") {
     ":tab_grid_ui",
     "//base",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/tab_switcher",
