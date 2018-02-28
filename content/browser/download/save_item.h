@@ -50,8 +50,6 @@ class SaveItem {
   // Update path for SaveItem, the actual file is renamed on the file thread.
   void SetTargetPath(const base::FilePath& full_path);
 
-  void SetTotalBytes(int64_t total_bytes);
-
   // Accessors.
   SaveItemId id() const { return save_item_id_; }
   SaveState state() const { return state_; }
@@ -91,9 +89,6 @@ class SaveItem {
   // (FrameTreeNode::kFrameTreeNodeInvalidId if this save item represents the
   // main frame, which obviously doesn't have a containing/parent frame).
   int container_frame_tree_node_id_;
-
-  // Total bytes expected.
-  int64_t total_bytes_;
 
   // Current received bytes.
   int64_t received_bytes_;

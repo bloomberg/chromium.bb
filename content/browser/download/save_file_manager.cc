@@ -115,14 +115,15 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
                        context));
   } else {
     // We manually start the save job.
-    SaveFileCreateInfo* info = new SaveFileCreateInfo(
+    auto info = std::make_unique<SaveFileCreateInfo>(
         file_full_path, url, save_item_id, save_package->id(),
         render_process_host_id, render_frame_routing_id, save_source);
 
     // Since the data will come from render process, so we need to start
     // this kind of save job by ourself.
     download::GetDownloadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&SaveFileManager::StartSave, this, info));
+        FROM_HERE,
+        base::BindOnce(&SaveFileManager::StartSave, this, std::move(info)));
   }
 }
 
@@ -179,22 +180,23 @@ void SaveFileManager::SendCancelRequest(SaveItemId save_item_id) {
 // The IO thread created |info|, but the file thread (this method) uses it
 // to create a SaveFile which will hold and finally destroy |info|. It will
 // then passes |info| to the UI thread for reporting saving status.
-void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
+void SaveFileManager::StartSave(std::unique_ptr<SaveFileCreateInfo> info) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(info);
   // No need to calculate hash.
-  std::unique_ptr<SaveFile> save_file = std::make_unique<SaveFile>(info, false);
+  auto save_file =
+      std::make_unique<SaveFile>(std::move(info), /*calculate_hash=*/false);
 
   // TODO(phajdan.jr): We should check the return value and handle errors here.
   save_file->Initialize();
-  info->path = save_file->FullPath();
 
-  DCHECK(!LookupSaveFile(info->save_item_id));
-  save_file_map_[info->save_item_id] = std::move(save_file);
+  const SaveFileCreateInfo& save_file_create_info = save_file->create_info();
+  DCHECK(!LookupSaveFile(save_file->save_item_id()));
+  save_file_map_[save_file->save_item_id()] = std::move(save_file);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SaveFileManager::OnStartSave, this, *info));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&SaveFileManager::OnStartSave, this,
+                                         save_file_create_info));
 }
 
 // We do forward an update to the UI thread here, since we do not use timer to
