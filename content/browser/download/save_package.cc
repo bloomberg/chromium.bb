@@ -514,8 +514,6 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
 
   DCHECK(!saved_main_file_path_.empty());
 
-  save_item->SetTotalBytes(info->total_bytes);
-
   // Determine the proper path for a saving job, by choosing either the default
   // save directory, or prompting the user.
   DCHECK(!save_item->has_final_name());

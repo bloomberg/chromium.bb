@@ -22,7 +22,6 @@ SaveFileCreateInfo::SaveFileCreateInfo(const base::FilePath& path,
       render_process_id(render_process_id),
       render_frame_routing_id(render_frame_routing_id),
       request_id(-1),
-      total_bytes(0),
       save_source(save_source) {}
 
 SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
@@ -32,8 +31,7 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
                                        int render_process_id,
                                        int render_frame_routing_id,
                                        int request_id,
-                                       const std::string& content_disposition,
-                                       int64_t total_bytes)
+                                       const std::string& content_disposition)
     : url(url),
       final_url(final_url),
       save_item_id(save_item_id),
@@ -42,7 +40,6 @@ SaveFileCreateInfo::SaveFileCreateInfo(const GURL& url,
       render_frame_routing_id(render_frame_routing_id),
       request_id(request_id),
       content_disposition(content_disposition),
-      total_bytes(total_bytes),
       save_source(SaveFileCreateInfo::SAVE_FILE_FROM_NET) {}
 
 SaveFileCreateInfo::SaveFileCreateInfo(const SaveFileCreateInfo& other) =

@@ -5,10 +5,6 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_RESOURCE_HANDLER_H_
 
-#include <stdint.h>
-
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/save_types.h"
@@ -82,25 +78,14 @@ class SaveFileResourceHandler : public ResourceHandler {
   // N/A to this flavor of SaveFileResourceHandler.
   void OnDataDownloaded(int bytes_downloaded) override;
 
-  // If the content-length header is not present (or contains something other
-  // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and
-  // is handled correctly by the SaveManager.
-  void set_content_length(const std::string& content_length);
-
-  void set_content_disposition(const std::string& content_disposition) {
-    content_disposition_ = content_disposition;
-  }
-
  private:
   SaveItemId save_item_id_;
   SavePackageId save_package_id_;
   int render_process_id_;
   int render_frame_routing_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;
-  std::string content_disposition_;
   GURL url_;
   GURL final_url_;
-  int64_t content_length_;
   SaveFileManager* save_manager_;
 
   AuthorizationState authorization_state_;

@@ -59,6 +59,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -110,7 +111,7 @@ class CONTENT_EXPORT SaveFileManager
                SavePackage* save_package);
 
   // Notifications sent from the IO thread and run on the file thread:
-  void StartSave(SaveFileCreateInfo* info);
+  void StartSave(std::unique_ptr<SaveFileCreateInfo> info);
   void UpdateSaveProgress(SaveItemId save_item_id,
                           net::IOBuffer* data,
                           int size);

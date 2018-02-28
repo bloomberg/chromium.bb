@@ -58,8 +58,7 @@ struct SaveFileCreateInfo {
                      int render_process_id,
                      int render_frame_routing_id,
                      int request_id,
-                     const std::string& content_disposition,
-                     int64_t total_bytes);
+                     const std::string& content_disposition);
 
   SaveFileCreateInfo(const SaveFileCreateInfo& other);
 
@@ -83,8 +82,6 @@ struct SaveFileCreateInfo {
   int request_id;
   // Disposition info from HTTP response.
   std::string content_disposition;
-  // Total bytes of saved file.
-  int64_t total_bytes;
   // Source type of saved file.
   SaveFileSource save_source;
 };

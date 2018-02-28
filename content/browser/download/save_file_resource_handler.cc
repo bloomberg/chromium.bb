@@ -4,6 +4,8 @@
 
 #include "content/browser/download/save_file_resource_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -12,8 +14,10 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/loader/resource_controller.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace content {
 
@@ -31,7 +35,6 @@ SaveFileResourceHandler::SaveFileResourceHandler(
       render_process_id_(render_process_host_id),
       render_frame_routing_id_(render_frame_routing_id),
       url_(url),
-      content_length_(0),
       save_manager_(SaveFileManager::Get()),
       authorization_state_(authorization_state) {}
 
@@ -49,14 +52,18 @@ void SaveFileResourceHandler::OnRequestRedirected(
 void SaveFileResourceHandler::OnResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
-  // |save_manager_| consumes (deletes):
-  SaveFileCreateInfo* info = new SaveFileCreateInfo(
+  std::string content_disposition;
+  if (response->head.headers) {
+    response->head.headers->GetNormalizedHeader("Content-Disposition",
+                                                &content_disposition);
+  }
+
+  auto info = std::make_unique<SaveFileCreateInfo>(
       url_, final_url_, save_item_id_, save_package_id_, render_process_id_,
-      render_frame_routing_id_, GetRequestID(), content_disposition_,
-      content_length_);
+      render_frame_routing_id_, GetRequestID(), content_disposition);
   download::GetDownloadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SaveFileManager::StartSave, save_manager_, info));
+      FROM_HERE, base::BindOnce(&SaveFileManager::StartSave, save_manager_,
+                                std::move(info)));
   controller->Resume();
 }
 
@@ -116,11 +123,6 @@ void SaveFileResourceHandler::OnResponseCompleted(
 
 void SaveFileResourceHandler::OnDataDownloaded(int bytes_downloaded) {
   NOTREACHED();
-}
-
-void SaveFileResourceHandler::set_content_length(
-    const std::string& content_length) {
-  base::StringToInt64(content_length, &content_length_);
 }
 
 }  // namespace content
