@@ -1177,7 +1177,6 @@ test("browser_tests") {
         "../browser/extensions/api/proxy/proxy_apitest.cc",
         "../browser/extensions/api/resources_private/resources_private_apitest.cc",
         "../browser/extensions/api/runtime/runtime_apitest.cc",
-        "../browser/extensions/api/screenlock_private/screenlock_private_apitest.cc",
         "../browser/extensions/api/sessions/sessions_apitest.cc",
         "../browser/extensions/api/settings_overrides/settings_overrides_browsertest.cc",
         "../browser/extensions/api/settings_private/settings_private_apitest.cc",
@@ -1628,6 +1627,7 @@ test("browser_tests") {
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
+        "../browser/extensions/api/screenlock_private/screenlock_private_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/mash_service_registry_browsertest.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
@@ -3389,7 +3389,6 @@ test("unit_tests") {
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_search_api/safe_search_url_checker_unittest.cc",
-      "../browser/signin/easy_unlock_app_manager_unittest.cc",
       "../browser/signin/easy_unlock_auth_attempt_unittest.cc",
       "../browser/signin/easy_unlock_notification_controller_chromeos_unittest.cc",
       "../browser/signin/easy_unlock_screenlock_state_handler_unittest.cc",
@@ -3540,6 +3539,7 @@ test("unit_tests") {
     if (is_chromeos) {
       sources += [
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
+        "../browser/signin/easy_unlock_app_manager_unittest.cc",
       ]
     } else {
       sources += [

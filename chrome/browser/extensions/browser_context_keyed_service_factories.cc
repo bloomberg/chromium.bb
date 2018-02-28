@@ -26,7 +26,6 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
-#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_event_router_factory.h"
@@ -58,6 +57,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #elif defined(OS_LINUX) || defined(OS_WIN)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #endif
@@ -117,7 +117,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
   extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
+#endif
   extensions::SessionsAPI::GetFactoryInstance();
   extensions::SettingsPrivateEventRouterFactory::GetInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();

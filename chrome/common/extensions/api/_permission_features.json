@@ -681,7 +681,8 @@
   "screenlockPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],
-    "location": "component"
+    "location": "component",
+    "platforms": ["chromeos"]
   },
   "sessions": {
     "channel": "stable",
