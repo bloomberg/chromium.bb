@@ -2205,12 +2205,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
       </message>
-      <message name="IDS_ACCESSIBILITY_EXPAND_OFFLINE_PAGES" desc="Content description for the suggested section header expand button.">
-        Tap to expand
-      </message>
-      <message name="IDS_ACCESSIBILITY_COLLAPSE_OFFLINE_PAGES" desc="Content description for the suggested section header collapse button.">
-        Tap to collapse
-      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
@@ -2399,12 +2393,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_JUST_NOW" desc="A time label for an event that happened just now. For example 'Last synced: just now'">
         just now
-      </message>
-      <message name="IDS_NTP_RECENT_TABS_ACCESSIBILITY_COLLAPSED_GROUP" desc="Content description for collapsed state indicator for the group view." >
-        Collapsed - Click to expand
-      </message>
-      <message name="IDS_NTP_RECENT_TABS_ACCESSIBILITY_EXPANDED_GROUP" desc="Content description for expanded state indicator for the group view." >
-        Expanded - Click to collapse
       </message>
       <message name="IDS_RECENT_TABS_OPEN_ALL_MENU_OPTION" desc="Context menu option to open all tabs from a foreign session.">
         Open all
@@ -2797,6 +2785,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
         {NUM_SELECTED, plural,
           =1 {Remove 1 selected item}
           other {Remove # selected items}}
+      </message>
+      <message name="IDS_ACCESSIBILITY_EXPAND_SECTION_HEADER" desc="Content description for the suggested section header expand button.">
+        Tap to expand
+      </message>
+      <message name="IDS_ACCESSIBILITY_COLLAPSE_SECTION_HEADER" desc="Content description for the suggested section header collapse button.">
+        Tap to collapse
       </message>
 
       <message name="IDS_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">

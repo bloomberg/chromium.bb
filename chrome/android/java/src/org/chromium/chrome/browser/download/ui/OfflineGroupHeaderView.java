@@ -114,8 +114,8 @@ public class OfflineGroupHeaderView
     private void updateExpandIcon(boolean expanded) {
         mExpandImage.setImageResource(expanded ? R.drawable.ic_collapsed : R.drawable.ic_expanded);
         mExpandImage.setContentDescription(
-                getResources().getString(expanded ? R.string.accessibility_collapse_offline_pages
-                                                  : R.string.accessibility_expand_offline_pages));
+                getResources().getString(expanded ? R.string.accessibility_collapse_section_header
+                                                  : R.string.accessibility_expand_section_header));
     }
 
     private void updateCheckIcon(boolean checked) {

@@ -117,6 +117,9 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder implements Vie
         if (!mHeader.isExpandable()) return;
         mIconView.setImageResource(
                 mHeader.isExpanded() ? R.drawable.ic_collapsed : R.drawable.ic_expanded);
+        mIconView.setContentDescription(mIconView.getResources().getString(mHeader.isExpanded()
+                        ? R.string.accessibility_collapse_section_header
+                        : R.string.accessibility_expand_section_header));
     }
 
     /**

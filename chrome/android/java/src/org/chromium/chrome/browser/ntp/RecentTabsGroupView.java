@@ -126,9 +126,9 @@ public class RecentTabsGroupView extends RelativeLayout {
     }
 
     private void configureExpandedCollapsed(boolean isExpanded) {
-        String description = getResources().getString(isExpanded
-                ? R.string.ntp_recent_tabs_accessibility_expanded_group
-                : R.string.ntp_recent_tabs_accessibility_collapsed_group);
+        String description =
+                getResources().getString(isExpanded ? R.string.accessibility_collapse_section_header
+                                                    : R.string.accessibility_expand_section_header);
         mExpandCollapseIcon.setContentDescription(description);
 
         int level = isExpanded ? DRAWABLE_LEVEL_EXPANDED : DRAWABLE_LEVEL_COLLAPSED;
