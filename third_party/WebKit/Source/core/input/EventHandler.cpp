@@ -1874,9 +1874,9 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   if (!override_target_element && ShouldShowContextMenuAtSelection(selection)) {
     DCHECK(!doc->NeedsLayoutTreeUpdate());
 
-    IntRect first_rect = frame_->GetEditor().FirstRectForRange(
-        selection.ComputeVisibleSelectionInDOMTree()
-            .ToNormalizedEphemeralRange());
+    IntRect first_rect =
+        FirstRectForRange(selection.ComputeVisibleSelectionInDOMTree()
+                              .ToNormalizedEphemeralRange());
 
     int x = right_aligned ? first_rect.MaxX() : first_rect.X();
     // In a multiline edit, firstRect.maxY() would end up on the next line, so

@@ -1022,7 +1022,7 @@ bool WebLocalFrameImpl::FirstRectForCharacterRange(
       PlainTextRange(location, location + length).CreateRange(*editable);
   if (range.IsNull())
     return false;
-  IntRect int_rect = GetFrame()->GetEditor().FirstRectForRange(range);
+  IntRect int_rect = FirstRectForRange(range);
   rect_in_viewport = WebRect(int_rect);
   rect_in_viewport = GetFrame()->View()->ContentsToViewport(rect_in_viewport);
   return true;

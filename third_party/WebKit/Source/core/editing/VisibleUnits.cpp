@@ -1514,4 +1514,43 @@ FloatRect ComputeTextFloatRect(const EphemeralRange& range) {
   return ComputeTextRectTemplate(range);
 }
 
+IntRect FirstRectForRange(const EphemeralRange& range) {
+  DCHECK(!range.GetDocument().NeedsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      range.GetDocument().Lifecycle());
+
+  LayoutUnit extra_width_to_end_of_line;
+  DCHECK(range.IsNotNull());
+
+  const PositionWithAffinity start_position(
+      CreateVisiblePosition(range.StartPosition()).DeepEquivalent(),
+      TextAffinity::kDownstream);
+  const IntRect start_caret_rect =
+      AbsoluteCaretRectOfPosition(start_position, &extra_width_to_end_of_line);
+  if (start_caret_rect.IsEmpty())
+    return IntRect();
+
+  const PositionWithAffinity end_position(
+      CreateVisiblePosition(range.EndPosition()).DeepEquivalent(),
+      TextAffinity::kUpstream);
+  const IntRect end_caret_rect = AbsoluteCaretRectOfPosition(end_position);
+  if (end_caret_rect.IsEmpty())
+    return IntRect();
+
+  if (start_caret_rect.Y() == end_caret_rect.Y()) {
+    // start and end are on the same line
+    return IntRect(
+        std::min(start_caret_rect.X(), end_caret_rect.X()),
+        start_caret_rect.Y(), abs(end_caret_rect.X() - start_caret_rect.X()),
+        std::max(start_caret_rect.Height(), end_caret_rect.Height()));
+  }
+
+  // start and end aren't on the same line, so go from start to the end of its
+  // line
+  return IntRect(
+      start_caret_rect.X(), start_caret_rect.Y(),
+      (start_caret_rect.Width() + extra_width_to_end_of_line).ToInt(),
+      start_caret_rect.Height());
+}
+
 }  // namespace blink
