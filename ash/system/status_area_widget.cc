@@ -4,6 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -14,6 +15,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/i18n/time_formatting.h"
@@ -46,6 +48,11 @@ void StatusAreaWidget::Initialize() {
 
   system_tray_ = std::make_unique<SystemTray>(shelf_);
   status_area_widget_delegate_->AddChildView(system_tray_.get());
+
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    system_tray_unified_ = std::make_unique<UnifiedSystemTray>(shelf_);
+    status_area_widget_delegate_->AddChildView(system_tray_unified_.get());
+  }
 
   // Must happen after the widget is initialized so the native window exists.
   web_notification_tray_ = std::make_unique<WebNotificationTray>(
@@ -92,6 +99,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   web_notification_tray_.reset();
   // Must be destroyed after |web_notification_tray_|.
   system_tray_.reset();
+  system_tray_unified_.reset();
   ime_menu_tray_.reset();
   virtual_keyboard_tray_.reset();
   palette_tray_.reset();
