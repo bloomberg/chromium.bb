@@ -90,8 +90,6 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
     tracing_controller_.OnTraceLogEnabled();
   }
 
-  base::WeakPtr<WebFrameSchedulerImpl> GetWeakPtr();
-
  private:
   friend class WebViewSchedulerImpl;
   friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
@@ -140,6 +138,8 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> DeferrableTaskQueue();
   scoped_refptr<TaskQueue> PausableTaskQueue();
   scoped_refptr<TaskQueue> UnpausableTaskQueue();
+
+  base::WeakPtr<WebFrameSchedulerImpl> GetWeakPtr();
 
   TraceableVariableController tracing_controller_;
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;

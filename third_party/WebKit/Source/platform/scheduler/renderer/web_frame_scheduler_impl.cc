@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. ();All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/default_params.h"
+#include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -32,17 +33,6 @@ const char* VisibilityStateToString(bool is_visible) {
   } else {
     return "hidden";
   }
-}
-
-const char* PageVisibilityStateToString(PageVisibilityState visibility) {
-  switch (visibility) {
-    case PageVisibilityState::kVisible:
-      return "visible";
-    case PageVisibilityState::kHidden:
-      return "hidden";
-  }
-  // Keep MSVC happy.
-  return nullptr;
 }
 
 const char* PausedStateToString(bool is_paused) {

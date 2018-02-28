@@ -12,7 +12,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 namespace scheduler {
@@ -31,24 +31,19 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   explicit WorkerSchedulerProxy(WebFrameScheduler* scheduler);
   ~WorkerSchedulerProxy() override;
 
-  void OnWorkerSchedulerCreated(WorkerSchedulerImpl* worker_scheduler);
+  void OnWorkerSchedulerCreated(
+      base::WeakPtr<WorkerSchedulerImpl> worker_scheduler);
 
   void OnThrottlingStateChanged(
       WebFrameScheduler::ThrottlingState throttling_state) override;
 
   // Should be accessed only from the main thread or during init.
   WebFrameScheduler::ThrottlingState throttling_state() const {
-    DCHECK(IsMainThread() || !initialized_);
+    DCHECK(WTF::IsMainThread() || !initialized_);
     return throttling_state_;
   }
 
  private:
-  bool IsMainThread() const;
-  bool IsWorkerThread() const;
-
-  base::PlatformThreadRef main_thread_ref_;
-  base::PlatformThreadRef worker_thread_ref_;
-
   // Can be accessed only from the worker thread.
   base::WeakPtr<WorkerSchedulerImpl> worker_scheduler_;
 
@@ -59,7 +54,7 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
       WebFrameScheduler::ThrottlingState::kNotThrottled;
 
   std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
-      throttling_observer_;
+      throttling_observer_handle_;
 
   bool initialized_ = false;
 

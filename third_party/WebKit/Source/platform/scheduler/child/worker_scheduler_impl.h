@@ -71,8 +71,6 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   // task queues.
   scoped_refptr<WorkerTaskQueue> ControlTaskQueue();
 
-  base::WeakPtr<WorkerSchedulerImpl> GetWeakPtr();
-
  protected:
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
@@ -89,6 +87,8 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 
  private:
   void MaybeStartLongIdlePeriod();
+
+  base::WeakPtr<WorkerSchedulerImpl> GetWeakPtr();
 
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
