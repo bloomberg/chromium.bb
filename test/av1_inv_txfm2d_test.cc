@@ -317,32 +317,32 @@ TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
   }
 }
 
-#if HAVE_SSE2 && defined(__SSE2__)
-#include "av1/common/x86/av1_txfm_sse2.h"
+#if HAVE_SSSE3 && defined(__SSSE3__)
+#include "av1/common/x86/av1_inv_txfm_ssse3.h"
 
-const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
-  av1_lowbd_inv_txfm2d_add_4x4_sse2,    // TX_4X4
-  av1_lowbd_inv_txfm2d_add_8x8_sse2,    // TX_8X8
-  av1_lowbd_inv_txfm2d_add_16x16_sse2,  // TX_16X16
-  av1_lowbd_inv_txfm2d_add_32x32_sse2,  // TX_32X32
-  av1_lowbd_inv_txfm2d_add_64x64_sse2,  // 64x64
-  av1_lowbd_inv_txfm2d_add_4x8_sse2,    // TX_4X8
-  av1_lowbd_inv_txfm2d_add_8x4_sse2,    // TX_8X4
-  av1_lowbd_inv_txfm2d_add_8x16_sse2,   // TX_8X16
-  av1_lowbd_inv_txfm2d_add_16x8_sse2,   // TX_16X8
-  av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
-  av1_lowbd_inv_txfm2d_add_32x16_sse2,  // TX_32X16
-  av1_lowbd_inv_txfm2d_add_32x64_sse2,  // TX_32X64
-  av1_lowbd_inv_txfm2d_add_64x32_sse2,  // TX_64X32
-  av1_lowbd_inv_txfm2d_add_4x16_sse2,   // TX_4X16
-  av1_lowbd_inv_txfm2d_add_16x4_sse2,   // TX_16X4
-  av1_lowbd_inv_txfm2d_add_8x32_sse2,   // 8x32
-  av1_lowbd_inv_txfm2d_add_32x8_sse2,   // 32x8
-  av1_lowbd_inv_txfm2d_add_16x64_sse2,  // 16x64
-  av1_lowbd_inv_txfm2d_add_64x16_sse2,  // 64x16
+const LbdInvTxfm2dFunc kLbdInvFuncSSSE3List[TX_SIZES_ALL] = {
+  av1_lowbd_inv_txfm2d_add_4x4_ssse3,    // TX_4X4
+  av1_lowbd_inv_txfm2d_add_8x8_ssse3,    // TX_8X8
+  av1_lowbd_inv_txfm2d_add_16x16_ssse3,  // TX_16X16
+  av1_lowbd_inv_txfm2d_add_32x32_ssse3,  // TX_32X32
+  av1_lowbd_inv_txfm2d_add_64x64_ssse3,  // 64x64
+  av1_lowbd_inv_txfm2d_add_4x8_ssse3,    // TX_4X8
+  av1_lowbd_inv_txfm2d_add_8x4_ssse3,    // TX_8X4
+  av1_lowbd_inv_txfm2d_add_8x16_ssse3,   // TX_8X16
+  av1_lowbd_inv_txfm2d_add_16x8_ssse3,   // TX_16X8
+  av1_lowbd_inv_txfm2d_add_16x32_ssse3,  // TX_16X32
+  av1_lowbd_inv_txfm2d_add_32x16_ssse3,  // TX_32X16
+  av1_lowbd_inv_txfm2d_add_32x64_ssse3,  // TX_32X64
+  av1_lowbd_inv_txfm2d_add_64x32_ssse3,  // TX_64X32
+  av1_lowbd_inv_txfm2d_add_4x16_ssse3,   // TX_4X16
+  av1_lowbd_inv_txfm2d_add_16x4_ssse3,   // TX_16X4
+  av1_lowbd_inv_txfm2d_add_8x32_ssse3,   // 8x32
+  av1_lowbd_inv_txfm2d_add_32x8_ssse3,   // 32x8
+  av1_lowbd_inv_txfm2d_add_16x64_ssse3,  // 16x64
+  av1_lowbd_inv_txfm2d_add_64x16_ssse3,  // 64x16
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AV1LbdInvTxfm2d,
-                        Combine(Values(kLbdInvFuncSSE2List),
+INSTANTIATE_TEST_CASE_P(SSSE3, AV1LbdInvTxfm2d,
+                        Combine(Values(kLbdInvFuncSSSE3List),
                                 Range(0, (int)TX_SIZES_ALL, 1)));
 
 #endif  // HAVE_SSE2
