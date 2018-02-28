@@ -34,6 +34,8 @@ aggregate_vector_icons("ksv_vector_icons") {
     "ksv_brightness_up.icon",
     "ksv_browser_back.1x.icon",
     "ksv_browser_back.icon",
+    "ksv_browser_forward.1x.icon",
+    "ksv_browser_forward.icon",
     "ksv_fullscreen.1x.icon",
     "ksv_fullscreen.icon",
     "ksv_mute.1x.icon",

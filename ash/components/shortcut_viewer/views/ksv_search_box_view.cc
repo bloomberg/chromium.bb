@@ -18,7 +18,7 @@ namespace keyboard_shortcut_viewer {
 namespace {
 
 constexpr SkColor kDefaultSearchBoxBackgroundColor =
-    SkColorSetARGBMacro(0x1E, 0x80, 0x86, 0x8B);
+    SkColorSetARGBMacro(0x28, 0x80, 0x86, 0x8B);
 
 constexpr int kIconSize = 20;
 
@@ -34,6 +34,10 @@ KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
   search_box()->SetBackgroundColor(SK_ColorTRANSPARENT);
   search_box()->set_placeholder_text(
       l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_PLACEHOLDER));
+  constexpr SkColor kSearchBoxTextColor =
+      SkColorSetARGBMacro(0xFF, 0x3C, 0x40, 0x43);
+  search_box()->SetColor(kSearchBoxTextColor);
+  search_box()->set_placeholder_text_color(kSearchBoxTextColor);
   search_box()->set_placeholder_text_draw_flags(gfx::Canvas::TEXT_ALIGN_CENTER);
   search_box()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME));

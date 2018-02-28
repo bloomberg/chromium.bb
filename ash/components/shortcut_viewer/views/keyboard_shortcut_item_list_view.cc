@@ -49,12 +49,15 @@ class HorizontalSeparator : public views::View {
 }  // namespace
 
 KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
-  constexpr int kHorizontalPadding = 32;
+  // The padding values are by design. Lesser padding between list view and the
+  // side tab than the padding between list view and the border of the window.
+  constexpr int kLeftPadding = 16;
+  constexpr int kRightPadding = 32;
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kHorizontalPadding, 0, kHorizontalPadding)));
+  SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(0, kLeftPadding, 0, kRightPadding)));
 }
 
 void KeyboardShortcutItemListView::AddCategoryLabel(
@@ -68,9 +71,10 @@ void KeyboardShortcutItemListView::AddCategoryLabel(
   category_label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kLabelTopPadding, 0, kLabelBottomPadding, 0)));
   category_label->SetEnabledColor(kLabelColor);
+  constexpr int kLabelFontSizeDelta = 1;
   category_label->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+          kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
   AddChildView(category_label);
 }
 

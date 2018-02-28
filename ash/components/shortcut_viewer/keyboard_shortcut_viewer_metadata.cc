@@ -140,6 +140,8 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
   switch (key_code) {
     case ui::VKEY_BROWSER_BACK:
       return &kKsvBrowserBackIcon;
+    case ui::VKEY_BROWSER_FORWARD:
+      return &kKsvBrowserForwardIcon;
     case ui::VKEY_BROWSER_REFRESH:
       return &kKsvReloadIcon;
     case ui::VKEY_MEDIA_LAUNCH_APP2:
