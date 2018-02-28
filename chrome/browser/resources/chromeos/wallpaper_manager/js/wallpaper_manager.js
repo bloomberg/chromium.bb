@@ -993,12 +993,11 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
   $('author-name').textContent = selectedItem.author;
   $('author-website').textContent = $('author-website').href =
       selectedItem.authorWebsite;
+  var img = $('attribute-image');
   chrome.wallpaperPrivate.getThumbnail(
       selectedItem.baseURL, selectedItem.source, data => {
-        var img = $('attribute-image');
         if (data) {
           WallpaperUtil.displayImage(img, data, null /*opt_callback=*/);
-          img.hidden = false;
         } else {
           // The only known case for hitting this branch is when showing the
           // wallpaper picker for the first time after OOBE, the |saveThumbnail|
@@ -1016,11 +1015,11 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
             if (xhr.status === 200) {
               WallpaperUtil.displayImage(
                   img, xhr.response, null /*opt_callback=*/);
-              img.hidden = false;
             }
           });
         }
       });
+  img.hidden = false;
   $('wallpaper-attribute').hidden = false;
 };
 
