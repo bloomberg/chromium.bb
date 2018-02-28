@@ -2045,14 +2045,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(59)
   def GetLatestBuildRequestsForReason(self, request_reason,
-                                      status=None,
                                       num_results=NUM_RESULTS_NO_LIMIT,
                                       n_days_back=7):
     """Gets the latest build_requests associated with the request_reason.
 
     Args:
       request_reason: The reason to filter by
-      status: Whether to filter on status
       num_results: Number of results to return, default to
         self.NUM_RESULTS_NO_LIMIT.
       n_days_back: How many days back to look for build requests.
@@ -2067,9 +2065,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       query.append(
           'AND t1.timestamp > TIMESTAMP(DATE_SUB(NOW(), INTERVAL %s DAY))'
           % n_days_back)
-
-    if status is not None:
-      query.append("AND status = '%s'" % status)
 
     if num_results != self.NUM_RESULTS_NO_LIMIT:
       query.append('LIMIT %d' % num_results)
