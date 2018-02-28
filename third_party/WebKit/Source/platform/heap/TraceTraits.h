@@ -695,14 +695,7 @@ struct TraceInCollectionTrait<
       if (!HashTableHelper<Node*, typename Table::ExtractorType,
                            typename Table::KeyTraitsType>::
               IsEmptyOrDeletedBucket(array[i])) {
-        TraceListHashSetValue(visitor, array[i]->value_);
-        // Just mark the node without tracing because we already traced
-        // the contents, and there is no need to trace the next and
-        // prev fields since iterating over the hash table backing will
-        // find the whole chain.
-        // TODO(mlippautz): Remove cast.
-        reinterpret_cast<blink::MarkingVisitor*>(visitor)->MarkNoTracing(
-            array[i]);
+        visitor->Trace(array[i]);
       }
     }
     return false;
@@ -874,12 +867,7 @@ struct TraceInCollectionTrait<
     static_assert(IsTraceableInCollectionTrait<Traits>::value ||
                       Traits::kWeakHandlingFlag == WTF::kWeakHandling,
                   "T should not be traced");
-    TraceListHashSetValue(visitor, node->value_);
-    // Just mark the node without tracing because we already traced the
-    // contents, and there is no need to trace the next and prev fields
-    // since iterating over the hash table backing will find the whole
-    // chain.
-    visitor->MarkNoTracing(node);
+    visitor->Trace(node);
     return false;
   }
 };
