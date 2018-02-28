@@ -137,7 +137,10 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
 
 namespace vr {
 
-MailboxToSurfaceBridge::MailboxToSurfaceBridge() : weak_ptr_factory_(this) {}
+MailboxToSurfaceBridge::MailboxToSurfaceBridge(base::OnceClosure on_initialized)
+    : on_initialized_(std::move(on_initialized)), weak_ptr_factory_(this) {
+  DVLOG(1) << __FUNCTION__;
+}
 
 MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
   if (surface_handle_) {
@@ -146,11 +149,24 @@ MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
     tracker->RemoveSurface(surface_handle_);
   }
   DestroyContext();
+  DVLOG(1) << __FUNCTION__;
+}
+
+bool MailboxToSurfaceBridge::IsReady() {
+  return context_provider_ && gl_;
+}
+
+bool MailboxToSurfaceBridge::IsGpuWorkaroundEnabled(int32_t workaround) {
+  DCHECK(IsReady());
+
+  return context_provider_->GetGpuFeatureInfo().IsWorkaroundEnabled(workaround);
 }
 
 void MailboxToSurfaceBridge::OnContextAvailable(
     std::unique_ptr<gl::ScopedJavaSurface> surface,
     scoped_refptr<viz::ContextProvider> provider) {
+  DVLOG(1) << __FUNCTION__;
+
   // Must save a reference to the viz::ContextProvider to keep it alive,
   // otherwise the GL context created from it becomes invalid.
   context_provider_ = std::move(provider);
@@ -168,6 +184,10 @@ void MailboxToSurfaceBridge::OnContextAvailable(
     return;
   }
   InitializeRenderer();
+
+  if (on_initialized_) {
+    base::ResetAndReturn(&on_initialized_).Run();
+  }
 }
 
 void MailboxToSurfaceBridge::CreateSurface(
@@ -236,7 +256,7 @@ void MailboxToSurfaceBridge::CreateSurface(
 }
 
 void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
-  if (!gl_) {
+  if (!IsReady()) {
     // We're not initialized yet, save the requested size for later.
     needs_resize_ = true;
     resize_width_ = width;
@@ -251,10 +271,10 @@ void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
 
 bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
     const gpu::MailboxHolder& mailbox) {
-  if (!gl_) {
+  if (!IsReady()) {
     // We may not have a context yet, i.e. due to surface initialization
     // being incomplete. This is not an error, but we obviously can't draw
-    // yet.
+    // yet. TODO(klausw): change the caller to defer this until we are ready.
     return false;
   }
 
@@ -350,6 +370,8 @@ void MailboxToSurfaceBridge::InitializeRenderer() {
 }
 
 void MailboxToSurfaceBridge::DrawQuad(unsigned int texture_handle) {
+  DCHECK(IsReady());
+
   // We're redrawing over the entire viewport, but it's generally more
   // efficient on mobile tiling GPUs to clear anyway as a hint that
   // we're done with the old content. TODO(klausw, https://crbug.com/700389):

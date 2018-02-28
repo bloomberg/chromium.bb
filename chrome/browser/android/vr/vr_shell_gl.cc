@@ -40,6 +40,7 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -93,6 +94,12 @@ static constexpr float kMinAppButtonGestureAngleRad = 0.25;
 // reached, yield to let other tasks execute before rechecking.
 static constexpr base::TimeDelta kWebVRFenceCheckTimeout =
     base::TimeDelta::FromMicroseconds(2000);
+
+// Polling interval for checking for the WebVR rendering GL fence. Used as
+// an alternative to kWebVRFenceCheckTimeout if the GPU workaround is active.
+// The actual interval may be longer due to PostDelayedTask's resolution.
+static constexpr base::TimeDelta kWebVRFenceCheckPollInterval =
+    base::TimeDelta::FromMicroseconds(500);
 
 static constexpr int kWebVrInitialFrameTimeoutSeconds = 5;
 static constexpr int kWebVrSpinnerTimeoutSeconds = 2;
@@ -315,12 +322,18 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   if (reinitializing && mailbox_bridge_) {
     mailbox_bridge_ = nullptr;
+    mailbox_bridge_ready_ = false;
     CreateOrResizeWebVRSurface(webvr_surface_size_);
   }
 
   ready_to_draw_ = true;
   if (!paused_ && !reinitializing)
     OnVSync(base::TimeTicks::Now());
+}
+
+void VrShellGl::OnGpuProcessConnectionReady() {
+  DVLOG(1) << __FUNCTION__;
+  mailbox_bridge_ready_ = true;
 }
 
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
@@ -346,7 +359,11 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   if (mailbox_bridge_) {
     mailbox_bridge_->ResizeSurface(size.width(), size.height());
   } else {
-    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
+    mailbox_bridge_ready_ = false;
+    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>(
+        base::BindOnce(&VrShellGl::OnGpuProcessConnectionReady,
+                       weak_ptr_factory_.GetWeakPtr()));
+
     mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
   }
 }
@@ -1146,16 +1163,35 @@ void VrShellGl::DrawFrameSubmitWhenReady(
     int16_t frame_index,
     const gfx::Transform& head_pose,
     std::unique_ptr<gl::GLFenceEGL> fence) {
+  bool use_polling = mailbox_bridge_ready_ &&
+                     mailbox_bridge_->IsGpuWorkaroundEnabled(
+                         gpu::DONT_USE_EGLCLIENTWAITSYNC_WITH_TIMEOUT);
   if (fence) {
-    fence->ClientWaitWithTimeoutNanos(kWebVRFenceCheckTimeout.InMicroseconds() *
-                                      1000);
+    if (!use_polling) {
+      // Use wait-with-timeout to find out as soon as possible when rendering
+      // is complete.
+      fence->ClientWaitWithTimeoutNanos(
+          kWebVRFenceCheckTimeout.InMicroseconds() * 1000);
+    }
     if (!fence->HasCompleted()) {
       webvr_delayed_frame_submit_.Reset(base::BindRepeating(
           &VrShellGl::DrawFrameSubmitWhenReady, base::Unretained(this)));
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
-                         head_pose, base::Passed(&fence)));
+      if (use_polling) {
+        // Poll the fence status at a short interval. This burns some CPU, but
+        // avoids excessive waiting on devices which don't handle timeouts
+        // correctly. Downside is that the completion status is only detected
+        // with a delay of up to one polling interval.
+        task_runner_->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
+                           head_pose, base::Passed(&fence)),
+            kWebVRFenceCheckPollInterval);
+      } else {
+        task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(webvr_delayed_frame_submit_.callback(), frame_index,
+                           head_pose, base::Passed(&fence)));
+      }
       return;
     }
   }

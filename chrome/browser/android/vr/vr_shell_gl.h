@@ -137,6 +137,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   device::mojom::VRDisplayFrameTransportOptionsPtr
   GetWebVrFrameTransportOptions();
   void InitializeRenderer();
+  void OnGpuProcessConnectionReady();
   // Returns true if successfully resized.
   bool ResizeForWebVR(int16_t frame_index);
   void UpdateSamples();
@@ -226,6 +227,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   int premature_received_frames_ = 0;
   base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
+  bool mailbox_bridge_ready_ = false;
 
   // A fence used to avoid overstuffed GVR buffers in WebVR mode.
   std::unique_ptr<gl::GLFenceEGL> webvr_prev_frame_completion_fence_;
