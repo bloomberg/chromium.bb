@@ -3512,3 +3512,4 @@ crbug.com/816868 [ Win7 ] external/wpt/css/css-text/white-space/textarea-pre-wra
 crbug.com/816868 [ Win7 ] external/wpt/css/css-text/white-space/textarea-pre-wrap-006.html [ Failure Pass ]
 crbug.com/816868 [ Win7 ] external/wpt/css/css-text/white-space/textarea-pre-wrap-011.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
+crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
