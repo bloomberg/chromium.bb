@@ -395,6 +395,21 @@ ScriptPromise CredentialsContainer::get(
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
 
+    if (options.publicKey().hasExtensions() &&
+        options.publicKey().extensions().hasAppid()) {
+      const auto& appid = options.publicKey().extensions().appid();
+      if (!appid.IsEmpty()) {
+        KURL appid_url(appid);
+        if (!appid_url.IsValid()) {
+          resolver->Reject(
+              DOMException::Create(kSyntaxError,
+                                   "The `appid` extension value is neither "
+                                   "empty/null nor a valid URL"));
+          return promise;
+        }
+      }
+    }
+
     auto mojo_options =
         MojoPublicKeyCredentialRequestOptions::From(options.publicKey());
     if (mojo_options) {
@@ -527,6 +542,16 @@ ScriptPromise CredentialsContainer::create(
     const String& relying_party_id = options.publicKey().rp().id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
+
+    if (options.publicKey().hasExtensions() &&
+        options.publicKey().extensions().hasAppid()) {
+      resolver->Reject(DOMException::Create(
+          kNotSupportedError,
+          "The 'appid' extension is only valid when requesting an assertion "
+          "for a pre-existing credential that was registered using the "
+          "legacy FIDO U2F API."));
+      return promise;
+    }
 
     auto mojo_options =
         MojoPublicKeyCredentialCreationOptions::From(options.publicKey());

@@ -98,7 +98,7 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = webauth::mojom::PublicKeyCredentialRequestOptions::New(
         kTestChallenge, base::TimeDelta::FromSeconds(30), "example.com",
-        std::move(credentials));
+        std::move(credentials), base::nullopt);
 
     return mojo_options;
   }

@@ -29,7 +29,11 @@ using ::testing::_;
 
 namespace {
 
-constexpr char kTestRelyingPartyId[] = "google.com";
+constexpr uint8_t kTestRelyingPartyIdSHA256[32] = {
+    0xd4, 0xc9, 0xd9, 0x02, 0x73, 0x26, 0x27, 0x1a, 0x89, 0xce, 0x51,
+    0xfc, 0xaf, 0x32, 0x8e, 0xd6, 0x73, 0xf1, 0x7b, 0xe3, 0x34, 0x69,
+    0xff, 0x97, 0x9e, 0x8a, 0xb8, 0xdd, 0x50, 0x1e, 0x66, 0x4f,
+};
 constexpr bool kNoIndividualAttestation = false;
 constexpr bool kIndividualAttestation = true;
 
@@ -349,7 +353,7 @@ TEST_F(U2fRegisterTest, TestCreateU2fRegisterCommand) {
       0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01};
 
   U2fRegister register_request(
-      kTestRelyingPartyId, nullptr, protocols, registration_keys,
+      nullptr, protocols, registration_keys,
       std::vector<uint8_t>(std::begin(kChallengeDigest),
                            std::end(kChallengeDigest)),
       std::vector<uint8_t>(std::begin(kAppIdDigest), std::end(kAppIdDigest)),
@@ -393,9 +397,8 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, registration_keys,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -424,9 +427,8 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, registration_keys,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -458,9 +460,8 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, registration_keys,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -508,9 +509,8 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, handles,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -559,9 +559,8 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, handles,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -627,9 +626,8 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, handles,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -679,9 +677,8 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   TestRegisterCallback cb;
 
   auto request = std::make_unique<U2fRegister>(
-      kTestRelyingPartyId, nullptr, protocols, handles,
-      std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-      kNoIndividualAttestation, cb.callback());
+      nullptr, protocols, handles, std::vector<uint8_t>(32),
+      std::vector<uint8_t>(32), kNoIndividualAttestation, cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -779,9 +776,10 @@ TEST_F(U2fRegisterTest, TestAuthenticatorData) {
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
 
-  AuthenticatorData authenticator_data(kTestRelyingPartyId, flags,
-                                       std::vector<uint8_t>(4) /* counter */,
-                                       std::move(attested_data));
+  AuthenticatorData authenticator_data(
+      std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
+                           kTestRelyingPartyIdSHA256 + 32),
+      flags, std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
 
   EXPECT_EQ(GetTestAuthenticatorDataBytes(),
             authenticator_data.SerializeToByteArray());
@@ -800,9 +798,10 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  AuthenticatorData authenticator_data(kTestRelyingPartyId, flags,
-                                       std::vector<uint8_t>(4) /* counter */,
-                                       std::move(attested_data));
+  AuthenticatorData authenticator_data(
+      std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
+                           kTestRelyingPartyIdSHA256 + 32),
+      flags, std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
 
   // Construct the attestation statement.
   std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =
@@ -821,7 +820,9 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
 TEST_F(U2fRegisterTest, TestRegisterResponseData) {
   base::Optional<RegisterResponseData> response =
       RegisterResponseData::CreateFromU2fRegisterResponse(
-          kTestRelyingPartyId, GetTestRegisterResponse());
+          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
+                               kTestRelyingPartyIdSHA256 + 32),
+          GetTestRegisterResponse());
   EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
   EXPECT_EQ(GetTestAttestationObjectBytes(),
             response->GetCBOREncodedAttestationObject());
@@ -842,9 +843,8 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
     TestRegisterCallback cb;
 
     auto request = std::make_unique<U2fRegister>(
-        kTestRelyingPartyId, nullptr, protocols, registration_keys,
-        std::vector<uint8_t>(32), std::vector<uint8_t>(32),
-        individual_attestation, cb.callback());
+        nullptr, protocols, registration_keys, std::vector<uint8_t>(32),
+        std::vector<uint8_t>(32), individual_attestation, cb.callback());
 
     auto* discovery =
         SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());

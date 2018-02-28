@@ -21,7 +21,7 @@ namespace device {
 class SignResponseData : public ResponseData {
  public:
   static base::Optional<SignResponseData> CreateFromU2fSignResponse(
-      const std::string& relying_party_id,
+      const std::vector<uint8_t>& relying_party_id_hash,
       const std::vector<uint8_t>& u2f_data,
       const std::vector<uint8_t>& key_handle);
 
