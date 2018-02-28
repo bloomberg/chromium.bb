@@ -49,12 +49,12 @@ PersonalDataManagerFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<PersonalDataManager> service(
       new PersonalDataManager(GetApplicationContext()->GetApplicationLocale()));
-  service->Init(ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
-                    chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-                chrome_browser_state->GetPrefs(),
-                IdentityManagerFactory::GetInstance()->GetForBrowserState(
-                    chrome_browser_state),
-                chrome_browser_state->IsOffTheRecord());
+  service->Init(
+      ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
+          chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
+      chrome_browser_state->GetPrefs(),
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
+      chrome_browser_state->IsOffTheRecord());
   return service;
 }
 

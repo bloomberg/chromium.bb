@@ -129,8 +129,7 @@ syncer::SyncService* ChromeAutofillClient::GetSyncService() {
 identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return IdentityManagerFactory::GetInstance()->GetForProfile(
-      profile->GetOriginalProfile());
+  return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
