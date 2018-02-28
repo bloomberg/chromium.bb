@@ -1358,11 +1358,11 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
                                          aom_yv12_copy_v };
 
-  YV12_BUFFER_CONFIG dst;
-  memset(&dst, 0, sizeof(dst));
+  YV12_BUFFER_CONFIG *dst = &cm->rst_frame;
+
   const int frame_width = frame->crop_widths[0];
   const int frame_height = frame->crop_heights[0];
-  if (aom_realloc_frame_buffer(&dst, frame_width, frame_height,
+  if (aom_realloc_frame_buffer(dst, frame_width, frame_height,
                                cm->subsampling_x, cm->subsampling_y,
                                cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
                                cm->byte_alignment, NULL, NULL, NULL) < 0)
@@ -1377,7 +1377,6 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     const RestorationInfo *rsi = &cm->rst_info[plane];
     RestorationType rtype = rsi->frame_restoration_type;
     if (rtype == RESTORE_NONE) {
-      copy_funs[plane](frame, &dst);
       continue;
     }
 
@@ -1398,19 +1397,16 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     ctxt.highbd = highbd;
     ctxt.bit_depth = bit_depth;
     ctxt.data8 = frame->buffers[plane];
-    ctxt.dst8 = dst.buffers[plane];
+    ctxt.dst8 = dst->buffers[plane];
     ctxt.data_stride = frame->strides[is_uv];
-    ctxt.dst_stride = dst.strides[is_uv];
+    ctxt.dst_stride = dst->strides[is_uv];
     ctxt.tmpbuf = cm->rst_tmpbuf;
 
     av1_foreach_rest_unit_in_frame(cm, plane, filter_frame_on_tile,
                                    filter_frame_on_unit, &ctxt);
-  }
 
-  for (int plane = 0; plane < num_planes; ++plane) {
-    copy_funs[plane](&dst, frame);
+    copy_funs[plane](dst, frame);
   }
-  aom_free_frame_buffer(&dst);
 }
 
 static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,

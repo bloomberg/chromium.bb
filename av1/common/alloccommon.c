@@ -181,6 +181,8 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
     boundaries->stripe_boundary_above = NULL;
     boundaries->stripe_boundary_below = NULL;
   }
+
+  aom_free_frame_buffer(&cm->rst_frame);
 }
 
 #if LOOP_FILTER_BITMASK

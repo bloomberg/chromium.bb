@@ -437,6 +437,9 @@ typedef struct AV1Common {
   // Pointer to a scratch buffer used by self-guided restoration
   int32_t *rst_tmpbuf;
 
+  // Output of loop restoration
+  YV12_BUFFER_CONFIG rst_frame;
+
   // Flag signaling how frame contexts should be updated at the end of
   // a frame decode
   REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
