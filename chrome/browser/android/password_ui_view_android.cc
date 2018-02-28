@@ -5,9 +5,9 @@
 #include "chrome/browser/android/password_ui_view_android.h"
 
 #include <algorithm>
+#include <memory>
+#include <vector>
 
-#include "base/android/callback_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/android/byte_array_int_callback.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/autofill/core/common/password_form.h"
@@ -188,20 +189,23 @@ static jlong JNI_PasswordUIView_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(controller);
 }
 
-std::string PasswordUIViewAndroid::ObtainAndSerializePasswords() {
+PasswordUIViewAndroid::SerializationResult
+PasswordUIViewAndroid::ObtainAndSerializePasswords() {
   // This is run on a backend task runner. Do not access any member variables
   // except for |credential_provider_| and |password_manager_presenter_|.
   password_manager::CredentialProviderInterface* const provider =
       credential_provider_for_testing_ ? credential_provider_for_testing_
                                        : &password_manager_presenter_;
 
-  return password_manager::PasswordCSVWriter::SerializePasswords(
-      provider->GetAllPasswords());
+  std::vector<std::unique_ptr<autofill::PasswordForm>> passwords =
+      provider->GetAllPasswords();
+  return {password_manager::PasswordCSVWriter::SerializePasswords(passwords),
+          static_cast<int>(passwords.size())};
 }
 
 void PasswordUIViewAndroid::PostSerializedPasswords(
     const base::android::JavaRef<jobject>& callback,
-    std::string serialized_passwords) {
+    SerializationResult serialized_passwords) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (state_) {
     case State::ALIVE:
@@ -212,13 +216,11 @@ void PasswordUIViewAndroid::PostSerializedPasswords(
       if (export_target_for_testing_) {
         *export_target_for_testing_ = serialized_passwords;
       } else {
-        JNIEnv* env = base::android::AttachCurrentThread();
-        base::android::RunCallbackAndroid(
-            callback,
-            base::android::ToJavaByteArray(
-                env,
-                reinterpret_cast<const uint8_t*>(serialized_passwords.data()),
-                serialized_passwords.size()));
+        RunByteArrayIntCallback(
+            base::android::AttachCurrentThread(), callback,
+            reinterpret_cast<const uint8_t*>(serialized_passwords.data.data()),
+            serialized_passwords.data.size(),
+            serialized_passwords.entries_count);
       }
       break;
     }

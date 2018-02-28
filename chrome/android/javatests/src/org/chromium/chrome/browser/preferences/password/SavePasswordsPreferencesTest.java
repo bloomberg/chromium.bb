@@ -61,7 +61,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -109,7 +108,7 @@ public class SavePasswordsPreferencesTest {
 
         // This is set once {@link #serializePasswords()} is called.
         @Nullable
-        private Callback<byte[]> mExportCallback;
+        private ByteArrayIntCallback mExportCallback;
 
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
@@ -119,7 +118,7 @@ public class SavePasswordsPreferencesTest {
             mSavedPasswordExeptions = savedPasswordExceptions;
         }
 
-        public Callback<byte[]> getExportCallback() {
+        public ByteArrayIntCallback getExportCallback() {
             return mExportCallback;
         }
 
@@ -164,7 +163,7 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
-        public void serializePasswords(Callback<byte[]> callback) {
+        public void serializePasswords(ByteArrayIntCallback callback) {
             mExportCallback = callback;
         }
     }
@@ -787,7 +786,7 @@ public class SavePasswordsPreferencesTest {
         reauthenticateAndRequestExport(preferences);
 
         // Pretend that passwords have been serialized to go directly to the intent.
-        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
+        mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 123);
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -797,6 +796,9 @@ public class SavePasswordsPreferencesTest {
         MetricsUtils.HistogramDelta successDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
                         SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+
+        MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
 
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -809,6 +811,7 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         Assert.assertEquals(1, successDelta.getDelta());
+        Assert.assertEquals(1, countDelta.getDelta());
     }
 
     /**
@@ -844,7 +847,7 @@ public class SavePasswordsPreferencesTest {
         });
 
         // Pretend that passwords have been serialized to go directly to the intent.
-        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
+        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3}, 56);
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -854,6 +857,9 @@ public class SavePasswordsPreferencesTest {
         MetricsUtils.HistogramDelta successDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
                         SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+
+        MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.ExportedPasswordsPerUserInCSV", 56);
 
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -866,6 +872,7 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         Assert.assertEquals(1, successDelta.getDelta());
+        Assert.assertEquals(1, countDelta.getDelta());
     }
 
     /**
@@ -1055,7 +1062,7 @@ public class SavePasswordsPreferencesTest {
                 .check(matches(isDisplayed()));
 
         // Now pretend that passwords have been serialized.
-        mHandler.getExportCallback().onResult(new byte[] {1, 2, 3});
+        mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
 
         // After simulating the serialized passwords being received, check that the progress bar is
         // hidden.

@@ -29,6 +29,13 @@ class CredentialProviderInterface;
 // PasswordManagerPresenter.
 class PasswordUIViewAndroid : public PasswordUIView {
  public:
+  // Result of transforming a vector of PasswordForms into their CSV
+  // description, storing the size of that vector in |entries_count|.
+  struct SerializationResult {
+    std::string data;
+    int entries_count;
+  };
+
   PasswordUIViewAndroid(JNIEnv* env, jobject);
   ~PasswordUIViewAndroid() override;
 
@@ -69,7 +76,8 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // Destroy the native implementation.
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
-  void set_export_target_for_testing(std::string* export_target_for_testing) {
+  void set_export_target_for_testing(
+      SerializationResult* export_target_for_testing) {
     export_target_for_testing_ = export_target_for_testing;
   }
 
@@ -101,11 +109,11 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // and then PasswordCSVWriter to serialize them. It returns the serialized
   // value. Both steps involve a lot of memory allocation and copying, so this
   // method should be executed on a suitable task runner.
-  std::string ObtainAndSerializePasswords();
+  SerializationResult ObtainAndSerializePasswords();
 
   // Sends |serialized_passwords| to Java via |callback|.
   void PostSerializedPasswords(const base::android::JavaRef<jobject>& callback,
-                               std::string serialized_passwords);
+                               SerializationResult serialized_passwords);
 
   // The |state_| must only be accessed on the main task runner.
   State state_ = State::ALIVE;
@@ -113,7 +121,7 @@ class PasswordUIViewAndroid : public PasswordUIView {
   // If not null, PostSerializedPasswords will write the serialized passwords to
   // |*export_target_for_testing_| instead of passing them to Java. This must
   // remain null in production code.
-  std::string* export_target_for_testing_ = nullptr;
+  SerializationResult* export_target_for_testing_ = nullptr;
 
   PasswordManagerPresenter password_manager_presenter_;
 
