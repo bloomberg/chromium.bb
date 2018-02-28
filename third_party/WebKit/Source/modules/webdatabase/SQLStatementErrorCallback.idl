@@ -28,5 +28,5 @@
 
 // https://www.w3.org/TR/webdatabase/#sqlstatementerrorcallback
 callback interface SQLStatementErrorCallback {
-    [Custom] boolean handleEvent(SQLTransaction transaction, SQLError error);
+    boolean handleEvent(SQLTransaction transaction, SQLError error);
 };

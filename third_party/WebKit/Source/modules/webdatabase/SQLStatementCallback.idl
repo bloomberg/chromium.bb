@@ -28,5 +28,5 @@
 
 // https://www.w3.org/TR/webdatabase/#sqlstatementcallback
 callback interface SQLStatementCallback {
-    boolean handleEvent(SQLTransaction transaction, SQLResultSet resultSet);
+    void handleEvent(SQLTransaction transaction, SQLResultSet resultSet);
 };

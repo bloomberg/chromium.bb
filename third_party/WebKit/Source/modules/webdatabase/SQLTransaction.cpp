@@ -53,7 +53,12 @@ void SQLTransaction::OnProcessV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 bool SQLTransaction::OnProcessV8Impl::OnProcess(SQLTransaction* transaction) {
-  return callback_->handleEvent(nullptr, transaction);
+  v8::TryCatch try_catch(callback_->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  // An exception if any is killed with the v8::TryCatch above and reported
+  // to the global exception handler.
+  return callback_->handleEvent(nullptr, transaction).IsJust();
 }
 
 void SQLTransaction::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
@@ -71,7 +76,12 @@ void SQLTransaction::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
 }
 
 bool SQLTransaction::OnErrorV8Impl::OnError(SQLError* error) {
-  return callback_->handleEvent(nullptr, error);
+  v8::TryCatch try_catch(callback_->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  // An exception if any is killed with the v8::TryCatch above and reported
+  // to the global exception handler.
+  return callback_->handleEvent(nullptr, error).IsJust();
 }
 
 SQLTransaction* SQLTransaction::Create(Database* db,
