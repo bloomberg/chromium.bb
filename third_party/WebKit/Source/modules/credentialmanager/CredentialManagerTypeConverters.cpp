@@ -325,14 +325,6 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
       }
     }
   }
-
-  if (options.hasExtensions()) {
-    const auto& extensions = options.extensions();
-    if (extensions.hasAppid()) {
-      mojo_options->appid = extensions.appid();
-    }
-  }
-
   return mojo_options;
 }
 

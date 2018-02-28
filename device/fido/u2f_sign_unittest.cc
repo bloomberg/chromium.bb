@@ -37,11 +37,7 @@ constexpr uint8_t kKeyHandle[] = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01,
     0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x00, 0x01};
 
-constexpr uint8_t kTestRelyingPartyIdSHA256[32] = {
-    0xd4, 0xc9, 0xd9, 0x02, 0x73, 0x26, 0x27, 0x1a, 0x89, 0xce, 0x51,
-    0xfc, 0xaf, 0x32, 0x8e, 0xd6, 0x73, 0xf1, 0x7b, 0xe3, 0x34, 0x69,
-    0xff, 0x97, 0x9e, 0x8a, 0xb8, 0xdd, 0x50, 0x1e, 0x66, 0x4f,
-};
+constexpr char kTestRelyingPartyId[] = "google.com";
 
 // Signature counter returned within the authenticator data.
 constexpr uint8_t kTestSignatureCounter[] = {0x00, 0x00, 0x00, 0x25};
@@ -184,11 +180,11 @@ TEST_F(U2fSignTest, TestCreateSignApduCommand) {
       // clang-format on
   };
 
-  U2fSign u2f_sign(nullptr, protocols, handles,
+  U2fSign u2f_sign(kTestRelyingPartyId, nullptr, protocols, handles,
                    std::vector<uint8_t>(std::begin(kChallengeDigest),
                                         std::end(kChallengeDigest)),
                    std::vector<uint8_t>(std::begin(kAppId), std::end(kAppId)),
-                   base::nullopt, cb.callback());
+                   cb.callback());
   const auto encoded_sign = u2f_sign.GetU2fSignApduCommand(handles[0]);
   ASSERT_TRUE(encoded_sign);
   EXPECT_THAT(encoded_sign->GetEncodedCommand(),
@@ -230,8 +226,8 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -265,8 +261,8 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -308,8 +304,8 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -349,8 +345,8 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -397,8 +393,8 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -440,20 +436,17 @@ TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
 
-  EXPECT_EQ(
-      GetTestAuthenticatorData(),
-      AuthenticatorData(std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                                             kTestRelyingPartyIdSHA256 + 32),
-                        flags, GetTestSignatureCounter(), base::nullopt)
-          .SerializeToByteArray());
+  EXPECT_EQ(GetTestAuthenticatorData(),
+            AuthenticatorData(kTestRelyingPartyId, flags,
+                              GetTestSignatureCounter(), base::nullopt)
+                .SerializeToByteArray());
 }
 
 TEST_F(U2fSignTest, TestSignResponseData) {
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
-          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                               kTestRelyingPartyIdSHA256 + 32),
-          GetTestSignResponse(), GetTestCredentialRawIdBytes());
+          kTestRelyingPartyId, GetTestSignResponse(),
+          GetTestCredentialRawIdBytes());
   ASSERT_TRUE(response.has_value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
   EXPECT_EQ(GetTestAuthenticatorData(), response->GetAuthenticatorDataBytes());
@@ -463,18 +456,15 @@ TEST_F(U2fSignTest, TestSignResponseData) {
 TEST_F(U2fSignTest, TestNullKeyHandle) {
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
-          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                               kTestRelyingPartyIdSHA256 + 32),
-          GetTestSignResponse(), std::vector<uint8_t>());
+          kTestRelyingPartyId, GetTestSignResponse(), std::vector<uint8_t>());
   EXPECT_FALSE(response);
 }
 
 TEST_F(U2fSignTest, TestNullResponse) {
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
-          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                               kTestRelyingPartyIdSHA256 + 32),
-          std::vector<uint8_t>(), GetTestCredentialRawIdBytes());
+          kTestRelyingPartyId, std::vector<uint8_t>(),
+          GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 
@@ -482,9 +472,8 @@ TEST_F(U2fSignTest, TestCorruptedCounter) {
   // A sign response of less than 5 bytes.
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
-          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                               kTestRelyingPartyIdSHA256 + 32),
-          GetTestCorruptedSignResponse(3), GetTestCredentialRawIdBytes());
+          kTestRelyingPartyId, GetTestCorruptedSignResponse(3),
+          GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 
@@ -492,9 +481,8 @@ TEST_F(U2fSignTest, TestCorruptedSignature) {
   // A sign response no more than 5 bytes.
   base::Optional<SignResponseData> response =
       SignResponseData::CreateFromU2fSignResponse(
-          std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
-                               kTestRelyingPartyIdSHA256 + 32),
-          GetTestCorruptedSignResponse(5), GetTestCredentialRawIdBytes());
+          kTestRelyingPartyId, GetTestCorruptedSignResponse(5),
+          GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 
@@ -506,8 +494,8 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
   TestSignCallback cb;
 
   auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32),
-      std::vector<uint8_t>(32), std::vector<uint8_t>(0), cb.callback());
+      kTestRelyingPartyId, nullptr, protocols, handles,
+      std::vector<uint8_t>(32), std::vector<uint8_t>(32), cb.callback());
 
   auto* discovery =
       SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
@@ -528,61 +516,4 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
   EXPECT_EQ(U2fReturnCode::FAILURE, cb.GetReturnCode());
   EXPECT_FALSE(cb.GetResponseData());
 }
-
-MATCHER_P(WithApplicationParameter, expected, "") {
-  // See
-  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#authentication-request-message---u2f_authenticate
-  if (arg.size() < 71) {
-    return false;
-  }
-
-  base::span<const uint8_t> cmd_bytes(arg);
-  auto application_parameter = cmd_bytes.subspan(
-      4 /* framing bytes */ + 3 /* request length */ + 32 /* challenge hash */,
-      32);
-  return std::equal(application_parameter.begin(), application_parameter.end(),
-                    expected.begin());
-}
-
-TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
-  base::flat_set<U2fTransportProtocol> protocols;
-  std::vector<std::vector<uint8_t>> handles;
-  handles.emplace_back(32, 0xA);
-  TestSignCallback cb;
-
-  const std::vector<uint8_t> primary_app_param(32, 1);
-  const std::vector<uint8_t> alt_app_param(32, 2);
-
-  auto request = std::make_unique<U2fSign>(
-      nullptr, protocols, handles, std::vector<uint8_t>(32), primary_app_param,
-      alt_app_param, cb.callback());
-
-  auto* discovery =
-      SetMockDiscovery(request.get(), std::make_unique<MockU2fDiscovery>());
-  EXPECT_CALL(*discovery, Start())
-      .WillOnce(
-          testing::Invoke(discovery, &MockU2fDiscovery::StartSuccessAsync));
-  request->Start();
-
-  auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
-  // The first request will use the primary app_param, which will be rejected.
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(WithApplicationParameter(primary_app_param), _))
-      .WillOnce(testing::Invoke(MockU2fDevice::WrongData));
-  // After the rejection, the alternative should be tried.
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(WithApplicationParameter(alt_app_param), _))
-      .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
-  EXPECT_CALL(*device, TryWinkRef(_))
-      .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
-  discovery->AddDevice(std::move(device));
-
-  cb.WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, cb.GetReturnCode());
-
-  EXPECT_EQ(GetTestAssertionSignature(), cb.GetResponseData()->signature());
-  EXPECT_EQ(handles[0], cb.GetResponseData()->raw_id());
-}
-
 }  // namespace device

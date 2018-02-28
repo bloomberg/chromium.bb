@@ -19,7 +19,7 @@ constexpr size_t kSignatureIndex = 5;
 
 // static
 base::Optional<SignResponseData> SignResponseData::CreateFromU2fSignResponse(
-    const std::vector<uint8_t>& relying_party_id_hash,
+    const std::string& relying_party_id,
     const std::vector<uint8_t>& u2f_data,
     const std::vector<uint8_t>& key_handle) {
   if (key_handle.empty())
@@ -37,7 +37,7 @@ base::Optional<SignResponseData> SignResponseData::CreateFromU2fSignResponse(
     return base::nullopt;
 
   // Construct the authenticator data.
-  AuthenticatorData authenticator_data(relying_party_id_hash, flags[0],
+  AuthenticatorData authenticator_data(relying_party_id, flags[0],
                                        std::move(counter), base::nullopt);
 
   // Extract the signature from the remainder of the U2fResponse bytes.

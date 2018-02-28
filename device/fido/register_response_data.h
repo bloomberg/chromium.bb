@@ -23,7 +23,7 @@ class AttestationObject;
 class RegisterResponseData : public ResponseData {
  public:
   static base::Optional<RegisterResponseData> CreateFromU2fRegisterResponse(
-      const std::vector<uint8_t>& relying_party_id_hash,
+      std::string relying_party_id,
       base::span<const uint8_t> u2f_data);
 
   RegisterResponseData();
