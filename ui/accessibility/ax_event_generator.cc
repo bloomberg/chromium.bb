@@ -397,8 +397,8 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
                                                 AXNode* target_node) {
   int32_t target_id = target_node->id();
   std::set<AXNode*> source_nodes;
-  auto callback = [&](const auto entry) {
-    const auto target_to_sources = entry.second;
+  auto callback = [&](const auto& entry) {
+    const auto& target_to_sources = entry.second;
     auto sources_it = target_to_sources.find(target_id);
     if (sources_it == target_to_sources.end())
       return;
