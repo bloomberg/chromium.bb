@@ -161,7 +161,7 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckSingletonInHeaders(mock_input_api,
                                                   MockOutputApi())
     self.assertEqual(1, len(warnings))
-    self.assertEqual(2, len(warnings[0].items))
+    self.assertEqual(1, len(warnings[0].items))
     self.assertEqual('error', warnings[0].type)
     self.assertTrue('Found base::Singleton<T>' in warnings[0].message)
 
@@ -1305,6 +1305,28 @@ class CrbugUrlFormatTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckCrbugLinksHaveHttps(input_api, MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual(3, warnings[0].message.count('\n'));
+
+
+class BannedFunctionCheckTest(unittest.TestCase):
+
+  def testBannedIosObcjFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/ios/file.mm',
+               ['TEST(SomeClassTest, SomeInteraction) {',
+                '}']),
+      MockFile('some/mac/file.mm',
+               ['TEST(SomeClassTest, SomeInteraction) {',
+                '}']),
+      MockFile('another/ios_file.mm',
+               ['class SomeTest : public testing::Test {};']),
+    ]
+
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('some/ios/file.mm' in errors[0].message)
+    self.assertTrue('another/ios_file.mm' in errors[0].message)
+    self.assertTrue('some/mac/file.mm' not in errors[0].message)
 
 
 if __name__ == '__main__':

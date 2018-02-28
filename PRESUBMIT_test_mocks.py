@@ -58,6 +58,8 @@ class MockInputApi(object):
   attribute as the list of changed files.
   """
 
+  DEFAULT_BLACK_LIST = ()
+
   def __init__(self):
     self.canned_checks = MockCannedChecks()
     self.fnmatch = fnmatch
@@ -74,10 +76,29 @@ class MockInputApi(object):
     self.presubmit_local_path = os.path.dirname(__file__)
 
   def AffectedFiles(self, file_filter=None, include_deletes=False):
-    return self.files
+    for file in self.files:
+      if file_filter and not file_filter(file):
+        continue
+      if not include_deletes and file.Action() == 'D':
+        continue
+      yield file
 
   def AffectedSourceFiles(self, file_filter=None):
-    return self.files
+    return self.AffectedFiles(file_filter=file_filter)
+
+  def FilterSourceFile(self, file, white_list=(), black_list=()):
+    local_path = file.LocalPath()
+    if white_list:
+      for pattern in white_list:
+        compiled_pattern = re.compile(pattern)
+        if compiled_pattern.search(local_path):
+          return True
+    if black_list:
+      for pattern in black_list:
+        compiled_pattern = re.compile(pattern)
+        if compiled_pattern.search(local_path):
+          return False
+    return True
 
   def LocalPaths(self):
     return self.files
