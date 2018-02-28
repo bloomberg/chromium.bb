@@ -178,6 +178,8 @@ class STORAGE_EXPORT BlobMemoryController {
   void ShrinkFileAllocation(ShareableFileReference* file_reference,
                             uint64_t old_length,
                             uint64_t new_length);
+  void GrowFileAllocation(ShareableFileReference* file_reference,
+                          uint64_t delta);
 
   using DiskSpaceFuncPtr = int64_t (*)(const base::FilePath&);
 

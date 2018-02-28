@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_builder_from_stream.h"
 
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -12,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/common/data_pipe_utils.h"
+#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +25,7 @@ namespace {
 constexpr size_t kTestBlobStorageMaxBytesDataItemSize = 13;
 constexpr size_t kTestBlobStorageMaxBlobMemorySize = 500;
 constexpr uint64_t kTestBlobStorageMinFileSizeBytes = 32;
+constexpr uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 constexpr uint64_t kTestBlobStorageMaxDiskSpace = 1000;
 
 enum class LengthHintTestType {
@@ -46,6 +49,7 @@ class BlobBuilderFromStreamTest
     limits_.max_bytes_data_item_size = kTestBlobStorageMaxBytesDataItemSize;
     limits_.max_blob_in_memory_space = kTestBlobStorageMaxBlobMemorySize;
     limits_.min_page_file_size = kTestBlobStorageMinFileSizeBytes;
+    limits_.max_file_size = kTestBlobStorageMaxFileSizeBytes;
     limits_.desired_max_disk_space = kTestBlobStorageMaxDiskSpace;
     limits_.effective_max_disk_space = kTestBlobStorageMaxDiskSpace;
     context_->set_limits_for_testing(limits_);
@@ -109,6 +113,51 @@ class BlobBuilderFromStreamTest
     return result;
   }
 
+  void VerifyBlobContents(base::span<const char> in_memory_data,
+                          base::span<const char> on_disk_data,
+                          const BlobDataSnapshot& blob_data) {
+    size_t next_memory_offset = 0;
+    size_t next_file_offset = 0;
+    for (const auto& item : blob_data.items()) {
+      if (item->type() == BlobDataItem::Type::kBytes) {
+        EXPECT_EQ(0u, next_file_offset)
+            << "Bytes item after file items is invalid";
+
+        EXPECT_LE(item->length(), kTestBlobStorageMaxBlobMemorySize);
+        ASSERT_LE(next_memory_offset + item->length(), in_memory_data.size());
+
+        EXPECT_EQ(in_memory_data.subspan(next_memory_offset, item->length()),
+                  item->bytes());
+
+        next_memory_offset += item->length();
+      } else if (item->type() == BlobDataItem::Type::kFile) {
+        EXPECT_EQ(next_memory_offset, in_memory_data.size())
+            << "File item before all in memory data was found";
+
+        EXPECT_LE(item->length(), kTestBlobStorageMaxFileSizeBytes);
+        ASSERT_LE(next_file_offset + item->length(), on_disk_data.size());
+
+        std::string file_contents;
+        EXPECT_TRUE(base::ReadFileToString(item->path(), &file_contents));
+        EXPECT_EQ(item->length(), file_contents.size());
+        EXPECT_EQ(on_disk_data.subspan(next_file_offset, item->length()),
+                  base::make_span(file_contents));
+
+        next_file_offset += item->length();
+        if (next_file_offset < on_disk_data.size()) {
+          EXPECT_EQ(kTestBlobStorageMaxFileSizeBytes, item->length())
+              << "All but the last file should be max sized";
+        }
+      } else {
+        ADD_FAILURE() << "Invalid blob item type: "
+                      << static_cast<int>(item->type());
+      }
+    }
+
+    EXPECT_EQ(next_memory_offset, in_memory_data.size());
+    EXPECT_EQ(next_file_offset, on_disk_data.size());
+  }
+
  protected:
   const std::string kContentType = "content/type";
   const std::string kContentDisposition = "disposition";
@@ -151,6 +200,10 @@ TEST_P(BlobBuilderFromStreamTest, EmptyStream) {
   // Verify memory usage.
   EXPECT_EQ(0u, context_->memory_controller().memory_usage());
   EXPECT_EQ(0u, context_->memory_controller().disk_usage());
+
+  // Verify blob contents.
+  VerifyBlobContents(base::span<const char>(), base::span<const char>(),
+                     *result->CreateSnapshot());
 }
 
 TEST_P(BlobBuilderFromStreamTest, SmallStream) {
@@ -166,6 +219,10 @@ TEST_P(BlobBuilderFromStreamTest, SmallStream) {
   // Verify memory usage.
   EXPECT_EQ(kData.size(), context_->memory_controller().memory_usage());
   EXPECT_EQ(0u, context_->memory_controller().disk_usage());
+
+  // Verify blob contents.
+  VerifyBlobContents(kData, base::span<const char>(),
+                     *result->CreateSnapshot());
 }
 
 TEST_P(BlobBuilderFromStreamTest, MediumStream) {
@@ -187,6 +244,18 @@ TEST_P(BlobBuilderFromStreamTest, MediumStream) {
   } else {
     EXPECT_EQ(0u, context_->memory_controller().memory_usage());
     EXPECT_EQ(kData.size(), context_->memory_controller().disk_usage());
+  }
+
+  // Verify blob contents.
+  if (GetParam() == LengthHintTestType::kUnknownSize) {
+    VerifyBlobContents(base::make_span(kData).subspan(
+                           0, 2 * kTestBlobStorageMaxBytesDataItemSize),
+                       base::make_span(kData).subspan(
+                           2 * kTestBlobStorageMaxBytesDataItemSize),
+                       *result->CreateSnapshot());
+  } else {
+    VerifyBlobContents(base::span<const char>(), kData,
+                       *result->CreateSnapshot());
   }
 }
 
@@ -217,6 +286,18 @@ TEST_P(BlobBuilderFromStreamTest, LargeStream) {
   } else {
     EXPECT_EQ(0u, context_->memory_controller().memory_usage());
     EXPECT_EQ(kData.size(), context_->memory_controller().disk_usage());
+  }
+
+  // Verify blob contents.
+  if (GetParam() == LengthHintTestType::kUnknownSize) {
+    VerifyBlobContents(base::make_span(kData).subspan(
+                           0, 2 * kTestBlobStorageMaxBytesDataItemSize),
+                       base::make_span(kData).subspan(
+                           2 * kTestBlobStorageMaxBytesDataItemSize),
+                       *result->CreateSnapshot());
+  } else {
+    VerifyBlobContents(base::span<const char>(), kData,
+                       *result->CreateSnapshot());
   }
 }
 
