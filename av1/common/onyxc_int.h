@@ -1176,8 +1176,13 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
 
   av1_zero_array(cm->above_context[0] + offset_y, width_y);
   if (num_planes > 1) {
-    av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
-    av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
+    if (cm->above_context[1] && cm->above_context[2]) {
+      av1_zero_array(cm->above_context[1] + offset_uv, width_uv);
+      av1_zero_array(cm->above_context[2] + offset_uv, width_uv);
+    } else {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid value of planes");
+    }
   }
 
   av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
