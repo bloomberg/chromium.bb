@@ -2717,8 +2717,10 @@ static void write_film_grain_params(AV1_COMP *cpi,
   pars->random_seed += 3245;  // For film grain test vectors purposes
   if (!pars->random_seed)     // Random seed should not be zero
     pars->random_seed += 1735;
-
-  aom_wb_write_bit(wb, pars->update_parameters);
+  if (cm->frame_type == INTER_FRAME)
+    aom_wb_write_bit(wb, pars->update_parameters);
+  else
+    pars->update_parameters = 1;
 #if CONFIG_FILM_GRAIN_SHOWEX
   if (!pars->update_parameters) {
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
@@ -3354,7 +3356,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->film_grain_params_present && cm->show_frame) {
 #endif
     int flip_back_update_parameters_flag = 0;
-    if (cm->frame_type == KEY_FRAME &&
+    if (cm->frame_type != INTER_FRAME &&
         cm->film_grain_params.update_parameters == 0) {
       cm->film_grain_params.update_parameters = 1;
       flip_back_update_parameters_flag = 1;

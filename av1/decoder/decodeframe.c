@@ -2155,15 +2155,10 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   }
 
   pars->random_seed = aom_rb_read_literal(rb, 16);
-
-  pars->update_parameters = aom_rb_read_bit(rb);
-
-  if (!pars->update_parameters && cm->frame_type != INTER_FRAME) {
-    aom_internal_error(
-        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-        "Film grain parameters prediction is only allowed in inter-frames");
-    return;
-  }
+  if (cm->frame_type == INTER_FRAME)
+    pars->update_parameters = aom_rb_read_bit(rb);
+  else
+    pars->update_parameters = 1;
 
 #if CONFIG_FILM_GRAIN_SHOWEX
   if (!pars->update_parameters) {
