@@ -528,12 +528,12 @@ float HarfBuzzPositionToFloat(hb_position_t value) {
 bool IsSafeToBreakBefore(const hb_glyph_info_t* glyph_infos,
                          unsigned num_glyphs,
                          unsigned i) {
-  // At the end of the run.
-  if (i == num_glyphs - 1)
+  // Before the first glyph is safe to break.
+  if (!i)
     return true;
 
   // Not at a cluster boundary.
-  if (glyph_infos[i].cluster == glyph_infos[i + 1].cluster)
+  if (glyph_infos[i].cluster == glyph_infos[i - 1].cluster)
     return false;
 
   // The HB_GLYPH_FLAG_UNSAFE_TO_BREAK flag is set for all glyphs in a
