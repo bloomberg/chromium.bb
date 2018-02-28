@@ -4,9 +4,9 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="incompatible_software_browser_proxy.html">
+<link rel="import" href="incompatible_applications_browser_proxy.html">
 
-<dom-module id="incompatible-software-item">
+<dom-module id="incompatible-application-item">
   <template>
     <style include="settings-shared">
       :host {
@@ -14,12 +14,12 @@
       }
     </style>
     <div class="list-item">
-      <div class="start">[[softwareName]]</div>
+      <div class="start">[[applicationName]]</div>
       <div class="separator"></div>
       <paper-button class="primary-button" on-click="onActionTap_">
         [[getActionName_(actionType)]]
       </paper-button>
     </div>
   </template>
-  <script src="incompatible_software_item.js"></script>
+  <script src="incompatible_application_item.js"></script>
 </dom-module>

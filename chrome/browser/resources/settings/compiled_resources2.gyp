@@ -80,7 +80,7 @@
         'default_browser_page/compiled_resources2.gyp:*',
         'device_page/compiled_resources2.gyp:*',
         'downloads_page/compiled_resources2.gyp:*',
-        'incompatible_software_page/compiled_resources2.gyp:*',
+        'incompatible_applications_page/compiled_resources2.gyp:*',
         'internet_page/compiled_resources2.gyp:*',
         'languages_page/compiled_resources2.gyp:*',
         'on_startup_page/compiled_resources2.gyp:*',

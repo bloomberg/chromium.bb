@@ -55,7 +55,7 @@
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
-#include "chrome/browser/ui/webui/settings/incompatible_software_handler_win.h"
+#include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif
 #endif  // defined(OS_WIN)
@@ -229,15 +229,16 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   ProblematicProgramsUpdater::TrimCache();
-  bool has_incompatible_software =
+  bool has_incompatible_applications =
       ProblematicProgramsUpdater::HasCachedPrograms();
-  html_source->AddBoolean("showIncompatibleSoftware",
-                          has_incompatible_software);
+  html_source->AddBoolean("showIncompatibleApplications",
+                          has_incompatible_applications);
   // TODO(pmonette): Implement a function to determine hasAdminRights.
-  html_source->AddBoolean("hasAdminRights", false);
+  html_source->AddBoolean("hasAdminRights", true);
 
-  if (has_incompatible_software)
-    AddSettingsPageUIHandler(base::MakeUnique<IncompatibleSoftwareHandler>());
+  if (has_incompatible_applications)
+    AddSettingsPageUIHandler(
+        base::MakeUnique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
 
   bool password_protection_available = false;

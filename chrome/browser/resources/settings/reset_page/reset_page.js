@@ -42,10 +42,10 @@ Polymer({
     },
 
     /** @private */
-    showIncompatibleSoftware_: {
+    showIncompatibleApplications_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('showIncompatibleSoftware');
+        return loadTimeData.getBoolean('showIncompatibleApplications');
       },
     },
     // </if>
@@ -101,8 +101,8 @@ Polymer({
   },
 
   /** @private */
-  onIncompatibleSoftwareTap_: function() {
-    settings.navigateTo(settings.routes.INCOMPATIBLE_SOFTWARE);
+  onIncompatibleApplicationsTap_: function() {
+    settings.navigateTo(settings.routes.INCOMPATIBLE_APPLICATIONS);
   },
   // </if>
 
