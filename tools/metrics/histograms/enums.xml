@@ -44070,6 +44070,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="18764319" label="webstore_installer"/>
   <int value="19185953" label="offline_prefetch"/>
   <int value="20053290" label="cryptauth_find_eligible_for_promotion"/>
+  <int value="20153177" label="quic_chromium_packet_writer"/>
   <int value="21145003" label="extension_crx_fetcher"/>
   <int value="21785164" label="intranet_redirect_detector"/>
   <int value="22096011" label="test_partial"/>
@@ -44104,6 +44105,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="36859107" label="logo_tracker"/>
   <int value="37249086" label="android_device_manager_socket"/>
   <int value="37531401" label="proxy_script_fetcher"/>
+  <int value="38670228" label="download_internals_webui_source"/>
   <int value="39356976" label="android_web_socket"/>
   <int value="39877119" label="gaia_auth_exchange_device_id"/>
   <int value="40534770" label="obsolete_favicon_component"/>
