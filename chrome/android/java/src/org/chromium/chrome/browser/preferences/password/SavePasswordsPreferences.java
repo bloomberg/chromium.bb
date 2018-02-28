@@ -196,8 +196,11 @@ public class SavePasswordsPreferences
     @Nullable
     private ExportErrorDialogFragment.ErrorDialogParams mErrorDialogParams;
 
-    // True as long as the export warning dialog is showing.
-    private boolean mExportWarningShowing;
+    // Contains the reference to the export warning dialog when it is displayed, so that the dialog
+    // can be dismissed if Chrome goes to background (without being killed) and is restored too late
+    // for the reauthentication time window to still allow exporting. It is null during all other
+    // times.
+    private ExportWarningDialogFragment mExportWarningDialogFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -418,9 +421,9 @@ public class SavePasswordsPreferences
      * needed) and choosing a consumer app for the data.
      */
     private void exportAfterReauth() {
-        assert !mExportWarningShowing;
-        ExportWarningDialogFragment exportWarningDialogFragment = new ExportWarningDialogFragment();
-        exportWarningDialogFragment.setExportWarningHandler(
+        assert mExportWarningDialogFragment == null;
+        mExportWarningDialogFragment = new ExportWarningDialogFragment();
+        mExportWarningDialogFragment.setExportWarningHandler(
                 new ExportWarningDialogFragment.Handler() {
                     /**
                      * On positive button response asks the parent to continue with the export flow.
@@ -456,13 +459,12 @@ public class SavePasswordsPreferences
                             mExportState = EXPORT_STATE_INACTIVE;
                         }
 
-                        mExportWarningShowing = false;
+                        mExportWarningDialogFragment = null;
                         // If the error dialog has been waiting, display it now.
                         if (mErrorDialogParams != null) showExportErrorDialogFragment();
                     }
                 });
-        mExportWarningShowing = true;
-        exportWarningDialogFragment.show(getFragmentManager(), null);
+        mExportWarningDialogFragment.show(getFragmentManager(), null);
     }
 
     /**
@@ -527,7 +529,7 @@ public class SavePasswordsPreferences
                     R.string.save_password_preferences_export_error_details, detailedDescription);
         }
 
-        if (!mExportWarningShowing) showExportErrorDialogFragment();
+        if (mExportWarningDialogFragment == null) showExportErrorDialogFragment();
     }
 
     /**
@@ -796,13 +798,15 @@ public class SavePasswordsPreferences
     public void onResume() {
         super.onResume();
         if (mExportState == EXPORT_STATE_REQUESTED) {
-            // Resuming in the "requested" state means that the user just returned from the
-            // reauthentication activity. Depending on the result, either carry on with exporting or
-            // re-enable the export menu for future attempts.
+            // If Chrome returns to foreground from being paused (but without being killed), and
+            // exportAfterReauth was called before pausing, the warning dialog is still
+            // displayed and ready to be used, and this is indicated by
+            // |mExportWarningDialogFragment| being non-null.
             if (ReauthenticationManager.authenticationStillValid(
                         ReauthenticationManager.REAUTH_SCOPE_BULK)) {
-                exportAfterReauth();
+                if (mExportWarningDialogFragment == null) exportAfterReauth();
             } else {
+                if (mExportWarningDialogFragment != null) mExportWarningDialogFragment.dismiss();
                 RecordHistogram.recordEnumeratedHistogram(
                         "PasswordManager.ExportPasswordsToCSVResult", EXPORT_RESULT_USER_ABORTED,
                         EXPORT_RESULT_COUNT);
