@@ -53,6 +53,11 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     # Only measure a single page so that this test cycles reasonably quickly.
     benchmark.options['pageset_repeat'] = 1
 
+    # Some benchmarks are running multiple iterations
+    # which is not needed for a smoke test
+    if hasattr(benchmark, 'enable_smoke_test_mode'):
+      benchmark.enable_smoke_test_mode = True
+
     class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
 
       def CreateStorySet(self, options):
