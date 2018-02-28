@@ -6,17 +6,16 @@
 
 #include <utility>
 
-#include "crypto/sha2.h"
 #include "device/fido/u2f_parsing_utils.h"
 
 namespace device {
 
 AuthenticatorData::AuthenticatorData(
-    std::string relying_party_id,
+    std::vector<uint8_t> application_parameter,
     uint8_t flags,
     std::vector<uint8_t> counter,
     base::Optional<AttestedCredentialData> data)
-    : relying_party_id_(std::move(relying_party_id)),
+    : application_parameter_(std::move(application_parameter)),
       flags_(flags),
       counter_(std::move(counter)),
       attested_data_(std::move(data)) {
@@ -32,10 +31,7 @@ AuthenticatorData::~AuthenticatorData() = default;
 
 std::vector<uint8_t> AuthenticatorData::SerializeToByteArray() const {
   std::vector<uint8_t> authenticator_data;
-  std::vector<uint8_t> rp_id_hash(crypto::kSHA256Length);
-  crypto::SHA256HashString(relying_party_id_, rp_id_hash.data(),
-                           rp_id_hash.size());
-  u2f_parsing_utils::Append(&authenticator_data, rp_id_hash);
+  u2f_parsing_utils::Append(&authenticator_data, application_parameter_);
   authenticator_data.insert(authenticator_data.end(), flags_);
   u2f_parsing_utils::Append(&authenticator_data, counter_);
   if (attested_data_) {

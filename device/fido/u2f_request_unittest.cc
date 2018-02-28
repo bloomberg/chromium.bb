@@ -18,13 +18,10 @@ namespace device {
 
 namespace {
 
-constexpr char kTestRelyingPartyId[] = "google.com";
-
 class FakeU2fRequest : public U2fRequest {
  public:
-  explicit FakeU2fRequest(std::string relying_party_id)
-      : U2fRequest(std::move(relying_party_id),
-                   nullptr /* connector */,
+  explicit FakeU2fRequest()
+      : U2fRequest(nullptr /* connector */,
                    base::flat_set<U2fTransportProtocol>(),
                    std::vector<uint8_t>(),
                    std::vector<uint8_t>(),
@@ -69,7 +66,7 @@ class U2fRequestTest : public testing::Test {
 };
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
-  FakeU2fRequest request(kTestRelyingPartyId);
+  FakeU2fRequest request;
   auto* discovery =
       SetMockDiscovery(&request, std::make_unique<MockU2fDiscovery>());
   auto device0 = std::make_unique<MockU2fDevice>();
@@ -110,7 +107,7 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
 }
 
 TEST_F(U2fRequestTest, TestBasicMachine) {
-  FakeU2fRequest request(kTestRelyingPartyId);
+  FakeU2fRequest request;
   auto* discovery =
       SetMockDiscovery(&request, std::make_unique<MockU2fDiscovery>());
   EXPECT_CALL(*discovery, Start())
@@ -133,7 +130,7 @@ TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   discovery->AddDevice(std::move(device));
 
-  FakeU2fRequest request(kTestRelyingPartyId);
+  FakeU2fRequest request;
   EXPECT_CALL(*discovery, Start())
       .WillOnce(
           testing::Invoke(discovery.get(), &MockU2fDiscovery::StartSuccess));
@@ -146,7 +143,7 @@ TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
 TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
   // Create a fake request with two different discoveries that both start up
   // successfully.
-  FakeU2fRequest request(kTestRelyingPartyId);
+  FakeU2fRequest request;
   MockU2fDiscovery* discoveries[2];
   std::tie(discoveries[0], discoveries[1]) =
       SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),
@@ -202,7 +199,7 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
 TEST_F(U2fRequestTest, TestSlowDiscovery) {
   // Create a fake request with two different discoveries that start at
   // different times.
-  FakeU2fRequest request(kTestRelyingPartyId);
+  FakeU2fRequest request;
   MockU2fDiscovery* fast_discovery;
   MockU2fDiscovery* slow_discovery;
   std::tie(fast_discovery, slow_discovery) =
@@ -283,7 +280,7 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
   {
     // Create a fake request with two different discoveries that both start up
     // unsuccessfully.
-    FakeU2fRequest request(kTestRelyingPartyId);
+    FakeU2fRequest request;
     MockU2fDiscovery* discoveries[2];
     std::tie(discoveries[0], discoveries[1]) =
         SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),
@@ -302,7 +299,7 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
   {
     // Create a fake request with two different discoveries, where only one
     // starts up successfully.
-    FakeU2fRequest request(kTestRelyingPartyId);
+    FakeU2fRequest request;
     MockU2fDiscovery* discoveries[2];
     std::tie(discoveries[0], discoveries[1]) =
         SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),

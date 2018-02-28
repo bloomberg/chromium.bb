@@ -30,18 +30,18 @@ using ::testing::_;
 
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorStatus;
+using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
+using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
 using webauth::mojom::PublicKeyCredentialCreationOptions;
 using webauth::mojom::PublicKeyCredentialCreationOptionsPtr;
-using webauth::mojom::PublicKeyCredentialRpEntity;
-using webauth::mojom::PublicKeyCredentialRpEntityPtr;
-using webauth::mojom::PublicKeyCredentialUserEntity;
-using webauth::mojom::PublicKeyCredentialUserEntityPtr;
-using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
-using webauth::mojom::GetAssertionAuthenticatorResponsePtr;
 using webauth::mojom::PublicKeyCredentialParameters;
 using webauth::mojom::PublicKeyCredentialParametersPtr;
 using webauth::mojom::PublicKeyCredentialRequestOptions;
 using webauth::mojom::PublicKeyCredentialRequestOptionsPtr;
+using webauth::mojom::PublicKeyCredentialRpEntity;
+using webauth::mojom::PublicKeyCredentialRpEntityPtr;
+using webauth::mojom::PublicKeyCredentialUserEntity;
+using webauth::mojom::PublicKeyCredentialUserEntityPtr;
 
 namespace {
 
@@ -333,11 +333,14 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
 
-// Verify behavior for various combinations of origins and rp id's.
+// Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   // These instances should return security errors (for circumstances
   // that would normally crash the renderer).
   for (auto test_case : kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+                 std::string(test_case.origin));
+
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
@@ -353,6 +356,9 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   // These instances pass the origin and relying party checks and return at
   // the algorithm check.
   for (auto test_case : kValidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+                 std::string(test_case.origin));
+
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialCreationOptionsPtr options =
@@ -483,12 +489,15 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
             cb.GetResponseStatus());
 }
 
-// Verify behavior for various combinations of origins and rp id's.
+// Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
   // These instances should return security errors (for circumstances
   // that would normally crash the renderer).
   for (const OriginRelyingPartyIdPair& test_case :
        kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.relying_party_id) + " " +
+                 std::string(test_case.origin));
+
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
     PublicKeyCredentialRequestOptionsPtr options =
@@ -501,6 +510,60 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
               cb.GetResponseStatus());
   }
+}
+
+typedef struct {
+  const char* origin;
+  const char* appid;
+  bool should_succeed;
+} OriginAppIdPair;
+
+constexpr OriginAppIdPair kInvalidAppIdCases[] = {
+    {"https://example.com", "https://com/foo", false},
+    {"https://example.com", "https://foo.com/", false},
+    {"https://example.com", "http://example.com", false},
+    {"http://example.com", "https://example.com", false},
+    {"https://127.0.0.1", "https://127.0.0.1", false},
+    {"https://www.notgoogle.com",
+     "https://www.gstatic.com/securitykey/origins.json", false},
+
+    /* Cannot be tested yet:
+    {"https://example.com", "https://example.com", true},
+    {"https://www.example.com", "https://example.com", true},
+    {"https://example.com", "https://www.example.com", true},
+    {"https://example.com", "https://foo.bar.example.com", true},
+    {"https://example.com", "https://foo.bar.example.com/foo/bar", true},
+    {"https://www.google.com",
+     "https://www.gstatic.com/securitykey/origins.json", true},
+    {"https://www.google.com",
+     "https://www.gstatic.com/securitykey/a/google.com/origins.json", true},
+     */
+};
+
+// Verify behavior for various combinations of origins and RP IDs.
+TEST_F(AuthenticatorImplTest, AppIdExtension) {
+  for (const auto& test_case : kInvalidAppIdCases) {
+    SCOPED_TRACE(std::string(test_case.origin) + " " +
+                 std::string(test_case.appid));
+
+    CHECK(!test_case.should_succeed) << "can't test this yet";
+
+    const GURL origin_url(test_case.origin);
+    NavigateAndCommit(origin_url);
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = origin_url.host();
+    options->appid = std::string(test_case.appid);
+
+    TestGetAssertionCallback cb;
+    authenticator->GetAssertion(std::move(options), cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
+              cb.GetResponseStatus());
+  }
+
+  // TODO(agl): test positive cases once a mock U2F device exists.
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
