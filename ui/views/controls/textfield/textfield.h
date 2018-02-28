@@ -360,6 +360,11 @@ class VIEWS_EXPORT Textfield : public View,
   // Executes the given |command|.
   virtual void ExecuteTextEditCommand(ui::TextEditCommand command);
 
+  // Offsets the double-clicked word's range. This is only used in the unusual
+  // case where the text changes on the second mousedown of a double-click.
+  // This is harmless if there is not a currently double-clicked word.
+  void OffsetDoubleClickWord(int offset);
+
  private:
   friend class TextfieldTestApi;
 
