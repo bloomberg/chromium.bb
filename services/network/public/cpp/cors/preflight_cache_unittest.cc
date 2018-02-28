@@ -21,7 +21,8 @@ class PreflightCacheTest : public testing::Test {
   PreflightCacheTest() = default;
 
  protected:
-  size_t cache_size() const { return cache_.size_for_testing(); }
+  size_t CountOrigins() const { return cache_.CountOriginsForTesting(); }
+  size_t CountEntries() const { return cache_.CountEntriesForTesting(); }
   PreflightCache* cache() { return &cache_; }
 
   void AppendEntry(const std::string& origin, const GURL& url) {
@@ -56,23 +57,23 @@ TEST_F(PreflightCacheTest, CacheSize) {
   const GURL url("http://www.test.com/A");
   const GURL other_url("http://www.test.com/B");
 
-  // Cache should be empty.
-  EXPECT_EQ(0u, cache_size());
+  EXPECT_EQ(0u, CountOrigins());
+  EXPECT_EQ(0u, CountEntries());
 
   AppendEntry(origin, url);
 
-  // Cache size should be 2 (counting origins and urls separately).
-  EXPECT_EQ(2u, cache_size());
+  EXPECT_EQ(1u, CountOrigins());
+  EXPECT_EQ(1u, CountEntries());
 
   AppendEntry(origin, other_url);
 
-  // Cache size should now be 3 (1 origin, 2 urls).
-  EXPECT_EQ(3u, cache_size());
+  EXPECT_EQ(1u, CountOrigins());
+  EXPECT_EQ(2u, CountEntries());
 
   AppendEntry(other_origin, url);
 
-  // Cache size should now be 4 (4 origin, 3 urls).
-  EXPECT_EQ(5u, cache_size());
+  EXPECT_EQ(2u, CountOrigins());
+  EXPECT_EQ(3u, CountEntries());
 }
 
 TEST_F(PreflightCacheTest, CacheTimeout) {
@@ -80,14 +81,14 @@ TEST_F(PreflightCacheTest, CacheTimeout) {
   const GURL url("http://www.test.com/A");
   const GURL other_url("http://www.test.com/B");
 
-  // Cache should be empty.
-  EXPECT_EQ(0u, cache_size());
+  EXPECT_EQ(0u, CountOrigins());
+  EXPECT_EQ(0u, CountEntries());
 
   AppendEntry(origin, url);
   AppendEntry(origin, other_url);
 
-  // Cache size should be 3 (counting origins and urls separately).
-  EXPECT_EQ(3u, cache_size());
+  EXPECT_EQ(1u, CountOrigins());
+  EXPECT_EQ(2u, CountEntries());
 
   // Cache entry should still be valid.
   EXPECT_TRUE(CheckEntryAndRefreshCache(origin, url));
@@ -98,15 +99,14 @@ TEST_F(PreflightCacheTest, CacheTimeout) {
   // Cache entry should now be expired.
   EXPECT_FALSE(CheckEntryAndRefreshCache(origin, url));
 
-  // Cache size should be 2, with the expired entry removed, but one origin and
-  // one url still in the cache.
-  EXPECT_EQ(2u, cache_size());
+  EXPECT_EQ(1u, CountOrigins());
+  EXPECT_EQ(1u, CountEntries());
 
   // Cache entry should be expired.
   EXPECT_FALSE(CheckEntryAndRefreshCache(origin, other_url));
 
-  // Cache size should be 0, with the expired entry removed.
-  EXPECT_EQ(0u, cache_size());
+  EXPECT_EQ(0u, CountOrigins());
+  EXPECT_EQ(0u, CountEntries());
 }
 
 }  // namespace

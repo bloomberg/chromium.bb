@@ -52,14 +52,14 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
   return false;
 }
 
-size_t PreflightCache::size_for_testing() const {
+size_t PreflightCache::CountOriginsForTesting() const {
+  return cache_.size();
+}
+
+size_t PreflightCache::CountEntriesForTesting() const {
   size_t entries = 0;
-  // Count the last entries, and per-origin cache entries so that unit tests
-  // can confirm if a per-origin cache was erased correctly.
-  // TODO(toyoshim): Split this method to two methods so to count origins and
-  // entries separately.
   for (auto const& cache_per_origin : cache_)
-    entries += cache_per_origin.second.size() + 1;
+    entries += cache_per_origin.second.size();
   return entries;
 }
 
