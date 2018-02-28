@@ -121,6 +121,7 @@ source_set("unit_tests") {
     "keyword_table_unittest.cc",
     "search_engine_data_type_controller_unittest.cc",
     "search_host_to_urls_map_unittest.cc",
+    "template_url_data_unittest.cc",
     "template_url_prepopulate_data_unittest.cc",
     "template_url_service_util_unittest.cc",
     "template_url_unittest.cc",
