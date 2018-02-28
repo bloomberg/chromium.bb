@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_constants.h"
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -13,14 +15,10 @@
 #endif
 
 namespace {
-const CGFloat kLabelTextColor = 0.314;
-const NSInteger kLabelNumLines = 2;
-const CGFloat kFaviconSize = 48;
-const CGFloat kSpaceFaviconTitle = 10;
 
-// Size of a Most Visited cell.
-const CGSize kCellSize = {73, 100};
-}
+const CGFloat kIconSizeLegacy = 48;
+
+}  // namespace
 
 @implementation ContentSuggestionsMostVisitedCell : MDCCollectionViewCell
 
@@ -46,21 +44,45 @@ const CGSize kCellSize = {73, 100};
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_titleLabel];
-    [self.contentView addSubview:_faviconView];
 
-    [NSLayoutConstraint activateConstraints:@[
-      [_faviconView.widthAnchor constraintEqualToConstant:kFaviconSize],
-      [_faviconView.heightAnchor
-          constraintEqualToAnchor:_faviconView.widthAnchor],
-      [_faviconView.centerXAnchor
-          constraintEqualToAnchor:_titleLabel.centerXAnchor],
-    ]];
+    UIView* containerView = nil;
+    if (IsUIRefreshPhase1Enabled()) {
+      UIImageView* faviconContainer =
+          [[UIImageView alloc] initWithFrame:self.bounds];
+      faviconContainer.translatesAutoresizingMaskIntoConstraints = NO;
+      faviconContainer.image = [UIImage imageNamed:@"ntp_most_visited_tile"];
+      [self.contentView addSubview:faviconContainer];
+      [faviconContainer addSubview:_faviconView];
+
+      [NSLayoutConstraint activateConstraints:@[
+        [faviconContainer.widthAnchor constraintEqualToConstant:kIconSize],
+        [faviconContainer.heightAnchor
+            constraintEqualToAnchor:faviconContainer.widthAnchor],
+        [faviconContainer.centerXAnchor
+            constraintEqualToAnchor:_titleLabel.centerXAnchor],
+        [_faviconView.heightAnchor constraintEqualToConstant:32],
+        [_faviconView.widthAnchor
+            constraintEqualToAnchor:_faviconView.heightAnchor],
+      ]];
+      AddSameCenterConstraints(_faviconView, faviconContainer);
+      containerView = faviconContainer;
+    } else {
+      [self.contentView addSubview:_faviconView];
+
+      [NSLayoutConstraint activateConstraints:@[
+        [_faviconView.widthAnchor constraintEqualToConstant:kIconSizeLegacy],
+        [_faviconView.heightAnchor
+            constraintEqualToAnchor:_faviconView.widthAnchor],
+        [_faviconView.centerXAnchor
+            constraintEqualToAnchor:_titleLabel.centerXAnchor],
+      ]];
+      containerView = _faviconView;
+    }
 
     ApplyVisualConstraintsWithMetrics(
-        @[ @"V:|[favicon]-(space)-[title]", @"H:|[title]|" ],
-        @{ @"favicon" : _faviconView,
-           @"title" : _titleLabel },
-        @{ @"space" : @(kSpaceFaviconTitle) });
+        @[ @"V:|[container]-(space)-[title]", @"H:|[title]|" ],
+        @{@"container" : containerView, @"title" : _titleLabel},
+        @{ @"space" : @(kSpaceIconTitle) });
 
     self.isAccessibilityElement = YES;
   }

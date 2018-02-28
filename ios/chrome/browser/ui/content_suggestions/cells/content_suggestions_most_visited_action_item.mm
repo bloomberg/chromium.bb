@@ -4,8 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_cell.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -16,46 +15,65 @@
 @implementation ContentSuggestionsMostVisitedActionItem
 
 @synthesize action = _action;
+@synthesize count = _count;
+@synthesize metricsRecorded = _metricsRecorded;
+@synthesize suggestionIdentifier = _suggestionIdentifier;
+@synthesize title = _title;
 
 - (instancetype)initWithAction:(ContentSuggestionsMostVisitedAction)action {
   self = [super initWithType:0];
   if (self) {
     _action = action;
-    switch (_action) {
-      case ContentSuggestionsMostVisitedActionBookmark:
-        self.title =
-            l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS);
-        self.attributes = [FaviconAttributes
-            attributesWithImage:[UIImage imageNamed:@"ntp_bookmarks_icon"]];
-        break;
-      case ContentSuggestionsMostVisitedActionReadingList:
-        self.title =
-            l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST);
-        self.attributes = [FaviconAttributes
-            attributesWithImage:[UIImage imageNamed:@"ntp_readinglist_icon"]];
-        break;
-      case ContentSuggestionsMostVisitedActionRecentTabs:
-        self.title =
-            l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
-        self.attributes = [FaviconAttributes
-            attributesWithImage:[UIImage imageNamed:@"ntp_recent_icon"]];
-        break;
-      case ContentSuggestionsMostVisitedActionHistory:
-        self.title =
-            l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_HISTORY);
-        self.attributes = [FaviconAttributes
-            attributesWithImage:[UIImage imageNamed:@"ntp_history_icon"]];
-        break;
-    }
+    self.cellClass = [ContentSuggestionsMostVisitedActionCell class];
+    self.title = [self titleForAction:_action];
   }
   return self;
 }
 
 #pragma mark - AccessibilityCustomAction
 
-- (void)configureCell:(ContentSuggestionsMostVisitedCell*)cell {
+- (void)configureCell:(ContentSuggestionsMostVisitedActionCell*)cell {
   [super configureCell:cell];
   cell.accessibilityCustomActions = nil;
+  cell.titleLabel.text = self.title;
+  cell.accessibilityLabel = self.title;
+  cell.iconView.image = [self imageForAction:_action];
+  if (self.count != 0)
+    cell.countLabel.text = [@(self.count) stringValue];
+}
+
+#pragma mark - ContentSuggestionsItem
+
+- (CGFloat)cellHeightForWidth:(CGFloat)width {
+  return [ContentSuggestionsMostVisitedActionCell defaultSize].height;
+}
+
+#pragma mark - Private
+
+- (NSString*)titleForAction:(ContentSuggestionsMostVisitedAction)action {
+  switch (action) {
+    case ContentSuggestionsMostVisitedActionBookmark:
+      return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS);
+    case ContentSuggestionsMostVisitedActionReadingList:
+      return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST);
+    case ContentSuggestionsMostVisitedActionRecentTabs:
+      return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
+    case ContentSuggestionsMostVisitedActionHistory:
+      return l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_HISTORY);
+  }
+}
+
+- (UIImage*)imageForAction:(ContentSuggestionsMostVisitedAction)action {
+  switch (action) {
+    case ContentSuggestionsMostVisitedActionBookmark:
+      return [UIImage imageNamed:@"ntp_bookmarks_icon"];
+    case ContentSuggestionsMostVisitedActionReadingList:
+      return [UIImage imageNamed:@"ntp_readinglist_icon"];
+    case ContentSuggestionsMostVisitedActionRecentTabs:
+      return [UIImage imageNamed:@"ntp_recent_icon"];
+    case ContentSuggestionsMostVisitedActionHistory:
+      return [UIImage imageNamed:@"ntp_history_icon"];
+  }
 }
 
 @end

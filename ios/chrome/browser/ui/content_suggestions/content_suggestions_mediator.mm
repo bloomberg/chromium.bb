@@ -107,6 +107,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // reading list count.
 @property(nonatomic, strong)
     ContentSuggestionsMostVisitedActionItem* readingListItem;
+// Number of unread items in reading list model.
+@property(nonatomic, assign) NSInteger readingListUnreadCount;
 
 @end
 
@@ -129,6 +131,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 @synthesize learnMoreItem = _learnMoreItem;
 @synthesize readingListNeedsReload = _readingListNeedsReload;
 @synthesize readingListItem = _readingListItem;
+@synthesize readingListUnreadCount = _readingListUnreadCount;
 
 #pragma mark - Public
 
@@ -602,6 +605,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (NSArray<ContentSuggestionsMostVisitedActionItem*>*)actionButtonItems {
   if (!_actionButtonItems) {
     self.readingListItem = ReadingListActionItem();
+    self.readingListItem.count = self.readingListUnreadCount;
     _actionButtonItems = @[
       BookmarkActionItem(), self.readingListItem, RecentTabsActionItem(),
       HistoryActionItem()
@@ -613,11 +617,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 #pragma mark - ReadingListModelBridgeObserver
 
 - (void)readingListModelLoaded:(const ReadingListModel*)model {
-  // TODO(crbug.com/805636) Pass model.size() to self.readingListItem
+  [self readingListModelDidApplyChanges:model];
 }
 
 - (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
-  // TODO(crbug.com/805636) Pass model.size() to self.readingListItem
+  self.readingListUnreadCount = model->unread_size();
+  if (self.readingListItem) {
+    self.readingListItem.count = self.readingListUnreadCount;
+    [self.dataSink itemHasChanged:self.readingListItem];
+  }
 }
 
 @end

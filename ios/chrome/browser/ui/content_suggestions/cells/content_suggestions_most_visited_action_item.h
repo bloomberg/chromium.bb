@@ -5,7 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_ACTION_ITEM_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_ACTION_ITEM_H_
 
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import <UIKit/UIKit.h>
+
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
 // Enum defining the actions for a ContentSuggestionsMostVisitedActionItem.
 typedef NS_ENUM(NSInteger, ContentSuggestionsMostVisitedAction) {
@@ -19,12 +22,19 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsMostVisitedAction) {
 // collection section as most visited items, but have static placement (the last
 // four) and cannot be removed.
 @interface ContentSuggestionsMostVisitedActionItem
-    : ContentSuggestionsMostVisitedItem
+    : CollectionViewItem<SuggestedContent>
 
-- (instancetype)initWithAction:(ContentSuggestionsMostVisitedAction)action;
+- (nonnull instancetype)initWithAction:
+    (ContentSuggestionsMostVisitedAction)action;
+
+// Text for the title and the accessibility label of the cell.
+@property(nonatomic, copy, nonnull) NSString* title;
 
 // The action type for this button.
 @property(nonatomic, assign) ContentSuggestionsMostVisitedAction action;
+
+// Reading list count passed to the most visited cell.
+@property(nonatomic, assign) NSInteger count;
 
 @end
 
