@@ -32,18 +32,7 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_EXT_INTRA_MOD)
-    if (NOT CONFIG_INTRA_EDGE)
-      change_config_and_warn(CONFIG_INTRA_EDGE 1 CONFIG_EXT_INTRA_MOD)
-    endif ()
-  endif ()
-
-  if (CONFIG_INTRA_EDGE2)
-    if (NOT CONFIG_INTRA_EDGE)
-      change_config_and_warn(CONFIG_INTRA_EDGE 1 CONFIG_INTRA_EDGE2)
-    endif ()
-  endif ()
-
+  
   if (CONFIG_LOOPFILTER_LEVEL)
     if (NOT CONFIG_EXT_DELTA_Q)
       change_config_and_warn(CONFIG_EXT_DELTA_Q 1 CONFIG_LOOPFILTER_LEVEL)
