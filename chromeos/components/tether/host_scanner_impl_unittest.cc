@@ -600,6 +600,17 @@ TEST_F(HostScannerImplTest, TestScan_ResultsFromNoDevices) {
       HostScannerImpl::HostScanResultEventType::NO_HOSTS_FOUND, 1);
 }
 
+TEST_F(HostScannerImplTest, StopScan) {
+  host_scanner_->StartScan();
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+  ASSERT_EQ(1u,
+            fake_host_scanner_operation_factory_->created_operations().size());
+  EXPECT_TRUE(host_scanner_->IsScanActive());
+
+  host_scanner_->StopScan();
+  EXPECT_FALSE(host_scanner_->IsScanActive());
+}
+
 TEST_F(HostScannerImplTest, TestScan_ResultsFromSomeDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
