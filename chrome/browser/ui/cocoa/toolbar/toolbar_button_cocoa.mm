@@ -232,7 +232,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   return themeIsDark ? SK_ColorWHITE
                      : (provider && provider->ShouldIncreaseContrast()
                             ? SK_ColorBLACK
-                            : SkColorSetRGB(0x5A, 0x5A, 0x5A));
+                            : SkColorSetRGB(0x75, 0x75, 0x75));
 }
 
 - (NSImage*)browserToolsIconForFillColor:(SkColor)fillColor {
