@@ -80,11 +80,16 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
 
+  std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
+
   void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info);
 
- private:
+  virtual bool IsHostChildURLLoaderFactoryBundle() const;
+
+ protected:
   ~ChildURLLoaderFactoryBundle() override;
 
+ private:
   void InitDefaultBlobFactoryIfNecessary();
   void InitDirectNetworkFactoryIfNecessary();
 

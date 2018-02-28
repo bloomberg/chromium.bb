@@ -148,6 +148,85 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
     return xhr_result && execute_result;
   }
 
+  // Will reuse the single opened windows through the test case.
+  bool CheckCanLoadHttpInWindowOpen(const std::string& relative_url) {
+    GURL test_url = embedded_test_server()->GetURL(relative_url);
+    std::string inject_script = base::StringPrintf(
+        "var xhr = new XMLHttpRequest();"
+        "xhr.open('GET', '%s', true);"
+        "xhr.onload = function (e) {"
+        "  if (xhr.readyState === 4) {"
+        "    window.opener.domAutomationController.send(xhr.status === 200);"
+        "  }"
+        "};"
+        "xhr.onerror = function () {"
+        "  window.opener.domAutomationController.send(false);"
+        "};"
+        "xhr.send(null)",
+        test_url.spec().c_str());
+    std::string window_open_script = base::StringPrintf(
+        "var new_window = new_window || window.open('');"
+        "var inject_script = document.createElement('script');"
+        "inject_script.innerHTML = \"%s\";"
+        "new_window.document.body.appendChild(inject_script);",
+        inject_script.c_str());
+
+    bool xhr_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(shell(), window_open_script, &xhr_result);
+    return xhr_result && execute_result;
+  }
+
+  // Workers will live throughout the test case unless terminated.
+  bool CheckCanWorkerFetch(const std::string& worker_name,
+                           const std::string& relative_url) {
+    GURL worker_url =
+        embedded_test_server()->GetURL("/workers/worker_common.js");
+    GURL fetch_url = embedded_test_server()->GetURL(relative_url);
+    std::string script = base::StringPrintf(
+        "var workers = workers || {};"
+        "var worker_name = '%s';"
+        "workers[worker_name] = workers[worker_name] || new Worker('%s');"
+        "workers[worker_name].onmessage = evt => {"
+        "  if (evt.data != 'wait')"
+        "    window.domAutomationController.send(evt.data === 200);"
+        "};"
+        "workers[worker_name].postMessage(\"eval "
+        "  fetch(new Request('%s'))"
+        "    .then(res => postMessage(res.status))"
+        "    .catch(error => postMessage(error.toString()));"
+        "  'wait'"
+        "\");",
+        worker_name.c_str(), worker_url.spec().c_str(),
+        fetch_url.spec().c_str());
+    bool fetch_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(shell(), script, &fetch_result);
+    return fetch_result && execute_result;
+  }
+
+  // Terminate and delete the worker.
+  bool TerminateWorker(const std::string& worker_name) {
+    std::string script = base::StringPrintf(
+        "var workers = workers || {};"
+        "var worker_name = '%s';"
+        "if (workers[worker_name]) {"
+        "  workers[worker_name].terminate();"
+        "  delete workers[worker_name];"
+        "  window.domAutomationController.send(true);"
+        "} else {"
+        "  window.domAutomationController.send(false);"
+        "}",
+        worker_name.c_str());
+    bool fetch_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(shell(), script, &fetch_result);
+    return fetch_result && execute_result;
+  }
+
   // Called by |embedded_test_server()|.
   void MonitorRequest(const net::test_server::HttpRequest& request) {
     last_request_relative_url_ = request.relative_url;
@@ -317,6 +396,91 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
   EXPECT_EQ(net::ERR_FAILED,
             LoadBasicRequestOnUIThread(factory.get(), GetTestURL()));
+}
+
+// Make sure the window from |window.open()| can load XHR after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WindowOpenXHR) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
+  EXPECT_TRUE(CheckCanLoadHttpInWindowOpen("/title1.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title1.html");
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+  // Flush the interface to make sure the frame host has received error
+  // notification and the new URLLoaderFactoryBundle has been received by the
+  // frame.
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  EXPECT_TRUE(CheckCanLoadHttpInWindowOpen("/title2.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title2.html");
+}
+
+// Make sure worker fetch works after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WorkerFetch) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
+  EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title1.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title1.html");
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+  // Flush the interface to make sure the frame host has received error
+  // notification and the new URLLoaderFactoryBundle has been received by the
+  // frame.
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title2.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title2.html");
+}
+
+// Make sure multiple workers are tracked correctly and work after crash.
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL("/echo")));
+  EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title1.html"));
+  EXPECT_TRUE(CheckCanWorkerFetch("worker2", "/title1.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title1.html");
+
+  // Crash the NetworkService process. Existing interfaces should receive error
+  // notifications at some point.
+  SimulateNetworkServiceCrash();
+  // Flush the interface to make sure the error notification was received.
+  partition->FlushNetworkInterfaceForTesting();
+  // Flush the interface to make sure the frame host has received error
+  // notification and the new URLLoaderFactoryBundle has been received by the
+  // frame.
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  // Both workers should work after crash.
+  EXPECT_TRUE(CheckCanWorkerFetch("worker1", "/title2.html"));
+  EXPECT_TRUE(CheckCanWorkerFetch("worker2", "/title2.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title2.html");
+
+  // Terminate "worker1". "worker2" shouldn't be affected.
+  EXPECT_TRUE(TerminateWorker("worker1"));
+  EXPECT_TRUE(CheckCanWorkerFetch("worker2", "/title1.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title1.html");
+
+  // Crash the NetworkService process again. "worker2" should still work.
+  SimulateNetworkServiceCrash();
+  partition->FlushNetworkInterfaceForTesting();
+  main_frame()->FlushNetworkAndNavigationInterfacesForTesting();
+
+  EXPECT_TRUE(CheckCanWorkerFetch("worker2", "/title2.html"));
+  EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
 }  // namespace content

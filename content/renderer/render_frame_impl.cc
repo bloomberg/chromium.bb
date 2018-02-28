@@ -112,6 +112,7 @@
 #include "content/renderer/installedapp/related_apps_fetcher.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/weburlresponse_extradata_impl.h"
@@ -3399,8 +3400,9 @@ void RenderFrameImpl::HandleRendererDebugURL(const GURL& url) {
 void RenderFrameImpl::UpdateSubresourceLoaderFactories(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) {
   DCHECK(loader_factories_);
-  static_cast<URLLoaderFactoryBundle*>(loader_factories_.get())
-      ->Update(std::move(subresource_loaders));
+  DCHECK(loader_factories_->IsHostChildURLLoaderFactoryBundle());
+  static_cast<HostChildURLLoaderFactoryBundle*>(loader_factories_.get())
+      ->UpdateThisAndAllClones(std::move(subresource_loaders));
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
@@ -6562,10 +6564,11 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
         frame_->Parent() ? frame_->Parent() : frame_->Opener());
     if (creator) {
       auto bundle_info =
-          base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+          base::WrapUnique(static_cast<TrackedChildURLLoaderFactoryBundleInfo*>(
               creator->GetLoaderFactoryBundle()->Clone().release()));
-      loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-          std::move(bundle_info));
+      loader_factories_ =
+          base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
+              std::move(bundle_info));
     } else {
       SetupLoaderFactoryBundle(nullptr);
     }
@@ -6577,12 +6580,13 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
     std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
+  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>();
+
   // In some tests |render_thread| could be null.
   if (render_thread) {
-    loader_factories_ = render_thread->blink_platform_impl()
-                            ->CreateDefaultURLLoaderFactoryBundle();
-  } else {
-    loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
+    loader_factories_->Update(render_thread->blink_platform_impl()
+                                  ->CreateDefaultURLLoaderFactoryBundle()
+                                  ->PassInterface());
   }
 
   if (info) {
