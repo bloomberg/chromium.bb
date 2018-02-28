@@ -203,7 +203,7 @@
     "pointerup",
     "popstate",
     "progress",
-    "processorstatechange",
+    "processorerror",
     "push",
     "ratechange",
     "reading",

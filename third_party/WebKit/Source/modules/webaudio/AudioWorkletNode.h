@@ -9,6 +9,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParamMap.h"
 #include "modules/webaudio/AudioWorkletNodeOptions.h"
+#include "modules/webaudio/AudioWorkletProcessorErrorState.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {
@@ -20,13 +21,6 @@ class CrossThreadAudioParamInfo;
 class ExceptionState;
 class MessagePort;
 class ScriptState;
-
-enum class AudioWorkletProcessorState {
-  kPending,
-  kRunning,
-  kStopped,
-  kError,
-};
 
 // AudioWorkletNode is a user-facing interface of custom audio processor in
 // Web Audio API. The integration of WebAudio renderer is done via
@@ -66,7 +60,7 @@ class AudioWorkletHandler final : public AudioHandler {
   // the user-supplied |process()| method returns false.
   void FinishProcessorOnRenderThread();
 
-  void NotifyProcessorStateChange(AudioWorkletProcessorState);
+  void NotifyProcessorError(AudioWorkletProcessorErrorState);
 
  private:
   AudioWorkletHandler(
@@ -107,13 +101,12 @@ class AudioWorkletNode final : public AudioNode,
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
-  void SetProcessorState(AudioWorkletProcessorState);
-
   // IDL
   AudioParamMap* parameters() const;
   MessagePort* port() const;
-  String processorState() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror);
+
+  void FireProcessorError();
 
   virtual void Trace(blink::Visitor*);
 
@@ -126,7 +119,6 @@ class AudioWorkletNode final : public AudioNode,
 
   Member<AudioParamMap> parameter_map_;
   Member<MessagePort> node_port_;
-  AudioWorkletProcessorState processor_state_;
 };
 
 }  // namespace blink

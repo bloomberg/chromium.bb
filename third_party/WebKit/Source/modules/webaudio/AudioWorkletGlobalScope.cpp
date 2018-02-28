@@ -25,6 +25,7 @@
 #include "modules/webaudio/AudioParamDescriptor.h"
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
+#include "modules/webaudio/AudioWorkletProcessorErrorState.h"
 #include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
@@ -175,7 +176,7 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
     return nullptr;
   }
 
-  // ToImplWithTypeCheck() may return nullptr whenthe type does not match.
+  // ToImplWithTypeCheck() may return nullptr when the type does not match.
   AudioWorkletProcessor* processor =
       V8AudioWorkletProcessor::ToImplWithTypeCheck(isolate, result);
 
@@ -317,7 +318,7 @@ bool AudioWorkletGlobalScope::Process(
     // process() method call method call failed for some reason or an exception
     // was thrown by the user supplied code. Disable the processor to exclude
     // it from the subsequent rendering task.
-    processor->MarkNonRunnable();
+    processor->SetErrorState(AudioWorkletProcessorErrorState::kProcessError);
     return false;
   }
 

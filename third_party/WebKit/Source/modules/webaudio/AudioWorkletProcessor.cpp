@@ -37,9 +37,22 @@ bool AudioWorkletProcessor::Process(
     Vector<AudioBus*>* output_buses,
     HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map) {
   DCHECK(global_scope_->IsContextThread());
-  DCHECK(IsRunnable());
+  DCHECK(!hasErrorOccured());
   return global_scope_->Process(this, input_buses, output_buses,
                                 param_value_map);
+}
+
+void AudioWorkletProcessor::SetErrorState(
+    AudioWorkletProcessorErrorState error_state) {
+  error_state_ = error_state;
+}
+
+AudioWorkletProcessorErrorState AudioWorkletProcessor::GetErrorState() const {
+  return error_state_;
+}
+
+bool AudioWorkletProcessor::hasErrorOccured() const {
+  return error_state_ != AudioWorkletProcessorErrorState::kNoError;
 }
 
 MessagePort* AudioWorkletProcessor::port() const {

@@ -79,8 +79,8 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
 void AudioWorkletHandler::Process(size_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
 
-  // Render and update the node state when the processor is ready and runnable.
-  if (processor_ && processor_->IsRunnable()) {
+  // Render and update the node state when the processor is ready with no error.
+  if (processor_ && !processor_->hasErrorOccured()) {
     Vector<AudioBus*> inputBuses;
     Vector<AudioBus*> outputBuses;
     for (unsigned i = 0; i < NumberOfInputs(); ++i)
@@ -104,12 +104,12 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
     // Run the render code and check the state of processor. Finish the
     // processor if needed.
     if (!processor_->Process(&inputBuses, &outputBuses, &param_value_map_) ||
-        !processor_->IsRunnable()) {
+        processor_->hasErrorOccured()) {
       FinishProcessorOnRenderThread();
     }
   } else {
     // The initialization of handler or the associated processor might not be
-    // ready yet or it is in 'non-runnable' state. If so, zero out the connected
+    // ready yet or it is in the error state. If so, zero out the connected
     // output.
     for (unsigned i = 0; i < NumberOfOutputs(); ++i) {
       Output(i).Bus()->Zero();
@@ -149,30 +149,31 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
   DCHECK(!IsMainThread());
 
   // |processor| can be nullptr when the invocation of user-supplied constructor
-  // fails. That failure sets the processor to "error" state.
-  processor_ = processor;
-  AudioWorkletProcessorState new_state;
-  new_state = processor_ ? AudioWorkletProcessorState::kRunning
-                         : AudioWorkletProcessorState::kError;
-  PostCrossThreadTask(
-      *task_runner_, FROM_HERE,
-      CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
-                      WrapRefCounted(this), new_state));
+  // fails. That failure fires at the node's 'onprocessorerror' event handler.
+  if (processor) {
+    processor_ = processor;
+  } else {
+    PostCrossThreadTask(
+        *task_runner_, FROM_HERE,
+        CrossThreadBind(&AudioWorkletHandler::NotifyProcessorError,
+                        WrapRefCounted(this),
+                        AudioWorkletProcessorErrorState::kConstructionError));
+  }
 }
 
 void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   DCHECK(Context()->IsAudioThread());
 
-  // The non-runnable processor means that the processor stopped due to an
-  // exception thrown by the user-supplied code.
-  AudioWorkletProcessorState new_state;
-  new_state = processor_->IsRunnable()
-      ? AudioWorkletProcessorState::kStopped
-      : AudioWorkletProcessorState::kError;
-  PostCrossThreadTask(
-      *task_runner_, FROM_HERE,
-      CrossThreadBind(&AudioWorkletHandler::NotifyProcessorStateChange,
-                      WrapRefCounted(this), new_state));
+  // If the user-supplied code is not runnable (i.e. threw an exception)
+  // anymore after the process() call above. Invoke error on the main thread.
+  AudioWorkletProcessorErrorState error_state = processor_->GetErrorState();
+  if (error_state == AudioWorkletProcessorErrorState::kProcessError) {
+    PostCrossThreadTask(
+        *task_runner_, FROM_HERE,
+        CrossThreadBind(&AudioWorkletHandler::NotifyProcessorError,
+                        WrapRefCounted(this),
+                        error_state));
+  }
 
   // TODO(hongchan): After this point, The handler has no more pending activity
   // and ready for GC.
@@ -181,12 +182,13 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   tail_time_ = 0;
 }
 
-void AudioWorkletHandler::NotifyProcessorStateChange(
-    AudioWorkletProcessorState state) {
+void AudioWorkletHandler::NotifyProcessorError(
+    AudioWorkletProcessorErrorState error_state) {
   DCHECK(IsMainThread());
   if (!Context() || !Context()->GetExecutionContext() || !GetNode())
     return;
-  static_cast<AudioWorkletNode*>(GetNode())->SetProcessorState(state);
+
+  static_cast<AudioWorkletNode*>(GetNode())->FireProcessorError();
 }
 
 // ----------------------------------------------------------------
@@ -198,8 +200,7 @@ AudioWorkletNode::AudioWorkletNode(
     const Vector<CrossThreadAudioParamInfo> param_info_list,
     MessagePort* node_port)
     : AudioNode(context),
-      node_port_(node_port),
-      processor_state_(AudioWorkletProcessorState::kPending) {
+      node_port_(node_port) {
   HeapHashMap<String, Member<AudioParam>> audio_param_map;
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
@@ -348,49 +349,16 @@ bool AudioWorkletNode::HasPendingActivity() const {
   return !context()->IsContextClosed();
 }
 
-void AudioWorkletNode::SetProcessorState(AudioWorkletProcessorState new_state) {
-  DCHECK(IsMainThread());
-  switch (processor_state_) {
-    case AudioWorkletProcessorState::kPending:
-      DCHECK(new_state == AudioWorkletProcessorState::kRunning ||
-             new_state == AudioWorkletProcessorState::kError);
-      break;
-    case AudioWorkletProcessorState::kRunning:
-      DCHECK(new_state == AudioWorkletProcessorState::kStopped ||
-             new_state == AudioWorkletProcessorState::kError);
-      break;
-    case AudioWorkletProcessorState::kStopped:
-    case AudioWorkletProcessorState::kError:
-      NOTREACHED()
-          << "The state never changes once it reaches kStopped or kError.";
-      return;
-  }
-
-  processor_state_ = new_state;
-  DispatchEvent(Event::Create(EventTypeNames::processorstatechange));
-}
-
 AudioParamMap* AudioWorkletNode::parameters() const {
   return parameter_map_;
 }
 
-String AudioWorkletNode::processorState() const {
-  switch (processor_state_) {
-    case AudioWorkletProcessorState::kPending:
-      return "pending";
-    case AudioWorkletProcessorState::kRunning:
-      return "running";
-    case AudioWorkletProcessorState::kStopped:
-      return "stopped";
-    case AudioWorkletProcessorState::kError:
-      return "error";
-  }
-  NOTREACHED();
-  return g_empty_string;
-}
-
 MessagePort* AudioWorkletNode::port() const {
   return node_port_;
+}
+
+void AudioWorkletNode::FireProcessorError() {
+  DispatchEvent(Event::Create(EventTypeNames::processorerror));
 }
 
 AudioWorkletHandler& AudioWorkletNode::GetWorkletHandler() const {
