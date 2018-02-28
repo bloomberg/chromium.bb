@@ -1355,7 +1355,7 @@
     },
     'mojo_unittests': {
       'android_swarming': {
-        'hard_timeout': 180,
+        'hard_timeout': 300,
       },
     },
   },
