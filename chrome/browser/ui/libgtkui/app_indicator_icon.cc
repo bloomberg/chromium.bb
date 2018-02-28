@@ -82,33 +82,11 @@ app_indicator_set_icon_full_func app_indicator_set_icon_full = nullptr;
 app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path =
     nullptr;
 
-bool ShouldUseLibAppIndicator() {
-  // Only use libappindicator where it is needed to support dbus based status
-  // icons. In particular, libappindicator does not support a click action.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  switch (base::nix::GetDesktopEnvironment(env.get())) {
-    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE5:
-    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
-    case base::nix::DESKTOP_ENVIRONMENT_UNITY:
-      return true;
-    case base::nix::DESKTOP_ENVIRONMENT_CINNAMON:
-    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
-    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
-    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
-      return false;
-  }
-}
-
 void EnsureMethodsLoaded() {
   if (g_attempted_load)
     return;
 
   g_attempted_load = true;
-
-  if (!ShouldUseLibAppIndicator())
-    return;
 
   void* indicator_lib = nullptr;
 
