@@ -51,14 +51,12 @@ import org.chromium.chrome.browser.preferences.TextMessagePreference;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.Toast;
 
-import java.io.BufferedWriter;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -334,10 +332,10 @@ public class SavePasswordsPreferences
      * for firing the share intent or displays an error.
      * @param serializedPasswords A string with a CSV representation of the user's passwords.
      */
-    private void shareSerializedPasswords(String serializedPasswords) {
-        AsyncTask<String, Void, ExportResult> task = new AsyncTask<String, Void, ExportResult>() {
+    private void shareSerializedPasswords(byte[] serializedPasswords) {
+        AsyncTask<byte[], Void, ExportResult> task = new AsyncTask<byte[], Void, ExportResult>() {
             @Override
-            protected ExportResult doInBackground(String... serializedPasswords) {
+            protected ExportResult doInBackground(byte[]... serializedPasswords) {
                 assert serializedPasswords.length == 1;
                 // Record the time it took to read and serialise the passwords. This excludes the
                 // time to write them into a file, to be consistent with desktop (where writing is
@@ -382,9 +380,9 @@ public class SavePasswordsPreferences
         // they arrive.
         mExportPreparationStart = System.currentTimeMillis();
         PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
-                new Callback<String>() {
+                new Callback<byte[]>() {
                     @Override
-                    public void onResult(String serializedPasswords) {
+                    public void onResult(byte[] serializedPasswords) {
                         shareSerializedPasswords(serializedPasswords);
                     }
                 });
@@ -571,9 +569,9 @@ public class SavePasswordsPreferences
      * This method saves the contents of |serializedPasswords| into a temporary file and returns a
      * sharing URI for it. In case of failure, returns EMPTY. It should only be run on the
      * background thread of an AsyncTask, because it does I/O operations.
-     * @param serializedPasswords A string with serialized passwords in CSV format
+     * @param serializedPasswords A byte array with serialized passwords in CSV format
      */
-    private ExportResult exportPasswordsIntoFile(String serializedPasswords) {
+    private ExportResult exportPasswordsIntoFile(byte[] serializedPasswords) {
         // First ensure that the PASSWORDS_CACHE_DIR cache directory exists.
         File passwordsDir =
                 new File(ContextUtils.getApplicationContext().getCacheDir() + PASSWORDS_CACHE_DIR);
@@ -587,9 +585,9 @@ public class SavePasswordsPreferences
             return new ExportResult(e.getMessage());
         }
         tempFile.deleteOnExit();
-        try (BufferedWriter tempWriter = new BufferedWriter(new OutputStreamWriter(
-                     new FileOutputStream(tempFile), Charset.forName("UTF-8")))) {
-            tempWriter.write(serializedPasswords);
+        try (BufferedOutputStream outputStream =
+                        new BufferedOutputStream(new FileOutputStream(tempFile))) {
+            outputStream.write(serializedPasswords);
         } catch (IOException e) {
             return new ExportResult(e.getMessage());
         }

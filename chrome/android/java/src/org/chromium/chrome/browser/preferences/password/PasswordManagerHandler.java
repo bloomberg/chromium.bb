@@ -69,5 +69,5 @@ public interface PasswordManagerHandler {
      *
      * @param callback is called on completion, with the serialized passwords as argument.
      */
-    void serializePasswords(Callback<String> callback);
+    void serializePasswords(Callback<byte[]> callback);
 }

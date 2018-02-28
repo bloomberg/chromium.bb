@@ -72,7 +72,7 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
-    public void serializePasswords(Callback<String> callback) {
+    public void serializePasswords(Callback<byte[]> callback) {
         nativeHandleSerializePasswords(mNativePasswordUIViewAndroid, callback);
     }
 
@@ -116,5 +116,5 @@ public final class PasswordUIView implements PasswordManagerHandler {
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 
     private native void nativeHandleSerializePasswords(
-            long nativePasswordUIViewAndroid, Callback<String> callback);
+            long nativePasswordUIViewAndroid, Callback<byte[]> callback);
 }

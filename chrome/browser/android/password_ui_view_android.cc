@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/android/callback_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -213,7 +214,11 @@ void PasswordUIViewAndroid::PostSerializedPasswords(
       } else {
         JNIEnv* env = base::android::AttachCurrentThread();
         base::android::RunCallbackAndroid(
-            callback, ConvertUTF8ToJavaString(env, serialized_passwords));
+            callback,
+            base::android::ToJavaByteArray(
+                env,
+                reinterpret_cast<const uint8_t*>(serialized_passwords.data()),
+                serialized_passwords.size()));
       }
       break;
     }
