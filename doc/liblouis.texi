@@ -2465,26 +2465,56 @@ tests:
   - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
 @end example
 
-The three basic components of a test file are as follows:
+The four basic components of a test file are as follows:
 
 @table @samp
-@item tables
-A list containing table names, which the tests should be run against.
-This is usually just one table, but for some situations more than one
-table can be required.
-
-To test the @file{en-ueb-g1.ctb} table using unicode braille you could
-use the following definition:
+@item table
+A list containing table files, which the tests should be run against.
+This is usually just one file, but for some situations more than one
+file can be required. For example:
 
 @example
-table: [unicode.dis, en-ueb-g1.ctb]
+table: [hu-hu-g1.ctb, hyph_hu_HU.dic]
 @end example
 
-If you wanted to test the @file{eo-g1.ctb} table using brf notation
-then you would use the following definition:
+It is also possible to specify a table inline. @ref{Inline definition
+of tables} below explains how to do this.
+
+A third way to specify a table is by its metadata. A table query,
+which is essentially as list of ``features'', is matched against the
+@ref{Table Metadata,table metadata} defined inside the tables
+contained in @env{LOUIS_TABLEPATH}. Only the best match is used for
+the test.
+
+The syntax of the query is a variation of the @ref{Query
+Syntax,syntax} used for the @ref{lou_findTable,@code{lou_findTable}}
+function:
 
 @example
-table: [en-us-brf.dis, eo-g1.ctb]
+table:
+  locale: fr
+  grade: 1
+@end example
+
+@item display
+A display table, which should be used to encode braille in the
+test. This item is optional. If it is present it should be the first
+item of the file. If it is not present, the braille encoding of each
+test is determined by the table that is being tested.
+
+The next example shows how to test the @file{en-ueb-g1.ctb} table
+using ASCII notation (as defined in @file{en-ueb-g1.ctb} itself):
+
+@example
+table: [en-ueb-g1.ctb]
+@end example
+
+If you wanted to test the @file{en-ueb-g1.ctb} table using Unicode dot
+patterns then you would use the following definition:
+
+@example
+display: unicode.dis
+table: [en-ueb-g1.ctb]
 @end example
 
 @item flags
@@ -2688,6 +2718,7 @@ tests:
   - [..., ...]
 @end example
 
+@anchor{Inline definition of tables}
 @subsection Inline definition of tables
 When testing very specific opcode combinations it is sometimes tedious
 to create specific test tables just for that. Hence the YAML tests

@@ -1,0 +1,15 @@
+display: unicode.dis
+table:
+  locale: zh-CHN
+  __assert-match: zh_CHN.tbl # zh-chn.ctb
+tests:
+  - [八,⠃⠔]
+  - [白,⠃⠪]
+  - [门,⠍⠴]
+  - [特,⠞⠢]
+  - [丸,⠻]
+  - [鱼,⠬]
+  - [贵,⠛⠺]
+  - [兞,⠍⠖]
+  - [8,⠼⠓]
+  - [？,⠐⠄]

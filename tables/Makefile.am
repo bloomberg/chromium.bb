@@ -57,7 +57,6 @@ table_files = \
 	da-dk-g28l.ctb \
 	da-dk-octobraille.dis \
 	da-lt.ctb \
-	da.tbl \
 	de-ch-accents.cti \
 	de-chardefs6.cti \
 	de-chardefs8.cti \
@@ -72,7 +71,6 @@ table_files = \
 	de-de-g0.utb \
 	de-de-g1.ctb \
 	de-de-g2.ctb \
-	de_DE.tbl \
 	de-eurobrl6.dis \
 	de-eurobrl6u.dis \
 	de-g0-core.uti \
@@ -87,7 +85,6 @@ table_files = \
 	dra.tbl \
 	el.ctb \
 	el.tbl \
-	en_AS.tbl \
 	en_CA.ctb \
 	en_CA.tbl \
 	en-chess.ctb \
@@ -96,7 +93,6 @@ table_files = \
 	en-GB-g2.ctb \
 	en_GB.tbl \
 	en-in-g1.ctb \
-	en.tbl \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
@@ -146,7 +142,6 @@ table_files = \
 	fr_CA.tbl \
 	fr-fr-g1.utb \
 	Fr-Fr-g2.ctb \
-	fr_FR.tbl \
 	fr.tbl \
 	ga-g1.utb \
 	ga-g2.ctb \
@@ -274,7 +269,6 @@ table_files = \
 	nl-chardefs.uti \
 	nl-g0.uti \
 	nl-NL-g0.utb \
-	nl_NL.tbl \
 	nl.tbl \
 	no-no-8dot-fallback-6dot-g0.utb \
 	no-no-8dot.utb \

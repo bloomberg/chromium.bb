@@ -106,6 +106,14 @@ check_base(const char *tableList, const char *input, const char *expected,
 int
 check_cursor_pos(const char *tableList, const char *str, const int *expected_pos);
 
+/* Check if a string is hyphenated as expected, by passing the
+ * expected hyphenation position array.
+ *
+ * @return 0 if the hyphenation is as expected and 1 otherwise.
+ */
+int
+check_hyphenation_pos(const char *tableList, const char *str, const char *expected);
+
 /** Check if a string is hyphenated as expected.
  *
  * @return 0 if the hyphenation is as expected and 1 otherwise.
