@@ -20,7 +20,8 @@
 
 struct AutocompleteMatch;
 
-class MockAutocompleteProviderClient : public AutocompleteProviderClient {
+class MockAutocompleteProviderClient
+    : public testing::NiceMock<AutocompleteProviderClient> {
  public:
   MockAutocompleteProviderClient();
   ~MockAutocompleteProviderClient();

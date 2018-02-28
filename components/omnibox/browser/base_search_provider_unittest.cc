@@ -79,15 +79,15 @@ class BaseSearchProviderTest : public testing::Test {
             nullptr, std::unique_ptr<SearchTermsData>(new SearchTermsData),
             nullptr, std::unique_ptr<TemplateURLServiceClient>(), nullptr,
             nullptr, base::Closure()));
-    client_.reset(new NiceMock<MockAutocompleteProviderClient>());
+    client_.reset(new MockAutocompleteProviderClient());
     client_->set_template_url_service(std::move(template_url_service));
     provider_ = new NiceMock<TestBaseSearchProvider>(
         AutocompleteProvider::TYPE_SEARCH, client_.get());
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  scoped_refptr<NiceMock<TestBaseSearchProvider> > provider_;
-  std::unique_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
+  scoped_refptr<NiceMock<TestBaseSearchProvider>> provider_;
+  std::unique_ptr<MockAutocompleteProviderClient> client_;
 };
 
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {

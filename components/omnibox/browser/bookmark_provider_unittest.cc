@@ -186,8 +186,7 @@ BookmarkProviderTest::BookmarkProviderTest() {
 }
 
 void BookmarkProviderTest::SetUp() {
-  provider_client_.reset(
-      new testing::NiceMock<MockAutocompleteProviderClient>());
+  provider_client_.reset(new MockAutocompleteProviderClient());
   EXPECT_CALL(*provider_client_, GetBookmarkModel())
       .WillRepeatedly(testing::Return(model_.get()));
   EXPECT_CALL(*provider_client_, GetSchemeClassifier())

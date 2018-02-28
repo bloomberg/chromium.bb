@@ -37,8 +37,7 @@ namespace {
 
 // An autocomplete provider client that embeds the fake Physical Web data
 // source.
-class FakeAutocompleteProviderClient
-    : public testing::NiceMock<MockAutocompleteProviderClient> {
+class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
       : physical_web_data_source_(
