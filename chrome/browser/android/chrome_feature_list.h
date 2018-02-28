@@ -37,6 +37,7 @@ extern const base::Feature kChromeHomeSwipeLogicVelocity;
 extern const base::Feature kChromeMemexFeature;
 extern const base::Feature kChromeModernDesign;
 extern const base::Feature kChromeSmartSelection;
+extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContentSuggestionsThumbnailDominantColor;

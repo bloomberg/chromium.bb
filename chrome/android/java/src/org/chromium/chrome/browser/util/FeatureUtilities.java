@@ -147,6 +147,7 @@ public class FeatureUtilities {
     public static void cacheNativeFlags() {
         cacheChromeHomeEnabled();
         cacheSoleEnabled();
+        cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
         cacheChromeModernDesignEnabled();
 
@@ -189,6 +190,16 @@ public class FeatureUtilities {
         // Chrome Home doesn't work with tablets.
         if (DeviceFormFactor.isTablet()) return;
         ChromePreferenceManager.getInstance().clearObsoleteChromeHomePrefs();
+    }
+
+    /**
+     * Cache whether or not command line is enabled on non-rooted devices.
+     */
+    private static void cacheCommandLineOnNonRootedEnabled() {
+        boolean isCommandLineOnNonRootedEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED);
+        ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
+        manager.setCommandLineOnNonRootedEnabled(isCommandLineOnNonRootedEnabled);
     }
 
     /**

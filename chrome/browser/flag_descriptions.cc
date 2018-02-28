@@ -1933,6 +1933,11 @@ const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
 const char kEnableAndroidSpellcheckerDescription[] =
     "Enables use of the Android spellchecker.";
 
+const char kEnableCommandLineOnNonRootedName[] =
+    "Enable command line on non-rooted devices";
+const char kEnableCommandLineOnNoRootedDescription[] =
+    "Enable reading command line file on non-rooted devices (DANGEROUS).";
+
 const char kEnableContentSuggestionsNewFaviconServerName[] =
     "Get favicons for content suggestions from a new server.";
 const char kEnableContentSuggestionsNewFaviconServerDescription[] =
