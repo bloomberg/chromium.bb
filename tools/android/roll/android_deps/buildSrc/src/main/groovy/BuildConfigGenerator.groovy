@@ -196,7 +196,7 @@ class BuildConfigGenerator extends DefaultTask {
         Version: ${dependency.version}
         License: ${licenseString}
         License File: ${dependency.supportsAndroid ? "LICENSE" : "NOT_SHIPPED"}
-        Security Critical: no
+        Security Critical: ${dependency.supportsAndroid ? "yes" : "no"}
 
         Description:
         ${dependency.description}
