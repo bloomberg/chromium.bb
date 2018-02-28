@@ -87,7 +87,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
                        RequestPriority priority,
                        int32_t initial_send_window_size,
                        int32_t max_recv_window_size,
-                       const NetLogWithSource& net_log)
+                       const NetLogWithSource& net_log,
+                       const NetworkTrafficAnnotationTag& traffic_annotation)
     : type_(type),
       stream_id_(0),
       url_(url),
@@ -111,6 +112,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       send_bytes_(0),
       recv_bytes_(0),
       write_handler_guard_(false),
+      traffic_annotation_(traffic_annotation),
       weak_ptr_factory_(this) {
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||

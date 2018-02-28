@@ -19,6 +19,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/ssl/ssl_config.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace {
 
@@ -130,7 +131,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int rv = stream_request.StartRequest(
       net::SPDY_REQUEST_RESPONSE_STREAM, spdy_session,
       GURL("http://www.example.invalid/"), net::DEFAULT_PRIORITY,
-      bound_test_net_log.bound(), wait_for_start.callback());
+      bound_test_net_log.bound(), wait_for_start.callback(),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
 
   if (rv == net::ERR_IO_PENDING) {
     rv = wait_for_start.WaitForResult();

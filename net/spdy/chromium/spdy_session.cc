@@ -56,12 +56,33 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/url_constants.h"
 
 namespace net {
 
 namespace {
+
+constexpr net::NetworkTrafficAnnotationTag
+    kSpdySessionCommandsTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("spdy_session_control", R"(
+        semantics {
+          sender: "Spdy Session"
+          description:
+            "Sends commands to control an HTTP/2 session."
+          trigger:
+            "Required control commands like initiating stream, requesting "
+            "stream reset, changing priorities, etc."
+          data: "No user data."
+          destination: OTHER
+          destination_other:
+            "Any destination the HTTP/2 session is connected to."
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification: "Essential for network access."
+        }
+    )");
 
 const int kReadBufferSize = 8 * 1024;
 const int kDefaultConnectionAtRiskOfLossSeconds = 10;
@@ -594,12 +615,14 @@ SpdyStreamRequest::~SpdyStreamRequest() {
   CancelRequest();
 }
 
-int SpdyStreamRequest::StartRequest(SpdyStreamType type,
-                                    const base::WeakPtr<SpdySession>& session,
-                                    const GURL& url,
-                                    RequestPriority priority,
-                                    const NetLogWithSource& net_log,
-                                    CompletionOnceCallback callback) {
+int SpdyStreamRequest::StartRequest(
+    SpdyStreamType type,
+    const base::WeakPtr<SpdySession>& session,
+    const GURL& url,
+    RequestPriority priority,
+    const NetLogWithSource& net_log,
+    CompletionOnceCallback callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(session);
   DCHECK(!session_);
   DCHECK(!stream_);
@@ -611,6 +634,7 @@ int SpdyStreamRequest::StartRequest(SpdyStreamType type,
   priority_ = priority;
   net_log_ = net_log;
   callback_ = std::move(callback);
+  traffic_annotation_ = MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
   base::WeakPtr<SpdyStream> stream;
   int rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
@@ -671,6 +695,7 @@ void SpdyStreamRequest::Reset() {
   priority_ = MINIMUM_PRIORITY;
   net_log_ = NetLogWithSource();
   callback_.Reset();
+  traffic_annotation_.reset();
 }
 
 // static
@@ -945,7 +970,8 @@ void SpdySession::EnqueueStreamWrite(
     std::unique_ptr<SpdyBufferProducer> producer) {
   DCHECK(frame_type == SpdyFrameType::HEADERS ||
          frame_type == SpdyFrameType::DATA);
-  EnqueueWrite(stream->priority(), frame_type, std::move(producer), stream);
+  EnqueueWrite(stream->priority(), frame_type, std::move(producer), stream,
+               stream->traffic_annotation());
 }
 
 std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
@@ -1480,7 +1506,7 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   auto new_stream = std::make_unique<SpdyStream>(
       request.type(), GetWeakPtr(), request.url(), request.priority(),
       stream_initial_send_window_size_, stream_max_recv_window_size_,
-      request.net_log());
+      request.net_log(), request.traffic_annotation());
   *stream = new_stream->GetWeakPtr();
   InsertCreatedStream(std::move(new_stream));
 
@@ -1687,9 +1713,11 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                  stream_id),
       base::TimeDelta::FromSeconds(kPushedStreamLifetimeSeconds));
 
+  // TODO(https://crbug.com/656607): Add proper annotation here.
   auto stream = std::make_unique<SpdyStream>(
       SPDY_PUSH_STREAM, GetWeakPtr(), gurl, request_priority,
-      stream_initial_send_window_size_, stream_max_recv_window_size_, net_log_);
+      stream_initial_send_window_size_, stream_max_recv_window_size_, net_log_,
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
   stream->set_stream_id(stream_id);
 
   // Convert RequestPriority to a SpdyPriority to send in a PRIORITY frame.
@@ -1824,7 +1852,8 @@ void SpdySession::EnqueuePriorityFrame(SpdyStreamId stream_id,
   EnqueueWrite(HIGHEST, SpdyFrameType::PRIORITY,
                std::make_unique<SimpleBufferProducer>(
                    std::make_unique<SpdyBuffer>(std::move(frame))),
-               base::WeakPtr<SpdyStream>());
+               base::WeakPtr<SpdyStream>(),
+               kSpdySessionCommandsTrafficAnnotation);
 }
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
@@ -2034,7 +2063,8 @@ int SpdySession::DoWrite() {
     SpdyFrameType frame_type = SpdyFrameType::DATA;
     std::unique_ptr<SpdyBufferProducer> producer;
     base::WeakPtr<SpdyStream> stream;
-    if (!write_queue_.Dequeue(&frame_type, &producer, &stream)) {
+    if (!write_queue_.Dequeue(&frame_type, &producer, &stream,
+                              &in_flight_write_traffic_annotation)) {
       write_state_ = WRITE_STATE_IDLE;
       return ERR_IO_PENDING;
     }
@@ -2078,12 +2108,11 @@ int SpdySession::DoWrite() {
   // argument in a scoped_refptr<IOBuffer> (see crbug.com/232345).
   scoped_refptr<IOBuffer> write_io_buffer =
       in_flight_write_->GetIOBufferForRemainingData();
-  // TODO(crbug.com/656607:) Add proper annotation.
   return connection_->socket()->Write(
       write_io_buffer.get(), in_flight_write_->GetRemainingSize(),
       base::Bind(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
                  WRITE_STATE_DO_WRITE_COMPLETE),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      NetworkTrafficAnnotationTag(in_flight_write_traffic_annotation));
 }
 
 int SpdySession::DoWriteComplete(int result) {
@@ -2097,6 +2126,7 @@ int SpdySession::DoWriteComplete(int result) {
     in_flight_write_frame_type_ = SpdyFrameType::DATA;
     in_flight_write_frame_size_ = 0;
     in_flight_write_stream_.reset();
+    in_flight_write_traffic_annotation.reset();
     write_state_ = WRITE_STATE_DO_WRITE;
     DoDrainSession(static_cast<Error>(result), "Write error");
     return OK;
@@ -2377,17 +2407,21 @@ void SpdySession::EnqueueSessionWrite(
   auto buffer = std::make_unique<SpdyBuffer>(std::move(frame));
   EnqueueWrite(priority, frame_type,
                std::make_unique<SimpleBufferProducer>(std::move(buffer)),
-               base::WeakPtr<SpdyStream>());
+               base::WeakPtr<SpdyStream>(),
+               kSpdySessionCommandsTrafficAnnotation);
 }
 
-void SpdySession::EnqueueWrite(RequestPriority priority,
-                               SpdyFrameType frame_type,
-                               std::unique_ptr<SpdyBufferProducer> producer,
-                               const base::WeakPtr<SpdyStream>& stream) {
+void SpdySession::EnqueueWrite(
+    RequestPriority priority,
+    SpdyFrameType frame_type,
+    std::unique_ptr<SpdyBufferProducer> producer,
+    const base::WeakPtr<SpdyStream>& stream,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (availability_state_ == STATE_DRAINING)
     return;
 
-  write_queue_.Enqueue(priority, frame_type, std::move(producer), stream);
+  write_queue_.Enqueue(priority, frame_type, std::move(producer), stream,
+                       traffic_annotation);
   MaybePostWriteLoop();
 }
 

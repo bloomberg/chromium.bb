@@ -608,12 +608,14 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
+  // TODO(https://crbug.com/656607): Add proper annotation here.
   return spdy_stream_request_.StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
       GURL("https://" + endpoint_.ToString()), priority_,
       spdy_session->net_log(),
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStreamComplete(int result) {

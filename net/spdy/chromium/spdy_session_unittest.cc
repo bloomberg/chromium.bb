@@ -43,6 +43,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -434,14 +435,16 @@ TEST_F(SpdySessionTest, PendingStreamCancellingAnother) {
   ASSERT_EQ(ERR_IO_PENDING,
             request1.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_,
                                   test_url_, MEDIUM, NetLogWithSource(),
-                                  callback1.MakeCallback()));
+                                  callback1.MakeCallback(),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // |callback2| is never called.
   TestCompletionCallback callback2;
   ASSERT_EQ(
       ERR_IO_PENDING,
       request2->StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                             MEDIUM, NetLogWithSource(), callback2.callback()));
+                             MEDIUM, NetLogWithSource(), callback2.callback(),
+                             TRAFFIC_ANNOTATION_FOR_TESTS));
 
   callback1.SetRequestToDestroy(std::move(request2));
 
@@ -867,7 +870,8 @@ TEST_F(SpdySessionTest, CreateStreamAfterGoAway) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                        test_url_, MEDIUM, NetLogWithSource(),
-                                       CompletionOnceCallback());
+                                       CompletionOnceCallback(),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_FAILED));
 
   EXPECT_TRUE(session_);
@@ -1205,7 +1209,8 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
   EXPECT_EQ(
       ERR_IO_PENDING,
       request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                            MEDIUM, NetLogWithSource(), callback4.callback()));
+                            MEDIUM, NetLogWithSource(), callback4.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Streams 1-3 were created. 4th is stalled. No streams are active yet.
   EXPECT_EQ(0u, num_active_streams());
@@ -1306,9 +1311,9 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
   // Start request.
   SpdyStreamRequest request;
   TestCompletionCallback callback;
-  int rv =
-      request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                           MEDIUM, NetLogWithSource(), callback.callback());
+  int rv = request.StartRequest(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM,
+      NetLogWithSource(), callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Stream is stalled.
@@ -1376,7 +1381,8 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
   EXPECT_EQ(
       ERR_IO_PENDING,
       request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                            MEDIUM, NetLogWithSource(), callback2.callback()));
+                            MEDIUM, NetLogWithSource(), callback2.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(1u, num_created_streams());
   EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
@@ -1955,7 +1961,8 @@ TEST_F(SpdySessionTest, OnSettings) {
   ASSERT_EQ(ERR_IO_PENDING,
             request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                                  MEDIUM, NetLogWithSource(),
-                                 stream_releaser.MakeCallback(&request)));
+                                 stream_releaser.MakeCallback(&request),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 
@@ -2010,7 +2017,8 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   SpdyStreamRequest request;
   ASSERT_THAT(
       request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                           MEDIUM, NetLogWithSource(), callback->callback()),
+                           MEDIUM, NetLogWithSource(), callback->callback(),
+                           TRAFFIC_ANNOTATION_FOR_TESTS),
       IsError(ERR_IO_PENDING));
 
   // Release the first one, this will allow the second to be created.
@@ -2780,14 +2788,16 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   ASSERT_EQ(
       ERR_IO_PENDING,
       request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                            LOWEST, NetLogWithSource(), callback2.callback()));
+                            LOWEST, NetLogWithSource(), callback2.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   TestCompletionCallback callback3;
   SpdyStreamRequest request3;
   ASSERT_EQ(
       ERR_IO_PENDING,
       request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
-                            LOWEST, NetLogWithSource(), callback3.callback()));
+                            LOWEST, NetLogWithSource(), callback3.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(0u, num_active_streams());
   EXPECT_EQ(1u, num_created_streams());
@@ -2890,14 +2900,16 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   ASSERT_EQ(
       ERR_IO_PENDING,
       request2.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                            LOWEST, NetLogWithSource(), callback2.callback()));
+                            LOWEST, NetLogWithSource(), callback2.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   TestCompletionCallback callback3;
   SpdyStreamRequest request3;
   ASSERT_EQ(
       ERR_IO_PENDING,
       request3.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                            LOWEST, NetLogWithSource(), callback3.callback()));
+                            LOWEST, NetLogWithSource(), callback3.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_EQ(0u, num_active_streams());
   EXPECT_EQ(kInitialMaxConcurrentStreams, num_created_streams());
