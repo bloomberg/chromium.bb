@@ -207,16 +207,31 @@ TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsAuthorizedWithError) {
   std::unique_ptr<media::AudioOutputIPC> ipc =
       std::make_unique<MojoAudioOutputIPC>(NullAccessor());
 
+  ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId, Origin());
+
+  // Don't call OnDeviceAuthorized synchronously, should wait until we run the
+  // RunLoop.
   EXPECT_CALL(delegate,
               OnDeviceAuthorized(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL, _,
-                                 std::string()))
-      .WillOnce(Invoke([&](media::OutputDeviceStatus,
-                           const media::AudioParameters&, const std::string&) {
-        ipc->CloseStream();
-        ipc.reset();
-      }));
-  ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId, Origin());
+                                 std::string()));
   base::RunLoop().RunUntilIdle();
+  ipc->CloseStream();
+}
+
+TEST(MojoAudioOutputIPC,
+     CreateWithoutAuthorizationWithoutFactory_CallsAuthorizedWithError) {
+  base::MessageLoopForIO message_loop;
+  StrictMock<MockDelegate> delegate;
+
+  std::unique_ptr<media::AudioOutputIPC> ipc =
+      std::make_unique<MojoAudioOutputIPC>(NullAccessor());
+
+  ipc->CreateStream(&delegate, Params());
+
+  // No call to OnDeviceAuthorized since authotization wasn't explicitly
+  // requested.
+  base::RunLoop().RunUntilIdle();
+  ipc->CloseStream();
 }
 
 TEST(MojoAudioOutputIPC, DeviceAuthorized_Propagates) {
