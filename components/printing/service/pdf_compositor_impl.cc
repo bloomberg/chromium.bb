@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/stl_util.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -26,21 +25,6 @@ PdfCompositorImpl::PdfCompositorImpl(
     : service_ref_(std::move(service_ref)), creator_(creator) {}
 
 PdfCompositorImpl::~PdfCompositorImpl() = default;
-
-void PdfCompositorImpl::NotifyUnavailableSubframe(uint64_t frame_guid) {
-  // Add this frame into the map.
-  DCHECK(!base::ContainsKey(frame_info_map_, frame_guid));
-  auto& frame_info =
-      frame_info_map_.emplace(frame_guid, std::make_unique<FrameInfo>())
-          .first->second;
-  frame_info->composited = true;
-  // Set content to be nullptr so it will be replaced by an empty picture during
-  // deserialization of its parent.
-  frame_info->content = nullptr;
-
-  // Update the requests in case any of them might be waiting for this frame.
-  UpdateRequestsWithSubframeInfo(frame_guid, std::vector<uint64_t>());
-}
 
 void PdfCompositorImpl::AddSubframeContent(
     uint64_t frame_guid,
@@ -72,33 +56,6 @@ void PdfCompositorImpl::AddSubframeContent(
       pending_subframes.push_back(subframe_guid);
   }
 
-  // Update the requests in case any of them is waiting for this frame.
-  UpdateRequestsWithSubframeInfo(frame_guid, pending_subframes);
-}
-
-void PdfCompositorImpl::CompositePageToPdf(
-    uint64_t frame_guid,
-    uint32_t page_num,
-    mojo::ScopedSharedBufferHandle serialized_content,
-    const ContentToFrameMap& subframe_content_map,
-    mojom::PdfCompositor::CompositePageToPdfCallback callback) {
-  HandleCompositionRequest(frame_guid, page_num, std::move(serialized_content),
-                           subframe_content_map, std::move(callback));
-}
-
-void PdfCompositorImpl::CompositeDocumentToPdf(
-    uint64_t frame_guid,
-    mojo::ScopedSharedBufferHandle serialized_content,
-    const ContentToFrameMap& subframe_content_map,
-    mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
-  HandleCompositionRequest(frame_guid, base::nullopt,
-                           std::move(serialized_content), subframe_content_map,
-                           std::move(callback));
-}
-
-void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
-    uint64_t frame_guid,
-    const std::vector<uint64_t>& pending_subframes) {
   // Check for each request's pending list.
   for (auto it = requests_.begin(); it != requests_.end();) {
     auto& request = *it;
@@ -122,6 +79,26 @@ void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
     // If the request still has pending frames, keep waiting.
     ++it;
   }
+}
+
+void PdfCompositorImpl::CompositePageToPdf(
+    uint64_t frame_guid,
+    uint32_t page_num,
+    mojo::ScopedSharedBufferHandle serialized_content,
+    const ContentToFrameMap& subframe_content_map,
+    mojom::PdfCompositor::CompositePageToPdfCallback callback) {
+  HandleCompositionRequest(frame_guid, page_num, std::move(serialized_content),
+                           subframe_content_map, std::move(callback));
+}
+
+void PdfCompositorImpl::CompositeDocumentToPdf(
+    uint64_t frame_guid,
+    mojo::ScopedSharedBufferHandle serialized_content,
+    const ContentToFrameMap& subframe_content_map,
+    mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
+  HandleCompositionRequest(frame_guid, base::nullopt,
+                           std::move(serialized_content), subframe_content_map,
+                           std::move(callback));
 }
 
 bool PdfCompositorImpl::IsReadyToComposite(

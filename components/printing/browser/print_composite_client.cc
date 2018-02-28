@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/shared_memory_handle.h"
-#include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -48,22 +47,6 @@ bool PrintCompositeClient::OnMessageReceived(
   return handled;
 }
 
-void PrintCompositeClient::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  auto frame_guid = GenerateFrameGuid(render_frame_host->GetProcess()->GetID(),
-                                      render_frame_host->GetRoutingID());
-  auto iter = pending_subframe_cookies_.find(frame_guid);
-  if (iter != pending_subframe_cookies_.end()) {
-    // When a subframe we are expecting is deleted, we should notify pdf
-    // compositor service.
-    for (auto doc_cookie : iter->second) {
-      auto& compositor = GetCompositeRequest(doc_cookie);
-      compositor->NotifyUnavailableSubframe(frame_guid);
-    }
-    pending_subframe_cookies_.erase(iter);
-  }
-}
-
 void PrintCompositeClient::OnDidPrintFrameContent(
     content::RenderFrameHost* render_frame_host,
     int document_cookie,
@@ -72,6 +55,7 @@ void PrintCompositeClient::OnDidPrintFrameContent(
   // is done here. Most of it will be directly forwarded to pdf compositor
   // service.
   auto& compositor = GetCompositeRequest(document_cookie);
+  DCHECK(compositor.is_bound());
 
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
       params.metafile_data_handle, params.data_size,
@@ -82,12 +66,6 @@ void PrintCompositeClient::OnDidPrintFrameContent(
       frame_guid, std::move(buffer_handle),
       ConvertContentInfoMap(web_contents(), render_frame_host,
                             params.subframe_content_info));
-
-  // Update our internal states about this frame.
-  pending_subframe_cookies_[frame_guid].erase(document_cookie);
-  if (pending_subframe_cookies_[frame_guid].empty())
-    pending_subframe_cookies_.erase(frame_guid);
-  printed_subframes_[document_cookie].insert(frame_guid);
 }
 
 void PrintCompositeClient::PrintCrossProcessSubframe(
@@ -97,33 +75,9 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
   PrintMsg_PrintFrame_Params params;
   params.printable_area = rect;
   params.document_cookie = document_cookie;
-  uint64_t frame_guid = GenerateFrameGuid(subframe_host->GetProcess()->GetID(),
-                                          subframe_host->GetRoutingID());
-  if (subframe_host->IsRenderFrameLive()) {
-    auto subframe_iter = printed_subframes_.find(document_cookie);
-    if (subframe_iter != printed_subframes_.end() &&
-        base::ContainsKey(subframe_iter->second, frame_guid)) {
-      // If this frame is already printed, no need to print again.
-      return;
-    }
-
-    auto cookie_iter = pending_subframe_cookies_.find(frame_guid);
-    if (cookie_iter != pending_subframe_cookies_.end() &&
-        base::ContainsKey(cookie_iter->second, document_cookie)) {
-      // If this frame is being printed, no need to print again.
-      return;
-    }
-
-    // Send the request to the destination frame.
-    subframe_host->Send(
-        new PrintMsg_PrintFrameContent(subframe_host->GetRoutingID(), params));
-    pending_subframe_cookies_[frame_guid].insert(document_cookie);
-  } else {
-    // When the subframe is dead, no need to send message,
-    // just notify the service.
-    auto& compositor = GetCompositeRequest(document_cookie);
-    compositor->NotifyUnavailableSubframe(frame_guid);
-  }
+  // Send the request to the destination frame.
+  subframe_host->Send(
+      new PrintMsg_PrintFrameContent(subframe_host->GetRoutingID(), params));
 }
 
 void PrintCompositeClient::DoCompositePageToPdf(
@@ -195,8 +149,6 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
     printing::mojom::PdfCompositor::Status status,
     mojo::ScopedSharedBufferHandle handle) {
   RemoveCompositeRequest(document_cookie);
-  // Clear all stored printed subframes.
-  printed_subframes_.erase(document_cookie);
   std::move(callback).Run(status, std::move(handle));
 }
 
@@ -227,10 +179,8 @@ ContentToFrameMap PrintCompositeClient::ConvertContentInfoMap(
 
 mojom::PdfCompositorPtr& PrintCompositeClient::GetCompositeRequest(int cookie) {
   auto iter = compositor_map_.find(cookie);
-  if (iter != compositor_map_.end()) {
-    DCHECK(iter->second.is_bound());
+  if (iter != compositor_map_.end())
     return iter->second;
-  }
 
   auto iterator =
       compositor_map_.emplace(cookie, CreateCompositeRequest()).first;

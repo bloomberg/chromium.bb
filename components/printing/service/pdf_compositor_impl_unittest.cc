@@ -324,25 +324,4 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
                           std::move(subframe_content_map));
 }
 
-TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
-  MockPdfCompositorImpl impl;
-  // Page 0 with frame 3 has content 1, which refers to frame 8.
-  // When the content is not available, the request is not fulfilled.
-  ContentToFrameMap subframe_content_map;
-  subframe_content_map[1u] = 8u;
-  EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
-  impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10),
-      std::move(subframe_content_map),
-      base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback,
-                     base::Unretained(this)));
-  testing::Mock::VerifyAndClearExpectations(&impl);
-
-  // Notifies that frame 8's unavailable, the previous request should be
-  // fulfilled.
-  EXPECT_CALL(impl, OnFulfillRequest(3u, 0)).Times(1);
-  impl.NotifyUnavailableSubframe(8u);
-  testing::Mock::VerifyAndClearExpectations(&impl);
-}
-
 }  // namespace printing
