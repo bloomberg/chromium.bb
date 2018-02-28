@@ -316,6 +316,12 @@ def _GetPlatform():
     return 'mac'
 
 
+def _IsTargetOsIos():
+  """Returns true if the target_os specified in args.gn file is ios"""
+  build_args = _ParseArgsGnFile()
+  return 'target_os' in build_args and build_args['target_os'] == '"ios"'
+
+
 # TODO(crbug.com/759794): remove this function once tools get included to
 # Clang bundle:
 # https://chromium-review.googlesource.com/c/chromium/src/+/688221
@@ -342,13 +348,13 @@ def DownloadCoverageToolsIfNeeded():
           package_version = stamp_file_line.rstrip()
           target_os = ''
 
-        if target_os and platform != target_os:
+        if target_os and target_os != 'ios' and platform != target_os:
           continue
 
         clang_revision_str, clang_sub_revision_str = package_version.split('-')
         return int(clang_revision_str), int(clang_sub_revision_str)
 
-    assert False, 'Coverage is only supported on target_os - linux, mac.'
+    assert False, 'Coverage is only supported on target_os - linux, mac and ios'
 
   platform = _GetPlatform()
   clang_revision, clang_sub_revision = _GetRevisionFromStampFile(
@@ -416,6 +422,11 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   ]
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
+  if _IsTargetOsIos():
+    # iOS binaries are universal binaries, and it requires specifying the
+    # architecture to use.
+    subprocess_cmd.append('-arch=x86_64')
+
   subprocess_cmd.extend(filters)
   subprocess.check_call(subprocess_cmd)
   logging.debug('Finished running "llvm-cov show" command')
@@ -751,13 +762,33 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
     if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
       os.remove(os.path.join(OUTPUT_DIR, file_or_dir))
 
+  profraw_file_paths = []
+
   # Run all test targets to generate profraw data files.
   for target, command in zip(targets, commands):
-    _ExecuteCommand(target, command)
+    output_file_name = os.extsep.join([target + '_output', 'txt'])
+    output_file_path = os.path.join(OUTPUT_DIR, output_file_name)
+    logging.info('Running command: "%s", the output is redirected to "%s"',
+                 command, output_file_path)
+
+    if _IsIosCommand(command):
+      # On iOS platform, due to lack of write permissions, profraw files are
+      # generated outside of the OUTPUT_DIR, and the exact paths are contained
+      # in the output of the command execution.
+      output = _ExecuteIosCommand(target, command)
+      profraw_file_paths.append(_GetProfrawDataFileByParsingOutput(output))
+    else:
+      # On other platforms, profraw files are generated inside the OUTPUT_DIR.
+      output = _ExecuteCommand(target, command)
+
+    with open(output_file_path, 'w') as output_file:
+      output_file.write(output)
 
   logging.debug('Finished executing the test commands')
 
-  profraw_file_paths = []
+  if _IsTargetOsIos():
+    return profraw_file_paths
+
   for file_or_dir in os.listdir(OUTPUT_DIR):
     if file_or_dir.endswith(PROFRAW_FILE_EXTENSION):
       profraw_file_paths.append(os.path.join(OUTPUT_DIR, file_or_dir))
@@ -775,12 +806,7 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
 
 
 def _ExecuteCommand(target, command):
-  """Runs a single command and generates a profraw data file.
-
-  Args:
-    target: A target built with coverage instrumentation.
-    command: A command used to run the target.
-  """
+  """Runs a single command and generates a profraw data file."""
   # Per Clang "Source-based Code Coverage" doc:
   # "%Nm" expands out to the instrumented binary's signature. When this pattern
   # is specified, the runtime creates a pool of N raw profiles which are used
@@ -796,15 +822,58 @@ def _ExecuteCommand(target, command):
       [target, '%4m', PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(OUTPUT_DIR,
                                             expected_profraw_file_name)
-  output_file_name = os.extsep.join([target + '_output', 'txt'])
-  output_file_path = os.path.join(OUTPUT_DIR, output_file_name)
 
-  logging.info('Running command: "%s", the output is redirected to "%s"',
-               command, output_file_path)
-  output = subprocess.check_output(
-      command.split(), env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
-  with open(output_file_path, 'w') as output_file:
-    output_file.write(output)
+  try:
+    output = subprocess.check_output(
+        command.split(), env={'LLVM_PROFILE_FILE': expected_profraw_file_path})
+  except subprocess.CalledProcessError as e:
+    output = e.output
+    logging.warning('Command: "%s" exited with non-zero return code', command)
+
+  return output
+
+
+def _ExecuteIosCommand(target, command):
+  """Runs a single iOS command and generates a profraw data file.
+
+  iOS application doesn't have write access to folders outside of the app, so
+  it's impossible to instruct the app to flush the profraw data file to the
+  desired location. The profraw data file will be generated somewhere within the
+  application's Documents folder, and the full path can be obtained by parsing
+  the output.
+  """
+  assert _IsIosCommand(command)
+
+  try:
+    output = subprocess.check_output(command.split())
+  except subprocess.CalledProcessError as e:
+    # iossim emits non-zero return code even if tests run successfully, so
+    # ignore the return code.
+    output = e.output
+
+  return output
+
+
+def _GetProfrawDataFileByParsingOutput(output):
+  """Returns the path to the profraw data file obtained by parsing the output.
+
+  The output of running the test target has no format, but it is guaranteed to
+  have a single line containing the path to the generated profraw data file.
+  NOTE: This should only be called when target os is iOS.
+  """
+  assert _IsTargetOsIos()
+
+  output_by_lines = ''.join(output).split('\n')
+  profraw_file_identifier = 'Coverage data at '
+
+  for line in output_by_lines:
+    if profraw_file_identifier in line:
+      profraw_file_path = line.split(profraw_file_identifier)[1][:-1]
+      return profraw_file_path
+
+  assert False, ('No profraw data file was generated, did you call '
+                 'coverage_util::ConfigureCoverageReportPath() in test setup? '
+                 'Please refer to base/test/test_support_ios.mm for example.')
 
 
 def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
@@ -853,6 +922,11 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
   ]
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
+  if _IsTargetOsIos():
+    # iOS binaries are universal binaries, and it requires specifying the
+    # architecture to use.
+    subprocess_cmd.append('-arch=x86_64')
+
   subprocess_cmd.extend(filters)
 
   json_output = json.loads(subprocess.check_output(subprocess_cmd))
@@ -887,6 +961,9 @@ def _GetBinaryPath(command):
   2. Use xvfb.
     2.1. "python testing/xvfb.py out/coverage/url_unittests <arguments>"
     2.2. "testing/xvfb.py out/coverage/url_unittests <arguments>"
+  3. Use iossim to run tests on iOS platform.
+    3.1. "out/Coverage-iphonesimulator/iossim
+          out/Coverage-iphonesimulator/url_unittests.app <arguments>"
 
   Args:
     command: A command used to run a target.
@@ -905,7 +982,19 @@ def _GetBinaryPath(command):
   if os.path.basename(command_parts[0]) == xvfb_script_name:
     return command_parts[1]
 
+  if _IsIosCommand(command):
+    # For a given application bundle, the binary resides in the bundle and has
+    # the same name with the application without the .app extension.
+    app_path = command_parts[1]
+    app_name = os.path.splitext(os.path.basename(app_path))[0]
+    return os.path.join(app_path, app_name)
+
   return command.split()[0]
+
+
+def _IsIosCommand(command):
+  """Returns true if command is used to run tests on iOS platform."""
+  return os.path.basename(command.split()[0]) == 'iossim'
 
 
 def _VerifyTargetExecutablesAreInBuildDirectory(commands):
