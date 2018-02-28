@@ -45,6 +45,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/LinkHighlight.h"
+#include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/compositing/CompositedLayerRasterInvalidator.h"
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -71,10 +72,6 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
-
-#ifndef NDEBUG
-#include "platform/graphics/LoggingCanvas.h"
-#endif
 
 namespace blink {
 
@@ -881,7 +878,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     json->SetValue("layerOffset", PointAsJSONArray(layer_state_->offset));
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   if (DrawsContent() && (flags & kLayerTreeIncludesPaintRecords))
     json->SetValue("paintRecord", RecordAsJSON(*CapturePaintRecord()));
 #endif

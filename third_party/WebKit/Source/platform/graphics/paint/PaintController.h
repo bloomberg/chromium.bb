@@ -202,9 +202,7 @@ class PLATFORM_EXPORT PaintController {
 
 #if DCHECK_IS_ON()
   void ShowDebugData() const;
-#ifndef NDEBUG
   void ShowDebugDataWithRecords() const;
-#endif
 #endif
 
   void SetTracksRasterInvalidations(bool);
