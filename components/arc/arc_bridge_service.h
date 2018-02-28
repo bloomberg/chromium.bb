@@ -81,6 +81,7 @@ class VoiceInteractionArcHomeHost;
 class VoiceInteractionArcHomeInstance;
 class VoiceInteractionFrameworkHost;
 class VoiceInteractionFrameworkInstance;
+class VolumeMounterHost;
 class VolumeMounterInstance;
 class WallpaperHost;
 class WallpaperInstance;
@@ -213,7 +214,8 @@ class ArcBridgeService {
   voice_interaction_framework() {
     return &voice_interaction_framework_;
   }
-  ConnectionHolder<mojom::VolumeMounterInstance>* volume_mounter() {
+  ConnectionHolder<mojom::VolumeMounterInstance, mojom::VolumeMounterHost>*
+  volume_mounter() {
     return &volume_mounter_;
   }
   ConnectionHolder<mojom::WallpaperInstance, mojom::WallpaperHost>*
@@ -274,7 +276,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::VoiceInteractionFrameworkInstance,
                    mojom::VoiceInteractionFrameworkHost>
       voice_interaction_framework_;
-  ConnectionHolder<mojom::VolumeMounterInstance> volume_mounter_;
+  ConnectionHolder<mojom::VolumeMounterInstance, mojom::VolumeMounterHost>
+      volume_mounter_;
   ConnectionHolder<mojom::WallpaperInstance, mojom::WallpaperHost> wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
