@@ -37,7 +37,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/prefs/pref_service.h"
-#include "google_apis/gaia/identity_provider.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -209,7 +209,7 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
   return observer_for_testing_ ||
          ::autofill::IsCreditCardUploadEnabled(
              client_->GetPrefs(), client_->GetSyncService(),
-             client_->GetIdentityProvider()->GetActiveUsername());
+             client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
 }
 
 void CreditCardSaveManager::OnDidUploadCard(
