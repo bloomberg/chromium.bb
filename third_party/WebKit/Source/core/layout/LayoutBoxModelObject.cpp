@@ -112,7 +112,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
 
   // TODO(flackr): When we correctly clip the scrolling contents layer we can
   // paint locally equivalent backgrounds into it. https://crbug.com/645957
-  if (!Style()->HasAutoClip())
+  if (HasClip())
     return kBackgroundPaintInGraphicsLayer;
 
   // TODO(flackr): Remove this when box shadows are still painted correctly when

@@ -66,56 +66,93 @@ TEST_F(PaintLayerScrollableAreaTest,
       true);
   SetBodyInnerHTML(R"HTML(
     <style>
-    .scroller { overflow: scroll; will-change: transform; width: 300px;
-    height: 300px;} .spacer { height: 1000px; }
-    #scroller13::-webkit-scrollbar { width: 13px; height: 13px;}
+      .scroller {
+        overflow: scroll;
+        will-change: transform;
+        width: 300px;
+        height: 300px;
+      }
+      .spacer { height: 1000px; }
+      #scroller13::-webkit-scrollbar {
+        width: 13px;
+        height: 13px;
+      }
     </style>
     <div id='scroller1' class='scroller' style='background: white local;'>
-        <div id='negative-composited-child' style='background-color: red;
-    width: 1px; height: 1px; position: absolute; backface-visibility:
-    hidden; z-index: -1'></div>
-        <div class='spacer'></div>
+      <div id='negative-composited-child' style='background-color: red;
+          width: 1px; height: 1px; position: absolute;
+          backface-visibility: hidden; z-index: -1'></div>
+      <div class='spacer'></div>
     </div>
-    <div id='scroller2' class='scroller' style='background: white
-    content-box; padding: 10px;'><div class='spacer'></div></div>
-    <div id='scroller3' class='scroller' style='background: white local
-    content-box; padding: 10px;'><div class='spacer'></div></div>
-    <div id='scroller4' class='scroller' style='background:
-    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg), white local;'><div
-    class='spacer'></div></div>
-    <div id='scroller5' class='scroller' style='background:
-    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white
-    local;'><div class='spacer'></div></div>
-    <div id='scroller6' class='scroller' style='background:
-    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white
-    padding-box; padding: 10px;'><div class='spacer'></div></div>
-    <div id='scroller7' class='scroller' style='background:
-    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white
-    content-box; padding: 10px;'><div class='spacer'></div></div>
-    <div id='scroller8' class='scroller' style='background: white
-    border-box;'><div class='spacer'></div></div>
-    <div id='scroller9' class='scroller' style='background: white
-    border-box; border: 10px solid black;'><div class='spacer'></div></div>
-    <div id='scroller10' class='scroller' style='background: white
-    border-box; border: 10px solid rgba(0, 0, 0, 0.5);'><div
-    class='spacer'></div></div>
-    <div id='scroller11' class='scroller' style='background: white
-    content-box;'><div class='spacer'></div></div>
-    <div id='scroller12' class='scroller' style='background: white
-    content-box; padding: 10px;'><div class='spacer'></div></div>
-    <div id='scroller13' class='scroller' style='background: white
-    border-box;'><div class='spacer'></div></div>
-    <div id='scroller14' class='scroller' style='background: white; border:
-    1px solid black; outline: 1px solid blue; outline-offset: -1px;'><div
-    class='spacer'></div></div>
-    <div id='scroller15' class='scroller' style='background: white; border:
-    1px solid black; outline: 1px solid blue; outline-offset: -2px;'><div
-    class='spacer'></div></div>
-    <div id='scroller16' class='scroller' style='background: white; clip:
-    rect(0px,10px,10px,0px);'><div class='spacer'></div></div>
-    <div id='scroller17' class='scroller' style='background:
-    rgba(255, 255, 255, 0.5) border-box; border: 5px solid
-    rgba(0, 0, 0, 0.5);'><div class='spacer'></div></div>
+    <div id='scroller2' class='scroller' style='background: white content-box;
+        padding: 10px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller3' class='scroller'
+        style='background: white local content-box; padding: 10px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller4' class='scroller'
+        style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg),
+        white local;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller5' class='scroller'
+        style='background:
+        url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white local;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller6' class='scroller'
+        style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg)
+        local, white padding-box; padding: 10px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller7' class='scroller'
+        style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg)
+        local, white content-box; padding: 10px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller8' class='scroller' style='background: white border-box;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller9' class='scroller' style='background: white border-box;
+        border: 10px solid black;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller10' class='scroller' style='background: white border-box;
+        border: 10px solid rgba(0, 0, 0, 0.5);'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller11' class='scroller'
+        style='background: white content-box;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller12' class='scroller' style='background: white content-box;
+        padding: 10px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller13' class='scroller' style='background: white border-box;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller14' class='scroller' style='background: white;
+        border: 1px solid black; outline: 1px solid blue;
+        outline-offset: -1px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller15' class='scroller' style='background: white;
+        border: 1px solid black; outline: 1px solid blue;
+        outline-offset: -2px;'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller16' class='scroller' style='position: absolute;
+        background: white; clip: rect(0px,10px,10px,0px);'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller17' class='scroller'
+        style='background: rgba(255, 255, 255, 0.5) border-box;
+        border: 5px solid rgba(0, 0, 0, 0.5);'>
+      <div class='spacer'></div>
+    </div>
   )HTML");
 
   // #scroller1 cannot paint background into scrolling contents layer because it
