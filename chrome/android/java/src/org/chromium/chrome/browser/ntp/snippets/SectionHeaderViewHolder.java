@@ -12,6 +12,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
@@ -75,6 +76,8 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder implements Vie
     public void onClick(View view) {
         assert mHeader.isExpandable() : "onClick() is called on a non-expandable section header.";
         mHeader.toggleHeader();
+        SuggestionsMetrics.recordExpandableHeaderTapped(mHeader.isExpanded());
+        SuggestionsMetrics.recordArticlesListVisible();
     }
 
     /**
