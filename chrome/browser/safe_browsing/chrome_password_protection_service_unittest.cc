@@ -304,8 +304,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
-  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
-      SigninManagerFactory::GetForProfile(profile()));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
                    std::string(kTestAccountID), std::string(kTestEmail));
@@ -388,8 +388,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseDetectedUserEventRecorded) {
   EnableGaiaPasswordReuseReporting();
   // Configure sync account type to GMAIL.
-  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
-      SigninManagerFactory::GetForProfile(profile()));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
                    std::string(kTestAccountID), std::string(kTestEmail));
@@ -425,8 +425,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EnableGaiaPasswordReuseReporting();
 
   // Configure sync account type to GMAIL.
-  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
-      SigninManagerFactory::GetForProfile(profile()));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound),
                    std::string(kTestAccountID), std::string(kTestEmail));
@@ -491,8 +491,8 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetChangePasswordURL) {
-  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
-      SigninManagerFactory::GetForProfile(profile()));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile());
   signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
   SetUpSyncAccount("example.com", std::string(kTestAccountID),
                    std::string(kTestEmail));

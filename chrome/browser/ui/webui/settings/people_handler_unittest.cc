@@ -198,8 +198,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     error_ = GoogleServiceAuthError::AuthErrorNone();
 
     // Sign in the user.
-    mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile()));
+    mock_signin_ = SigninManagerFactory::GetForProfile(profile());
     std::string username = GetTestUser();
     if (!username.empty())
       mock_signin_->SetAuthenticatedAccountInfo(username, username);
@@ -337,7 +336,7 @@ TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.
-  SigninManager* manager = static_cast<SigninManager*>(mock_signin_);
+  SigninManager* manager = SigninManager::FromSigninManagerBase(mock_signin_);
   manager->SignOut(signin_metrics::SIGNOUT_TEST,
                    signin_metrics::SignoutDelete::IGNORE_METRIC);
   base::ListValue list_args;

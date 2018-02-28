@@ -81,8 +81,7 @@ class DesktopIOSPromotionUtilTest : public testing::Test {
     profile_ = profile_builder.Build();
     sync_service_ = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetForProfile(profile_.get()));
-    mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile_.get()));
+    mock_signin_ = SigninManagerFactory::GetForProfile(profile_.get());
     mock_signin_->SetAuthenticatedAccountInfo("test", "test");
   }
 

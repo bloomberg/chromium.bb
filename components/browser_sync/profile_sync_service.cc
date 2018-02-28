@@ -1123,7 +1123,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // On every platform except ChromeOS, sign out the user after a dashboard
       // clear.
       if (!IsLocalSyncEnabled()) {
-        static_cast<SigninManager*>(signin_->GetOriginal())
+        SigninManager::FromSigninManagerBase(signin_->GetOriginal())
             ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
                       signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
