@@ -245,6 +245,9 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.ht
 crbug.com/724697 overflow/overflow-basic-002.html [ Failure ]
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
+### external/wpt/css/css-tables/
+crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
