@@ -366,9 +366,13 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(const BeginFrameAck& ack,
   }
   if (display_time.is_null()) {
     // This can sometimes occur for the first few frames when capture starts,
-    // but should not happen thereafter.
-    DLOG(WARNING) << "OnFrameDamaged() called without prior OnBeginFrame().";
-    return;
+    // or whenever Surfaces are changed; but should not otherwise happen. If
+    // this is too frequent, the oracle will be making suboptimal decisions.
+    VLOG(1)
+        << "OnFrameDamaged() called without prior OnBeginFrame() for source_id="
+        << ack.source_id << " and sequence_number=" << ack.sequence_number
+        << ". Using NOW as a substitute display time.";
+    display_time = clock_->NowTicks();
   }
 
   if (frame_size == oracle_.source_size()) {
