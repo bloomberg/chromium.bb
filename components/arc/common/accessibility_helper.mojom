@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 10
+// Next MinVersion: 11
 
 module arc.mojom;
 
@@ -244,6 +244,17 @@ enum AccessibilityFilterType {
   [MinVersion=2] WHITELISTED_PACKAGE_NAME
 };
 
+[Extensible]
+enum AccessibilityNotificationStateType {
+  // Surface for a notification is created. OnNotificationStateChanged of
+  // SURFACE_CREATED for a notification must be called before
+  // OnAccessibilityEvent of WINDOW_STATE_CHANGED for it is called.
+  SURFACE_CREATED,
+
+  // Surface for a notification is removed.
+  SURFACE_REMOVED,
+};
+
 // AccessibilityEventData is a struct to contain info of
 // AccessibilityEvent in Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
@@ -280,7 +291,7 @@ struct AccessibilityActionData {
   [MinVersion=6] int32 window_id;
 };
 
-// Next method ID: 2
+// Next method ID: 3
 interface AccessibilityHelperHost {
   OnAccessibilityEventDeprecated@0(AccessibilityEventType event_type,
                                    AccessibilityNodeInfoData? event_source);
@@ -288,6 +299,11 @@ interface AccessibilityHelperHost {
   // OnAccessibilityEvent is called when a converted Android accessibility event
   // is sent from Android.
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
+
+  // OnNotificationStateChanged is called when state of a notification is
+  // changed, e.g. surface for a notification is created.
+  [MinVersion=10] OnNotificationStateChanged@2(
+      string notification_key, AccessibilityNotificationStateType state);
 };
 
 // Next method ID: 8
