@@ -5,8 +5,6 @@
 source_set("toolbar") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "legacy_toolbar_coordinator.h",
-    "legacy_toolbar_coordinator.mm",
     "toolbar_model_delegate_ios.h",
     "toolbar_model_delegate_ios.mm",
   ]

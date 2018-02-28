@@ -105,9 +105,11 @@ class OmniboxPerfTest : public PerfTest {
     [[[toolbarDelegate stub] andReturnValue:OCMOCK_VALUE(model_for_mock)]
         toolbarModel];
 
-    coordinator_ = [[ToolbarCoordinator alloc] init];
+    coordinator_ = [[ToolbarCoordinator alloc]
+        initWithToolsMenuConfigurationProvider:nil
+                                    dispatcher:nil
+                                  browserState:chrome_browser_state_.get()];
     coordinator_.delegate = toolbarDelegate;
-    coordinator_.browserState = chrome_browser_state_.get();
     coordinator_.webStateList = web_state_list_.get();
     [coordinator_ start];
 

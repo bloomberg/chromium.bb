@@ -202,8 +202,8 @@
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinator_adaptor.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
-#include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
@@ -584,7 +584,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   SnackbarCoordinator* _snackbarCoordinator;
 
   // Coordinator for the toolbar.
-  LegacyToolbarCoordinator* _toolbarCoordinator;
+  ToolbarCoordinator* _toolbarCoordinator;
 
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
@@ -2037,12 +2037,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [adaptor addToolbarCoordinator:topToolbarCoordinator];
     // TODO(crbug.com/800330): Add secondary toolbar.
   } else {
-    _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
-            initWithBaseViewController:self
-        toolsMenuConfigurationProvider:self
-                            dispatcher:self.dispatcher
-                          browserState:_browserState
-                          webStateList:[_model webStateList]];
+    _toolbarCoordinator = [[ToolbarCoordinator alloc]
+        initWithToolsMenuConfigurationProvider:self
+                                    dispatcher:self.dispatcher
+                                  browserState:_browserState];
+    _toolbarCoordinator.webStateList = [_model webStateList];
     _toolbarCoordinator.delegate = self;
     _toolbarCoordinator.URLLoader = self;
     self.primaryToolbarCoordinator = _toolbarCoordinator;
