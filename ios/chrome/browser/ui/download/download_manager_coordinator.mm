@@ -80,8 +80,8 @@
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                didCreateDownload:(nonnull web::DownloadTask*)download
-               webStateIsVisible:(BOOL)vebStateIsVisible {
-  if (!vebStateIsVisible) {
+               webStateIsVisible:(BOOL)webStateIsVisible {
+  if (!webStateIsVisible) {
     // Do nothing if a background Tab requested download UI presentation.
     return;
   }
