@@ -18523,6 +18523,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Suggestions.ExpandableHeader.Collapsed">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.com</owner>
+  <description>
+    Android: The suggestions section is collapsed by user click on the section
+    header.
+  </description>
+</action>
+
+<action name="Suggestions.ExpandableHeader.Expanded">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.com</owner>
+  <description>
+    Android: The suggestions section is expanded by user click on the section
+    header.
+  </description>
+</action>
+
 <action name="Suggestions.FirstTimeSurfaceVisible">
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
