@@ -635,6 +635,13 @@ void WebrtcTransport::OnIceConnectionChange(
       new_state == webrtc::PeerConnectionInterface::kIceConnectionConnected) {
     connected_ = true;
     event_handler_->OnWebrtcTransportConnected();
+  } else if (connected_ &&
+             new_state ==
+                 webrtc::PeerConnectionInterface::kIceConnectionDisconnected &&
+             transport_context_->role() == TransportRole::SERVER) {
+    connected_ = false;
+    want_ice_restart_ = true;
+    RequestNegotiation();
   }
 }
 
@@ -699,6 +706,11 @@ void WebrtcTransport::SendOffer() {
       webrtc::MediaConstraintsInterface::kValueFalse);
   offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp,
                             webrtc::MediaConstraintsInterface::kValueTrue);
+  if (want_ice_restart_) {
+    offer_config.AddMandatory(webrtc::MediaConstraintsInterface::kIceRestart,
+                              webrtc::MediaConstraintsInterface::kValueTrue);
+    want_ice_restart_ = false;
+  }
   peer_connection()->CreateOffer(
       CreateSessionDescriptionObserver::Create(
           base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
