@@ -90,6 +90,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "download_manager_egtest.mm",
     "pass_kit_egtest.mm",
   ]
 
@@ -105,6 +106,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//ios/web/public",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
