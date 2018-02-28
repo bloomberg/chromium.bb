@@ -78,10 +78,6 @@ namespace base {
 class BaseTimerTaskInternal;
 class TickClock;
 
-// TODO(gab): Removing this fwd-decl causes IWYU failures in other headers,
-// remove it in a follow- up CL.
-class SingleThreadTaskRunner;
-
 //-----------------------------------------------------------------------------
 // This class wraps TaskRunner::PostDelayedTask to manage delayed and repeating
 // tasks. See meta comment above for thread-safety requirements.
