@@ -56,22 +56,18 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   // total to take os_accomodation into account.
   const double kTemporaryPoolSizeRatio = 1.0 / 3.0;  // 33%
 
-  // The fraction of the device's storage the browser attempts to
+  // The amount of the device's storage the browser attempts to
   // keep free. If there is less than this amount of storage free
   // on the device, Chrome will grant 0 quota to origins.
-  // Examples:
-  //     32GB device: 1% is 320MB
-  //    200GB device: 1% is   2GB
-  //      1TB device: 1% is  10GB
-  const double kShouldRemainAvailableRatio = 0.01;  // 1%
+  //
+  // Prior to M66, this was 10% of total storage instead of a fixed value.
+  const int64_t kShouldRemainAvailable = 2048 * kMBytes;  // 2GB
 
-  // The fraction of the device's storage the browser attempts to
+  // The amount of the device's storage the browser attempts to
   // keep free at all costs. Data will be aggressively evicted.
-  // Examples:
-  //     32GB device: 0.25% is  80MB
-  //    200GB device: 0.25% is 500MB
-  //      1TB device: 0.25% is 2.5GB
-  const double kMustRemainAvailableRatio = 0.0025;  // 0.25%
+  //
+  // Prior to M66, this was 1% of total storage instead of a fixed value.
+  const int64_t kMustRemainAvailable = 1024 * kMBytes;  // 1GB
 
   // Determines the portion of the temp pool that can be
   // utilized by a single host (ie. 5 for 20%).
@@ -116,8 +112,8 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   int64_t pool_size = adjusted_total * kTemporaryPoolSizeRatio;
 
   settings.pool_size = pool_size;
-  settings.should_remain_available = total * kShouldRemainAvailableRatio;
-  settings.must_remain_available = total * kMustRemainAvailableRatio;
+  settings.should_remain_available = kShouldRemainAvailable;
+  settings.must_remain_available = kMustRemainAvailable;
   settings.per_host_quota = pool_size / kPerHostTemporaryPortion;
   settings.session_only_per_host_quota = std::min(
       RandomizeByPercent(kMaxSessionOnlyHostQuota, kRandomizedPercentage),
