@@ -218,6 +218,11 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   void OnProxyEnabledPrefChange();
 
+  // Records data savings percentage histogram at chrome startup, for users who
+  // have browsed a reasonable amount. Positive and negative savings are
+  // recorded in a separate histogram.
+  void RecordStartupSavings() const;
+
   void ResetDataReductionStatistics();
 
   // Update IO thread objects in response to UI thread changes.
