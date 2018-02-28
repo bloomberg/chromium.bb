@@ -46,7 +46,8 @@ public final class ReauthenticationManager {
     public static final String FRAGMENT_TAG = "reauthentication-manager-fragment";
 
     // Defines how long a successful reauthentication remains valid.
-    private static final int VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS = 60000;
+    @VisibleForTesting
+    public static final int VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS = 60000;
 
     // Used for verifying if the last successful reauthentication is still valid. The null value
     // means there was no successful reauthentication yet.

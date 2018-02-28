@@ -763,6 +763,63 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that the export flow ends up with sending off a share intent with the exported
+     * passwords, even if the flow gets interrupted by pausing Chrome.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportIntentPaused() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        Intents.init();
+
+        reauthenticateAndRequestExport();
+
+        // Call onResume to simulate that the user put Chrome into background by opening "recent
+        // apps" and then restored Chrome by choosing it from the list.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
+
+        // Pretend that passwords have been serialized to go directly to the intent.
+        mHandler.getExportCallback().onResult("serialized passwords");
+
+        // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
+        // after the test is finished.
+        intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
+                .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+        MetricsUtils.HistogramDelta successDelta =
+                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
+                        SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+
+        // Confirm the export warning to fire the sharing intent.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                        allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
+
+        Intents.release();
+
+        Assert.assertEquals(1, successDelta.getDelta());
+    }
+
+    /**
      * Check that the export flow can be canceled in the warning dialogue and that upon cancellation
      * the export menu item gets re-enabled.
      */
@@ -788,6 +845,93 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+    }
+
+    /**
+     * Check that the export warning is not duplicated when onResume is called on the settings.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportWarningOnResume() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Call onResume to simulate that the user put Chrome into background by opening "recent
+        // apps" and then restored Chrome by choosing it from the list.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
+
+        // Cancel the export warning.
+        Espresso.onView(withText(R.string.cancel)).perform(click());
+
+        // Check that export warning is not visible again.
+        Espresso.onView(withText(R.string.cancel)).check(doesNotExist());
+
+        // Check that the cancellation succeeded by checking that the export menu is available and
+        // enabled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+    }
+
+    /**
+     * Check that the export warning is dismissed after onResume if the last reauthentication
+     * happened too long ago.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportWarningTimeoutOnResume() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+
+        // Before exporting, pretend that the last successful reauthentication happend too long ago.
+        ReauthenticationManager.recordLastReauth(System.currentTimeMillis()
+                        - ReauthenticationManager.VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS - 1,
+                ReauthenticationManager.REAUTH_SCOPE_BULK);
+
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Call onResume to simulate that the user put Chrome into background by opening "recent
+        // apps" and then restored Chrome by choosing it from the list.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                preferences.getFragmentForTest().onResume();
+            }
+        });
+
+        // Check that export warning is not visible again.
+        Espresso.onView(withText(R.string.cancel)).check(doesNotExist());
+
+        // Check that the export flow was cancelled automatically by checking that the export menu
+        // is available and enabled.
         checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
