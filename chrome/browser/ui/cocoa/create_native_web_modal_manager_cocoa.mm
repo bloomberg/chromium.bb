@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "ui/base/ui_features.h"
 
 namespace web_modal {
 
@@ -16,10 +14,4 @@ WebContentsModalDialogManager::CreateNativeWebModalManager(
   return new SingleWebContentsDialogManagerViewsMac(dialog, delegate);
 }
 
-bool WebContentsModalDialogManager::IsCocoaBrowser() {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  return views_mode_controller::IsViewsBrowserCocoa();
-#endif
-  return true;
-}
 }  // namespace web_modal
