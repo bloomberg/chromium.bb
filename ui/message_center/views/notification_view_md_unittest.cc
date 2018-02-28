@@ -178,6 +178,7 @@ void NotificationViewMDTest::SetUp() {
 }
 
 void NotificationViewMDTest::TearDown() {
+  notification_view_->SetInkDropMode(MessageView::InkDropMode::OFF);
   notification_view_->RemoveObserver(this);
   widget()->Close();
   notification_view_.reset();

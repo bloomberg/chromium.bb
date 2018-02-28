@@ -1375,7 +1375,7 @@ void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
 void NotificationViewMD::RemoveBackgroundAnimation() {
   header_row_->SetSubpixelRenderingEnabled(true);
 
-  SetInkDropMode(InkDropMode::OFF);
+  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
 void NotificationViewMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
