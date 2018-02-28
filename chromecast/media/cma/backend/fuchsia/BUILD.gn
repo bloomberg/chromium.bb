@@ -16,7 +16,7 @@ cast_source_set("media_backend") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//chromecast/media/cma/backend:audio",
+    "//chromecast/media/cma/backend:for_mixer_audio",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media",
