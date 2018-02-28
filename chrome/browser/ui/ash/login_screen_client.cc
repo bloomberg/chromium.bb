@@ -61,6 +61,9 @@ void LoginScreenClient::AuthenticateUser(
     delegate_->HandleAuthenticateUser(account_id, hashed_password,
                                       sync_password_data, authenticated_by_pin,
                                       std::move(callback));
+  } else {
+    LOG(ERROR) << "Returning failed authentication attempt; no delegate";
+    std::move(callback).Run(false);
   }
 }
 
