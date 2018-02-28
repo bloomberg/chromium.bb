@@ -342,8 +342,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
 
   if (request.GetFetchRequestMode() ==
       network::mojom::FetchRequestMode::kNoCORS) {
-    SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(
-        request_context_, request.GetSkipServiceWorker()));
+    SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(request_context_));
   } else {
     cors_flag_ = !GetSecurityOrigin()->CanRequest(request.Url());
   }

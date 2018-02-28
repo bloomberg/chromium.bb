@@ -63,10 +63,9 @@ ExtractCorsExposedHeaderNamesList(network::mojom::FetchCredentialsMode,
 BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
     const WebString&);
 
-// Checks whether request mode 'no-cors' is allowed for a certain context and
-// service-worker mode.
-BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(WebURLRequest::RequestContext,
-                                                  bool skip_service_worker);
+// Checks whether request mode 'no-cors' is allowed for a certain context.
+BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(
+    WebURLRequest::RequestContext);
 
 // TODO(toyoshim): The following three methods delegate to SchemeRegistry and
 // FetchUtils respectively to expose them for outofblink-CORS in CORSURLLoader.
