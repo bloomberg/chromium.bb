@@ -11,6 +11,7 @@
 #include "base/pickle.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
+#include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verify_result.h"
@@ -45,6 +46,27 @@ struct HttpRawRequestResponseInfo;
 }
 
 namespace IPC {
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    ParamTraits<scoped_refptr<net::AuthChallengeInfo>> {
+  typedef scoped_refptr<net::AuthChallengeInfo> param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::AuthCredentials> {
+  typedef net::AuthCredentials param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::CertVerifyResult> {

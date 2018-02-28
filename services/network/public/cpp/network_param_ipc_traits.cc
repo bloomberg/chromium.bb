@@ -12,6 +12,67 @@
 
 namespace IPC {
 
+void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p != nullptr);
+  if (p) {
+    WriteParam(m, p->is_proxy);
+    WriteParam(m, p->challenger);
+    WriteParam(m, p->scheme);
+    WriteParam(m, p->realm);
+  }
+}
+
+bool ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object) {
+    *r = nullptr;
+    return true;
+  }
+  *r = new net::AuthChallengeInfo();
+  return ReadParam(m, iter, &(*r)->is_proxy) &&
+         ReadParam(m, iter, &(*r)->challenger) &&
+         ReadParam(m, iter, &(*r)->scheme) && ReadParam(m, iter, &(*r)->realm);
+}
+
+void ParamTraits<scoped_refptr<net::AuthChallengeInfo>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<AuthChallengeInfo>");
+}
+
+void ParamTraits<net::AuthCredentials>::Write(base::Pickle* m,
+                                              const param_type& p) {
+  WriteParam(m, p.username());
+  WriteParam(m, p.password());
+}
+
+bool ParamTraits<net::AuthCredentials>::Read(const base::Pickle* m,
+                                             base::PickleIterator* iter,
+                                             param_type* r) {
+  base::string16 username;
+  bool read_username = ReadParam(m, iter, &username);
+  base::string16 password;
+  bool read_password = ReadParam(m, iter, &password);
+
+  if (!read_username || !read_password)
+    return false;
+
+  r->Set(username, password);
+  return true;
+}
+
+void ParamTraits<net::AuthCredentials>::Log(const param_type& p,
+                                            std::string* l) {
+  l->append("<AuthCredentials>");
+}
+
 void ParamTraits<net::CertVerifyResult>::Write(base::Pickle* m,
                                                const param_type& p) {
   WriteParam(m, p.verified_cert);

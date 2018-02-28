@@ -5,7 +5,9 @@
 #ifndef CONTENT_SHELL_BROWSER_SHELL_LOGIN_DIALOG_H_
 #define CONTENT_SHELL_BROWSER_SHELL_LOGIN_DIALOG_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
@@ -20,7 +22,7 @@ class ShellLoginDialogHelper;
 
 namespace net {
 class AuthChallengeInfo;
-class URLRequest;
+class AuthCredentials;
 }
 
 namespace content {
@@ -30,7 +32,10 @@ namespace content {
 class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
  public:
   // Threading: IO thread.
-  ShellLoginDialog(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
+  ShellLoginDialog(
+      net::AuthChallengeInfo* auth_info,
+      base::Callback<void(const base::Optional<net::AuthCredentials>&)>
+          auth_required_callback);
 
   // ResourceDispatcherHostLoginDelegate implementation:
   // Threading: IO thread.
@@ -71,13 +76,8 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
                            const base::string16& username,
                            const base::string16& password);
 
-  // Who/where/what asked for the authentication.
-  // Threading: IO thread.
-  scoped_refptr<net::AuthChallengeInfo> auth_info_;
-
-  // The request that wants login data.
-  // Threading: IO thread.
-  net::URLRequest* request_;
+  base::Callback<void(const base::Optional<net::AuthCredentials>&)>
+      auth_required_callback_;
 
 #if defined(OS_MACOSX)
   // Threading: UI thread.

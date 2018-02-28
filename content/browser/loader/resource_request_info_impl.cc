@@ -187,7 +187,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context),
       suggested_filename_(suggested_filename),
-      blocked_cross_site_document_(false) {}
+      blocked_cross_site_document_(false),
+      first_auth_attempt_(true) {}
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }

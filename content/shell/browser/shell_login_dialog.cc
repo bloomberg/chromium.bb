@@ -10,17 +10,16 @@
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/auth.h"
-#include "net/url_request/url_request.h"
 #include "ui/gfx/text_elider.h"
 
 namespace content {
 
 ShellLoginDialog::ShellLoginDialog(
     net::AuthChallengeInfo* auth_info,
-    net::URLRequest* request) : auth_info_(auth_info),
-                                request_(request) {
+    base::Callback<void(const base::Optional<net::AuthCredentials>&)>
+        auth_required_callback)
+    : auth_required_callback_(auth_required_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -95,11 +94,15 @@ void ShellLoginDialog::SendAuthToRequester(bool success,
                                            const base::string16& username,
                                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (success)
-    request_->SetAuth(net::AuthCredentials(username, password));
-  else
-    request_->CancelAuth();
-  ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request_);
+
+  if (!auth_required_callback_.is_null()) {
+    if (success) {
+      std::move(auth_required_callback_)
+          .Run(net::AuthCredentials(username, password));
+    } else {
+      std::move(auth_required_callback_).Run(base::nullopt);
+    }
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

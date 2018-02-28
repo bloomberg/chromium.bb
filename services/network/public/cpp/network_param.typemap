@@ -4,6 +4,7 @@
 
 mojom = "//services/network/public/mojom/url_loader.mojom"
 public_headers = [
+  "//net/base/auth.h",
   "//net/base/host_port_pair.h",
   "//net/cert/cert_verify_result.h",
   "//net/cert/x509_certificate.h",
@@ -16,6 +17,8 @@ public_deps = [
   "//net",
 ]
 type_mappings = [
+  "network.mojom.AuthChallengeInfo=scoped_refptr<net::AuthChallengeInfo>[nullable_is_same_type]",
+  "network.mojom.AuthCredentials=net::AuthCredentials",
   "network.mojom.CertVerifyResult=net::CertVerifyResult",
   "network.mojom.HostPortPair=net::HostPortPair",
   "network.mojom.SSLCertRequestInfo=scoped_refptr<net::SSLCertRequestInfo>[nullable_is_same_type]",

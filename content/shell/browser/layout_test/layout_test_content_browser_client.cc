@@ -18,7 +18,6 @@
 #include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
 #include "content/shell/browser/layout_test/layout_test_message_filter.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
-#include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/layout_test/mojo_layout_test_helper.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
@@ -109,13 +108,6 @@ void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
     BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
 }
 
-void LayoutTestContentBrowserClient::ResourceDispatcherHostCreated() {
-  set_resource_dispatcher_host_delegate(
-      base::WrapUnique(new LayoutTestResourceDispatcherHostDelegate));
-  ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate());
-}
-
 void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
@@ -195,6 +187,18 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToFrame(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry) {
   registry->AddInterface(base::Bind(&BindLayoutTestHelper));
+}
+
+ResourceDispatcherHostLoginDelegate*
+LayoutTestContentBrowserClient::CreateLoginDelegate(
+    net::AuthChallengeInfo* auth_info,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    bool is_main_frame,
+    const GURL& url,
+    bool first_auth_attempt,
+    const base::Callback<void(const base::Optional<net::AuthCredentials>&)>&
+        auth_required_callback) {
+  return nullptr;
 }
 
 }  // namespace content
