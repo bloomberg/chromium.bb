@@ -2726,7 +2726,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
     for (ref_frame = LAST_FRAME; ref_frame < TOTAL_REFS_PER_FRAME;
          ref_frame++) {
       ref_idx = get_ref_frame_map_idx(cpi, ref_frame);
-      assert(idx != INVALID_IDX);
+      assert(ref_idx != INVALID_IDX);
       buf_idx = cm->ref_frame_map[ref_idx];
       if (frame_bufs[buf_idx].film_grain_params_present &&
           memcmp(pars, &frame_bufs[buf_idx].film_grain_params, sizeof(*pars))) {
