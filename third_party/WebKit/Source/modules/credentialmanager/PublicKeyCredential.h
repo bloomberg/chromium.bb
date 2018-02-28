@@ -14,6 +14,8 @@
 namespace blink {
 
 class AuthenticatorResponse;
+class ScriptPromise;
+class ScriptState;
 
 class MODULES_EXPORT PublicKeyCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
@@ -25,6 +27,8 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
 
   DOMArrayBuffer* rawId() const { return raw_id_.Get(); }
   AuthenticatorResponse* response() const { return response_.Get(); }
+  static ScriptPromise isUserVerifyingPlatformAuthenticatorAvailable(
+      ScriptState*);
 
   // Credential:
   void Trace(blink::Visitor*) override;

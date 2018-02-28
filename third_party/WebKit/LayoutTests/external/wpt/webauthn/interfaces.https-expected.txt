@@ -12,7 +12,7 @@ PASS PublicKeyCredential interface: attribute response
 PASS Unscopable handled correctly for response property on PublicKeyCredential
 FAIL PublicKeyCredential interface: operation getClientExtensionResults() assert_own_property: interface prototype object missing non-static operation expected property "getClientExtensionResults" missing
 PASS Unscopable handled correctly for getClientExtensionResults() on PublicKeyCredential
-FAIL PublicKeyCredential interface: operation isUserVerifyingPlatformAuthenticatorAvailable() assert_own_property: interface object missing static operation expected property "isUserVerifyingPlatformAuthenticatorAvailable" missing
+PASS PublicKeyCredential interface: operation isUserVerifyingPlatformAuthenticatorAvailable()
 PASS Unscopable handled correctly for isUserVerifyingPlatformAuthenticatorAvailable() on PublicKeyCredential
 PASS AuthenticatorResponse interface: existence and properties of interface object
 PASS AuthenticatorResponse interface object length
