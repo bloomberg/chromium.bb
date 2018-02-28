@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableBottomSheetContent.SelectableBottomSheetContentManager;
@@ -301,9 +302,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         ChromeActivity activity = (ChromeActivity) mActivity;
         if (createNewTab) {
-            activity.getTabCreator(isIncognito)
-                    .createNewTab(new LoadUrlParams(url), TabLaunchType.FROM_LINK,
-                            activity.getActivityTab());
+            TabCreator tabCreator = (isIncognito == null) ? activity.getCurrentTabCreator()
+                                                          : activity.getTabCreator(isIncognito);
+            tabCreator.createNewTab(
+                    new LoadUrlParams(url), TabLaunchType.FROM_LINK, activity.getActivityTab());
         } else {
             activity.getActivityTab().loadUrl(new LoadUrlParams(url));
         }
