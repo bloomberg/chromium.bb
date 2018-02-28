@@ -71,6 +71,20 @@ void HostScannerImpl::StartScan() {
       &HostScannerImpl::OnTetherHostsFetched, weak_ptr_factory_.GetWeakPtr()));
 }
 
+void HostScannerImpl::StopScan() {
+  if (!host_scanner_operation_)
+    return;
+
+  PA_LOG(INFO) << "Host scan has been stopped prematurely.";
+
+  host_scanner_operation_->RemoveObserver(
+      gms_core_notifications_state_tracker_);
+  host_scanner_operation_->RemoveObserver(this);
+  host_scanner_operation_.reset();
+
+  NotifyScanFinished();
+}
+
 void HostScannerImpl::OnTetherHostsFetched(
     const cryptauth::RemoteDeviceList& tether_hosts) {
   is_fetching_hosts_ = false;

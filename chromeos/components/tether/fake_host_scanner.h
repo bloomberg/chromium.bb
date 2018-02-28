@@ -19,12 +19,12 @@ class FakeHostScanner : public HostScanner {
 
   size_t num_scans_started() { return num_scans_started_; }
 
-  void StopScan();
   void NotifyScanFinished();
 
   // HostScanner:
   bool IsScanActive() override;
   void StartScan() override;
+  void StopScan() override;
 
  private:
   size_t num_scans_started_ = 0u;

@@ -118,9 +118,21 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
   bool was_screen_locked = is_screen_locked_;
   is_screen_locked_ = session_manager_->IsScreenLocked();
 
+  if (is_screen_locked_) {
+    // If the screen is now locked, stop any ongoing scan. A scan during the
+    // lock screen could cause bad interactions with EasyUnlock. See
+    // https://crbug.com/763604.
+    // Note: Once the SecureChannel API is in use, the scan will no longer have
+    //       to stop.
+    host_scanner_->StopScan();
+    return;
+  }
+
+  if (!was_screen_locked)
+    return;
+
   // If the device was just unlocked, start a scan.
-  if (was_screen_locked && !is_screen_locked_)
-    EnsureScan();
+  EnsureScan();
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(

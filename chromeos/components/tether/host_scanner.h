@@ -32,6 +32,10 @@ class HostScanner {
   // function is a no-op.
   virtual void StartScan() = 0;
 
+  // Stops a host scan if there is a current scan. If no scan is active, this
+  // function is a no-op.
+  virtual void StopScan() = 0;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

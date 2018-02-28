@@ -71,6 +71,7 @@ class HostScannerImpl : public HostScanner,
   // HostScanner:
   bool IsScanActive() override;
   void StartScan() override;
+  void StopScan() override;
 
  protected:
   // HostScannerOperation::Observer:
