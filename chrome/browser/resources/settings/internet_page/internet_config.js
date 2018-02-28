@@ -103,6 +103,16 @@ Polymer({
   },
 
   /**
+   * @param {!Event} event
+   * @private
+   */
+  onClose_: function(event) {
+    this.close();
+    this.fire('networks-changed');
+    event.stopPropagation();
+  },
+
+  /**
    * @return {string}
    * @private
    */
