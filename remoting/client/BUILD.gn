@@ -19,6 +19,8 @@ static_library("client") {
     "cursor_shape_stub_proxy.h",
     "empty_cursor_filter.cc",
     "empty_cursor_filter.h",
+    "feedback_data.cc",
+    "feedback_data.h",
     "host_experiment_sender.cc",
     "host_experiment_sender.h",
     "in_memory_log_handler.cc",

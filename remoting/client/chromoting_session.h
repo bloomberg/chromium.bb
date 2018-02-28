@@ -17,6 +17,7 @@
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/connect_to_host_info.h"
+#include "remoting/client/feedback_data.h"
 #include "remoting/client/input/client_input_injector.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -100,6 +101,9 @@ class ChromotingSession : public ClientUserInterface,
       const std::string& token_url,
       const std::string& scope,
       const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback);
+
+  // Creates feedback data to be included in the feedback report.
+  std::unique_ptr<FeedbackData> CreateFeedbackData() const;
 
   // Called by the client when the token is fetched.
   void HandleOnThirdPartyTokenFetched(const std::string& token,

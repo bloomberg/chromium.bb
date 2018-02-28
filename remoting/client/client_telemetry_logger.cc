@@ -46,6 +46,11 @@ void ClientTelemetryLogger::SetHostInfo(const std::string& host_version,
   host_info_.reset(new HostInfo{host_version, host_os, host_os_version});
 }
 
+void ClientTelemetryLogger::SetTransportRoute(
+    const protocol::TransportRoute& route) {
+  transport_route_ = std::make_unique<protocol::TransportRoute>(route);
+}
+
 void ClientTelemetryLogger::LogSessionStateChange(
     ChromotingEvent::SessionState state,
     ChromotingEvent::ConnectionError error) {
@@ -57,7 +62,16 @@ void ClientTelemetryLogger::LogSessionStateChange(
 
   ChromotingEvent event =
       ClientTelemetryLogger::MakeSessionStateChangeEvent(state, error);
+
+  const base::Value* previous_state =
+      current_session_state_event_.GetValue(ChromotingEvent::kSessionStateKey);
+  if (previous_state) {
+    event.SetInteger(ChromotingEvent::kPreviousSessionStateKey,
+                     previous_state->GetInt());
+  }
+
   log_writer_->Log(event);
+  current_session_state_event_ = std::move(event);
 
   if (ChromotingEvent::IsEndOfSession(state)) {
     session_id_.clear();
@@ -163,6 +177,22 @@ ChromotingEvent::ConnectionError ClientTelemetryLogger::TranslateError(
   }
 }
 
+// static
+ChromotingEvent::ConnectionType ClientTelemetryLogger::TranslateConnectionType(
+    protocol::TransportRoute::RouteType type) {
+  switch (type) {
+    case protocol::TransportRoute::DIRECT:
+      return ChromotingEvent::ConnectionType::DIRECT;
+    case protocol::TransportRoute::STUN:
+      return ChromotingEvent::ConnectionType::STUN;
+    case protocol::TransportRoute::RELAY:
+      return ChromotingEvent::ConnectionType::RELAY;
+    default:
+      NOTREACHED();
+      return ChromotingEvent::ConnectionType::DIRECT;
+  }
+}
+
 void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
   event->SetEnum(ChromotingEvent::kModeKey, mode_);
   event->SetEnum(ChromotingEvent::kRoleKey, ChromotingEvent::Role::CLIENT);
@@ -172,6 +202,11 @@ void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
     event->SetEnum(ChromotingEvent::kHostOsKey, host_info_->host_os);
     event->SetString(ChromotingEvent::kHostOsVersionKey,
                      host_info_->host_os_version);
+  }
+  if (transport_route_) {
+    ChromotingEvent::ConnectionType connection_type =
+        TranslateConnectionType(transport_route_->type);
+    event->SetEnum(ChromotingEvent::kConnectionTypeKey, connection_type);
   }
   event->AddSystemInfo();
   if (!session_id_.empty()) {

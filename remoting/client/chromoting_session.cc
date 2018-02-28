@@ -163,6 +163,15 @@ void ChromotingSession::FetchThirdPartyToken(
                             delegate_, token_url, host_public_key, scope));
 }
 
+std::unique_ptr<FeedbackData> ChromotingSession::CreateFeedbackData() const {
+  DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
+  auto data = std::make_unique<FeedbackData>();
+  if (logger_) {
+    data->FillWithChromotingEvent(logger_->current_session_state_event());
+  }
+  return data;
+}
+
 void ChromotingSession::HandleOnThirdPartyTokenFetched(
     const std::string& token,
     const std::string& shared_secret) {
@@ -365,6 +374,7 @@ void ChromotingSession::OnRouteChanged(const std::string& channel_name,
                         protocol::TransportRoute::GetTypeString(route.type) +
                         " connection.";
   VLOG(1) << "Route: " << message;
+  logger_->SetTransportRoute(route);
 }
 
 void ChromotingSession::SetCapabilities(const std::string& capabilities) {

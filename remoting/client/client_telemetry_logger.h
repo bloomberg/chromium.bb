@@ -16,6 +16,7 @@
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/performance_tracker.h"
+#include "remoting/protocol/transport.h"
 
 namespace remoting {
 
@@ -35,6 +36,8 @@ class ClientTelemetryLogger {
                    ChromotingEvent::Os host_os,
                    const std::string& host_os_version);
 
+  void SetTransportRoute(const protocol::TransportRoute& route);
+
   void LogSessionStateChange(ChromotingEvent::SessionState state,
                              ChromotingEvent::ConnectionError error);
 
@@ -45,11 +48,18 @@ class ClientTelemetryLogger {
 
   void SetSessionIdGenerationTimeForTest(base::TimeTicks gen_time);
 
+  const ChromotingEvent& current_session_state_event() const {
+    return current_session_state_event_;
+  }
+
   static ChromotingEvent::SessionState TranslateState(
       protocol::ConnectionToHost::State state);
 
   static ChromotingEvent::ConnectionError TranslateError(
       protocol::ErrorCode state);
+
+  static ChromotingEvent::ConnectionType TranslateConnectionType(
+      protocol::TransportRoute::RouteType type);
 
  private:
   struct HostInfo;
@@ -82,9 +92,12 @@ class ClientTelemetryLogger {
 
   base::TimeTicks session_id_generation_time_;
 
+  ChromotingEvent current_session_state_event_;
+
   ChromotingEvent::Mode mode_;
 
   std::unique_ptr<HostInfo> host_info_;
+  std::unique_ptr<protocol::TransportRoute> transport_route_;
 
   // The log writer that actually sends log to the server.
   ChromotingEventLogWriter* log_writer_;
