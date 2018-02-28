@@ -36,10 +36,6 @@ std::unique_ptr<WebMainParts> WebClient::CreateWebMainParts() {
   return nullptr;
 }
 
-std::string WebClient::GetAcceptLangs(BrowserState* state) const {
-  return std::string();
-}
-
 std::string WebClient::GetApplicationLocale() const {
   return "en-US";
 }
