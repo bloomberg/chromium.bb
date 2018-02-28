@@ -64,6 +64,10 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       : IncrementalMarkingScope(thread_state), objects_(objects) {
     EXPECT_TRUE(marking_stack_->IsEmpty());
     for (T* object : objects_) {
+      // Ensure that the object is in the normal arena so we can ignore backing
+      // objects on the marking stack.
+      CHECK(ThreadHeap::IsNormalArenaIndex(
+          PageFromObject(object)->Arena()->ArenaIndex()));
       headers_.push_back(HeapObjectHeader::FromPayload(object));
       EXPECT_FALSE(headers_.back()->IsMarked());
     }
@@ -80,6 +84,10 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
     while (!marking_stack_->IsEmpty()) {
       CallbackStack::Item* item = marking_stack_->Pop();
       T* obj = reinterpret_cast<T*>(item->Object());
+      // Ignore the backing object.
+      if (!ThreadHeap::IsNormalArenaIndex(
+              PageFromObject(obj)->Arena()->ArenaIndex()))
+        continue;
       auto pos = std::find(objects_.begin(), objects_.end(), obj);
       // The following check makes sure that there are no unexpected objects on
       // the marking stack. If it fails then the write barrier fired for an

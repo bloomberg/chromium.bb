@@ -127,6 +127,10 @@ class PLATFORM_EXPORT HeapAllocator {
   static void FreeHashTableBacking(void* address, bool is_weak_table);
   static bool ExpandHashTableBacking(void*, size_t);
 
+  static void BackingWriteBarrier(void* address) {
+    ThreadState::Current()->Heap().WriteBarrier(address);
+  }
+
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
     return reinterpret_cast<Return>(ThreadHeap::Allocate<Metadata>(

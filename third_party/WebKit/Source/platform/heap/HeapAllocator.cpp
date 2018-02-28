@@ -21,9 +21,13 @@ void HeapAllocator::BackingFree(void* address) {
   if (page->IsLargeObjectPage() || page->Arena()->GetThreadState() != state)
     return;
 
-  state->CheckObjectNotInCallbackStacks(address);
-
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
+  // Don't promptly free marked backing as they may be registered on the marking
+  // callback stack. The effect on non incremental marking GCs is that promptly
+  // free is disabled for surviving backings during lazy sweeping.
+  if (header->IsMarked())
+    return;
+  state->CheckObjectNotInCallbackStacks(address);
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
   state->Heap().PromptlyFreed(header->GcInfoIndex());
   arena->PromptlyFreeObject(header);
