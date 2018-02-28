@@ -8,6 +8,7 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSUnsetValue* CSSUnsetValue::Create() {
   return CssValuePool().UnsetValue();
@@ -17,4 +18,5 @@ String CSSUnsetValue::CustomCSSText() const {
   return "unset";
 }
 
+}  // namespace cssvalue
 }  // namespace blink

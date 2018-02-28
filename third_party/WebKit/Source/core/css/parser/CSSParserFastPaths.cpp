@@ -1052,7 +1052,7 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
   if (value_id == CSSValueInitial)
     return CSSInitialValue::Create();
   if (value_id == CSSValueUnset)
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property_id, value_id,
                                                          parser_mode))
     return CSSIdentifierValue::Create(value_id);

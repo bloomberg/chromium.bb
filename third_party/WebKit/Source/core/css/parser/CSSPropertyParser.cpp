@@ -218,7 +218,7 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   else if (id == CSSValueInherit)
     value = CSSInheritedValue::Create();
   else if (id == CSSValueUnset)
-    value = CSSUnsetValue::Create();
+    value = cssvalue::CSSUnsetValue::Create();
   else
     return false;
 
