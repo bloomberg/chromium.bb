@@ -94,6 +94,8 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   const char* GetName() const override { return "LayoutSVGRoot"; }
 
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
+
  private:
   const LayoutObjectChildList* Children() const { return &children_; }
   LayoutObjectChildList* Children() { return &children_; }
@@ -139,11 +141,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
                    HitTestAction) override;
 
   LayoutRect LocalVisualRectIgnoringVisibility() const override;
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
-    // The rule is the same as LayoutBox's instead of LayoutReplaced's.
-    return LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-  }
 
   void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,

@@ -29,8 +29,10 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
+#include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/SVGRootPainter.h"
@@ -453,6 +455,19 @@ LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
   }
 
   return LayoutRect(EnclosingIntRect(visual_rect));
+}
+
+bool LayoutSVGRoot::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
+  // The rule extends LayoutBox's instead of LayoutReplaced's.
+  if (!LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
+    return false;
+
+  if (SVGResources* resources =
+          SVGResourcesCache::CachedResourcesForLayoutObject(*this)) {
+    if (resources->Masker())
+      return false;
+  }
+  return true;
 }
 
 // This method expects local CSS box coordinates.

@@ -18,7 +18,7 @@ Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
   if (!object.IsBoxModelObject() && !object.IsSVGChild())
     return WTF::nullopt;
 
-  if (object.IsSVGChild()) {
+  if (object.IsSVG()) {
     SVGResources* resources =
         SVGResourcesCache::CachedResourcesForLayoutObject(object);
     LayoutSVGResourceMasker* masker = resources ? resources->Masker() : nullptr;
