@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <random>
 #include <vector>
 
 #include "base/macros.h"
@@ -18,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "net/base/ip_endpoint.h"
-#include "third_party/mt19937ar/mt19937ar.h"
 
 namespace net {
 class NetLog;
@@ -99,7 +99,7 @@ class InterruptedPoissonProcess {
   std::vector<base::WeakPtr<InternalBuffer> > send_buffers_;
 
   // Fast pseudo random number generator.
-  MersenneTwister mt_rand_;
+  std::mt19937 mt_rand_;
 
   base::WeakPtrFactory<InterruptedPoissonProcess> weak_factory_;
 

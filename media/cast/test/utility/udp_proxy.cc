@@ -422,8 +422,8 @@ InterruptedPoissonProcess::InterruptedPoissonProcess(
       coef_variance_(coef_variance),
       rate_index_(0),
       on_state_(true),
+      mt_rand_(rand_seed),
       weak_factory_(this) {
-  mt_rand_.init_genrand(rand_seed);
   DCHECK(!average_rates.empty());
   ComputeRates();
 }
@@ -461,9 +461,9 @@ base::TimeDelta InterruptedPoissonProcess::NextEvent(double rate) {
 double InterruptedPoissonProcess::RandDouble() {
   // Generate a 64-bits random number from MT19937 and then convert
   // it to double.
-  uint64_t rand = mt_rand_.genrand_int32();
+  uint64_t rand = mt_rand_();
   rand <<= 32;
-  rand |= mt_rand_.genrand_int32();
+  rand |= mt_rand_();
   return base::BitsToOpenEndedUnitInterval(rand);
 }
 

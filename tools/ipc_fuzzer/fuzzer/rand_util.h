@@ -7,17 +7,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include "third_party/mt19937ar/mt19937ar.h"
+#include <random>
 
 namespace ipc_fuzzer {
 
-extern MersenneTwister* g_mersenne_twister;
+extern std::mt19937* g_mersenne_twister;
 
 void InitRand();
 
 inline uint32_t RandU32() {
-  return g_mersenne_twister->genrand_int32();
+  return (*g_mersenne_twister)();
 }
 
 inline uint64_t RandU64() {

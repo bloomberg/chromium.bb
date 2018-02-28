@@ -83,7 +83,6 @@ static_library("variations") {
     "//components/crash/core/common:crash_key",
     "//components/prefs",
     "//crypto",
-    "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/zlib/google:compression_utils",
   ]
