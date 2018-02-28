@@ -111,7 +111,30 @@ public class CompositorAnimator extends Animator {
      * A utility for creating a basic animator.
      * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
      * @param target The object to modify.
-     * @param property The projecty of the object to modify.
+     * @param property The property of the object to modify.
+     * @param startValue The starting animation value.
+     * @param endValue The end animation value.
+     * @param durationMs The duration of the animation in ms.
+     * @param interpolator The time interpolator for the animation.
+     * @return A {@link CompositorAnimator} for the property.
+     */
+    public static <T> CompositorAnimator ofFloatProperty(CompositorAnimationHandler handler,
+            final T target, final FloatProperty<T> property, float startValue, float endValue,
+            long durationMs, TimeInterpolator interpolator) {
+        CompositorAnimator animator = new CompositorAnimator(handler);
+        animator.setValues(startValue, endValue);
+        animator.setDuration(durationMs);
+        animator.addUpdateListener(
+                (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
+        animator.setInterpolator(interpolator);
+        return animator;
+    }
+
+    /**
+     * A utility for creating a basic animator.
+     * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
+     * @param target The object to modify.
+     * @param property The property of the object to modify.
      * @param startValue The starting animation value.
      * @param endValue The end animation value.
      * @param durationMs The duration of the animation in ms.
@@ -120,12 +143,8 @@ public class CompositorAnimator extends Animator {
     public static <T> CompositorAnimator ofFloatProperty(CompositorAnimationHandler handler,
             final T target, final FloatProperty<T> property, float startValue, float endValue,
             long durationMs) {
-        CompositorAnimator animator = new CompositorAnimator(handler);
-        animator.setValues(startValue, endValue);
-        animator.setDuration(durationMs);
-        animator.addUpdateListener(
-                (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
-        return animator;
+        return ofFloatProperty(handler, target, property, startValue, endValue, durationMs,
+                ChromeAnimation.getDecelerateInterpolator());
     }
 
     /** An interface for listening for frames of an animation. */
