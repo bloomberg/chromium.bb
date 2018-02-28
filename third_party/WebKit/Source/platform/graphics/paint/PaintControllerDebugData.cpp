@@ -177,11 +177,9 @@ void PaintController::ShowDebugData() const {
   return ShowDebugDataInternal(DisplayItemList::kDefault);
 }
 
-#ifndef NDEBUG
 void PaintController::ShowDebugDataWithRecords() const {
   return ShowDebugDataInternal(DisplayItemList::kShowPaintRecords);
 }
-#endif
 
 }  // namespace blink
 

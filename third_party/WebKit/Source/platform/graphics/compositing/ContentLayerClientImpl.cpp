@@ -114,7 +114,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
   if (int transform_id = GetTransformId(layer_state_.Transform(), context))
     json->SetInteger("transform", transform_id);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   if (context.flags & kLayerTreeIncludesPaintRecords) {
     LoggingCanvas canvas;
     cc_display_item_list_->Raster(&canvas);

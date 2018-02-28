@@ -670,13 +670,10 @@ void PaintController::CommitNewDisplayItems() {
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
     LOG(ERROR) << "PaintController::CommitNewDisplayItems() done";
-#ifndef NDEBUG
-    if (VLOG_IS_ON(3)) {
+    if (VLOG_IS_ON(3))
       ShowDebugDataWithRecords();
-      return;
-    }
-#endif
-    ShowDebugData();
+    else
+      ShowDebugData();
   }
 #endif
 }
