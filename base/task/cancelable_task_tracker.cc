@@ -152,6 +152,8 @@ void CancelableTaskTracker::TryCancelAll() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   for (const auto& it : task_flags_)
     it.second->Set();
+  weak_factory_.InvalidateWeakPtrs();
+  task_flags_.clear();
 }
 
 bool CancelableTaskTracker::HasTrackedTasks() const {

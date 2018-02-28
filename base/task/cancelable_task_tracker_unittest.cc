@@ -267,9 +267,8 @@ TEST_F(CancelableTaskTrackerTest, DestructionCancelsAll) {
   EXPECT_FALSE(is_canceled.Run());
 }
 
-// Post a task and cancel it.  HasTrackedTasks() should return true
-// from when the task is posted until the (do-nothing) reply task is
-// flushed.
+// Post a task and cancel it. HasTrackedTasks() should return false as soon as
+// TryCancelAll() is called.
 TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
   scoped_refptr<TestSimpleTaskRunner> test_task_runner(
       new TestSimpleTaskRunner());
@@ -281,17 +280,14 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPost) {
 
   task_tracker_.TryCancelAll();
 
-  test_task_runner->RunUntilIdle();
-
-  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
-
-  RunCurrentLoopUntilIdle();
-
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  test_task_runner->RunUntilIdle();
+  RunCurrentLoopUntilIdle();
 }
 
-// Post a task with a reply and cancel it.  HasTrackedTasks() should
-// return true from when the task is posted until it is canceled.
+// Post a task with a reply and cancel it. HasTrackedTasks() should return false
+// as soon as TryCancelAll() is called.
 TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
   scoped_refptr<TestSimpleTaskRunner> test_task_runner(
       new TestSimpleTaskRunner());
@@ -306,17 +302,14 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksPostWithReply) {
 
   task_tracker_.TryCancelAll();
 
-  test_task_runner->RunUntilIdle();
-
-  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
-
-  RunCurrentLoopUntilIdle();
-
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
+
+  test_task_runner->RunUntilIdle();
+  RunCurrentLoopUntilIdle();
 }
 
-// Create a new tracked task ID.  HasTrackedTasks() should return true
-// until the IsCanceledCallback is destroyed.
+// Create a new tracked task ID. HasTrackedTasks() should return false as soon
+// as TryCancelAll() is called.
 TEST_F(CancelableTaskTrackerTest, HasTrackedTasksIsCancelled) {
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 
@@ -324,10 +317,6 @@ TEST_F(CancelableTaskTrackerTest, HasTrackedTasksIsCancelled) {
   ignore_result(task_tracker_.NewTrackedTaskId(&is_canceled));
 
   task_tracker_.TryCancelAll();
-
-  EXPECT_TRUE(task_tracker_.HasTrackedTasks());
-
-  is_canceled.Reset();
 
   EXPECT_FALSE(task_tracker_.HasTrackedTasks());
 }
