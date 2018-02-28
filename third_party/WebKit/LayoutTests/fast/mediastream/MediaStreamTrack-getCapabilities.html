@@ -19,31 +19,111 @@ promise_test(function() {
     var capabilities = stream.getVideoTracks()[0].getCapabilities();
     assert_greater_than(Object.keys(capabilities).length, 0);
     assert_true(capabilities.hasOwnProperty('deviceId'));
-    if (capabilities.hasOwnProperty('width')) {
+    assert_true(capabilities.hasOwnProperty('facingMode'));
+    verifyVideoRangeProperties(capabilities);
+  });
+}, 'getCapabilities() support for getUserMedia() video track.');
+
+test(function() {
+  var stream = (new AudioContext()).createMediaStreamDestination().stream;
+  var capabilities = stream.getAudioTracks()[0].getCapabilities();
+  assert_equals(Object.keys(capabilities).length, 2);
+  assert_true(capabilities.hasOwnProperty('deviceId'));
+  assert_true(capabilities.hasOwnProperty('echoCancellation'));
+  assert_equals(Object.keys(capabilities.echoCancellation).length, 1);
+  assert_equals(capabilities.echoCancellation[0], false);
+}, 'getCapabilities() support for audio track associated with a MediaStreamAudioDestinationNode.');
+
+test(function() {
+  var canvas = document.createElement('canvas');
+  var stream = canvas.captureStream();
+  var capabilities = stream.getVideoTracks()[0].getCapabilities();
+  assert_greater_than(Object.keys(capabilities).length, 0);
+  assert_true(capabilities.hasOwnProperty('deviceId'));
+  assert_true(capabilities.hasOwnProperty('facingMode'));
+  assert_equals(Object.keys(capabilities.facingMode).length, 0);
+  verifyVideoRangeProperties(capabilities);
+}, 'getCapabilities() support for video track associated with a canvas element.');
+
+test(function() {
+  var video = document.createElement('video');
+  video.src = "../../external/wpt/media/test-av-384k-44100Hz-1ch-320x240-30fps-10kfr.webm";
+  video.play();
+  video.oncanplay = function() {
+    var stream = video.captureStream();
+    var audioCapabilities = stream.getAudioTracks()[0].getCapabilities();
+    var videoCapabilities = stream.getVideoTracks()[0].getCapabilities();
+    assert_equals(Object.keys(audioCapabilities).length, 2);
+    assert_true(audioCapabilities.hasOwnProperty('deviceId'));
+    assert_true(audioCapabilities.hasOwnProperty('echoCancellation'));
+    assert_equals(Object.keys(audioCapabilities.echoCancellation).length, 1);
+    assert_equals(audioCapabilities.echoCancellation[0], false);
+    assert_greater_than(Object.keys(videoCapabilities).length, 0);
+    assert_true(videoCapabilities.hasOwnProperty('deviceId'));
+    assert_true(videoCapabilities.hasOwnProperty('facingMode'));
+    assert_equals(Object.keys(videoCapabilities.facingMode).length, 0);
+    verifyVideoRangeProperties(videoCapabilities);
+  };
+}, 'getCapabilities() support for audio and video tracks associated with a video element.');
+
+promise_test(function() {
+  var caller = new RTCPeerConnection();
+  var callee = new RTCPeerConnection();
+  return navigator.mediaDevices.getUserMedia({audio:true, video:true})
+  .then((stream) => {
+    caller.addStream(stream);
+    return createAndSetOffer(caller, callee);
+  }).then(() => {
+    var remoteStream = callee.getRemoteStreams()[0];
+    var audioCapabilities = remoteStream.getAudioTracks()[0].getCapabilities();
+    var videoCapabilities = remoteStream.getVideoTracks()[0].getCapabilities();
+    assert_equals(Object.keys(audioCapabilities).length, 2);
+    assert_true(audioCapabilities.hasOwnProperty('deviceId'));
+    assert_true(audioCapabilities.hasOwnProperty('echoCancellation'));
+    assert_equals(Object.keys(audioCapabilities.echoCancellation).length, 1);
+    assert_equals(audioCapabilities.echoCancellation[0], false);
+    assert_greater_than(Object.keys(videoCapabilities).length, 0);
+    assert_true(videoCapabilities.hasOwnProperty('deviceId'));
+    assert_true(videoCapabilities.hasOwnProperty('facingMode'));
+    assert_equals(Object.keys(videoCapabilities.facingMode).length, 0);
+  });
+}, 'getCapabilities() support for audio and video tracks associated with a RTCPeerConnection.');
+
+function createAndSetOffer(caller, callee) {
+  var description = null;
+  return caller.createOffer()
+  .then(offer => {
+    description = offer;
+    return caller.setLocalDescription(description);
+  }).then(() => {
+    return callee.setRemoteDescription(description);
+  });
+}
+
+function verifyVideoRangeProperties(capabilities) {
+  if (capabilities.hasOwnProperty('width')) {
       assert_equals(Object.keys(capabilities.width).length, 2);
       assert_true(capabilities.width.hasOwnProperty('min'));
       assert_true(capabilities.width.hasOwnProperty('max'));
       assert_less_than_equal(capabilities.width.min, capabilities.width.max);
-    }
-    if (capabilities.hasOwnProperty('height')) {
-      assert_equals(Object.keys(capabilities.height).length, 2);
-      assert_true(capabilities.height.hasOwnProperty('min'));
-      assert_true(capabilities.height.hasOwnProperty('max'));
-      assert_less_than_equal(capabilities.height.min, capabilities.height.max);
-    }
-    if (capabilities.hasOwnProperty('aspectRatio')) {
-      assert_equals(Object.keys(capabilities.aspectRatio).length, 2);
-      assert_true(capabilities.aspectRatio.hasOwnProperty('min'));
-      assert_true(capabilities.aspectRatio.hasOwnProperty('max'));
-      assert_less_than_equal(capabilities.aspectRatio.min, capabilities.aspectRatio.max);
-    }
-    if (capabilities.hasOwnProperty('frameRate')) {
-      assert_equals(Object.keys(capabilities.frameRate).length, 2);
-      assert_true(capabilities.frameRate.hasOwnProperty('min'));
-      assert_true(capabilities.frameRate.hasOwnProperty('max'));
-      assert_less_than_equal(capabilities.frameRate.min, capabilities.frameRate.max);
-    }
-    assert_true(capabilities.hasOwnProperty('facingMode'));
-  });
-}, 'getCapabilities() support for getUserMedia() video track.');
+  }
+  if (capabilities.hasOwnProperty('height')) {
+    assert_equals(Object.keys(capabilities.height).length, 2);
+    assert_true(capabilities.height.hasOwnProperty('min'));
+    assert_true(capabilities.height.hasOwnProperty('max'));
+    assert_less_than_equal(capabilities.height.min, capabilities.height.max);
+  }
+  if (capabilities.hasOwnProperty('aspectRatio')) {
+    assert_equals(Object.keys(capabilities.aspectRatio).length, 2);
+    assert_true(capabilities.aspectRatio.hasOwnProperty('min'));
+    assert_true(capabilities.aspectRatio.hasOwnProperty('max'));
+    assert_less_than_equal(capabilities.aspectRatio.min, capabilities.aspectRatio.max);
+  }
+  if (capabilities.hasOwnProperty('frameRate')) {
+    assert_equals(Object.keys(capabilities.frameRate).length, 2);
+    assert_true(capabilities.frameRate.hasOwnProperty('min'));
+    assert_true(capabilities.frameRate.hasOwnProperty('max'));
+    assert_less_than_equal(capabilities.frameRate.min, capabilities.frameRate.max);
+  }
+}
 </script>

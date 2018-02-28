@@ -1025,6 +1025,11 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.SetExtraData(media_stream_source);
 
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = track_id;
+  capabilities.echo_cancellation = std::vector<bool>({false});
+  web_media_stream_source.SetCapabilities(capabilities);
+
   media_stream_source->ConnectToTrack(web_media_stream_track);
   web_media_stream->AddTrack(web_media_stream_track);
 #endif

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/gl_helper.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
@@ -461,13 +462,18 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   std::string str_track_id;
   base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
   const blink::WebString track_id = blink::WebString::FromASCII(str_track_id);
-  blink::WebMediaStreamSource webkit_source;
+  media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   std::unique_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
           MediaStreamSource::SourceStoppedCallback(), std::move(source)));
+  blink::WebMediaStreamSource webkit_source;
   webkit_source.Initialize(track_id, blink::WebMediaStreamSource::kTypeVideo,
                            track_id, false);
   webkit_source.SetExtraData(media_stream_source.get());
+  webkit_source.SetCapabilities(ComputeCapabilitiesForVideoSource(
+      track_id, preferred_formats,
+      media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
+      false /* is_device_capture */));
 
   web_track->Initialize(webkit_source);
   web_track->SetTrackData(new MediaStreamVideoTrack(
