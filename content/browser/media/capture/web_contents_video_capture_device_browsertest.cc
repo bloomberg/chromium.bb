@@ -8,11 +8,13 @@
 
 #include <array>
 #include <cmath>
+#include <string>
 #include <tuple>
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,6 +31,10 @@
 #include "media/base/video_util.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,6 +42,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 namespace content {
 namespace {
@@ -165,9 +175,20 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
 
   // Alters the solid fill color making up the page content. This will trigger a
   // compositor update, which will trigger a frame capture.
-  void ChangePageContentColor(std::string css_color) {
-    std::string script("document.body.style.backgroundColor = '#123456';");
-    script.replace(script.find("#123456"), 7, css_color);
+  void ChangePageContentColor(std::string css_color_hex) {
+    // See the HandleRequest() method for the original documents being modified
+    // here.
+    std::string script;
+    if (is_cross_site_capture_test()) {
+      const GURL& inner_frame_url =
+          embedded_test_server()->GetURL(kInnerFrameHostname, kInnerFramePath);
+      script = base::StringPrintf(
+          "document.getElementsByTagName('iframe')[0].src = '%s?color=123456';",
+          inner_frame_url.spec().c_str());
+    } else {
+      script = "document.body.style.backgroundColor = '#123456';";
+    }
+    script.replace(script.find("123456"), 6, css_color_hex);
     CHECK(ExecuteScript(shell()->web_contents(), script));
   }
 
@@ -209,6 +230,33 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
             ? media::ResolutionChangePolicy::FIXED_ASPECT_RATIO
             : media::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
     return params;
+  }
+
+  // Navigates to the initial document, according to the current test
+  // parameters, and waits for page load completion.
+  void NavigateToInitialDocument() {
+    // Navigate to the single-frame test's document and record the view size.
+    ASSERT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                   kSingleFrameHostname, kSingleFramePath)));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    expected_view_size_ = GetViewSize();
+    VLOG(1) << "View size is " << expected_view_size_.ToString();
+
+    // If doing a cross-site capture test, navigate to the more-complex document
+    // that also contains an iframe (rendered in a separate process).
+    if (is_cross_site_capture_test()) {
+      ASSERT_TRUE(
+          NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                     kOuterFrameHostname, kOuterFramePath)));
+      ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+      // Confirm the iframe is a cross-process child render frame.
+      auto* const child_frame =
+          ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+      ASSERT_TRUE(child_frame);
+      ASSERT_TRUE(child_frame->IsCrossProcessSubframe());
+    }
   }
 
   // Creates and starts the device for frame capture, and checks that the
@@ -266,8 +314,10 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
         frames_.pop_front();
         EXPECT_FALSE(rgb_frame.empty());
 
-        // Analyze the frame and compute the average color value for both the
-        // content and non-content (i.e., letterboxed) regions.
+        // Analyze the frame and compute the average color value for each of: 1)
+        // the upper-left quadrant of the content region; 2) the remaining three
+        // quadrants of the content region; and 3) the non-content (i.e.,
+        // letterboxed) region.
         const gfx::Size frame_size(rgb_frame.width(), rgb_frame.height());
         const gfx::Size current_view_size = GetViewSize();
         EXPECT_EQ(expected_view_size_, current_view_size)
@@ -277,16 +327,23 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
                 ? media::ComputeLetterboxRegion(gfx::Rect(frame_size),
                                                 current_view_size)
                 : gfx::Rect(frame_size);
-        std::array<double, 3> average_content_rgb;
+        std::array<double, 3> average_ul_content_rgb;
+        std::array<double, 3> average_rem_content_rgb;
         std::array<double, 3> average_letterbox_rgb;
-        AnalyzeFrame(rgb_frame, content_rect, &average_content_rgb,
-                     &average_letterbox_rgb);
+        AnalyzeFrame(rgb_frame, content_rect, &average_ul_content_rgb,
+                     &average_rem_content_rgb, &average_letterbox_rgb);
 
+        const auto ToTriplet = [](const std::array<double, 3>& rgb) {
+          return base::StringPrintf("(%f,%f,%f)", rgb[0], rgb[1], rgb[2]);
+        };
         VLOG(1) << "Video frame analysis: size=" << frame_size.ToString()
                 << ", expected content_rect=" << content_rect.ToString()
-                << ", average_red=" << average_content_rgb[0]
-                << ", average_green=" << average_content_rgb[1]
-                << ", average_blue=" << average_content_rgb[2];
+                << ", average upper-left content quadrant rgb="
+                << ToTriplet(average_ul_content_rgb)
+                << ", average remaining content rgb="
+                << ToTriplet(average_rem_content_rgb)
+                << ", average letterbox rgb="
+                << ToTriplet(average_letterbox_rgb);
 
         // The letterboxed region should be black.
         if (use_fixed_aspect_ratio()) {
@@ -304,7 +361,14 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
           return;
         }
 
-        if (IsApproximatelySameColor(color, average_content_rgb)) {
+        if (is_cross_site_capture_test() &&
+            IsApproximatelySameColor(color, average_ul_content_rgb) &&
+            IsApproximatelySameColor(SK_ColorWHITE, average_rem_content_rgb)) {
+          VLOG(1) << "Observed desired frame.";
+          return;
+        } else if (!is_cross_site_capture_test() &&
+                   IsApproximatelySameColor(color, average_ul_content_rgb) &&
+                   IsApproximatelySameColor(color, average_rem_content_rgb)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {
@@ -327,6 +391,7 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
   // These are overridden for the parameterized tests.
   virtual bool use_software_compositing() const { return false; }
   virtual bool use_fixed_aspect_ratio() const { return false; }
+  virtual bool is_cross_site_capture_test() const { return false; }
 
   void SetUp() override {
     // IMPORTANT: Do not add the switches::kUseGpuInTests command line flag: It
@@ -346,20 +411,24 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    // Set the page content to a solid fill color: Initially, black.
-    static constexpr char kTestHtmlAsDataUrl[] =
-        "data:text/html,<!doctype html>"
-        "<body style='background-color: #000000;'></body>";
-    ASSERT_TRUE(NavigateToURL(shell(), GURL(kTestHtmlAsDataUrl)));
-
-    expected_view_size_ = GetViewSize();
-    VLOG(1) << "View size is " << expected_view_size_.ToString();
+    // Set-up and start the embedded test HTTP server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &WebContentsVideoCaptureDeviceBrowserTest::HandleRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
     frames_.clear();
 
     // Run any left-over tasks (usually these are delete-soon's and orphaned
@@ -376,6 +445,42 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
     last_frame_timestamp_ = frame->timestamp();
 
     frames_.emplace_back(std::move(frame));
+  }
+
+  // Called by the embedded test HTTP server to provide the document resources.
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    auto response = std::make_unique<BasicHttpResponse>();
+    response->set_content_type("text/html");
+    const GURL& url = request.GetURL();
+    if (url.path() == kOuterFramePath) {
+      // A page with a solid white fill color, but containing an iframe in its
+      // upper-left quadrant.
+      const GURL& inner_frame_url =
+          embedded_test_server()->GetURL(kInnerFrameHostname, kInnerFramePath);
+      response->set_content(base::StringPrintf(
+          "<!doctype html>"
+          "<body style='background-color: #ffffff;'>"
+          "<iframe src='%s' width=%d height=%d style='position:absolute; "
+          "top:0px; left:0px; margin:none; padding:none; border:none;'>"
+          "</iframe>"
+          "</body>",
+          inner_frame_url.spec().c_str(), expected_view_size_.width() / 2,
+          expected_view_size_.height() / 2));
+    } else {
+      // A page whose solid fill color is based on a query parameter, or
+      // defaults to black.
+      const std::string& query = url.query();
+      std::string color = "#000000";
+      const auto pos = query.find("color=");
+      if (pos != std::string::npos) {
+        color = "#" + query.substr(pos + 6, 6);
+      }
+      response->set_content(
+          base::StringPrintf("<!doctype html>"
+                             "<body style='background-color: %s;'></body>",
+                             color.c_str()));
+    }
+    return std::move(response);
   }
 
   static SkBitmap ConvertToSkBitmap(const media::VideoFrame& frame) {
@@ -396,36 +501,54 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
     return bitmap;
   }
 
-  // Computes the average color of the content and letterboxed regions of the
-  // frame.
+  // Computes the average color in the frame for each of these regions: 1) the
+  // upper-left quadrant of the content; 2) the remaining three quadrants of the
+  // content; 3) the letterboxed regions (if any).
   static void AnalyzeFrame(SkBitmap frame,
                            const gfx::Rect& content_rect,
-                           std::array<double, 3>* average_content_rgb,
+                           std::array<double, 3>* average_ul_content_rgb,
+                           std::array<double, 3>* average_rem_content_rgb,
                            std::array<double, 3>* average_letterbox_rgb) {
-    int64_t sum_of_content_values[3] = {0};
+    const gfx::Rect ul_content_rect(content_rect.x(), content_rect.y(),
+                                    content_rect.width() / 2,
+                                    content_rect.height() / 2);
+    int64_t sum_of_ul_content_values[3] = {0};
+    int64_t sum_of_rem_content_values[3] = {0};
     int64_t sum_of_letterbox_values[3] = {0};
     for (int y = 0; y < frame.height(); ++y) {
       for (int x = 0; x < frame.width(); ++x) {
         const SkColor color = frame.getColor(x, y);
-        int64_t* const sums = content_rect.Contains(x, y)
-                                  ? sum_of_content_values
-                                  : sum_of_letterbox_values;
+        int64_t* const sums =
+            ul_content_rect.Contains(x, y)
+                ? sum_of_ul_content_values
+                : (content_rect.Contains(x, y) ? sum_of_rem_content_values
+                                               : sum_of_letterbox_values);
         sums[0] += SkColorGetR(color);
         sums[1] += SkColorGetG(color);
         sums[2] += SkColorGetB(color);
       }
     }
 
-    const double content_area =
-        static_cast<double>(content_rect.size().GetArea());
+    const double ul_content_area =
+        static_cast<double>(ul_content_rect.size().GetArea());
     for (int i = 0; i < 3; ++i) {
-      (*average_content_rgb)[i] =
-          (content_area <= 0.0) ? NAN
-                                : (sum_of_content_values[i] / content_area);
+      (*average_ul_content_rgb)[i] =
+          (ul_content_area <= 0.0)
+              ? NAN
+              : (sum_of_ul_content_values[i] / ul_content_area);
     }
 
-    const double letterbox_area =
-        (frame.width() * frame.height()) - content_area;
+    const double rem_content_area = static_cast<double>(
+        content_rect.size().GetArea() - ul_content_rect.size().GetArea());
+    for (int i = 0; i < 3; ++i) {
+      (*average_rem_content_rgb)[i] =
+          (rem_content_area <= 0.0)
+              ? NAN
+              : (sum_of_rem_content_values[i] / rem_content_area);
+    }
+
+    const double letterbox_area = static_cast<double>(
+        (frame.width() * frame.height()) - content_rect.size().GetArea());
     for (int i = 0; i < 3; ++i) {
       (*average_letterbox_rgb)[i] =
           (letterbox_area <= 0.0)
@@ -453,12 +576,38 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
   base::TimeDelta last_frame_timestamp_;
 
   static constexpr int kMaxColorDifference = 8;
+
+  // Arbitrary string constants used to refer to each document by
+  // host+path. Note that the "inner frame" and "outer frame" must have
+  // different hostnames to engage the cross-site process isolation logic in the
+  // browser.
+  static constexpr char kInnerFrameHostname[] = "innerframe.com";
+  static constexpr char kInnerFramePath[] = "/inner.html";
+  static constexpr char kOuterFrameHostname[] = "outerframe.com";
+  static constexpr char kOuterFramePath[] = "/outer.html";
+  static constexpr char kSingleFrameHostname[] = "singleframe.com";
+  static constexpr char kSingleFramePath[] = "/single.html";
 };
+
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kInnerFrameHostname[];
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kInnerFramePath[];
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kOuterFrameHostname[];
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kOuterFramePath[];
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kSingleFrameHostname[];
+// static
+constexpr char WebContentsVideoCaptureDeviceBrowserTest::kSingleFramePath[];
 
 // Tests that the device refuses to start if the WebContents target was
 // destroyed before the device could start.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+  NavigateToInitialDocument();
+
   auto* const main_frame = shell()->web_contents()->GetMainFrame();
   const auto render_process_id = main_frame->GetProcess()->GetID();
   const auto render_frame_id = main_frame->GetRoutingID();
@@ -492,10 +641,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // errors-out because the WebContents is destroyed before the device is stopped.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        ErrorsOutWhenWebContentsIsDestroyed) {
+  NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
-  ChangePageContentColor("#ff0000");
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Delete the WebContents instance and the Shell, and allow the the "target
@@ -513,10 +663,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // to be delivered, to ensure the client is up-to-date.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        SuspendsAndResumes) {
+  NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
   // Initially, the device captures any content changes normally.
-  ChangePageContentColor("#ff0000");
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Suspend the device.
@@ -526,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
   // Change the page content and run the browser for five seconds. Expect no
   // frames were queued because the device should be suspended.
-  ChangePageContentColor("#00ff00");
+  ChangePageContentColor("00ff00");
   base::RunLoop run_loop;
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                  run_loop.QuitClosure(),
@@ -546,10 +697,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // content is not changing.
 IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
                        DeliversRefreshFramesUponRequest) {
+  NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
   // Set the page content to a known color.
-  ChangePageContentColor("#ff0000");
+  ChangePageContentColor("ff0000");
   WaitForFrameWithColor(SK_ColorRED);
 
   // Without making any further changes to the source (which would trigger
@@ -565,13 +717,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 class WebContentsVideoCaptureDeviceBrowserTestP
     : public WebContentsVideoCaptureDeviceBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  public:
   bool use_software_compositing() const override {
     return std::get<0>(GetParam());
   }
   bool use_fixed_aspect_ratio() const override {
     return std::get<1>(GetParam());
+  }
+  bool is_cross_site_capture_test() const override {
+    return std::get<2>(GetParam());
   }
 };
 
@@ -583,6 +738,8 @@ INSTANTIATE_TEST_CASE_P(
         // On ChromeOS, software compositing is not an option.
         testing::Values(false),
         // Force video frame resolutions to have a fixed aspect ratio?
+        testing::Values(false, true),
+        // Test with a document that contains a cross-site iframe?
         testing::Values(false, true)));
 #else
 INSTANTIATE_TEST_CASE_P(
@@ -592,13 +749,15 @@ INSTANTIATE_TEST_CASE_P(
         // Use software compositing instead of GPU-accelerated compositing?
         testing::Values(false, true),
         // Force video frame resolutions to have a fixed aspect ratio?
+        testing::Values(false, true),
+        // Test with a document that contains a cross-site iframe?
         testing::Values(false, true)));
 #endif  // defined(OS_CHROMEOS)
 
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
-// compositing, and whether the WebContents is visible/hidden or
-// occluded/unoccluded.
+// compositing, whether the WebContents is visible/hidden or occluded/unoccluded
+// and whether the main document contains a cross-site iframe.
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
                        CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
@@ -609,6 +768,7 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
                << (use_fixed_aspect_ratio() ? "Fixed Video Aspect Ratio"
                                             : "Variable Video Aspect Ratio"));
 
+  NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
   for (int visilibilty_case = 0; visilibilty_case < 3; ++visilibilty_case) {
@@ -638,16 +798,16 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
     }
 
     static const struct {
-      const char* const css;
+      const char* const css_hex;
       SkColor skia;
     } kColorsToCycleThrough[] = {
-        {"#ff0000", SK_ColorRED},   {"#00ff00", SK_ColorGREEN},
-        {"#0000ff", SK_ColorBLUE},  {"#ffff00", SK_ColorYELLOW},
-        {"#00ffff", SK_ColorCYAN},  {"#ff00ff", SK_ColorMAGENTA},
-        {"#ffffff", SK_ColorWHITE},
+        {"ff0000", SK_ColorRED},   {"00ff00", SK_ColorGREEN},
+        {"0000ff", SK_ColorBLUE},  {"ffff00", SK_ColorYELLOW},
+        {"00ffff", SK_ColorCYAN},  {"ff00ff", SK_ColorMAGENTA},
+        {"ffffff", SK_ColorWHITE},
     };
     for (const auto color : kColorsToCycleThrough) {
-      ChangePageContentColor(color.css);
+      ChangePageContentColor(color.css_hex);
       WaitForFrameWithColor(color.skia);
     }
   }
