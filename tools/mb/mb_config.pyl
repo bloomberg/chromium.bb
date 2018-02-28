@@ -1888,7 +1888,7 @@
     # size of chrome installer which are downloaded by bysecting script many
     # times.
     'enable_archive_compression': {
-      'gn_args': 'enable_archive_compression=true',
+      'gn_args': 'skip_archive_compression=false',
     },
 
     # This mixin is used to force configs that use it to fail. It
