@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Col 1'",
-          "rect": [266, 74, 268, 19],
+          "rect": [533, 74, 267, 19],
           "reason": "style change"
         },
         {
           "object": "InlineTextBox 'Col 1'",
-          "rect": [533, 74, 267, 19],
+          "rect": [267, 74, 266, 19],
           "reason": "style change"
         },
         {
@@ -34,7 +34,7 @@
         },
         {
           "object": "InlineTextBox 'Col 1'",
-          "rect": [799, 74, 47, 19],
+          "rect": [800, 74, 46, 19],
           "reason": "style change"
         }
       ]
