@@ -108,6 +108,8 @@ enum class ReauthenticationStatus {
 @property(nonatomic, copy) NSString* serializedPasswords;
 // The exporter state.
 @property(nonatomic, assign) ExportState exportState;
+// The number of passwords that are exported. Used for metrics.
+@property(nonatomic, assign) int passwordCount;
 
 @end
 
@@ -120,6 +122,7 @@ enum class ReauthenticationStatus {
 @synthesize reauthenticationStatus = _reauthenticationStatus;
 @synthesize serializingFinished = _serializingFinished;
 @synthesize serializedPasswords = _serializedPasswords;
+@synthesize passwordCount = _passwordCount;
 
 - (instancetype)initWithReauthenticationModule:
                     (id<ReauthenticationProtocol>)reauthenticationModule
@@ -171,6 +174,8 @@ enum class ReauthenticationStatus {
 
 - (void)serializePasswords:
     (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
+  self.passwordCount = passwords.size();
+
   base::Time exportPreparationStart = base::Time::Now();
   __weak PasswordExporter* weakSelf = self;
   void (^onPasswordsSerialized)(std::string) =
@@ -242,6 +247,7 @@ enum class ReauthenticationStatus {
 - (void)resetExportState {
   self.serializingFinished = NO;
   self.serializedPasswords = nil;
+  self.passwordCount = 0;
   self.reauthenticationStatus = ReauthenticationStatus::PENDING;
   self.exportState = ExportState::IDLE;
   [_weakDelegate updateExportPasswordsButton];
@@ -345,6 +351,8 @@ enum class ReauthenticationStatus {
       "PasswordManager.ExportPasswordsToCSVResult",
       password_manager::metrics_util::ExportPasswordsResult::SUCCESS,
       password_manager::metrics_util::ExportPasswordsResult::COUNT);
+  UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
+                       self.passwordCount);
 }
 
 #pragma mark - ForTesting
