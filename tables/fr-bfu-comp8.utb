@@ -1,6 +1,7 @@
 #+locale:fr
 #+type:computer
 #+dots:8
+#+system:bfu
 
 #-display-name: Unified French 8 dots
 #-author: André-Abush CLAUSE <dev@andreabc.net>
