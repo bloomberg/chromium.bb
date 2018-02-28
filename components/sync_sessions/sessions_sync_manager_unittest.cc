@@ -125,22 +125,17 @@ testing::AssertionResult ChangeTypeMatches(
 
 class SessionNotificationObserver {
  public:
-  SessionNotificationObserver()
-      : notified_of_update_(false), notified_of_refresh_(false) {}
+  SessionNotificationObserver() : notified_of_update_(false) {}
   void NotifyOfUpdate() { notified_of_update_ = true; }
-  void NotifyOfRefresh() { notified_of_refresh_ = true; }
 
   bool notified_of_update() const { return notified_of_update_; }
-  bool notified_of_refresh() const { return notified_of_refresh_; }
 
   void Reset() {
     notified_of_update_ = false;
-    notified_of_refresh_ = false;
   }
 
  private:
   bool notified_of_update_;
-  bool notified_of_refresh_;
 };
 
 // A SyncedTabDelegate fake for testing. It simulates a normal
@@ -501,8 +496,6 @@ class SessionsSyncManagerTest : public testing::Test {
         &mock_sync_sessions_client_, sync_prefs_.get(), local_device_.get(),
         router_.get(),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
-                   base::Unretained(&observer_)),
-        base::Bind(&SessionNotificationObserver::NotifyOfRefresh,
                    base::Unretained(&observer_)));
   }
 
@@ -2274,19 +2267,6 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfLocalRemovalOfForeignSession) {
   ASSERT_FALSE(observer()->notified_of_update());
   manager()->GetOpenTabsUIDelegate()->DeleteForeignSession(tag);
   ASSERT_TRUE(observer()->notified_of_update());
-}
-
-// Tests that opening the other devices page triggers a session sync refresh.
-// This page only exists on mobile platforms today; desktop has a
-// search-enhanced NTP without other devices.
-TEST_F(SessionsSyncManagerTest, NotifiedOfRefresh) {
-  SessionID::id_type window_id = AddWindow()->GetSessionId();
-  ASSERT_FALSE(observer()->notified_of_refresh());
-  InitWithNoSyncData();
-  TestSyncedTabDelegate* tab = AddTab(window_id, kFoo1);
-  EXPECT_FALSE(observer()->notified_of_refresh());
-  NavigateTab(tab, "chrome://newtab/#open_tabs");
-  EXPECT_TRUE(observer()->notified_of_refresh());
 }
 
 // Tests receipt of duplicate tab IDs in the same window.  This should never

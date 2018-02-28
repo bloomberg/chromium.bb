@@ -63,8 +63,7 @@ class SessionsSyncManager : public syncer::SyncableService,
                       syncer::SyncPrefs* sync_prefs,
                       syncer::LocalDeviceInfoProvider* local_device,
                       LocalSessionEventRouter* router,
-                      const base::Closure& sessions_updated_callback,
-                      const base::Closure& datatype_refresh_callback);
+                      const base::RepeatingClosure& sessions_updated_callback);
   ~SessionsSyncManager() override;
 
   // syncer::SyncableService implementation.
@@ -293,10 +292,7 @@ class SessionsSyncManager : public syncer::SyncableService,
       lost_navigations_recorder_;
 
   // Callback to inform interested observer that new sessions data has arrived.
-  base::Closure sessions_updated_callback_;
-
-  // Callback to inform sync that a sync data refresh is requested.
-  base::Closure datatype_refresh_callback_;
+  base::RepeatingClosure sessions_updated_callback_;
 
   // Tracks Chrome Tasks, which associates navigations, with tab and navigation
   // changes of current session.
