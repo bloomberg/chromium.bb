@@ -80,19 +80,17 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     return content::PREVIEWS_OFF;
   }
 
-  // Make priority decision among allow client preview types that can be decided
-  // at Commit time.
+  // Make priority decision among allowed client preview types that can be
+  // decided at Commit time.
   if (previews_state & content::NOSCRIPT_ON) {
-    // Use NoScript if committed URL is HTTPS and NoScript is still allowed
-    // (without reconsidering ECT).
+    // NoScript was chosen for the original URL but only continue with it
+    // if the committed URL has HTTPS scheme and is allowed by decider.
     if (is_https && previews_decider &&
-        previews_decider->ShouldAllowPreviewAtECT(
-            url_request, previews::PreviewsType::NOSCRIPT,
-            net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST,
-            std::vector<std::string>())) {
+        previews_decider->IsURLAllowedForPreview(
+            url_request, previews::PreviewsType::NOSCRIPT)) {
       return content::NOSCRIPT_ON;
     }
-    previews_state &= ~(content::NOSCRIPT_ON);
+    return content::PREVIEWS_OFF;
   }
   if (previews_state & content::CLIENT_LOFI_ON) {
     return content::CLIENT_LOFI_ON;

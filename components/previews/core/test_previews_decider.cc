@@ -25,4 +25,9 @@ bool TestPreviewsDecider::ShouldAllowPreview(
   return allow_previews_;
 }
 
+bool TestPreviewsDecider::IsURLAllowedForPreview(const net::URLRequest& request,
+                                                 PreviewsType type) const {
+  return allow_previews_;
+}
+
 }  // namespace previews

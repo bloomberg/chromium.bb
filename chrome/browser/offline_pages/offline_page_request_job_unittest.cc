@@ -255,6 +255,11 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
     return should_allow_preview_;
   }
 
+  bool IsURLAllowedForPreview(const net::URLRequest& request,
+                              previews::PreviewsType type) const override {
+    return should_allow_preview_;
+  }
+
   bool should_allow_preview() const { return should_allow_preview_; }
   void set_should_allow_preview(bool should_allow_preview) {
     should_allow_preview_ = should_allow_preview;

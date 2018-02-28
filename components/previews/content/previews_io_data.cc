@@ -306,16 +306,13 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   if (IsServerWhitelistedType(type)) {
     if (params::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so require whitelist match.
-      if (!previews_opt_guide_ ||
-          !previews_opt_guide_->IsWhitelisted(request, type)) {
-        LogPreviewDecisionMade(
-            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
-            request.url(), base::Time::Now(), type, std::move(passed_reasons),
-            page_id);
+      PreviewsEligibilityReason status =
+          IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
+      if (status != PreviewsEligibilityReason::ALLOWED) {
+        LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+                               std::move(passed_reasons), page_id);
         return false;
       }
-      passed_reasons.push_back(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
     } else {
       // Since server optimization guidance not configured, allow the preview
       // but with qualified eligibility reason.
@@ -331,6 +328,56 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
                          base::Time::Now(), type, std::move(passed_reasons),
                          page_id);
   return true;
+}
+
+bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
+                                            PreviewsType type) const {
+  if (previews_black_list_ && !blacklist_ignored_) {
+    std::vector<PreviewsEligibilityReason> passed_reasons;
+    // The blacklist will disallow certain hosts for periods of time based on
+    // user's opting out of the preview.
+    PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
+        request.url(), type, &passed_reasons);
+    if (status != PreviewsEligibilityReason::ALLOWED) {
+      LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+                             std::move(passed_reasons),
+                             PreviewsUserData::GetData(request)->page_id());
+      return false;
+    }
+  }
+
+  // Check whitelist from the server, if provided.
+  if (IsServerWhitelistedType(type)) {
+    if (params::IsOptimizationHintsEnabled()) {
+      std::vector<PreviewsEligibilityReason> passed_reasons;
+      PreviewsEligibilityReason status =
+          IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
+      if (status != PreviewsEligibilityReason::ALLOWED) {
+        LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+                               std::move(passed_reasons),
+                               PreviewsUserData::GetData(request)->page_id());
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+PreviewsEligibilityReason PreviewsIOData::IsPreviewAllowedByOptmizationHints(
+    const net::URLRequest& request,
+    PreviewsType type,
+    std::vector<PreviewsEligibilityReason>* passed_reasons) const {
+  if (!previews_opt_guide_)
+    return PreviewsEligibilityReason::ALLOWED;
+
+  // Check optmization guide whitelist.
+  if (!previews_opt_guide_->IsWhitelisted(request, type)) {
+    return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
+  }
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
+
+  return PreviewsEligibilityReason::ALLOWED;
 }
 
 uint64_t PreviewsIOData::GeneratePageId() {

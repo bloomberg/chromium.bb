@@ -20,10 +20,12 @@ namespace previews {
 
 namespace {
 
-class TestPreviewsDecider : public PreviewsDecider {
+// A test implementation of PreviewsDecider that simply returns whether the
+// preview type feature is enabled (ignores ECT and blacklist considerations).
+class PreviewEnabledPreviewsDecider : public PreviewsDecider {
  public:
-  TestPreviewsDecider() {}
-  ~TestPreviewsDecider() override {}
+  PreviewEnabledPreviewsDecider() {}
+  ~PreviewEnabledPreviewsDecider() override {}
 
   bool ShouldAllowPreviewAtECT(
       const net::URLRequest& request,
@@ -31,8 +33,23 @@ class TestPreviewsDecider : public PreviewsDecider {
       net::EffectiveConnectionType effective_connection_type_threshold,
       const std::vector<std::string>& host_blacklist_from_server)
       const override {
-    // For these tests, simply return whether client preview feature is enabled
-    // or not (ignores ECT and blacklist considerations).
+    return IsEnabled(type);
+  }
+
+  bool ShouldAllowPreview(const net::URLRequest& request,
+                          PreviewsType type) const override {
+    return ShouldAllowPreviewAtECT(request, type,
+                                   params::GetECTThresholdForPreview(type),
+                                   std::vector<std::string>());
+  }
+
+  bool IsURLAllowedForPreview(const net::URLRequest& request,
+                              PreviewsType type) const override {
+    return IsEnabled(type);
+  }
+
+ private:
+  bool IsEnabled(PreviewsType type) const {
     switch (type) {
       case previews::PreviewsType::OFFLINE:
         return previews::params::IsOfflinePreviewsEnabled();
@@ -51,21 +68,16 @@ class TestPreviewsDecider : public PreviewsDecider {
     NOTREACHED();
     return false;
   }
-
-  bool ShouldAllowPreview(const net::URLRequest& request,
-                          PreviewsType type) const override {
-    return ShouldAllowPreviewAtECT(request, type,
-                                   params::GetECTThresholdForPreview(type),
-                                   std::vector<std::string>());
-  }
 };
 
 class PreviewsContentUtilTest : public testing::Test {
  public:
-  PreviewsContentUtilTest() : previews_decider_(), context_() {}
+  PreviewsContentUtilTest() : enabled_previews_decider_(), context_() {}
   ~PreviewsContentUtilTest() override {}
 
-  TestPreviewsDecider* previews_decider() { return &previews_decider_; }
+  PreviewsDecider* enabled_previews_decider() {
+    return &enabled_previews_decider_;
+  }
 
   std::unique_ptr<net::URLRequest> CreateRequest() const {
     return CreateRequestWithURL(GURL("http://example.com"));
@@ -85,7 +97,7 @@ class PreviewsContentUtilTest : public testing::Test {
   base::MessageLoopForIO loop_;
 
  private:
-  TestPreviewsDecider previews_decider_;
+  PreviewEnabledPreviewsDecider enabled_previews_decider_;
   net::TestURLRequestContext context_;
 };
 
@@ -95,22 +107,22 @@ TEST_F(PreviewsContentUtilTest,
   scoped_feature_list.InitFromCommandLine("ClientLoFi" /* enable_features */,
                                           "Previews" /* disable_features */);
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
-                                                          previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateHttpsRequest(), enabled_previews_decider()));
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineEnabledClientPreviewsState(*CreateRequest(),
-                                                          previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateRequest(), enabled_previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest, DetermineEnabledClientPreviewsStateClientLoFi) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
   EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
-                                                          previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateHttpsRequest(), enabled_previews_decider()));
   EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineEnabledClientPreviewsState(*CreateRequest(),
-                                                          previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateRequest(), enabled_previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -122,21 +134,21 @@ TEST_F(PreviewsContentUtilTest,
 
   // Verify NoScript takes precendence over LoFi (for https).
   EXPECT_EQ(content::NOSCRIPT_ON,
-            previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
-                                                          previews_decider()));
-  EXPECT_EQ(content::NOSCRIPT_ON, previews::DetermineEnabledClientPreviewsState(
-                                      *CreateRequest(), previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateHttpsRequest(), enabled_previews_decider()));
+  EXPECT_EQ(content::NOSCRIPT_ON,
+            previews::DetermineEnabledClientPreviewsState(
+                *CreateRequest(), enabled_previews_decider()));
 
   // Verify non-HTTP[S] URL has no previews enabled.
   std::unique_ptr<net::URLRequest> data_url_request(
       CreateRequestWithURL(GURL("data://someblob")));
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineEnabledClientPreviewsState(*data_url_request,
-                                                          previews_decider()));
+            previews::DetermineEnabledClientPreviewsState(
+                *data_url_request, enabled_previews_decider()));
 }
 
-TEST_F(PreviewsContentUtilTest,
-       DetermineCommittedClientPreviewsStateClientLoFi) {
+TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "Previews,ClientLoFi,NoScriptPreviews", std::string());
@@ -147,21 +159,27 @@ TEST_F(PreviewsContentUtilTest,
                 *CreateHttpsRequest(),
                 content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                     content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                previews_decider()));
+                enabled_previews_decider()));
 
-  // For HTTPS, NoScript has precendence over Client LoFi:
+  // NoScript has precedence over Client LoFi - kept for committed HTTPS:
   EXPECT_EQ(
       content::NOSCRIPT_ON,
       previews::DetermineCommittedClientPreviewsState(
           *CreateHttpsRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-          previews_decider()));
+          enabled_previews_decider()));
 
-  // HTTP allows Client LoFi:
+  // NoScript has precedence over Client LoFi - dropped for committed HTTP:
   EXPECT_EQ(
-      content::CLIENT_LOFI_ON,
+      content::PREVIEWS_OFF,
       previews::DetermineCommittedClientPreviewsState(
           *CreateRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-          previews_decider()));
+          enabled_previews_decider()));
+
+  // Client LoFi:
+  EXPECT_EQ(content::CLIENT_LOFI_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                *CreateHttpsRequest(), content::CLIENT_LOFI_ON,
+                enabled_previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -170,10 +188,10 @@ TEST_F(PreviewsContentUtilTest,
   scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
   // NoScript not allowed at commit time so Client LoFi chosen:
   EXPECT_EQ(
-      content::CLIENT_LOFI_ON,
+      content::PREVIEWS_OFF,
       previews::DetermineCommittedClientPreviewsState(
           *CreateHttpsRequest(), content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-          previews_decider()));
+          enabled_previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
