@@ -223,7 +223,7 @@ class BleConnectionManager : public BleScanner::Observer {
       StateChangeDetail state_change_detail);
   void OnGattCharacteristicsNotAvailable(const std::string& device_id);
 
-  void SetTestDoubles(std::unique_ptr<base::Clock> test_clock,
+  void SetTestDoubles(base::Clock* test_clock,
                       std::unique_ptr<TimerFactory> test_timer_factory);
 
   // Record various operation durations. These need to be separate methods
@@ -240,7 +240,7 @@ class BleConnectionManager : public BleScanner::Observer {
   AdHocBleAdvertiser* ad_hoc_ble_advertisement_;
 
   std::unique_ptr<TimerFactory> timer_factory_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   bool has_registered_observer_;
   std::map<std::string, std::unique_ptr<ConnectionMetadata>>

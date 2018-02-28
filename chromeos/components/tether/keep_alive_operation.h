@@ -67,10 +67,10 @@ class KeepAliveOperation : public MessageTransferOperation {
  private:
   friend class KeepAliveOperationTest;
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+  void SetClockForTest(base::Clock* clock_for_test);
 
   cryptauth::RemoteDevice remote_device_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   base::ObserverList<Observer> observer_list_;
 
   base::Time keep_alive_tickle_request_start_time_;

@@ -54,7 +54,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
           connection_manager),
       remote_device_(device_to_connect),
       has_sent_message_(false),
-      clock_(std::make_unique<base::DefaultClock>()) {}
+      clock_(base::DefaultClock::GetInstance()) {}
 
 DisconnectTetheringOperation::~DisconnectTetheringOperation() = default;
 
@@ -107,8 +107,8 @@ void DisconnectTetheringOperation::OnMessageSent(int sequence_number) {
 }
 
 void DisconnectTetheringOperation::SetClockForTest(
-    std::unique_ptr<base::Clock> clock_for_test) {
-  clock_ = std::move(clock_for_test);
+    base::Clock* clock_for_test) {
+  clock_ = clock_for_test;
 }
 
 }  // namespace tether

@@ -68,7 +68,7 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   void LogHostScanBatchMetric();
 
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
-                      std::unique_ptr<base::Clock> test_clock,
+                      base::Clock* test_clock,
                       scoped_refptr<base::TaskRunner> test_task_runner);
 
   NetworkStateHandler* network_state_handler_;
@@ -76,7 +76,7 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   session_manager::SessionManager* session_manager_;
 
   std::unique_ptr<base::Timer> timer_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   base::Time last_scan_batch_start_timestamp_;

@@ -75,7 +75,7 @@ ConnectTetheringOperation::ConnectTetheringOperation(
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
-      clock_(std::make_unique<base::DefaultClock>()),
+      clock_(base::DefaultClock::GetInstance()),
       setup_required_(setup_required),
       error_code_to_return_(
           ConnectTetheringResponse_ResponseCode::
@@ -209,9 +209,8 @@ uint32_t ConnectTetheringOperation::GetTimeoutSeconds() {
                    kSetupNotRequiredResponseTimeoutSeconds;
 }
 
-void ConnectTetheringOperation::SetClockForTest(
-    std::unique_ptr<base::Clock> clock_for_test) {
-  clock_ = std::move(clock_for_test);
+void ConnectTetheringOperation::SetClockForTest(base::Clock* clock_for_test) {
+  clock_ = clock_for_test;
 }
 
 }  // namespace tether

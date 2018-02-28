@@ -110,12 +110,12 @@ class HostScannerOperation : public MessageTransferOperation {
  private:
   friend class HostScannerOperationTest;
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+  void SetClockForTest(base::Clock* clock_for_test);
   void RecordTetherAvailabilityResponseDuration(const std::string device_id);
 
   TetherHostResponseRecorder* tether_host_response_recorder_;
   ConnectionPreserver* connection_preserver_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   base::ObserverList<Observer> observer_list_;
 
   std::vector<cryptauth::RemoteDevice> gms_core_notifications_disabled_devices_;

@@ -153,9 +153,8 @@ class HostScannerOperationTest : public testing::Test {
     test_host_scan_device_prioritizer_->VerifyHasBeenPrioritized(
         remote_devices, operation_->remote_devices());
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+    test_clock_.SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(&test_clock_);
 
     EXPECT_FALSE(test_observer_->has_received_update());
     operation_->Initialize();
@@ -192,7 +191,7 @@ class HostScannerOperationTest : public testing::Test {
     size_t num_scanned_device_results_so_far =
         test_observer_->scanned_devices_so_far().size();
 
-    test_clock_->Advance(kTetherAvailabilityResponseTime);
+    test_clock_.Advance(kTetherAvailabilityResponseTime);
 
     fake_ble_connection_manager_->ReceiveMessage(
         remote_device.GetDeviceId(), CreateTetherAvailabilityResponseString(
@@ -264,7 +263,7 @@ class HostScannerOperationTest : public testing::Test {
       mock_tether_host_response_recorder_;
   std::unique_ptr<FakeConnectionPreserver> fake_connection_preserver_;
   std::unique_ptr<TestObserver> test_observer_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::unique_ptr<HostScannerOperation> operation_;
 
   base::HistogramTester histogram_tester_;
