@@ -740,10 +740,8 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   AVERAGE_TILE_CDFS(zeromv_cdf)
   AVERAGE_TILE_CDFS(refmv_cdf)
   AVERAGE_TILE_CDFS(drl_cdf)
-#if CONFIG_EXT_COMP_REFS
   AVERAGE_TILE_CDFS(uni_comp_ref_cdf)
   AVERAGE_TILE_CDFS(comp_ref_type_cdf)
-#endif
   AVERAGE_TILE_CDFS(inter_compound_mode_cdf)
 
   AVERAGE_TILE_CDFS(compound_type_cdf)

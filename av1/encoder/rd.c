@@ -240,7 +240,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       }
     }
 
-#if CONFIG_EXT_COMP_REFS
     for (i = 0; i < COMP_REF_TYPE_CONTEXTS; ++i) {
       av1_cost_tokens_from_cdf(x->comp_ref_type_cost[i],
                                fc->comp_ref_type_cdf[i], NULL);
@@ -252,7 +251,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                  fc->uni_comp_ref_cdf[i][j], NULL);
       }
     }
-#endif  // CONFIG_EXT_COMP_REFS
 
     for (i = 0; i < REF_CONTEXTS; ++i) {
       for (j = 0; j < FWD_REFS - 1; ++j) {
@@ -1032,12 +1030,10 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL3A2] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTGA2] += 1000;
 
-#if CONFIG_EXT_COMP_REFS
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLL2] += 2000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLL3] += 2000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLG] += 2000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTBA] += 2000;
-#endif  // CONFIG_EXT_COMP_REFS
 
   rd->thresh_mult[THR_COMP_NEAR_NEARLA] += 1200;
   rd->thresh_mult[THR_COMP_NEAREST_NEWLA] += 1500;
@@ -1144,7 +1140,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_D113_PRED] += 2500;
   rd->thresh_mult[THR_D45_PRED] += 2500;
 
-#if CONFIG_EXT_COMP_REFS
   rd->thresh_mult[THR_COMP_NEAR_NEARLL2] += 1600;
   rd->thresh_mult[THR_COMP_NEAREST_NEWLL2] += 2000;
   rd->thresh_mult[THR_COMP_NEW_NEARESTLL2] += 2000;
@@ -1176,7 +1171,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEARBA] += 2200;
   rd->thresh_mult[THR_COMP_NEW_NEWBA] += 2400;
   rd->thresh_mult[THR_COMP_GLOBAL_GLOBALBA] += 3200;
-#endif  // CONFIG_EXT_COMP_REFS
 }
 
 void av1_set_rd_speed_thresholds_sub8x8(AV1_COMP *cpi) {

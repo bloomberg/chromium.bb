@@ -335,13 +335,11 @@ typedef enum ATTRIBUTE_PACKED {
   AOM_REFFRAME_ALL = (1 << 7) - 1
 } AOM_REFFRAME;
 
-#if CONFIG_EXT_COMP_REFS
 typedef enum ATTRIBUTE_PACKED {
   UNIDIR_COMP_REFERENCE,
   BIDIR_COMP_REFERENCE,
   COMP_REFERENCE_TYPES,
 } COMP_REFERENCE_TYPE;
-#endif  // CONFIG_EXT_COMP_REFS
 
 typedef enum ATTRIBUTE_PACKED {
   PLANE_TYPE_Y,
@@ -563,10 +561,8 @@ typedef enum ATTRIBUTE_PACKED {
 #define COMP_INTER_CONTEXTS 5
 #define REF_CONTEXTS 3
 
-#if CONFIG_EXT_COMP_REFS
 #define COMP_REF_TYPE_CONTEXTS 5
 #define UNI_COMP_REF_CONTEXTS 3
-#endif  // CONFIG_EXT_COMP_REFS
 
 #define TXFM_PARTITION_CONTEXTS ((TX_SIZES - TX_8X8) * 6 - 2)
 typedef uint8_t TXFM_CONTEXT;
@@ -604,20 +600,14 @@ typedef enum ATTRIBUTE_PACKED {
   BWDREF_ALTREF2_FRAMES,  // { BWDREF_FRAME, ALTREF2_FRAME }
   ALTREF2_ALTREF_FRAMES,  // { ALTREF2_FRAME, ALTREF_FRAME }
   TOTAL_UNIDIR_COMP_REFS,
-#if CONFIG_EXT_COMP_REFS
   // NOTE: UNIDIR_COMP_REFS is the number of uni-directional reference pairs
   //       that are explicitly signaled.
   UNIDIR_COMP_REFS = BWDREF_ALTREF_FRAMES + 1,
-#endif  // CONFIG_EXT_COMP_REFS
 } UNIDIR_COMP_REF;
 
 #define TOTAL_COMP_REFS (FWD_REFS * BWD_REFS + TOTAL_UNIDIR_COMP_REFS)
 
-#if CONFIG_EXT_COMP_REFS
 #define COMP_REFS (FWD_REFS * BWD_REFS + UNIDIR_COMP_REFS)
-#else  // !CONFIG_EXT_COMP_REFS
-#define COMP_REFS (FWD_REFS * BWD_REFS)
-#endif  // CONFIG_EXT_COMP_REFS
 
 // NOTE: A limited number of unidirectional reference pairs can be signalled for
 //       compound prediction. The use of skip mode, on the other hand, makes it

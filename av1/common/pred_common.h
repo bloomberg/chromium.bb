@@ -191,7 +191,6 @@ static INLINE aom_cdf_prob *av1_get_reference_mode_cdf(const AV1_COMMON *cm,
   return xd->tile_ctx->comp_inter_cdf[av1_get_reference_mode_context(cm, xd)];
 }
 
-#if CONFIG_EXT_COMP_REFS
 int av1_get_comp_reference_type_context(const MACROBLOCKD *xd);
 
 // == Uni-directional contexts ==
@@ -225,7 +224,6 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_uni_comp_ref_p2(
   const int pred_context = av1_get_pred_context_uni_comp_ref_p2(xd);
   return xd->tile_ctx->uni_comp_ref_cdf[pred_context][2];
 }
-#endif  // CONFIG_EXT_COMP_REFS
 
 // == Bi-directional contexts ==
 

@@ -434,8 +434,7 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob\n"
       "default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)]");
 
-/* ext_comp_refs experiment */
-#if CONFIG_EXT_COMP_REFS
+  /* ext_comp_refs experiment */
   cts_each_dim[0] = COMP_REF_TYPE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_cdf_table(
@@ -450,7 +449,6 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob\n"
                      "default_uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_"
                      "COMP_REFS - 1][CDF_SIZE(2)]");
-#endif
 
   /* Reference frame (single ref) */
   cts_each_dim[0] = REF_CONTEXTS;

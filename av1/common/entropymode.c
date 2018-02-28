@@ -182,7 +182,6 @@ static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
             { AOM_CDF2(9804) },
             { AOM_CDF2(2842) } };
 
-#if CONFIG_EXT_COMP_REFS
 static const aom_cdf_prob default_comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS]
                                                    [CDF_SIZE(2)] = {
                                                      { AOM_CDF2(8 * 128) },
@@ -202,7 +201,6 @@ static const aom_cdf_prob
                                               { { AOM_CDF2(254 * 128) },
                                                 { AOM_CDF2(180 * 128) },
                                                 { AOM_CDF2(196 * 128) } } };
-#endif  // CONFIG_EXT_COMP_REFS
 
 static const aom_cdf_prob
     default_comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)] = {
@@ -1091,10 +1089,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->angle_delta_cdf, default_angle_delta_cdf);
 #endif  // CONFIG_EXT_INTRA_MOD
   av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
-#if CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_type_cdf, default_comp_ref_type_cdf);
   av1_copy(fc->uni_comp_ref_cdf, default_uni_comp_ref_cdf);
-#endif  // CONFIG_EXT_COMP_REFS
   av1_copy(fc->palette_y_mode_cdf, default_palette_y_mode_cdf);
   av1_copy(fc->palette_uv_mode_cdf, default_palette_uv_mode_cdf);
   av1_copy(fc->comp_ref_cdf, default_comp_ref_cdf);

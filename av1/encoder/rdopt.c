@@ -92,14 +92,9 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
    (1 << LAST3_FRAME) | (1 << GOLDEN_FRAME) | (1 << BWDREF_FRAME) | \
    (1 << ALTREF2_FRAME))
 
-#if CONFIG_EXT_COMP_REFS
 #define SECOND_REF_FRAME_MASK                                         \
   ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | \
    (1 << GOLDEN_FRAME) | (1 << LAST2_FRAME) | 0x01)
-#else  // !CONFIG_EXT_COMP_REFS
-#define SECOND_REF_FRAME_MASK \
-  ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | 0x01)
-#endif  // CONFIG_EXT_COMP_REFS
 
 #define NEW_MV_DISCOUNT_FACTOR 8
 
@@ -184,12 +179,10 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEAREST_NEARESTMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEARESTMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
 
-#if CONFIG_EXT_COMP_REFS
   { NEAREST_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAREST_NEARESTMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAREST_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAREST_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
-#endif  // CONFIG_EXT_COMP_REFS
 
   { PAETH_PRED, { INTRA_FRAME, NONE_FRAME } },
 
@@ -302,7 +295,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { D113_PRED, { INTRA_FRAME, NONE_FRAME } },
   { D45_PRED, { INTRA_FRAME, NONE_FRAME } },
 
-#if CONFIG_EXT_COMP_REFS
   { NEAR_NEARMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, LAST2_FRAME } },
@@ -334,7 +326,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEAR_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { GLOBAL_GLOBALMV, { BWDREF_FRAME, ALTREF_FRAME } },
-#endif  // CONFIG_EXT_COMP_REFS
 };
 
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
@@ -5504,25 +5495,16 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 static void estimate_ref_frame_costs(
     const AV1_COMMON *cm, const MACROBLOCKD *xd, const MACROBLOCK *x,
     int segment_id, unsigned int *ref_costs_single,
-#if CONFIG_EXT_COMP_REFS
-    unsigned int (*ref_costs_comp)[TOTAL_REFS_PER_FRAME]
-#else
-    unsigned int *ref_costs_comp
-#endif  // CONFIG_EXT_COMP_REFS
-) {
+    unsigned int (*ref_costs_comp)[TOTAL_REFS_PER_FRAME]) {
   int seg_ref_active =
       segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
   if (seg_ref_active) {
     memset(ref_costs_single, 0,
            TOTAL_REFS_PER_FRAME * sizeof(*ref_costs_single));
-#if CONFIG_EXT_COMP_REFS
     int ref_frame;
     for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
       memset(ref_costs_comp[ref_frame], 0,
              TOTAL_REFS_PER_FRAME * sizeof((*ref_costs_comp)[0]));
-#else
-    memset(ref_costs_comp, 0, TOTAL_REFS_PER_FRAME * sizeof(*ref_costs_comp));
-#endif  // CONFIG_EXT_COMP_REFS
   } else {
     int intra_inter_ctx = av1_get_intra_inter_context(xd);
     ref_costs_single[INTRA_FRAME] = x->intra_inter_cost[intra_inter_ctx][0];
@@ -5572,7 +5554,6 @@ static void estimate_ref_frame_costs(
       const int ref_comp_ctx_p1 = av1_get_pred_context_comp_ref_p1(xd);
       const int ref_comp_ctx_p2 = av1_get_pred_context_comp_ref_p2(xd);
 
-#if CONFIG_EXT_COMP_REFS
       const int comp_ref_type_ctx = av1_get_comp_reference_type_context(xd);
       unsigned int ref_bicomp_costs[TOTAL_REFS_PER_FRAME] = { 0 };
 
@@ -5633,42 +5614,7 @@ static void estimate_ref_frame_costs(
       ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] =
           base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
           x->uni_comp_ref_cost[uni_comp_ref_ctx_p][0][1];
-#else   // !CONFIG_EXT_COMP_REFS
-
-      ref_costs_comp[LAST_FRAME] = ref_costs_comp[LAST2_FRAME] =
-          ref_costs_comp[LAST3_FRAME] = ref_costs_comp[GOLDEN_FRAME] =
-              base_cost;
-
-      ref_costs_comp[BWDREF_FRAME] = ref_costs_comp[ALTREF2_FRAME] =
-          ref_costs_comp[ALTREF_FRAME] = 0;
-
-      ref_costs_comp[LAST_FRAME] += x->comp_ref_cost[ref_comp_ctx_p][0][0];
-      ref_costs_comp[LAST2_FRAME] += x->comp_ref_cost[ref_comp_ctx_p][0][0];
-      ref_costs_comp[LAST3_FRAME] += x->comp_ref_cost[ref_comp_ctx_p][0][1];
-      ref_costs_comp[GOLDEN_FRAME] += x->comp_ref_cost[ref_comp_ctx_p][0][1];
-
-      ref_costs_comp[LAST_FRAME] += x->comp_ref_cost[ref_comp_ctx_p1][1][0];
-      ref_costs_comp[LAST2_FRAME] += x->comp_ref_cost[ref_comp_ctx_p1][1][1];
-
-      ref_costs_comp[LAST3_FRAME] += x->comp_ref_cost[ref_comp_ctx_p2][2][0];
-      ref_costs_comp[GOLDEN_FRAME] += x->comp_ref_cost[ref_comp_ctx_p2][2][1];
-
-      // NOTE(zoeliu): BWDREF and ALTREF each add an extra cost by coding 1
-      //               more bit.
-      ref_costs_comp[BWDREF_FRAME] +=
-          x->comp_bwdref_cost[bwdref_comp_ctx_p][0][0];
-      ref_costs_comp[ALTREF2_FRAME] +=
-          x->comp_bwdref_cost[bwdref_comp_ctx_p][0][0];
-      ref_costs_comp[ALTREF_FRAME] +=
-          x->comp_bwdref_cost[bwdref_comp_ctx_p][0][1];
-
-      ref_costs_comp[BWDREF_FRAME] +=
-          x->comp_bwdref_cost[bwdref_comp_ctx_p1][1][0];
-      ref_costs_comp[ALTREF2_FRAME] +=
-          x->comp_bwdref_cost[bwdref_comp_ctx_p1][1][1];
-#endif  // CONFIG_EXT_COMP_REFS
     } else {
-#if CONFIG_EXT_COMP_REFS
       int ref0, ref1;
       for (ref0 = LAST_FRAME; ref0 <= GOLDEN_FRAME; ++ref0) {
         for (ref1 = BWDREF_FRAME; ref1 <= ALTREF_FRAME; ++ref1)
@@ -5678,15 +5624,6 @@ static void estimate_ref_frame_costs(
       ref_costs_comp[LAST_FRAME][LAST3_FRAME] = 512;
       ref_costs_comp[LAST_FRAME][GOLDEN_FRAME] = 512;
       ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] = 512;
-#else   // !CONFIG_EXT_COMP_REFS
-      ref_costs_comp[LAST_FRAME] = 512;
-      ref_costs_comp[LAST2_FRAME] = 512;
-      ref_costs_comp[LAST3_FRAME] = 512;
-      ref_costs_comp[BWDREF_FRAME] = 512;
-      ref_costs_comp[ALTREF2_FRAME] = 512;
-      ref_costs_comp[ALTREF_FRAME] = 512;
-      ref_costs_comp[GOLDEN_FRAME] = 512;
-#endif  // CONFIG_EXT_COMP_REFS
     }
   }
 }
@@ -8608,11 +8545,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int best_mode_skippable = 0;
   int midx, best_mode_index = -1;
   unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
-#if CONFIG_EXT_COMP_REFS
   unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
-#else
-  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME];
-#endif  // CONFIG_EXT_COMP_REFS
   int *comp_inter_cost =
       x->comp_inter_cost[av1_get_reference_mode_context(cm, xd)];
   int64_t best_intra_rd = INT64_MAX;
@@ -8993,15 +8926,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     // This is only used in motion vector unit test.
     if (cpi->oxcf.motion_vector_unit_test && ref_frame == INTRA_FRAME) continue;
 
-#if !CONFIG_EXT_COMP_REFS  // Changes LL bitstream
-    if (cpi->oxcf.pass == 0) {
-      // Complexity-compression trade-offs
-      // if (ref_frame == ALTREF_FRAME) continue;
-      // if (ref_frame == BWDREF_FRAME) continue;
-      if (second_ref_frame == ALTREF_FRAME) continue;
-      // if (second_ref_frame == BWDREF_FRAME) continue;
-    }
-#endif  // !CONFIG_EXT_COMP_REFS
     comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {
       if (!cpi->allow_comp_inter_inter) continue;
@@ -9523,12 +9447,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     // Estimate the reference frame signaling cost and add it
     // to the rolling cost variable.
     if (comp_pred) {
-#if CONFIG_EXT_COMP_REFS
       rate2 += ref_costs_comp[ref_frame][second_ref_frame];
-#else   // !CONFIG_EXT_COMP_REFS
-      rate2 += ref_costs_comp[ref_frame];
-      rate2 += ref_costs_comp[second_ref_frame];
-#endif  // CONFIG_EXT_COMP_REFS
     } else {
       rate2 += ref_costs_single[ref_frame];
     }
@@ -10119,11 +10038,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   int i;
   int64_t best_pred_diff[REFERENCE_MODES];
   unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
-#if CONFIG_EXT_COMP_REFS
   unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
-#else
-  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME];
-#endif  // CONFIG_EXT_COMP_REFS
   int *comp_inter_cost =
       x->comp_inter_cost[av1_get_reference_mode_context(cm, xd)];
   InterpFilter best_filter = SWITCHABLE;

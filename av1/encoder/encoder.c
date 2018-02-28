@@ -356,12 +356,6 @@ static void setup_frame(AV1_COMP *cpi) {
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
     av1_zero(cpi->interp_filter_selected[0]);
   }
-#if !CONFIG_EXT_COMP_REFS  // No change to bitstream
-  if (cpi->sf.recode_loop == DISALLOW_RECODE) {
-    cpi->refresh_bwd_ref_frame = cpi->refresh_last_frame;
-    cpi->rc.is_bipred_frame = 1;
-  }
-#endif  // !CONFIG_EXT_COMP_REFS
 
   cpi->vaq_refresh = 0;
 }

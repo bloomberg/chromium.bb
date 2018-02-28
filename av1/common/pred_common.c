@@ -196,7 +196,6 @@ int av1_get_reference_mode_context(const AV1_COMMON *cm,
   return ctx;
 }
 
-#if CONFIG_EXT_COMP_REFS
 int av1_get_comp_reference_type_context(const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
@@ -339,7 +338,6 @@ int av1_get_pred_context_uni_comp_ref_p2(const MACROBLOCKD *xd) {
   assert(pred_context >= 0 && pred_context < UNI_COMP_REF_CONTEXTS);
   return pred_context;
 }
-#endif  // CONFIG_EXT_COMP_REFS
 
 // == Common context functions for both comp and single ref ==
 //
