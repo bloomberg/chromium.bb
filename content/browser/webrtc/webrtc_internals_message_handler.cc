@@ -99,6 +99,11 @@ void WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled(
 void WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled(
     bool enable,
     const base::ListValue* /* unused_list */) {
+  if (!webrtc_internals_->CanToggleEventLogRecordings()) {
+    LOG(WARNING) << "Cannot toggle WebRTC event logging.";
+    return;
+  }
+
   if (enable) {
     webrtc_internals_->EnableLocalEventLogRecordings(
         web_ui()->GetWebContents());
@@ -116,6 +121,10 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
 
   if (webrtc_internals_->IsEventLogRecordingsEnabled())
     ExecuteJavascriptCommand("setEventLogRecordingsEnabled", nullptr);
+
+  const base::Value can_toggle(
+      webrtc_internals_->CanToggleEventLogRecordings());
+  ExecuteJavascriptCommand("setEventLogRecordingsToggleability", &can_toggle);
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const char* command,
@@ -123,6 +132,8 @@ void WebRTCInternalsMessageHandler::OnUpdate(const char* command,
   ExecuteJavascriptCommand(command, args);
 }
 
+// TODO(eladalon): Make this function accept a vector of base::Values.
+// https://crbug.com/817384
 void WebRTCInternalsMessageHandler::ExecuteJavascriptCommand(
     const char* command,
     const base::Value* args) {

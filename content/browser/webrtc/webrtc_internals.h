@@ -118,6 +118,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   void DisableLocalEventLogRecordings();
 
   bool IsEventLogRecordingsEnabled() const;
+  bool CanToggleEventLogRecordings() const;
 
   int num_open_connections() const { return num_open_connections_; }
 
@@ -226,7 +227,12 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   std::unique_ptr<media::AudioDebugRecordingSession>
       audio_debug_recording_session_;
 
-  // Diagnostic event log recording state.
+  // If non-empty, WebRTC (local) event logging should be enabled using this
+  // path, and may not be turned off, except by restarting the browser.
+  const base::FilePath command_line_derived_logging_path_;
+
+  // Diagnostic event log recording state. These are meaningful only when
+  // |command_line_derived_logging_path_| is empty.
   bool event_log_recordings_;
   base::FilePath event_log_recordings_file_path_;
 

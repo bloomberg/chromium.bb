@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_debug_recording_session.h"
@@ -41,6 +43,9 @@ using std::string;
 namespace content {
 
 namespace {
+
+const base::FilePath::CharType kEventLogFilename[] =
+    FILE_PATH_LITERAL("event_log");
 
 // This is intended to limit DoS attacks against the browser process consisting
 // of many getUserMedia() calls. See https://crbug.com/804440.
@@ -93,15 +98,20 @@ WebRTCInternals::WebRTCInternals() : WebRTCInternals(500, true) {}
 WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
                                  bool should_block_power_saving)
     : selection_type_(SelectionType::kAudioDebugRecordings),
+      command_line_derived_logging_path_(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+              switches::kWebRtcLocalEventLogging)),
       event_log_recordings_(false),
       num_open_connections_(0),
       should_block_power_saving_(should_block_power_saving),
       aggregate_updates_ms_(aggregate_updates_ms),
       weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_webrtc_internals);
 
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
+// https://crbug.com/817446
 #if BUILDFLAG(ENABLE_WEBRTC)
   audio_debug_recordings_file_path_ =
       GetContentClient()->browser()->GetDefaultDownloadDirectory();
@@ -118,7 +128,17 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
         audio_debug_recordings_file_path_.Append(
             FILE_PATH_LITERAL("audio_debug"));
     event_log_recordings_file_path_ =
-        event_log_recordings_file_path_.Append(FILE_PATH_LITERAL("event_log"));
+        event_log_recordings_file_path_.Append(kEventLogFilename);
+  }
+
+  // Allow command-line based setting of (local) WebRTC event logging.
+  if (!command_line_derived_logging_path_.empty()) {
+    const base::FilePath local_logs_path =
+        command_line_derived_logging_path_.Append(kEventLogFilename);
+    WebRtcEventLogManager::GetInstance()->EnableLocalLogging(local_logs_path);
+    // For clarity's sake, though these aren't supposed to be regarded now:
+    event_log_recordings_ = true;
+    event_log_recordings_file_path_.clear();
   }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
@@ -358,13 +378,11 @@ const base::FilePath& WebRTCInternals::GetAudioDebugRecordingsFilePath() const {
 void WebRTCInternals::EnableLocalEventLogRecordings(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CanToggleEventLogRecordings());
 #if BUILDFLAG(ENABLE_WEBRTC)
 #if defined(OS_ANDROID)
-  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-  if (webrtc_event_log_manager) {
-    webrtc_event_log_manager->EnableLocalLogging(
-        event_log_recordings_file_path_);
-  }
+  WebRtcEventLogManager::GetInstance()->EnableLocalLogging(
+      event_log_recordings_file_path_);
 #else
   DCHECK(web_contents);
   DCHECK(!select_file_dialog_);
@@ -383,16 +401,18 @@ void WebRTCInternals::DisableLocalEventLogRecordings() {
   event_log_recordings_ = false;
   // Tear down the dialog since the user has unchecked the event log checkbox.
   select_file_dialog_ = nullptr;
-  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-  if (webrtc_event_log_manager) {
-    webrtc_event_log_manager->DisableLocalLogging();
-  }
+  DCHECK(CanToggleEventLogRecordings());
+  WebRtcEventLogManager::GetInstance()->DisableLocalLogging();
 #endif
 }
 
 bool WebRTCInternals::IsEventLogRecordingsEnabled() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return event_log_recordings_;
+}
+
+bool WebRTCInternals::CanToggleEventLogRecordings() const {
+  return command_line_derived_logging_path_.empty();
 }
 
 void WebRTCInternals::SendUpdate(const char* command,
@@ -430,10 +450,7 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
     case SelectionType::kRtcEventLogs: {
       event_log_recordings_file_path_ = path;
       event_log_recordings_ = true;
-      auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
-      if (webrtc_event_log_manager) {
-        webrtc_event_log_manager->EnableLocalLogging(path);
-      }
+      WebRtcEventLogManager::GetInstance()->EnableLocalLogging(path);
       break;
     }
     case SelectionType::kAudioDebugRecordings: {

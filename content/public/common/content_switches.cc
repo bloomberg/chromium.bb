@@ -900,6 +900,12 @@ const char kWebRtcMaxCpuConsumptionPercentage[] =
 const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
 #endif
 
+// Enable capture and local storage of WebRTC event logs without visiting
+// chrome://webrtc-internals. This is useful for automated testing. It accepts
+// the path to which the local logs would be stored. Disabling is not possible
+// without restarting the browser and relaunching without this flag.
+const char kWebRtcLocalEventLogging[] = "webrtc-event-logging";
+
 #if defined(OS_ANDROID)
 // Disable Media Session API
 const char kDisableMediaSessionAPI[] = "disable-media-session-api";
