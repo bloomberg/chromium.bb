@@ -190,7 +190,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // Only used by Unified IO.
   int session_id_;
 
-  // ID of hardware output device to be used (provided session_id_ is zero)
+  // ID of hardware output device to be used (provided |session_id_| is zero)
   const std::string device_id_;
   const url::Origin security_origin_;
 

@@ -215,8 +215,13 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
   DCHECK(callback_) << "Initialize hasn't been called";
   switch (state_) {
     case IPC_CLOSED:
-      if (callback_)
-        callback_->OnRenderError();
+      // We must make sure to not access |callback_| in case Stop() has already
+      // been called.
+      {
+        base::AutoLock auto_lock_(audio_thread_lock_);
+        if (!stopping_hack_)
+          callback_->OnRenderError();
+      }
       break;
 
     case IDLE:
