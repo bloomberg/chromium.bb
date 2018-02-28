@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include "base/i18n/rtl.h"
+#include "ui/views/views_export.h"
+
 namespace ui {
 class SimpleMenuModel;
 }
@@ -25,6 +28,12 @@ class ViewsTextServicesContextMenu {
   static std::unique_ptr<ViewsTextServicesContextMenu> Create(
       ui::SimpleMenuModel* menu,
       Textfield* textfield);
+
+  // Method for testing. Returns true if the text direction BiDi submenu item
+  // in |menu| should be checked.
+  VIEWS_EXPORT static bool IsTextDirectionCheckedForTesting(
+      ViewsTextServicesContextMenu* menu,
+      base::i18n::TextDirection direction);
 };
 
 }  // namespace views

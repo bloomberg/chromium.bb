@@ -24,6 +24,7 @@ class ViewsTextServicesContextMenuMac
   ViewsTextServicesContextMenuMac(ui::SimpleMenuModel* menu, Textfield* client)
       : text_services_menu_(this), client_(client) {
     text_services_menu_.AppendToContextMenu(menu);
+    text_services_menu_.AppendEditableItems(menu);
   }
 
   ~ViewsTextServicesContextMenuMac() override {}
@@ -31,6 +32,26 @@ class ViewsTextServicesContextMenuMac
   // TextServicesContextMenu::Delegate:
   base::string16 GetSelectedText() const override {
     return client_->GetSelectedText();
+  }
+
+  bool IsTextDirectionEnabled(
+      base::i18n::TextDirection direction) const override {
+    return direction != base::i18n::UNKNOWN_DIRECTION;
+  }
+
+  bool IsTextDirectionChecked(
+      base::i18n::TextDirection direction) const override {
+    return direction != base::i18n::UNKNOWN_DIRECTION &&
+           client_->GetTextDirection() == direction;
+  }
+
+  void UpdateTextDirection(base::i18n::TextDirection direction) override {
+    DCHECK_NE(direction, base::i18n::UNKNOWN_DIRECTION);
+
+    base::i18n::TextDirection text_direction =
+        direction == base::i18n::LEFT_TO_RIGHT ? base::i18n::LEFT_TO_RIGHT
+                                               : base::i18n::RIGHT_TO_LEFT;
+    client_->ChangeTextDirectionAndLayoutAlignment(text_direction);
   }
 
  private:
@@ -52,4 +73,11 @@ ViewsTextServicesContextMenu::Create(ui::SimpleMenuModel* menu,
   return base::MakeUnique<ViewsTextServicesContextMenuMac>(menu, client);
 }
 
+// static
+bool ViewsTextServicesContextMenu::IsTextDirectionCheckedForTesting(
+    ViewsTextServicesContextMenu* menu,
+    base::i18n::TextDirection direction) {
+  return static_cast<views::ViewsTextServicesContextMenuMac*>(menu)
+      ->IsTextDirectionChecked(direction);
+}
 }  // namespace views

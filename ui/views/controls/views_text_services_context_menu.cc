@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/views_text_services_context_menu.h"
 
+#include "base/logging.h"
+
 namespace views {
 
 // static
@@ -11,6 +13,13 @@ std::unique_ptr<ViewsTextServicesContextMenu>
 ViewsTextServicesContextMenu::Create(ui::SimpleMenuModel* menu,
                                      Textfield* client) {
   return nullptr;
+}
+
+bool ViewsTextServicesContextMenu::IsTextDirectionCheckedForTesting(
+    ViewsTextServicesContextMenu* menu,
+    base::i18n::TextDirection direction) {
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace views
