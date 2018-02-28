@@ -1357,6 +1357,10 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
+  // Persist foopy1's failure to |service|'s cache of bad proxies, so it will
+  // be considered by subsequent calls to ResolveProxy().
+  service.ReportSuccess(info, nullptr);
+
   // Fake a PAC failure.
   ProxyInfo info2;
   TestCompletionCallback callback3;
@@ -1392,11 +1396,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
       "foopy1:8080;foopy2:9090");
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
-  // The first proxy is not there since it was added to the bad proxies
-  // list by the earlier ReconsiderProxyAfterError().
+  // The first proxy was deprioritized since it was added to the bad proxies
+  // list by the earlier ReportSuccess().
   EXPECT_THAT(callback4.WaitForResult(), IsOk());
   EXPECT_FALSE(info3.is_direct());
-  EXPECT_EQ("foopy1:8080", info3.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", info3.proxy_server().ToURI());
+  EXPECT_EQ(2u, info3.proxy_list().size());
 
   EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
   EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
@@ -1450,6 +1455,10 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
+  // Persist foopy1's failure to |service|'s cache of bad proxies, so it will
+  // be considered by subsequent calls to ResolveProxy().
+  service.ReportSuccess(info, nullptr);
+
   // Fake a PAC failure.
   ProxyInfo info2;
   TestCompletionCallback callback3;
@@ -1486,11 +1495,12 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
       "foopy1:8080;foopy2:9090");
   resolver.pending_jobs()[0]->CompleteNow(OK);
 
-  // The first proxy is not there since the it was added to the bad proxies
-  // list by the earlier ReconsiderProxyAfterError().
+  // The first proxy was deprioritized since it was added to the bad proxies
+  // list by the earlier ReportSuccess().
   EXPECT_THAT(callback4.WaitForResult(), IsOk());
   EXPECT_FALSE(info3.is_direct());
-  EXPECT_EQ("foopy1:8080", info3.proxy_server().ToURI());
+  EXPECT_EQ("foopy2:9090", info3.proxy_server().ToURI());
+  EXPECT_EQ(2u, info3.proxy_list().size());
 }
 
 TEST_F(ProxyServiceTest, ProxyBypassList) {
