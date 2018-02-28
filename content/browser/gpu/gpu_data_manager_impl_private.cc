@@ -67,78 +67,22 @@ namespace content {
 namespace {
 
 #if defined(OS_WIN)
-
-enum WinSubVersion {
-  kWinOthers = 0,
-  kWinXP,
-  kWinVista,
-  kWin7,
-  kWin8,
-  kWin8_1,
-  kWin10,
-  kWin10_TH2,
-  kWin10_RS1,
-  kWin10_RS2,
-  kWin10_RS3,
-  kNumWinSubVersions
-};
-
 int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
-  static WinSubVersion sub_version = kNumWinSubVersions;
-  if (sub_version == kNumWinSubVersions) {
-    sub_version = kWinOthers;
-    switch (base::win::GetVersion()) {
-      case base::win::VERSION_PRE_XP:
-      case base::win::VERSION_XP:
-      case base::win::VERSION_SERVER_2003:
-      case base::win::VERSION_VISTA:
-      case base::win::VERSION_WIN_LAST:
-        break;
-      case base::win::VERSION_WIN7:
-        sub_version = kWin7;
-        break;
-      case base::win::VERSION_WIN8:
-        sub_version = kWin8;
-        break;
-      case base::win::VERSION_WIN8_1:
-        sub_version = kWin8_1;
-        break;
-      case base::win::VERSION_WIN10:
-        sub_version = kWin10;
-        break;
-      case base::win::VERSION_WIN10_TH2:
-        sub_version = kWin10_TH2;
-        break;
-      case base::win::VERSION_WIN10_RS1:
-        sub_version = kWin10_RS1;
-        break;
-      case base::win::VERSION_WIN10_RS2:
-        sub_version = kWin10_RS2;
-        break;
-      case base::win::VERSION_WIN10_RS3:
-        sub_version = kWin10_RS3;
-        break;
-    }
-  }
-  int entry_index = static_cast<int>(sub_version) * gpu::kGpuFeatureStatusMax;
-  switch (status) {
-    case gpu::kGpuFeatureStatusEnabled:
-      break;
-    case gpu::kGpuFeatureStatusBlacklisted:
-      entry_index++;
-      break;
-    case gpu::kGpuFeatureStatusDisabled:
-      entry_index += 2;
-      break;
-    case gpu::kGpuFeatureStatusSoftware:
-      entry_index += 3;
-      break;
-    case gpu::kGpuFeatureStatusUndefined:
-    case gpu::kGpuFeatureStatusMax:
-      NOTREACHED();
-      break;
-  }
-  return entry_index;
+  // The enums are defined as:
+  //   Enabled VERSION_PRE_XP = 0,
+  //   Blacklisted VERSION_PRE_XP = 1,
+  //   Disabled VERSION_PRE_XP = 2,
+  //   Software VERSION_PRE_XP = 3,
+  //   Unknown VERSION_PRE_XP = 4,
+  //   Enabled VERSION_XP = 5,
+  //   ...
+  //   Unknown Windows Version = VERSION_WIN_LAST * gpu::kGpuFeatureStatusMax.
+  static const base::win::Version version = base::win::GetVersion();
+  if (version == base::win::VERSION_WIN_LAST)
+    return -1;
+  DCHECK_NE(gpu::kGpuFeatureStatusMax, status);
+  int entry_index = static_cast<int>(version) * gpu::kGpuFeatureStatusMax;
+  return entry_index + static_cast<int>(status);
 }
 #endif  // OS_WIN
 
@@ -190,11 +134,11 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
        command_line.HasSwitch(switches::kDisableWebGL2))};
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
-      "GPU.BlacklistFeatureTestResultsWindows.Accelerated2dCanvas",
-      "GPU.BlacklistFeatureTestResultsWindows.GpuCompositing",
-      "GPU.BlacklistFeatureTestResultsWindows.GpuRasterization",
-      "GPU.BlacklistFeatureTestResultsWindows.Webgl",
-      "GPU.BlacklistFeatureTestResultsWindows.Webgl2"};
+      "GPU.BlacklistFeatureTestResultsWindows2.Accelerated2dCanvas",
+      "GPU.BlacklistFeatureTestResultsWindows2.GpuCompositing",
+      "GPU.BlacklistFeatureTestResultsWindows2.GpuRasterization",
+      "GPU.BlacklistFeatureTestResultsWindows2.Webgl",
+      "GPU.BlacklistFeatureTestResultsWindows2.Webgl2"};
 #endif
   const size_t kNumFeatures =
       sizeof(kGpuFeatures) / sizeof(gpu::GpuFeatureType);
@@ -211,12 +155,15 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram_pointer->Add(value);
 #if defined(OS_WIN)
-    histogram_pointer = base::LinearHistogram::FactoryGet(
-        kGpuBlacklistFeatureHistogramNamesWin[i], 1,
-        kNumWinSubVersions * gpu::kGpuFeatureStatusMax,
-        kNumWinSubVersions * gpu::kGpuFeatureStatusMax + 1,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram_pointer->Add(GetGpuBlacklistHistogramValueWin(value));
+    int value_win = GetGpuBlacklistHistogramValueWin(value);
+    if (value_win >= 0) {
+      int32_t max_sample = static_cast<int32_t>(base::win::VERSION_WIN_LAST) *
+                           gpu::kGpuFeatureStatusMax;
+      histogram_pointer = base::LinearHistogram::FactoryGet(
+          kGpuBlacklistFeatureHistogramNamesWin[i], 1, max_sample,
+          max_sample + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
+      histogram_pointer->Add(value_win);
+    }
 #endif
   }
 }
