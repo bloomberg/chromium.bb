@@ -41,7 +41,7 @@ class ViewsTestBase : public PlatformTest {
 
   // Creates a widget of |type| with any platform specific data for use in
   // cross-platform tests.
-  Widget::InitParams CreateParams(Widget::InitParams::Type type);
+  virtual Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
   bool HasCompositingManager() const;
 

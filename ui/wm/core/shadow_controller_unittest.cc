@@ -61,15 +61,16 @@ TEST_F(ShadowControllerTest, Shadow) {
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
 
-  // We should create the shadow before the window is visible (the shadow's
-  // layer won't get drawn yet since it's a child of the window's layer).
+  // The shadow is not created until the Window is shown (some Windows should
+  // never get shadows, which is checked when the window first becomes visible).
+  EXPECT_FALSE(ShadowController::GetShadowForWindow(window.get()));
+  window->Show();
+
   const Shadow* shadow = ShadowController::GetShadowForWindow(window.get());
   ASSERT_TRUE(shadow != NULL);
   EXPECT_TRUE(shadow->layer()->visible());
 
   // The shadow should remain visible after window visibility changes.
-  window->Show();
-  EXPECT_TRUE(shadow->layer()->visible());
   window->Hide();
   EXPECT_TRUE(shadow->layer()->visible());
 

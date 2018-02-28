@@ -90,6 +90,11 @@ bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
 }
 
 // static
+bool WidgetTest::WidgetHasInProcessShadow(Widget* widget) {
+  return false;
+}
+
+// static
 Widget::Widgets WidgetTest::GetAllWidgets() {
   Widget::Widgets all_widgets;
   for (NSWindow* window : [NSApp windows]) {

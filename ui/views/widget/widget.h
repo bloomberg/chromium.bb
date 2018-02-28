@@ -240,6 +240,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // A hint about the size of the shadow if the type is SHADOW_TYPE_DROP. May
     // be ignored on some platforms. No value indicates no preference.
     base::Optional<int> shadow_elevation;
+    // The window corner radius. May be ignored on some platforms.
+    base::Optional<int> corner_radius;
     // Specifies that the system default caption and icon should not be
     // rendered, and that the client area should be equivalent to the window
     // area. Only used on some platforms (Windows and Linux).

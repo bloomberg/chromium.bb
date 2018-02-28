@@ -100,6 +100,11 @@ class WidgetTest : public ViewsTestBase {
   // Return true if |window| is transparent according to the native platform.
   static bool IsNativeWindowTransparent(gfx::NativeWindow window);
 
+  // Returns whether |widget| has a Window shadow managed in this process. That
+  // is, a shadow that is drawn outside of the Widget bounds, and managed by the
+  // WindowManager.
+  static bool WidgetHasInProcessShadow(Widget* widget);
+
   // Returns the set of all Widgets that currently have a NativeWindow.
   static Widget::Widgets GetAllWidgets();
 

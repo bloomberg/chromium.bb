@@ -157,15 +157,23 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   // MusClient has assertions that ui::mojom::WindowType matches
   // views::Widget::InitParams::Type.
   aura::SetWindowType(window_, static_cast<ui::mojom::WindowType>(params.type));
+  if (params.corner_radius) {
+    window_->SetProperty(aura::client::kWindowCornerRadiusKey,
+                         *params.corner_radius);
+  }
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   if (params.type == Widget::InitParams::TYPE_BUBBLE)
     wm::SetHideOnDeactivate(window_, true);
   window_->SetTransparent(
       params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
+
+  // Check for SHADOW_TYPE_NONE before aura::Window::Init() to ensure observers
+  // do not add useless shadow layers by deriving one from the window type.
+  SetShadowElevationFromInitParams(window_, params);
+
   window_->Init(params.layer_type);
   // Set name after layer init so it propagates to layer.
   window_->SetName(params.name);
-  SetShadowElevationFromInitParams(window_, params);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 

@@ -49,6 +49,10 @@ bool ValidateShowState(int64_t value) {
          value == int64_t(ui::mojom::ShowState::FULLSCREEN);
 }
 
+bool ValidateWindowCornerRadius(int64_t value) {
+  return value >= -1;
+}
+
 }  // namespace
 
 PropertyConverter::PrimitiveProperty::PrimitiveProperty() {}
@@ -96,6 +100,10 @@ PropertyConverter::PropertyConverter() {
                          ui::mojom::WindowManager::kName_Property);
   RegisterString16Property(client::kTitleKey,
                            ui::mojom::WindowManager::kWindowTitle_Property);
+  RegisterPrimitiveProperty(
+      client::kWindowCornerRadiusKey,
+      ui::mojom::WindowManager::kWindowCornerRadius_Property,
+      base::BindRepeating(&ValidateWindowCornerRadius));
 }
 
 PropertyConverter::~PropertyConverter() {}

@@ -47,6 +47,12 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/wm/core/base_focus_rules.h"
+#include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/shadow_controller.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -3729,6 +3735,142 @@ TEST_F(WidgetTest, MouseWheelEvent) {
 
   event_generator.MoveMouseWheel(1, 1);
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSEWHEEL));
+}
+
+class WidgetShadowTest : public WidgetTest {
+ public:
+  WidgetShadowTest() { InitControllers(); }
+
+  // WidgetTest:
+  Widget::InitParams CreateParams(Widget::InitParams::Type type) override {
+    Widget::InitParams params =
+        WidgetTest::CreateParams(override_type_.value_or(type));
+    params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params.shadow_elevation = 10;
+    params.name = name_;
+    params.child = force_child_;
+    return params;
+  }
+
+ protected:
+  base::Optional<Widget::InitParams::Type> override_type_;
+  std::string name_;
+  bool force_child_ = false;
+
+ private:
+#if !defined(OS_CHROMEOS)
+  void InitControllers() {}
+#else
+  class TestFocusRules : public wm::BaseFocusRules {
+   public:
+    TestFocusRules() = default;
+
+    bool SupportsChildActivation(aura::Window* window) const override {
+      return true;
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
+  };
+
+  void InitControllers() {
+    // Add bits usually managed by the ash::Shell. Under Mus,
+    // DesktopNativeWidgetAura provides these in-process instead.
+    if (IsMus())
+      return;
+
+    focus_controller_ =
+        std::make_unique<wm::FocusController>(new TestFocusRules);
+    shadow_controller_ =
+        std::make_unique<wm::ShadowController>(focus_controller_.get());
+  }
+
+  std::unique_ptr<wm::FocusController> focus_controller_;
+  std::unique_ptr<wm::ShadowController> shadow_controller_;
+#endif  // OS_CHROMEOS
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetShadowTest);
+};
+
+// Disabled on Mac: All drop shadows are managed out of process for now.
+#if defined(OS_MACOSX) && !defined(USE_AURA)
+#define MAYBE_ShadowsInRootWindow DISABLED_ShadowsInRootWindow
+#else
+#define MAYBE_ShadowsInRootWindow ShadowsInRootWindow
+#endif
+
+// Test that shadows are not added to root windows when created or upon
+// activation. Test that shadows are added to non-root windows even if not
+// activated.
+TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
+  // A desktop window clips to its bounds, so it shouldn't have a shadow.
+  bool top_level_window_should_have_shadow = false;
+
+#if defined(OS_CHROMEOS)
+  // In Mus, the shadow should be in the WindowServer process only. In non-mus
+  // CreateNativeDesktopWidget() creates a non-root window, so it should have
+  // a shadow.
+  top_level_window_should_have_shadow = !IsMus();
+#endif
+
+  // To start, just create a Widget. This constructs the first ShadowController
+  // which will start observing the environment for additional aura::Window
+  // initialization. The very first ShadowController in DesktopNativeWidgetAura
+  // is created after the call to aura::Window::Init(), so the ShadowController
+  // Impl class won't ever see this first Window being initialized.
+  name_ = "other_top_level";
+  Widget* other_top_level = CreateNativeDesktopWidget();
+
+  name_ = "top_level";
+  Widget* top_level = CreateNativeDesktopWidget();
+  top_level->SetBounds(gfx::Rect(100, 100, 320, 200));
+
+  EXPECT_FALSE(WidgetHasInProcessShadow(top_level));
+  EXPECT_FALSE(top_level->IsVisible());
+  top_level->ShowInactive();
+  EXPECT_EQ(top_level_window_should_have_shadow,
+            WidgetHasInProcessShadow(top_level));
+  top_level->Show();
+  EXPECT_EQ(top_level_window_should_have_shadow,
+            WidgetHasInProcessShadow(top_level));
+
+  name_ = "control";
+  Widget* control = CreateChildNativeWidgetWithParent(top_level);
+  control->SetBounds(gfx::Rect(20, 20, 160, 100));
+
+  // Widgets of TYPE_CONTROL become visible during Init, so start with a shadow.
+  EXPECT_TRUE(WidgetHasInProcessShadow(control));
+  control->ShowInactive();
+  EXPECT_TRUE(WidgetHasInProcessShadow(control));
+  control->Show();
+  EXPECT_TRUE(WidgetHasInProcessShadow(control));
+
+  name_ = "child";
+  override_type_ = Widget::InitParams::TYPE_POPUP;
+  force_child_ = true;
+  Widget* child = CreateChildNativeWidgetWithParent(top_level);
+  child->SetBounds(gfx::Rect(20, 20, 160, 100));
+
+  // Now false: the Widget hasn't been shown yet.
+  EXPECT_FALSE(WidgetHasInProcessShadow(child));
+  child->ShowInactive();
+  EXPECT_TRUE(WidgetHasInProcessShadow(child));
+  child->Show();
+  EXPECT_TRUE(WidgetHasInProcessShadow(child));
+
+  other_top_level->Show();
+
+  // Re-activate the top level window. This handles a hypothetical case where
+  // a shadow is added via the ActivationChangeObserver rather than by the
+  // aura::WindowObserver. Activation changes only modify an existing shadow
+  // (if there is one), but should never install a Shadow, even if the Window
+  // properties otherwise say it should have one.
+  top_level->Show();
+  EXPECT_EQ(top_level_window_should_have_shadow,
+            WidgetHasInProcessShadow(top_level));
+
+  top_level->Close();
+  other_top_level->Close();
 }
 
 #if defined(OS_WIN)

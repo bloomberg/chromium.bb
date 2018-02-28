@@ -250,11 +250,8 @@ TEST_F(ClientControlledShellSurfaceTest, SurfaceShadow) {
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
 
-  // 1) Initial state, no shadow.
-  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
-  ASSERT_TRUE(shadow);
-  EXPECT_FALSE(shadow->layer()->visible());
-
+  // 1) Initial state, no shadow (SurfaceFrameType is NONE);
+  EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
   std::unique_ptr<Display> display(new Display);
 
   // 2) Just creating a sub surface won't create a shadow.
@@ -266,11 +263,14 @@ TEST_F(ClientControlledShellSurfaceTest, SurfaceShadow) {
       display->CreateSubSurface(child.get(), surface.get()));
   surface->Commit();
 
-  EXPECT_FALSE(shadow->layer()->visible());
+  EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
 
   // 3) Create a shadow.
+  surface->SetFrame(SurfaceFrameType::NORMAL);
   shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
+  wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
+  ASSERT_TRUE(shadow);
   EXPECT_TRUE(shadow->layer()->visible());
 
   gfx::Rect before = shadow->layer()->bounds();
@@ -321,6 +321,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
   surface->Attach(buffer.get());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
 
   // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
@@ -379,6 +380,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithTransform) {
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
   surface->Attach(buffer.get());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
@@ -408,6 +410,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   shell_surface->SetMaximized();
   surface->Attach(buffer.get());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
 
   views::Widget* widget = shell_surface->GetWidget();
@@ -416,7 +419,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
   // There is no shadow when started in maximized state.
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
 
-  // Sending a shadow bounds in maximized state won't create a shaodw.
+  // Sending a shadow bounds in maximized state won't create a shadow.
   shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
