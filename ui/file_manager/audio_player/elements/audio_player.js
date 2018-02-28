@@ -18,89 +18,55 @@ Polymer({
      * Flag whether the audio is playing or paused. True if playing, or false
      * paused.
      */
-    playing: {
-      type: Boolean,
-      observer: 'playingChanged',
-      reflectToAttribute: true
-    },
+    playing:
+        {type: Boolean, observer: 'playingChanged', reflectToAttribute: true},
 
     /**
      * Current elapsed time in the current music in millisecond.
      */
-    time: {
-      type: Number,
-      observer: 'timeChanged'
-    },
+    time: {type: Number, observer: 'timeChanged'},
 
     /**
      * Whether the shuffle button is ON.
      */
-    shuffle: {
-      type: Boolean,
-      notify: true
-    },
+    shuffle: {type: Boolean, notify: true},
 
     /**
      * What mode the repeat button idicates.
      * repeat-modes can be "no-repeat", "repeat-all", "repeat-one".
      */
-    repeatMode: {
-      type: String,
-      notify: true
-    },
+    repeatMode: {type: String, notify: true},
 
     /**
      * The audio volume. 0 is silent, and 100 is maximum loud.
      */
-    volume: {
-      type: Number,
-      notify: true
-    },
+    volume: {type: Number, notify: true},
 
     /**
      * Whether the playlist is expanded or not.
      */
-    playlistExpanded: {
-      type: Boolean,
-      notify: true
-    },
+    playlistExpanded: {type: Boolean, notify: true},
     /**
      * Whether the artwork is expanded or not.
      */
-    trackInfoExpanded: {
-      type: Boolean,
-      notify: true
-    },
+    trackInfoExpanded: {type: Boolean, notify: true},
 
     /**
      * Track index of the current track.
      */
-    currentTrackIndex: {
-      type: Number,
-      observer: 'currentTrackIndexChanged'
-    },
+    currentTrackIndex: {type: Number, observer: 'currentTrackIndexChanged'},
 
     /**
      * URL of the current track. (exposed publicly for tests)
      */
-    currenttrackurl: {
-      type: String,
-      value: '',
-      reflectToAttribute: true
-    },
+    currenttrackurl: {type: String, value: '', reflectToAttribute: true},
 
     /**
      * The number of played tracks. (exposed publicly for tests)
      */
-    playcount: {
-      type: Number,
-      value: 0,
-      reflectToAttribute: true
-    },
+    playcount: {type: Number, value: 0, reflectToAttribute: true},
 
-    ariaLabels: {
-      type: Object
-    }
+    ariaLabels: {type: Object}
   },
 
   /**
@@ -133,6 +99,13 @@ Polymer({
     this.$.audio.addEventListener('emptied', onAudioStatusUpdatedBound);
     this.$.audio.addEventListener('stalled', onAudioStatusUpdatedBound);
     this.$.audio.addEventListener('loadedmetadata', onAudioStatusUpdatedBound);
+  },
+
+  /**
+   * Starts playing in inner audio element.
+   */
+  play: function() {
+    this.$.audio.play();
   },
 
   /**

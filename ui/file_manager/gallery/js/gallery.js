@@ -779,6 +779,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'Escape':
+    case 'BrowserBack':
       window.close();
       break;
   }

@@ -285,7 +285,7 @@ AudioPlayer.prototype.select_ = function(newTrack) {
   // Run asynchronously after an event of current track change is delivered.
   setTimeout(function() {
     if (!window.appReopen)
-      this.player_.$.audio.play();
+      this.player_.play();
 
     window.appState.position = this.currentTrackIndex_;
     window.appState.time = 0;
@@ -365,6 +365,7 @@ AudioPlayer.prototype.onResize_ = function(event) {
 AudioPlayer.prototype.onKeyDown_ = function(event) {
   switch (util.getKeyModifiers(event) + event.key) {
     case 'Ctrl-w': // Ctrl+W => Close the player.
+    case 'BrowserBack':
       chrome.app.window.current().close();
       break;
 
@@ -511,7 +512,7 @@ AudioPlayer.prototype.onTrackInfoExpandedChanged_ = function(newValue) {
 
   if (this.isTrackInfoExpanded_ !== newValue) {
     this.isTrackInfoExpanded_ = newValue;
-    var state = chrome.app.window.current()
+    var state = chrome.app.window.current();
     var newHeight = window.outerHeight;
     if (newValue) {
       state.innerBounds.minHeight = AudioPlayer.EXPANDED_MODE_MIN_HEIGHT;
