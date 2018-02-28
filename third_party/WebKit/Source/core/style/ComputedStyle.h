@@ -1854,6 +1854,8 @@ class ComputedStyle : public ComputedStyleBase,
     return IsDisplayLayoutCustomBox(Display());
   }
 
+  bool IsDisplayTableType() const { return IsDisplayTableType(Display()); }
+
   // Isolation utility functions.
   bool HasIsolation() const { return Isolation() != EIsolation::kAuto; }
 
