@@ -7,37 +7,34 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
+#import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
-@protocol ActivityServicePositioner;
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-@protocol OmniboxFocuser;
-@class ToolbarButtonUpdater;
+@class CommandDispatcher;
 @protocol ToolbarCoordinatorDelegate;
+@protocol ToolsMenuConfigurationProvider;
 @protocol UrlLoader;
-@protocol VoiceSearchControllerDelegate;
-@protocol QRScannerResultLoading;
 class WebStateList;
 namespace ios {
 class ChromeBrowserState;
 }
-namespace web {
-class WebState;
-}
 
 // Coordinator to run a toolbar -- a UI element housing controls.
-@interface ToolbarCoordinator
-    : NSObject<FakeboxFocuser, ToolsMenuPresentationProvider>
+@interface ToolbarCoordinator : NSObject<PrimaryToolbarCoordinator,
+                                         ToolbarCoordinating,
+                                         ToolbarSnapshotProviding,
+                                         ToolsMenuPresentationStateProvider>
 
-// Weak reference to ChromeBrowserState;
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// The dispatcher for this view controller.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
-        dispatcher;
+- (instancetype)
+initWithToolsMenuConfigurationProvider:
+    (id<ToolsMenuConfigurationProvider>)configurationProvider
+                            dispatcher:(CommandDispatcher*)dispatcher
+                          browserState:(ios::ChromeBrowserState*)browserState;
+
+- (instancetype)init NS_UNAVAILABLE;
+
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Delegate for this coordinator. Only used for plumbing to Location Bar
@@ -47,60 +44,11 @@ class WebState;
 // URL loader for the toolbar.
 // TODO(crbug.com/799446): Remove this.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
-// UIViewController managed by this coordinator.
-@property(nonatomic, strong, readonly) UIViewController* viewController;
-// Button updater for the toolbar.
-@property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
-
-// Returns the ActivityServicePositioner for this toolbar.
-- (id<ActivityServicePositioner>)activityServicePositioner;
-
-// Returns the OmniboxFocuser for this toolbar.
-- (id<OmniboxFocuser>)omniboxFocuser;
-// Returns the VoiceSearchControllerDelegate for this toolbar.
-- (id<VoiceSearchControllerDelegate>)voiceSearchControllerDelegate;
-// Returns the QRScannerResultLoading for this toolbar.
-- (id<QRScannerResultLoading>)QRScannerResultLoader;
 
 // Start this coordinator.
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
-
-// Coordinates the location bar focusing/defocusing. For example, initiates
-// transition to the expanded location bar state of the view controller.
-- (void)transitionToLocationBarFocusedState:(BOOL)focused;
-
-// Updates the toolbar so it is in a state where a snapshot for |webState| can
-// be taken.
-- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState;
-// Resets the toolbar after taking a side swipe snapshot. After calling this
-// method the toolbar is adapted to the current webState.
-- (void)resetToolbarAfterSideSwipeSnapshot;
-// Sets the ToolsMenu visibility depending if the tools menu |isVisible|.
-- (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
-// Triggers the animation of the tools menu button.
-- (void)triggerToolsMenuButtonAnimation;
-// Sets the background color of the Toolbar to the one of the Incognito NTP,
-// with an |alpha|.
-- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha;
-// Briefly animate the progress bar when a pre-rendered tab is displayed.
-- (void)showPrerenderingAnimation;
-// Returns whether omnibox is a first responder.
-- (BOOL)isOmniboxFirstResponder;
-// Returns whether the omnibox popup is currently displayed.
-- (BOOL)showingOmniboxPopup;
-// Activates constraints to simulate a safe area with |fakeSafeAreaInsets|
-// insets. The insets will be used as leading/trailing wrt RTL. Those
-// constraints have a higher priority than the one used to respect the safe
-// area. They need to be deactivated for the toolbar to respect the safe area
-// again. The fake safe area can be bigger or smaller than the real safe area.
-- (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets;
-// Deactivates the constraints used to create a fake safe area.
-- (void)deactivateFakeSafeAreaInsets;
-// Asks the provider for the color of the background of the toolbar. A nil value
-// indicates the default color will be used.
-- (UIColor*)toolbarBackgroundColor;
 
 @end
 

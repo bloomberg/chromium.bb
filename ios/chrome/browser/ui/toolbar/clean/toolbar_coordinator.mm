@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -30,6 +31,11 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player.h"
@@ -43,7 +49,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinator ()<OmniboxPopupPositioner> {
+@interface ToolbarCoordinator ()<OmniboxPopupPositioner,
+                                 ToolbarCommands,
+                                 ToolsMenuPresentationProvider> {
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -59,6 +67,16 @@
     ToolsMenuButtonObserverBridge* toolsMenuButtonObserverBridge;
 // The coordinator for the location bar in the toolbar.
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
+// Weak reference to ChromeBrowserState;
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+// The dispatcher for this view controller.
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
+        dispatcher;
+// Coordinator for the tools menu UI.
+@property(nonatomic, strong) ToolsMenuCoordinator* toolsMenuCoordinator;
+// Button updater for the toolbar.
+@property(nonatomic, strong) ToolbarButtonUpdater* buttonUpdater;
 
 @end
 
@@ -71,13 +89,49 @@
 @synthesize started = _started;
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolsMenuButtonObserverBridge = _toolsMenuButtonObserverBridge;
+@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize URLLoader = _URLLoader;
 @synthesize webStateList = _webStateList;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
 
+- (instancetype)
+initWithToolsMenuConfigurationProvider:
+    (id<ToolsMenuConfigurationProvider>)configurationProvider
+                            dispatcher:(CommandDispatcher*)dispatcher
+                          browserState:(ios::ChromeBrowserState*)browserState {
+  self = [super init];
+  if (self) {
+    DCHECK(browserState);
+    _mediator = [[ToolbarMediator alloc] init];
+    _dispatcher =
+        static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
+            dispatcher);
+    _browserState = browserState;
+
+    _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
+    _toolsMenuCoordinator.dispatcher = dispatcher;
+    _toolsMenuCoordinator.configurationProvider = configurationProvider;
+    _toolsMenuCoordinator.presentationProvider = self;
+    [_toolsMenuCoordinator start];
+
+    [dispatcher startDispatchingToTarget:self
+                             forProtocol:@protocol(ToolbarCommands)];
+
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(toolsMenuWillShowNotification:)
+                          name:kToolsMenuWillShowNotification
+                        object:_toolsMenuCoordinator];
+    [defaultCenter addObserver:self
+                      selector:@selector(toolsMenuWillHideNotification:)
+                          name:kToolsMenuWillHideNotification
+                        object:_toolsMenuCoordinator];
+  }
+  return self;
+}
+
 - (instancetype)init {
   if ((self = [super init])) {
-    _mediator = [[ToolbarMediator alloc] init];
   }
   return self;
 }
@@ -162,6 +216,7 @@
   if (!self.started)
     return;
 
+  [self setToolbarBackgroundAlpha:1];
   self.started = NO;
   self.delegate = nil;
   [self.mediator disconnect];
@@ -174,17 +229,9 @@
   _fullscreenObserver = nullptr;
 }
 
-#pragma mark - Public
+#pragma mark - PrimaryToolbarCoordinator
 
-- (id<ActivityServicePositioner>)activityServicePositioner {
-  return self.toolbarViewController;
-}
-
-- (id<OmniboxFocuser>)omniboxFocuser {
-  return self.locationBarCoordinator;
-}
-
-- (id<VoiceSearchControllerDelegate>)voiceSearchControllerDelegate {
+- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
   return self.locationBarCoordinator;
 }
 
@@ -192,38 +239,16 @@
   return self.locationBarCoordinator;
 }
 
-- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
-  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
-
-  // Don't do anything for a live non-ntp tab.
-  if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
-    [self.locationBarCoordinator.view setHidden:NO];
-    return;
-  }
-
-  self.viewController.view.hidden = NO;
-  [self.locationBarCoordinator.view setHidden:YES];
-  [self.mediator updateConsumerForWebState:webState];
-  [self.toolbarViewController updateForSideSwipeSnapshotOnNTP:isNTP];
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+  return self.buttonUpdater;
 }
 
-- (void)resetToolbarAfterSideSwipeSnapshot {
-  [self.mediator
-      updateConsumerForWebState:self.webStateList->GetActiveWebState()];
-  [self.locationBarCoordinator.view setHidden:NO];
-  [self.toolbarViewController resetAfterSideSwipeSnapshot];
+- (id<ActivityServicePositioner>)activityServicePositioner {
+  return self.toolbarViewController;
 }
 
-- (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible {
-  [self.toolbarViewController.toolsMenuButton setToolsMenuIsVisible:isVisible];
-}
-
-- (void)triggerToolsMenuButtonAnimation {
-  [self.toolbarViewController.toolsMenuButton triggerAnimation];
-}
-
-- (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
-  [self.toolbarViewController setBackgroundToIncognitoNTPColorWithAlpha:alpha];
+- (id<OmniboxFocuser>)omniboxFocuser {
+  return self.locationBarCoordinator;
 }
 
 - (void)showPrerenderingAnimation {
@@ -237,29 +262,6 @@
 - (BOOL)showingOmniboxPopup {
   return [self.locationBarCoordinator showingOmniboxPopup];
 }
-
-- (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets {
-  [self.toolbarViewController activateFakeSafeAreaInsets:fakeSafeAreaInsets];
-}
-
-- (void)deactivateFakeSafeAreaInsets {
-  [self.toolbarViewController deactivateFakeSafeAreaInsets];
-}
-
-- (UIColor*)toolbarBackgroundColor {
-  return self.toolbarViewController.backgroundColor;
-}
-
-// TODO(crbug.com/786940): This protocol should move to the ViewController
-// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
-// is more advanced.
-#pragma mark OmniboxPopupPositioner methods.
-
-- (UIView*)popupParentView {
-  return self.toolbarViewController.view.superview;
-}
-
-#pragma mark - LocationBarDelegate
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
   if (IsIPadIdiom()) {
@@ -280,6 +282,82 @@
   }
 }
 
+// TODO(crbug.com/786940): This protocol should move to the ViewController
+// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
+// is more advanced.
+#pragma mark OmniboxPopupPositioner methods.
+
+- (UIView*)popupParentView {
+  return self.toolbarViewController.view.superview;
+}
+
+#pragma mark - ToolsMenuPresentationStateProvider
+
+- (BOOL)isShowingToolsMenu {
+  return [_toolsMenuCoordinator isShowingToolsMenu];
+}
+
+#pragma mark - ToolbarCoordinating
+
+- (void)updateToolsMenu {
+  [_toolsMenuCoordinator updateConfiguration];
+}
+
+#pragma mark - ToolbarCommands
+
+- (void)triggerToolsMenuButtonAnimation {
+  [self.toolbarViewController.toolsMenuButton triggerAnimation];
+}
+
+#pragma mark - NewTabPageControllerDelegate
+
+- (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
+  [self.toolbarViewController
+      setBackgroundToIncognitoNTPColorWithAlpha:1 - alpha];
+}
+
+- (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
+  NOTREACHED();
+}
+
+#pragma mark - ToolbarSnapshotProviding
+
+- (UIView*)snapshotForTabSwitcher {
+  UIView* toolbarSnapshotView;
+  if ([self.viewController.view window]) {
+    toolbarSnapshotView =
+        [self.viewController.view snapshotViewAfterScreenUpdates:NO];
+  } else {
+    toolbarSnapshotView =
+        [[UIView alloc] initWithFrame:self.viewController.view.frame];
+    [toolbarSnapshotView layer].contents = static_cast<id>(
+        CaptureViewWithOption(self.viewController.view, 0, kClientSideRendering)
+            .CGImage);
+  }
+  return toolbarSnapshotView;
+}
+
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
+                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
+  CGRect oldFrame = self.viewController.view.superview.frame;
+  CGRect newFrame = oldFrame;
+  newFrame.size.width = width;
+
+  self.viewController.view.superview.frame = newFrame;
+  [self.toolbarViewController activateFakeSafeAreaInsets:safeAreaInsets];
+  [self.viewController.view.superview layoutIfNeeded];
+
+  UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
+
+  self.viewController.view.superview.frame = oldFrame;
+  [self.toolbarViewController deactivateFakeSafeAreaInsets];
+
+  return toolbarSnapshotView;
+}
+
+- (UIColor*)toolbarBackgroundColor {
+  return self.toolbarViewController.backgroundColor;
+}
 
 #pragma mark - FakeboxFocuser
 
@@ -310,6 +388,26 @@
 - (void)onFakeboxAnimationComplete {
   DCHECK(!IsIPadIdiom());
   self.viewController.view.hidden = NO;
+}
+
+#pragma mark - SideSwipeToolbarInteracting
+
+- (UIView*)toolbarView {
+  return self.viewController.view;
+}
+
+- (BOOL)canBeginToolbarSwipe {
+  return ![self isOmniboxFirstResponder] && ![self showingOmniboxPopup];
+}
+
+- (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
+  [self updateToolbarForSideSwipeSnapshot:webState];
+  UIImage* toolbarSnapshot = CaptureViewWithOption(
+      [self.viewController view], [[UIScreen mainScreen] scale],
+      kClientSideRendering);
+
+  [self resetToolbarAfterSideSwipeSnapshot];
+  return toolbarSnapshot;
 }
 
 #pragma mark - ToolsMenuPresentationProvider
@@ -384,6 +482,32 @@
 
 #pragma mark - Private
 
+// Updates the toolbar so it is in a state where a snapshot for |webState| can
+// be taken.
+- (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
+  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
+
+  // Don't do anything for a live non-ntp tab.
+  if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
+    [self.locationBarCoordinator.view setHidden:NO];
+    return;
+  }
+
+  self.viewController.view.hidden = NO;
+  [self.locationBarCoordinator.view setHidden:YES];
+  [self.mediator updateConsumerForWebState:webState];
+  [self.toolbarViewController updateForSideSwipeSnapshotOnNTP:isNTP];
+}
+
+// Resets the toolbar after taking a side swipe snapshot. After calling this
+// method the toolbar is adapted to the current webState.
+- (void)resetToolbarAfterSideSwipeSnapshot {
+  [self.mediator
+      updateConsumerForWebState:self.webStateList->GetActiveWebState()];
+  [self.locationBarCoordinator.view setHidden:NO];
+  [self.toolbarViewController resetAfterSideSwipeSnapshot];
+}
+
 // Animates |_toolbar| and |_locationBarView| for omnibox expansion. If
 // |animated| is NO the animation will happen instantly.
 - (void)expandOmniboxAnimated:(BOOL)animated {
@@ -427,6 +551,16 @@
   [self.locationBarCoordinator addContractOmniboxAnimations:animator];
   [self.toolbarViewController addToolbarContractionAnimations:animator];
   [animator startAnimation];
+}
+
+// Called when the tools menu will show.
+- (void)toolsMenuWillShowNotification:(NSNotification*)note {
+  [self.toolbarViewController.toolsMenuButton setToolsMenuIsVisible:YES];
+}
+
+// Called when the tools menu will hide.
+- (void)toolsMenuWillHideNotification:(NSNotification*)note {
+  [self.toolbarViewController.toolsMenuButton setToolsMenuIsVisible:NO];
 }
 
 @end
