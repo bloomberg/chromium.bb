@@ -20,6 +20,7 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExt
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.intent.matcher.UriMatchers.hasHost;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
+import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
@@ -51,6 +52,7 @@ import android.support.test.espresso.util.TreeIterables;
 import android.support.test.filters.SmallTest;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;
@@ -1430,7 +1432,12 @@ public class SavePasswordsPreferencesTest {
         }
         Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
         Espresso.onView(withText(R.string.saved_passwords_none_text)).check(doesNotExist());
-        Espresso.onView(withText(R.string.section_saved_passwords)).check(doesNotExist());
+        // Check that the section header for saved passwords is not present. Do not confuse it with
+        // the toolbar label which contains the same string, look for the one inside a linear
+        // layout.
+        Espresso.onView(allOf(withParent(isAssignableFrom(LinearLayout.class)),
+                                withText(R.string.prefs_saved_passwords_title)))
+                .check(doesNotExist());
     }
 
     /**
