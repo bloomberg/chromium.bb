@@ -247,12 +247,10 @@ static const arg_def_t profile =
     ARG_DEF(NULL, "profile", 1, "Bitstream profile number to use");
 static const arg_def_t width = ARG_DEF("w", "width", 1, "Frame width");
 static const arg_def_t height = ARG_DEF("h", "height", 1, "Frame height");
-#if CONFIG_FRAME_SIZE
 static const arg_def_t forced_max_frame_width = ARG_DEF(
     NULL, "forced_max_frame_width", 0, "Maximum frame width value to force");
 static const arg_def_t forced_max_frame_height = ARG_DEF(
     NULL, "forced_max_frame_height", 0, "Maximum frame height value to force");
-#endif
 #if CONFIG_WEBM_IO
 static const struct arg_enum_list stereo_mode_enum[] = {
   { "mono", STEREO_FORMAT_MONO },
@@ -291,10 +289,8 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &profile,
                                           &width,
                                           &height,
-#if CONFIG_FRAME_SIZE
                                           &forced_max_frame_width,
                                           &forced_max_frame_height,
-#endif
 #if CONFIG_WEBM_IO
                                           &stereo_mode,
 #endif
@@ -1225,12 +1221,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_w = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &height, argi)) {
       config->cfg.g_h = arg_parse_uint(&arg);
-#if CONFIG_FRAME_SIZE
     } else if (arg_match(&arg, &forced_max_frame_width, argi)) {
       config->cfg.g_forced_max_frame_width = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &forced_max_frame_height, argi)) {
       config->cfg.g_forced_max_frame_height = arg_parse_uint(&arg);
-#endif
     } else if (arg_match(&arg, &bitdeptharg, argi)) {
       config->cfg.g_bit_depth = arg_parse_enum_or_int(&arg);
     } else if (arg_match(&arg, &inbitdeptharg, argi)) {

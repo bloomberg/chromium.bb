@@ -208,12 +208,10 @@ typedef int BASE_CTX_TABLE[2 /*col*/][3 /*sig_map*/]
 
 /* Initial version of sequence header structure */
 typedef struct SequenceHeader {
-#if CONFIG_FRAME_SIZE
   int num_bits_width;
   int num_bits_height;
   int max_frame_width;
   int max_frame_height;
-#endif
   int frame_id_numbers_present_flag;
   int frame_id_length;
   int delta_frame_id_length;

@@ -2574,18 +2574,11 @@ static void write_superres_scale(const AV1_COMMON *const cm,
   }
 }
 
-#if CONFIG_FRAME_SIZE
 static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
-                             struct aom_write_bit_buffer *wb)
-#else
-static void write_frame_size(const AV1_COMMON *cm,
-                             struct aom_write_bit_buffer *wb)
-#endif
-{
+                             struct aom_write_bit_buffer *wb) {
   const int coded_width = cm->superres_upscaled_width - 1;
   const int coded_height = cm->superres_upscaled_height - 1;
 
-#if CONFIG_FRAME_SIZE
   if (frame_size_override) {
     const SequenceHeader *seq_params = &cm->seq_params;
     int num_bits_width = seq_params->num_bits_width;
@@ -2593,10 +2586,6 @@ static void write_frame_size(const AV1_COMMON *cm,
     aom_wb_write_literal(wb, coded_width, num_bits_width);
     aom_wb_write_literal(wb, coded_height, num_bits_height);
   }
-#else
-  aom_wb_write_literal(wb, coded_width, 16);
-  aom_wb_write_literal(wb, coded_height, 16);
-#endif
 
   write_superres_scale(cm, wb);
   write_render_size(cm, wb);
@@ -2624,14 +2613,10 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
     }
   }
 
-#if CONFIG_FRAME_SIZE
   if (!found) {
-    int frame_size_override = 1;  // Allways equal to 1 in this function
+    int frame_size_override = 1;  // Always equal to 1 in this function
     write_frame_size(cm, frame_size_override, wb);
   }
-#else
-  if (!found) write_frame_size(cm, wb);
-#endif
 }
 
 static void write_profile(BITSTREAM_PROFILE profile,
@@ -2857,7 +2842,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *seq_params = &cm->seq_params;
 
-#if CONFIG_FRAME_SIZE
   int num_bits_width = 16;
   int num_bits_height = 16;
   int max_frame_width = cpi->oxcf.forced_max_frame_width
@@ -2876,7 +2860,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, num_bits_height - 1, 4);
   aom_wb_write_literal(wb, max_frame_width - 1, num_bits_width);
   aom_wb_write_literal(wb, max_frame_height - 1, num_bits_height);
-#endif
 
   /* Placeholder for actually writing to the bitstream */
   seq_params->frame_id_numbers_present_flag =
@@ -3140,7 +3123,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 
-#if CONFIG_FRAME_SIZE
   if (cm->width > cm->seq_params.max_frame_width ||
       cm->height > cm->seq_params.max_frame_height) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
@@ -3150,18 +3132,13 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       (cm->width != cm->seq_params.max_frame_width ||
        cm->height != cm->seq_params.max_frame_height);
   aom_wb_write_bit(wb, frame_size_override_flag);
-#endif
 
 #if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
 #endif  // CONFIG_FRAME_REFS_SIGNALING
 
   if (cm->frame_type == KEY_FRAME) {
-#if CONFIG_FRAME_SIZE
     write_frame_size(cm, frame_size_override_flag, wb);
-#else
-    write_frame_size(cm, wb);
-#endif
     assert(av1_superres_unscaled(cm) ||
            !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
     if (cm->allow_screen_content_tools &&
@@ -3180,11 +3157,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
     if (cm->intra_only) {
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-#if CONFIG_FRAME_SIZE
       write_frame_size(cm, frame_size_override_flag, wb);
-#else
-      write_frame_size(cm, wb);
-#endif
       assert(av1_superres_unscaled(cm) ||
              !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
       if (cm->allow_screen_content_tools &&
@@ -3262,15 +3235,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
     }
 
-#if CONFIG_FRAME_SIZE
     if (cm->error_resilient_mode == 0 && frame_size_override_flag) {
       write_frame_size_with_refs(cpi, wb);
     } else {
       write_frame_size(cm, frame_size_override_flag, wb);
     }
-#else
-    write_frame_size_with_refs(cpi, wb);
-#endif
 
 #if CONFIG_AMVR
     if (cm->cur_frame_force_integer_mv) {

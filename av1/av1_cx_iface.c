@@ -512,10 +512,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->max_threads = (int)cfg->g_threads;
   oxcf->width = cfg->g_w;
   oxcf->height = cfg->g_h;
-#if CONFIG_FRAME_SIZE
   oxcf->forced_max_frame_width = cfg->g_forced_max_frame_width;
   oxcf->forced_max_frame_height = cfg->g_forced_max_frame_height;
-#endif
   oxcf->bit_depth = cfg->g_bit_depth;
   oxcf->input_bit_depth = cfg->g_input_bit_depth;
   // guess a frame rate if out of whack, use 30

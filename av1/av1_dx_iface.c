@@ -206,14 +206,12 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   }
 #endif  // CONFIG_SCALABILITY
 
-#if CONFIG_FRAME_SIZE
   int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
   int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
   int max_frame_width = aom_rb_read_literal(&rb, num_bits_width) + 1;
   int max_frame_height = aom_rb_read_literal(&rb, num_bits_height) + 1;
   si->w = max_frame_width;
   si->h = max_frame_height;
-#endif  // CONFIG_FRAME_SIZE
 
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
   return AOM_CODEC_OK;
