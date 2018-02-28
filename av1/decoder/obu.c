@@ -346,6 +346,10 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (cm->show_existing_frame) frame_decoding_finished = 1;
         break;
       case OBU_TILE_GROUP:
+        if (!frame_header_received) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return;
+        }
         obu_payload_size =
             read_one_tile_group_obu(pbi, &rb, is_first_tg_obu_received, data,
                                     data + obu_size - obu_header_size,
