@@ -3242,10 +3242,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->reference_mode = read_frame_reference_mode(cm, rb);
   if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
 
-#if CONFIG_EXT_SKIP
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
-#endif  // CONFIG_EXT_SKIP
 
   read_compound_tools(cm, rb);
 

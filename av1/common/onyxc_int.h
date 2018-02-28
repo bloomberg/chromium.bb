@@ -285,12 +285,10 @@ typedef struct AV1Common {
 
   // Each Inter frame can reference INTER_REFS_PER_FRAME buffers
   RefBuffer frame_refs[INTER_REFS_PER_FRAME];
-#if CONFIG_EXT_SKIP
   int is_skip_mode_allowed;
   int skip_mode_flag;
   int ref_frame_idx_0;
   int ref_frame_idx_1;
-#endif  // CONFIG_EXT_SKIP
 
   int new_fb_idx;
 

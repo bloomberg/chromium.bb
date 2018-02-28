@@ -7553,7 +7553,6 @@ static int64_t motion_mode_rd(
   return 0;
 }
 
-#if CONFIG_EXT_SKIP
 static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             BLOCK_SIZE bsize, int mi_row, int mi_col,
                             BUFFER_SET *const orig_dst) {
@@ -7593,7 +7592,6 @@ static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   restore_dst_buf(xd, *orig_dst, num_planes);
   return 0;
 }
-#endif  // CONFIG_EXT_SKIP
 
 static int64_t handle_inter_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
@@ -8591,7 +8589,6 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       int left_stride);
 #endif
 
-#if CONFIG_EXT_SKIP
 static void estimate_skip_mode_rdcost(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
     BLOCK_SIZE bsize, int mi_row, int mi_col,
@@ -8712,7 +8709,6 @@ static void estimate_skip_mode_rdcost(
     break;
   }
 }
-#endif  // CONFIG_EXT_SKIP
 
 void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
@@ -9061,10 +9057,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
       modelled_rd[i][ref_frame] = INT64_MAX;
 
-#if CONFIG_EXT_SKIP
   x->skip_mode_rdcost = -1;
   x->skip_mode_index = -1;
-#endif  // CONFIG_EXT_SKIP
 
   for (midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index;
@@ -9080,9 +9074,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     uint8_t ref_frame_type;
 
     mode_index = mode_map[midx];
-#if CONFIG_EXT_SKIP
     x->skip_mode_index_candidate = mode_index;
-#endif  // CONFIG_EXT_SKIP
     this_mode = av1_mode_order[mode_index].mode;
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
@@ -10033,7 +10025,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 PALETTE_EXIT:
 
-#if CONFIG_EXT_SKIP
   best_mbmode.skip_mode = 0;
   if (cm->skip_mode_flag &&
       !segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
@@ -10124,7 +10115,6 @@ PALETTE_EXIT:
 #endif  // 0
     }
   }
-#endif  // CONFIG_EXT_SKIP
 
   // The inter modes' rate costs are not calculated precisely in some cases.
   // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and

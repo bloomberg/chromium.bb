@@ -144,7 +144,6 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
   return segp->pred_cdf[av1_get_pred_context_seg_id(xd)];
 }
 
-#if CONFIG_EXT_SKIP
 static INLINE int av1_get_skip_mode_context(const MACROBLOCKD *xd) {
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
@@ -152,7 +151,6 @@ static INLINE int av1_get_skip_mode_context(const MACROBLOCKD *xd) {
   const int left_skip_mode = left_mi ? left_mi->mbmi.skip_mode : 0;
   return above_skip_mode + left_skip_mode;
 }
-#endif  // CONFIG_EXT_SKIP
 
 static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
   const MODE_INFO *const above_mi = xd->above_mi;

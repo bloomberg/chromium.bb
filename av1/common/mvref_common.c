@@ -2053,7 +2053,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 }
 #endif  // CONFIG_EXT_WARPED_MOTION
 
-#if CONFIG_EXT_SKIP
 void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   cm->is_skip_mode_allowed = 0;
   cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
@@ -2114,7 +2113,6 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
     }
   }
 }
-#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_FRAME_REFS_SIGNALING
 typedef struct {

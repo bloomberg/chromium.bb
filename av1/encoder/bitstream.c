@@ -232,7 +232,6 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_EXT_SKIP
 static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, const MODE_INFO *mi, aom_writer *w) {
   if (!cm->skip_mode_flag) return 0;
@@ -248,7 +247,6 @@ static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   aom_write_symbol(w, skip_mode, xd->tile_ctx->skip_mode_cdfs[ctx], 2);
   return skip_mode;
 }
-#endif  // CONFIG_EXT_SKIP
 
 static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, aom_writer *w, const int is_inter) {
@@ -1049,18 +1047,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, 0, 1);
 
-#if CONFIG_EXT_SKIP
   write_skip_mode(cm, xd, segment_id, mi, w);
 
   if (mbmi->skip_mode) {
     skip = mbmi->skip;
     assert(skip);
   } else {
-#endif  // CONFIG_EXT_SKIP
     skip = write_skip(cm, xd, segment_id, mi, w);
-#if CONFIG_EXT_SKIP
   }
-#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_SPATIAL_SEGMENTATION
   write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
@@ -1103,14 +1097,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
   }
 
-#if CONFIG_EXT_SKIP
-  if (!mbmi->skip_mode)
-#endif  // CONFIG_EXT_SKIP
-    write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
+  if (!mbmi->skip_mode) write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
-#if CONFIG_EXT_SKIP
   if (mbmi->skip_mode) return;
-#endif  // CONFIG_EXT_SKIP
 
   if (!is_inter) {
     write_intra_mode(ec_ctx, bsize, mode, w);
@@ -1497,7 +1486,6 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
           refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
       }
 
-#if CONFIG_EXT_SKIP
       printf(
           "=== ENCODER ===: "
           "Frame=%d, (mi_row,mi_col)=(%d,%d), skip_mode=%d, mode=%d, bsize=%d, "
@@ -1509,19 +1497,6 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
           mv[1].as_mv.row, mv[1].as_mv.col, mbmi->ref_frame[0],
           mbmi->ref_frame[1], mbmi->motion_mode, mode_ctx, newmv_ctx,
           zeromv_ctx, refmv_ctx, mbmi->tx_size);
-#else
-      printf(
-          "=== ENCODER ===: "
-          "Frame=%d, (mi_row,mi_col)=(%d,%d), mode=%d, bsize=%d, "
-          "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
-          "ref[1]=%d, motion_mode=%d, mode_ctx=%d, "
-          "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d, tx_size=%d\n",
-          cm->current_video_frame, mi_row, mi_col, mbmi->mode, bsize,
-          cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col, mv[1].as_mv.row,
-          mv[1].as_mv.col, mbmi->ref_frame[0], mbmi->ref_frame[1],
-          mbmi->motion_mode, mode_ctx, newmv_ctx, zeromv_ctx, refmv_ctx,
-          mbmi->tx_size);
-#endif  // CONFIG_EXT_SKIP
     }
   }
 }
@@ -1708,9 +1683,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   for (int plane = 0; plane < AOMMIN(2, av1_num_planes(cm)); ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
-#if CONFIG_EXT_SKIP
     assert(!mbmi->skip_mode || !palette_size_plane);
-#endif  // CONFIG_EXT_SKIP
     if (palette_size_plane > 0) {
       assert(mbmi->use_intrabc == 0);
       assert(av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type));
@@ -3400,13 +3373,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(wb, use_hybrid_pred);
   }
 
-#if CONFIG_EXT_SKIP
-#if 0
-  printf("\n[ENCODER] Frame=%d, is_skip_mode_allowed=%d, skip_mode_flag=%d\n\n",
-         (int)cm->frame_offset, cm->is_skip_mode_allowed, cm->skip_mode_flag);
-#endif  // 0
   if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
-#endif  // CONFIG_EXT_SKIP
 
   write_compound_tools(cm, wb);
 

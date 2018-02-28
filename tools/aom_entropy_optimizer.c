@@ -640,7 +640,6 @@ int main(int argc, const char **argv) {
       "default_coeff_base_eob_multi[TX_SIZES][PLANE_TYPES][SIG_COEF_"
       "CONTEXTS_EOB][CDF_SIZE(NUM_BASE_LEVELS+1)]");
 
-#if CONFIG_EXT_SKIP
   /* Skip mode flag */
   cts_each_dim[0] = SKIP_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
@@ -650,7 +649,6 @@ int main(int argc, const char **argv) {
   optimize_cdf_table(&fc.skip_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(2)]");
-#endif  // CONFIG_EXT_SKIP
 
   fclose(statsfile);
   fclose(logfile);

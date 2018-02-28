@@ -657,10 +657,8 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     // Set to zero to make sure we do not use the previous encoded frame stats
     mbmi->skip = 0;
 
-#if CONFIG_EXT_SKIP
     // Reset skip mode flag.
     mbmi->skip_mode = 0;
-#endif
   }
 
   x->skip_chroma_rd =
@@ -899,7 +897,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   const int seg_ref_active =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
 
-#if CONFIG_EXT_SKIP
   if (cm->skip_mode_flag && !seg_ref_active && is_comp_ref_allowed(bsize)) {
     const int skip_mode_ctx = av1_get_skip_mode_context(xd);
     td->counts->skip_mode[skip_mode_ctx][mbmi->skip_mode]++;
@@ -908,15 +905,12 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   }
 
   if (!mbmi->skip_mode) {
-#endif  // CONFIG_EXT_SKIP
     if (!seg_ref_active) {
       const int skip_ctx = av1_get_skip_context(xd);
       td->counts->skip[skip_ctx][mbmi->skip]++;
       if (allow_update_cdf) update_cdf(fc->skip_cdfs[skip_ctx], mbmi->skip, 2);
     }
-#if CONFIG_EXT_SKIP
   }
-#endif  // CONFIG_EXT_SKIP
 
   if (cm->delta_q_present_flag &&
       (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
@@ -984,7 +978,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
     FRAME_COUNTS *const counts = td->counts;
 
-#if CONFIG_EXT_SKIP
     if (mbmi->skip_mode) {
       rdc->skip_mode_used_flag = 1;
       if (cm->reference_mode == REFERENCE_MODE_SELECT) {
@@ -994,7 +987,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
       return;
     }
-#endif  // CONFIG_EXT_SKIP
 
     const int inter_block = is_inter_block(mbmi);
 
@@ -4121,7 +4113,6 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
   }
 }
 
-#if CONFIG_EXT_SKIP
 static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
                                              int ref_offset[2]) {
   ref_offset[0] = ref_offset[1] = 0;
@@ -4169,7 +4160,6 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
 
   return 1;
 }
-#endif  // CONFIG_EXT_SKIP
 
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
@@ -4469,9 +4459,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
 
-#if CONFIG_EXT_SKIP
   cm->skip_mode_flag = check_skip_mode_enabled(cpi);
-#endif  // CONFIG_EXT_SKIP
 
   {
     struct aom_usec_timer emr_timer;
@@ -4579,9 +4567,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     make_consistent_compound_tools(cm);
 
     rdc->compound_ref_used_flag = 0;
-#if CONFIG_EXT_SKIP
     rdc->skip_mode_used_flag = 0;
-#endif  // CONFIG_EXT_SKIP
 
     encode_frame_internal(cpi);
 
@@ -4598,7 +4584,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
       }
     }
     make_consistent_compound_tools(cm);
-#if CONFIG_EXT_SKIP
     // Re-check on the skip mode status as reference mode may have been changed.
     if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE) {
       cm->is_skip_mode_allowed = 0;
@@ -4606,7 +4591,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     }
     if (cm->skip_mode_flag && rdc->skip_mode_used_flag == 0)
       cm->skip_mode_flag = 0;
-#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_EXT_TILE
     if (!cm->large_scale_tile) {

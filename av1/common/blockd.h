@@ -233,9 +233,7 @@ typedef struct MB_MODE_INFO {
   TX_SIZE min_tx_size;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   int8_t skip;
-#if CONFIG_EXT_SKIP
   int8_t skip_mode;
-#endif  // CONFIG_EXT_SKIP
   int8_t segment_id;
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
 

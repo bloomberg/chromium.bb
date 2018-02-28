@@ -343,9 +343,7 @@ typedef struct RD_COUNTS {
   // Stores number of 4x4 blocks using global motion per reference frame.
   int global_motion_used[TOTAL_REFS_PER_FRAME];
   int compound_ref_used_flag;
-#if CONFIG_EXT_SKIP
   int skip_mode_used_flag;
-#endif  // CONFIG_EXT_SKIP
 } RD_COUNTS;
 
 typedef struct ThreadData {

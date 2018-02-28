@@ -431,9 +431,7 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
 
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
 void av1_setup_frame_sign_bias(AV1_COMMON *cm);
-#if CONFIG_EXT_SKIP
 void av1_setup_skip_mode_allowed(AV1_COMMON *cm);
-#endif  // CONFIG_EXT_SKIP
 #if CONFIG_MFMV
 void av1_setup_motion_field(AV1_COMMON *cm);
 #endif  // CONFIG_MFMV

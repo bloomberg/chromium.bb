@@ -237,7 +237,6 @@ struct macroblock {
   int skip_chroma_rd;
   int skip_cost[SKIP_CONTEXTS][2];
 
-#if CONFIG_EXT_SKIP
   int skip_mode;  // 0: off; 1: on
   int skip_mode_cost[SKIP_CONTEXTS][2];
 
@@ -252,7 +251,6 @@ struct macroblock {
 #endif  // CONFIG_JNT_COMP
   int skip_mode_index_candidate;
   int skip_mode_index;
-#endif  // CONFIG_EXT_SKIP
 
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];

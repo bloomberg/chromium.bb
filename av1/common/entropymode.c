@@ -554,17 +554,11 @@ static const aom_cdf_prob
       { AOM_CDF2(128 * 128) }
     };
 
-#if CONFIG_EXT_SKIP
 static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(31609) }, { AOM_CDF2(20107) }, { AOM_CDF2(10296) } };
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(30224) }, { AOM_CDF2(16244) }, { AOM_CDF2(4835) }
 };
-#else
-static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
-  { AOM_CDF2(24576) }, { AOM_CDF2(16384) }, { AOM_CDF2(8192) }
-};
-#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_JNT_COMP
 static const aom_cdf_prob
@@ -1181,9 +1175,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_cdf, default_partition_cdf);
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
-#if CONFIG_EXT_SKIP
   av1_copy(fc->skip_mode_cdfs, default_skip_mode_cdfs);
-#endif  // CONFIG_EXT_SKIP
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
 #if CONFIG_SPATIAL_SEGMENTATION
