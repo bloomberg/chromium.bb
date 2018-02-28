@@ -27,10 +27,6 @@ const int kNumCookies = 20000;
 const char kCookieLine[] = "A  = \"b=;\\\"\"  ;secure;;;";
 const char kGoogleURL[] = "http://www.foo.com";
 
-int CountInString(const std::string& str, char c) {
-  return std::count(str.begin(), str.end(), c);
-}
-
 class CookieMonsterTest : public testing::Test {
  public:
   CookieMonsterTest() : message_loop_(new base::MessageLoopForIO()) {}
@@ -67,7 +63,7 @@ class SetCookieCallback : public CookieTestCallback {
                  const std::string& cookie) {
     cm->SetCookieWithOptionsAsync(
         gurl, cookie, options_,
-        base::Bind(&SetCookieCallback::Run, base::Unretained(this)));
+        base::BindOnce(&SetCookieCallback::Run, base::Unretained(this)));
     WaitForCallback();
   }
 
@@ -79,22 +75,22 @@ class SetCookieCallback : public CookieTestCallback {
   CookieOptions options_;
 };
 
-class GetCookiesCallback : public CookieTestCallback {
+class GetCookieListCallback : public CookieTestCallback {
  public:
-  const std::string& GetCookies(CookieMonster* cm, const GURL& gurl) {
-    cm->GetCookiesWithOptionsAsync(
+  const CookieList& GetCookieList(CookieMonster* cm, const GURL& gurl) {
+    cm->GetCookieListWithOptionsAsync(
         gurl, options_,
-        base::Bind(&GetCookiesCallback::Run, base::Unretained(this)));
+        base::BindOnce(&GetCookieListCallback::Run, base::Unretained(this)));
     WaitForCallback();
-    return cookies_;
+    return cookie_list_;
   }
 
  private:
-  void Run(const std::string& cookies) {
-    cookies_ = cookies;
+  void Run(const CookieList& cookie_list) {
+    cookie_list_ = cookie_list;
     CookieTestCallback::Run();
   }
-  std::string cookies_;
+  CookieList cookie_list_;
   CookieOptions options_;
 };
 
@@ -102,7 +98,7 @@ class GetAllCookiesCallback : public CookieTestCallback {
  public:
   CookieList GetAllCookies(CookieMonster* cm) {
     cm->GetAllCookiesAsync(
-        base::Bind(&GetAllCookiesCallback::Run, base::Unretained(this)));
+        base::BindOnce(&GetAllCookiesCallback::Run, base::Unretained(this)));
     WaitForCallback();
     return cookies_;
   }
@@ -156,12 +152,12 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   }
   timer.Done();
 
-  GetCookiesCallback getCookiesCallback;
+  GetCookieListCallback getCookieListCallback;
 
   base::PerfTimeLogger timer2("Cookie_monster_query_single_host");
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    getCookiesCallback.GetCookies(cm.get(), GURL(kGoogleURL));
+    getCookieListCallback.GetCookieList(cm.get(), GURL(kGoogleURL));
   }
   timer2.Done();
 
@@ -189,12 +185,12 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
   }
   timer.Done();
 
-  GetCookiesCallback getCookiesCallback;
+  GetCookieListCallback getCookieListCallback;
 
   base::PerfTimeLogger timer2("Cookie_monster_query_many_hosts");
   for (std::vector<GURL>::const_iterator it = gurls.begin(); it != gurls.end();
        ++it) {
-    getCookiesCallback.GetCookies(cm.get(), *it);
+    getCookieListCallback.GetCookieList(cm.get(), *it);
   }
   timer2.Done();
 
@@ -206,7 +202,7 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
 
 TEST_F(CookieMonsterTest, TestDomainTree) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
-  GetCookiesCallback getCookiesCallback;
+  GetCookieListCallback getCookieListCallback;
   SetCookieCallback setCookieCallback;
   const char domain_cookie_format_tree[] = "a=b; domain=%s";
   const std::string domain_base("top.com");
@@ -249,12 +245,13 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
   EXPECT_EQ(31u, getAllCookiesCallback.GetAllCookies(cm.get()).size());
 
   GURL probe_gurl("https://b.a.b.a.top.com/");
-  std::string cookie_line = getCookiesCallback.GetCookies(cm.get(), probe_gurl);
-  EXPECT_EQ(5, CountInString(cookie_line, '='))
-      << "Cookie line: " << cookie_line;
+  const CookieList& cookie_list =
+      getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
+  EXPECT_EQ(5u, cookie_list.size())
+      << CanonicalCookie::BuildCookieLine(cookie_list);
   base::PerfTimeLogger timer("Cookie_monster_query_domain_tree");
   for (int i = 0; i < kNumCookies; i++) {
-    getCookiesCallback.GetCookies(cm.get(), probe_gurl);
+    getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   }
   timer.Done();
 }
@@ -262,10 +259,9 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
 TEST_F(CookieMonsterTest, TestDomainLine) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr));
   SetCookieCallback setCookieCallback;
-  GetCookiesCallback getCookiesCallback;
+  GetCookieListCallback getCookieListCallback;
   std::vector<std::string> domain_list;
   GURL probe_gurl("https://b.a.b.a.top.com/");
-  std::string cookie_line;
 
   // Create a line of 32 domain cookies such that all cookies stored
   // by effective TLD+1 will apply to probe GURL.
@@ -290,11 +286,12 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
     }
   }
 
-  cookie_line = getCookiesCallback.GetCookies(cm.get(), probe_gurl);
-  EXPECT_EQ(32, CountInString(cookie_line, '='));
+  const CookieList& cookie_list =
+      getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
+  EXPECT_EQ(32u, cookie_list.size());
   base::PerfTimeLogger timer2("Cookie_monster_query_domain_line");
   for (int i = 0; i < kNumCookies; i++) {
-    getCookiesCallback.GetCookies(cm.get(), probe_gurl);
+    getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   }
   timer2.Done();
 }
@@ -302,7 +299,7 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
 TEST_F(CookieMonsterTest, TestImport) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
   std::vector<std::unique_ptr<CanonicalCookie>> initial_cookies;
-  GetCookiesCallback getCookiesCallback;
+  GetCookieListCallback getCookieListCallback;
 
   // We want to setup a fairly large backing store, with 300 domains of 50
   // cookies each.  Creation times must be unique.
@@ -327,7 +324,7 @@ TEST_F(CookieMonsterTest, TestImport) {
   GURL gurl("www.foo.com");
   CookieOptions options;
   base::PerfTimeLogger timer("Cookie_monster_import_from_store");
-  getCookiesCallback.GetCookies(cm.get(), gurl);
+  getCookieListCallback.GetCookieList(cm.get(), gurl);
   timer.Done();
 
   // Just confirm keys were set as expected.

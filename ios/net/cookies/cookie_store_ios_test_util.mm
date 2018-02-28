@@ -95,28 +95,6 @@ void TestPersistentCookieStore::Flush(base::OnceClosure callback) {
 }
 
 #pragma mark -
-#pragma mark GetCookieCallback
-
-GetCookieCallback::GetCookieCallback() : did_run_(false) {}
-
-#pragma mark -
-#pragma mark GetCookieCallback methods
-
-bool GetCookieCallback::did_run() {
-  return did_run_;
-}
-
-const std::string& GetCookieCallback::cookie_line() {
-  return cookie_line_;
-}
-
-void GetCookieCallback::Run(const std::string& cookie_line) {
-  ASSERT_FALSE(did_run_);
-  did_run_ = true;
-  cookie_line_ = cookie_line;
-}
-
-#pragma mark -
 #pragma mark TestCookieStoreIOSClient
 
 TestCookieStoreIOSClient::TestCookieStoreIOSClient() {}

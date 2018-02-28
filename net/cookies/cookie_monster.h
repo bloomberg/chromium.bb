@@ -161,9 +161,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                bool secure_source,
                                bool modify_http_only,
                                SetCookiesCallback callback) override;
-  void GetCookiesWithOptionsAsync(const GURL& url,
-                                  const CookieOptions& options,
-                                  GetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
@@ -397,10 +394,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& cookie_line,
                             const CookieOptions& options,
                             SetCookiesCallback callback);
-
-  void GetCookiesWithOptions(const GURL& url,
-                             const CookieOptions& options,
-                             GetCookiesCallback callback);
 
   void DeleteCookie(const GURL& url,
                     const std::string& cookie_name,

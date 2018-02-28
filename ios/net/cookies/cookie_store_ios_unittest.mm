@@ -98,8 +98,7 @@ class GetAllCookiesCallback {
 void IgnoreBoolean(bool ignored) {
 }
 
-void IgnoreString(const std::string& ignored) {
-}
+void IgnoreList(const net::CookieList& ignored) {}
 
 }  // namespace
 
@@ -130,11 +129,11 @@ class CookieStoreIOSTest : public PlatformTest {
   ~CookieStoreIOSTest() override {}
 
   // Gets the cookies. |callback| will be called on completion.
-  void GetCookies(net::CookieStore::GetCookiesCallback callback) {
+  void GetCookies(net::CookieStore::GetCookieListCallback callback) {
     net::CookieOptions options;
     options.set_include_httponly();
-    store_->GetCookiesWithOptionsAsync(kTestCookieURLFooBar, options,
-                                       std::move(callback));
+    store_->GetCookieListWithOptionsAsync(kTestCookieURLFooBar, options,
+                                          std::move(callback));
   }
 
   // Sets a cookie.
@@ -196,7 +195,7 @@ class CookieStoreIOSTest : public PlatformTest {
 };
 
 TEST_F(CookieStoreIOSTest, SetCookieCallsHookWhenSynchronized) {
-  GetCookies(base::Bind(&IgnoreString));
+  GetCookies(base::BindOnce(&IgnoreList));
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
@@ -218,7 +217,7 @@ TEST_F(CookieStoreIOSTest, SetCookieCallsHookWhenSynchronized) {
 }
 
 TEST_F(CookieStoreIOSTest, DeleteCallsHook) {
-  GetCookies(base::Bind(&IgnoreString));
+  GetCookies(base::BindOnce(&IgnoreList));
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
@@ -230,8 +229,7 @@ TEST_F(CookieStoreIOSTest, DeleteCallsHook) {
 }
 
 TEST_F(CookieStoreIOSTest, SameValueDoesNotCallHook) {
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&IgnoreString));
+  GetCookies(base::BindOnce(&IgnoreList));
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());

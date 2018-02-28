@@ -63,6 +63,7 @@
 #include "content/public/test/test_utils.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "net/base/filename_util.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -402,10 +403,10 @@ Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
 
 namespace {
 
-void GetCookiesCallback(base::WaitableEvent* event,
-                        std::string* cookies,
-                        const std::string& cookie_line) {
-  *cookies = cookie_line;
+void GetCookieListCallback(base::WaitableEvent* event,
+                           net::CookieList* cookies,
+                           const net::CookieList& cookie_list) {
+  *cookies = cookie_list;
   event->Signal();
 }
 
@@ -413,11 +414,12 @@ void GetCookiesOnIOThread(
     const GURL& url,
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     base::WaitableEvent* event,
-    std::string* cookies) {
-  context_getter->GetURLRequestContext()->cookie_store()->
-      GetCookiesWithOptionsAsync(
+    net::CookieList* cookie_list) {
+  context_getter->GetURLRequestContext()
+      ->cookie_store()
+      ->GetCookieListWithOptionsAsync(
           url, net::CookieOptions(),
-          base::Bind(&GetCookiesCallback, event, cookies));
+          base::BindOnce(&GetCookieListCallback, event, cookie_list));
 }
 
 }  // namespace
@@ -435,11 +437,14 @@ void GetCookies(const GURL& url,
             ->GetURLRequestContext();
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
+    net::CookieList cookie_list;
     CHECK(content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&GetCookiesOnIOThread, url, context_getter, &event, value)));
+        base::BindOnce(&GetCookiesOnIOThread, url, context_getter, &event,
+                       &cookie_list)));
     event.Wait();
 
+    *value = net::CanonicalCookie::BuildCookieLine(cookie_list);
     *value_size = static_cast<int>(value->size());
   }
 }

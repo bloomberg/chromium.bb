@@ -69,22 +69,6 @@ class ResultSavingCookieCallback : public CookieCallback {
   T result_;
 };
 
-class StringResultCookieCallback : public CookieCallback {
- public:
-  StringResultCookieCallback();
-  explicit StringResultCookieCallback(base::Thread* run_in_thread);
-
-  void Run(const std::string& result) {
-    result_ = result;
-    CallbackEpilogue();
-  }
-
-  const std::string& result() { return result_; }
-
- private:
-  std::string result_;
-};
-
 class NoResultCookieCallback : public CookieCallback {
  public:
   NoResultCookieCallback();
