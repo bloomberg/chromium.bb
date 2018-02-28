@@ -29,6 +29,7 @@
 
 #include "core/editing/commands/EditingCommandsUtilities.h"
 
+#include "core/dom/NodeComputedStyle.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
@@ -89,6 +90,14 @@ bool IsNodeRendered(const Node& node) {
     return false;
 
   return layout_object->Style()->Visibility() == EVisibility::kVisible;
+}
+
+bool IsInline(const Node* node) {
+  if (!node)
+    return false;
+
+  const ComputedStyle* style = node->GetComputedStyle();
+  return style && style->Display() == EDisplay::kInline;
 }
 
 // FIXME: This method should not need to call
@@ -533,6 +542,32 @@ void TidyUpHTMLStructure(Document& document) {
   document.AppendChild(root);
 
   // TODO(tkent): Should we check and move Text node children of <html>?
+}
+
+InputEvent::InputType DeletionInputTypeFromTextGranularity(
+    DeleteDirection direction,
+    TextGranularity granularity) {
+  using InputType = InputEvent::InputType;
+  switch (direction) {
+    case DeleteDirection::kForward:
+      if (granularity == TextGranularity::kWord)
+        return InputType::kDeleteWordForward;
+      if (granularity == TextGranularity::kLineBoundary)
+        return InputType::kDeleteSoftLineForward;
+      if (granularity == TextGranularity::kParagraphBoundary)
+        return InputType::kDeleteHardLineForward;
+      return InputType::kDeleteContentForward;
+    case DeleteDirection::kBackward:
+      if (granularity == TextGranularity::kWord)
+        return InputType::kDeleteWordBackward;
+      if (granularity == TextGranularity::kLineBoundary)
+        return InputType::kDeleteSoftLineBackward;
+      if (granularity == TextGranularity::kParagraphBoundary)
+        return InputType::kDeleteHardLineBackward;
+      return InputType::kDeleteContentBackward;
+    default:
+      return InputType::kNone;
+  }
 }
 
 }  // namespace blink
