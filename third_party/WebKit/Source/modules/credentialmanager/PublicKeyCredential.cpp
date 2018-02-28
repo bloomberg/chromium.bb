@@ -4,6 +4,12 @@
 
 #include "modules/credentialmanager/PublicKeyCredential.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
+#include "platform/bindings/ScriptState.h"
+
 namespace blink {
 
 namespace {
@@ -24,6 +30,14 @@ PublicKeyCredential::PublicKeyCredential(const String& id,
     : Credential(id, kPublicKeyCredentialType),
       raw_id_(raw_id),
       response_(response) {}
+
+ScriptPromise
+PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
+    ScriptState* script_state) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      DOMException::Create(kNotSupportedError, "Operation not implemented."));
+}
 
 void PublicKeyCredential::Trace(blink::Visitor* visitor) {
   visitor->Trace(raw_id_);

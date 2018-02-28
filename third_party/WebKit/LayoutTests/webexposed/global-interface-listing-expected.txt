@@ -5228,6 +5228,7 @@ interface PromiseRejectionEvent : Event
     getter reason
     method constructor
 interface PublicKeyCredential : Credential
+    static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
     getter rawId
     getter response
