@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class CSSProperty;
+
 class CORE_EXPORT StylePropertyMapReadOnly
     : public ScriptWrappable,
       public PairIterable<String, CSSStyleValueVector> {
@@ -42,6 +44,8 @@ class CORE_EXPORT StylePropertyMapReadOnly
 
  private:
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
+
+  CSSStyleValue* GetShorthandProperty(const CSSProperty&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnly);

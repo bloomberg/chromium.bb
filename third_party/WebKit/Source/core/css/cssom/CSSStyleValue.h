@@ -31,6 +31,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   // This enum ordering is significant for CSSStyleValue::IsNumericValue.
   enum StyleValueType {
     kUnknownType,
+    kShorthandType,
     kUnparsedType,
     kKeywordType,
     // Start of CSSNumericValue subclasses
