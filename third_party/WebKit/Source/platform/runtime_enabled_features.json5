@@ -726,6 +726,14 @@
       status: "experimental",
     },
     {
+      name: "OffscreenCanvas",
+      status: "experimental",
+    },
+    {
+      name: "OffscreenCanvasText",
+      status: "experimental",
+    },
+    {
       name: "OnDeviceChange",
       status: "stable",
     },

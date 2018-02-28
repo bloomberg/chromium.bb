@@ -378,7 +378,6 @@ def GpuRasterizationPages(base_name):
 # Pages that should be run with experimental canvas features.
 def ExperimentalCanvasFeaturesPages(base_name):
   browser_args = [
-    '--enable-experimental-canvas-features',
     '--enable-experimental-web-platform-features'] # for lowLatency
   unaccelerated_args = [
     '--disable-accelerated-2d-canvas',
