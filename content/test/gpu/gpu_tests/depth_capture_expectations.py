@@ -12,10 +12,10 @@ class DepthCaptureExpectations(GpuTestExpectations):
     # self.Fail('DepthCapture_depthStreamToRGBAFloatTexture',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
     self.Flaky('DepthCapture_depthStreamToR32FloatTexture',
-               ['linux', 'nvidia'], bug=737410)
+               ['linux', ('nvidia', 0x104a)], bug=737410)
     self.Flaky('DepthCapture_depthStreamToRGBAFloatTexture',
-               ['linux', 'nvidia'], bug=737410)
+               ['linux', ('nvidia', 0x104a)], bug=737410)
     self.Flaky('DepthCapture_depthStreamToRGBAUint8Texture',
-               ['linux', 'nvidia'], bug=737410)
+               ['linux', ('nvidia', 0x104a)], bug=737410)
     self.Fail('DepthCapture_depthStreamToR32FloatTexture',
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=765913)
