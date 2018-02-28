@@ -191,11 +191,17 @@
     <message name="IDS_SETTINGS_CHROMEVOX_OPTIONS_LABEL" desc="Label for button to open ChromeVox options.">
       Open ChromeVox settings
     </message>
-    <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the screen magnifier">
-      Enable screen magnifier
+    <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the fullscreen magnifier">
+      Enable fullscreen magnifier
     </message>
-    <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_LABEL" desc="Label for dropdown menu which contains zoom levels for the screen magnifier">
-      Zoom level:
+    <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_LABEL" desc="Label for dropdown menu which contains zoom levels for the fullscreen magnifier">
+      Fullscreen zoom level:
+    </message>
+    <message name="IDS_SETTINGS_DOCKED_MAGNIFIER_LABEL" desc="Label for checkbox which enables the docked magnifier">
+      Enable docked magnifier
+    </message>
+    <message name="IDS_SETTINGS_DOCKED_MAGNIFIER_ZOOM_LABEL" desc="Label for dropdown menu which contains zoom levels for the docked magnifier">
+      Docked zoom level:
     </message>
     <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_ZOOM_2_X" desc="Desription of a 2x zoom level">
       2x

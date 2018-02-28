@@ -366,6 +366,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kNightLightCustomEndTime] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kDockedMagnifierEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kDockedMagnifierScale] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Input method settings.
   (*s_whitelist)[::prefs::kLanguagePreloadEngines] =
