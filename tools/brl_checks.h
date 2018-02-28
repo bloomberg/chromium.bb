@@ -59,7 +59,8 @@ typedef struct {
  * it defaults to -1.
  * @param expected_cursorPos (optional) the expected cursor position after this
  * translation. If not specified it defaults to -1.
- * @param direction (optional) 0 for forward translation, 1 for backwards translation. If
+ * @param direction (optional) 0 for forward translation, 1 for backwards translation,
+ * 2 for both directions. If
  * not specified it defaults to 0.
  * @param diagnostics (optional) Print diagnostic output on failure if diagnostics is not
  * 0. If not specified it defaults to 1.
