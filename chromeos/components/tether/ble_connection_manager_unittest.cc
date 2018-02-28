@@ -301,10 +301,9 @@ class BleConnectionManagerTest : public testing::Test {
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(base::Time::UnixEpoch());
+    test_clock_.SetNow(base::Time::UnixEpoch());
     mock_timer_factory_ = new MockTimerFactory();
-    manager_->SetTestDoubles(base::WrapUnique(test_clock_),
+    manager_->SetTestDoubles(&test_clock_,
                              base::WrapUnique(mock_timer_factory_));
   }
 
@@ -438,7 +437,7 @@ class BleConnectionManagerTest : public testing::Test {
       const cryptauth::RemoteDevice& remote_device,
       const std::string& bluetooth_address,
       const ConnectionReason connection_reason) {
-    test_clock_->SetNow(base::Time::UnixEpoch());
+    test_clock_.SetNow(base::Time::UnixEpoch());
 
     manager_->RegisterRemoteDevice(remote_device.GetDeviceId(),
                                    connection_reason);
@@ -478,16 +477,16 @@ class BleConnectionManagerTest : public testing::Test {
 
     num_expected_authenticated_channels_++;
 
-    test_clock_->SetNow(base::Time::UnixEpoch());
+    test_clock_.SetNow(base::Time::UnixEpoch());
     channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTING);
 
-    test_clock_->Advance(kStatusConnectedTime);
+    test_clock_.Advance(kStatusConnectedTime);
     channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTED);
     histogram_tester_.ExpectTimeBucketCount(
         "InstantTethering.Performance.AdvertisementToConnectionDuration",
         kStatusConnectedTime, num_expected_authenticated_channels_);
 
-    test_clock_->Advance(kStatusAuthenticatedTime);
+    test_clock_.Advance(kStatusAuthenticatedTime);
     channel->ChangeStatus(cryptauth::SecureChannel::Status::AUTHENTICATING);
     channel->ChangeStatus(cryptauth::SecureChannel::Status::AUTHENTICATED);
     histogram_tester_.ExpectTimeBucketCount(
@@ -548,7 +547,7 @@ class BleConnectionManagerTest : public testing::Test {
   std::unique_ptr<FakeAdHocBleAdvertiser> fake_ad_hoc_ble_advertiser_;
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   MockTimerFactory* mock_timer_factory_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::unique_ptr<FakeConnectionFactory> fake_connection_factory_;
   std::unique_ptr<FakeSecureChannelFactory> fake_secure_channel_factory_;
   std::unique_ptr<TestObserver> test_observer_;

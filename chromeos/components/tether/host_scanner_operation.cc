@@ -140,7 +140,7 @@ HostScannerOperation::HostScannerOperation(
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
       connection_preserver_(connection_preserver),
-      clock_(std::make_unique<base::DefaultClock>()) {}
+      clock_(base::DefaultClock::GetInstance()) {}
 
 HostScannerOperation::~HostScannerOperation() = default;
 
@@ -244,9 +244,8 @@ MessageType HostScannerOperation::GetMessageTypeForConnection() {
   return MessageType::TETHER_AVAILABILITY_REQUEST;
 }
 
-void HostScannerOperation::SetClockForTest(
-    std::unique_ptr<base::Clock> clock_for_test) {
-  clock_ = std::move(clock_for_test);
+void HostScannerOperation::SetClockForTest(base::Clock* clock_for_test) {
+  clock_ = clock_for_test;
 }
 
 void HostScannerOperation::RecordTetherAvailabilityResponseDuration(

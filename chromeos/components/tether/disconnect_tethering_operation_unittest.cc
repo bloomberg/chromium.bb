@@ -71,9 +71,8 @@ class DisconnectTetheringOperationTest : public testing::Test {
     test_observer_ = base::WrapUnique(new TestObserver());
     operation_->AddObserver(test_observer_.get());
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+    test_clock_.SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(&test_clock_);
 
     operation_->Initialize();
   }
@@ -89,7 +88,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
     EXPECT_EQ(test_device_.GetDeviceId(), sent_messages[0].device_id);
     EXPECT_EQ(disconnect_tethering_request_string_, sent_messages[0].message);
 
-    test_clock_->Advance(kDisconnectTetheringRequestTime);
+    test_clock_.Advance(kDisconnectTetheringRequestTime);
 
     // Now, simulate the message being sent.
     int last_sequence_number =
@@ -112,7 +111,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<TestObserver> test_observer_;
 
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
 
   std::unique_ptr<DisconnectTetheringOperation> operation_;
 

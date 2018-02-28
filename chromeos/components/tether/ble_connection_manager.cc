@@ -227,7 +227,7 @@ BleConnectionManager::BleConnectionManager(
       ble_scanner_(ble_scanner),
       ad_hoc_ble_advertisement_(ad_hoc_ble_advertisement),
       timer_factory_(std::make_unique<TimerFactory>()),
-      clock_(std::make_unique<base::DefaultClock>()),
+      clock_(base::DefaultClock::GetInstance()),
       has_registered_observer_(false),
       weak_ptr_factory_(this) {}
 
@@ -614,9 +614,9 @@ void BleConnectionManager::NotifyMessageSent(int sequence_number) {
 }
 
 void BleConnectionManager::SetTestDoubles(
-    std::unique_ptr<base::Clock> test_clock,
+    base::Clock* test_clock,
     std::unique_ptr<TimerFactory> test_timer_factory) {
-  clock_ = std::move(test_clock);
+  clock_ = test_clock;
   timer_factory_ = std::move(test_timer_factory);
 }
 

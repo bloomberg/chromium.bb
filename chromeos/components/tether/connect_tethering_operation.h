@@ -95,7 +95,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
                            TestOperation_SetupRequired);
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+  void SetClockForTest(base::Clock* clock_for_test);
 
   // The amount of time this operation will wait for a response. The timeout
   // values are different depending on whether setup is needed on the host.
@@ -104,7 +104,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
   cryptauth::RemoteDevice remote_device_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   int connect_message_sequence_number_ = -1;
   bool setup_required_;
 

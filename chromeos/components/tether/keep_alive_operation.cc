@@ -48,7 +48,7 @@ KeepAliveOperation::KeepAliveOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
-      clock_(std::make_unique<base::DefaultClock>()) {}
+      clock_(base::DefaultClock::GetInstance()) {}
 
 KeepAliveOperation::~KeepAliveOperation() = default;
 
@@ -110,9 +110,8 @@ MessageType KeepAliveOperation::GetMessageTypeForConnection() {
   return MessageType::KEEP_ALIVE_TICKLE;
 }
 
-void KeepAliveOperation::SetClockForTest(
-    std::unique_ptr<base::Clock> clock_for_test) {
-  clock_ = std::move(clock_for_test);
+void KeepAliveOperation::SetClockForTest(base::Clock* clock_for_test) {
+  clock_ = clock_for_test;
 }
 
 }  // namespace tether

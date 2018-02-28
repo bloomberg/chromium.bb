@@ -11,10 +11,6 @@
 
 class PrefService;
 
-namespace base {
-class Clock;
-}  // namespace base
-
 namespace session_manager {
 class SessionManager;
 }  // namespace session_manager
@@ -127,7 +123,6 @@ class SynchronousShutdownObjectContainerImpl
   std::unique_ptr<MasterHostScanCache> master_host_scan_cache_;
   std::unique_ptr<NotificationRemover> notification_remover_;
   std::unique_ptr<KeepAliveScheduler> keep_alive_scheduler_;
-  std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<HotspotUsageDurationTracker> hotspot_usage_duration_tracker_;
   std::unique_ptr<ConnectionPreserver> connection_preserver_;
   std::unique_ptr<HostScanner> host_scanner_;

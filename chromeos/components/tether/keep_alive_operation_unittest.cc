@@ -84,9 +84,8 @@ class KeepAliveOperationTest : public testing::Test {
     test_observer_ = base::WrapUnique(new TestObserver());
     operation_->AddObserver(test_observer_.get());
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+    test_clock_.SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(&test_clock_);
 
     operation_->Initialize();
   }
@@ -106,7 +105,7 @@ class KeepAliveOperationTest : public testing::Test {
   const cryptauth::RemoteDevice test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::unique_ptr<TestObserver> test_observer_;
 
   std::unique_ptr<KeepAliveOperation> operation_;
@@ -123,7 +122,7 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   EXPECT_FALSE(test_observer_->has_run_callback());
 
-  test_clock_->Advance(kKeepAliveTickleResponseTime);
+  test_clock_.Advance(kKeepAliveTickleResponseTime);
 
   fake_ble_connection_manager_->ReceiveMessage(
       test_device_.GetDeviceId(), CreateKeepAliveTickleResponseString());

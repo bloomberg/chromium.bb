@@ -55,7 +55,7 @@ class BleSynchronizer : public BleSynchronizerBase {
   };
 
   void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
-                      std::unique_ptr<base::Clock> test_clock,
+                      base::Clock* test_clock,
                       scoped_refptr<base::TaskRunner> test_task_runner);
 
   void OnAdvertisementRegistered(
@@ -87,7 +87,7 @@ class BleSynchronizer : public BleSynchronizerBase {
 
   std::unique_ptr<Command> current_command_;
   std::unique_ptr<base::Timer> timer_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
   base::Time last_command_end_timestamp_;
   base::WeakPtrFactory<BleSynchronizer> weak_ptr_factory_;

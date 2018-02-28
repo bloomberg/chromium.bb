@@ -227,13 +227,11 @@ class BleSynchronizerTest : public testing::Test {
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
+    test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     synchronizer_ = std::make_unique<BleSynchronizer>(mock_adapter_);
-    synchronizer_->SetTestDoubles(base::WrapUnique(mock_timer_),
-                                  base::WrapUnique(test_clock_),
+    synchronizer_->SetTestDoubles(base::WrapUnique(mock_timer_), &test_clock_,
                                   test_task_runner_);
   }
 
@@ -450,7 +448,7 @@ class BleSynchronizerTest : public testing::Test {
   scoped_refptr<NiceMock<MockBluetoothAdapterWithAdvertisements>> mock_adapter_;
 
   base::MockTimer* mock_timer_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::vector<std::unique_ptr<RegisterAdvertisementArgs>> register_args_list_;
@@ -568,7 +566,7 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
   EXPECT_EQ(1, num_register_success_);
 
   // Advance to one millisecond before the limit.
-  test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs - 1));
+  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs - 1));
   UnregisterAdvertisement();
 
   // Should still be empty since it should have been throttled, and the timer
@@ -578,7 +576,7 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
 
   // Advance the clock and fire the timer. This should result in the next
   // command being executed.
-  test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
+  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
   mock_timer_->Fire();
 
   InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */,
@@ -594,7 +592,7 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
 
   // Advance the clock and fire the timer. This should result in the next
   // command being executed.
-  test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
+  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
   mock_timer_->Fire();
 
   EXPECT_EQ(2u, register_args_list_.size());
@@ -604,7 +602,7 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
 
   // Advance the clock and fire the timer. This should result in the next
   // command being executed.
-  test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
+  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
   mock_timer_->Fire();
 
   EXPECT_EQ(3u, register_args_list_.size());
@@ -615,7 +613,7 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
   // Advance the clock before doing anything else. The next request should not
   // be throttled.
   EXPECT_FALSE(mock_timer_->IsRunning());
-  test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
+  test_clock_.Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
 
   UnregisterAdvertisement();
   InvokeUnregisterCallback(false /* success */, 1u /* reg_arg_index */,

@@ -124,9 +124,8 @@ class ConnectTetheringOperationTest : public testing::Test {
         mock_tether_host_response_recorder_.get(), false /* setup_required */));
     operation_->AddObserver(test_observer_.get());
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+    test_clock_.SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(&test_clock_);
 
     operation_->Initialize();
   }
@@ -155,7 +154,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   void SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode response_code,
       bool use_proto_without_ssid_and_password) {
-    test_clock_->Advance(kConnectTetheringResponseTime);
+    test_clock_.Advance(kConnectTetheringResponseTime);
 
     fake_ble_connection_manager_->ReceiveMessage(
         test_device_.GetDeviceId(),
@@ -210,7 +209,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>
       mock_tether_host_response_recorder_;
   std::unique_ptr<TestObserver> test_observer_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::unique_ptr<ConnectTetheringOperation> operation_;
 
   base::HistogramTester histogram_tester_;
