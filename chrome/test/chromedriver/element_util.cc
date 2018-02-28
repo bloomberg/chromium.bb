@@ -257,14 +257,20 @@ Status FindElement(int interval_ms,
     arguments.Append(CreateElement(*root_element_id));
 
   base::TimeTicks start_time = base::TimeTicks::Now();
+  int context_retry = 0;
   while (true) {
     std::unique_ptr<base::Value> temp;
     Status status = web_view->CallFunction(
         session->GetCurrentFrameId(), script, arguments, &temp);
-    if (status.IsError())
+    // A "Cannot find context" error can occur due to transition from in-process
+    // iFrame to OOPIF. Retry a couple of times.
+    if (status.IsError() &&
+        (status.message().find("Cannot find context") == std::string::npos ||
+         ++context_retry > 2)) {
       return status;
+    }
 
-    if (!temp->is_none()) {
+    if (temp && !temp->is_none()) {
       if (only_one) {
         *value = std::move(temp);
         return Status(kOk);
