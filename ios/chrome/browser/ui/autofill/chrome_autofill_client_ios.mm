@@ -40,8 +40,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     web::WebState* web_state,
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,
-    password_manager::PasswordGenerationManager* password_generation_manager,
-    std::unique_ptr<IdentityProvider> identity_provider)
+    password_manager::PasswordGenerationManager* password_generation_manager)
     : pref_service_(browser_state->GetPrefs()),
       personal_data_manager_(PersonalDataManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
@@ -50,7 +49,6 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       identity_manager_(
           IdentityManagerFactory::GetInstance()->GetForBrowserState(
               browser_state->GetOriginalChromeBrowserState())),
-      identity_provider_(std::move(identity_provider)),
       autofill_web_data_service_(
           ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
               browser_state,
@@ -84,10 +82,6 @@ syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
 
 identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
-}
-
-IdentityProvider* ChromeAutofillClientIOS::GetIdentityProvider() {
-  return identity_provider_.get();
 }
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {

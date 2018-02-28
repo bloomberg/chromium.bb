@@ -18,7 +18,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class IdentityProvider;
 class PrefService;
 
 namespace content {
@@ -108,10 +107,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the IdentityManager associated with the client.
   virtual identity::IdentityManager* GetIdentityManager() = 0;
-
-  // Gets the IdentityProvider associated with the client (for OAuth2).
-  // TODO(https://crbug.com/809435): Remove.
-  virtual IdentityProvider* GetIdentityProvider() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;

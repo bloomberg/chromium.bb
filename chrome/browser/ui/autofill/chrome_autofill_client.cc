@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -44,7 +42,6 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/user_prefs/user_prefs.h"
@@ -134,25 +131,6 @@ identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IdentityManagerFactory::GetInstance()->GetForProfile(
       profile->GetOriginalProfile());
-}
-
-IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
-  if (!identity_provider_) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
-            ->GetOriginalProfile();
-    base::Closure login_callback;
-#if !defined(OS_ANDROID)
-    login_callback =
-        LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile);
-#endif
-    identity_provider_.reset(new ProfileIdentityProvider(
-        SigninManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        login_callback));
-  }
-
-  return identity_provider_.get();
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
