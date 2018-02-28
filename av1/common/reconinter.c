@@ -1019,9 +1019,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           if (is_scaled) {
             int ssx = pd->subsampling_x;
             int ssy = pd->subsampling_y;
-            int orig_pos_y = (mi_y << (SUBPEL_BITS - ssy)) + (y << SUBPEL_BITS);
+            int orig_pos_y = (r_offset + y) << SUBPEL_BITS;
             orig_pos_y += mv.row * (1 << (1 - ssy));
-            int orig_pos_x = (mi_x << (SUBPEL_BITS - ssx)) + (x << SUBPEL_BITS);
+            int orig_pos_x = (c_offset + x) << SUBPEL_BITS;
             orig_pos_x += mv.col * (1 << (1 - ssx));
             int pos_y = sf->scale_value_y(orig_pos_y, sf);
             int pos_x = sf->scale_value_x(orig_pos_x, sf);
