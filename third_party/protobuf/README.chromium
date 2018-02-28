@@ -118,3 +118,7 @@ Description of the patches:
 - 0019-rename-a-shadowed-variable.patch
 
   Cherry-picks upstream https://github.com/google/protobuf/commit/af3813cd7
+
+- 0020-Add-support-for-libc-on-Windows.patch
+
+  Cherry-picks upstream https://github.com/google/protobuf/commit/3ba21cd5f
