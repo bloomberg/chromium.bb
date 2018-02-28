@@ -3095,6 +3095,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     "MemoryAblation")},
 
 #if defined(OS_ANDROID)
+    {"enable-command-line-on-non-rooted-devices",
+     flag_descriptions::kEnableCommandLineOnNonRootedName,
+     flag_descriptions::kEnableCommandLineOnNoRootedDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCommandLineOnNonRooted)},
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
     {"enable-custom-context-menu",
      flag_descriptions::kEnableCustomContextMenuName,
      flag_descriptions::kEnableCustomContextMenuDescription, kOsAndroid,

@@ -184,6 +184,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String CLIPBOARD_CONTENT_SETTING = "ClipboardContentSetting";
+    public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER =
             "ContentSuggestionsFaviconsFromNewServer";
     public static final String CONTENT_SUGGESTIONS_NOTIFICATIONS =

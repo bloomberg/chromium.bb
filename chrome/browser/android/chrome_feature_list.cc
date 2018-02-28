@@ -79,6 +79,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeSmartSelection,
     &kChromeMemexFeature,
     &kChromeModernDesign,
+    &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsSettings,
     &kContentSuggestionsThumbnailDominantColor,
@@ -237,6 +238,9 @@ const base::Feature kChromeModernDesign{"ChromeModernDesign",
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_ENABLED_BY_DEFAULT};

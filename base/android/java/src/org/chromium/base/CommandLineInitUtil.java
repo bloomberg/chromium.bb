@@ -29,7 +29,7 @@ public final class CommandLineInitUtil {
      * 1) The "debug app" is set to the application calling this.
      * and
      * 2) ADB is enabled.
-     *
+     * 3) Force enabled by the embedder.
      */
     private static final String COMMAND_LINE_FILE_PATH_DEBUG_APP = "/data/local/tmp";
 
@@ -48,7 +48,6 @@ public final class CommandLineInitUtil {
      * Initializes the CommandLine class, pulling command line arguments from {@code fileName}.
      * @param fileName The name of the command line file to pull arguments from.
      * @param shouldUseDebugFlags If non-null, returns whether debug flags are allowed to be used.
-     *     Called only when the usual checks indicate that they may not be.
      */
     public static void initCommandLine(
             String fileName, @Nullable Supplier<Boolean> shouldUseDebugFlags) {
@@ -56,8 +55,7 @@ public final class CommandLineInitUtil {
         File commandLineFile = new File(COMMAND_LINE_FILE_PATH_DEBUG_APP, fileName);
         // shouldUseDebugCommandLine() uses IPC, so don't bother calling it if no flags file exists.
         boolean debugFlagsExist = commandLineFile.exists();
-        if (!debugFlagsExist || !shouldUseDebugCommandLine()
-                || (shouldUseDebugFlags != null && !shouldUseDebugFlags.get())) {
+        if (!debugFlagsExist || !shouldUseDebugCommandLine(shouldUseDebugFlags)) {
             commandLineFile = new File(COMMAND_LINE_FILE_PATH, fileName);
         }
         CommandLine.initFromFile(commandLineFile.getPath());
@@ -66,15 +64,17 @@ public final class CommandLineInitUtil {
     /**
      * Use an alternative path if:
      * - The current build is "eng" or "userdebug", OR
-     * - adb is enabled and this is the debug app.
+     * - adb is enabled and this is the debug app, OR
+     * - Force enabled by the embedder.
+     * @param shouldUseDebugFlags If non-null, returns whether debug flags are allowed to be used.
      */
-    private static boolean shouldUseDebugCommandLine() {
-        // TODO(crbug/784947): Allow /data/local/tmp if enabled in chrome://settings.
+    private static boolean shouldUseDebugCommandLine(
+            @Nullable Supplier<Boolean> shouldUseDebugFlags) {
+        if (shouldUseDebugFlags != null && shouldUseDebugFlags.get()) return true;
         Context context = ContextUtils.getApplicationContext();
         String debugApp = Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1
                 ? getDebugAppPreJBMR1(context)
                 : getDebugAppJBMR1(context);
-
         // Check isDebugAndroid() last to get full code coverage when using userdebug devices.
         return context.getPackageName().equals(debugApp) || BuildInfo.isDebugAndroid();
     }
