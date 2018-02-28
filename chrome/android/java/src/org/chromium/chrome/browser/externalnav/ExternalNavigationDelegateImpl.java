@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.provider.Telephony;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
+import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -254,13 +256,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isWithinCurrentWebappScope(String url) {
+    public @WebappScopePolicy.NavigationDirective int applyWebappScopePolicyForUrl(String url) {
         Context context = getAvailableContext();
         if (context instanceof WebappActivity) {
-            String scope = ((WebappActivity) context).getWebappScope();
-            return url.startsWith(scope);
+            WebappActivity webappActivity = (WebappActivity) context;
+            return webappActivity.scopePolicy().applyPolicyForNavigationToUrl(
+                    webappActivity.getWebappInfo(), url);
         }
-        return false;
+        return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
     }
 
     @Override
@@ -517,6 +520,17 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             loadUrlParams.setReferrer(referrer);
         }
         tab.loadUrl(loadUrlParams);
+    }
+
+    @Override
+    public void launchCctForWebappUrl(String url, boolean launchInNewTask) {
+        Context context = getAvailableContext();
+        if (!(context instanceof WebappActivity)) return;
+
+        CustomTabsIntent customTabIntent =
+                ((WebappActivity) context).buildCustomTabIntentForURL(url);
+        if (launchInNewTask) customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        customTabIntent.launchUrl(context, Uri.parse(url));
     }
 
     @Override

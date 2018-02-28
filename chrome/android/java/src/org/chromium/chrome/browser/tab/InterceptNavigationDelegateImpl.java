@@ -229,7 +229,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         return mTab.getWebContents().getNavigationController().getLastCommittedEntryIndex();
     }
 
-    protected boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
+    private boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
         if (mTab.getWebContents() == null) return false;
         if (!mTab.getWebContents().getNavigationController().canGoToOffset(0)) return true;
 
@@ -248,7 +248,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * Called when Chrome decides to override URL loading and launch an intent or an asynchronous
      * action.
      */
-    protected void onOverrideUrlLoadingAndLaunchIntent() {
+    private void onOverrideUrlLoadingAndLaunchIntent() {
         if (mTab.getWebContents() == null) return;
 
         // Before leaving Chrome, close the empty child tab.

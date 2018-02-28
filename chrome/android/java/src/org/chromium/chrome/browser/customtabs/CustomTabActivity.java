@@ -83,7 +83,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.webapps.WebappInterceptNavigationDelegate;
+import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -148,7 +148,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
-    private WebappInterceptNavigationDelegate.CustomTabTimeSpentLogger mWebappTimeSpentLogger;
+    private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
         private final CustomTabsConnection mConnection;
@@ -727,11 +727,9 @@ public class CustomTabActivity extends ChromeActivity {
             }
         }
         mIsInitialResume = false;
-        mWebappTimeSpentLogger =
-                WebappInterceptNavigationDelegate.CustomTabTimeSpentLogger
-                        .createInstanceAndStartTimer(getIntent().getIntExtra(
-                                CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
-                                ACTIVITY_TYPE_OTHER));
+        mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
+                getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
+                        ACTIVITY_TYPE_OTHER));
     }
 
     @Override
