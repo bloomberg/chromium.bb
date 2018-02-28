@@ -3174,6 +3174,15 @@ void CompositedLayerMapping::SetScrollingContentsNeedDisplayInRect(
   ApplyToGraphicsLayers(this, functor, kApplyToScrollingContentLayers);
 }
 
+void CompositedLayerMapping::SetNeedsCheckRasterInvalidation() {
+  ApplyToGraphicsLayers(this,
+                        [](GraphicsLayer* graphics_layer) {
+                          if (graphics_layer->DrawsContent())
+                            graphics_layer->SetNeedsCheckRasterInvalidation();
+                        },
+                        kApplyToAllGraphicsLayers);
+}
+
 const GraphicsLayerPaintInfo* CompositedLayerMapping::ContainingSquashedLayer(
     const LayoutObject* layout_object,
     const Vector<GraphicsLayerPaintInfo>& layers,

@@ -293,6 +293,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // must DrawsContent. The result is never nullptr.
   sk_sp<PaintRecord> CapturePaintRecord() const;
 
+  void SetNeedsCheckRasterInvalidation() {
+    needs_check_raster_invalidation_ = true;
+  }
+
  protected:
   String DebugName(cc::Layer*) const;
   bool ShouldFlattenTransform() const { return should_flatten_transform_; }
@@ -378,6 +382,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool contents_visible_ : 1;
   bool is_root_for_isolated_group_ : 1;
   bool hit_testable_without_draws_content_ : 1;
+  bool needs_check_raster_invalidation_ : 1;
 
   bool has_scroll_parent_ : 1;
   bool has_clip_parent_ : 1;

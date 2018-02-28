@@ -12,6 +12,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
+#include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/CompositingLayerPropertyUpdater.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "platform/graphics/paint/GeometryMapper.h"
@@ -197,9 +198,10 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   UpdateAuxiliaryObjectProperties(object, context);
 
   Optional<ObjectPaintPropertyTreeBuilder> property_tree_builder;
+  bool property_changed = false;
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
-    property_tree_builder->UpdateForSelf();
+    property_changed = property_tree_builder->UpdateForSelf();
 
     if (context.tree_builder_context->clip_changed) {
       context.paint_invalidator_context.subtree_flags |=
@@ -213,8 +215,23 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       context.paint_invalidator_context);
 
   if (context.tree_builder_context) {
-    property_tree_builder->UpdateForChildren();
+    property_changed |= property_tree_builder->UpdateForChildren();
     InvalidatePaintLayerOptimizationsIfNeeded(object, context);
+
+    if (property_changed &&
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      const auto* paint_invalidation_layer =
+          context.paint_invalidator_context.paint_invalidation_container
+              ->Layer();
+      if (!paint_invalidation_layer->NeedsRepaint()) {
+        auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
+        if (!mapping)
+          mapping = paint_invalidation_layer->GroupedMapping();
+        if (mapping)
+          mapping->SetNeedsCheckRasterInvalidation();
+      }
+    }
   }
 
   CompositingLayerPropertyUpdater::Update(object);

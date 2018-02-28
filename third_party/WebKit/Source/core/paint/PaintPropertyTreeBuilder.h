@@ -176,11 +176,13 @@ class ObjectPaintPropertyTreeBuilder {
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also
   // handles updating the object's paintOffset.
-  void UpdateForSelf();
+  // Returns true if any paint property of the object has changed.
+  bool UpdateForSelf();
 
   // Update the paint properties that affect children of this object (e.g.,
   // scroll offset transform) and ensure the context is up to date.
-  void UpdateForChildren();
+  // Returns true if any paint property of the object has changed.
+  bool UpdateForChildren();
 
  private:
   ALWAYS_INLINE void InitFragmentPaintProperties(

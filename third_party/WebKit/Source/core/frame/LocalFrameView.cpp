@@ -1783,11 +1783,20 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // layer->SubtreeIsInvisible() here.
     layout_object->SetMayNeedPaintInvalidationSubtree();
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        !layer->NeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
       // layer may change if the paint properties escape the graphics layer's
-      // property state.
-      layer->SetNeedsRepaint();
+      // property state. Need to check raster invalidation for relative paint
+      // property changes.
+      if (auto* paint_invalidation_layer =
+              layer->EnclosingLayerForPaintInvalidation()) {
+        auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
+        if (!mapping)
+          mapping = paint_invalidation_layer->GroupedMapping();
+        if (mapping)
+          mapping->SetNeedsCheckRasterInvalidation();
+      }
     }
 
     TRACE_EVENT_INSTANT1(

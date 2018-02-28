@@ -191,6 +191,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                                              PaintInvalidationReason,
                                              const DisplayItemClient&);
 
+  // Let all DrawsContent GraphicsLayers check raster invalidations after
+  // a no-change paint.
+  void SetNeedsCheckRasterInvalidation();
+
   // Notification from the layoutObject that its content changed.
   void ContentChanged(ContentChangeType);
 
