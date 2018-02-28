@@ -84,7 +84,7 @@
             browserState->GetRecordingBrowserState()),
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
-            browserState),
+            browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewWebDataServiceWrapperFactory::
             GetAutofillWebDataForBrowserState(
                 browserState, ServiceAccessType::EXPLICIT_ACCESS)));
