@@ -318,7 +318,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   // expected behavior.
   auto it2 = notification_key_to_tree_.find(kNotificationKey);
   EXPECT_NE(notification_key_to_tree_.end(), it2);
-  AXTreeSourceArc* tree2 = it->second.get();
+  AXTreeSourceArc* tree2 = it2->second.get();
   ui::AXTreeData tree_data2;
   tree2->GetTreeData(&tree_data2);
   EXPECT_EQ(tree_data2.tree_id, test_surface.GetAXTreeId());
