@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/predictors/resource_prefetcher.h"
 #include "url/gurl.h"
 
 namespace predictors {
@@ -23,24 +22,6 @@ struct LoadingPredictorConfig;
 struct PageRequestSummary;
 
 namespace internal {
-constexpr char kResourcePrefetchPredictorPrecisionHistogram[] =
-    "ResourcePrefetchPredictor.LearningPrecision";
-constexpr char kResourcePrefetchPredictorRecallHistogram[] =
-    "ResourcePrefetchPredictor.LearningRecall";
-constexpr char kResourcePrefetchPredictorCountHistogram[] =
-    "ResourcePrefetchPredictor.LearningCount";
-constexpr char kResourcePrefetchPredictorPrefetchMissesCountCached[] =
-    "ResourcePrefetchPredictor.PrefetchMissesCount.Cached";
-constexpr char kResourcePrefetchPredictorPrefetchMissesCountNotCached[] =
-    "ResourcePrefetchPredictor.PrefetchMissesCount.NotCached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsCountCached[] =
-    "ResourcePrefetchPredictor.PrefetchHitsCount.Cached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsCountNotCached[] =
-    "ResourcePrefetchPredictor.PrefetchHitsCount.NotCached";
-constexpr char kResourcePrefetchPredictorPrefetchHitsSize[] =
-    "ResourcePrefetchPredictor.PrefetchHitsSizeKB";
-constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
-    "ResourcePrefetchPredictor.PrefetchMissesSizeKB";
 constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
     "ResourcePrefetchPredictor.RedirectStatus";
 constexpr char kLoadingPredictorPreconnectLearningPrecision[] =
@@ -59,8 +40,6 @@ constexpr char kLoadingPredictorPreresolveCount[] =
     "LoadingPredictor.PreresolveCount";
 constexpr char kLoadingPredictorPreconnectCount[] =
     "LoadingPredictor.PreconnectCount";
-constexpr char kLoadingPredictorSubresourceConnectDuration[] =
-    "LoadingPredictor.SubresourceConnectDuration";
 }  // namespace internal
 
 // Accumulates data from different speculative actions and collates this data
@@ -71,9 +50,6 @@ class LoadingStatsCollector {
                         const LoadingPredictorConfig& config);
   ~LoadingStatsCollector();
 
-  // Records statistics about a finished prefetching operation.
-  void RecordPrefetcherStats(
-      std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats);
   // Records statistics about a finished preconnect operation.
   void RecordPreconnectStats(std::unique_ptr<PreconnectStats> stats);
   // Records a summary of a page load. The summary is collated with speculative
@@ -88,8 +64,6 @@ class LoadingStatsCollector {
  private:
   ResourcePrefetchPredictor* predictor_;
   base::TimeDelta max_stats_age_;
-  std::map<GURL, std::unique_ptr<ResourcePrefetcher::PrefetcherStats>>
-      prefetcher_stats_;
   std::map<GURL, std::unique_ptr<PreconnectStats>> preconnect_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingStatsCollector);

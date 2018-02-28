@@ -184,7 +184,7 @@ Refer to README.md for content description and update process.
  <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_message_filter.cc"/>
  <item id="reporting" hash_code="109891200" type="0" content_hash_code="125758928" os_list="linux,windows" file_path="net/reporting/reporting_uploader.cc"/>
  <item id="resource_dispatcher_host" hash_code="81157007" type="0" content_hash_code="35725167" os_list="linux,windows" file_path="content/browser/loader/resource_dispatcher_host_impl.cc"/>
- <item id="resource_prefetch" hash_code="110815970" type="0" content_hash_code="39251261" os_list="linux,windows" file_path="chrome/browser/predictors/resource_prefetcher.cc"/>
+ <item id="resource_prefetch" hash_code="110815970" type="0" deprecated="2018-02-28" content_hash_code="39251261" file_path=""/>
  <item id="rlz_ping" hash_code="99279418" type="0" content_hash_code="102108802" os_list="windows" file_path="rlz/lib/financial_ping.cc"/>
  <item id="safe_browsing_backup_request" hash_code="106980485" type="0" content_hash_code="101760679" os_list="linux,windows" file_path="chrome/browser/safe_browsing/protocol_manager.cc"/>
  <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/browser/threat_details_cache.cc"/>

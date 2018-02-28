@@ -29,9 +29,6 @@ namespace predictors {
 // thread.
 //
 // Currently manages:
-//  - UrlResourceTable - key: url, value: PrefetchData
-//  - UrlRedirectTable - key: url, value: RedirectData
-//  - HostResourceTable - key: host, value: PrefetchData
 //  - HostRedirectTable - key: host, value: RedirectData
 //  - OriginTable - key: host, value: OriginData
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
@@ -42,21 +39,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   virtual void ExecuteDBTaskOnDBSequence(DBTask task);
 
-  virtual GlowplugKeyValueTable<PrefetchData>* url_resource_table();
-  virtual GlowplugKeyValueTable<RedirectData>* url_redirect_table();
-  virtual GlowplugKeyValueTable<PrefetchData>* host_resource_table();
   virtual GlowplugKeyValueTable<RedirectData>* host_redirect_table();
   virtual GlowplugKeyValueTable<OriginData>* origin_table();
-
-  // Removes the resources with more than |max_consecutive_misses| consecutive
-  // misses from |data|.
-  static void TrimResources(PrefetchData* data, size_t max_consecutive_misses);
-
-  // Sorts the resources by score, decreasing.
-  static void SortResources(PrefetchData* data);
-
-  // Computes score of |data|.
-  static float ComputeResourceScore(const ResourceData& data);
 
   // Removes the redirects with more than |max_consecutive_misses| consecutive
   // misses from |data|.
@@ -93,7 +77,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 10;
+  static constexpr int kDatabaseVersion = 11;
 
   // PredictorTableBase:
   void CreateTableIfNonExistent() override;
@@ -103,9 +87,6 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   static int GetDatabaseVersion(sql::Connection* db);
   static bool SetDatabaseVersion(sql::Connection* db, int version);
 
-  std::unique_ptr<GlowplugKeyValueTable<PrefetchData>> url_resource_table_;
-  std::unique_ptr<GlowplugKeyValueTable<RedirectData>> url_redirect_table_;
-  std::unique_ptr<GlowplugKeyValueTable<PrefetchData>> host_resource_table_;
   std::unique_ptr<GlowplugKeyValueTable<RedirectData>> host_redirect_table_;
   std::unique_ptr<GlowplugKeyValueTable<OriginData>> origin_table_;
 

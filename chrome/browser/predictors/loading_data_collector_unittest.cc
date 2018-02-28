@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -629,17 +630,6 @@ TEST_F(LoadingDataCollectorTest, OnSubresourceResponse) {
   collector_->RecordURLResponse(resource3);
 
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  EXPECT_EQ(3U, collector_->inflight_navigations_[main_frame1.navigation_id]
-                    ->subresource_requests.size());
-  EXPECT_EQ(resource1,
-            collector_->inflight_navigations_[main_frame1.navigation_id]
-                ->subresource_requests[0]);
-  EXPECT_EQ(resource2,
-            collector_->inflight_navigations_[main_frame1.navigation_id]
-                ->subresource_requests[1]);
-  EXPECT_EQ(resource3,
-            collector_->inflight_navigations_[main_frame1.navigation_id]
-                ->subresource_requests[2]);
 }
 
 TEST_F(LoadingDataCollectorTest, TestRecordFirstContentfulPaint) {
