@@ -167,15 +167,14 @@ class AppMenuModel : public ui::SimpleMenuModel,
   // Builds the menu model, adding appropriate menu items.
   virtual void Build();
 
-  // Appends everything needed for the clipboard menu: a menu break, the
-  // clipboard menu content and the finalizing menu break.
+  // Appends a clipboard menu (without separators).
   void CreateCutCopyPasteMenu();
 
-  // Add a menu item for the browser action icons.
-  void CreateActionToolbarOverflowMenu();
+  // Add a menu item for the browser action icons if there is overflow, returns
+  // whether the menu was added.
+  bool CreateActionToolbarOverflowMenu();
 
-  // Appends everything needed for the zoom menu: a menu break, then the zoom
-  // menu content and then another menu break.
+  // Appends a zoom menu (without separators).
   void CreateZoomMenu();
 
  private:

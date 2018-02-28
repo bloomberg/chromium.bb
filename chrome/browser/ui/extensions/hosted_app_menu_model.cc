@@ -22,7 +22,8 @@ HostedAppMenuModel::HostedAppMenuModel(ui::AcceleratorProvider* provider,
 HostedAppMenuModel::~HostedAppMenuModel() {}
 
 void HostedAppMenuModel::Build() {
-  CreateActionToolbarOverflowMenu();
+  if (CreateActionToolbarOverflowMenu())
+    AddSeparator(ui::UPPER_SEPARATOR);
   AddItemWithStringId(IDC_HOSTED_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
@@ -38,13 +39,15 @@ void HostedAppMenuModel::Build() {
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
+  AddSeparator(ui::LOWER_SEPARATOR);
   CreateZoomMenu();
+  AddSeparator(ui::UPPER_SEPARATOR);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (media_router::MediaRouterEnabled(browser()->profile()))
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
+  AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
-  AddItemWithStringId(IDC_SITE_SETTINGS, IDS_SITE_SETTINGS);
 }
 
 void HostedAppMenuModel::LogMenuAction(AppMenuAction action_id) {
