@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
-#define CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
+#ifndef COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
+#define COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
 
-#include "content/common/content_export.h"
-
-namespace content {
+namespace download {
 
 // Attribute names to be used with setxattr and friends.
 //
@@ -15,9 +13,9 @@ namespace content {
 // The referrer URL attribute is not part of the XDG standard,
 // but it is used to keep the naming consistent.
 // http://freedesktop.org/wiki/CommonExtendedAttributes
-CONTENT_EXPORT extern const char kSourceURLExtendedAttrName[];
-CONTENT_EXPORT extern const char kReferrerURLExtendedAttrName[];
+extern const char kSourceURLExtendedAttrName[];
+extern const char kReferrerURLExtendedAttrName[];
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_COMMON_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_
+#endif  // COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_CONSTANTS_LINUX_H_

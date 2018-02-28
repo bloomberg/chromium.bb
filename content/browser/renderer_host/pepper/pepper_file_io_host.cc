@@ -21,7 +21,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/quarantine.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -456,7 +455,7 @@ void PepperFileIOHost::OnLocalFileOpened(
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&QuarantineFile, path,
+      base::Bind(&download::QuarantineFile, path,
                  browser_ppapi_host_->GetDocumentURLForInstance(pp_instance()),
                  GURL(), std::string()),
       base::Bind(&PepperFileIOHost::OnLocalFileQuarantined, AsWeakPtr(),
@@ -470,10 +469,11 @@ void PepperFileIOHost::OnLocalFileOpened(
 void PepperFileIOHost::OnLocalFileQuarantined(
     ppapi::host::ReplyMessageContext reply_context,
     const base::FilePath& path,
-    QuarantineFileResult quarantine_result) {
-  base::File::Error file_error = (quarantine_result == QuarantineFileResult::OK
-                                      ? base::File::FILE_OK
-                                      : base::File::FILE_ERROR_SECURITY);
+    download::QuarantineFileResult quarantine_result) {
+  base::File::Error file_error =
+      (quarantine_result == download::QuarantineFileResult::OK
+           ? base::File::FILE_OK
+           : base::File::FILE_ERROR_SECURITY);
   if (file_error != base::File::FILE_OK && file_.IsValid())
     file_.Close(base::FileProxy::StatusCallback());
   SendFileOpenReply(reply_context, file_error);

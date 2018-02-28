@@ -16,12 +16,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
-#include "content/common/quarantine/quarantine_constants_linux.h"
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
+#include "components/download/quarantine/quarantine_constants_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 namespace {
 
 using std::istringstream;
@@ -180,4 +180,4 @@ TEST_F(QuarantineLinuxTest, IsFileQuarantined) {
       IsFileQuarantined(fully_annotated, referrer_url(), referrer_url()));
 }
 
-}  // namespace content
+}  // namespace download

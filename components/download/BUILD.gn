@@ -12,6 +12,7 @@ group("unit_tests") {
       "//components/download/downloader/in_progress:unit_tests",
       "//components/download/internal/background_service:unit_tests",
       "//components/download/internal/common:unit_tests",
+      "//components/download/quarantine:unit_tests",
     ]
   }
 

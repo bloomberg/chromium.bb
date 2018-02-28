@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/Foundation.h>
@@ -137,7 +137,7 @@ bool SetQuarantineProperties(const base::FilePath& file,
 
 }  // namespace
 
-namespace content {
+namespace download {
 
 namespace {
 
@@ -339,4 +339,4 @@ bool IsFileQuarantined(const base::FilePath& file,
              isEqualToString:base::SysUTF8ToNSString(referrer_url.spec())];
 }
 
-}  // namespace content
+}  // namespace download

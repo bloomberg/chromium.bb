@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/quarantine.h"
+#include "components/download/quarantine/quarantine.h"
 
 #include <windows.h>
 #include <wrl/client.h>
@@ -29,7 +29,7 @@
 #include "base/win/scoped_handle.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 namespace {
 
 // [MS-FSCC] Section 5.6.1
@@ -118,10 +118,10 @@ void RecordAttachmentServicesSaveResult(const base::FilePath& file,
       if (SUCCEEDED(hr)) {
         bool motw_exists = file_exists && ZoneIdentifierPresentForFile(file);
         RecordAttachmentServicesResult(
-            file_exists
-                ? motw_exists ? AttachmentServicesResult::SUCCESS_WITH_MOTW
+            file_exists ? motw_exists
+                              ? AttachmentServicesResult::SUCCESS_WITH_MOTW
                               : AttachmentServicesResult::SUCCESS_WITHOUT_MOTW
-                : AttachmentServicesResult::SUCCESS_WITHOUT_FILE);
+                        : AttachmentServicesResult::SUCCESS_WITHOUT_FILE);
         return;
       }
 
@@ -349,4 +349,4 @@ bool IsFileQuarantined(const base::FilePath& file,
   return ZoneIdentifierPresentForFile(file);
 }
 
-}  // namespace content
+}  // namespace download

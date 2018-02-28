@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_QUARANTINE_H_
-#define CONTENT_PUBLIC_COMMON_QUARANTINE_H_
+#ifndef COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_H_
+#define COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_H_
 
 #include <string>
-
-#include "content/common/content_export.h"
 
 class GURL;
 
@@ -15,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
+namespace download {
 
 // Return value for QuarantineFile.
 enum class QuarantineFileResult {
@@ -72,11 +70,10 @@ enum class QuarantineFileResult {
 //   |referrer_url|: Referring URL.
 //   |client_guid|: Only used on Windows. Identifies the client application
 //     that downloaded the file.
-CONTENT_EXPORT QuarantineFileResult
-QuarantineFile(const base::FilePath& file,
-               const GURL& source_url,
-               const GURL& referrer_url,
-               const std::string& client_guid);
+QuarantineFileResult QuarantineFile(const base::FilePath& file,
+                                    const GURL& source_url,
+                                    const GURL& referrer_url,
+                                    const std::string& client_guid);
 
 // Determine if a file has quarantine metadata attached to it.
 //
@@ -97,10 +94,10 @@ QuarantineFile(const base::FilePath& file,
 // **Note**: On Windows, this function only checks if the |ZoneIdentifier|
 // metadata is present. |source_url| and |referrer_url| are ignored. Windows
 // currently doesn't store individual URLs as part of the mark-of-the-web.
-CONTENT_EXPORT bool IsFileQuarantined(const base::FilePath& file,
-                                      const GURL& source_url,
-                                      const GURL& referrer_url);
+bool IsFileQuarantined(const base::FilePath& file,
+                       const GURL& source_url,
+                       const GURL& referrer_url);
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_COMMON_QUARANTINE_H_
+#endif  // COMPONENTS_DOWNLOAD_QUARANTINE_QUARANTINE_H_
