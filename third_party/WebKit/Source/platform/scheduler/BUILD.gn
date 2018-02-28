@@ -53,6 +53,8 @@ blink_platform_sources("scheduler") {
     "child/idle_helper.h",
     "child/metrics_helper.cc",
     "child/metrics_helper.h",
+    "child/page_visibility_state.cc",
+    "child/page_visibility_state.h",
     "child/pollable_thread_safe_flag.cc",
     "child/pollable_thread_safe_flag.h",
     "child/process_state.cc",

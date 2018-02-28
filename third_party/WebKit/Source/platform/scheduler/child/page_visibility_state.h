@@ -8,7 +8,10 @@
 namespace blink {
 namespace scheduler {
 
+// TODO(altimin): Move to core/.
 enum class PageVisibilityState { kVisible, kHidden };
+
+const char* PageVisibilityStateToString(PageVisibilityState visibility);
 
 }  // namespace scheduler
 }  // namespace blink

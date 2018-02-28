@@ -70,7 +70,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
   helper_->AddTaskTimeObserver(this);
 
   if (proxy)
-    proxy->OnWorkerSchedulerCreated(this);
+    proxy->OnWorkerSchedulerCreated(GetWeakPtr());
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);

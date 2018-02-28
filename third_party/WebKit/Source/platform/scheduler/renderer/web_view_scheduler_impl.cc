@@ -11,6 +11,7 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
+#include "platform/scheduler/child/default_params.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -99,7 +100,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     bool disable_background_timer_throttling)
     : intervention_reporter_(intervention_reporter),
       renderer_scheduler_(renderer_scheduler),
-      page_visible_(kDefaultPageVisibility),
+      page_visible_(kDefaultPageVisibility == PageVisibilityState::kVisible),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
       reported_background_throttling_since_navigation_(false),

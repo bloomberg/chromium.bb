@@ -10,30 +10,29 @@
 namespace blink {
 namespace scheduler {
 
-WorkerSchedulerProxy::WorkerSchedulerProxy(WebFrameScheduler* frame_scheduler)
-    : main_thread_ref_(base::PlatformThread::CurrentRef()) {
-  throttling_observer_ = frame_scheduler->AddThrottlingObserver(
+WorkerSchedulerProxy::WorkerSchedulerProxy(WebFrameScheduler* frame_scheduler) {
+  throttling_observer_handle_ = frame_scheduler->AddThrottlingObserver(
       WebFrameScheduler::ObserverType::kWorkerScheduler, this);
 }
 
 WorkerSchedulerProxy::~WorkerSchedulerProxy() {
-  DCHECK(IsMainThread());
+  DCHECK(WTF::IsMainThread());
 }
 
 void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
-    WorkerSchedulerImpl* worker_scheduler) {
-  DCHECK(!IsMainThread())
+    base::WeakPtr<WorkerSchedulerImpl> worker_scheduler) {
+  DCHECK(!WTF::IsMainThread())
       << "OnWorkerSchedulerCreated should be called from the worker thread";
   DCHECK(!worker_scheduler_) << "OnWorkerSchedulerCreated is called twice";
-  worker_scheduler_ = worker_scheduler->GetWeakPtr();
-  worker_thread_task_runner_ = worker_scheduler->ControlTaskQueue();
-  worker_thread_ref_ = base::PlatformThread::CurrentRef();
+  DCHECK(worker_scheduler) << "WorkerScheduler is expected to exist";
+  worker_scheduler_ = std::move(worker_scheduler);
+  worker_thread_task_runner_ = worker_scheduler_->ControlTaskQueue();
   initialized_ = true;
 }
 
 void WorkerSchedulerProxy::OnThrottlingStateChanged(
     WebFrameScheduler::ThrottlingState throttling_state) {
-  DCHECK(IsMainThread());
+  DCHECK(WTF::IsMainThread());
   if (throttling_state_ == throttling_state)
     return;
   throttling_state_ = throttling_state;
@@ -44,14 +43,6 @@ void WorkerSchedulerProxy::OnThrottlingStateChanged(
   worker_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WorkerSchedulerImpl::OnThrottlingStateChanged,
                                 worker_scheduler_, throttling_state));
-}
-
-bool WorkerSchedulerProxy::IsMainThread() const {
-  return main_thread_ref_ == base::PlatformThread::CurrentRef();
-}
-
-bool WorkerSchedulerProxy::IsWorkerThread() const {
-  return worker_thread_ref_ == base::PlatformThread::CurrentRef();
 }
 
 }  // namespace scheduler
