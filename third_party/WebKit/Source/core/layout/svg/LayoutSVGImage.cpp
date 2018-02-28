@@ -185,7 +185,7 @@ void LayoutSVGImage::ImageChanged(WrappedImagePtr,
   // Notify parent resources that we've changed. This also invalidates
   // references from resources (filters) that may have a cached
   // representation of this image/layout object.
-  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(this,
+  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
 
   if (StyleRef().Width().IsAuto() || StyleRef().Height().IsAuto()) {

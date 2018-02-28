@@ -136,8 +136,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     if (mark_for_invalidation)
       MarkClientForInvalidation(*client, mode);
 
-    LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-        client, needs_layout);
+    MarkForLayoutAndParentResourceInvalidation(*client, needs_layout);
   }
 
   // Invalidate clients registered via an SVGElementProxy.
@@ -218,19 +217,18 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
 }
 
 void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-    LayoutObject* object,
+    LayoutObject& object,
     bool needs_layout) {
-  DCHECK(object);
-  DCHECK(object->GetNode());
+  DCHECK(object.GetNode());
 
-  if (needs_layout && !object->DocumentBeingDestroyed())
-    object->SetNeedsLayoutAndFullPaintInvalidation(
+  if (needs_layout && !object.DocumentBeingDestroyed())
+    object.SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kSvgResourceInvalidated);
 
-  RemoveFromCacheAndInvalidateDependencies(*object, needs_layout);
+  RemoveFromCacheAndInvalidateDependencies(object, needs_layout);
 
   // Invalidate resources in ancestor chain, if needed.
-  LayoutObject* current = object->Parent();
+  LayoutObject* current = object.Parent();
   while (current) {
     RemoveFromCacheAndInvalidateDependencies(*current, needs_layout);
 

@@ -134,7 +134,7 @@ void SVGGraphicsElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::FromAttribute(attr_name));
     if (LayoutObject* object = GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(object);
+      MarkForLayoutAndParentResourceInvalidation(*object);
     return;
   }
 

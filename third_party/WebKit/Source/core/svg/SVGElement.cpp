@@ -1089,8 +1089,7 @@ bool SVGElement::HasFocusEventListeners() const {
 }
 
 void SVGElement::MarkForLayoutAndParentResourceInvalidation(
-    LayoutObject* layout_object) {
-  DCHECK(layout_object);
+    LayoutObject& layout_object) {
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
       layout_object, true);
 }
@@ -1288,7 +1287,7 @@ void SVGElement::NotifyIncomingReferences(bool needs_layout) {
       }
 
       LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-          layout_object, needs_layout);
+          *layout_object, needs_layout);
       invalidating_dependencies.erase(element);
     }
   }

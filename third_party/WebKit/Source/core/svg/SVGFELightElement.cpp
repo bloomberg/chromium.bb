@@ -137,7 +137,7 @@ void SVGFELightElement::ChildrenChanged(const ChildrenChange& change) {
     if (ContainerNode* parent = parentNode()) {
       LayoutObject* layout_object = parent->GetLayoutObject();
       if (layout_object && layout_object->IsSVGResourceFilterPrimitive())
-        MarkForLayoutAndParentResourceInvalidation(layout_object);
+        MarkForLayoutAndParentResourceInvalidation(*layout_object);
     }
   }
 }

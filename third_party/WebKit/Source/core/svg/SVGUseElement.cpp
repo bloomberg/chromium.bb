@@ -237,9 +237,8 @@ void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {
           *target_element_instance_->CorrespondingElement());
     }
 
-    LayoutObject* object = this->GetLayoutObject();
-    if (object)
-      MarkForLayoutAndParentResourceInvalidation(object);
+    if (LayoutObject* object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*object);
     return;
   }
 

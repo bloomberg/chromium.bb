@@ -107,8 +107,8 @@ void SVGForeignObjectElement::SvgAttributeChanged(
             : StyleChangeReasonForTracing::FromAttribute(attr_name));
 
     UpdateRelativeLengthsInformation();
-    if (LayoutObject* layout_object = this->GetLayoutObject())
-      MarkForLayoutAndParentResourceInvalidation(layout_object);
+    if (LayoutObject* layout_object = GetLayoutObject())
+      MarkForLayoutAndParentResourceInvalidation(*layout_object);
 
     return;
   }

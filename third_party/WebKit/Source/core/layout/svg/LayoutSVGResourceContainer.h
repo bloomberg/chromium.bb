@@ -72,7 +72,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
   static void MarkForLayoutAndParentResourceInvalidation(
-      LayoutObject*,
+      LayoutObject&,
       bool needs_layout = true);
 
   void ClearInvalidationMask() { invalidation_mask_ = 0; }
