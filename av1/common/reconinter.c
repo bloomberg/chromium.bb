@@ -819,7 +819,7 @@ void av1_highbd_build_inter_predictor(
   mv.row += SCALE_EXTRA_OFF;
   const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
   const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
-  ConvolveParams conv_params = get_conv_params(ref, ref, plane, xd->bd);
+  ConvolveParams conv_params = get_conv_params(ref, 0, plane, xd->bd);
 
   src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
          (mv.col >> SCALE_SUBPEL_BITS);

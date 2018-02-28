@@ -92,30 +92,6 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int scaled, ConvolveParams *conv_params,
                             const struct scale_factors *sf);
 
-static INLINE ConvolveParams get_conv_params_round(int ref, int do_average,
-                                                   int plane, int bd) {
-  ConvolveParams conv_params;
-  conv_params.ref = ref;
-  conv_params.do_average = do_average;
-  conv_params.plane = plane;
-  conv_params.round = CONVOLVE_OPT_ROUND;
-  conv_params.round_0 = ROUND0_BITS;
-  conv_params.round_1 = 0;
-  conv_params.is_compound = 0;
-  conv_params.dst = NULL;
-  conv_params.dst_stride = 0;
-#if CONFIG_LOWPRECISION_BLEND
-  const int intbufrange = bd + FILTER_BITS - conv_params.round_0 + 2;
-  if (bd < 12) assert(intbufrange <= 16);
-  if (intbufrange > 16) {
-    conv_params.round_0 += intbufrange - 16;
-  }
-#else
-  (void)bd;
-#endif  // CONFIG_LOWPRECISION_BLEND
-  return conv_params;
-}
-
 static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
                                                       int plane,
                                                       CONV_BUF_TYPE *dst,
