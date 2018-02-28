@@ -2090,6 +2090,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (CGFloat)primaryToolbarHeightWithInset {
   UIView* primaryToolbar = self.primaryToolbarCoordinator.viewController.view;
   CGFloat intrinsicHeight = primaryToolbar.intrinsicContentSize.height;
+  if (IsUIRefreshPhase1Enabled() && !IsSplitToolbarMode()) {
+    // When the adaptive toolbar is unsplit, add a margin.
+    intrinsicHeight += kTopToolbarUnsplitMargin;
+  }
   // If the primary toolbar is not the topmost header, it does not overlap with
   // the unsafe area.
   // TODO(crbug.com/806437): Update implementation such that this calculates the
@@ -2108,7 +2112,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // The topmost header is laid out |headerOffset| from the top of |view|, so
   // subtract that from the unsafe height.
   unsafeHeight -= self.headerOffset;
-  return primaryToolbar.intrinsicContentSize.height + unsafeHeight;
+  return intrinsicHeight + unsafeHeight;
 }
 
 // The height of the secondary toolbar with the bottom safe area inset included.

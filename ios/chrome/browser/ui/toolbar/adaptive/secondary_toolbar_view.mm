@@ -64,7 +64,7 @@
 #pragma mark - UIView
 
 - (CGSize)intrinsicContentSize {
-  return CGSizeMake(UIViewNoIntrinsicMetric, kToolbarHeight);
+  return CGSizeMake(UIViewNoIntrinsicMetric, kAdaptiveToolbarHeight);
 }
 
 #pragma mark - Setup
@@ -107,10 +107,14 @@
 
   [NSLayoutConstraint activateConstraints:@[
     [self.stackView.leadingAnchor
-        constraintEqualToAnchor:safeArea.leadingAnchor],
+        constraintEqualToAnchor:safeArea.leadingAnchor
+                       constant:kAdaptiveToolbarMargin],
     [self.stackView.trailingAnchor
-        constraintEqualToAnchor:safeArea.trailingAnchor],
-    [self.stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
+        constraintEqualToAnchor:safeArea.trailingAnchor
+                       constant:-kAdaptiveToolbarMargin],
+    [self.stackView.topAnchor
+        constraintEqualToAnchor:self.topAnchor
+                       constant:kBottomButtonsBottomMargin],
   ]];
 }
 

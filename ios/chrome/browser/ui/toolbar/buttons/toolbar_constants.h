@@ -22,9 +22,13 @@ extern const CGFloat kIncognitoToolbarBackgroundColor;
 extern const CGFloat kNTPBackgroundColorBrightnessIncognito;
 
 // Stackview constraints.
-extern const CGFloat kLocationBarVerticalMargin;
-extern const CGFloat kExpandedLocationBarVerticalMargin;
+extern const CGFloat kTopButtonsBottomMargin;
+extern const CGFloat kBottomButtonsBottomMargin;
+extern const CGFloat kAdaptiveToolbarMargin;
+extern const CGFloat kAdaptiveToolbarStackViewSpacing;
+// TODO(crbug.com/800266): Remove those properties.
 extern const CGFloat kButtonVerticalMargin;
+extern const CGFloat kLocationBarVerticalMargin;
 extern const CGFloat kLeadingMarginIPad;
 extern const CGFloat kHorizontalMargin;
 extern const CGFloat kStackViewSpacing;
@@ -43,6 +47,7 @@ extern const CGFloat kProgressBarHeight;
 
 // Toolbar Buttons.
 extern const CGFloat kToolsMenuButtonWidth;
+extern const CGFloat kAdaptiveToolbarButtonHeight;
 extern const CGFloat kAdaptiveToolbarButtonWidth;
 extern const CGFloat kToolbarButtonWidth;
 extern const CGFloat kLeadingLocationBarButtonWidth;
@@ -65,15 +70,21 @@ extern const NSInteger kShowTabStripButtonMaxTabCount;
 extern const LayoutOffset kToolbarButtonAnimationOffset;
 
 // Adaptive toolbar position constants.
-extern const CGFloat kAdaptiveToolbarHorizontalMargin;
+extern const CGFloat kExpandedLocationBarHorizontalMargin;
+extern const CGFloat kContractedLocationBarHorizontalMargin;
 
 // Adaptive Location bar constants.
 extern const CGFloat kAdaptiveLocationBarCornerRadius;
 extern const CGFloat kIcongnitoAdaptiveLocationBackgroundColor;
 extern const CGFloat kAdaptiveLocationBarBackgroundAlpha;
+extern const CGFloat kAdaptiveLocationBarVerticalMargin;
 
 // Height of the toolbar.
 extern const CGFloat kToolbarHeight;
+// Top margin of the top toolbar when the adaptive toolbar is unsplit.
+extern const CGFloat kTopToolbarUnsplitMargin;
+// Height of the adaptive toolbars.
+extern const CGFloat kAdaptiveToolbarHeight;
 // Height of the toolbar when in fullscreen.
 extern const CGFloat kToolbarHeightFullscreen;
 
@@ -89,6 +100,10 @@ extern NSString* const kToolbarOmniboxButtonIdentifier;
 // The maximum number to display in the tab switcher button.
 extern NSInteger const kStackButtonMaxTabCount;
 
+// Font size for the TabGrid button containing the tab count.
+extern const NSInteger kTabGridButtonFontSize;
+
+// TODO(crbug.com/800266): Remove those properties.
 // Font sizes for the button containing the tab count
 extern const NSInteger kFontSizeFewerThanTenTabs;
 extern const NSInteger kFontSizeTenTabsOrMore;

@@ -42,9 +42,11 @@
 @property(nonatomic, readonly) UIColor* buttonsTintColor;
 
 // Color of the title of the buttons for the normal state.
+// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* buttonTitleNormalColor;
 
 // Color of the title of the buttons for the highlighted state.
+// TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* buttonTitleHighlightedColor;
 
 // Returns the background color of the location bar, with a |visibilityFactor|.
