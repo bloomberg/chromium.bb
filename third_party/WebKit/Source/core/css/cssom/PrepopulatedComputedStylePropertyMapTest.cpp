@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/FilteredComputedStylePropertyMap.h"
+#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
 
 #include <memory>
 #include "core/css/CSSComputedStyleDeclaration.h"
@@ -13,9 +13,9 @@
 
 namespace blink {
 
-class FilteredComputedStylePropertyMapTest : public PageTestBase {
+class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
  public:
-  FilteredComputedStylePropertyMapTest() = default;
+  PrepopulatedComputedStylePropertyMapTest() = default;
 
   CSSComputedStyleDeclaration* Declaration() const {
     return declaration_.Get();
@@ -33,12 +33,17 @@ class FilteredComputedStylePropertyMapTest : public PageTestBase {
   Persistent<CSSComputedStyleDeclaration> declaration_;
 };
 
-TEST_F(FilteredComputedStylePropertyMapTest, NativePropertyAccessors) {
+TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
   Vector<CSSPropertyID> native_properties(
       {CSSPropertyColor, CSSPropertyAlignItems});
   Vector<AtomicString> empty_custom_properties;
-  FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::Create(PageNode(), native_properties,
+
+  Node* node = PageNode();
+  const ComputedStyle& style = *node->EnsureComputedStyle();
+
+  PrepopulatedComputedStylePropertyMap* map =
+      new PrepopulatedComputedStylePropertyMap(GetDocument(), style, node,
+                                               native_properties,
                                                empty_custom_properties);
 
   DummyExceptionStateForTesting exception_state;
@@ -65,12 +70,17 @@ TEST_F(FilteredComputedStylePropertyMapTest, NativePropertyAccessors) {
   exception_state.ClearException();
 }
 
-TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
+TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
   Vector<CSSPropertyID> empty_native_properties;
   Vector<AtomicString> custom_properties({"--foo", "--bar"});
-  FilteredComputedStylePropertyMap* map =
-      FilteredComputedStylePropertyMap::Create(
-          PageNode(), empty_native_properties, custom_properties);
+
+  Node* node = PageNode();
+  const ComputedStyle& style = *node->EnsureComputedStyle();
+
+  PrepopulatedComputedStylePropertyMap* map =
+      new PrepopulatedComputedStylePropertyMap(GetDocument(), style, node,
+                                               empty_native_properties,
+                                               custom_properties);
 
   DummyExceptionStateForTesting exception_state;
 

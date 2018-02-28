@@ -7,7 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/cssom/FilteredComputedStylePropertyMap.h"
+#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/csspaint/PaintRenderingContext2D.h"
@@ -97,9 +97,10 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
       container_size, color_params, context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadOnly* style_map =
-      FilteredComputedStylePropertyMap::Create(layout_object.GetNode(),
-                                               native_invalidation_properties_,
-                                               custom_invalidation_properties_);
+      new PrepopulatedComputedStylePropertyMap(
+          layout_object.GetDocument(), layout_object.StyleRef(),
+          layout_object.GetNode(), native_invalidation_properties_,
+          custom_invalidation_properties_);
 
   Vector<v8::Local<v8::Value>, 4> argv;
   if (paint_arguments) {
