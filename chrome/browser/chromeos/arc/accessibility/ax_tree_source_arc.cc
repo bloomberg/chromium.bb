@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -164,6 +165,12 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
                         &class_name)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                                  class_name);
+  }
+
+  if (GetBooleanProperty(node,
+                         arc::mojom::AccessibilityBooleanProperty::EDITABLE)) {
+    out_data->role = ax::mojom::Role::kTextField;
+    return;
   }
 
   if (HasCoveringSpan(node, arc::mojom::AccessibilityStringProperty::TEXT,
@@ -530,17 +537,65 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   using AXStringProperty = arc::mojom::AccessibilityStringProperty;
 
   // String properties.
-  std::string text;
-  if (GetStringProperty(node, AXStringProperty::TEXT, &text))
-    out_data->SetName(text);
-  else if (GetStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION,
-                             &text))
-    out_data->SetName(text);
+  int labelled_by = -1;
+
+  // Accessible name computation picks (in-order) content description, text, or
+  // labelled by text.
+  std::string name;
+  bool has_name = false;
+  if (GetStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION, &name) ||
+      GetStringProperty(node, AXStringProperty::TEXT, &name)) {
+    has_name = true;
+  } else if (GetIntProperty(node,
+                            arc::mojom::AccessibilityIntProperty::LABELED_BY,
+                            &labelled_by)) {
+    mojom::AccessibilityNodeInfoData* labelled_by_node = GetFromId(labelled_by);
+    if (labelled_by_node) {
+      ui::AXNodeData labelled_by_data;
+      SerializeNode(labelled_by_node, &labelled_by_data);
+      has_name = labelled_by_data.GetStringAttribute(
+          ax::mojom::StringAttribute::kName, &name);
+    }
+  }
+
+  if (has_name) {
+    if (out_data->role == ax::mojom::Role::kTextField)
+      out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, name);
+    else
+      out_data->SetName(name);
+  }
+
   std::string role_description;
   if (GetStringProperty(node, AXStringProperty::ROLE_DESCRIPTION,
                         &role_description)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                                  role_description);
+  }
+
+  if (out_data->role == ax::mojom::Role::kRootWebArea) {
+    std::string package_name;
+    if (GetStringProperty(node, AXStringProperty::PACKAGE_NAME,
+                          &package_name)) {
+      const std::string& url =
+          base::StringPrintf("%s/%d", package_name.c_str(), tree_id());
+      out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
+    }
+  }
+
+  // Int properties.
+  int traversal_before = -1, traversal_after = -1;
+  if (GetIntProperty(node,
+                     arc::mojom::AccessibilityIntProperty::TRAVERSAL_BEFORE,
+                     &traversal_before)) {
+    out_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
+                              traversal_before);
+  }
+
+  if (GetIntProperty(node,
+                     arc::mojom::AccessibilityIntProperty::TRAVERSAL_AFTER,
+                     &traversal_after)) {
+    out_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId,
+                              traversal_after);
   }
 
   // Boolean properties.
@@ -578,9 +633,6 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
                                local_bounds.width(), local_bounds.height());
   }
-
-  if (out_data->role == ax::mojom::Role::kTextField && !text.empty())
-    out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, text);
 
   // Integer properties.
   int32_t val;
