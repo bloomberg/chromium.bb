@@ -14,7 +14,8 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
   signin_manager_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
-  static_cast<SigninManager*>(signin_manager_)->set_diagnostics_client(this);
+  SigninManager::FromSigninManagerBase(signin_manager_)
+      ->set_diagnostics_client(this);
 #endif
   token_service_->AddDiagnosticsObserver(this);
 }
@@ -22,7 +23,8 @@ IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
 IdentityManager::~IdentityManager() {
   signin_manager_->RemoveObserver(this);
 #if !defined(OS_CHROMEOS)
-  static_cast<SigninManager*>(signin_manager_)->set_diagnostics_client(nullptr);
+  SigninManager::FromSigninManagerBase(signin_manager_)
+      ->set_diagnostics_client(nullptr);
 #endif
   token_service_->RemoveDiagnosticsObserver(this);
 }

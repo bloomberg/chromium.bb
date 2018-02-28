@@ -344,6 +344,12 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
   return !!match;  // !! == convert from UBool to bool.
 }
 
+// static
+SigninManager* SigninManager::FromSigninManagerBase(
+    SigninManagerBase* manager) {
+  return static_cast<SigninManager*>(manager);
+}
+
 bool SigninManager::IsAllowedUsername(const std::string& username) const {
   const PrefService* local_state = local_state_pref_registrar_.prefs();
   if (!local_state)

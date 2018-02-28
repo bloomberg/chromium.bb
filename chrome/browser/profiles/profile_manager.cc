@@ -1612,8 +1612,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
           !entry->IsAuthenticated()) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::BindOnce(&SignOut,
-                           static_cast<SigninManager*>(signin_manager)));
+            base::BindOnce(&SignOut, SigninManager::FromSigninManagerBase(
+                                         signin_manager)));
       }
 #endif
       return;

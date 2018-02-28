@@ -81,6 +81,11 @@ class SigninManager : public SigninManagerBase,
   static bool IsUsernameAllowedByPolicy(const std::string& username,
                                         const std::string& policy);
 
+  // Returns |manager| as a SigninManager instance. Relies on the fact that on
+  // platforms where signin_manager.* is built, all SigninManagerBase instances
+  // are actually SigninManager instances.
+  static SigninManager* FromSigninManagerBase(SigninManagerBase* manager);
+
   // Attempt to sign in this user with a refresh token.
   // If |refresh_token| is not empty, then SigninManager will add it to the
   // |token_service_| when the sign-in flow is completed.
