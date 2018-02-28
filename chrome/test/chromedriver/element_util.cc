@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -633,7 +634,8 @@ Status ScrollElementRegionIntoView(
   WebPoint saved_region_offset;
   for (std::list<FrameInfo>::reverse_iterator rit = session->frames.rbegin();
        rit != session->frames.rend(); ++rit) {
-    if (!has_saved_region_offset && web_view->IsOOPIF(rit->frame_id)) {
+    if (!session->chrome->GetBrowserInfo()->is_android &&
+        !has_saved_region_offset && web_view->IsOOPIF(rit->frame_id)) {
       saved_region_offset = region_offset;
       has_saved_region_offset = true;
     }
