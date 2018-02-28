@@ -18016,7 +18016,13 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     }
   }
 
-  GLenum compatibility_internal_format = internal_format;
+  // First lookup compatibility format via texture manager for swizzling legacy
+  // LUMINANCE/ALPHA formats.
+  GLenum compatibility_internal_format =
+      texture_manager()->AdjustTexStorageFormat(feature_info_.get(),
+                                                internal_format);
+
+  // Then lookup compatibility format for compressed formats.
   const CompressedFormatInfo* format_info =
       GetCompressedFormatInfo(internal_format);
   if (format_info != nullptr && !format_info->support_check(*feature_info_)) {
@@ -18067,6 +18073,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
       if (target == GL_TEXTURE_3D)
         level_depth = std::max(1, level_depth >> 1);
     }
+    texture->ApplyFormatWorkarounds(feature_info_.get());
     texture->SetImmutable(true);
   }
 }

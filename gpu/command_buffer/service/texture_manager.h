@@ -1092,6 +1092,9 @@ class GPU_GLES2_EXPORT TextureManager
   static GLenum AdjustTexFormat(const gles2::FeatureInfo* feature_info,
                                 GLenum format);
 
+  static GLenum AdjustTexStorageFormat(const gles2::FeatureInfo* feature_info,
+                                       GLenum format);
+
   void WorkaroundCopyTexImageCubeMap(
       DecoderTextureState* texture_state,
       ContextState* state,
