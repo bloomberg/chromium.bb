@@ -5,6 +5,7 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 #define STORAGE_BROWSER_BLOB_BLOB_BUILDER_FROM_STREAM_H
 
+#include "base/containers/queue.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -60,29 +61,39 @@ class STORAGE_EXPORT BlobBuilderFromStream {
   class WritePipeToFileHelper;
   class WritePipeToFutureDataHelper;
 
-  void AllocateMoreSpace(mojo::ScopedDataPipeConsumerHandle pipe);
-  void QuotaAllocated(mojo::ScopedDataPipeConsumerHandle pipe,
-                      scoped_refptr<ShareableBlobDataItem> item,
-                      bool success);
-  void DidWriteToMemory(scoped_refptr<ShareableBlobDataItem> item,
-                        uint64_t bytes_written,
-                        mojo::ScopedDataPipeConsumerHandle pipe);
+  void AllocateMoreMemorySpace(uint64_t length_hint,
+                               mojo::ScopedDataPipeConsumerHandle pipe);
+  void MemoryQuotaAllocated(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+      size_t item_to_populate,
+      bool success);
+  void DidWriteToMemory(
+      std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+      size_t populated_item_index,
+      uint64_t bytes_written,
+      mojo::ScopedDataPipeConsumerHandle pipe);
 
-  void AllocateMoreFileSpace(mojo::ScopedDataPipeConsumerHandle pipe);
+  void AllocateMoreFileSpace(uint64_t length_hint,
+                             mojo::ScopedDataPipeConsumerHandle pipe);
   void FileQuotaAllocated(
       mojo::ScopedDataPipeConsumerHandle pipe,
-      scoped_refptr<ShareableBlobDataItem> item,
+      std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+      size_t item_to_populate,
       std::vector<BlobMemoryController::FileCreationInfo> info,
       bool success);
-  void DidWriteToFile(scoped_refptr<ShareableBlobDataItem> item,
-                      scoped_refptr<ShareableFileReference> file,
-                      uint64_t bytes_written,
-                      mojo::ScopedDataPipeConsumerHandle pipe,
-                      const base::Time& modification_time);
+  void DidWriteToFile(
+      std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
+      std::vector<BlobMemoryController::FileCreationInfo> info,
+      size_t populated_item_index,
+      uint64_t bytes_written,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      const base::Time& modification_time);
+
   void OnError();
   void OnSuccess();
 
-  bool ShouldStoreNextBlockOnDisk();
+  bool ShouldStoreNextBlockOnDisk(uint64_t length_hint);
 
   // Amount of memory space we allocate at a time.
   const size_t kMemoryBlockSize;
@@ -93,6 +104,9 @@ class STORAGE_EXPORT BlobBuilderFromStream {
 
   // Amount of file space we allocate at a time.
   const uint64_t kFileBlockSize;
+
+  // Maximum size of individual files.
+  const uint64_t kMaxFileSize;
 
   base::WeakPtr<BlobStorageContext> context_;
   ResultCallback callback_;
