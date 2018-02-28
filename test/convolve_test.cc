@@ -76,13 +76,13 @@ typedef std::tr1::tuple<int, int, const ConvolveFunctions *> ConvolveParam;
       make_tuple(64, 32, &convolve_fn), make_tuple(32, 64, &convolve_fn), \
       make_tuple(64, 64, &convolve_fn)
 
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION
+#if CONFIG_AV1
 #define ALL_SIZES(convolve_fn)                                          \
   make_tuple(128, 64, &convolve_fn), make_tuple(64, 128, &convolve_fn), \
       make_tuple(128, 128, &convolve_fn), ALL_SIZES_64(convolve_fn)
 #else
 #define ALL_SIZES ALL_SIZES_64
-#endif  // CONFIG_AV1 && CONFIG_EXT_PARTITION
+#endif  // CONFIG_AV1
 
 // Reference 8-tap subpixel filter, slightly modified to fit into this test.
 #define AV1_FILTER_WEIGHT 128
@@ -1167,7 +1167,7 @@ INSTANTIATE_TEST_CASE_P(AVX2, ConvolveTest,
 #endif  // HAVE_AVX2
 
 // TODO(any): Make NEON versions support 128x128 128x64 64x128 block sizes
-#if HAVE_NEON && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#if HAVE_NEON && !(CONFIG_AV1)
 #if HAVE_NEON_ASM
 const ConvolveFunctions convolve8_neon(
     aom_convolve_copy_neon, aom_convolve_avg_neon, aom_convolve8_horiz_neon,
@@ -1187,10 +1187,10 @@ const ConvolveFunctions convolve8_neon(
 const ConvolveParam kArrayConvolve8_neon[] = { ALL_SIZES_64(convolve8_neon) };
 INSTANTIATE_TEST_CASE_P(NEON, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_neon));
-#endif  // HAVE_NEON && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#endif  // HAVE_NEON && !(CONFIG_AV1)
 
 // TODO(any): Make DSPR2 versions support 128x128 128x64 64x128 block sizes
-#if HAVE_DSPR2 && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#if HAVE_DSPR2 && !(CONFIG_AV1)
 const ConvolveFunctions convolve8_dspr2(
     aom_convolve_copy_dspr2, aom_convolve_avg_dspr2, aom_convolve8_horiz_dspr2,
     aom_convolve8_avg_horiz_dspr2, aom_convolve8_vert_dspr2,
@@ -1201,10 +1201,10 @@ const ConvolveFunctions convolve8_dspr2(
 const ConvolveParam kArrayConvolve8_dspr2[] = { ALL_SIZES_64(convolve8_dspr2) };
 INSTANTIATE_TEST_CASE_P(DSPR2, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_dspr2));
-#endif  // HAVE_DSPR2 && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#endif  // HAVE_DSPR2 && !(CONFIG_AV1)
 
 // TODO(any): Make MSA versions support 128x128 128x64 64x128 block sizes
-#if HAVE_MSA && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#if HAVE_MSA && !(CONFIG_AV1)
 const ConvolveFunctions convolve8_msa(
     aom_convolve_copy_msa, aom_convolve_avg_msa, aom_convolve8_horiz_msa,
     aom_convolve8_avg_horiz_msa, aom_convolve8_vert_msa,
@@ -1215,5 +1215,5 @@ const ConvolveFunctions convolve8_msa(
 const ConvolveParam kArrayConvolve8_msa[] = { ALL_SIZES_64(convolve8_msa) };
 INSTANTIATE_TEST_CASE_P(MSA, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_msa));
-#endif  // HAVE_MSA && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
+#endif  // HAVE_MSA && !(CONFIG_AV1)
 }  // namespace

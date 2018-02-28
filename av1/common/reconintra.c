@@ -130,7 +130,6 @@ uint8_t has_tr_64x16[2] = { 3, 1 };
 uint8_t has_tr_32x128[1] = { 15 };
 uint8_t has_tr_128x32[1] = { 1 };
 
-#if CONFIG_EXT_PARTITION
 static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   // 4X4
   has_tr_4x4,
@@ -155,29 +154,6 @@ static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 #endif
 };
-#else
-static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
-  // 4X4
-  has_tr_8x8,
-  // 4X8,         8X4,            8X8
-  has_tr_8x16, has_tr_16x8, has_tr_16x16,
-  // 8X16,        16X8,           16X16
-  has_tr_16x32, has_tr_32x16, has_tr_32x32,
-  // 16X32,       32X16,          32X32
-  has_tr_32x64, has_tr_64x32, has_tr_64x64,
-  // 32X64,       64X32,          64X64
-  has_tr_64x128, has_tr_128x64, has_tr_128x128,
-
-#if CONFIG_EXT_PARTITION_TYPES
-  // 4x16,        16x4,           8x32
-  has_tr_8x32, has_tr_32x8, has_tr_16x64,
-  // 32x8,        16x64,          64x16
-  has_tr_64x16, has_tr_32x128, has_tr_128x32
-#else
-  NULL, NULL, NULL, NULL, NULL, NULL
-#endif
-};
-#endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_EXT_PARTITION_TYPES
 uint8_t has_tr_vert_8x8[32] = {
@@ -199,7 +175,6 @@ uint8_t has_tr_vert_64x64[1] = { 3 };
 //
 // There are tables for each of the square sizes. Vertical rectangles (like
 // BLOCK_16X32) use their respective "non-vert" table
-#if CONFIG_EXT_PARTITION
 static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
   // 4X4
   NULL,
@@ -214,20 +189,6 @@ static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
   // 64x128,   128x64,      128x128
   has_tr_64x128, NULL, has_tr_128x128
 };
-#else
-static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
-  // 4X4
-  NULL,
-  // 4X8,       8X4,         8X8
-  has_tr_8x16, NULL, has_tr_vert_16x16,
-  // 8X16,      16X8,        16X16
-  has_tr_16x32, NULL, has_tr_vert_32x32,
-  // 16X32,     32X16,       32X32
-  has_tr_32x64, NULL, has_tr_vert_64x64,
-  // 32X64,     64X32,       64X64
-  has_tr_64x128, NULL, has_tr_128x128
-};
-#endif
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const uint8_t *get_has_tr_table(PARTITION_TYPE partition,
@@ -260,7 +221,6 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
   const int top_right_count_unit = tx_size_wide_unit[txsz];
 
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
-#if CONFIG_EXT_PARTITION
     if (block_size_wide[bsize] > block_size_wide[BLOCK_64X64]) {
       // Special case: For 128x128 blocks, the transform unit whose
       // top-right corner is at the center of the block does in fact have
@@ -273,9 +233,6 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
       const int col_off_64 = col_off % plane_bw_unit_64;
       return col_off_64 + top_right_count_unit < plane_bw_unit_64;
     }
-#else
-    (void)ss_y;
-#endif
     return col_off + top_right_count_unit < plane_bw_unit;
   } else {
     // All top-right pixels are in the block above, which is already available.
@@ -373,7 +330,6 @@ uint8_t has_bl_64x16[2] = { 42, 42 };
 uint8_t has_bl_32x128[1] = { 0 };
 uint8_t has_bl_128x32[1] = { 0 };
 
-#if CONFIG_EXT_PARTITION
 static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   // 4X4
   has_bl_4x4,
@@ -398,29 +354,6 @@ static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
 #endif
 };
-#else
-static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
-  // 4X4
-  has_bl_8x8,
-  // 4X8,         8X4,            8X8
-  has_bl_8x16, has_bl_16x8, has_bl_16x16,
-  // 8X16,        16X8,           16X16
-  has_bl_16x32, has_bl_32x16, has_bl_32x32,
-  // 16X32,       32X16,          32X32
-  has_bl_32x64, has_bl_64x32, has_bl_64x64,
-  // 32X64,       64X32,          64X64
-  has_bl_64x128, has_bl_128x64, has_bl_128x128,
-
-#if CONFIG_EXT_PARTITION_TYPES
-  // 4x16,        16x4,           8x32
-  has_bl_8x32, has_bl_32x8, has_bl_16x64,
-  // 32x8,        16x64,          64x16
-  has_bl_64x16, has_bl_32x128, has_bl_128x32
-#else
-  NULL, NULL, NULL, NULL, NULL, NULL
-#endif
-};
-#endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_EXT_PARTITION_TYPES
 uint8_t has_bl_vert_8x8[32] = {
@@ -442,7 +375,6 @@ uint8_t has_bl_vert_64x64[1] = { 2 };
 //
 // There are tables for each of the square sizes. Vertical rectangles (like
 // BLOCK_16X32) use their respective "non-vert" table
-#if CONFIG_EXT_PARTITION
 static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
   // 4X4
   NULL,
@@ -457,20 +389,6 @@ static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
   // 64x128,  128x64,      128x128
   has_bl_64x128, NULL, has_bl_128x128
 };
-#else
-static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
-  // 4X4
-  NULL,
-  // 4X8,      8X4,         8X8
-  has_bl_8x16, NULL, has_bl_vert_16x16,
-  // 8X16,     16X8,        16X16
-  has_bl_16x32, NULL, has_bl_vert_32x32,
-  // 16X32,    32X16,       32X32
-  has_bl_32x64, NULL, has_bl_vert_64x64,
-  // 32X64,    64X32,       64X64
-  has_bl_64x128, NULL, has_bl_128x128
-};
-#endif
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const uint8_t *get_has_bl_table(PARTITION_TYPE partition,
@@ -498,7 +416,6 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                            int col_off, int ss_x, int ss_y) {
   if (!bottom_available || !left_available) return 0;
 
-#if CONFIG_EXT_PARTITION
   // Special case for 128x* blocks, when col_off is half the block width.
   // This is needed because 128x* superblocks are divided into 64x* blocks in
   // raster order
@@ -516,9 +433,6 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
       return row_off_64 + tx_size_high_unit[txsz] < plane_bh_unit;
     }
   }
-#else
-  (void)ss_x;
-#endif  // CONFIG_EXT_PARTITION
 
   if (col_off > 0) {
     // Bottom-left pixels are in the bottom-left block, which is not available.

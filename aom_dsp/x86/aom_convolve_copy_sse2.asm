@@ -50,7 +50,7 @@ cglobal convolve_%1, 4, 7, 4+AUX_XMM_REGS, src, src_stride, \
   cmp r4d, 32
   je .w32
 
-%if CONFIG_AV1 && CONFIG_EXT_PARTITION
+%if CONFIG_AV1
   cmp r4d, 64
   je .w64
 %ifidn %2, highbd
@@ -160,7 +160,7 @@ cglobal convolve_%1, 4, 7, 4+AUX_XMM_REGS, src, src_stride, \
   jnz .loop128
   RET
 
-%else  ; CONFIG_AV1 && CONFIG_EXT_PARTITION
+%else  ; CONFIG_AV1
 
 %ifidn %2, highbd
   cmp r4d, 64
@@ -202,7 +202,7 @@ cglobal convolve_%1, 4, 7, 4+AUX_XMM_REGS, src, src_stride, \
   jnz .loop128
   RET
 %endif
-%endif  ; CONFIG_AV1 && CONFIG_EXT_PARTITION
+%endif  ; CONFIG_AV1
 
 .w64:
   mov                    r4d, dword hm

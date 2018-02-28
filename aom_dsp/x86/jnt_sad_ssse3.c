@@ -216,11 +216,11 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
 #endif  // CONFIG_JNT_COMP
 
 /* clang-format off */
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION
+#if CONFIG_AV1
 jnt_sadMxN_sse2(128, 128)
 jnt_sadMxN_sse2(128, 64)
 jnt_sadMxN_sse2(64, 128)
-#endif  // CONFIG_AV1 && CONFIG_EXT_PARTITION
+#endif  // CONFIG_AV1
 
 jnt_sadMxN_sse2(64, 64)
 jnt_sadMxN_sse2(64, 32)

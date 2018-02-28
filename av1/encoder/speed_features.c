@@ -304,11 +304,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->inter_mode_mask[BLOCK_32X64] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_64X32] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_64X64] = INTER_NEAREST;
-#if CONFIG_EXT_PARTITION
     sf->inter_mode_mask[BLOCK_64X128] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_128X64] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_128X128] = INTER_NEAREST;
-#endif  // CONFIG_EXT_PARTITION
     sf->partition_search_type = REFERENCE_PARTITION;
     sf->default_min_partition_size = BLOCK_8X8;
     sf->reuse_inter_pred_sby = 1;

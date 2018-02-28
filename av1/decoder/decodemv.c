@@ -50,15 +50,10 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
   if (!(mi_col & (cm->seq_params.mib_size - 1)) &&
       !(mi_row & (cm->seq_params.mib_size - 1))) {  // Top left?
-#if CONFIG_EXT_PARTITION
     cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
         cm->cdef_preset[3] = -1;
-#else
-    cm->cdef_preset = -1;
-#endif
   }
-// Read CDEF param at first a non-skip coding block
-#if CONFIG_EXT_PARTITION
+  // Read CDEF param at first a non-skip coding block
   const int mask = 1 << (6 - MI_SIZE_LOG2);
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
@@ -68,13 +63,6 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
       cm->cdef_preset[index] == -1 && !mbmi->skip
           ? aom_read_literal(r, cm->cdef_bits, ACCT_STR)
           : cm->cdef_preset[index];
-#else
-  cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
-      ->mbmi.cdef_strength = cm->cdef_preset =
-      cm->cdef_preset == -1 && !mbmi->skip
-          ? aom_read_literal(r, cm->cdef_bits, ACCT_STR)
-          : cm->cdef_preset;
-#endif
 }
 
 static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,

@@ -87,10 +87,8 @@ class AV1ExtTileTest
       encoder->Control(AV1E_SET_TILE_ROWS, kTileSize);
       // TODO(yunqingwang): test single_tile_decoding = 0.
       encoder->Control(AV1E_SET_SINGLE_TILE_DECODING, 1);
-#if CONFIG_EXT_PARTITION
       // Always use 64x64 max partition.
       encoder->Control(AV1E_SET_SUPERBLOCK_SIZE, AOM_SUPERBLOCK_SIZE_64X64);
-#endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 #if CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
       encoder->Control(AV1E_SET_TILE_LOOPFILTER_V, 0);

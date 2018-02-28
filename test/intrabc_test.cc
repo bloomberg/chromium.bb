@@ -29,9 +29,7 @@ TEST(IntrabcTest, DvValidation) {
   const int kSubPelScale = 8;
   const int kTileMaxMibWidth = 8;
   const DvTestCase kDvCases[] = {
-#if CONFIG_EXT_PARTITION
     { { 0, 0 }, 0, 0, BLOCK_128X128, false },
-#endif
     { { 0, 0 }, 0, 0, BLOCK_64X64, false },
     { { 0, 0 }, 0, 0, BLOCK_32X32, false },
     { { 0, 0 }, 0, 0, BLOCK_16X16, false },

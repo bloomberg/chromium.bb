@@ -94,11 +94,9 @@ TEST_P(ObmcVarianceTest, ExtremeValues) {
 
 #if HAVE_SSE4_1
 const ObmcVarianceTest::ParamType sse4_functions[] = {
-#if CONFIG_EXT_PARTITION
   TestFuncs(aom_obmc_variance128x128_c, aom_obmc_variance128x128_sse4_1),
   TestFuncs(aom_obmc_variance128x64_c, aom_obmc_variance128x64_sse4_1),
   TestFuncs(aom_obmc_variance64x128_c, aom_obmc_variance64x128_sse4_1),
-#endif  // CONFIG_EXT_PARTITION
   TestFuncs(aom_obmc_variance64x64_c, aom_obmc_variance64x64_sse4_1),
   TestFuncs(aom_obmc_variance64x32_c, aom_obmc_variance64x32_sse4_1),
   TestFuncs(aom_obmc_variance32x64_c, aom_obmc_variance32x64_sse4_1),
@@ -181,14 +179,12 @@ TEST_P(ObmcVarianceHBDTest, ExtremeValues) {
 
 #if HAVE_SSE4_1
 ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
-#if CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_obmc_variance128x128_c,
             aom_highbd_obmc_variance128x128_sse4_1, 8),
   TestFuncs(aom_highbd_obmc_variance128x64_c,
             aom_highbd_obmc_variance128x64_sse4_1, 8),
   TestFuncs(aom_highbd_obmc_variance64x128_c,
             aom_highbd_obmc_variance64x128_sse4_1, 8),
-#endif  // CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_obmc_variance64x64_c,
             aom_highbd_obmc_variance64x64_sse4_1, 8),
   TestFuncs(aom_highbd_obmc_variance64x32_c,
@@ -215,14 +211,12 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
             8),
   TestFuncs(aom_highbd_obmc_variance4x4_c, aom_highbd_obmc_variance4x4_sse4_1,
             8),
-#if CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_10_obmc_variance128x128_c,
             aom_highbd_10_obmc_variance128x128_sse4_1, 10),
   TestFuncs(aom_highbd_10_obmc_variance128x64_c,
             aom_highbd_10_obmc_variance128x64_sse4_1, 10),
   TestFuncs(aom_highbd_10_obmc_variance64x128_c,
             aom_highbd_10_obmc_variance64x128_sse4_1, 10),
-#endif  // CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_10_obmc_variance64x64_c,
             aom_highbd_10_obmc_variance64x64_sse4_1, 10),
   TestFuncs(aom_highbd_10_obmc_variance64x32_c,
@@ -249,14 +243,12 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
             aom_highbd_10_obmc_variance4x8_sse4_1, 10),
   TestFuncs(aom_highbd_10_obmc_variance4x4_c,
             aom_highbd_10_obmc_variance4x4_sse4_1, 10),
-#if CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_12_obmc_variance128x128_c,
             aom_highbd_12_obmc_variance128x128_sse4_1, 12),
   TestFuncs(aom_highbd_12_obmc_variance128x64_c,
             aom_highbd_12_obmc_variance128x64_sse4_1, 12),
   TestFuncs(aom_highbd_12_obmc_variance64x128_c,
             aom_highbd_12_obmc_variance64x128_sse4_1, 12),
-#endif  // CONFIG_EXT_PARTITION
   TestFuncs(aom_highbd_12_obmc_variance64x64_c,
             aom_highbd_12_obmc_variance64x64_sse4_1, 12),
   TestFuncs(aom_highbd_12_obmc_variance64x32_c,

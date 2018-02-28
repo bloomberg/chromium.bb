@@ -555,11 +555,7 @@ typedef struct AV1Common {
   int cdef_strengths[CDEF_MAX_STRENGTHS];
   int cdef_uv_strengths[CDEF_MAX_STRENGTHS];
   int cdef_bits;
-#if CONFIG_EXT_PARTITION
   int cdef_preset[4];
-#else
-  int cdef_preset;
-#endif
 
   int delta_q_present_flag;
   // Resolution of delta quant
@@ -1016,9 +1012,9 @@ static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_B);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
-#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#if !ALLOW_128X32_BLOCKS
   if (bsize != BLOCK_128X128)
-#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#endif  // !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_HORZ_4);
 #endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
@@ -1036,9 +1032,9 @@ static INLINE void partition_gather_vert_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_B);
-#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#if !ALLOW_128X32_BLOCKS
   if (bsize != BLOCK_128X128)
-#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#endif  // !ALLOW_128X32_BLOCKS
     out[0] -= cdf_element_prob(in, PARTITION_VERT_4);
 #endif  // CONFIG_EXT_PARTITION_TYPES
   out[0] = AOM_ICDF(out[0]);
@@ -1106,10 +1102,10 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
 static INLINE int partition_cdf_length(BLOCK_SIZE bsize) {
 #if CONFIG_EXT_PARTITION_TYPES
   if (bsize <= BLOCK_8X8) return PARTITION_TYPES;
-#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#if !ALLOW_128X32_BLOCKS
   else if (bsize == BLOCK_128X128)
     return EXT_PARTITION_TYPES - 2;
-#endif  // CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#endif  // !ALLOW_128X32_BLOCKS
   else
     return EXT_PARTITION_TYPES;
 #else
@@ -1241,9 +1237,7 @@ static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
 
 static INLINE TX_SIZE get_sqr_tx_size(int tx_dim) {
   switch (tx_dim) {
-#if CONFIG_EXT_PARTITION
     case 128:
-#endif  // CONFIG_EXT_PARTITION
     case 64: return TX_64X64; break;
     case 32: return TX_32X32; break;
     case 16: return TX_16X16; break;

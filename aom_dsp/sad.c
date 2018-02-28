@@ -100,7 +100,7 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 
 /* clang-format off */
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION
+#if CONFIG_AV1
 // 128x128
 sadMxN(128, 128)
 sadMxNxK(128, 128, 3)
@@ -114,7 +114,7 @@ sadMxNx4D(128, 64)
 // 64x128
 sadMxN(64, 128)
 sadMxNx4D(64, 128)
-#endif  // CONFIG_AV1 && CONFIG_EXT_PARTITION
+#endif  // CONFIG_AV1
 
 // 64x64
 sadMxN(64, 64)
@@ -185,9 +185,7 @@ sadMxNxK(4, 4, 8)
 sadMxNx4D(4, 4)
 
 #if CONFIG_JNT_COMP
-#if CONFIG_EXT_PARTITION
 sadMxh(128);
-#endif
 sadMxh(64);
 sadMxh(32);
 sadMxh(16);
@@ -307,7 +305,7 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
   }
 
 /* clang-format off */
-#if CONFIG_AV1 && CONFIG_EXT_PARTITION
+#if CONFIG_AV1
 // 128x128
 highbd_sadMxN(128, 128)
 highbd_sadMxNxK(128, 128, 3)
@@ -321,7 +319,7 @@ highbd_sadMxNx4D(128, 64)
 // 64x128
 highbd_sadMxN(64, 128)
 highbd_sadMxNx4D(64, 128)
-#endif  // CONFIG_AV1 && CONFIG_EXT_PARTITION
+#endif  // CONFIG_AV1
 
 // 64x64
 highbd_sadMxN(64, 64)

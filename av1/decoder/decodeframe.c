@@ -956,14 +956,9 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
-#if CONFIG_EXT_PARTITION
     assert(cm->seq_params.sb_size == BLOCK_64X64 ||
            cm->seq_params.sb_size == BLOCK_128X128);
     const int sb_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
-#else
-    assert(cm->seq_params.sb_size == BLOCK_64X64);
-    const int sb_size = 64;
-#endif
 
     for (int p = 0; p < num_planes; ++p)
       cm->rst_info[p].restoration_unit_size = sb_size;
@@ -1426,11 +1421,7 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 static void setup_sb_size(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
   (void)rb;
-#if CONFIG_EXT_PARTITION
   set_sb_size(seq_params, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
-#else
-  set_sb_size(seq_params, BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
 }
 
 static INLINE int valid_ref_frame_img_fmt(aom_bit_depth_t ref_bit_depth,
@@ -1619,18 +1610,14 @@ static void read_tile_info(AV1Decoder *const pbi,
         cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
     cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
-// Read the tile width/height
-#if CONFIG_EXT_PARTITION
+    // Read the tile width/height
     if (cm->seq_params.sb_size == BLOCK_128X128) {
       cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
       cm->tile_height = aom_rb_read_literal(rb, 5) + 1;
     } else {
-#endif  // CONFIG_EXT_PARTITION
       cm->tile_width = aom_rb_read_literal(rb, 6) + 1;
       cm->tile_height = aom_rb_read_literal(rb, 6) + 1;
-#if CONFIG_EXT_PARTITION
     }
-#endif  // CONFIG_EXT_PARTITION
 
     cm->tile_width <<= cm->seq_params.mib_size_log2;
     cm->tile_height <<= cm->seq_params.mib_size_log2;

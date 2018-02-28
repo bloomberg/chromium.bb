@@ -49,19 +49,12 @@ static int is_8x8_block_skip(MODE_INFO **grid, int mi_row, int mi_col,
   return is_skip;
 }
 
-#if CONFIG_EXT_PARTITION
 int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                         cdef_list *dlist, BLOCK_SIZE bs)
-#else
-int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                         cdef_list *dlist)
-#endif
-{
+                         cdef_list *dlist, BLOCK_SIZE bs) {
   MODE_INFO **grid = cm->mi_grid_visible;
   int maxc = cm->mi_cols - mi_col;
   int maxr = cm->mi_rows - mi_row;
 
-#if CONFIG_EXT_PARTITION
   if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
     maxc = AOMMIN(maxc, MI_SIZE_128X128);
   else
@@ -70,10 +63,6 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
     maxr = AOMMIN(maxr, MI_SIZE_128X128);
   else
     maxr = AOMMIN(maxr, MI_SIZE_64X64);
-#else
-  maxr = AOMMIN(maxr, MI_SIZE_64X64);
-  maxc = AOMMIN(maxc, MI_SIZE_64X64);
-#endif
 
   const int r_step = mi_size_high[BLOCK_8X8];
   const int c_step = mi_size_wide[BLOCK_8X8];
@@ -263,15 +252,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       uv_sec_strength += uv_sec_strength == 3;
       if ((level == 0 && sec_strength == 0 && uv_level == 0 &&
            uv_sec_strength == 0) ||
-#if CONFIG_EXT_PARTITION
           (cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
                                              fbc * MI_SIZE_64X64, dlist,
-                                             BLOCK_64X64)) == 0)
-#else
-          (cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
-                                             fbc * MI_SIZE_64X64, dlist)) == 0)
-#endif
-      {
+                                             BLOCK_64X64)) == 0) {
         cdef_left = 0;
         continue;
       }

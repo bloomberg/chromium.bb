@@ -111,11 +111,7 @@ static const int idx_n_column_to_subblock[4][2] = {
 };
 
 // clamp_mv_ref
-#if CONFIG_EXT_PARTITION
 #define MV_BORDER (16 << 3)  // Allow 16 pels in 1/8th pel units
-#else
-#define MV_BORDER (8 << 3)  // Allow 8 pels in 1/8th pel units
-#endif                      // CONFIG_EXT_PARTITION
 
 // Get the number of frames between the current frame and a reference frame
 static INLINE int get_ref_frame_dist(const AV1_COMMON *cm,

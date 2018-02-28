@@ -965,9 +965,7 @@ static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
 void av1_setup_mask(AV1_COMMON *const cm, int mi_row, int mi_col,
                     MODE_INFO **mi, int mode_info_stride,
                     LOOP_FILTER_MASK *lfm) {
-#if CONFIG_EXT_PARTITION
   assert(0 && "Not yet updated");
-#endif  // CONFIG_EXT_PARTITION
   int idx_32, idx_16, idx_8;
   const loop_filter_info_n *const lfi_n = &cm->lf_info;
   MODE_INFO **mip = mi;
@@ -1782,65 +1780,57 @@ typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
 static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
   // mask for vertical edges filtering
   {
-      4 - 1,   // BLOCK_4X4
-      4 - 1,   // BLOCK_4X8
-      8 - 1,   // BLOCK_8X4
-      8 - 1,   // BLOCK_8X8
-      8 - 1,   // BLOCK_8X16
-      16 - 1,  // BLOCK_16X8
-      16 - 1,  // BLOCK_16X16
-      16 - 1,  // BLOCK_16X32
-      32 - 1,  // BLOCK_32X16
-      32 - 1,  // BLOCK_32X32
-      32 - 1,  // BLOCK_32X64
-      64 - 1,  // BLOCK_64X32
-      64 - 1,  // BLOCK_64X64
-#if CONFIG_EXT_PARTITION
+      4 - 1,    // BLOCK_4X4
+      4 - 1,    // BLOCK_4X8
+      8 - 1,    // BLOCK_8X4
+      8 - 1,    // BLOCK_8X8
+      8 - 1,    // BLOCK_8X16
+      16 - 1,   // BLOCK_16X8
+      16 - 1,   // BLOCK_16X16
+      16 - 1,   // BLOCK_16X32
+      32 - 1,   // BLOCK_32X16
+      32 - 1,   // BLOCK_32X32
+      32 - 1,   // BLOCK_32X64
+      64 - 1,   // BLOCK_64X32
+      64 - 1,   // BLOCK_64X64
       64 - 1,   // BLOCK_64X128
       128 - 1,  // BLOCK_128X64
       128 - 1,  // BLOCK_128X128
-#endif          // CONFIG_EXT_PARTITION
       4 - 1,    // BLOCK_4X16,
       16 - 1,   // BLOCK_16X4,
       8 - 1,    // BLOCK_8X32,
       32 - 1,   // BLOCK_32X8,
       16 - 1,   // BLOCK_16X64,
       64 - 1,   // BLOCK_64X16
-#if CONFIG_EXT_PARTITION
       32 - 1,   // BLOCK_32X128
       128 - 1,  // BLOCK_128X32
-#endif          // CONFIG_EXT_PARTITION
   },
   // mask for horizontal edges filtering
   {
-      4 - 1,   // BLOCK_4X4
-      8 - 1,   // BLOCK_4X8
-      4 - 1,   // BLOCK_8X4
-      8 - 1,   // BLOCK_8X8
-      16 - 1,  // BLOCK_8X16
-      8 - 1,   // BLOCK_16X8
-      16 - 1,  // BLOCK_16X16
-      32 - 1,  // BLOCK_16X32
-      16 - 1,  // BLOCK_32X16
-      32 - 1,  // BLOCK_32X32
-      64 - 1,  // BLOCK_32X64
-      32 - 1,  // BLOCK_64X32
-      64 - 1,  // BLOCK_64X64
-#if CONFIG_EXT_PARTITION
+      4 - 1,    // BLOCK_4X4
+      8 - 1,    // BLOCK_4X8
+      4 - 1,    // BLOCK_8X4
+      8 - 1,    // BLOCK_8X8
+      16 - 1,   // BLOCK_8X16
+      8 - 1,    // BLOCK_16X8
+      16 - 1,   // BLOCK_16X16
+      32 - 1,   // BLOCK_16X32
+      16 - 1,   // BLOCK_32X16
+      32 - 1,   // BLOCK_32X32
+      64 - 1,   // BLOCK_32X64
+      32 - 1,   // BLOCK_64X32
+      64 - 1,   // BLOCK_64X64
       128 - 1,  // BLOCK_64X128
       64 - 1,   // BLOCK_128X64
       128 - 1,  // BLOCK_128X128
-#endif          // CONFIG_EXT_PARTITION
       16 - 1,   // BLOCK_4X16,
       4 - 1,    // BLOCK_16X4,
       32 - 1,   // BLOCK_8X32,
       8 - 1,    // BLOCK_32X8,
       64 - 1,   // BLOCK_16X64,
       16 - 1,   // BLOCK_64X16
-#if CONFIG_EXT_PARTITION
       128 - 1,  // BLOCK_32X128
       32 - 1,   // BLOCK_128X32
-#endif          // CONFIG_EXT_PARTITION
   },
 };
 

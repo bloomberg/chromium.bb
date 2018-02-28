@@ -258,11 +258,9 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#if CONFIG_EXT_PARTITION
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#endif  // CONFIG_EXT_PARTITION
   { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_4X16], 0,
     wedge_masks[BLOCK_4X16] },
   { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X4], 0,
@@ -273,10 +271,8 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
     wedge_masks[BLOCK_32X8] },
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#if CONFIG_EXT_PARTITION
   { 0, NULL, NULL, 0, NULL },
   { 0, NULL, NULL, 0, NULL },
-#endif  // CONFIG_EXT_PARTITION
 };
 
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
@@ -1357,14 +1353,12 @@ static const uint8_t obmc_mask_32[32] = { 33, 35, 36, 38, 40, 41, 43, 44,
                                           56, 57, 58, 59, 60, 60, 61, 62,
                                           64, 64, 64, 64, 64, 64, 64, 64 };
 
-#if CONFIG_EXT_PARTITION
 static const uint8_t obmc_mask_64[64] = {
   33, 34, 35, 35, 36, 37, 38, 39, 40, 40, 41, 42, 43, 44, 44, 44,
   45, 46, 47, 47, 48, 49, 50, 51, 51, 51, 52, 52, 53, 54, 55, 56,
   56, 56, 57, 57, 58, 58, 59, 60, 60, 60, 60, 60, 61, 62, 62, 62,
   62, 62, 63, 63, 63, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 };
-#endif  // CONFIG_EXT_PARTITION
 
 const uint8_t *av1_get_obmc_mask(int length) {
   switch (length) {
@@ -1374,9 +1368,7 @@ const uint8_t *av1_get_obmc_mask(int length) {
     case 8: return obmc_mask_8;
     case 16: return obmc_mask_16;
     case 32: return obmc_mask_32;
-#if CONFIG_EXT_PARTITION
     case 64: return obmc_mask_64;
-#endif  // CONFIG_EXT_PARTITION
     default: assert(0); return NULL;
   }
 }
@@ -1394,9 +1386,7 @@ void av1_get_obmc_mask2d(uint8_t *mask, const int mask_stride, int w, int h,
     case 8: mask1d = obmc_mask_8; break;
     case 16: mask1d = obmc_mask_16; break;
     case 32: mask1d = obmc_mask_32; break;
-#if CONFIG_EXT_PARTITION
     case 64: mask1d = obmc_mask_64; break;
-#endif  // CONFIG_EXT_PARTITION
     default: assert(0); return;
   }
 
@@ -2163,7 +2153,6 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 
 /* clang-format off */
-#if CONFIG_EXT_PARTITION
 static const uint8_t ii_weights1d[MAX_SB_SIZE] = {
   60, 58, 56, 54, 52, 50, 48, 47, 45, 44, 42, 41, 39, 38, 37, 35, 34, 33, 32,
   31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 22, 21, 20, 19, 19, 18, 18, 17, 16,
@@ -2178,20 +2167,7 @@ static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
     4,  4,  2,  2,  2, 1, 1, 1,
     16, 16, 8, 8, 4, 4, 2, 2
 };
-#else
-static const uint8_t ii_weights1d[MAX_SB_SIZE] = {
-  60, 56, 52, 48, 45, 42, 39, 37, 34, 32, 30, 28, 26, 24, 22, 21,
-  19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 10,  9,  8,  8,  7,  7,
-  6,  6,  6,  5,  5,  4,  4,  4,  4,  3,  3,  3,  3,  3,  2,  2,
-  2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
-};
-static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
-    16, 8, 8, 8, 4, 4, 4,
-    2,  2, 2, 1, 1, 1,
-    8, 8, 4, 4, 2, 2,
-};
 /* clang-format on */
-#endif  // CONFIG_EXT_PARTITION
 
 static void build_smooth_interintra_mask(uint8_t *mask, int stride,
                                          BLOCK_SIZE plane_bsize,

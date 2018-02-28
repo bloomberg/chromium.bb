@@ -538,7 +538,6 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
   }
 }
 
-#if CONFIG_EXT_PARTITION
 static INLINE void copy_128(const uint8_t *src, uint8_t *dst) {
   __m128i s[8];
   s[0] = _mm_loadu_si128((__m128i *)(src + 0 * 16));
@@ -558,7 +557,6 @@ static INLINE void copy_128(const uint8_t *src, uint8_t *dst) {
   _mm_store_si128((__m128i *)(dst + 6 * 16), s[6]);
   _mm_store_si128((__m128i *)(dst + 7 * 16), s[7]);
 }
-#endif
 
 void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
                                   uint8_t *dst, int dst_stride, int w, int h,
@@ -665,7 +663,6 @@ void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
       dst += dst_stride;
       h -= 2;
     } while (h);
-#if CONFIG_EXT_PARTITION
   } else {
     do {
       copy_128(src, dst);
@@ -676,7 +673,6 @@ void av1_convolve_2d_copy_sr_sse2(const uint8_t *src, int src_stride,
       dst += dst_stride;
       h -= 2;
     } while (h);
-#endif  // CONFIG_EXT_PARTITION
   }
 }
 

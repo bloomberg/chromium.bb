@@ -940,16 +940,11 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
   // Initialise when at top left part of the superblock
   if (!(mi_row & (cm->seq_params.mib_size - 1)) &&
       !(mi_col & (cm->seq_params.mib_size - 1))) {  // Top left?
-#if CONFIG_EXT_PARTITION
     cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
         cm->cdef_preset[3] = -1;
-#else
-    cm->cdef_preset = -1;
-#endif
   }
 
-// Emit CDEF param at first non-skip coding block
-#if CONFIG_EXT_PARTITION
+  // Emit CDEF param at first non-skip coding block
   const int mask = 1 << (6 - MI_SIZE_LOG2);
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
@@ -958,12 +953,6 @@ static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
     aom_write_literal(w, mbmi->cdef_strength, cm->cdef_bits);
     cm->cdef_preset[index] = mbmi->cdef_strength;
   }
-#else
-  if (cm->cdef_preset == -1 && !skip) {
-    aom_write_literal(w, mbmi->cdef_strength, cm->cdef_bits);
-    cm->cdef_preset = mbmi->cdef_strength;
-  }
-#endif
 }
 
 static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
@@ -1944,14 +1933,9 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
-#if CONFIG_EXT_PARTITION
     assert(cm->seq_params.sb_size == BLOCK_64X64 ||
            cm->seq_params.sb_size == BLOCK_128X128);
     const int sb_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
-#else
-    assert(cm->seq_params.sb_size == BLOCK_64X64);
-    const int sb_size = 64;
-#endif
 
     RestorationInfo *rsi = &cm->rst_info[0];
 
@@ -2398,22 +2382,18 @@ static void write_tile_info(const AV1_COMMON *const cm,
     assert(tile_width > 0);
     assert(tile_height > 0);
 
-// Write the tile sizes
-#if CONFIG_EXT_PARTITION
+    // Write the tile sizes
     if (cm->seq_params.sb_size == BLOCK_128X128) {
       assert(tile_width <= 32);
       assert(tile_height <= 32);
       aom_wb_write_literal(wb, tile_width - 1, 5);
       aom_wb_write_literal(wb, tile_height - 1, 5);
     } else {
-#endif  // CONFIG_EXT_PARTITION
       assert(tile_width <= 64);
       assert(tile_height <= 64);
       aom_wb_write_literal(wb, tile_width - 1, 6);
       aom_wb_write_literal(wb, tile_height - 1, 6);
-#if CONFIG_EXT_PARTITION
     }
-#endif  // CONFIG_EXT_PARTITION
   } else {
 #endif  // CONFIG_EXT_TILE
 
@@ -2844,13 +2824,9 @@ static void write_sb_size(SequenceHeader *seq_params,
   (void)wb;
   assert(seq_params->mib_size == mi_size_wide[seq_params->sb_size]);
   assert(seq_params->mib_size == 1 << seq_params->mib_size_log2);
-#if CONFIG_EXT_PARTITION
   assert(seq_params->sb_size == BLOCK_128X128 ||
          seq_params->sb_size == BLOCK_64X64);
   aom_wb_write_bit(wb, seq_params->sb_size == BLOCK_128X128 ? 1 : 0);
-#else
-  assert(seq_params->sb_size == BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
 }
 
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {

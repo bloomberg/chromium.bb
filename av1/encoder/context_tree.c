@@ -13,10 +13,7 @@
 #include "av1/encoder/encoder.h"
 
 static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 1] = {
-  BLOCK_4X4,     BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64,
-#if CONFIG_EXT_PARTITION
-  BLOCK_128X128,
-#endif  // CONFIG_EXT_PARTITION
+  BLOCK_4X4, BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64, BLOCK_128X128,
 };
 
 static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
@@ -136,19 +133,10 @@ static void free_tree_contexts(PC_TREE *tree, const int num_planes) {
 // represents the state of our search.
 void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   int i, j;
-#if CONFIG_EXT_PARTITION
   const int tree_nodes_inc = 1024;
-#else
-  const int tree_nodes_inc = 256;
-#endif  // CONFIG_EXT_PARTITION
   const int leaf_factor = 4;
-#if CONFIG_EXT_PARTITION
   const int leaf_nodes = 256 * leaf_factor;
   const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
-#else
-  const int leaf_nodes = 64 * leaf_factor;
-  const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
-#endif  // CONFIG_EXT_PARTITION
   int pc_tree_index = 0;
   PC_TREE *this_pc;
   int square_index = 1;
@@ -191,17 +179,9 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 }
 
 void av1_free_pc_tree(ThreadData *td, const int num_planes) {
-#if CONFIG_EXT_PARTITION
   const int tree_nodes_inc = 1024;
-#else
-  const int tree_nodes_inc = 256;
-#endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_EXT_PARTITION
   const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
-#else
-  const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
-#endif  // CONFIG_EXT_PARTITION
   int i;
   for (i = 0; i < tree_nodes; ++i)
     free_tree_contexts(&td->pc_tree[i], num_planes);
@@ -237,8 +217,6 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   memcpy(dst_ctx->pred_mv, src_ctx->pred_mv, sizeof(MV) * TOTAL_REFS_PER_FRAME);
   dst_ctx->pred_interp_filter = src_ctx->pred_interp_filter;
 
-#if CONFIG_EXT_PARTITION
   dst_ctx->partition = src_ctx->partition;
-#endif  // CONFIG_EXT_PARTITION
 }
 #endif  // CONFIG_EXT_PARTITION_TYPES

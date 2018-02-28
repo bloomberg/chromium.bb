@@ -1027,7 +1027,6 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                            ? TX_4X4
                            : get_max_rect_tx_size(bsize);
 
-#if CONFIG_EXT_PARTITION
   // The decoder is designed so that it can process 64x64 luma pixels at a
   // time. If this is a chroma plane with subsampling and bsize corresponds to
   // a subsampled BLOCK_128X128 then the lookup above will give TX_64X64. That
@@ -1041,10 +1040,6 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
     else
       max_txsize = TX_32X32;
   }
-#else
-  (void)subsampled;
-#endif
-
   return max_txsize;
 }
 

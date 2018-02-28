@@ -128,11 +128,9 @@ static INLINE void obmc_variance_w8n(const uint8_t *pre, const int pre_stride,
     return *sse - (unsigned int)(((int64_t)sum * sum) / (W * H));      \
   }
 
-#if CONFIG_EXT_PARTITION
 OBMCVARWXH(128, 128)
 OBMCVARWXH(128, 64)
 OBMCVARWXH(64, 128)
-#endif  // CONFIG_EXT_PARTITION
 OBMCVARWXH(64, 64)
 OBMCVARWXH(64, 32)
 OBMCVARWXH(32, 64)
@@ -153,10 +151,8 @@ OBMCVARWXH(8, 32)
 OBMCVARWXH(32, 8)
 OBMCVARWXH(16, 64)
 OBMCVARWXH(64, 16)
-#if CONFIG_EXT_PARTITION
 OBMCVARWXH(32, 128)
 OBMCVARWXH(128, 32)
-#endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -346,11 +342,9 @@ static INLINE void highbd_12_obmc_variance(const uint8_t *pre8, int pre_stride,
     return (var >= 0) ? (uint32_t)var : 0;                                 \
   }
 
-#if CONFIG_EXT_PARTITION
 HBD_OBMCVARWXH(128, 128)
 HBD_OBMCVARWXH(128, 64)
 HBD_OBMCVARWXH(64, 128)
-#endif  // CONFIG_EXT_PARTITION
 HBD_OBMCVARWXH(64, 64)
 HBD_OBMCVARWXH(64, 32)
 HBD_OBMCVARWXH(32, 64)
@@ -371,8 +365,6 @@ HBD_OBMCVARWXH(8, 32)
 HBD_OBMCVARWXH(32, 8)
 HBD_OBMCVARWXH(16, 64)
 HBD_OBMCVARWXH(64, 16)
-#if CONFIG_EXT_PARTITION
 HBD_OBMCVARWXH(32, 128)
 HBD_OBMCVARWXH(128, 32)
-#endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES

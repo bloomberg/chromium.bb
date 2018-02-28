@@ -284,11 +284,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int fbr, fbc;
   uint16_t *src[3];
   uint16_t *ref_coeff[3];
-#if CONFIG_EXT_PARTITION
   static cdef_list dlist[MI_SIZE_128X128 * MI_SIZE_128X128];
-#else
-  cdef_list dlist[MI_SIZE_64X64 * MI_SIZE_64X64];
-#endif
   int dir[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int var[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int stride[3];
@@ -388,7 +384,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * fbr);
       int hb_step = 1;
       int vb_step = 1;
-#if CONFIG_EXT_PARTITION
       BLOCK_SIZE bs = BLOCK_64X64;
       MB_MODE_INFO *const mbmi =
           &cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
@@ -413,16 +408,10 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         nvb = AOMMIN(MI_SIZE_128X128, cm->mi_rows - MI_SIZE_64X64 * fbr);
         vb_step = 2;
       }
-#endif
       // No filtering if the entire filter block is skipped
       if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
-#if CONFIG_EXT_PARTITION
       cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
                                         fbc * MI_SIZE_64X64, dlist, bs);
-#else
-      cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
-                                        fbc * MI_SIZE_64X64, dlist);
-#endif
       for (pli = 0; pli < num_planes; pli++) {
         for (i = 0; i < CDEF_INBUF_SIZE; i++) inbuf[i] = CDEF_VERY_LARGE;
         for (gi = 0; gi < total_strengths; gi++) {

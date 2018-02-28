@@ -173,7 +173,7 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
 
   /* default values */
   if (cfg) {
-    cfg->cfg.ext_partition = CONFIG_EXT_PARTITION;
+    cfg->cfg.ext_partition = 1;
   }
 
   return res;

@@ -119,11 +119,9 @@ static INLINE unsigned int obmc_sad_w8n(const uint8_t *pre,
     }                                                          \
   }
 
-#if CONFIG_EXT_PARTITION
 OBMCSADWXH(128, 128)
 OBMCSADWXH(128, 64)
 OBMCSADWXH(64, 128)
-#endif  // CONFIG_EXT_PARTITION
 OBMCSADWXH(64, 64)
 OBMCSADWXH(64, 32)
 OBMCSADWXH(32, 64)
@@ -249,11 +247,9 @@ static INLINE unsigned int hbd_obmc_sad_w8n(const uint8_t *pre8,
     }                                                             \
   }
 
-#if CONFIG_EXT_PARTITION
 HBD_OBMCSADWXH(128, 128)
 HBD_OBMCSADWXH(128, 64)
 HBD_OBMCSADWXH(64, 128)
-#endif  // CONFIG_EXT_PARTITION
 HBD_OBMCSADWXH(64, 64)
 HBD_OBMCSADWXH(64, 32)
 HBD_OBMCSADWXH(32, 64)

@@ -86,14 +86,6 @@ set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
 
-if (NOT CONFIG_EXT_PARTITION)
-  set(AOM_DSP_COMMON_ASM_NEON
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon_asm.asm"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon_asm.asm"
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon_asm.asm")
-endif ()
-
 set(AOM_DSP_COMMON_ASM_NEON
     ${AOM_DSP_COMMON_ASM_NEON}
     "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.asm"
@@ -107,11 +99,6 @@ set(AOM_DSP_COMMON_ASM_NEON
     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
     "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
 
-
-if (NOT CONFIG_EXT_PARTITION)
-  set(AOM_DSP_COMMON_INTRIN_NEON
-      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_neon.c")
-endif ()
 
 set(AOM_DSP_COMMON_INTRIN_NEON
     ${AOM_DSP_COMMON_INTRIN_NEON}
@@ -128,15 +115,6 @@ set(AOM_DSP_COMMON_INTRIN_NEON
 
 
 if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
-  if (NOT CONFIG_EXT_PARTITION)
-    set(AOM_DSP_COMMON_INTRIN_NEON
-        ${AOM_DSP_COMMON_INTRIN_NEON}
-        "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon.c"
-        "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon.c"
-        "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon.c"
-        "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon.c")
-  endif ()
-
   set(AOM_DSP_COMMON_INTRIN_NEON
       ${AOM_DSP_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.c"

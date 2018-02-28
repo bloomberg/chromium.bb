@@ -69,33 +69,27 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 // Eventually this should be replaced by custom no-reference routines,
 //  which will be faster.
 static const uint8_t AV1_VAR_OFFS[MAX_SB_SIZE] = {
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-#if CONFIG_EXT_PARTITION
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128
-#endif  // CONFIG_EXT_PARTITION
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128
 };
 
 static const uint16_t AV1_HIGH_VAR_OFFS_8[MAX_SB_SIZE] = {
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-#if CONFIG_EXT_PARTITION
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
-  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128
-#endif  // CONFIG_EXT_PARTITION
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
+  128, 128, 128, 128, 128, 128, 128, 128
 };
 
 static const uint16_t AV1_HIGH_VAR_OFFS_10[MAX_SB_SIZE] = {
@@ -107,7 +101,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_10[MAX_SB_SIZE] = {
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
-#if CONFIG_EXT_PARTITION
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
@@ -116,7 +109,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_10[MAX_SB_SIZE] = {
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4
-#endif  // CONFIG_EXT_PARTITION
 };
 
 static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
@@ -129,8 +121,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
-  128 * 16,
-#if CONFIG_EXT_PARTITION
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
@@ -140,8 +130,7 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
-  128 * 16
-#endif  // CONFIG_EXT_PARTITION
+  128 * 16, 128 * 16
 };
 
 #if CONFIG_FP_MB_STATS
@@ -1973,14 +1962,10 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   8x16,   16x8,   16x16
   BLOCK_8X8,   BLOCK_8X8,   BLOCK_16X16,  //  16x32,  32x16,   32x32
   BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  //  32x64,  64x32,   64x64
-#if CONFIG_EXT_PARTITION
   BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  // 64x128, 128x64, 128x128
-#endif  // CONFIG_EXT_PARTITION
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   4x16,   16x4,    8x32
   BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,  //   32x8,  16x64,   64x16
-#if CONFIG_EXT_PARTITION
   BLOCK_16X16, BLOCK_16X16                // 32x128, 128x32
-#endif  // CONFIG_EXT_PARTITION
 };
 
 static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
@@ -1989,14 +1974,10 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
   BLOCK_32X32,   BLOCK_32X32,   BLOCK_32X32,    //   8x16,   16x8,   16x16
   BLOCK_64X64,   BLOCK_64X64,   BLOCK_64X64,    //  16x32,  32x16,   32x32
   BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  //  32x64,  64x32,   64x64
-#if CONFIG_EXT_PARTITION
   BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  // 64x128, 128x64, 128x128
-#endif  // CONFIG_EXT_PARTITION
   BLOCK_16X16,   BLOCK_16X16,   BLOCK_32X32,    //   4x16,   16x4,    8x32
   BLOCK_32X32,   BLOCK_LARGEST, BLOCK_LARGEST,  //   32x8,  16x64,   64x16
-#if CONFIG_EXT_PARTITION
   BLOCK_LARGEST, BLOCK_LARGEST                  // 32x128, 128x32
-#endif  // CONFIG_EXT_PARTITION
 };
 
 // Next square block size less or equal than current block size.
@@ -2006,14 +1987,10 @@ static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
   BLOCK_8X8,   BLOCK_8X8,     BLOCK_16X16,  //   8x16,   16x8,   16x16
   BLOCK_16X16, BLOCK_16X16,   BLOCK_32X32,  //  16x32,  32x16,   32x32
   BLOCK_32X32, BLOCK_32X32,   BLOCK_64X64,  //  32x64,  64x32,   64x64
-#if CONFIG_EXT_PARTITION
   BLOCK_64X64, BLOCK_64X64, BLOCK_128X128,  // 64x128, 128x64, 128x128
-#endif  // CONFIG_EXT_PARTITION
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
   BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16,    //   32x8,  16x64,   64x16
-#if CONFIG_EXT_PARTITION
   BLOCK_32X32, BLOCK_32X32                  // 32x128, 128x32
-#endif  // CONFIG_EXT_PARTITION
 };
 /* clang-format on */
 
@@ -2181,24 +2158,18 @@ static INLINE void load_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
 #if CONFIG_FP_MB_STATS
 const int qindex_skip_threshold_lookup[BLOCK_SIZES] = {
   0, 10, 10, 30, 40, 40, 60, 80, 80, 90, 100, 100, 120,
-#if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
   130, 130, 150
-#endif  // CONFIG_EXT_PARTITION
 };
 const int qindex_split_threshold_lookup[BLOCK_SIZES] = {
   0, 3, 3, 7, 15, 15, 30, 40, 40, 60, 80, 80, 120,
-#if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
   160, 160, 240
-#endif  // CONFIG_EXT_PARTITION
 };
 const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 6,
-#if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
   8, 8, 10
-#endif  // CONFIG_EXT_PARTITION
 };
 
 typedef enum {
@@ -3272,7 +3243,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 // for this block. This is almost the same as ext_partition_allowed, except
 // that we don't allow 128x32 or 32x128 blocks if ALLOW_128X32_BLOCKS is false,
 // so we require that bsize is not BLOCK_128X128.
-#if CONFIG_EXT_PARTITION && !ALLOW_128X32_BLOCKS
+#if !ALLOW_128X32_BLOCKS
   const int partition4_allowed =
       ext_partition_allowed && bsize != BLOCK_128X128;
 #else
@@ -3535,11 +3506,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   SPEED_FEATURES *const sf = &cpi->sf;
   int mi_col;
-#if CONFIG_EXT_PARTITION
   const int leaf_nodes = 256;
-#else
-  const int leaf_nodes = 64;
-#endif  // CONFIG_EXT_PARTITION
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);

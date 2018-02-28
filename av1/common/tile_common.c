@@ -168,13 +168,8 @@ void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   tile->mi_col_end = AOMMIN(tile->mi_col_start + cm->tile_width, cm->mi_cols);
 }
 
-#if CONFIG_EXT_PARTITION
 #define MIN_TILE_WIDTH_MAX_SB 2
 #define MAX_TILE_WIDTH_MAX_SB 32
-#else
-#define MIN_TILE_WIDTH_MAX_SB 4
-#define MAX_TILE_WIDTH_MAX_SB 64
-#endif  // CONFIG_EXT_PARTITION
 
 static int get_min_log2_tile_cols(int max_sb_cols) {
   int min_log2 = 0;

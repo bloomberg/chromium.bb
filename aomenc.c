@@ -168,7 +168,7 @@ static const arg_def_t psnrarg =
 #if CONFIG_FILEOPTIONS
 static const arg_def_t use_cfg = ARG_DEF("c", "cfg", 1, "Config file to use");
 static const arg_def_t ext_partition =
-    ARG_DEF(NULL, "ext-partition", 1, "corresponds to CONFIG_EXT_PARTITION");
+    ARG_DEF(NULL, "ext-partition", 1, "corresponds to exended partitions");
 #endif
 
 static const struct arg_enum_list test_decode_enum[] = {
@@ -625,7 +625,6 @@ static const arg_def_t cdf_update_mode =
             "2: selectively update CDF on some frames");
 #endif  // CONFIG_CDF_UPDATE_MODE
 
-#if CONFIG_EXT_PARTITION
 static const struct arg_enum_list superblock_size_enum[] = {
   { "dynamic", AOM_SUPERBLOCK_SIZE_DYNAMIC },
   { "64", AOM_SUPERBLOCK_SIZE_64X64 },
@@ -634,7 +633,6 @@ static const struct arg_enum_list superblock_size_enum[] = {
 };
 static const arg_def_t superblock_size = ARG_DEF_ENUM(
     NULL, "sb-size", 1, "Superblock size to use", superblock_size_enum);
-#endif  // CONFIG_EXT_PARTITION
 
 static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &dev_sf_av1,
@@ -690,9 +688,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &input_chroma_sample_position,
                                        &min_gf_interval,
                                        &max_gf_interval,
-#if CONFIG_EXT_PARTITION
                                        &superblock_size,
-#endif  // CONFIG_EXT_PARTITION
                                        &num_tg,
                                        &mtu_size,
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
@@ -759,9 +755,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_CHROMA_SAMPLE_POSITION,
                                         AV1E_SET_MIN_GF_INTERVAL,
                                         AV1E_SET_MAX_GF_INTERVAL,
-#if CONFIG_EXT_PARTITION
                                         AV1E_SET_SUPERBLOCK_SIZE,
-#endif  // CONFIG_EXT_PARTITION
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
 #if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
@@ -1613,9 +1607,7 @@ static void initialize_encoder(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
     const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
-    aom_codec_dec_cfg_t cfg = {
-      0, 0, 0, CONFIG_LOWBITDEPTH, { CONFIG_EXT_PARTITION }
-    };
+    aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, { 1 } };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
 #if CONFIG_EXT_TILE

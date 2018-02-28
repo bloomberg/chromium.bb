@@ -39,11 +39,7 @@ if ($opts{arch} eq "x86_64") {
   $avx2_x86_64 = 'avx2';
 }
 
-if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
-  @block_widths = (4, 8, 16, 32, 64, 128)
-} else {
-  @block_widths = (4, 8, 16, 32, 64)
-}
+@block_widths = (4, 8, 16, 32, 64, 128);
 
 @block_sizes = ();
 foreach $w (@block_widths) {
@@ -58,10 +54,8 @@ if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
   push @block_sizes, [32, 8];
   push @block_sizes, [16, 64];
   push @block_sizes, [64, 16];
-  if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
-      push @block_sizes, [32, 128];
-      push @block_sizes, [128, 32];
-  }
+  push @block_sizes, [32, 128];
+  push @block_sizes, [128, 32];
 }
 
 @tx_dims = (2, 4, 8, 16, 32, 64);
@@ -293,7 +287,7 @@ specialize qw/aom_convolve8_add_src_hip sse2/;
 specialize qw/aom_convolve8_add_src_hip avx2/;
 
 # TODO(any): These need to be extended to up to 128x128 block sizes
-if (!(aom_config("CONFIG_AV1") eq "yes" && aom_config("CONFIG_EXT_PARTITION") eq "yes")) {
+if (!(aom_config("CONFIG_AV1") eq "yes")) {
   specialize qw/aom_convolve_copy       neon dspr2 msa/;
   specialize qw/aom_convolve_avg        neon dspr2 msa/;
   specialize qw/aom_convolve8           neon dspr2 msa/;
@@ -659,21 +653,19 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sad4x8_avg          msa sse2/;
   specialize qw/aom_sad4x4_avg          msa sse2/;
 
-  if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
-    specialize qw/aom_sad4x16      sse2/;
-    specialize qw/aom_sad16x4      sse2/;
-    specialize qw/aom_sad8x32      sse2/;
-    specialize qw/aom_sad32x8      sse2/;
-    specialize qw/aom_sad16x64     sse2/;
-    specialize qw/aom_sad64x16     sse2/;
+  specialize qw/aom_sad4x16      sse2/;
+  specialize qw/aom_sad16x4      sse2/;
+  specialize qw/aom_sad8x32      sse2/;
+  specialize qw/aom_sad32x8      sse2/;
+  specialize qw/aom_sad16x64     sse2/;
+  specialize qw/aom_sad64x16     sse2/;
 
-    specialize qw/aom_sad4x16_avg  sse2/;
-    specialize qw/aom_sad16x4_avg  sse2/;
-    specialize qw/aom_sad8x32_avg  sse2/;
-    specialize qw/aom_sad32x8_avg  sse2/;
-    specialize qw/aom_sad16x64_avg sse2/;
-    specialize qw/aom_sad64x16_avg sse2/;
-  }
+  specialize qw/aom_sad4x16_avg  sse2/;
+  specialize qw/aom_sad16x4_avg  sse2/;
+  specialize qw/aom_sad8x32_avg  sse2/;
+  specialize qw/aom_sad32x8_avg  sse2/;
+  specialize qw/aom_sad16x64_avg sse2/;
+  specialize qw/aom_sad64x16_avg sse2/;
 
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     specialize qw/aom_jnt_sad128x128_avg ssse3/;
@@ -1125,18 +1117,13 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
       specialize qw/aom_jnt_sub_pixel_avg_variance32x8  ssse3/;
       specialize qw/aom_jnt_sub_pixel_avg_variance16x64 ssse3/;
       specialize qw/aom_jnt_sub_pixel_avg_variance64x16 ssse3/;
-
-      if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
-        specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
-        specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
-      }
+      specialize qw/aom_jnt_sub_pixel_avg_variance128x32   ssse3/;
+      specialize qw/aom_jnt_sub_pixel_avg_variance32x128   ssse3/;
     }
 
-    if (aom_config("CONFIG_EXT_PARTITION") eq "yes") {
-      specialize qw/aom_jnt_sub_pixel_avg_variance128x128  ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance128x64   ssse3/;
-      specialize qw/aom_jnt_sub_pixel_avg_variance64x128   ssse3/;
-    }
+    specialize qw/aom_jnt_sub_pixel_avg_variance128x128  ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance128x64   ssse3/;
+    specialize qw/aom_jnt_sub_pixel_avg_variance64x128   ssse3/;
   }
 
 

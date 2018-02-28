@@ -329,10 +329,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(extra_cfg, single_tile_decoding, 1);
 
   if (cfg->large_scale_tile) {
-// TODO(any): Warning. If CONFIG_EXT_TILE is true, tile_columns really
-// means tile_width, and tile_rows really means tile_hight. The interface
-// should be sanitized.
-#if CONFIG_EXT_PARTITION
+    // TODO(any): Warning. If CONFIG_EXT_TILE is true, tile_columns really
+    // means tile_width, and tile_rows really means tile_hight. The interface
+    // should be sanitized.
     // While cfg->large_scale_tile = 1, only allow AOM_SUPERBLOCK_SIZE_64X64 and
     // AOM_SUPERBLOCK_SIZE_128X128 for superblock_size. If superblock_size =
     // AOM_SUPERBLOCK_SIZE_DYNAMIC(default), hard set it to
@@ -343,13 +342,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
         RANGE_CHECK(extra_cfg, tile_columns, 1, 32);
       if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 32);
     } else {
-#endif  // CONFIG_EXT_PARTITION
       if (extra_cfg->tile_columns != 0)
         RANGE_CHECK(extra_cfg, tile_columns, 1, 64);
       if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
-#if CONFIG_EXT_PARTITION
     }
-#endif  // CONFIG_EXT_PARTITION
   } else {
 #endif  // CONFIG_EXT_TILE
 #if CONFIG_MAX_TILE
@@ -669,9 +665,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->cdf_update_mode = (uint8_t)extra_cfg->cdf_update_mode;
 #endif  // CONFIG_CDF_UPDATE_MODE
 
-#if CONFIG_EXT_PARTITION
   oxcf->superblock_size = extra_cfg->superblock_size;
-#endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_FILM_GRAIN
   oxcf->film_grain_test_vector = extra_cfg->film_grain_test_vector;
@@ -681,7 +675,6 @@ static aom_codec_err_t set_encoder_config(
   oxcf->single_tile_decoding =
       (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
   if (oxcf->large_scale_tile) {
-#if CONFIG_EXT_PARTITION
     // superblock_size can only be AOM_SUPERBLOCK_SIZE_64X64 or
     // AOM_SUPERBLOCK_SIZE_128X128 while oxcf->large_scale_tile = 1;
     if (extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_64X64 &&
@@ -689,9 +682,6 @@ static aom_codec_err_t set_encoder_config(
       oxcf->superblock_size = AOM_SUPERBLOCK_SIZE_64X64;
     const unsigned int max =
         oxcf->superblock_size == AOM_SUPERBLOCK_SIZE_64X64 ? 64 : 32;
-#else
-    const unsigned int max = 64;
-#endif  // CONFIG_EXT_PARTITION
     // If tile size is not set, set it to the default value.
     const unsigned int tc =
         (!extra_cfg->tile_columns) ? UINT_MAX : extra_cfg->tile_columns;
@@ -1821,16 +1811,16 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         2000,  // rc_two_pass_vbrmax_section
 
         // keyframing settings (kf)
-        AOM_KF_AUTO,               // g_kfmode
-        0,                         // kf_min_dist
-        9999,                      // kf_max_dist
-        0,                         // large_scale_tile
-        0,                         // monochrome
-        0,                         // tile_width_count
-        0,                         // tile_height_count
-        { 0 },                     // tile_widths
-        { 0 },                     // tile_heights
-        { CONFIG_EXT_PARTITION },  // config file
+        AOM_KF_AUTO,  // g_kfmode
+        0,            // kf_min_dist
+        9999,         // kf_max_dist
+        0,            // large_scale_tile
+        0,            // monochrome
+        0,            // tile_width_count
+        0,            // tile_height_count
+        { 0 },        // tile_widths
+        { 0 },        // tile_heights
+        { 1 },        // config file
     } },
 };
 

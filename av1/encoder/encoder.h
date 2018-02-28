@@ -304,9 +304,7 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_CDF_UPDATE_MODE
   uint8_t cdf_update_mode;
 #endif  // CONFIG_CDF_UPDATE_MODE
-#if CONFIG_EXT_PARTITION
   aom_superblock_size_t superblock_size;
-#endif  // CONFIG_EXT_PARTITION
 #if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
