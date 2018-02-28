@@ -39,12 +39,11 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                       type_param,
                       modifiers_param,
                       time_stamp_seconds_param),
-        WebPointerProperties(
-            id_param,
-            PointerType::kMouse,
-            button_param,
-            WebFloatPoint(floor(position.x), floor(position.y)),
-            WebFloatPoint(floor(global_position.x), floor(global_position.y))),
+        WebPointerProperties(id_param,
+                             PointerType::kMouse,
+                             button_param,
+                             position,
+                             global_position),
         click_count(click_count_param),
         menu_source_type(menu_source_type_param) {
     DCHECK_GE(type_param, kMouseTypeFirst);

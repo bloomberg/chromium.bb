@@ -123,12 +123,8 @@ static bool DragTypeIsValid(DragSourceAction action) {
 
 static WebMouseEvent CreateMouseEvent(DragData* drag_data) {
   WebMouseEvent result(
-      WebInputEvent::kMouseMove,
-      WebFloatPoint(drag_data->ClientPosition().X(),
-                    drag_data->ClientPosition().Y()),
-      WebFloatPoint(drag_data->GlobalPosition().X(),
-                    drag_data->GlobalPosition().Y()),
-      WebPointerProperties::Button::kLeft, 0,
+      WebInputEvent::kMouseMove, drag_data->ClientPosition(),
+      drag_data->GlobalPosition(), WebPointerProperties::Button::kLeft, 0,
       static_cast<WebInputEvent::Modifiers>(drag_data->GetModifiers()),
       CurrentTimeTicksInSeconds());
   // TODO(dtapuska): Really we should chnage DragData to store the viewport

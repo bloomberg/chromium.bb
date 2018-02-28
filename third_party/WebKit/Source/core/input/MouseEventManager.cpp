@@ -336,12 +336,9 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
     modifiers |= WebInputEvent::kLeftButtonDown;
   }
   WebMouseEvent fake_mouse_move_event(
-      WebInputEvent::kMouseMove,
-      WebFloatPoint(last_known_mouse_position_.X(),
-                    last_known_mouse_position_.Y()),
-      WebFloatPoint(last_known_mouse_global_position_.X(),
-                    last_known_mouse_global_position_.Y()),
-      button, 0, modifiers, CurrentTimeTicksInSeconds());
+      WebInputEvent::kMouseMove, last_known_mouse_position_,
+      last_known_mouse_global_position_, button, 0, modifiers,
+      CurrentTimeTicksInSeconds());
   // TODO(dtapuska): Update m_lastKnowMousePosition to be viewport coordinates.
   fake_mouse_move_event.SetFrameScale(1);
   Vector<WebMouseEvent> coalesced_events;
