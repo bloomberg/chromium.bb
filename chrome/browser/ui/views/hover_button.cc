@@ -215,6 +215,13 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
 HoverButton::~HoverButton() {}
 
+void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
+  LabelButton::SetBorder(std::move(b));
+  // Make sure the minimum size is correct according to the layout (if any).
+  if (GetLayoutManager())
+    SetMinSize(GetLayoutManager()->GetPreferredSize(this));
+}
+
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
   DCHECK(subtitle_);
   if (!subtitle_->text().empty())
@@ -312,29 +319,24 @@ void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void HoverButton::SetStyle(Style style) {
-  SkColor background_color = 0, subtitle_text_color = 0;
-  switch (style) {
-    case STYLE_PROMINENT:
-      // White text on |gfx::kGoogleBlue500| would be adjusted by
-      // AutoColorRedability. However, this specific combination has an
-      // exception (http://go/mdcontrast). So, disable AutoColorReadability.
-      title_->set_auto_color_readability_enabled(false);
-      background_color = GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ProminentButtonColor);
-      subtitle_text_color = GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextOnProminentButtonColor);
-      break;
-    case STYLE_ERROR:
-      background_color = gfx::kGoogleRed700;
-      subtitle_text_color = SK_ColorWHITE;
-      break;
-    default:
-      NOTREACHED();
+  if (style == STYLE_PROMINENT) {
+    SkColor background_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ProminentButtonColor);
+    SetBackground(views::CreateSolidBackground(background_color));
+    // White text on |gfx::kGoogleBlue500| would be adjusted by
+    // AutoColorRedability. However, this specific combination has an
+    // exception (http://go/mdcontrast). So, disable AutoColorReadability.
+    title_->set_auto_color_readability_enabled(false);
+    SetTitleTextStyle(views::style::STYLE_DIALOG_BUTTON_DEFAULT,
+                      background_color);
+    SetSubtitleColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_TextOnProminentButtonColor));
+  } else if (style == STYLE_ERROR) {
+    DCHECK_EQ(nullptr, background());
+    title_->SetDefaultTextStyle(STYLE_RED);
+  } else {
+    NOTREACHED();
   }
-  SetBackground(views::CreateSolidBackground(background_color));
-  SetTitleTextStyle(views::style::STYLE_DIALOG_BUTTON_DEFAULT,
-                    background_color);
-  SetSubtitleColor(subtitle_text_color);
 }
 
 void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,

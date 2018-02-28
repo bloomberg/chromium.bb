@@ -835,10 +835,8 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  if (error != sync_ui_util::SUPERVISED_USER_AUTH_ERROR && dice_enabled_) {
-    return CreateDiceSyncErrorView(avatar_item, error, button_string_id,
-                                   content_string_id);
-  }
+  if (error != sync_ui_util::SUPERVISED_USER_AUTH_ERROR && dice_enabled_)
+    return CreateDiceSyncErrorView(avatar_item, error, button_string_id);
 
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
@@ -904,30 +902,31 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
 views::View* ProfileChooserView::CreateDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
-    int title_string_id,
-    int subtitle_string_id) {
-  // Creates a view containing a red hover button with a transparent border of
-  // width |kMenuEdgeMargin| around it. The hover button contains the profile
-  // photo, given by |avatar_item.icon|, badged with the sync-error icon. The
-  // title of the hover button describes the action to take and the subtitle
-  // gives more information about the error. A view has to be used here instead
-  // of hover_button->SetBorder() because the latter creates a border with the
-  // same color as the button.
+    int button_string_id) {
+  // Creates a view containing an error hover button displaying the current
+  // profile (non-selectable) and a blue button to resolve the error.
   views::View* view = new views::View();
-  view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  view->SetBorder(
-      views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
+  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(kMenuEdgeMargin),
+      kMenuEdgeMargin));
+  // Add profile hover button.
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
       BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR, avatar_item.icon);
-  HoverButton* hover_button =
+  HoverButton* current_profile =
       new HoverButton(this, std::move(current_profile_photo),
-                      l10n_util::GetStringUTF16(title_string_id),
-                      l10n_util::GetStringUTF16(subtitle_string_id));
-  hover_button->SetStyle(HoverButton::STYLE_ERROR);
-
-  view->AddChildView(hover_button);
-  sync_error_button_ = hover_button;
+                      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE),
+                      avatar_item.username);
+  current_profile->SetStyle(HoverButton::STYLE_ERROR);
+  current_profile->SetEnabled(false);
+  // Remove the default |HoverButton| border from |current_profile| so the
+  // insets of |BoxLayout| are used for aligment instead.
+  current_profile->SetBorder(nullptr);
+  view->AddChildView(current_profile);
+  // Add blue button.
+  sync_error_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
+      this, l10n_util::GetStringUTF16(button_string_id));
   sync_error_button_->set_id(error);
+  view->AddChildView(sync_error_button_);
   return view;
 }
 
