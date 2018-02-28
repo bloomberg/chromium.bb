@@ -171,9 +171,6 @@ void BaseArena::MakeConsistentForGC() {
 #if DCHECK_IS_ON()
   DCHECK(IsConsistentForGC());
 #endif
-  for (BasePage* page = first_page_; page; page = page->Next()) {
-    page->MarkAsUnswept();
-  }
 
   // We should not start a new GC until we finish sweeping in the current GC.
   CHECK(SweepingCompleted());
@@ -220,17 +217,12 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(IsConsistentForGC());
 #endif
-  DCHECK(SweepingCompleted());
+  // DCHECK(SweepingCompleted());
 
   size_t object_payload_size = 0;
-  for (BasePage* page = first_page_; page; page = page->Next())
+  for (BasePage* page = first_unswept_page_; page; page = page->Next())
     object_payload_size += page->ObjectPayloadSizeForTesting();
   return object_payload_size;
-}
-
-size_t NormalPageArena::ObjectPayloadSizeForTesting() {
-  SetAllocationPoint(nullptr, 0);
-  return BaseArena::ObjectPayloadSizeForTesting();
 }
 
 void BaseArena::PrepareForSweep() {
@@ -241,6 +233,10 @@ void BaseArena::PrepareForSweep() {
 
   // Verification depends on the allocation point being cleared.
   Verify();
+
+  for (BasePage* page = first_page_; page; page = page->Next()) {
+    page->MarkAsUnswept();
+  }
 
   // Move all pages to a list of unswept pages.
   first_unswept_page_ = first_page_;
@@ -1276,7 +1272,6 @@ NormalPage::~NormalPage() {
 size_t NormalPage::ObjectPayloadSizeForTesting() {
   size_t object_payload_size = 0;
   Address header_address = Payload();
-  MarkAsSwept();
   DCHECK_NE(header_address, PayloadEnd());
   do {
     HeapObjectHeader* header =
@@ -1731,7 +1726,6 @@ LargeObjectPage::LargeObjectPage(PageMemory* storage,
 }
 
 size_t LargeObjectPage::ObjectPayloadSizeForTesting() {
-  MarkAsSwept();
   return PayloadSize();
 }
 
