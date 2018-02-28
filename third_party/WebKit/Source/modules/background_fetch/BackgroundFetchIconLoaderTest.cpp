@@ -17,11 +17,15 @@
 namespace blink {
 namespace {
 
-enum class LoadState { kNotLoaded, kLoadFailed, kLoadSuccessful };
+enum class BackgroundFetchLoadState {
+  kNotLoaded,
+  kLoadFailed,
+  kLoadSuccessful
+};
 
-constexpr char kImageLoaderBaseUrl[] = "http://test.com/";
-constexpr char kImageLoaderBaseDir[] = "notifications/";
-constexpr char kImageLoaderIcon500x500[] = "500x500.png";
+constexpr char kBackgroundFetchImageLoaderBaseUrl[] = "http://test.com/";
+constexpr char kBackgroundFetchImageLoaderBaseDir[] = "notifications/";
+constexpr char kBackgroundFetchImageLoaderIcon500x500[] = "500x500.png";
 
 class BackgroundFetchIconLoaderTest : public PageTestBase {
  public:
@@ -37,7 +41,8 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   // Registers a mocked URL.
   WebURL RegisterMockedURL(const String& file_name) {
     WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
-        kImageLoaderBaseUrl, testing::CoreTestDataPath(kImageLoaderBaseDir),
+        kBackgroundFetchImageLoaderBaseUrl,
+        testing::CoreTestDataPath(kBackgroundFetchImageLoaderBaseDir),
         file_name, "image/png");
     return registered_url;
   }
@@ -47,9 +52,9 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   void IconLoaded(const SkBitmap& bitmap) {
     LOG(ERROR) << "did icon get loaded?";
     if (!bitmap.empty())
-      loaded_ = LoadState::kLoadSuccessful;
+      loaded_ = BackgroundFetchLoadState::kLoadSuccessful;
     else
-      loaded_ = LoadState::kLoadFailed;
+      loaded_ = BackgroundFetchLoadState::kLoadFailed;
   }
 
   void LoadIcon(const KURL& url) {
@@ -62,17 +67,17 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
-  LoadState loaded_ = LoadState::kNotLoaded;
+  BackgroundFetchLoadState loaded_ = BackgroundFetchLoadState::kNotLoaded;
 
  private:
   Persistent<BackgroundFetchIconLoader> loader_;
 };
 
 TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
-  KURL url = RegisterMockedURL(kImageLoaderIcon500x500);
+  KURL url = RegisterMockedURL(kBackgroundFetchImageLoaderIcon500x500);
   LoadIcon(url);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  EXPECT_EQ(LoadState::kLoadSuccessful, loaded_);
+  EXPECT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
 }
 
 }  // namespace
