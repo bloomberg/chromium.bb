@@ -107,6 +107,7 @@ PaintImage CreateAnimatedImage(const gfx::Size& size,
 PaintImage CreateBitmapImage(const gfx::Size& size) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width(), size.height());
+  bitmap.eraseColor(SK_AlphaTRANSPARENT);
   return PaintImageBuilder::WithDefault()
       .set_id(PaintImage::GetNextId())
       .set_image(SkImage::MakeFromBitmap(bitmap),
