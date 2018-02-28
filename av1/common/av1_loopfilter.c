@@ -407,8 +407,6 @@ const FilterMaskY size_mask_y[BLOCK_SIZES_ALL] = {
 
   { { 0xffffffffffffffffULL,  // BLOCK_64X64
       0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL } },
-
-#if CONFIG_EXT_PARTITION
   // Y plane max coding block size is 128x128, but the codec divides it
   // into 4 64x64 blocks.
   // BLOCK_64X128
@@ -417,7 +415,6 @@ const FilterMaskY size_mask_y[BLOCK_SIZES_ALL] = {
   { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
   // BLOCK_128X128
   { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
-#endif
 
   { { 0x0001000100010001ULL,  // BLOCK_4X16
       0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
@@ -436,12 +433,10 @@ const FilterMaskY size_mask_y[BLOCK_SIZES_ALL] = {
 
   { { 0xffffffffffffffffULL,  // BLOCK_64X16
       0x0000000000000000ULL, 0x0000000000000000ULL, 0x0000000000000000ULL } },
-#if CONFIG_EXT_PARTITION
   // BLOCK_32X128
   { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
   // BLOCK_128X32
   { { 0x0ULL, 0x0ULL, 0x0ULL, 0x0ULL } },
-#endif
 };
 
 // U/V plane max transform size is 32x32 (format 420).
@@ -508,21 +503,17 @@ const FilterMaskUV size_mask_u_v[BLOCK_SIZES_ALL] = {
   0xffffffffffffffffULL,  // BLOCK_32X64,
   0xffffffffffffffffULL,  // BLOCK_64X32,
   0xffffffffffffffffULL,  // BLOCK_64X64,
-#if CONFIG_EXT_PARTITION
   0xffffffffffffffffULL,  // BLOCK_64X128,
   0xffffffffffffffffULL,  // BLOCK_128X64,
   0xffffffffffffffffULL,  // BLOCK_128X128,
-#endif
   0x0000000001010101ULL,  // BLOCK_4X16,
   0x000000000000000fULL,  // BLOCK_16X4,
   0x0303030303030303ULL,  // BLOCK_8X32,
   0x000000000000ffffULL,  // BLOCK_32X8,
   0x0f0f0f0f0f0f0f0fULL,  // BLOCK_16X64,
   0x00000000ffffffffULL,  // BLOCK_64X16
-#if CONFIG_EXT_PARTITION
   0xffffffffffffffffULL,  // BLOCK_32X128,
   0xffffffffffffffffULL,  // BLOCK_128X32,
-#endif
 };
 #endif  // LOOP_FILTER_BITMASK
 
