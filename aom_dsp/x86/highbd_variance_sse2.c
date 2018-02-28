@@ -190,7 +190,7 @@ VAR_FN(8, 8, 8, 6);
 #if CONFIG_EXT_PARTITION_TYPES
 VAR_FN(16, 4, 16, 6);
 VAR_FN(8, 32, 8, 8);
-VAR_FN(32, 8, 16, 8);
+VAR_FN(32, 8, 8, 8);
 VAR_FN(16, 64, 16, 10);
 VAR_FN(64, 16, 16, 10);
 #endif

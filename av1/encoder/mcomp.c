@@ -668,7 +668,7 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
                                 unsigned int *sse) {
   unsigned int besterr;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]) = { 0 };
+    DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
     if (second_pred != NULL) {
       if (mask) {
         aom_highbd_comp_mask_upsampled_pred(
