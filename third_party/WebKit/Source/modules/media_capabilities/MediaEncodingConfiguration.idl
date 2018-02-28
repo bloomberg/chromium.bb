@@ -6,7 +6,7 @@
 
 enum MediaEncodingType {
     "record",
-    // TODO(mcasas): Implement other types https://crbug.com/709181
+    // TODO(mcasas): Implement other types https://crbug.com/817382
 };
 
 dictionary MediaEncodingConfiguration : MediaConfiguration{
