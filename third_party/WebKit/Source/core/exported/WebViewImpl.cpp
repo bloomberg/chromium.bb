@@ -2000,8 +2000,10 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
                WebInputEvent::GetName(input_event.GetType()));
 
-  // If a drag-and-drop operation is in progress, ignore input events.
-  if (MainFrameImpl()->FrameWidget()->DoingDragAndDrop())
+  // If a drag-and-drop operation is in progress, ignore input events except
+  // PointerCancel.
+  if (MainFrameImpl()->FrameWidget()->DoingDragAndDrop() &&
+      input_event.GetType() != WebInputEvent::kPointerCancel)
     return WebInputEventResult::kHandledSuppressed;
 
   if (dev_tools_emulator_->HandleInputEvent(input_event))
