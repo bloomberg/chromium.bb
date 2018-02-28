@@ -552,6 +552,37 @@ class TaskSchedulerWorkerPoolHistogramTest
   // its own arguments.
   void SetUp() override {}
 
+  // Floods |worker_pool_| with a single task each that blocks until
+  // |continue_event| is signaled. Every worker in the pool is blocked on
+  // |continue_event| when this method returns. Note: this helper can easily be
+  // generalized to be useful in other tests, but it's here for now because it's
+  // only used in a TaskSchedulerWorkerPoolHistogramTest at the moment.
+  void FloodPool(WaitableEvent* continue_event) {
+    ASSERT_FALSE(continue_event->IsSignaled());
+
+    auto task_runner =
+        worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+
+    const auto pool_capacity = worker_pool_->GetWorkerCapacityForTesting();
+
+    WaitableEvent workers_flooded(WaitableEvent::ResetPolicy::MANUAL,
+                                  WaitableEvent::InitialState::NOT_SIGNALED);
+    RepeatingClosure all_workers_running_barrier = BarrierClosure(
+        pool_capacity,
+        BindOnce(&WaitableEvent::Signal, Unretained(&workers_flooded)));
+    for (size_t i = 0; i < pool_capacity; ++i) {
+      task_runner->PostTask(
+          FROM_HERE,
+          BindOnce(
+              [](OnceClosure on_running, WaitableEvent* continue_event) {
+                std::move(on_running).Run();
+                continue_event->Wait();
+              },
+              all_workers_running_barrier, continue_event));
+    }
+    workers_flooded.Wait();
+  }
+
  private:
   std::unique_ptr<StatisticsRecorder> statistics_recorder_ =
       StatisticsRecorder::CreateTemporaryForTesting();
@@ -595,16 +626,6 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 }
 
-namespace {
-
-void SignalAndWaitEvent(WaitableEvent* signal_event,
-                        WaitableEvent* wait_event) {
-  signal_event->Signal();
-  wait_event->Wait();
-}
-
-}  // namespace
-
 // Verifies that NumTasksBetweenWaits histogram is logged as expected across
 // idle and cleanup periods.
 TEST_F(TaskSchedulerWorkerPoolHistogramTest,
@@ -613,70 +634,61 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest,
                                      WaitableEvent::InitialState::NOT_SIGNALED);
   CreateAndStartWorkerPool(kReclaimTimeForCleanupTests,
                            kNumWorkersInWorkerPool);
-  auto task_runner =
-      worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
-  // Post tasks to saturate the pool.
-  std::vector<std::unique_ptr<WaitableEvent>> task_started_events;
-  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    task_started_events.push_back(std::make_unique<WaitableEvent>(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED));
-    task_runner->PostTask(FROM_HERE,
-                          BindOnce(&SignalAndWaitEvent,
-                                   Unretained(task_started_events.back().get()),
-                                   Unretained(&tasks_can_exit_event)));
-  }
-  for (const auto& task_started_event : task_started_events)
-    task_started_event->Wait();
+  WaitableEvent workers_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED);
 
-  // Allow tasks to complete their execution and wait to allow workers to
-  // cleanup (at least one of them will not cleanup to keep the idle thread
-  // count above zero).
-  tasks_can_exit_event.Signal();
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-  PlatformThread::Sleep(kReclaimTimeForCleanupTests +
-                        kExtraTimeToWaitForCleanup);
-
-  // Wake up SchedulerWorkers by posting tasks. They should record the
-  // TaskScheduler.NumTasksBetweenWaits.* histogram on wake up.
-  tasks_can_exit_event.Reset();
-  task_started_events.clear();
-  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
-    task_started_events.push_back(std::make_unique<WaitableEvent>(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED));
-    task_runner->PostTask(FROM_HERE,
-                          BindOnce(&SignalAndWaitEvent,
-                                   Unretained(task_started_events.back().get()),
-                                   Unretained(&tasks_can_exit_event)));
-  }
-  for (const auto& task_started_event : task_started_events)
-    task_started_event->Wait();
+  FloodPool(&workers_continue);
 
   const auto* histogram = worker_pool_->num_tasks_between_waits_histogram();
 
-  // Verify that counts were recorded to the histogram as expected.
-  // - The "0" bucket does not have a report because we do not report this
-  //   histogram when threads get no work twice in a row and cleanup (or go idle
-  //   if last on idle stack).
+  // NumTasksBetweenWaits shouldn't be logged until idle.
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  // - The "1" bucket has a count of |kNumWorkersInWorkerPool| because each
-  //   SchedulerWorker ran a task before waiting on its WaitableEvent at the
-  //   beginning of the test (counted the same whether resurrecting post-cleanup
-  //   or waking from idle).
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(1));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
+
+  // Make all workers go idle.
+  workers_continue.Signal();
+  worker_pool_->WaitForAllWorkersIdleForTesting();
+
+  // All workers should have reported a single hit in the "1" bucket per the the
+  // histogram being reported when going idle and each worker having processed
+  // precisely 1 task per the controlled flooding logic above.
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
   EXPECT_EQ(static_cast<int>(kNumWorkersInWorkerPool),
             histogram->SnapshotSamples()->GetCount(1));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 
-  tasks_can_exit_event.Signal();
+  // Letting workers cleanup shouldn't affect the above counts.
+  PlatformThread::Sleep(kReclaimTimeForCleanupTests +
+                        kExtraTimeToWaitForCleanup);
+
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
+  EXPECT_EQ(static_cast<int>(kNumWorkersInWorkerPool),
+            histogram->SnapshotSamples()->GetCount(1));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
+
+  // Flooding the pool once again (without letting any workers go idle)
+  // shouldn't affect the counts either.
+
+  workers_continue.Reset();
+  FloodPool(&workers_continue);
+
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
+  EXPECT_EQ(static_cast<int>(kNumWorkersInWorkerPool),
+            histogram->SnapshotSamples()->GetCount(1));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
+
+  workers_continue.Signal();
   worker_pool_->WaitForAllWorkersIdleForTesting();
   worker_pool_->DisallowWorkerCleanupForTesting();
 }
 
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
-  CreateAndStartWorkerPool(kReclaimTimeForCleanupTests,
-                           kNumWorkersInWorkerPool);
+  // Strictly use two workers for this test to avoid depending on the
+  // scheduler's logic to always keep one extra idle worker.
+  constexpr size_t kTwoWorkers = 2;
+  CreateAndStartWorkerPool(kReclaimTimeForCleanupTests, kTwoWorkers);
 
   auto histogrammed_thread_task_runner =
       worker_pool_->CreateSequencedTaskRunnerWithTraits(
@@ -754,24 +766,21 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
                      thread_ref, Unretained(&top_idle_thread_running),
                      Unretained(&top_idle_thread_continue)));
   top_idle_thread_running.Wait();
+  EXPECT_EQ(0U, worker_pool_->NumberOfIdleWorkersForTesting());
   cleanup_thread_continue.Signal();
-  // Wait for the thread processing the |histogrammed_thread_task_runner| work
-  // to go to the idle stack.
-  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  // Wait for the cleanup thread to also become idle.
+  worker_pool_->WaitForWorkersIdleForTesting(1U);
   top_idle_thread_continue.Signal();
   // Allow the thread processing the |histogrammed_thread_task_runner| work to
   // cleanup.
   PlatformThread::Sleep(kReclaimTimeForCleanupTests +
-                        kReclaimTimeForCleanupTests);
+                        kExtraTimeToWaitForCleanup);
   worker_pool_->WaitForAllWorkersIdleForTesting();
   worker_pool_->DisallowWorkerCleanupForTesting();
 
   // Verify that counts were recorded to the histogram as expected.
   const auto* histogram = worker_pool_->num_tasks_before_detach_histogram();
-  // Note: There'll be a thread that cleanups after running no tasks. This
-  // thread was the one created to maintain an idle thread after posting the
-  // task via |task_runner_for_top_idle|.
-  EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(0));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(1));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(2));
   EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
