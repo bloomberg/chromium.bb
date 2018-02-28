@@ -99,7 +99,7 @@ public class WebappDataStorageTest {
     public void testLastUsedRetrieval() throws Exception {
         long lastUsed = 100;
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
-        assertEquals(lastUsed, new WebappDataStorage("test").getLastUsedTime());
+        assertEquals(lastUsed, new WebappDataStorage("test").getLastUsedTimeMs());
     }
 
     @Test

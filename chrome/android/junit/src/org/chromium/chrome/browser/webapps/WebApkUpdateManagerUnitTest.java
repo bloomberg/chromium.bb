@@ -433,7 +433,7 @@ public class WebApkUpdateManagerUnitTest {
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
-        assertEquals(initialTime, storage.getLastWebApkUpdateRequestCompletionTime());
+        assertEquals(initialTime, storage.getLastWebApkUpdateRequestCompletionTimeMs());
     }
 
     /**
@@ -456,8 +456,8 @@ public class WebApkUpdateManagerUnitTest {
         assertFalse(updateManager.updateRequested());
 
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
-        assertEquals(
-                mClockRule.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
+        assertEquals(mClockRule.currentTimeMillis(),
+                storage.getLastWebApkUpdateRequestCompletionTimeMs());
     }
 
     /**
@@ -480,8 +480,8 @@ public class WebApkUpdateManagerUnitTest {
         // Check {@link WebappDataStorage} state.
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         assertFalse(storage.getDidLastWebApkUpdateRequestSucceed());
-        assertEquals(
-                mClockRule.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
+        assertEquals(mClockRule.currentTimeMillis(),
+                storage.getLastWebApkUpdateRequestCompletionTimeMs());
     }
 
     /**
