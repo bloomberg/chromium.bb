@@ -779,7 +779,7 @@ class PLATFORM_EXPORT BaseArena {
 #endif
   virtual void TakeFreelistSnapshot(const String& dump_base_name) {}
   virtual void ClearFreeLists() {}
-  void MakeConsistentForGC();
+  virtual void MakeConsistentForGC();
   void MakeConsistentForMutator();
 #if DCHECK_IS_ON()
   virtual bool IsConsistentForGC() = 0;
@@ -876,6 +876,8 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
            (CurrentAllocationPoint() <= address) &&
            (address < (CurrentAllocationPoint() + RemainingAllocationSize()));
   }
+
+  void MakeConsistentForGC() override;
 
  private:
   void AllocatePage();
