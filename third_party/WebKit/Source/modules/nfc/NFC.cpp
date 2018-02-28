@@ -764,7 +764,8 @@ ScriptPromise NFC::watch(ScriptState* script_state,
   requests_.insert(resolver);
   auto watch_callback =
       WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
-                WrapPersistent(callback), WrapPersistent(resolver));
+                WrapPersistent(ToV8PersistentCallbackFunction(callback)),
+                WrapPersistent(resolver));
   nfc_->Watch(device::mojom::blink::NFCWatchOptions::From(options),
               std::move(watch_callback));
   return resolver->Promise();
@@ -895,10 +896,11 @@ ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
   return ScriptPromise();
 }
 
-void NFC::OnWatchRegistered(V8MessageCallback* callback,
-                            ScriptPromiseResolver* resolver,
-                            uint32_t id,
-                            device::mojom::blink::NFCErrorPtr error) {
+void NFC::OnWatchRegistered(
+    V8PersistentCallbackFunction<V8MessageCallback>* callback,
+    ScriptPromiseResolver* resolver,
+    uint32_t id,
+    device::mojom::blink::NFCErrorPtr error) {
   requests_.erase(resolver);
 
   // Invalid id was returned.
@@ -912,7 +914,7 @@ void NFC::OnWatchRegistered(V8MessageCallback* callback,
   }
 
   if (error.is_null()) {
-    callbacks_.insert(id, callback);
+    callbacks_.insert(id, callback->ToNonV8Persistent());
     resolver->Resolve(id);
   } else {
     resolver->Reject(NFCError::Take(resolver, error->error_type));

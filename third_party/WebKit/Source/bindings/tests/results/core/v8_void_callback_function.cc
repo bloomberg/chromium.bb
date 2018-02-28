@@ -109,4 +109,16 @@ void V8VoidCallbackFunction::InvokeAndReportException(ScriptWrappable* callback_
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
+CORE_TEMPLATE_EXPORT
+v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunction>::Invoke(ScriptWrappable* callback_this_value) {
+  return Proxy()->Invoke(
+      callback_this_value);
+}
+
+CORE_TEMPLATE_EXPORT
+void V8PersistentCallbackFunction<V8VoidCallbackFunction>::InvokeAndReportException(ScriptWrappable* callback_this_value) {
+  Proxy()->InvokeAndReportException(
+      callback_this_value);
+}
+
 }  // namespace blink

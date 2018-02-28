@@ -314,12 +314,8 @@ ScriptPromise BaseAudioContext::decodeAudioData(
     decode_audio_resolvers_.insert(resolver);
 
     audio_decoder_.DecodeAsync(
-        audio, rate,
-        V8PersistentCallbackFunction<V8DecodeSuccessCallback>::Create(
-            success_callback),
-        V8PersistentCallbackFunction<V8DecodeErrorCallback>::Create(
-            error_callback),
-        resolver, this);
+        audio, rate, ToV8PersistentCallbackFunction(success_callback),
+        ToV8PersistentCallbackFunction(error_callback), resolver, this);
   } else {
     // If audioData is already detached (neutered) we need to reject the
     // promise with an error.

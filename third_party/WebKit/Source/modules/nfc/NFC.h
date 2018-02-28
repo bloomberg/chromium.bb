@@ -75,7 +75,7 @@ class NFC final : public ScriptWrappable,
   void OnRequestCompleted(ScriptPromiseResolver*,
                           device::mojom::blink::NFCErrorPtr);
   void OnConnectionError();
-  void OnWatchRegistered(V8MessageCallback*,
+  void OnWatchRegistered(V8PersistentCallbackFunction<V8MessageCallback>*,
                          ScriptPromiseResolver*,
                          uint32_t id,
                          device::mojom::blink::NFCErrorPtr);

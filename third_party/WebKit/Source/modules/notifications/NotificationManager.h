@@ -5,6 +5,7 @@
 #ifndef NotificationManager_h
 #define NotificationManager_h
 
+#include "bindings/modules/v8/v8_notification_permission_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
@@ -17,7 +18,6 @@ namespace blink {
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-class V8NotificationPermissionCallback;
 struct WebNotificationData;
 
 // The notification manager, unique to the execution context, is responsible for
@@ -79,9 +79,10 @@ class NotificationManager final
   // established the first time this method is called.
   const mojom::blink::NotificationServicePtr& GetNotificationService();
 
-  void OnPermissionRequestComplete(ScriptPromiseResolver*,
-                                   V8NotificationPermissionCallback*,
-                                   mojom::blink::PermissionStatus);
+  void OnPermissionRequestComplete(
+      ScriptPromiseResolver*,
+      V8PersistentCallbackFunction<V8NotificationPermissionCallback>*,
+      mojom::blink::PermissionStatus);
 
   void OnNotificationServiceConnectionError();
   void OnPermissionServiceConnectionError();

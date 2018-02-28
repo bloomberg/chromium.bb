@@ -14,12 +14,6 @@
 
 namespace blink {
 
-static void RunWatchCallback(V8MojoWatchCallback* callback,
-                             ScriptWrappable* wrappable,
-                             MojoResult result) {
-  callback->InvokeAndReportException(wrappable, result);
-}
-
 // static
 MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
                                  const MojoHandleSignals& signals_dict,
@@ -37,8 +31,11 @@ MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
   // is scheduled.
   if (result != MOJO_RESULT_OK) {
     watcher->task_runner_->PostTask(
-        FROM_HERE, WTF::Bind(&RunWatchCallback, WrapPersistent(callback),
-                             WrapPersistent(watcher), result));
+        FROM_HERE,
+        WTF::Bind(&V8PersistentCallbackFunction<
+                      V8MojoWatchCallback>::InvokeAndReportException,
+                  WrapPersistent(ToV8PersistentCallbackFunction(callback)),
+                  WrapPersistent(watcher), result));
   }
   return watcher;
 }
@@ -171,7 +168,7 @@ void MojoWatcher::RunReadyCallback(MojoResult result) {
     // been reset.
     if (watcher_handle_.is_valid()) {
       watcher_handle_.reset();
-      RunWatchCallback(callback_, this, result);
+      callback_->InvokeAndReportException(this, result);
     }
     return;
   }
@@ -180,7 +177,7 @@ void MojoWatcher::RunReadyCallback(MojoResult result) {
   if (!watcher_handle_.is_valid())
     return;
 
-  RunWatchCallback(callback_, this, result);
+  callback_->InvokeAndReportException(this, result);
 
   // The user callback may have canceled watching.
   if (!watcher_handle_.is_valid())

@@ -18,14 +18,20 @@ CallbackFunctionBase::CallbackFunctionBase(
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
-CallbackFunctionBase::CallbackFunctionBase(const CallbackFunctionBase& other)
-    : callback_function_(other.GetIsolate(), other.CallbackFunction()),
-      callback_relevant_script_state_(other.callback_relevant_script_state_),
-      incumbent_script_state_(other.incumbent_script_state_) {}
-
 void CallbackFunctionBase::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_function_);
+}
+
+V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
+    CallbackFunctionBase* callback_function)
+    : callback_function_(callback_function) {
+  v8_function_.Reset(callback_function_->GetIsolate(),
+                     callback_function_->callback_function_.Get());
+}
+
+void V8PersistentCallbackFunctionBase::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_function_);
 }
 
 }  // namespace blink
