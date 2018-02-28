@@ -195,8 +195,6 @@ class DataUseMeasurementTest : public testing::Test {
     histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Upstream." +
                                           target_dimension + kConnectionType,
                                       1);
-    // One upload and one download message, so total count should be 2.
-    histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 2);
   }
 
   DataUseMeasurement* data_use_measurement() { return &data_use_measurement_; }

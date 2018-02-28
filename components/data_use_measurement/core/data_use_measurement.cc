@@ -394,9 +394,6 @@ void DataUseMeasurement::ReportDataUsageServices(
     DataUseUserData::AppState app_state,
     bool is_connection_cellular,
     int64_t message_size) const {
-  RecordUMAHistogramCount(
-      "DataUse.MessageSize." + DataUseUserData::GetServiceNameAsString(service),
-      message_size);
   if (message_size > 0) {
     IncreaseSparseHistogramByValue(
         GetHistogramName("DataUse.MessageSize.AllServices", dir, app_state,
