@@ -51,9 +51,11 @@ void SetupSearchIllustrationView(views::View* illustration_view,
       SkColorSetARGBMacro(0xFF, 0xDA, 0xDC, 0xE0);
 
   illustration_view->set_owned_by_client();
-  views::BoxLayout* layout = illustration_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  constexpr int kTopPadding = 98;
+  views::BoxLayout* layout =
+      illustration_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, gfx::Insets(kTopPadding, 0, 0, 0)));
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(
       gfx::CreateVectorIcon(icon, kSearchIllustrationIconColor));
@@ -68,7 +70,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
-      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   illustration_view->AddChildView(text);
 }
 
@@ -94,14 +96,13 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     g_ksv_view->GetWidget()->Activate();
   } else {
     constexpr gfx::Size kKSVWindowSize(768, 512);
-    gfx::Point offset;
+    gfx::Rect window_bounds(kKSVWindowSize);
     if (context) {
-      gfx::Rect root_bounds(context->GetRootWindow()->bounds());
-      offset.SetPoint((root_bounds.width() - kKSVWindowSize.width()) / 2,
-                      (root_bounds.height() - kKSVWindowSize.height()) / 2);
+      window_bounds = context->GetRootWindow()->bounds();
+      window_bounds.ClampToCenteredSize(kKSVWindowSize);
     }
-    views::Widget::CreateWindowWithContextAndBounds(
-        new KeyboardShortcutView(), context, gfx::Rect(offset, kKSVWindowSize));
+    views::Widget::CreateWindowWithContextAndBounds(new KeyboardShortcutView(),
+                                                    context, window_bounds);
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();
@@ -168,9 +169,6 @@ void KeyboardShortcutView::InitViews() {
       std::make_unique<views::FillLayout>());
   search_results_container_->AddChildView(search_start_view_.get());
   search_results_container_->SetVisible(false);
-  constexpr int kHorizontalPadding = 96;
-  search_results_container_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kHorizontalPadding, 0, kHorizontalPadding)));
   AddChildView(search_results_container_);
 
   // Init views of KeyboardShortcutItemView.
@@ -182,7 +180,10 @@ void KeyboardShortcutView::InitViews() {
   }
   std::sort(shortcut_views_.begin(), shortcut_views_.end(),
             [](KeyboardShortcutItemView* lhs, KeyboardShortcutItemView* rhs) {
-              return lhs->category() < rhs->category();
+              if (lhs->category() != rhs->category())
+                return lhs->category() < rhs->category();
+              return lhs->description_label_view()->text() <
+                     rhs->description_label_view()->text();
             });
 
   // Init views of TabbedPane and KeyboardShortcutItemListView.
@@ -240,9 +241,13 @@ void KeyboardShortcutView::Layout() {
 
   constexpr int kSearchBoxTopPadding = 8;
   constexpr int kSearchBoxBottomPadding = 16;
+  constexpr int kSearchBoxHorizontalPadding = 32;
   const int left = content_bounds.x();
   const int top = content_bounds.y();
   gfx::Rect search_box_bounds(search_box_view_->GetPreferredSize());
+  search_box_bounds.set_width(
+      std::min(search_box_bounds.width(),
+               content_bounds.width() - 2 * kSearchBoxHorizontalPadding));
   search_box_bounds.set_x(
       left + (content_bounds.width() - search_box_bounds.width()) / 2);
   search_box_bounds.set_y(top + kSearchBoxTopPadding);
@@ -321,6 +326,12 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
     }
 
     if (found_items_list_view->has_children()) {
+      // To offset the padding between the bottom of the |search_box_view_| and
+      // the top of the |search_results_container_|.
+      constexpr int kTopPadding = -16;
+      constexpr int kHorizontalPadding = 128;
+      found_items_list_view->SetBorder(views::CreateEmptyBorder(
+          gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
       views::ScrollView* const scroller = CreateScrollView();
       scroller->SetContents(found_items_list_view.release());
       search_container_content_view = scroller;

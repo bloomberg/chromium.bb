@@ -34,11 +34,15 @@ BubbleView::BubbleView() {
   constexpr SkColor kShadowColor = SkColorSetARGBMacro(0x15, 0, 0, 0);
   shadows_ = {gfx::ShadowValue(gfx::Vector2d(kShadowXOffset, kShadowYOffset),
                                kShadowBlur, kShadowColor)};
-  // Preferred padding.
-  constexpr int kVerticalPadding = 6;
-  constexpr int kHorizontalPadding = 12;
+  // Preferred padding. The difference between the top and bottom paddings is to
+  // take acount the shadow y-offset to position the text and icon in the center
+  // of the bubble view.
+  constexpr int kVerticalTopPadding = 4;
+  constexpr int kVerticalBottomPadding = 6;
+  constexpr int kHorizontalPadding = 8;
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kVerticalPadding, kHorizontalPadding)));
+      gfx::Insets(kVerticalTopPadding, kHorizontalPadding,
+                  kVerticalBottomPadding, kHorizontalPadding)));
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(), kIconTextSpacing));
@@ -56,7 +60,7 @@ void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
     AddChildViewAt(icon_, 0);
   }
 
-  constexpr int kIconSize = 18;
+  constexpr int kIconSize = 12;
   constexpr SkColor kIconColor = SkColorSetARGBMacro(0xFF, 0x5C, 0x5D, 0x60);
   icon_->SetImage(gfx::CreateVectorIcon(icon, kIconColor));
   icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
@@ -71,7 +75,7 @@ void BubbleView::SetText(const base::string16& text) {
     constexpr int kLabelFontSizeDelta = 1;
     text_->SetFontList(
         ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-            kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+            kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
     AddChildView(text_);
   }
   text_->SetText(text);
@@ -90,7 +94,7 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
   preferred_size.Enlarge(GetInsets().width(), GetInsets().height());
 
   // To avoid text and icon bubbles have different heights in a row.
-  constexpr int kMinimumHeight = 36;
+  constexpr int kMinimumHeight = 24;
   preferred_size.SetToMax(gfx::Size(kMinimumHeight, kMinimumHeight));
   // Make the width to be at lease as large as the height.
   preferred_size.set_width(

@@ -27,7 +27,7 @@ namespace {
 std::unique_ptr<views::View> CreateSeparatorView() {
   constexpr SkColor kSeparatorColor =
       SkColorSetARGBMacro(0xFF, 0x1A, 0x73, 0xE8);
-  constexpr int kIconSize = 27;
+  constexpr int kIconSize = 16;
 
   std::unique_ptr<views::ImageView> separator_view =
       std::make_unique<views::ImageView>();
@@ -130,20 +130,27 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   if (width <= 0)
     return;
 
-  constexpr int kDescriptionViewPreferredWidth = 210;
-  constexpr int kShortcutViewPreferredWidth = 268;
+  // The width of |description_label_view_| and |shortcut_label_view_| as a
+  // ratio of its parent view's width. The unused width is to have some spacing
+  // in between the two views.
+  constexpr float kDescriptionViewPreferredWidthRatio = 0.32f;
+  constexpr float kShortcutViewPreferredWidthRatio = 0.65f;
+  const int description_view_preferred_width =
+      width * kDescriptionViewPreferredWidthRatio;
+  const int shortcut_view_preferred_width =
+      width * kShortcutViewPreferredWidthRatio;
   const int description_view_height =
       description_label_view_->GetHeightForWidth(
-          kDescriptionViewPreferredWidth);
+          description_view_preferred_width);
   const int shortcut_view_height =
-      shortcut_label_view_->GetHeightForWidth(kShortcutViewPreferredWidth);
+      shortcut_label_view_->GetHeightForWidth(shortcut_view_preferred_width);
 
   // Sets the bounds and layout in order to get the center points of the views
   // making up the top lines in both the description and shortcut views.
   // We want the center of the top lines in both views to align with each other.
-  description_label_view_->SetBounds(0, 0, kDescriptionViewPreferredWidth,
+  description_label_view_->SetBounds(0, 0, description_view_preferred_width,
                                      description_view_height);
-  shortcut_label_view_->SetBounds(0, 0, kShortcutViewPreferredWidth,
+  shortcut_label_view_->SetBounds(0, 0, shortcut_view_preferred_width,
                                   shortcut_view_height);
 
   DCHECK(shortcut_label_view_->has_children() &&
@@ -165,12 +172,12 @@ void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {
   const int top = insets.top();
   // Left align the |description_label_view_|.
   description_label_view_->SetBoundsRect(
-      gfx::Rect(left, top + description_delta_y, kDescriptionViewPreferredWidth,
-                description_view_height));
+      gfx::Rect(left, top + description_delta_y,
+                description_view_preferred_width, description_view_height));
   // Right align the |shortcut_label_view_|.
   shortcut_label_view_->SetBoundsRect(
-      gfx::Rect(left + width - kShortcutViewPreferredWidth, top,
-                kShortcutViewPreferredWidth, shortcut_view_height));
+      gfx::Rect(left + width - shortcut_view_preferred_width, top,
+                shortcut_view_preferred_width, shortcut_view_height));
   // Add 2 * |description_delta_y| to balance the top and bottom paddings.
   const int total_height =
       std::max(shortcut_view_height,
