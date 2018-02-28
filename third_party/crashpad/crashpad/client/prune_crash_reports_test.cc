@@ -36,27 +36,20 @@ class MockDatabase : public CrashReportDatabase {
  public:
   // CrashReportDatabase:
   MOCK_METHOD0(GetSettings, Settings*());
-  MOCK_METHOD1(PrepareNewCrashReport,
-               OperationStatus(std::unique_ptr<NewReport>*));
+  MOCK_METHOD1(PrepareNewCrashReport, OperationStatus(NewReport**));
+  MOCK_METHOD2(FinishedWritingCrashReport, OperationStatus(NewReport*, UUID*));
+  MOCK_METHOD1(ErrorWritingCrashReport, OperationStatus(NewReport*));
   MOCK_METHOD2(LookUpCrashReport, OperationStatus(const UUID&, Report*));
   MOCK_METHOD1(GetPendingReports, OperationStatus(std::vector<Report>*));
   MOCK_METHOD1(GetCompletedReports, OperationStatus(std::vector<Report>*));
   MOCK_METHOD2(GetReportForUploading,
-               OperationStatus(const UUID&,
-                               std::unique_ptr<const UploadReport>*));
+               OperationStatus(const UUID&, const Report**));
   MOCK_METHOD3(RecordUploadAttempt,
-               OperationStatus(UploadReport*, bool, const std::string&));
+               OperationStatus(const Report*, bool, const std::string&));
   MOCK_METHOD2(SkipReportUpload,
                OperationStatus(const UUID&, Metrics::CrashSkippedReason));
   MOCK_METHOD1(DeleteReport, OperationStatus(const UUID&));
   MOCK_METHOD1(RequestUpload, OperationStatus(const UUID&));
-
-  // gmock doesn't support mocking methods with non-copyable types such as
-  // unique_ptr.
-  OperationStatus FinishedWritingCrashReport(std::unique_ptr<NewReport> report,
-                                             UUID* uuid) override {
-    return kNoError;
-  }
 };
 
 time_t NDaysAgo(int num_days) {

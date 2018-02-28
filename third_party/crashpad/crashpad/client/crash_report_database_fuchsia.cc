@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/misc/capture_context.h"
+#include "client/crash_report_database.h"
 
 #include "base/logging.h"
 
 namespace crashpad {
 
-void CaptureContext(NativeCPUContext* context) {
-  // Don't use this file in production.
-  CHECK(false)
-      << "Don't use this! For cross builds only. See https://crbug.com/762167.";
+// static
+std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
+    const base::FilePath& path) {
+  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  return std::unique_ptr<CrashReportDatabase>();
+}
+
+// static
+std::unique_ptr<CrashReportDatabase>
+CrashReportDatabase::InitializeWithoutCreating(const base::FilePath& path) {
+  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
+  return std::unique_ptr<CrashReportDatabase>();
 }
 
 }  // namespace crashpad
