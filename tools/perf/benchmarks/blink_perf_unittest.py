@@ -42,7 +42,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     results = self.RunMeasurement(measurement=self._measurement,
         ps=self._CreateStorySetForTestFile('append-child-measure-time.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
     self.assertEquals(len(results.FindAllTraceValues()), 1)
 
     frame_view_layouts = results.FindAllPageSpecificValuesNamed(
@@ -65,7 +65,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'color-changes-measure-frame-time.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
     self.assertEquals(len(results.FindAllTraceValues()), 1)
 
     frame_view_prepaints = results.FindAllPageSpecificValuesNamed(
@@ -89,7 +89,7 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
         ps=self._CreateStorySetForTestFile(
             'simple-html-measure-page-load-time.html'),
         options=self._options)
-    self.assertFalse(results.failures)
+    self.assertFalse(results.had_failures)
     self.assertEquals(len(results.FindAllTraceValues()), 1)
 
     create_child_frame = results.FindAllPageSpecificValuesNamed(

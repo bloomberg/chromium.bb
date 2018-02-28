@@ -43,7 +43,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     ps.AddStory(TestRepaintPage(ps, ps.base_dir))
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(results.had_failures)
 
     frame_times = results.FindAllPageSpecificValuesNamed('frame_times')
     self.assertEquals(len(frame_times), 1)

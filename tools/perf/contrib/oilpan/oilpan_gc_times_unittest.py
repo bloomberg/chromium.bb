@@ -163,7 +163,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForSmoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(results.had_failures)
 
     gc_events = []
     for gc_reason in self._GC_REASONS:
@@ -176,7 +176,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForBlinkPerf()
     results = self.RunMeasurement(measurement, ps, options=self._options)
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(results.had_failures)
 
     gc_events = []
     for gc_reason in self._GC_REASONS:

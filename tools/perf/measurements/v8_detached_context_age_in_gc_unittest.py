@@ -99,7 +99,7 @@ class V8DetachedContextAgeInGCTests(page_test_test_case.PageTestTestCase):
     page_set.AddStory(page)
     metric = v8_detached_context_age_in_gc.V8DetachedContextAgeInGC()
     results = self.RunMeasurement(metric, page_set, options=self._options)
-    self.assertEquals(0, len(results.failures), msg=str(results.failures))
+    self.assertFalse(results.had_failures)
     actual = _ActualValues(results)['V8_DetachedContextAgeInGC']
     self.assertLessEqual(0, actual.value)
     self.assertEqual('garbage_collections', actual.units)
