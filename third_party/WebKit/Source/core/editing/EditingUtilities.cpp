@@ -54,6 +54,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLParagraphElement.h"
 #include "core/html/HTMLSpanElement.h"
@@ -1773,6 +1774,19 @@ Element* FindEventTargetFrom(LocalFrame& frame,
   if (target->IsInUserAgentShadowRoot())
     return target->OwnerShadowHost();
   return target;
+}
+
+HTMLImageElement* ImageElementFromImageDocument(const Document* document) {
+  if (!document)
+    return nullptr;
+  if (!document->IsImageDocument())
+    return nullptr;
+
+  const HTMLElement* const body = document->body();
+  if (!body)
+    return nullptr;
+
+  return ToHTMLImageElementOrNull(body->firstChild());
 }
 
 }  // namespace blink

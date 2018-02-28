@@ -318,6 +318,10 @@ HTMLSpanElement* CreateTabSpanElement(Document&, const String& tab_text);
 
 Element* FindEventTargetFrom(LocalFrame&, const VisibleSelection&);
 
+// Note: ImageElementFromImageDocument() is both used in ExecuteCopy() and
+// Editor::CanCopy()
+HTMLImageElement* ImageElementFromImageDocument(const Document*);
+
 // Boolean functions on Element
 
 CORE_EXPORT bool ElementCannotHaveEndTag(const Node&);

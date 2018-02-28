@@ -88,9 +88,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanDelete() const;
   bool CanSmartCopyOrDelete() const;
 
-  void Cut(EditorCommandSource);
-  void Copy(EditorCommandSource);
-
   static void CountEvent(ExecutionContext*, const Event*);
   void CopyImage(const HitTestResult&);
 
@@ -304,14 +301,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     DCHECK(frame_);
     return *frame_;
   }
-
-  bool CanDeleteRange(const EphemeralRange&) const;
-
-  // Returns true if Editor should continue with default processing.
-  bool DispatchCopyEvent(EditorCommandSource);
-  bool DispatchCutEvent(EditorCommandSource);
-
-  void WriteSelectionToPasteboard();
 
   void ChangeSelectionAfterCommand(const SelectionInDOMTree&,
                                    const SetSelectionOptions&);
