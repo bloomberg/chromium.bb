@@ -88,6 +88,8 @@ void TemplateURLData::SetKeyword(const base::string16& keyword) {
   // Case sensitive keyword matching is confusing. As such, we force all
   // keywords to be lower case.
   keyword_ = base::i18n::ToLower(keyword);
+
+  base::TrimWhitespace(keyword_, base::TRIM_ALL, &keyword_);
 }
 
 void TemplateURLData::SetURL(const std::string& url) {
