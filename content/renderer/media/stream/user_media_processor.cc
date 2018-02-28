@@ -47,10 +47,6 @@
 namespace content {
 namespace {
 
-// TODO(c.padhi): Allow frame rates lower than 1Hz,
-// see https://crbug.com/814131.
-const float kMinDeviceCaptureFrameRate = 1.0f;
-
 void CopyFirstString(const blink::StringConstraint& constraint,
                      std::string* destination) {
   if (!constraint.Exact().IsEmpty())
@@ -108,31 +104,6 @@ void SurfaceHardwareEchoCancellationSetting(
   if (params.IsValid() &&
       (params.effects() & media::AudioParameters::ECHO_CANCELLER))
     source->SetEchoCancellation(true);
-}
-
-blink::WebMediaStreamSource::Capabilities ComputeCapabilities(
-    const MediaStreamDevice& device,
-    const media::VideoCaptureFormats& formats,
-    bool is_device_capture) {
-  int max_width = 1;
-  int max_height = 1;
-  float min_frame_rate = is_device_capture ? kMinDeviceCaptureFrameRate : 0.0f;
-  float max_frame_rate = min_frame_rate;
-  for (const auto& format : formats) {
-    max_width = std::max(max_width, format.frame_size.width());
-    max_height = std::max(max_height, format.frame_size.height());
-    max_frame_rate = std::max(max_frame_rate, format.frame_rate);
-  }
-  blink::WebMediaStreamSource::Capabilities capabilities;
-  capabilities.device_id = blink::WebString::FromUTF8(device.id);
-  capabilities.width = {1, max_width};
-  capabilities.height = {1, max_height};
-  capabilities.aspect_ratio = {1.0 / max_height,
-                               static_cast<double>(max_width)};
-  capabilities.frame_rate = {min_frame_rate, max_frame_rate};
-  if (is_device_capture)
-    capabilities.facing_mode = ToWebFacingMode(device.video_facing);
-  return capabilities;
 }
 
 }  // namespace
@@ -812,8 +783,9 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
     source.SetExtraData(CreateVideoSource(
         device, base::Bind(&UserMediaProcessor::OnLocalSourceStopped,
                            weak_factory_.GetWeakPtr())));
-    source.SetCapabilities(ComputeCapabilities(
-        device, *current_request_info_->GetVideoFormats(device.id),
+    source.SetCapabilities(ComputeCapabilitiesForVideoSource(
+        blink::WebString::FromUTF8(device.id),
+        *current_request_info_->GetVideoFormats(device.id), device.video_facing,
         current_request_info_->is_video_device_capture()));
     local_sources_.push_back(source);
   }

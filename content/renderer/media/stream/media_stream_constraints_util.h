@@ -11,8 +11,10 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/video_track_adapter.h"
+#include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/webrtc/api/optional.h"
 
@@ -367,6 +369,14 @@ double NumericConstraintFitnessDistance(double value1, double value2);
 double StringConstraintFitnessDistance(
     const blink::WebString& value,
     const blink::StringConstraint& constraint);
+
+// This method computes capabilities for a video source based on the given
+// |formats|. |facing_mode| is valid only in case of video device capture.
+blink::WebMediaStreamSource::Capabilities CONTENT_EXPORT
+ComputeCapabilitiesForVideoSource(const blink::WebString& device_id,
+                                  const media::VideoCaptureFormats& formats,
+                                  media::VideoFacingMode facing_mode,
+                                  bool is_device_capture);
 
 }  // namespace content
 

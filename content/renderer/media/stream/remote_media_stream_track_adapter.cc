@@ -41,6 +41,11 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
       new MediaStreamRemoteVideoSource(std::move(observer)));
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeVideo);
   web_track()->Source().SetExtraData(video_source.get());
+
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = blink::WebString::FromUTF8(id());
+  web_track()->Source().SetCapabilities(capabilities);
+
   MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
       video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
       enabled);
@@ -83,6 +88,12 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
   MediaStreamAudioSource* const source =
       new PeerConnectionRemoteAudioSource(observed_track().get());
   web_track()->Source().SetExtraData(source);  // Takes ownership.
+
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = blink::WebString::FromUTF8(id());
+  capabilities.echo_cancellation = std::vector<bool>({false});
+  web_track()->Source().SetCapabilities(capabilities);
+
   source->ConnectToTrack(*(web_track()));
 }
 

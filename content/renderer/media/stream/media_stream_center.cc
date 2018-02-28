@@ -51,6 +51,11 @@ void CreateNativeAudioMediaStreamTrack(
     DVLOG(1) << "Creating WebAudio media stream source.";
     media_stream_source = new WebAudioMediaStreamSource(&source);
     source.SetExtraData(media_stream_source);  // Takes ownership.
+
+    blink::WebMediaStreamSource::Capabilities capabilities;
+    capabilities.device_id = source.Id();
+    capabilities.echo_cancellation = std::vector<bool>({false});
+    source.SetCapabilities(capabilities);
   }
 
   if (media_stream_source)

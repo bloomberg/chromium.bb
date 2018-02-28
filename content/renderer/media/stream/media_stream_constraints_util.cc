@@ -10,12 +10,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 
 namespace {
+
+// TODO(c.padhi): Allow frame rates lower than 1Hz,
+// see https://crbug.com/814131.
+const float kMinDeviceCaptureFrameRate = 1.0f;
 
 template <typename P, typename T>
 bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
@@ -317,6 +321,35 @@ double StringConstraintFitnessDistance(
   }
 
   return 1.0;
+}
+
+blink::WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
+    const blink::WebString& device_id,
+    const media::VideoCaptureFormats& formats,
+    media::VideoFacingMode facing_mode,
+    bool is_device_capture) {
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = device_id;
+  if (is_device_capture)
+    capabilities.facing_mode = ToWebFacingMode(facing_mode);
+  if (!formats.empty()) {
+    int max_width = 1;
+    int max_height = 1;
+    float min_frame_rate =
+        is_device_capture ? kMinDeviceCaptureFrameRate : 0.0f;
+    float max_frame_rate = min_frame_rate;
+    for (const auto& format : formats) {
+      max_width = std::max(max_width, format.frame_size.width());
+      max_height = std::max(max_height, format.frame_size.height());
+      max_frame_rate = std::max(max_frame_rate, format.frame_rate);
+    }
+    capabilities.width = {1, max_width};
+    capabilities.height = {1, max_height};
+    capabilities.aspect_ratio = {1.0 / max_height,
+                                 static_cast<double>(max_width)};
+    capabilities.frame_rate = {min_frame_rate, max_frame_rate};
+  }
+  return capabilities;
 }
 
 }  // namespace content
