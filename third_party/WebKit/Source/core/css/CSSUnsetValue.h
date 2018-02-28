@@ -10,6 +10,10 @@
 
 namespace blink {
 
+class CSSValuePool;
+
+namespace cssvalue {
+
 class CSSUnsetValue : public CSSValue {
  public:
   static CSSUnsetValue* Create();
@@ -23,13 +27,14 @@ class CSSUnsetValue : public CSSValue {
   }
 
  private:
-  friend class CSSValuePool;
+  friend class ::blink::CSSValuePool;
 
   CSSUnsetValue() : CSSValue(kUnsetClass) {}
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnsetValue, IsUnsetValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSUnsetValue_h

@@ -219,12 +219,12 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
   if (!ResolveTokenRange(value.VariableDataValue()->Tokens(),
                          disallow_animation_tainted, tokens, backing_strings,
                          is_animation_tainted)) {
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
   }
   const CSSValue* result =
       CSSPropertyParser::ParseSingleValue(id, tokens, value.ParserContext());
   if (!result)
-    return CSSUnsetValue::Create();
+    return cssvalue::CSSUnsetValue::Create();
   return result;
 }
 
@@ -268,7 +268,7 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
   if (value)
     return value;
 
-  return CSSUnsetValue::Create();
+  return cssvalue::CSSUnsetValue::Create();
 }
 
 scoped_refptr<CSSVariableData>

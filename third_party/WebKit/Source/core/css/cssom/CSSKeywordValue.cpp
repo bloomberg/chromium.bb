@@ -80,7 +80,7 @@ const CSSValue* CSSKeywordValue::ToCSSValue() const {
     case (CSSValueInitial):
       return CSSInitialValue::Create();
     case (CSSValueUnset):
-      return CSSUnsetValue::Create();
+      return cssvalue::CSSUnsetValue::Create();
     case (CSSValueInvalid):
       return CSSCustomIdentValue::Create(AtomicString(keyword_value_));
     default:
