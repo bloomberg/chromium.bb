@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <functional>
+#include <random>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "third_party/mt19937ar/mt19937ar.h"
 
 namespace variations {
 
@@ -31,7 +31,7 @@ struct SeededRandGenerator {
   // Returns a random number in range [0, range).
   uint32_t operator()(uint32_t range);
 
-  MersenneTwister mersenne_twister_;
+  std::mt19937 mersenne_twister_;
 };
 
 // Fills |mapping| to create a bijection of values in the range of

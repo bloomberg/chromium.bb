@@ -19,9 +19,8 @@ namespace variations {
 
 namespace internal {
 
-SeededRandGenerator::SeededRandGenerator(uint32_t seed) {
-  mersenne_twister_.init_genrand(seed);
-}
+SeededRandGenerator::SeededRandGenerator(uint32_t seed)
+    : mersenne_twister_(seed) {}
 
 SeededRandGenerator::~SeededRandGenerator() {
 }
@@ -39,7 +38,7 @@ uint32_t SeededRandGenerator::operator()(uint32_t range) {
 
   uint32_t value;
   do {
-    value = mersenne_twister_.genrand_int32();
+    value = mersenne_twister_();
   } while (value > max_acceptable_value);
 
   return value % range;
