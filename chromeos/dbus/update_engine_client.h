@@ -145,10 +145,10 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
   // Called once GetEolStatus() is complete. Takes one parameter;
   // - EndOfLife Status: the end of life status of the device.
   using GetEolStatusCallback =
-      base::Callback<void(update_engine::EndOfLifeStatus status)>;
+      base::OnceCallback<void(update_engine::EndOfLifeStatus status)>;
 
   // Get EndOfLife status of the device and calls |callback| when completed.
-  virtual void GetEolStatus(const GetEolStatusCallback& callback) = 0;
+  virtual void GetEolStatus(GetEolStatusCallback callback) = 0;
 
   // Either allow or disallow receiving updates over cellular connections.
   // Synchronous (blocking) method.

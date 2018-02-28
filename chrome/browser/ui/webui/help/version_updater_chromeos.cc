@@ -243,19 +243,20 @@ void VersionUpdaterCros::OnGetChannel(const ChannelCallback& cb,
   cb.Run(current_channel);
 }
 
-void VersionUpdaterCros::GetEolStatus(const EolStatusCallback& cb) {
+void VersionUpdaterCros::GetEolStatus(EolStatusCallback cb) {
   UpdateEngineClient* update_engine_client =
       DBusThreadManager::Get()->GetUpdateEngineClient();
 
   // Request the Eol Status. Bind to a weak_ptr bound method rather than passing
   // |cb| directly so that |cb| does not outlive |this|.
-  update_engine_client->GetEolStatus(base::Bind(
-      &VersionUpdaterCros::OnGetEolStatus, weak_ptr_factory_.GetWeakPtr(), cb));
+  update_engine_client->GetEolStatus(
+      base::BindOnce(&VersionUpdaterCros::OnGetEolStatus,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(cb)));
 }
 
-void VersionUpdaterCros::OnGetEolStatus(const EolStatusCallback& cb,
+void VersionUpdaterCros::OnGetEolStatus(EolStatusCallback cb,
                                         update_engine::EndOfLifeStatus status) {
-  cb.Run(status);
+  std::move(cb).Run(status);
 }
 
 VersionUpdaterCros::VersionUpdaterCros(content::WebContents* web_contents)

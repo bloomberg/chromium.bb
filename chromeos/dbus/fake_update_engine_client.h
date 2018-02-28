@@ -35,7 +35,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
                   bool is_powerwash_allowed) override;
   void GetChannel(bool get_current_channel,
                   const GetChannelCallback& callback) override;
-  void GetEolStatus(const GetEolStatusCallback& callback) override;
+  void GetEolStatus(GetEolStatusCallback callback) override;
   void SetUpdateOverCellularPermission(bool allowed,
                                        const base::Closure& callback) override;
   void SetUpdateOverCellularOneTimePermission(

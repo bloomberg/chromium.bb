@@ -198,6 +198,13 @@ cr.define('settings', function() {
     getRegulatoryInfo() {}
 
     /**
+     * Checks if the device has reached end-of-life status and will no longer
+     * receive updates.
+     * @return {!Promise<boolean>}
+     */
+    getHasEndOfLife() {}
+
+    /**
      * Request TPM firmware update status from the browser. It results in one or
      * more 'tpm-firmware-update-status-changed' WebUI events.
      */
@@ -276,6 +283,11 @@ cr.define('settings', function() {
     /** @override */
     getRegulatoryInfo() {
       return cr.sendWithPromise('getRegulatoryInfo');
+    }
+
+    /** @override */
+    getHasEndOfLife() {
+      return cr.sendWithPromise('getHasEndOfLife');
     }
 
     /** @override */

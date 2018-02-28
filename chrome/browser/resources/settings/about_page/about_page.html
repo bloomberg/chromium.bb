@@ -96,12 +96,22 @@
             </div>
             <div class="settings-box two-line">
               <!-- TODO(dpapad): Investigate why vulcanize does not handle well
-                a new line after "getIconSrc_(", causes incorrect src URL -->
+                a new line after "getThrobberSrcIfUpdating_(", causes incorrect
+                src URL -->
+              <!-- Set the icon from the iconset (when it's obsolete/EOL and
+                when update is done) or set the src (when it's updating). -->
               <iron-icon
-                  hidden="[[!showUpdateStatus_]]"
-                  icon$="[[getIcon_(
+                  hidden="[[!shouldShowIcons_(showUpdateStatus_)]]"
+<if expr="not chromeos">
+                  icon$="[[getUpdateStatusIcon_(
                       obsoleteSystemInfo_, currentUpdateStatusEvent_)]]"
-                  src="[[getIconSrc_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
+                  src="[[getThrobberSrcIfUpdating_(obsoleteSystemInfo_, currentUpdateStatusEvent_)]]">
+</if>
+<if expr="chromeos">
+                  icon$="[[getUpdateStatusIcon_(
+                      hasEndOfLife_, currentUpdateStatusEvent_)]]"
+                  src="[[getThrobberSrcIfUpdating_(hasEndOfLife_, currentUpdateStatusEvent_)]]">
+</if>
               </iron-icon>
               <div class="start padded">
                 <div id="updateStatusMessage" hidden="[[!showUpdateStatus_]]">
@@ -121,6 +131,7 @@
                     $i18n{learnMore}
                   </a>
                 </div>
+<if expr="not chromeos">
                 <span id="deprecationWarning"
                     hidden="[[!obsoleteSystemInfo_.obsolete]]">
                   $i18n{aboutObsoleteSystem}
@@ -128,6 +139,15 @@
                     $i18n{learnMore}
                   </a>
                 </span>
+</if>
+<if expr="chromeos">
+               <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
+                 $i18n{endOfLifeMessage}
+                 <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
+                   $i18n{learnMore}
+                 </a>
+               </div>
+</if>
                 <div class="secondary">$i18n{aboutBrowserVersion}</div>
               </div>
               <div class="separator" hidden="[[!showButtonContainer_]]"></div>
