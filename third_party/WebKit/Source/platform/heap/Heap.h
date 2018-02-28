@@ -451,6 +451,7 @@ class PLATFORM_EXPORT ThreadHeap {
     return BlinkGC::kVector1ArenaIndex <= arena_index &&
            arena_index <= BlinkGC::kVector4ArenaIndex;
   }
+  static bool IsNormalArenaIndex(int);
   void AllocationPointAdjusted(int arena_index);
   void PromptlyFreed(size_t gc_info_index);
   void ClearArenaAges();
@@ -505,7 +506,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void ResetHeapCounters();
 
   static int ArenaIndexForObjectSize(size_t);
-  static bool IsNormalArenaIndex(int);
 
   void CommitCallbackStacks();
   void DecommitCallbackStacks();

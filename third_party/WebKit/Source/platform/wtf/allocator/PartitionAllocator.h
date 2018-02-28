@@ -100,6 +100,8 @@ class WTF_EXPORT PartitionAllocator {
     Free(ptr);  // Not the system free, the one from this class.
   }
 
+  static void BackingWriteBarrier(void*) {}
+
   static bool IsAllocationAllowed() { return true; }
   static bool IsObjectResurrectionForbidden() { return false; }
 
