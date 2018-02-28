@@ -194,7 +194,13 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
                         &chrome_role)) {
     ax::mojom::Role role_value = ui::ParseRole(chrome_role.c_str());
     if (role_value != ax::mojom::Role::kNone) {
-      out_data->role = role_value;
+      // The webView and rootWebArea roles differ between Android and Chrome. In
+      // particular, Android includes far fewer attributes which leads to
+      // undesirable behavior. Exclude their direct mapping.
+      out_data->role = (role_value != ax::mojom::Role::kWebView &&
+                        role_value != ax::mojom::Role::kRootWebArea)
+                           ? role_value
+                           : ax::mojom::Role::kGenericContainer;
       return;
     }
   }
@@ -236,7 +242,6 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   MAP_ROLE(ui::kAXToggleButtonClassname, ax::mojom::Role::kToggleButton);
   MAP_ROLE(ui::kAXViewClassname, ax::mojom::Role::kGenericContainer);
   MAP_ROLE(ui::kAXViewGroupClassname, ax::mojom::Role::kGroup);
-  MAP_ROLE(ui::kAXWebViewClassname, ax::mojom::Role::kWebView);
 
 #undef MAP_ROLE
 

@@ -420,7 +420,7 @@ Output.RULES = {
       speak: `$name $role @describe_index($posInSet, $setSize) $state
           $restriction $description`
     },
-    paragraph: {speak: `$descendants`},
+    paragraph: {speak: `$nameOrDescendants`},
     popUpButton: {
       speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
           $state $restriction $description`
@@ -630,6 +630,10 @@ Output.isTruthy = function(node, attrib) {
       return node.htmlAttributes['aria-posinset'];
     case 'setSize':
       return node.htmlAttributes['aria-setsize'];
+
+    // These attributes default to false for empty strings.
+    case 'roleDescription':
+      return !!node.roleDescription;
     default:
       return node[attrib] !== undefined || node.state[attrib];
   }
@@ -1035,8 +1039,10 @@ Output.prototype = {
             options.annotation.push(new Output.SelectionSpan(
                 node.textSelStart || 0, node.textSelEnd || 0));
 
-            selectedText = node.value.substring(
-                node.textSelStart || 0, node.textSelEnd || 0);
+            if (node.value) {
+              selectedText = node.value.substring(
+                  node.textSelStart || 0, node.textSelEnd || 0);
+            }
           }
           options.annotation.push(token);
           if (selectedText && !this.formatOptions_.braille) {
