@@ -998,6 +998,15 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_LANGUAGES_ITEM_OPTION_OFFER_TO_TRANSLATE" desc="Option in language item menu. User can click the 'Offer to translate' option to toggle whether they want Chrome to translate pages in this language. [CHAR-LIMIT=32]">
         Offer to translate
       </message>
+      <message name="IDS_LANGUAGES_ITEM_OPTION_MOVE_UP" desc="Option in language item menu. User can click the 'Move up' option to move the language up in the list of languages. [CHAR-LIMIT=32]">
+        Move up
+      </message>
+      <message name="IDS_LANGUAGES_ITEM_OPTION_MOVE_DOWN" desc="Option in language item menu. User can click the 'Move down' option to move the language down in the list of languages. [CHAR-LIMIT=32]">
+        Move down
+      </message>
+      <message name="IDS_LANGUAGES_ITEM_OPTION_MOVE_TO_TOP" desc="Option in language item menu. User can click the 'Move to top' option to move the language up to the top of the list of languages. [CHAR-LIMIT=32]">
+        Move to top
+      </message>
 
       <!-- Location preferences -->
       <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location." meaning="Geolocation">
