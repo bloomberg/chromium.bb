@@ -53,6 +53,8 @@
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chrome/installer/zucchini/zucchini.h"
+#include "chrome/installer/zucchini/zucchini_integration.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 
@@ -318,6 +320,29 @@ int BsdiffPatchFiles(const base::FilePath& src,
       << "Failed to apply bsdiff patch " << patch.value()
       << " to file " << src.value() << " and generating file " << dest.value()
       << ". err=" << exit_code;
+
+  return exit_code;
+}
+
+int ZucchiniPatchFiles(const base::FilePath& src,
+                       const base::FilePath& patch,
+                       const base::FilePath& dest) {
+  VLOG(1) << "Applying Zucchini patch " << patch.value() << " to file "
+          << src.value() << " and generating file " << dest.value();
+
+  if (src.empty() || patch.empty() || dest.empty())
+    return installer::PATCH_INVALID_ARGUMENTS;
+
+  const zucchini::status::Code patch_status = zucchini::Apply(src, patch, dest);
+  const int exit_code =
+      (patch_status != zucchini::status::kStatusSuccess)
+          ? static_cast<int>(patch_status) + kZucchiniErrorOffset
+          : 0;
+
+  LOG_IF(ERROR, exit_code) << "Failed to apply Zucchini patch " << patch.value()
+                           << " to file " << src.value()
+                           << " and generating file " << dest.value()
+                           << ". err=" << exit_code;
 
   return exit_code;
 }

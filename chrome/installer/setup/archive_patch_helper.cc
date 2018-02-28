@@ -8,7 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chrome/installer/setup/buildflags.h"
 #include "chrome/installer/util/lzma_util.h"
+#include "chrome/installer/zucchini/zucchini.h"
 #include "chrome/installer/zucchini/zucchini_integration.h"
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"
@@ -37,8 +39,7 @@ bool ArchivePatchHelper::UncompressAndPatch(
     UnPackConsumer consumer) {
   ArchivePatchHelper instance(working_directory, compressed_archive,
                               patch_source, target, consumer);
-  return (instance.Uncompress(NULL) &&
-          (instance.CourgetteEnsemblePatch() || instance.BinaryPatch()));
+  return (instance.Uncompress(NULL) && instance.ApplyPatch());
 }
 
 bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
@@ -59,6 +60,14 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
   if (last_uncompressed_file)
     *last_uncompressed_file = last_uncompressed_file_;
   return true;
+}
+
+bool ArchivePatchHelper::ApplyPatch() {
+#if BUILDFLAG(ZUCCHINI)
+  if (ZucchiniEnsemblePatch())
+    return true;
+#endif  // BUILDFLAG(ZUCCHINI)
+  return CourgetteEnsemblePatch() || BinaryPatch();
 }
 
 bool ArchivePatchHelper::CourgetteEnsemblePatch() {
