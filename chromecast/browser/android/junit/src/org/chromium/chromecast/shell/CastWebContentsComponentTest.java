@@ -6,7 +6,9 @@ package org.chromium.chromecast.shell;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
@@ -164,5 +166,24 @@ public class CastWebContentsComponentTest {
         component.stop(mActivity);
 
         verify(mActivity, never()).unbindService(any(ServiceConnection.class));
+    }
+
+    @Test
+    public void testStartWebContentsComponentMultipleTimes() {
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(INSTANCE_ID, null, null, false, false);
+        CastWebContentsComponent.Delegate delegate = mock(CastWebContentsComponent.Delegate.class);
+        component.setDelegate(delegate);
+        component.start(mActivity, mWebContents);
+        Object receiver1 = component.getIntentReceiver();
+        Assert.assertNotNull(receiver1);
+        verify(delegate, times(1)).start(eq(mActivity), eq(mWebContents));
+        component.start(mActivity, mWebContents);
+        Object receiver2 = component.getIntentReceiver();
+        Assert.assertEquals(receiver1, receiver2);
+        verify(delegate, times(1)).start(any(Context.class), any(WebContents.class));
+        component.stop(mActivity);
+        Assert.assertNull(component.getIntentReceiver());
+        verify(delegate, times(1)).stop(any(Context.class));
     }
 }

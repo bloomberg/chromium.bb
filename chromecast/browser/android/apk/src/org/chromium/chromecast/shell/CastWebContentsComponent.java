@@ -17,6 +17,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -38,7 +39,8 @@ public class CastWebContentsComponent {
      */
     public interface OnKeyDownHandler { void onKeyDown(int keyCode); }
 
-    private interface Delegate {
+    @VisibleForTesting
+    interface Delegate {
         void start(Context context, WebContents webContents);
         void stop(Context context);
     }
@@ -181,12 +183,11 @@ public class CastWebContentsComponent {
     private static final String ACTION_ACTIVITY_STOPPED =
             "com.google.android.apps.castshell.intent.action.ACTIVITY_STOPPED";
 
-    private final Delegate mDelegate;
     private final OnComponentClosedHandler mComponentClosedHandler;
     private final OnKeyDownHandler mKeyDownHandler;
+    private final String mInstanceId;
+    private Delegate mDelegate;
     private Receiver mReceiver;
-    private String mInstanceId;
-    private boolean mStarted = false;
 
     public CastWebContentsComponent(String instanceId,
             OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler,
@@ -194,6 +195,11 @@ public class CastWebContentsComponent {
         mComponentClosedHandler = onComponentClosedHandler;
         mKeyDownHandler = onKeyDownHandler;
         mInstanceId = instanceId;
+        if (DEBUG) {
+            Log.d(TAG,
+                    "New CastWebContentsComponent. Instance ID: " + instanceId + "; isHeadless: "
+                            + isHeadless + "; enableTouchInput:" + enableTouchInput);
+        }
         if (BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE || isHeadless) {
             if (DEBUG) Log.d(TAG, "Creating service delegate...");
             mDelegate = new ServiceDelegate();
@@ -207,31 +213,52 @@ public class CastWebContentsComponent {
     }
 
     public void start(Context context, WebContents webContents) {
-        if (DEBUG) Log.d(TAG, "start with delegate: " + mDelegate.getClass().getSimpleName());
+        if (DEBUG) {
+            Log.d(TAG,
+                    "start with delegate: " + mDelegate.getClass().getSimpleName()
+                            + "; Instance ID: " + mInstanceId);
+        }
 
         Uri instanceUri = getInstanceUri(mInstanceId);
-        mReceiver = new Receiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_ACTIVITY_STOPPED);
-        filter.addAction(ACTION_KEY_EVENT);
-        filter.addDataScheme(instanceUri.getScheme());
-        filter.addDataAuthority(instanceUri.getAuthority(), null);
-        filter.addDataPath(instanceUri.getPath(), PatternMatcher.PATTERN_LITERAL);
+        if (mReceiver == null) {
+            mReceiver = new Receiver();
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_ACTIVITY_STOPPED);
+            filter.addAction(ACTION_KEY_EVENT);
+            filter.addDataScheme(instanceUri.getScheme());
+            filter.addDataAuthority(instanceUri.getAuthority(), null);
+            filter.addDataPath(instanceUri.getPath(), PatternMatcher.PATTERN_LITERAL);
 
-        if (DEBUG) Log.d(TAG, "Registering mReceiver");
-        getLocalBroadcastManager().registerReceiver(mReceiver, filter);
+            if (DEBUG) Log.d(TAG, "Registering mReceiver");
+            getLocalBroadcastManager().registerReceiver(mReceiver, filter);
 
-        mDelegate.start(context, webContents);
-        mStarted = true;
+            mDelegate.start(context, webContents);
+        } else {
+            if (DEBUG) Log.d(TAG, "Receiver already created.");
+        }
+    }
+
+    @VisibleForTesting
+    Receiver getIntentReceiver() {
+        return mReceiver;
+    }
+
+    @VisibleForTesting
+    void setDelegate(Delegate delegate) {
+        mDelegate = delegate;
     }
 
     public void stop(Context context) {
-        if (DEBUG) Log.d(TAG, "stop");
-        if (mStarted) {
+        if (DEBUG) {
+            Log.d(TAG,
+                    "stop with delegate: " + mDelegate.getClass().getSimpleName()
+                            + "; Instance ID: " + mInstanceId);
+        }
+        if (mReceiver != null) {
             getLocalBroadcastManager().unregisterReceiver(mReceiver);
             if (DEBUG) Log.d(TAG, "Call delegate to stop");
             mDelegate.stop(context);
-            mStarted = false;
+            mReceiver = null;
         }
     }
 
