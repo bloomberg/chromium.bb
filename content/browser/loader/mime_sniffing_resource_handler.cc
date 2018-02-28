@@ -513,12 +513,9 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   }
 
   // Attempt to intercept the request as a stream.
-  base::FilePath plugin_path;
-  if (has_plugin)
-    plugin_path = plugin.path;
   std::string payload;
-  std::unique_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
-      plugin_path, request(), response_.get(), &payload));
+  std::unique_ptr<ResourceHandler> handler(
+      host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
   if (handler) {
     if (!CheckResponseIsNotProvisional())
       return false;

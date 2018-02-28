@@ -1443,6 +1443,9 @@ void ProfileIOData::ShutdownOnUIThread(
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();
+#if BUILDFLAG(ENABLE_PLUGINS)
+  always_open_pdf_externally_.Destroy();
+#endif
 #if defined(OS_CHROMEOS)
   account_consistency_mirror_required_pref_.Destroy();
 #endif

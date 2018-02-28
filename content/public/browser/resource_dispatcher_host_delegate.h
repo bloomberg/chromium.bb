@@ -81,9 +81,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
                                       ResourceRequestInfo* info);
 
   // Returns true and sets |origin| if a Stream should be created for the
-  // resource. |plugin_path| is the plugin which will be used to handle the
-  // request (if the stream will be rendered in a BrowserPlugin). It may be
-  // empty. If true is returned, a new Stream will be created and
+  // resource. If true is returned, a new Stream will be created and
   // OnStreamCreated() will be called with a StreamHandle instance for the
   // Stream. The handle contains the URL for reading the Stream etc. The
   // Stream's origin will be set to |origin|.
@@ -93,7 +91,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // renderer process.
   virtual bool ShouldInterceptResourceAsStream(
       net::URLRequest* request,
-      const base::FilePath& plugin_path,
       const std::string& mime_type,
       GURL* origin,
       std::string* payload);
