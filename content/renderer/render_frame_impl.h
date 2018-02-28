@@ -1640,6 +1640,9 @@ class CONTENT_EXPORT RenderFrameImpl
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info_;
 
   // URLLoaderFactory instances used for subresource loading.
+  // Depending on how the frame was created, |loader_factories_| could be:
+  //   * |HostChildURLLoaderFactoryBundle| for standalone frames, or
+  //   * |TrackedChildURLLoaderFactoryBundle| for frames opened by other frames.
   scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.

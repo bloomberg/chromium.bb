@@ -118,6 +118,10 @@ void ChildURLLoaderFactoryBundle::Update(
   URLLoaderFactoryBundle::Update(std::move(info));
 }
 
+bool ChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle() const {
+  return false;
+}
+
 void ChildURLLoaderFactoryBundle::InitDefaultBlobFactoryIfNecessary() {
   if (default_blob_factory_getter_.is_null())
     return;
@@ -141,6 +145,31 @@ void ChildURLLoaderFactoryBundle::InitDirectNetworkFactoryIfNecessary() {
   } else {
     direct_network_factory_getter_.Reset();
   }
+}
+
+std::unique_ptr<ChildURLLoaderFactoryBundleInfo>
+ChildURLLoaderFactoryBundle::PassInterface() {
+  InitDefaultBlobFactoryIfNecessary();
+  InitDirectNetworkFactoryIfNecessary();
+
+  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  if (default_factory_)
+    default_factory_info = default_factory_.PassInterface();
+
+  std::map<std::string, network::mojom::URLLoaderFactoryPtrInfo> factories_info;
+  for (auto& factory : factories_) {
+    factories_info.emplace(factory.first, factory.second.PassInterface());
+  }
+
+  PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
+      direct_network_factory_info;
+  if (direct_network_factory_) {
+    direct_network_factory_info = direct_network_factory_.PassInterface();
+  }
+
+  return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+      std::move(default_factory_info), std::move(factories_info),
+      std::move(direct_network_factory_info));
 }
 
 }  // namespace content
