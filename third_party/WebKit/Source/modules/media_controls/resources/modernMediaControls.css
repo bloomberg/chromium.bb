@@ -59,21 +59,24 @@ video::-webkit-media-controls-panel {
   font-style: normal;
 
   background-image:
-    linear-gradient(-180deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, .27) 32%,
-      rgba(255, 255, 255, .9) 98%);
+    linear-gradient(to top,
+      rgba(0, 0, 0, .8) 0,
+      rgba(0, 0, 0, .2) 60px,
+      rgba(0, 0, 0, 0) 80px);
 }
 
 video::-webkit-media-controls-panel.scrubbing-message {
-  /* Need light gradient at the top of the video when the scrubbing message is
+  /* Need dark gradient at the top of the video when the scrubbing message is
    * shown */
   background-image:
-    linear-gradient(-180deg,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(255, 255, 255, 0.27) 32%,
-      rgba(255, 255, 255, 0.27) 68%,
-      rgba(255, 255, 255, 0.9) 98%);
+    linear-gradient(to top,
+      rgba(0, 0, 0, .8) 0,
+      rgba(0, 0, 0, .2) 60px,
+      rgba(0, 0, 0, 0) 80px),
+    linear-gradient(to bottom,
+      rgba(0, 0, 0, .8) 0,
+      rgba(0, 0, 0, .3) 80px,
+      rgba(0, 0, 0, 0) 120px);
 }
 
 
@@ -149,12 +152,22 @@ video::-webkit-media-controls-play-button {
     url(default_100_percent/modern/ic_play_arrow.png) 1x,
     url(default_200_percent/modern/ic_play_arrow.png) 2x);
 }
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-play-button"] {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_play_arrow_white.png) 1x,
+    url(default_200_percent/modern/ic_play_arrow_white.png) 2x);
+}
 
 audio::-webkit-media-controls-mute-button,
 video::-webkit-media-controls-mute-button {
   background-image: -webkit-image-set(
     url(default_100_percent/modern/ic_volume_up.png) 1x,
     url(default_200_percent/modern/ic_volume_up.png) 2x);
+}
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-mute-button"] {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_volume_up_white.png) 1x,
+    url(default_200_percent/modern/ic_volume_up_white.png) 2x);
 }
 
 audio::-webkit-media-controls-mute-button.muted,
@@ -163,6 +176,11 @@ video::-webkit-media-controls-mute-button.muted {
     url(default_100_percent/modern/ic_volume_off.png) 1x,
     url(default_200_percent/modern/ic_volume_off.png) 2x);
 }
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-mute-button"].muted {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_volume_off_white.png) 1x,
+    url(default_200_percent/modern/ic_volume_off_white.png) 2x);
+}
 
 audio::-webkit-media-controls-fullscreen-button,
 video::-webkit-media-controls-fullscreen-button {
@@ -170,12 +188,22 @@ video::-webkit-media-controls-fullscreen-button {
     url(default_100_percent/modern/ic_fullscreen.png) 1x,
     url(default_200_percent/modern/ic_fullscreen.png) 2x);
 }
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-fullscreen-button"] {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_fullscreen_white.png) 1x,
+    url(default_200_percent/modern/ic_fullscreen_white.png) 2x);
+}
 
 audio::-webkit-media-controls-fullscreen-button.fullscreen,
 video::-webkit-media-controls-fullscreen-button.fullscreen {
   background-image: -webkit-image-set(
     url(default_100_percent/modern/ic_fullscreen_exit.png) 1x,
     url(default_200_percent/modern/ic_fullscreen_exit.png) 2x);
+}
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-fullscreen-button"].fullscreen {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_fullscreen_exit_white.png) 1x,
+    url(default_200_percent/modern/ic_fullscreen_exit_white.png) 2x);
 }
 
 audio::-internal-media-controls-cast-button,
@@ -215,6 +243,11 @@ audio::-internal-media-controls-overflow-button {
   background-image: -webkit-image-set(
     url(default_100_percent/modern/ic_menu.png) 1x,
     url(default_200_percent/modern/ic_menu.png) 2x);
+}
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-internal-media-controls-overflow-button"] {
+  background-image: -webkit-image-set(
+    url(default_100_percent/modern/ic_menu_white.png) 1x,
+    url(default_200_percent/modern/ic_menu_white.png) 2x);
 }
 
 video::-webkit-media-controls-overlay-play-button {
@@ -295,6 +328,10 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segm
   border-radius: 2px;
   position: relative;
 }
+video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-internal-media-controls-segmented-track {
+  background: rgba(255, 255, 255, .3);
+  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.5);
+}
 
 /* thumb-current-time CSS here instead of in the scoped CSS so we can hide on
  * audio-only. */
@@ -329,6 +366,10 @@ input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   margin-top: -4px;
   flex: 0 0 0;
 }
+video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
+  background: #FFFFFF;
+  box-shadow: unset;
+}
 
 .state-no-source input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   display: none;
@@ -352,10 +393,16 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highl
   background: rgba(0, 0, 0, .87);
   border-radius: 100px;
 }
+video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before {
+  background: rgba(255, 255, 255, 1);
+}
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
   background: rgba(0, 0, 0, .54);
   border-radius: 2px;
+}
+video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after {
+  background: rgba(255, 255, 255, .54);
 }
 
 audio::-webkit-media-controls-volume-slider,
@@ -373,6 +420,9 @@ input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffe
   left: 0;
   top: 0;
   display: none;
+}
+video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  background: rgba(255, 255, 255, .54);
 }
 
 .state-buffering input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
@@ -399,6 +449,12 @@ video::-webkit-media-controls-time-remaining-display {
   color: #000000;
   letter-spacing: 0;
   text-shadow: 0 0 10px #FFFFFF;
+}
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-current-time-display"],
+video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-time-remaining-display"] {
+  color: #FFFFFF;
+  text-shadow: unset;
+  opacity: unset;
 }
 
 /**
@@ -635,6 +691,7 @@ video::-internal-media-controls-scrubbing-message {
   top: 12px;
   text-align: center;
   width: 100%;
+  color: #FFFFFF;
 }
 
 .state-scrubbing div[pseudo="-internal-media-controls-button-panel" i],
