@@ -604,8 +604,16 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
 
 // Tests that an image link returns details for both the image and the link
 // destination when the image source is a relative url.
+// TODO(crbug.com/817385): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FindLinkImageAtPointForRelativeUrl \
+  FindLinkImageAtPointForRelativeUrl
+#else
+#define MAYBE_FindLinkImageAtPointForRelativeUrl \
+  FLAKY_FindLinkImageAtPointForRelativeUrl
+#endif
 TEST_F(ContextMenuJsFindElementAtPointTest,
-       FindLinkImageAtPointForRelativeUrl) {
+       MAYBE_FindLinkImageAtPointForRelativeUrl) {
   NSString* kLinkDest = @"http://destination/";
   NSString* kImageHtml =
       @"<a href='%@'><img width=400 height=400 src='foo'></img></a>";
