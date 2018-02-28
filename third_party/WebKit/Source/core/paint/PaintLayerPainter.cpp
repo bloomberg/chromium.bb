@@ -1376,11 +1376,16 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
         *paint_layer_.GetCompositedLayerMapping()->ChildClippingMaskLayer();
     ForAllFragments(
         context, layer_fragments, [&](const PaintLayerFragment& fragment) {
-          auto state = fragment.fragment_data->ContentsProperties();
+          // Use the LocalBorderboxProperties as a starting point to ensure that
+          // we don't include the scroll offset when painting the mask layer.
+          auto state = fragment.fragment_data->LocalBorderBoxProperties();
           // This is a hack to incorporate mask-based clip-path.
           // See CompositingLayerPropertyUpdater.cpp about
           // ChildClippingMaskLayer.
           state.SetEffect(fragment.fragment_data->PreFilter());
+          // Update the clip to be the ContentsProperties clip, since it
+          // includes the InnerBorderRadiusClip.
+          state.SetClip(fragment.fragment_data->ContentsProperties().Clip());
           ScopedPaintChunkProperties fragment_paint_chunk_properties(
               context.GetPaintController(), state, client,
               DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
