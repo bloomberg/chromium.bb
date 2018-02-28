@@ -99,7 +99,8 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
     auto response = std::make_unique<test_server::BasicHttpResponse>();
     response->AddCustomHeader(
         "Report-To",
-        base::StringPrintf("{\"url\":\"%s\",\"group\":\"%s\",\"max-age\":%d}",
+        base::StringPrintf("{\"endpoints\":[{\"url\":\"%s\"}],\"group\":\"%s\","
+                           "\"max-age\":%d}",
                            endpoint_url.spec().c_str(), kGroup, kMaxAgeSec));
     response->AddCustomHeader(
         "NEL", base::StringPrintf("{\"report-to\":\"%s\",\"max-age\":%d}",

@@ -59,8 +59,9 @@ TEST_F(ReportingServiceTest, QueueReport) {
 }
 
 TEST_F(ReportingServiceTest, ProcessHeader) {
-  service()->ProcessHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
-                                      "\","
+  service()->ProcessHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
+                                      kEndpoint_.spec() +
+                                      "\"}],"
                                       "\"group\":\"" +
                                       kGroup_ +
                                       "\","

@@ -46,33 +46,39 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
     const char* header_value;
     const char* description;
   } kInvalidHeaderTestCases[] = {
-      {"{\"max-age\":1}", "missing url"},
-      {"{\"url\":0,\"max-age\":1}", "non-string url"},
-      {"{\"url\":\"http://insecure/\",\"max-age\":1}", "insecure url"},
+      {"{\"max-age\":1, \"endpoints\": [{}]}", "missing url"},
+      {"{\"max-age\":1, \"endpoints\": [{\"url\":0}]}", "non-string url"},
+      {"{\"max-age\":1, \"endpoints\": [{\"url\":\"http://insecure/\"}]}",
+       "insecure url"},
 
-      {"{\"url\":\"https://endpoint/\"}", "missing max-age"},
-      {"{\"url\":\"https://endpoint/\",\"max-age\":\"\"}",
+      {"{\"endpoints\": [{\"url\":\"https://endpoint/\"}]}", "missing max-age"},
+      {"{\"max-age\":\"\", \"endpoints\": [{\"url\":\"https://endpoint/\"}]}",
        "non-integer max-age"},
-      {"{\"url\":\"https://endpoint/\",\"max-age\":-1}", "negative max-age"},
-
-      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"group\":0}",
+      {"{\"max-age\":-1, \"endpoints\": [{\"url\":\"https://endpoint/\"}]}",
+       "negative max-age"},
+      {"{\"max-age\":1, \"group\":0, "
+       "\"endpoints\": [{\"url\":\"https://endpoint/\"}]}",
        "non-string group"},
 
-      // Note that a non-boolean includeSubdomains field is *not* invalid, per
+      // Note that a non-boolean include-subdomains field is *not* invalid, per
       // the spec.
 
-      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"priority\":\"\"}",
+      {"{\"max-age\":1, "
+       "\"endpoints\": [{\"url\":\"https://endpoint/\",\"priority\":\"\"}]}",
        "non-integer priority"},
 
-      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":\"\"}",
+      {"{\"max-age\":1, "
+       "\"endpoints\": [{\"url\":\"https://endpoint/\",\"weight\":\"\"}]}",
        "non-integer weight"},
-      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":-1}",
+      {"{\"max-age\":1, "
+       "\"endpoints\": [{\"url\":\"https://endpoint/\",\"weight\":-1}]}",
        "negative weight"},
-      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":0}",
+      {"{\"max-age\":1, "
+       "\"endpoints\": [{\"url\":\"https://endpoint/\",\"weight\":0}]}",
        "zero weight"},
 
-      {"[{\"url\":\"https://a/\",\"max-age\":1},"
-       "{\"url\":\"https://b/\",\"max-age\":1}]",
+      {"[{\"max-age\":1, \"endpoints\": [{\"url\":\"https://a/\"}]},"
+       "{\"max-age\":1, \"endpoints\": [{\"url\":\"https://b/\"}]}]",
        "wrapped in list"}};
 
   for (size_t i = 0; i < arraysize(kInvalidHeaderTestCases); ++i) {
@@ -88,8 +94,8 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
 }
 
 TEST_F(ReportingHeaderParserTest, Valid) {
-  ParseHeader(kUrl_,
-              "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
+  ParseHeader(kUrl_, "{\"endpoints\": [{\"url\":\"" + kEndpoint_.spec() +
+                         "\"}],\"max-age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -108,15 +114,16 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAge) {
       tick_clock()->NowTicks() + base::TimeDelta::FromDays(1),
       ReportingClient::kDefaultPriority, ReportingClient::kDefaultWeight);
 
-  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":0}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\"}],\"max-age\":0}");
 
   EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
 }
 
 TEST_F(ReportingHeaderParserTest, Subdomains) {
-  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
-                         "\",\"max-age\":86400,"
-                         "\"includeSubdomains\":true}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\"}],\"max-age\":86400,"
+                         "\"include-subdomains\":true}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -125,9 +132,8 @@ TEST_F(ReportingHeaderParserTest, Subdomains) {
 }
 
 TEST_F(ReportingHeaderParserTest, PriorityPositive) {
-  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
-                         "\",\"max-age\":86400,"
-                         "\"priority\":2}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"priority\":2}],\"max-age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -136,9 +142,8 @@ TEST_F(ReportingHeaderParserTest, PriorityPositive) {
 }
 
 TEST_F(ReportingHeaderParserTest, PriorityNegative) {
-  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
-                         "\",\"max-age\":86400,"
-                         "\"priority\":-2}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"priority\":-2}],\"max-age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -147,9 +152,8 @@ TEST_F(ReportingHeaderParserTest, PriorityNegative) {
 }
 
 TEST_F(ReportingHeaderParserTest, Weight) {
-  ParseHeader(kUrl_, "{\"url\":\"" + kEndpoint_.spec() +
-                         "\",\"max-age\":86400,"
-                         "\"weight\":3}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\",\"weight\":3}],\"max-age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin_, kEndpoint_);
@@ -160,13 +164,14 @@ TEST_F(ReportingHeaderParserTest, Weight) {
 TEST_F(ReportingHeaderParserTest, RemoveOld) {
   static const GURL kDifferentEndpoint_ = GURL("https://endpoint2/");
 
-  ParseHeader(kUrl_,
-              "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":86400}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\"}],\"max-age\":86400}");
 
   EXPECT_TRUE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
 
-  ParseHeader(kUrl_, "{\"url\":\"" + kDifferentEndpoint_.spec() +
-                         "\",\"max-age\":86400}");
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" +
+                         kDifferentEndpoint_.spec() +
+                         "\"}],\"max-age\":86400}");
 
   EXPECT_FALSE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
   EXPECT_TRUE(FindClientInCache(cache(), kOrigin_, kDifferentEndpoint_));
