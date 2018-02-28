@@ -911,6 +911,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
   }
 }
 
+static FloatRoundedRect ToClipRect(const LayoutRect& rect) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return FloatRoundedRect(FloatRect(PixelSnappedIntRect(rect)));
+  return FloatRoundedRect(FloatRect(rect));
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
   DCHECK(properties_);
 
@@ -918,7 +924,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
     if (context_.fragment_clip) {
       OnUpdateClip(properties_->UpdateFragmentClip(
           context_.current.clip, context_.current.transform,
-          FloatRoundedRect(FloatRect(*context_.fragment_clip))));
+          ToClipRect(*context_.fragment_clip)));
     } else {
       OnClearClip(properties_->ClearFragmentClip());
     }
@@ -930,12 +936,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
 
 static bool NeedsCssClip(const LayoutObject& object) {
   return object.HasClip();
-}
-
-static FloatRoundedRect ToClipRect(const LayoutRect& rect) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return FloatRoundedRect(FloatRect(PixelSnappedIntRect(rect)));
-  return FloatRoundedRect(FloatRect(rect));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {

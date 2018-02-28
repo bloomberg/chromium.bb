@@ -5152,6 +5152,35 @@ TEST_P(PaintPropertyTreeBuilderTest, ShortColumnTallContent) {
   EXPECT_EQ(10u, NumFragments(flow_thread));
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FragmentClipPixelSnapped) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="columns: 2; column-gap: 0; width: 49.5px">
+      <div style="height: 99px"></div>
+    </div>
+  )HTML");
+
+  const auto* flow_thread =
+      GetLayoutObjectByElementId("container")->SlowFirstChild();
+  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
+  ASSERT_EQ(2u, NumFragments(flow_thread));
+  const auto* first_clip =
+      FragmentAt(flow_thread, 0).PaintProperties()->FragmentClip();
+  const auto* second_clip =
+      FragmentAt(flow_thread, 1).PaintProperties()->FragmentClip();
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(FloatRect(-999992, -999992, 1000025, 1000050),
+              first_clip->ClipRect().Rect());
+    EXPECT_EQ(FloatRect(33, 8, 1000000, 999951),
+              second_clip->ClipRect().Rect());
+  } else {
+    EXPECT_EQ(FloatRect(-999992, -999992, 1000024.75, 1000049.5),
+              first_clip->ClipRect().Rect());
+    EXPECT_EQ(FloatRect(32.75, 8, 1000000, 999950.5),
+              second_clip->ClipRect().Rect());
+  }
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        UpdateUnderChangedEffectUnderCompositedLayer) {
   // SPv1 has no effect tree.
