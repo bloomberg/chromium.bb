@@ -77,10 +77,6 @@ class WebClient {
   // schemes early on in the startup sequence.
   virtual void AddAdditionalSchemes(Schemes* schemes) const {}
 
-  // Returns the languages used in the Accept-Languages HTTP header.
-  // Used to decide URL formatting.
-  virtual std::string GetAcceptLangs(BrowserState* state) const;
-
   // Returns the embedding application locale string.
   virtual std::string GetApplicationLocale() const;
 
