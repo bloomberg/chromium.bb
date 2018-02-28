@@ -791,6 +791,12 @@ static INLINE TX_SIZE av1_max_tx_size_for_filter_intra(BLOCK_SIZE bsize,
   return TX_INVALID;
 }
 
+static INLINE int av1_filter_intra_allowed(const MB_MODE_INFO *mbmi) {
+  return mbmi->mode == DC_PRED &&
+         mbmi->palette_mode_info.palette_size[0] == 0 &&
+         av1_filter_intra_allowed_txsize(mbmi->tx_size);
+}
+
 // Converts block_index for given transform size to index of the block in raster
 // order.
 static INLINE int av1_block_index_to_raster_order(TX_SIZE tx_size,

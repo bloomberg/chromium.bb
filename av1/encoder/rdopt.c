@@ -2536,7 +2536,7 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
       total_rate += palette_mode_cost;
     }
   }
-  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+  if (av1_filter_intra_allowed(mbmi)) {
     total_rate += x->filter_intra_cost[mbmi->tx_size][use_filter_intra];
     if (use_filter_intra) {
       total_rate += x->filter_intra_mode_cost[mbmi->filter_intra_mode_info
@@ -3372,7 +3372,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               ctx->blk_skip[0]);
   }
 
-  if (beat_best_rd && !xd->lossless[mbmi->segment_id]) {
+  if (beat_best_rd) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd, ctx)) {
@@ -9039,7 +9039,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       memcpy(best_blk_skip, x->blk_skip[0],
              sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
 
-      if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id]) {
+      if (mbmi->mode == DC_PRED) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;

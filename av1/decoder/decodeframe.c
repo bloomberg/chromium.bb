@@ -610,8 +610,7 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
   FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
       &mbmi->filter_intra_mode_info;
 
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
-      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+  if (av1_filter_intra_allowed(mbmi)) {
     filter_intra_mode_info->use_filter_intra = aom_read_symbol(
         r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra) {
