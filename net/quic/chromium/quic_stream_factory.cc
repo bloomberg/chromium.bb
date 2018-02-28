@@ -1353,11 +1353,7 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
 }
 
 void QuicStreamFactory::OnSSLConfigChanged() {
-  // TODO(zhongyi): remove quic_stream_factory from being a
-  // SSLConfigService::Observer when channel ID is deprecated.
-  // (See http://crbug.com/809272.)
-
-  MarkAllActiveSessionsGoingAway();
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_CONNECTION_CANCELLED);
 }
 
 void QuicStreamFactory::OnCertDBChanged() {
