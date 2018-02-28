@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="advanced_settings_item.html">
@@ -10,7 +11,8 @@
 <link rel="import" href="search_dialog_css.html">
 
 <dom-module id="print-preview-advanced-dialog">
-  <style include="print-preview-shared search-dialog button"></style>
+  <style include="print-preview-shared search-dialog button cr-hidden-style">
+  </style>
   <template>
     <dialog is="cr-dialog" id="dialog" on-close="onCloseOrCancel_">
       <div slot="title">
@@ -24,11 +26,14 @@
       <div slot="body">
         <template is="dom-repeat"
             items="[[destination.capabilities.printer.vendor_capability]]">
-          <print-preview-advanced-settings-item
-              search-query="[[searchQuery_]]" capability="[[item]]"
+          <print-preview-advanced-settings-item capability="[[item]]"
               settings="[[settings]]">
           </print-preview-advanced-settings-item>
         </template>
+        <div class="no-settings-match-hint"
+            hidden$="[[!shouldShowHint_(hasMatching_)]]">
+          $i18n{noAdvancedSettingsMatchSearchHint}
+        </div>
       </div>
       <div slot="button-container">
         <button on-click="onCancelButtonClick_">$i18n{cancel}</button>

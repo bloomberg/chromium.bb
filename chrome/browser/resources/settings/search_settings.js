@@ -17,9 +17,6 @@ cr.exportPath('settings');
 settings.SearchResult;
 
 cr.define('settings', function() {
-  /** @type {string} */
-  const SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
-
   /**
    * A CSS attribute indicating that a node should be ignored during searching.
    * @type {string}
@@ -57,11 +54,7 @@ cr.define('settings', function() {
    */
   function findAndRemoveHighlights_(node) {
     cr.search_highlight_utils.findAndRemoveHighlights(node);
-
-    const searchBubbles =
-        node.querySelectorAll('* /deep/ .' + SEARCH_BUBBLE_CSS_CLASS);
-    for (let j = 0; j < searchBubbles.length; j++)
-      searchBubbles[j].remove();
+    cr.search_highlight_utils.findAndRemoveBubbles(node);
   }
 
   /**
@@ -135,44 +128,6 @@ cr.define('settings', function() {
   }
 
   /**
-   * Highlights the HTML control that triggers a subpage, by displaying a search
-   * bubble.
-   * @param {!HTMLElement} element The element to be highlighted.
-   * @param {string} rawQuery The search query.
-   * @private
-   */
-  function highlightAssociatedControl_(element, rawQuery) {
-    let searchBubble = element.querySelector('.' + SEARCH_BUBBLE_CSS_CLASS);
-    // If the associated control has already been highlighted due to another
-    // match on the same subpage, there is no need to do anything.
-    if (searchBubble)
-      return;
-
-    searchBubble = document.createElement('div');
-    searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
-    const innards = document.createElement('div');
-    innards.classList.add('search-bubble-innards', 'text-elide');
-    innards.textContent = rawQuery;
-    searchBubble.appendChild(innards);
-    element.appendChild(searchBubble);
-
-    // Dynamically position the bubble at the edge the associated control
-    // element.
-    const updatePosition = function() {
-      searchBubble.style.top = element.offsetTop +
-          (innards.classList.contains('above') ? -searchBubble.offsetHeight :
-                                                 element.offsetHeight) +
-          'px';
-    };
-    updatePosition();
-
-    searchBubble.addEventListener('mouseover', function() {
-      innards.classList.toggle('above');
-      updatePosition();
-    });
-  }
-
-  /**
    * Finds and makes visible the <settings-section> parent of |node|.
    * @param {!Node} node
    * @param {string} rawQuery
@@ -199,8 +154,10 @@ cr.define('settings', function() {
 
     // Need to add the search bubble after the parent SETTINGS-SECTION has
     // become visible, otherwise |offsetWidth| returns zero.
-    if (associatedControl)
-      highlightAssociatedControl_(associatedControl, rawQuery);
+    if (associatedControl) {
+      cr.search_highlight_utils.highlightControlWithBubble(
+          associatedControl, rawQuery);
+    }
   }
 
   /** @abstract */

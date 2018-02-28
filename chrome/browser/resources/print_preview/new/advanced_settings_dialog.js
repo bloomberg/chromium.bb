@@ -16,11 +16,43 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /** @private {boolean} */
+    hasMatching_: {
+      type: Boolean,
+      notify: true,
+      computed: 'computeHasMatching_(searchQuery_)',
+    },
+  },
+
+  /**
+   * @return {boolean} Whether there is a setting matching the query.
+   * @private
+   */
+  computeHasMatching_: function() {
+    const listItems = this.shadowRoot.querySelectorAll(
+        'print-preview-advanced-settings-item');
+    let hasMatch = false;
+    listItems.forEach(item => {
+      const matches = item.hasMatch(this.searchQuery_);
+      item.hidden = !matches;
+      hasMatch = hasMatch || matches;
+      item.updateHighlighting(this.searchQuery_);
+    });
+    return hasMatch;
+  },
+
+  /**
+   * @return {boolean} Whether the no matching settings hint should be shown.
+   * @private
+   */
+  shouldShowHint_: function() {
+    return !!this.searchQuery_ && !this.hasMatching_;
   },
 
   /** @private */
   onCloseOrCancel_: function() {
-    if (this.searchQuery)
+    if (this.searchQuery_)
       this.$.searchBox.setValue('');
   },
 
