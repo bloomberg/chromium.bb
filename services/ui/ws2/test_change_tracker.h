@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_TEST_CHANGE_TRACKER_H_
-#define SERVICES_UI_WS_TEST_CHANGE_TRACKER_H_
+#ifndef SERVICES_UI_WS2_TEST_CHANGE_TRACKER_H_
+#define SERVICES_UI_WS2_TEST_CHANGE_TRACKER_H_
 
 #include <stdint.h>
 
@@ -207,4 +207,4 @@ class TestChangeTracker {
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_TEST_CHANGE_TRACKER_H_
+#endif  // SERVICES_UI_WS2_TEST_CHANGE_TRACKER_H_

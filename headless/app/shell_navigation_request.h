@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HEADLESS_PUBLIC_UTIL_HTTP_URL_FETCHER_H_
-#define HEADLESS_PUBLIC_UTIL_HTTP_URL_FETCHER_H_
+#ifndef HEADLESS_APP_SHELL_NAVIGATION_REQUEST_H_
+#define HEADLESS_APP_SHELL_NAVIGATION_REQUEST_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -49,4 +49,4 @@ class ShellNavigationRequest : public NavigationRequest {
 
 }  // namespace headless
 
-#endif  // HEADLESS_PUBLIC_UTIL_HTTP_URL_FETCHER_H_
+#endif  // HEADLESS_APP_SHELL_NAVIGATION_REQUEST_H_

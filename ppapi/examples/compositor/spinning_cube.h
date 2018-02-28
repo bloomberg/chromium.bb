@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_EXAMPLES_GLES2_SPINNING_CUBE_SPINNING_CUBE_H_
-#define PPAPI_EXAMPLES_GLES2_SPINNING_CUBE_SPINNING_CUBE_H_
+#ifndef PPAPI_EXAMPLES_COMPOSITOR_SPINNING_CUBE_H_
+#define PPAPI_EXAMPLES_COMPOSITOR_SPINNING_CUBE_H_
 
 #include "ppapi/c/pp_stdint.h"
 
@@ -39,4 +39,4 @@ class SpinningCube {
   int direction_;
 };
 
-#endif  // PPAPI_EXAMPLES_GLES2_SPINNING_CUBE_SPINNING_CUBE_H_
+#endif  // PPAPI_EXAMPLES_COMPOSITOR_SPINNING_CUBE_H_
