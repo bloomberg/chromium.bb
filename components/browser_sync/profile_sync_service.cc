@@ -236,10 +236,7 @@ void ProfileSyncService::Initialize() {
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
       router,
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
-                 sync_enabled_weak_factory_.GetWeakPtr()),
-      base::Bind(&ProfileSyncService::TriggerRefresh,
-                 sync_enabled_weak_factory_.GetWeakPtr(),
-                 syncer::ModelTypeSet(syncer::SESSIONS)));
+                 sync_enabled_weak_factory_.GetWeakPtr()));
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory_,

@@ -42,10 +42,6 @@ const int kMaxSyncFavicons = 200;
 // The maximum number of navigations in each direction we care to sync.
 const int kMaxSyncNavigationCount = 6;
 
-// The URL at which the set of synced tabs is displayed. We treat it differently
-// from all other URL's as accessing it triggers a sync refresh of Sessions.
-const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
-
 // Default number of days without activity after which a session is considered
 // stale and becomes a candidate for garbage collection.
 const int kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
@@ -110,8 +106,7 @@ SessionsSyncManager::SessionsSyncManager(
     syncer::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
     LocalSessionEventRouter* router,
-    const base::Closure& sessions_updated_callback,
-    const base::Closure& datatype_refresh_callback)
+    const base::RepeatingClosure& sessions_updated_callback)
     : sessions_client_(sessions_client),
       session_tracker_(sessions_client),
       favicon_cache_(sessions_client->GetFaviconService(),
@@ -131,7 +126,6 @@ SessionsSyncManager::SessionsSyncManager(
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router),
       sessions_updated_callback_(sessions_updated_callback),
-      datatype_refresh_callback_(datatype_refresh_callback),
       task_tracker_(std::make_unique<TaskTracker>()) {}
 
 SessionsSyncManager::~SessionsSyncManager() {}
@@ -572,17 +566,6 @@ bool SessionsSyncManager::RebuildAssociations() {
 }
 
 void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
-  if (!modified_tab->IsBeingDestroyed()) {
-    GURL virtual_url =
-      modified_tab->GetVirtualURLAtIndex(modified_tab->GetCurrentEntryIndex());
-    if (virtual_url.is_valid() &&
-        virtual_url.spec() == kNTPOpenTabSyncURL) {
-      DVLOG(1) << "Triggering sync refresh for sessions datatype.";
-      if (!datatype_refresh_callback_.is_null())
-        datatype_refresh_callback_.Run();
-    }
-  }
-
   sessions::SerializedNavigationEntry current;
   modified_tab->GetSerializedNavigationAtIndex(
       modified_tab->GetCurrentEntryIndex(), &current);

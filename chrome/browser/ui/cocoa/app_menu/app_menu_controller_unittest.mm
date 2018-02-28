@@ -132,7 +132,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
             ->GetSyncSessionsClient(),
-        sync_prefs_.get(), local_device_.get(), &dummy_router_, base::Closure(),
+        sync_prefs_.get(), local_device_.get(), &dummy_router_,
         base::Closure());
 
     manager_->MergeDataAndStartSyncing(
