@@ -10,6 +10,10 @@
 
 #import "ios/web/public/block_types.h"
 
+namespace web {
+class BrowserState;
+}  // namespace web
+
 @protocol CRWContextMenuDelegate;
 @protocol CRWJSInjectionEvaluator;
 
@@ -30,6 +34,7 @@
 //   event on |webView| and can have performance impact.
 // TODO(crbug.com/228179): This class only triggers context menu on mainFrame.
 - (instancetype)initWithWebView:(WKWebView*)webView
+                   browserState:(web::BrowserState*)browserState
              injectionEvaluator:(id<CRWJSInjectionEvaluator>)injectionEvaluator
                        delegate:(id<CRWContextMenuDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
