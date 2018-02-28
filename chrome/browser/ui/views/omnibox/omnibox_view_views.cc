@@ -545,6 +545,10 @@ bool OmniboxViewViews::UnapplySteadyStateElisions() {
   if (offset != base::string16::npos) {
     start += offset;
     end += offset;
+
+    // Since we are changing the text in the double-click event handler, we
+    // need to fix the cached indices of the double-clicked word.
+    OffsetDoubleClickWord(offset);
   }
 
   // Update the text to the full unelided URL. The caret is positioned at 0, as

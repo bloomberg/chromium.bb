@@ -154,6 +154,11 @@ void SelectionController::OnMouseCaptureLost() {
     delegate_->UpdateSelectionClipboard();
 }
 
+void SelectionController::OffsetDoubleClickWord(int offset) {
+  double_click_word_.set_start(double_click_word_.start() + offset);
+  double_click_word_.set_end(double_click_word_.end() + offset);
+}
+
 void SelectionController::TrackMouseClicks(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     base::TimeDelta time_delta = event.time_stamp() - last_click_time_;

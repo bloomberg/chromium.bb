@@ -1884,6 +1884,10 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnAfterUserAction();
 }
 
+void Textfield::OffsetDoubleClickWord(int offset) {
+  selection_controller_.OffsetDoubleClickWord(offset);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
