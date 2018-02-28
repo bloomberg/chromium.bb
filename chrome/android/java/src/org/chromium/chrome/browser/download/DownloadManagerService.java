@@ -1419,12 +1419,39 @@ public class DownloadManagerService
             Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
                     LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                     downloadItem.getDownloadInfo().isOffTheRecord());
+            addCancelExtra(intent, downloadItem);
             mContext.sendBroadcast(intent);
         } else {
             Intent intent = DownloadNotificationFactory.buildActionIntent(mContext, action,
                     LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                     downloadItem.getDownloadInfo().isOffTheRecord());
+            addCancelExtra(intent, downloadItem);
             mContext.startService(intent);
+        }
+    }
+
+    /**
+     * Add an Intent extra for StateAtCancel UMA to know the state of a request prior to a
+     * user-initated cancel.
+     * @param intent The Intent associated with the download action.
+     * @param downloadItem The download associated with download action.
+     */
+    private void addCancelExtra(Intent intent, DownloadItem downloadItem) {
+        if (intent.getAction().equals(DownloadNotificationService2.ACTION_DOWNLOAD_CANCEL)) {
+            int state;
+            if (DownloadUtils.isDownloadPaused(downloadItem)) {
+                state = DownloadNotificationUmaHelper.StateAtCancel.PAUSED;
+            } else if (DownloadUtils.isDownloadPending(downloadItem)) {
+                if (downloadItem.getDownloadInfo().getPendingState()
+                        == PendingState.PENDING_NETWORK) {
+                    state = DownloadNotificationUmaHelper.StateAtCancel.PENDING_NETWORK;
+                } else {
+                    state = DownloadNotificationUmaHelper.StateAtCancel.PENDING_ANOTHER_DOWNLOAD;
+                }
+            } else {
+                state = DownloadNotificationUmaHelper.StateAtCancel.DOWNLOADING;
+            }
+            intent.putExtra(DownloadNotificationService2.EXTRA_DOWNLOAD_STATE_AT_CANCEL, state);
         }
     }
 

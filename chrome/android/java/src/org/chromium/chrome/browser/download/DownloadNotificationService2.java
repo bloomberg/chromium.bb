@@ -55,6 +55,9 @@ public class DownloadNotificationService2 {
     static final String EXTRA_IS_SUPPORTED_MIME_TYPE = "IsSupportedMimeType";
     static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+    // Used to propagate request state information for OfflineItems.StateAtCancel UMA.
+    static final String EXTRA_DOWNLOAD_STATE_AT_CANCEL =
+            "org.chromium.chrome.browser.download.OfflineItemsStateAtCancel";
 
     public static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";

@@ -32050,6 +32050,13 @@ Called by update_net_trust_anchors.py.-->
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OfflineItemsStateAtCancel">
+  <int value="0" label="Downloading"/>
+  <int value="1" label="Paused"/>
+  <int value="2" label="Pending network connection"/>
+  <int value="3" label="Pending another download completion"/>
+</enum>
+
 <enum name="OfflinePagePrefetchNotificationAction">
   <int value="0" label="Attempt to show pending content check"/>
   <int value="1" label="Showed notification"/>
