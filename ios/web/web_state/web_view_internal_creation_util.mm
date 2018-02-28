@@ -60,6 +60,7 @@ WKWebView* BuildWKWebView(CGRect frame,
   if (context_menu_delegate) {
     CRWContextMenuController* context_menu_controller = [
         [CRWContextMenuController alloc] initWithWebView:web_view
+                                            browserState:browser_state
                                       injectionEvaluator:nil
                                                 delegate:context_menu_delegate];
     void* associated_object_key = (__bridge void*)context_menu_controller;
