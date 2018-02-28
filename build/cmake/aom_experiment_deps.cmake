@@ -26,6 +26,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_OBU_SIZE_AFTER_HEADER)
+    if (NOT CONFIG_OBU_SIZING)
+      change_config_and_warn(CONFIG_OBU_SIZING 1 CONFIG_OBU_SIZE_AFTER_HEADER)
+    endif ()
+  endif ()
+
   if (CONFIG_ANALYZER)
     if (NOT CONFIG_INSPECTION)
       change_config_and_warn(CONFIG_INSPECTION 1 CONFIG_ANALYZER)
