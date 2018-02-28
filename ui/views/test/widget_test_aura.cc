@@ -13,6 +13,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_controller.h"
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11.h"        // nogncheck
@@ -160,6 +161,21 @@ ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
 // static
 bool WidgetTest::IsNativeWindowTransparent(gfx::NativeWindow window) {
   return window->transparent();
+}
+
+// static
+bool WidgetTest::WidgetHasInProcessShadow(Widget* widget) {
+  aura::Window* window = widget->GetNativeWindow();
+  if (wm::ShadowController::GetShadowForWindow(window))
+    return true;
+
+  // If the Widget's native window is the content window for a
+  // DesktopWindowTreeHost, then giving the root window a shadow also has the
+  // effect of drawing a shadow around the window.
+  if (window->parent() == window->GetRootWindow())
+    return wm::ShadowController::GetShadowForWindow(window->GetRootWindow());
+
+  return false;
 }
 
 // static

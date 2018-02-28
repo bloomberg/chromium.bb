@@ -195,6 +195,12 @@ MusClient::ConfigurePropertiesFromParams(
   properties[WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<TransportType>(init_params.remove_standard_frame);
 
+  if (init_params.corner_radius) {
+    properties[WindowManager::kWindowCornerRadius_Property] =
+        mojo::ConvertTo<TransportType>(
+            static_cast<PrimitiveType>(*init_params.corner_radius));
+  }
+
   if (!Widget::RequiresNonClientView(init_params.type))
     return properties;
 

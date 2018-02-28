@@ -153,6 +153,10 @@ interface WindowManager {
   // Type: ShowState.
   const string kShowState_Property = "prop:show-state";
 
+  // The window corner radius in DIPs. Maps to
+  // aura::client::kWindowCornerRadiusKey. Type: int.
+  const string kWindowCornerRadius_Property = "prop:window-corner-radius";
+
   // The window icon; typically 16x16 for titlebars. Type: SkBitmap
   const string kWindowIcon_Property = "prop:window-icon";
 

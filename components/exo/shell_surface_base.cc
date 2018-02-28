@@ -904,7 +904,8 @@ void ShellSurfaceBase::OnWindowBoundsChanged(aura::Window* window,
     UpdateSurfaceBounds();
 
     // The shadow size may be updated to match the widget. Change it back
-    // to the shadow content size.
+    // to the shadow content size. Note that this relies on wm::ShadowController
+    // being notified of the change before |this|.
     UpdateShadow();
 
     Configure();

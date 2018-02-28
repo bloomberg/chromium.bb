@@ -537,6 +537,9 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   data->properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::BUBBLE));
+  constexpr int kWindowCornerRadiusValue = 6;
+  data->properties[ui::mojom::WindowManager::kWindowCornerRadius_Property] =
+      ConvertToPropertyTransportValue(kWindowCornerRadiusValue);
   data->parent_id = server_id(root_window());
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
@@ -551,6 +554,8 @@ TEST_F(WindowTreeClientWmTest, OnWindowHierarchyChangedWithProperties) {
   Window* child = root_window()->children()[0];
   EXPECT_FALSE(child->TargetVisibility());
   EXPECT_EQ(server_test_property1_value, child->GetProperty(kTestPropertyKey1));
+  EXPECT_EQ(kWindowCornerRadiusValue,
+            child->GetProperty(client::kWindowCornerRadiusKey));
   EXPECT_EQ(child->type(), client::WINDOW_TYPE_POPUP);
   EXPECT_EQ(ui::mojom::WindowType::BUBBLE,
             child->GetProperty(client::kWindowTypeKey));

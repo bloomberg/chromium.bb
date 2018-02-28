@@ -94,7 +94,9 @@ RoundedOmniboxResultsFrame::~RoundedOmniboxResultsFrame() = default;
 void RoundedOmniboxResultsFrame::OnBeforeWidgetInit(
     views::Widget::InitParams* params) {
   params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params->corner_radius = GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS);
   params->shadow_elevation = kElevation;
+  params->name = "RoundedOmniboxResultsFrameWindow";
 }
 
 // static
@@ -128,25 +130,5 @@ void RoundedOmniboxResultsFrame::AddedToWidget() {
 #if defined(USE_AURA)
   GetWidget()->GetNativeWindow()->SetEventTargeter(
       std::make_unique<ResultsTargeter>(content_insets_.top()));
-
-  // This works well on ChromeOS. On other platforms, some tricks may be needed
-  // to ensure the shadow is not clipped to the parent Widget bounds, since it
-  // can peek outside the browser bounds. It is possible to just put the shadow
-  // layer into the Widget's layer hierarchy, but that needs further logic to
-  // ensure mouse events pass through it to the browser below.
-  auto* shadow_layer =
-      wm::ShadowController::GetShadowForWindow(GetWidget()->GetNativeWindow());
-#if defined(OS_WIN)
-  // To get a shadow from the ShadowController on Windows, the Widget can not be
-  // top-level (it must be a child within another DesktopWindowTreeHost).
-  // ChromeViewsDelegate decides this: it chooses top-level because software
-  // compositing is force-enabled for the Widget on windows, and because
-  // top-level Widgets are preferred under Aero (compositing window manager).
-  if (!shadow_layer)
-    return;
-#endif
-  DCHECK(shadow_layer);
-  shadow_layer->SetRoundedCornerRadius(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS));
 #endif
 }

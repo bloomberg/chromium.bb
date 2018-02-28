@@ -152,6 +152,10 @@ AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 // Indicates the type of embedding within the given window.
 AURA_EXPORT extern const WindowProperty<WindowEmbedType>* const kEmbedType;
 
+// The corner radius of a window in DIPs. Currently only used for shadows.
+// Default is -1, meaning "unspecified". 0 Ensures corners are square.
+AURA_EXPORT extern const WindowProperty<int>* const kWindowCornerRadiusKey;
+
 AURA_EXPORT extern const WindowProperty<ui::mojom::WindowType>* const
     kWindowTypeKey;
 
