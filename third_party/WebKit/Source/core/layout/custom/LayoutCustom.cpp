@@ -12,12 +12,36 @@
 #include "core/layout/custom/LayoutWorklet.h"
 #include "core/layout/custom/LayoutWorkletGlobalScope.h"
 #include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 
 namespace blink {
 
 LayoutCustom::LayoutCustom(Element* element) : LayoutBlockFlow(element) {
   DCHECK(element);
+}
+
+void LayoutCustom::AddChild(LayoutObject* new_child,
+                            LayoutObject* before_child) {
+  // Only use the block-flow AddChild logic when we are unloaded, i.e. we
+  // should behave exactly like a block-flow.
+  if (state_ == kUnloaded) {
+    LayoutBlockFlow::AddChild(new_child, before_child);
+    return;
+  }
+
+  LayoutBlock::AddChild(new_child, before_child);
+}
+
+void LayoutCustom::RemoveChild(LayoutObject* child) {
+  // Only use the block-flow RemoveChild logic when we are unloaded, i.e. we
+  // should behave exactly like a block-flow.
+  if (state_ == kUnloaded) {
+    LayoutBlockFlow::RemoveChild(child);
+    return;
+  }
+
+  LayoutBlock::RemoveChild(child);
 }
 
 void LayoutCustom::StyleDidChange(StyleDifference diff,
@@ -38,6 +62,8 @@ void LayoutCustom::StyleDidChange(StyleDifference diff,
   // "layout()" is registered.
   if (state_ == kUnloaded) {
     worklet->AddPendingLayout(name, GetNode());
+  } else {
+    SetChildrenInline(false);
   }
 }
 
@@ -100,10 +126,22 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     if (!instance->Layout(*this, &fragment_result_options))
       return false;
 
-    // TODO(ikilpatrick): Currently we need to "fail" if we have any children
-    // as they won't be laid out yet.
-    if (FirstChild())
-      return false;
+    // TODO(ikilpatrick): Currently we layout all our children so that we pass
+    // tests.
+    for (LayoutBox* child = FirstChildBox(); child;
+         child = child->NextSiblingBox()) {
+      if (child->IsOutOfFlowPositioned()) {
+        child->ContainingBlock()->InsertPositionedObject(child);
+
+        PaintLayer* child_layer = child->Layer();
+        child_layer->SetStaticInlinePosition(LayoutUnit(BorderStart()));
+        child_layer->SetStaticBlockPosition(LayoutUnit(BorderBefore()));
+
+        continue;
+      }
+
+      child->LayoutIfNeeded();
+    }
 
     SetLogicalHeight(LayoutUnit(fragment_result_options.autoBlockSize()));
 

@@ -2454,6 +2454,9 @@ class ComputedStyle : public ComputedStyleBase,
   bool DiffNeedsFullLayout(const Document&, const ComputedStyle& other) const;
   bool DiffNeedsFullLayoutForLayoutCustom(const Document&,
                                           const ComputedStyle& other) const;
+  bool DiffNeedsFullLayoutForLayoutCustomChild(
+      const Document&,
+      const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObjectForPaintImage(

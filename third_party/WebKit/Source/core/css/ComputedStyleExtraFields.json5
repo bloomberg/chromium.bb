@@ -91,6 +91,14 @@
       default_value: "g_null_atom",
     },
     {
+      name: "DisplayLayoutCustomParentName",
+      field_template: "external",
+      field_group: "*",
+      type_name: "AtomicString",
+      include_paths: ["platform/wtf/text/AtomicString.h"],
+      default_value: "g_null_atom",
+    },
+    {
       name: "OriginalDisplay",
       field_template: "keyword",
       type_name: "EDisplay",

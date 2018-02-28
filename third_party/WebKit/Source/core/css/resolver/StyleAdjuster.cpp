@@ -424,6 +424,9 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
         style.MarginAfter().IsPercentOrCalc()) {
       UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
     }
+  } else if (layout_parent_style.IsDisplayLayoutCustomBox()) {
+    // Blockify the children of a LayoutCustom.
+    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
   }
 }
 
@@ -550,6 +553,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // from inline.  https://drafts.csswg.org/css-containment/#containment-paint
     if (style.ContainsPaint() && style.Display() == EDisplay::kInline)
       style.SetDisplay(EDisplay::kBlock);
+
+    // If this is a child of a LayoutCustom, we need the name of the parent
+    // layout function for invalidation purposes.
+    if (layout_parent_style.IsDisplayLayoutCustomBox()) {
+      style.SetDisplayLayoutCustomParentName(
+          layout_parent_style.DisplayLayoutCustomName());
+    }
   } else {
     AdjustStyleForFirstLetter(style);
   }

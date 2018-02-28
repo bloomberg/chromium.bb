@@ -264,6 +264,8 @@ blink_core_sources("layout") {
     "custom/CSSLayoutDefinition.h",
     "custom/CSSLayoutWorklet.cpp",
     "custom/CSSLayoutWorklet.h",
+    "custom/CustomLayoutChild.cpp",
+    "custom/CustomLayoutChild.h",
     "custom/DocumentLayoutDefinition.cpp",
     "custom/DocumentLayoutDefinition.h",
     "custom/LayoutCustom.cpp",
