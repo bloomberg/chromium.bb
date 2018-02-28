@@ -478,7 +478,7 @@ class MasterValueParser : public ElementParser {
 
     template <typename Tag>
     constexpr static bool has_tag() {
-      return HasTag<Tag, Tags...>::value;
+      return MasterValueParser::HasTag<Tag, Tags...>::value;
     }
   };
 
