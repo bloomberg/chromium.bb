@@ -123,10 +123,10 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       compositor_task_runner_(std::move(compositor_task_runner)) {
 #if defined(OS_ANDROID)
-  if (compositor_task_runner) {
+  if (compositor_task_runner_) {
     synchronous_compositor_registry_ =
         std::make_unique<SynchronousCompositorProxyRegistry>(
-            compositor_task_runner);
+            compositor_task_runner_);
   }
 #endif
 }
