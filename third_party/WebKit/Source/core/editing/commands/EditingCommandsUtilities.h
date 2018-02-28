@@ -32,10 +32,17 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
+#include "core/editing/TextGranularity.h"
+#include "core/events/InputEvent.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+
+enum class DeleteDirection {
+  kForward,
+  kBackward,
+};
 
 class Document;
 class Element;
@@ -54,6 +61,7 @@ Node* EnclosingEmptyListItem(const VisiblePosition&);
 
 bool IsTableStructureNode(const Node*);
 bool IsNodeRendered(const Node&);
+bool IsInline(const Node*);
 // Returns true if specified nodes are elements, have identical tag names,
 // have identical attributes, and are editable.
 CORE_EXPORT bool AreIdenticalElements(const Node&, const Node&);
@@ -123,6 +131,9 @@ VisibleSelection SelectionForParagraphIteration(const VisibleSelection&);
 const String& NonBreakingSpaceString();
 
 CORE_EXPORT void TidyUpHTMLStructure(Document&);
+
+InputEvent::InputType DeletionInputTypeFromTextGranularity(DeleteDirection,
+                                                           TextGranularity);
 }  // namespace blink
 
 #endif

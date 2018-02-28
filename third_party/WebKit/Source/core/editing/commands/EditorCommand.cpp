@@ -49,6 +49,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/ApplyStyleCommand.h"
 #include "core/editing/commands/CreateLinkCommand.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"

@@ -29,7 +29,6 @@
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/Forward.h"
-#include "core/editing/TextGranularity.h"
 #include "core/events/InputEvent.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"
@@ -48,11 +47,6 @@ enum class PositionMoveType {
   // Standard Annex #29, Unicode text segmentation[1].
   // [1] http://www.unicode.org/reports/tr29/
   kGraphemeCluster,
-};
-
-enum class DeleteDirection {
-  kForward,
-  kBackward,
 };
 
 class Document;
@@ -165,7 +159,6 @@ bool IsMailHTMLBlockquoteElement(const Node*);
 // Returns true if the specified node is visible <table>. We don't want to add
 // invalid nodes to <table> elements.
 bool IsDisplayInsideTable(const Node*);
-bool IsInline(const Node*);
 bool IsTableCell(const Node*);
 bool IsEmptyTableCell(const Node*);
 bool IsHTMLListElement(const Node*);
@@ -390,10 +383,6 @@ DispatchEventResult DispatchBeforeInputEditorCommand(Node*,
 DispatchEventResult DispatchBeforeInputDataTransfer(Node*,
                                                     InputEvent::InputType,
                                                     DataTransfer*);
-
-InputEvent::InputType DeletionInputTypeFromTextGranularity(DeleteDirection,
-                                                           TextGranularity);
-
 }  // namespace blink
 
 #endif

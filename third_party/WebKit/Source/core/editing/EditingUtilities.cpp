@@ -963,14 +963,6 @@ bool IsEnclosingBlock(const Node* node) {
          !node->GetLayoutObject()->IsRubyText();
 }
 
-bool IsInline(const Node* node) {
-  if (!node)
-    return false;
-
-  const ComputedStyle* style = node->GetComputedStyle();
-  return style && style->Display() == EDisplay::kInline;
-}
-
 // TODO(yosin) Deploy this in all of the places where |enclosingBlockFlow()| and
 // |enclosingBlockFlowOrTableElement()| are used.
 // TODO(yosin) Callers of |Node| version of |enclosingBlock()| should use
@@ -1688,32 +1680,6 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
         TargetRangesForInputEvent(*target));
   }
   return target->DispatchEvent(before_input_event);
-}
-
-InputEvent::InputType DeletionInputTypeFromTextGranularity(
-    DeleteDirection direction,
-    TextGranularity granularity) {
-  using InputType = InputEvent::InputType;
-  switch (direction) {
-    case DeleteDirection::kForward:
-      if (granularity == TextGranularity::kWord)
-        return InputType::kDeleteWordForward;
-      if (granularity == TextGranularity::kLineBoundary)
-        return InputType::kDeleteSoftLineForward;
-      if (granularity == TextGranularity::kParagraphBoundary)
-        return InputType::kDeleteHardLineForward;
-      return InputType::kDeleteContentForward;
-    case DeleteDirection::kBackward:
-      if (granularity == TextGranularity::kWord)
-        return InputType::kDeleteWordBackward;
-      if (granularity == TextGranularity::kLineBoundary)
-        return InputType::kDeleteSoftLineBackward;
-      if (granularity == TextGranularity::kParagraphBoundary)
-        return InputType::kDeleteHardLineBackward;
-      return InputType::kDeleteContentBackward;
-    default:
-      return InputType::kNone;
-  }
 }
 
 // |IsEmptyNonEditableNodeInEditable()| is introduced for fixing
