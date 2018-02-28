@@ -67,9 +67,7 @@ class GIN_EXPORT V8Initializer {
 
 #if defined(OS_ANDROID)
   static base::FilePath GetNativesFilePath();
-  static base::FilePath GetSnapshotFilePath(
-      bool abi_32_bit,
-      V8SnapshotFileType snapshot_file_type);
+  static base::FilePath GetSnapshotFilePath(bool abi_32_bit);
 #endif
 
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
