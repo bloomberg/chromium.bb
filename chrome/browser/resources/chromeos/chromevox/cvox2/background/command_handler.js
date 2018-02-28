@@ -479,6 +479,15 @@ CommandHandler.onCommand = function(command) {
     case 'forceClickOnCurrentItem':
       if (ChromeVoxState.instance.currentRange) {
         var actionNode = ChromeVoxState.instance.currentRange.start.node;
+        // Scan for a clickable, which overrides the |actionNode|.
+        var clickable = actionNode;
+        while (clickable && !clickable.clickable)
+          clickable = clickable.parent;
+        if (clickable) {
+          clickable.doDefault();
+          return false;
+        }
+
         while (actionNode.role == RoleType.INLINE_TEXT_BOX ||
                actionNode.role == RoleType.STATIC_TEXT)
           actionNode = actionNode.parent;
@@ -486,11 +495,7 @@ CommandHandler.onCommand = function(command) {
           ChromeVoxState.instance.navigateToRange(
               cursors.Range.fromNode(actionNode.inPageLinkTarget));
         } else {
-          // Scan for a clickable, which overrides the |actionNode|.
-          var clickable = actionNode;
-          while (clickable && !clickable.clickable)
-            clickable = clickable.parent;
-          clickable ? clickable.doDefault() : actionNode.doDefault();
+          actionNode.doDefault();
         }
       }
       // Skip all other processing; if focus changes, we should get an event
