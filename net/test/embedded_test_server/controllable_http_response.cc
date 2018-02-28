@@ -40,9 +40,6 @@ ControllableHttpResponse::ControllableHttpResponse(
     const std::string& relative_url)
     : weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!embedded_test_server->Started()) << "ControllableHttpResponse must "
-                                              "be instanciated before starting "
-                                              "the EmbeddedTestServer.";
   embedded_test_server->RegisterRequestHandler(
       base::BindRepeating(RequestHandler, weak_ptr_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get(),
