@@ -74,6 +74,9 @@ function FullWindowVideoControls(
       case 'j':
         this.bigSkip(false);
         break;
+      case 'BrowserBack':
+        chrome.app.window.current().close();
+        break;
       case 'MediaStop':
         // TODO: Define "Stop" behavior.
         break;
