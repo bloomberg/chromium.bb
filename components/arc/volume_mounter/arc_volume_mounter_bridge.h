@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/common/volume_mounter.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -62,7 +63,11 @@ class ArcVolumeMounterBridge
                      const std::string& device_path) override;
 
  private:
+  void SendAllMountEvents();
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  base::WeakPtrFactory<ArcVolumeMounterBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVolumeMounterBridge);
 };
