@@ -55,6 +55,21 @@ a {
   padding: 0 6px; /* = 8px - 2px back button border */
 }
 
-#eula-accept-button {
+#eula-accept-button,
+#settings-close-button {
   -webkit-padding-end: 18px;
+}
+
+.tpm-password > div {
+  margin-top: 18px;
+}
+
+.password-row div {
+  color: rgb(66, 133, 244);
+  font: 24px Roboto;
+  margin-top: 82px;
+}
+
+.installation-settings-spinner {
+  -webkit-margin-end: 5px;
 }
