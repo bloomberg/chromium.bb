@@ -250,13 +250,12 @@ class ASH_EXPORT WallpaperController
 
   // Returns whether a wallpaper policy is enforced for |account_id| (not
   // including device policy).
-  bool IsPolicyControlled(const AccountId& account_id,
-                          bool is_persistent) const;
+  bool IsPolicyControlled(const AccountId& account_id, bool is_ephemeral) const;
 
   // When kiosk app is running or policy is enforced, setting a user wallpaper
   // is not allowed.
   bool CanSetUserWallpaper(const AccountId& account_id,
-                           bool is_persistent) const;
+                           bool is_ephemeral) const;
 
   // Prepares wallpaper to lock screen transition. Will apply blur if
   // |locking| is true and remove it otherwise.
@@ -304,24 +303,22 @@ class ASH_EXPORT WallpaperController
   // Returns whether the current wallpaper is blurred.
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
 
-  // TODO(crbug.com/776464): Change |is_persistent| to |is_ephemeral| to
-  // be consistent with |mojom::WallpaperUserInfo|.
   // Sets wallpaper info for |account_id| and saves it to local state if
-  // |is_persistent| is true.
+  // |is_ephemeral| is false.
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
-                            bool is_persistent);
+                            bool is_ephemeral);
 
   // Gets wallpaper info of |account_id| from local state, or memory if
-  // |is_persistent| is false. Returns false if wallpaper info is not found.
+  // |is_ephemeral| is true. Returns false if wallpaper info is not found.
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info,
-                            bool is_persistent) const;
+                            bool is_ephemeral) const;
 
   // Initializes wallpaper info for the user to default and saves it to local
-  // state if |is_persistent| is true.
+  // state if |is_ephemeral| is false.
   void InitializeUserWallpaperInfo(const AccountId& account_id,
-                                   bool is_persistent);
+                                   bool is_ephemeral);
 
   // TODO(crbug.com/776464): This method is a temporary workaround during the
   // refactoring. It should be combined with |SetCustomWallpaper|.
@@ -348,7 +345,7 @@ class ASH_EXPORT WallpaperController
   // login screen right now.
   bool ShouldSetDevicePolicyWallpaper() const;
 
-  // mojom::WallpaperController overrides:
+  // mojom::WallpaperController:
   void Init(mojom::WallpaperControllerClientPtr client,
             const base::FilePath& user_data_path,
             const base::FilePath& chromeos_wallpapers_path,
@@ -406,10 +403,10 @@ class ASH_EXPORT WallpaperController
   void ShowDefaultWallpaperForTesting();
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
-  // when running. However, the wallpaper widgets are now created
-  // asynchronously. If loading a real wallpaper, there are cases that these
-  // tests crash because the required widget is not ready. This function
-  // synchronously creates an empty widget for those tests to prevent crashes.
+  // when running. However, the wallpaper widgets are created asynchronously. If
+  // loading a real wallpaper, there are cases that these tests crash because
+  // the required widget is not ready. This function synchronously creates an
+  // empty widget for those tests to prevent crashes.
   void CreateEmptyWallpaperForTesting();
 
   // Sets a test client interface with empty file paths.
@@ -445,7 +442,7 @@ class ASH_EXPORT WallpaperController
   int GetWallpaperContainerId(bool locked);
 
   // Removes |account_id|'s wallpaper info and color cache if it exists.
-  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_persistent);
+  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_ephemeral);
 
   // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
   // custom wallpapers and directories.

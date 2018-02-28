@@ -390,7 +390,7 @@ class WallpaperControllerTest : public AshTestBase {
         relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED, wallpaper::CUSTOMIZED,
         base::Time::Now().LocalMidnight()};
     controller_->SetUserWallpaperInfo(account_id, info,
-                                      true /*is_persistent=*/);
+                                      false /*is_ephemeral=*/);
   }
 
   // Simulates setting a custom wallpaper by directly setting the wallpaper
@@ -401,7 +401,7 @@ class WallpaperControllerTest : public AshTestBase {
         wallpaper::WallpaperInfo("dummy_file_location", WALLPAPER_LAYOUT_CENTER,
                                  wallpaper::CUSTOMIZED,
                                  base::Time::Now().LocalMidnight()),
-        true /*is_persistent=*/);
+        false /*is_ephemeral=*/);
   }
 
   // Initializes default wallpaper paths "*default_*file" and writes JPEG
@@ -841,7 +841,7 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaper) {
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::CUSTOMIZED);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo expected_wallpaper_info(
       base::FilePath(wallpaper_files_id_1).Append(file_name_1).value(), layout,
       wallpaper::CUSTOMIZED, base::Time::Now().LocalMidnight());
@@ -855,7 +855,7 @@ TEST_F(WallpaperControllerTest, SetCustomWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 }
 
@@ -874,7 +874,7 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::ONLINE);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo expected_wallpaper_info(
       url, layout, wallpaper::ONLINE, base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
@@ -886,7 +886,7 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 }
 
@@ -898,9 +898,9 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
   // The user starts with no wallpaper info and is not controlled by policy.
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_FALSE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                 true /*is_persistent=*/));
+                                                 false /*is_ephemeral=*/));
   EXPECT_FALSE(
-      controller_->IsPolicyControlled(account_id_1, true /*is_persistent=*/));
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
   // A default wallpaper is shown for the user.
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   EXPECT_EQ(1, GetWallpaperCount());
@@ -913,7 +913,7 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
                                   std::string() /*data=*/);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo policy_wallpaper_info(
       base::FilePath(wallpaper_files_id_1)
           .Append("policy-controlled.jpeg")
@@ -922,7 +922,7 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
       base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
   EXPECT_TRUE(
-      controller_->IsPolicyControlled(account_id_1, true /*is_persistent=*/));
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
   // Verify the wallpaper is not updated since the user hasn't logged in.
   EXPECT_EQ(0, GetWallpaperCount());
 
@@ -939,13 +939,13 @@ TEST_F(WallpaperControllerTest, SetAndRemovePolicyWallpaper) {
                                      wallpaper_files_id_1);
   WaitUntilCustomWallpapersDeleted(account_id_1);
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo default_wallpaper_info(
       std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
   EXPECT_FALSE(
-      controller_->IsPolicyControlled(account_id_1, true /*is_persistent=*/));
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
   // Verify the wallpaper is not updated since the user hasn't logged in.
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::POLICY);
@@ -965,7 +965,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
   SimulateSettingCustomWallpaper(account_id_1);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo default_wallpaper_info(
       std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
@@ -986,7 +986,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
       {wallpaper_dir_->GetPath().Append(default_large_wallpaper_name)}));
 
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   // The user wallpaper info has been reset to the default value.
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
 
@@ -1006,7 +1006,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
       {wallpaper_dir_->GetPath().Append(default_small_wallpaper_name)}));
 
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   // The user wallpaper info has been reset to the default value.
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
 
@@ -1026,7 +1026,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForRegularAccount) {
       {wallpaper_dir_->GetPath().Append(default_small_wallpaper_name)}));
 
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   // The user wallpaper info has been reset to the default value.
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
 }
@@ -1079,7 +1079,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
   SimulateSettingCustomWallpaper(account_id_1);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo default_wallpaper_info(
       std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
@@ -1099,7 +1099,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::DEFAULT);
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, default_wallpaper_info);
   EXPECT_TRUE(CompareDecodeFilePaths(
       {wallpaper_dir_->GetPath().Append(guest_large_wallpaper_name)}));
@@ -1135,7 +1135,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
   EXPECT_EQ(0, GetWallpaperCount());
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_FALSE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                 true /* is_persistent */));
+                                                 false /*is_ephemeral=*/));
 
   // Verify that |SetOnlineWallpaper| doesn't set wallpaper in kiosk mode, and
   // |account_id|'s wallpaper info is not updated.
@@ -1145,7 +1145,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_FALSE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                 true /*is_persistent=*/));
+                                                 false /*is_ephemeral=*/));
 
   // Verify that |SetDefaultWallpaper| doesn't set wallpaper in kiosk mode, and
   // |account_id|'s wallpaper info is not updated.
@@ -1155,7 +1155,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_FALSE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                 true /*is_persistent=*/));
+                                                 false /*is_ephemeral=*/));
 }
 
 TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
@@ -1168,9 +1168,9 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
       "dummy_file_location", WALLPAPER_LAYOUT_CENTER, wallpaper::POLICY,
       base::Time::Now().LocalMidnight());
   controller_->SetUserWallpaperInfo(account_id_1, policy_wallpaper_info,
-                                    true /*is_persistent=*/);
+                                    false /*is_ephemeral=*/);
   EXPECT_TRUE(
-      controller_->IsPolicyControlled(account_id_1, true /*is_persistent=*/));
+      controller_->IsPolicyControlled(account_id_1, false /*is_ephemeral=*/));
 
   // Verify that |SetCustomWallpaper| doesn't set wallpaper when policy is
   // enforced, and |account_id|'s wallpaper info is not updated.
@@ -1181,7 +1181,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   EXPECT_EQ(0, GetWallpaperCount());
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
 
   // Verify that |SetOnlineWallpaper| doesn't set wallpaper when policy is
@@ -1192,7 +1192,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
 
   // Verify that |SetDefaultWallpaper| doesn't set wallpaper when policy is
@@ -1203,7 +1203,7 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestWhenPolicyIsEnforced) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, policy_wallpaper_info);
 }
 
@@ -1377,7 +1377,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   EXPECT_EQ(controller_->GetWallpaperLayout(), layout);
   wallpaper::WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   wallpaper::WallpaperInfo expected_wallpaper_info(
       base::FilePath(wallpaper_files_id_1).Append(file_name_1).value(), layout,
       wallpaper::CUSTOMIZED, base::Time::Now().LocalMidnight());
@@ -1392,7 +1392,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperLayout(), layout);
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   expected_wallpaper_info.layout = layout;
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 
@@ -1406,7 +1406,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), wallpaper::ONLINE);
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /*is_persistent=*/));
+                                                false /*is_ephemeral=*/));
   expected_wallpaper_info.type = wallpaper::ONLINE;
   expected_wallpaper_info.location = url;
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
@@ -1420,7 +1420,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   EXPECT_EQ(controller_->GetWallpaperLayout(), layout);
   // The saved wallpaper info is not updated.
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
-                                                true /* is_persistent */));
+                                                false /*is_ephemeral=*/));
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 }
 

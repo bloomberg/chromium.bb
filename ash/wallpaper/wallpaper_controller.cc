@@ -763,20 +763,20 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
 }
 
 bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
-                                             bool is_persistent) const {
+                                             bool is_ephemeral) const {
   WallpaperInfo info;
-  if (!GetUserWallpaperInfo(account_id, &info, is_persistent))
+  if (!GetUserWallpaperInfo(account_id, &info, is_ephemeral))
     return false;
   return info.type == wallpaper::POLICY;
 }
 
 bool WallpaperController::CanSetUserWallpaper(const AccountId& account_id,
-                                              bool is_persistent) const {
+                                              bool is_ephemeral) const {
   // There is no visible wallpaper in kiosk mode.
   if (IsInKioskMode())
     return false;
   // Don't allow user wallpapers while policy is in effect.
-  if (IsPolicyControlled(account_id, is_persistent)) {
+  if (IsPolicyControlled(account_id, is_ephemeral)) {
     return false;
   }
   return true;
@@ -807,7 +807,7 @@ std::string WallpaperController::GetActiveUserWallpaperLocation() {
 
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(active_user_session->user_info->account_id, &info,
-                            !active_user_session->user_info->is_ephemeral)) {
+                            active_user_session->user_info->is_ephemeral)) {
     return std::string();
   }
   return info.location;
@@ -927,8 +927,8 @@ bool WallpaperController::IsBlurEnabled() const {
 
 void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
                                                const WallpaperInfo& info,
-                                               bool is_persistent) {
-  if (!is_persistent) {
+                                               bool is_ephemeral) {
+  if (is_ephemeral) {
     ephemeral_users_wallpaper_info_[account_id] = info;
     return;
   }
@@ -938,7 +938,7 @@ void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
   if (!local_state)
     return;
   WallpaperInfo old_info;
-  if (GetUserWallpaperInfo(account_id, &old_info, is_persistent)) {
+  if (GetUserWallpaperInfo(account_id, &old_info, is_ephemeral)) {
     // Remove the color cache of the previous wallpaper if it exists.
     DictionaryPrefUpdate wallpaper_colors_update(local_state,
                                                  prefs::kWallpaperColors);
@@ -960,8 +960,8 @@ void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
 
 bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
                                                WallpaperInfo* info,
-                                               bool is_persistent) const {
-  if (!is_persistent) {
+                                               bool is_ephemeral) const {
+  if (is_ephemeral) {
     // Ephemeral users do not save anything to local state. Return true if the
     // info can be found in the map, otherwise return false.
     auto it = ephemeral_users_wallpaper_info_.find(account_id);
@@ -1009,11 +1009,11 @@ bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
 
 void WallpaperController::InitializeUserWallpaperInfo(
     const AccountId& account_id,
-    bool is_persistent) {
+    bool is_ephemeral) {
   const wallpaper::WallpaperInfo info = {
       std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(account_id, info, is_persistent);
+  SetUserWallpaperInfo(account_id, info, is_ephemeral);
 }
 
 void WallpaperController::SetArcWallpaper(
@@ -1025,7 +1025,7 @@ void WallpaperController::SetArcWallpaper(
     wallpaper::WallpaperLayout layout,
     bool is_ephemeral,
     bool show_wallpaper) {
-  if (!CanSetUserWallpaper(account_id, !is_ephemeral))
+  if (!CanSetUserWallpaper(account_id, is_ephemeral))
     return;
 
   ash::mojom::WallpaperUserInfoPtr user_info =
@@ -1095,7 +1095,7 @@ void WallpaperController::SetCustomWallpaper(
     wallpaper::WallpaperLayout layout,
     const SkBitmap& image,
     bool show_wallpaper) {
-  if (!CanSetUserWallpaper(user_info->account_id, !user_info->is_ephemeral))
+  if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
   SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
                       wallpaper::CUSTOMIZED, layout, show_wallpaper,
@@ -1110,7 +1110,7 @@ void WallpaperController::SetOnlineWallpaper(
     bool show_wallpaper) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
 
-  if (!CanSetUserWallpaper(user_info->account_id, !user_info->is_ephemeral))
+  if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
   gfx::ImageSkia online_wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(image);
@@ -1122,7 +1122,7 @@ void WallpaperController::SetOnlineWallpaper(
 
   WallpaperInfo info = {url, layout, wallpaper::ONLINE,
                         base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(user_info->account_id, info, !user_info->is_ephemeral);
+  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   if (show_wallpaper)
     SetWallpaperImage(online_wallpaper, info);
 
@@ -1137,15 +1137,15 @@ void WallpaperController::SetDefaultWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id,
     bool show_wallpaper) {
-  if (!CanSetUserWallpaper(user_info->account_id, !user_info->is_ephemeral))
+  if (!CanSetUserWallpaper(user_info->account_id, user_info->is_ephemeral))
     return;
 
   const AccountId account_id = user_info->account_id;
-  const bool is_persistent = !user_info->is_ephemeral;
+  const bool is_ephemeral = user_info->is_ephemeral;
   const user_manager::UserType type = user_info->type;
 
   RemoveUserWallpaper(std::move(user_info), wallpaper_files_id);
-  InitializeUserWallpaperInfo(account_id, is_persistent);
+  InitializeUserWallpaperInfo(account_id, is_ephemeral);
   if (show_wallpaper) {
     SetDefaultWallpaperImpl(account_id, type, true /*show_wallpaper=*/);
   }
@@ -1223,7 +1223,7 @@ void WallpaperController::UpdateCustomWallpaperLayout(
   }
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(user_info->account_id, &info,
-                            !user_info->is_ephemeral) ||
+                            user_info->is_ephemeral) ||
       info.type != wallpaper::CUSTOMIZED) {
     return;
   }
@@ -1231,7 +1231,7 @@ void WallpaperController::UpdateCustomWallpaperLayout(
     return;
 
   info.layout = layout;
-  SetUserWallpaperInfo(user_info->account_id, info, !user_info->is_ephemeral);
+  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   ShowUserWallpaper(std::move(user_info));
 }
 
@@ -1251,13 +1251,13 @@ void WallpaperController::ShowUserWallpaper(
   }
 
   const AccountId account_id = current_user_->account_id;
-  const bool is_persistent = !current_user_->is_ephemeral;
+  const bool is_ephemeral = current_user_->is_ephemeral;
   // Guest user or regular user in ephemeral mode.
   // TODO(wzang/xdai): Check if the wallpaper info for ephemeral users should
   // be saved to local state.
-  if ((!is_persistent && current_user_->has_gaia_account) ||
+  if ((is_ephemeral && current_user_->has_gaia_account) ||
       current_user_->type == user_manager::USER_TYPE_GUEST) {
-    InitializeUserWallpaperInfo(account_id, is_persistent);
+    InitializeUserWallpaperInfo(account_id, is_ephemeral);
     SetDefaultWallpaperImpl(account_id, current_user_->type,
                             true /*show_wallpaper=*/);
     LOG(ERROR) << "User is ephemeral or guest! Fallback to default wallpaper.";
@@ -1265,9 +1265,9 @@ void WallpaperController::ShowUserWallpaper(
   }
 
   WallpaperInfo info;
-  if (!GetUserWallpaperInfo(account_id, &info, is_persistent)) {
-    InitializeUserWallpaperInfo(account_id, is_persistent);
-    GetUserWallpaperInfo(account_id, &info, is_persistent);
+  if (!GetUserWallpaperInfo(account_id, &info, is_ephemeral)) {
+    InitializeUserWallpaperInfo(account_id, is_ephemeral);
+    GetUserWallpaperInfo(account_id, &info, is_ephemeral);
   }
 
   gfx::ImageSkia user_wallpaper;
@@ -1339,20 +1339,20 @@ void WallpaperController::ShowSigninWallpaper() {
 void WallpaperController::RemoveUserWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {
-  RemoveUserWallpaperInfo(user_info->account_id, !user_info->is_ephemeral);
+  RemoveUserWallpaperInfo(user_info->account_id, user_info->is_ephemeral);
   RemoveUserWallpaperImpl(user_info->account_id, wallpaper_files_id);
 }
 
 void WallpaperController::RemovePolicyWallpaper(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& wallpaper_files_id) {
-  DCHECK(IsPolicyControlled(user_info->account_id, !user_info->is_ephemeral));
+  DCHECK(IsPolicyControlled(user_info->account_id, user_info->is_ephemeral));
   // Updates the screen only when the user has logged in.
   const bool show_wallpaper =
       Shell::Get()->session_controller()->IsActiveUserSessionStarted();
   // Removes the wallpaper info so that the user is no longer policy controlled,
   // otherwise setting default wallpaper is not allowed.
-  RemoveUserWallpaperInfo(user_info->account_id, !user_info->is_ephemeral);
+  RemoveUserWallpaperInfo(user_info->account_id, user_info->is_ephemeral);
   SetDefaultWallpaper(std::move(user_info), wallpaper_files_id, show_wallpaper);
 }
 
@@ -1487,7 +1487,7 @@ int WallpaperController::GetWallpaperContainerId(bool locked) {
 }
 
 void WallpaperController::RemoveUserWallpaperInfo(const AccountId& account_id,
-                                                  bool is_persistent) {
+                                                  bool is_ephemeral) {
   if (wallpaper_cache_map_.find(account_id) != wallpaper_cache_map_.end())
     wallpaper_cache_map_.erase(account_id);
 
@@ -1496,7 +1496,7 @@ void WallpaperController::RemoveUserWallpaperInfo(const AccountId& account_id,
   if (!local_state)
     return;
   WallpaperInfo info;
-  GetUserWallpaperInfo(account_id, &info, is_persistent);
+  GetUserWallpaperInfo(account_id, &info, is_ephemeral);
   DictionaryPrefUpdate prefs_wallpapers_info_update(local_state,
                                                     prefs::kUserWallpaperInfo);
   prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
@@ -1674,7 +1674,7 @@ void WallpaperController::SaveAndSetWallpaper(
   // appropriate wallpaper resolution.
   WallpaperInfo info = {relative_path, layout, type,
                         base::Time::Now().LocalMidnight()};
-  SetUserWallpaperInfo(user_info->account_id, info, !user_info->is_ephemeral);
+  SetUserWallpaperInfo(user_info->account_id, info, user_info->is_ephemeral);
   if (show_wallpaper)
     SetWallpaperImage(image, info);
 
@@ -1846,7 +1846,7 @@ bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() {
   if (!active_user_session)
     return false;
   return IsPolicyControlled(active_user_session->user_info->account_id,
-                            !active_user_session->user_info->is_ephemeral);
+                            active_user_session->user_info->is_ephemeral);
 }
 
 bool WallpaperController::ShouldShowWallpaperSettingImpl() {
