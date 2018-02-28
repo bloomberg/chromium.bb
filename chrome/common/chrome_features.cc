@@ -462,6 +462,11 @@ const base::Feature kUseNewAcceptLanguageHeader{
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Delegate permissions to cross-origin iframes when the feature has been
+// allowed by feature policy.
+const base::Feature kPermissionDelegation{"PermissionDelegation",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Disables PostScript generation when printing to PostScript capable printers
 // and instead sends Emf files.
 #if defined(OS_WIN)

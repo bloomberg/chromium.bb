@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -823,14 +825,17 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffAcceptLSDResetsBackOff) {
 #endif
 
 TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
+  // With permission delegation enabled, there can't be multiple permission
+  // requests on the same page. This test can be deleted once the feature is
+  // enabled by default.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
   GURL requesting_frame_0("https://www.example.com/geolocation");
   GURL requesting_frame_1("https://www.example-2.com/geolocation");
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_0, requesting_frame_1));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_1, requesting_frame_1));
+  EXPECT_EQ(CONTENT_SETTING_ASK, GetGeolocationContentSetting(
+                                     requesting_frame_0, requesting_frame_1));
+  EXPECT_EQ(CONTENT_SETTING_ASK, GetGeolocationContentSetting(
+                                     requesting_frame_1, requesting_frame_1));
 
   NavigateAndCommit(requesting_frame_0);
   RequestManagerDocumentLoadCompleted();
@@ -839,10 +844,10 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   EXPECT_FALSE(HasActivePrompt());
 
   // Request permission for two frames.
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, true);
-  RequestGeolocationPermission(
-      web_contents(), RequestID(1), requesting_frame_1, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame_0,
+                               true);
+  RequestGeolocationPermission(web_contents(), RequestID(1), requesting_frame_1,
+                               true);
   // Ensure only one prompt is created.
   ASSERT_TRUE(HasActivePrompt());
   base::string16 text_0 = GetPromptText();
@@ -924,24 +929,17 @@ TEST_F(GeolocationPermissionContextTests, DISABLED_PermissionForFileScheme) {
 
 TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   GURL frame_0("https://www.example.com/geolocation");
-  GURL frame_1("https://www.example-2.com/geolocation");
   EXPECT_EQ(
       CONTENT_SETTING_ASK, GetGeolocationContentSetting(frame_0, frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK, GetGeolocationContentSetting(frame_1, frame_0));
 
   NavigateAndCommit(frame_0);
   RequestManagerDocumentLoadCompleted();
 
   ASSERT_FALSE(HasActivePrompt());
 
-  // Request permission for two frames.
   RequestGeolocationPermission(
       web_contents(), RequestID(0), frame_0, true);
-  RequestGeolocationPermission(
-      web_contents(), RequestID(1), frame_1, true);
 
-  // Get the first permission request text.
   ASSERT_TRUE(HasActivePrompt());
   base::string16 text_0 = GetPromptText();
   ASSERT_FALSE(text_0.empty());
@@ -949,20 +947,9 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   // Simulate the frame going away; the request should be removed.
   ClosePrompt();
 
-  // Check that the next pending request is created correctly.
-  base::string16 text_1 = GetPromptText();
-  EXPECT_NE(text_0, text_1);
-
-  // Allow this frame and check that it worked.
-  AcceptPrompt();
-  CheckTabContentsState(frame_1, CONTENT_SETTING_ALLOW);
-  CheckPermissionMessageSent(1, true);
-
-  // Ensure the persisted permissions are ok.
+  // Ensure permission isn't persisted.
   EXPECT_EQ(
       CONTENT_SETTING_ASK, GetGeolocationContentSetting(frame_0, frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ALLOW, GetGeolocationContentSetting(frame_1, frame_0));
 }
 
 TEST_F(GeolocationPermissionContextTests, InvalidURL) {
@@ -1013,6 +1000,11 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
 }
 
 TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
+  // With permission delegation enabled, there can't be multiple permission
+  // requests on the same page. This test can be deleted once the feature is
+  // enabled by default.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
   GURL url_a("https://www.example.com/geolocation");
   GURL url_b("https://www.example-2.com/geolocation");
   NavigateAndCommit(url_a);  // Tab A0.
@@ -1022,12 +1014,11 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 
   // Request permission in both tabs; the extra tab will have two permission
   // requests from two origins.
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), url_a, true);
-  RequestGeolocationPermission(
-      extra_tabs_[0].get(), RequestIDForTab(0, 0), url_a, true);
-  RequestGeolocationPermission(
-      extra_tabs_[0].get(), RequestIDForTab(0, 1), url_b, true);
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a, true);
+  RequestGeolocationPermission(extra_tabs_[0].get(), RequestIDForTab(0, 0),
+                               url_a, true);
+  RequestGeolocationPermission(extra_tabs_[0].get(), RequestIDForTab(0, 1),
+                               url_b, true);
 
   ASSERT_TRUE(HasActivePrompt());
   ASSERT_TRUE(HasActivePrompt(extra_tabs_[0].get()));
@@ -1050,34 +1041,20 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
 }
 
 TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
-  GURL requesting_frame_0("https://www.example.com/geolocation");
-  GURL requesting_frame_1("https://www.example-2.com/geolocation");
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_1, requesting_frame_0));
+  GURL requesting_frame("https://www.example.com/geolocation");
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetGeolocationContentSetting(requesting_frame, requesting_frame));
 
-  NavigateAndCommit(requesting_frame_0);
+  NavigateAndCommit(requesting_frame);
   RequestManagerDocumentLoadCompleted();
 
   // Request permission for two frames.
-  RequestGeolocationPermission(
-      web_contents(), RequestID(0), requesting_frame_0, false);
-  RequestGeolocationPermission(
-      web_contents(), RequestID(1), requesting_frame_1, false);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame,
+                               false);
 
-  // Ensure only one prompt is created.
   ASSERT_TRUE(HasActivePrompt());
-
-  // The content settings should not have changed.
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_0, requesting_frame_0));
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      GetGeolocationContentSetting(requesting_frame_1, requesting_frame_0));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetGeolocationContentSetting(requesting_frame, requesting_frame));
 }
 
 #if defined(OS_ANDROID)

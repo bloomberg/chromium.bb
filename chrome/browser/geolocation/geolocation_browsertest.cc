@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
@@ -570,6 +572,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
+  // When permission delegation is enabled, there isn't a way to have a pending
+  // permission prompt when permission has already been granted in another frame
+  // on the same page. That means that this test isn't relevant and can be
+  // deleted after the feature is enabled by default.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   LoadIFrames();
@@ -579,8 +588,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(fake_latitude(), fake_longitude());
 
-  // In a second iframe from a different origin with a cached position the user
-  // is prompted.
+  // In a second iframe from a different origin with a cached position the
+  // user is prompted.
   SetFrameForScriptExecution("iframe_1");
   WatchPositionAndObservePermissionRequest(true);
 
@@ -592,8 +601,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
                                              fresh_position_longitude));
   ExpectPosition(fresh_position_latitude, fresh_position_longitude);
 
-  // When permission is granted to the second iframe the fresh position gets to
-  // the script.
+  // When permission is granted to the second iframe the fresh position gets
+  // to the script.
   SetFrameForScriptExecution("iframe_1");
   ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(fresh_position_latitude, fresh_position_longitude);
@@ -624,6 +633,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
+  // When permission delegation is removed, iframe requests are made for the top
+  // level frame. Navigating the iframe should not cancel the request. This
+  // test can be removed after the feature is enabled by default.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   LoadIFrames();

@@ -617,6 +617,7 @@ test("browser_tests") {
       "../browser/pdf/pdf_extension_test.cc",
       "../browser/pdf/pdf_extension_test_util.cc",
       "../browser/pdf/pdf_extension_test_util.h",
+      "../browser/permissions/permission_delegation_browsertest.cc",
       "../browser/permissions/permission_request_manager_browsertest.cc",
       "../browser/permissions/permissions_browsertest.cc",
       "../browser/permissions/permissions_browsertest.h",

@@ -27,6 +27,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/database_manager.h"
@@ -327,6 +328,17 @@ void PermissionContextBase::DecidePermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Under permission delegation, when we display a permission prompt, the
+  // origin displayed in the prompt should never differ from the top-level
+  // origin. The New Tab Page is excluded from this check as its effective
+  // requesting origin may be the Default Search Engine origin. Extensions are
+  // also excluded as currently they can request permission from iframes when
+  // embedded in non-secure contexts (https://crbug.com/530507).
+  DCHECK(!base::FeatureList::IsEnabled(features::kPermissionDelegation) ||
+         embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
+         requesting_origin.SchemeIs(extensions::kExtensionScheme) ||
+         requesting_origin == embedding_origin);
 
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);
