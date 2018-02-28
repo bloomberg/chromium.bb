@@ -26,6 +26,10 @@
 #include "chromeos/dbus/volume_state.h"
 #include "media/base/video_facing.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace chromeos {
 
 class AudioDevicesPrefHandler;
