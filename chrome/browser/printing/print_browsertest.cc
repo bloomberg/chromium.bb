@@ -16,10 +16,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
+#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -206,6 +208,29 @@ class SitePerProcessPrintBrowserTest : public PrintBrowserTest {
     content::IsolateAllSitesForTesting(command_line);
   }
 };
+
+class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
+ public:
+  static constexpr char kIsolatedSite[] = "b.com";
+
+  IsolateOriginsPrintBrowserTest() {}
+  ~IsolateOriginsPrintBrowserTest() override {}
+
+  // content::BrowserTestBase
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    std::string origin_list =
+        embedded_test_server()->GetURL(kIsolatedSite, "/").spec();
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
+
+constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
 
 // Printing only a selection containing iframes is partially supported.
 // Iframes aren't currently displayed. This test passes whenever the print
@@ -405,6 +430,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
   subframe_rph->AddFilter(filter.get());
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+// Printing preview a web page with an iframe from an isolated origin.
+// This test passes whenever the print preview is rendered. This should not be
+// a timed out test which indicates the print preview hung or crash.
+IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, PrintIsolatedSubframe) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL(
+      "/printing/content_with_same_site_iframe.html"));
+  GURL isolated_url(
+      embedded_test_server()->GetURL(kIsolatedSite, "/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(NavigateIframeToURL(original_contents, "iframe", isolated_url));
+
+  ASSERT_EQ(2u, original_contents->GetAllFrames().size());
+  auto* main_frame = original_contents->GetMainFrame();
+  auto* subframe = original_contents->GetAllFrames()[1];
+  ASSERT_NE(main_frame->GetProcess(), subframe->GetProcess());
+
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+// Printing preview a webpage.
+// Test that we won't use oopif printing by default, unless the
+// test is run with site-per-process flag enabled.
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    EXPECT_TRUE(IsOopifEnabled());
+  } else {
+    EXPECT_FALSE(IsOopifEnabled());
+  }
+}
+
+// Printing preview a webpage with isolate-origins enabled.
+// Test that we will use oopif printing for this case.
+IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, OopifPrinting) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(IsOopifEnabled());
 }
 
 }  // namespace printing
