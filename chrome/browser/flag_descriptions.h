@@ -269,6 +269,9 @@ extern const char kEnableDataReductionProxySavingsPromoDescription[];
 extern const char kEnableDesktopPWAsName[];
 extern const char kEnableDesktopPWAsDescription[];
 
+extern const char kEnableDesktopPWAsLinkCapturingName[];
+extern const char kEnableDesktopPWAsLinkCapturingDescription[];
+
 extern const char kEnableDockedMagnifierName[];
 extern const char kEnableDockedMagnifierDescription[];
 

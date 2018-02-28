@@ -2120,6 +2120,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desktop-pwas", flag_descriptions::kEnableDesktopPWAsName,
      flag_descriptions::kEnableDesktopPWAsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAWindowing)},
+    {"enable-desktop-pwas-link-capturing",
+     flag_descriptions::kEnableDesktopPWAsLinkCapturingName,
+     flag_descriptions::kEnableDesktopPWAsLinkCapturingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsLinkCapturing)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(

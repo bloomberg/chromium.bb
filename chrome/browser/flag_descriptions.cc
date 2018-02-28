@@ -388,6 +388,13 @@ const char kEnableDesktopPWAsDescription[] =
     "Experimental windowing and install banner treatment for Progressive Web "
     "Apps on desktop platforms. Implies #enable-experimental-app-banners.";
 
+const char kEnableDesktopPWAsLinkCapturingName[] =
+    "Desktop PWAs Link Capturing";
+const char kEnableDesktopPWAsLinkCapturingDescription[] =
+    "Experimentally enable link capturing for Desktop PWAs. Navigations to "
+    "URLs that are in-scope of Desktop PWAs will open in a window. Requires "
+    "#enable-desktop-pwas.";
+
 const char kEnableDockedMagnifierName[] = "Docked Magnifier";
 const char kEnableDockedMagnifierDescription[] =
     "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";
