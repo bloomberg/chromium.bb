@@ -459,6 +459,7 @@ void WebRTCInternals::FileSelectionCanceled(void* params) {
     default:
       NOTREACHED();
   }
+  select_file_dialog_ = nullptr;
 #endif
 }
 
