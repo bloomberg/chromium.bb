@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_MAC_H_
-#define CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_MAC_H_
+#ifndef CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_H_
+#define CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_H_
 
 #include <mach/mach.h>
 #include <stdint.h>
@@ -37,7 +37,7 @@ class MachOImageReader;
 
 //! \brief Accesses information about another process, identified by a Mach
 //!     task.
-class ProcessReaderMac {
+class ProcessReader {
  public:
   //! \brief Contains information about a thread that belongs to a task
   //!     (process).
@@ -83,7 +83,7 @@ class ProcessReaderMac {
     //! \brief An image reader for the module.
     //!
     //! The lifetime of this MachOImageReader is scoped to the lifetime of the
-    //! ProcessReaderMac that created it.
+    //! ProcessReader that created it.
     //!
     //! This field may be `nullptr` if a reader could not be created for the
     //! module.
@@ -97,8 +97,8 @@ class ProcessReaderMac {
     time_t timestamp;
   };
 
-  ProcessReaderMac();
-  ~ProcessReaderMac();
+  ProcessReader();
+  ~ProcessReader();
 
   //! \brief Initializes this object. This method must be called before any
   //!     other.
@@ -244,9 +244,9 @@ class ProcessReaderMac {
   bool initialized_threads_;
   bool initialized_modules_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProcessReaderMac);
+  DISALLOW_COPY_AND_ASSIGN(ProcessReader);
 };
 
 }  // namespace crashpad
 
-#endif  // CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_MAC_H_
+#endif  // CRASHPAD_SNAPSHOT_MAC_PROCESS_READER_H_

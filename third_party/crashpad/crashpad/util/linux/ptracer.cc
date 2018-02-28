@@ -285,9 +285,9 @@ size_t GetGeneralPurposeRegistersAndLength(pid_t tid,
     switch (errno) {
 #if defined(ARCH_CPU_ARMEL)
       case EIO:
-        return GetGeneralPurposeRegistersLegacy(tid, context, can_log)
-                   ? sizeof(context->t32)
-                   : 0;
+        if (GetGeneralPurposeRegistersLegacy(tid, context, can_log)) {
+          return sizeof(context->t32);
+        }
 #endif  // ARCH_CPU_ARMEL
       default:
         PLOG_IF(ERROR, can_log) << "ptrace";

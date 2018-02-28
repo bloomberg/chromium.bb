@@ -18,7 +18,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "util/thread/stoppable.h"
 #include "util/thread/worker_thread.h"
 
 namespace crashpad {
@@ -32,7 +31,7 @@ class PruneCondition;
 //! After the thread is started, the database is pruned using the condition
 //! every 24 hours. Upon calling Start(), the thread waits 10 minutes before
 //! performing the initial prune operation.
-class PruneCrashReportThread : public WorkerThread::Delegate, public Stoppable {
+class PruneCrashReportThread : public WorkerThread::Delegate {
  public:
   //! \brief Constructs a new object.
   //!
@@ -43,8 +42,6 @@ class PruneCrashReportThread : public WorkerThread::Delegate, public Stoppable {
                          std::unique_ptr<PruneCondition> condition);
   ~PruneCrashReportThread();
 
-  // Stoppable:
-
   //! \brief Starts a dedicated pruning thread.
   //!
   //! The thread waits before running the initial prune, so as to not interfere
@@ -52,7 +49,7 @@ class PruneCrashReportThread : public WorkerThread::Delegate, public Stoppable {
   //!
   //! This method may only be be called on a newly-constructed object or after
   //! a call to Stop().
-  void Start() override;
+  void Start();
 
   //! \brief Stops the pruning thread.
   //!
@@ -61,7 +58,7 @@ class PruneCrashReportThread : public WorkerThread::Delegate, public Stoppable {
   //!
   //! This method may be called from any thread other than the pruning thread.
   //! It is expected to only be called from the same thread that called Start().
-  void Stop() override;
+  void Stop();
 
  private:
   // WorkerThread::Delegate:
