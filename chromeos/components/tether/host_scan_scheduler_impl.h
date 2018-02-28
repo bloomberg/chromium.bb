@@ -67,15 +67,18 @@ class HostScanSchedulerImpl : public HostScanScheduler,
   bool IsTetherNetworkConnectingOrConnected();
   void LogHostScanBatchMetric();
 
-  void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
-                      base::Clock* test_clock,
-                      scoped_refptr<base::TaskRunner> test_task_runner);
+  void SetTestDoubles(
+      std::unique_ptr<base::Timer> test_host_scan_batch_timer,
+      std::unique_ptr<base::Timer> test_delay_scan_after_unlock_timer,
+      base::Clock* test_clock,
+      scoped_refptr<base::TaskRunner> test_task_runner);
 
   NetworkStateHandler* network_state_handler_;
   HostScanner* host_scanner_;
   session_manager::SessionManager* session_manager_;
 
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Timer> host_scan_batch_timer_;
+  std::unique_ptr<base::Timer> delay_scan_after_unlock_timer_;
   base::Clock* clock_;
   scoped_refptr<base::TaskRunner> task_runner_;
 

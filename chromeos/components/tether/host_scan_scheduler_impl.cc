@@ -31,6 +31,11 @@ namespace {
 // seconds apart.
 const int64_t kMaxNumSecondsBetweenBatchScans = 60;
 
+// Scanning immediately after the device is unlocked may cause unwanted
+// interactions with EasyUnlock BLE channels. The scan is delayed slightly in
+// order to circumvent this issue.
+const int64_t kNumSecondsToDelayScanAfterUnlock = 3;
+
 // Minimum value for the scan length metric.
 const int64_t kMinScanMetricSeconds = 1;
 
@@ -49,7 +54,8 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
     : network_state_handler_(network_state_handler),
       host_scanner_(host_scanner),
       session_manager_(session_manager),
-      timer_(std::make_unique<base::OneShotTimer>()),
+      host_scan_batch_timer_(std::make_unique<base::OneShotTimer>()),
+      delay_scan_after_unlock_timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_screen_locked_(session_manager_->IsScreenLocked()),
@@ -67,7 +73,7 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 
   // If the most recent batch of host scans has already been logged, return
   // early.
-  if (!host_scanner_->IsScanActive() && !timer_->IsRunning())
+  if (!host_scanner_->IsScanActive() && !host_scan_batch_timer_->IsRunning())
     return;
 
   // If a scan is still active during shutdown, there is not enough time to wait
@@ -108,10 +114,10 @@ void HostScanSchedulerImpl::ScanFinished() {
   network_state_handler_->SetTetherScanState(false);
 
   last_scan_end_timestamp_ = clock_->Now();
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromSeconds(kMaxNumSecondsBetweenBatchScans),
-                base::Bind(&HostScanSchedulerImpl::LogHostScanBatchMetric,
-                           weak_ptr_factory_.GetWeakPtr()));
+  host_scan_batch_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kMaxNumSecondsBetweenBatchScans),
+      base::Bind(&HostScanSchedulerImpl::LogHostScanBatchMetric,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanSchedulerImpl::OnSessionStateChanged() {
@@ -125,6 +131,7 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
     // Note: Once the SecureChannel API is in use, the scan will no longer have
     //       to stop.
     host_scanner_->StopScan();
+    delay_scan_after_unlock_timer_->Stop();
     return;
   }
 
@@ -132,14 +139,21 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
     return;
 
   // If the device was just unlocked, start a scan.
-  EnsureScan();
+  delay_scan_after_unlock_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
+      base::Bind(&HostScanSchedulerImpl::EnsureScan,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
-    std::unique_ptr<base::Timer> test_timer,
+    std::unique_ptr<base::Timer> test_host_scan_batch_timer,
+    std::unique_ptr<base::Timer> test_delay_scan_after_unlock_timer,
     base::Clock* test_clock,
     scoped_refptr<base::TaskRunner> test_task_runner) {
-  timer_ = std::move(test_timer);
+  host_scan_batch_timer_ = std::move(test_host_scan_batch_timer);
+  delay_scan_after_unlock_timer_ =
+      std::move(test_delay_scan_after_unlock_timer);
   clock_ = test_clock;
   task_runner_ = test_task_runner;
 }
@@ -152,11 +166,12 @@ void HostScanSchedulerImpl::EnsureScan() {
   // previous scan, so the timer should be stopped (it will be restarted after
   // the new scan finishes). If the timer is not running, the new scan is part
   // of a new batch, so the start timestamp should be recorded.
-  if (timer_->IsRunning())
-    timer_->Stop();
+  if (host_scan_batch_timer_->IsRunning())
+    host_scan_batch_timer_->Stop();
   else
     last_scan_batch_start_timestamp_ = clock_->Now();
 
+  delay_scan_after_unlock_timer_->Stop();
   host_scanner_->StartScan();
   network_state_handler_->SetTetherScanState(true);
 }
