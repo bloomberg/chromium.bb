@@ -24,6 +24,10 @@ class VIEWS_EXPORT PlatformStyle {
   // Type used by LabelButton to map button states to text colors.
   using ButtonColorByState = SkColor[Button::STATE_COUNT];
 
+  // Whether the ok button is in the leading position (left in LTR) in a
+  // typical Cancel/OK button group.
+  static const bool kIsOkButtonLeading;
+
   // Minimum size for platform-styled buttons (Button::STYLE_BUTTON).
   static const int kMinLabelButtonWidth;
   static const int kMinLabelButtonHeight;

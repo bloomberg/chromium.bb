@@ -33,6 +33,12 @@ const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 
 }  // namespace
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const bool PlatformStyle::kIsOkButtonLeading = true;
+#else
+const bool PlatformStyle::kIsOkButtonLeading = false;
+#endif
+
 #if !defined(OS_MACOSX)
 
 const int PlatformStyle::kMinLabelButtonWidth = 70;
