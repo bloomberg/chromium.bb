@@ -21,18 +21,46 @@ namespace {
 // channel is currently speaking.
 SpeechChannel g_speech_channel;
 
+// Returns the TextDirection associated associated with the given BiDi
+// |command_id|.
+base::i18n::TextDirection GetTextDirectionFromCommandId(int command_id) {
+  switch (command_id) {
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
+      return base::i18n::UNKNOWN_DIRECTION;
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
+      return base::i18n::LEFT_TO_RIGHT;
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
+      return base::i18n::RIGHT_TO_LEFT;
+    default:
+      NOTREACHED();
+      return base::i18n::UNKNOWN_DIRECTION;
+  }
+}
+
 }  // namespace
 
 namespace ui {
 
 TextServicesContextMenu::TextServicesContextMenu(Delegate* delegate)
-    : speech_submenu_model_(this), delegate_(delegate) {
+    : speech_submenu_model_(this),
+      bidi_submenu_model_(this),
+      delegate_(delegate) {
   DCHECK(delegate);
 
   speech_submenu_model_.AddItemWithStringId(IDS_SPEECH_START_SPEAKING_MAC,
                                             IDS_SPEECH_START_SPEAKING_MAC);
   speech_submenu_model_.AddItemWithStringId(IDS_SPEECH_STOP_SPEAKING_MAC,
                                             IDS_SPEECH_STOP_SPEAKING_MAC);
+
+  bidi_submenu_model_.AddCheckItemWithStringId(
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT,
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT);
+  bidi_submenu_model_.AddCheckItemWithStringId(
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR,
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR);
+  bidi_submenu_model_.AddCheckItemWithStringId(
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL,
+      IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL);
 }
 
 void TextServicesContextMenu::SpeakText(const base::string16& text) {
@@ -64,8 +92,19 @@ void TextServicesContextMenu::AppendToContextMenu(SimpleMenuModel* model) {
                                 &speech_submenu_model_);
 }
 
+void TextServicesContextMenu::AppendEditableItems(SimpleMenuModel* model) {
+  model->AddSubMenuWithStringId(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
+                                IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU,
+                                &bidi_submenu_model_);
+}
+
 bool TextServicesContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
+      return delegate_->IsTextDirectionChecked(
+          GetTextDirectionFromCommandId(command_id));
     case IDS_SPEECH_START_SPEAKING_MAC:
     case IDS_SPEECH_STOP_SPEAKING_MAC:
       return false;
@@ -77,6 +116,11 @@ bool TextServicesContextMenu::IsCommandIdChecked(int command_id) const {
 
 bool TextServicesContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
+      return delegate_->IsTextDirectionEnabled(
+          GetTextDirectionFromCommandId(command_id));
     case IDS_SPEECH_START_SPEAKING_MAC:
       return true;
     case IDS_SPEECH_STOP_SPEAKING_MAC:
@@ -89,6 +133,11 @@ bool TextServicesContextMenu::IsCommandIdEnabled(int command_id) const {
 
 void TextServicesContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR:
+    case IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL:
+      delegate_->UpdateTextDirection(GetTextDirectionFromCommandId(command_id));
+      break;
     case IDS_SPEECH_START_SPEAKING_MAC:
       SpeakText(delegate_->GetSelectedText());
       break;

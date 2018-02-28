@@ -3405,4 +3405,37 @@ TEST_F(TextfieldTest, SendingDeletePreservesShiftFlag) {
   EXPECT_EQ(ui::EF_SHIFT_DOWN, textfield_->event_flags());
 }
 
+#if defined(OS_MACOSX)
+// Tests to see if the BiDi submenu items are updated correctly when the
+// textfield's text direction is changed.
+TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
+  InitTextfield();
+  EXPECT_TRUE(textfield_->context_menu_controller());
+
+  EXPECT_TRUE(GetContextMenuModel());
+
+  textfield_->ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection::LEFT_TO_RIGHT);
+  test_api_->UpdateContextMenu();
+
+  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::UNKNOWN_DIRECTION));
+  EXPECT_TRUE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::LEFT_TO_RIGHT));
+  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::RIGHT_TO_LEFT));
+
+  textfield_->ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection::RIGHT_TO_LEFT);
+  test_api_->UpdateContextMenu();
+
+  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::UNKNOWN_DIRECTION));
+  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::LEFT_TO_RIGHT));
+  EXPECT_TRUE(test_api_->IsTextDirectionCheckedInContextMenu(
+      base::i18n::TextDirection::RIGHT_TO_LEFT));
+}
+#endif  // defined(OS_MACOSX)
+
 }  // namespace views
