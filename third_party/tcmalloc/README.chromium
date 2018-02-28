@@ -113,3 +113,4 @@ Modifications:
 - Make kFooType in tcmalloc.cc truly const.
 - Added support for mips64el.
 - Pulled SuggestedDelayNS() implementation for 32bit architectures which do not support 64bit atomicity
+- Pulled several mipsel related changes from lss project to fix compile errors
