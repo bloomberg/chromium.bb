@@ -46,6 +46,7 @@
         "https://www.googleapis.com/auth/supportcontent",
         "https://www.googleapis.com/auth/cases",
         "https://www.googleapis.com/auth/cases.readonly",
+        "https://www.googleapis.com/auth/pixelbook.email.preferences",
         "https://www.google.com/accounts/OAuthLogin"
     ]
   },
