@@ -128,6 +128,11 @@ var availableTests = [
     chrome.passwordsPrivate.exportPasswords(callback);
   },
 
+  function cancelExportPasswords() {
+    chrome.passwordsPrivate.cancelExportPasswords();
+    chrome.test.succeed();
+  },
+
   function requestExportProgressStatus() {
     let callback = function(status) {
       chrome.test.assertEq(

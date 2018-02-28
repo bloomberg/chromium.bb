@@ -209,6 +209,21 @@ void PasswordsPrivateExportPasswordsFunction::ExportRequestCompleted(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PasswordsPrivateCancelExportPasswordsFunction
+
+PasswordsPrivateCancelExportPasswordsFunction::
+    ~PasswordsPrivateCancelExportPasswordsFunction() {}
+
+ExtensionFunction::ResponseAction
+PasswordsPrivateCancelExportPasswordsFunction::Run() {
+  PasswordsPrivateDelegate* delegate =
+      PasswordsPrivateDelegateFactory::GetForBrowserContext(browser_context(),
+                                                            true /* create */);
+  delegate->CancelExportPasswords();
+  return RespondNow(NoArguments());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PasswordsPrivateRequestExportProgressStatusFunction
 
 PasswordsPrivateRequestExportProgressStatusFunction::

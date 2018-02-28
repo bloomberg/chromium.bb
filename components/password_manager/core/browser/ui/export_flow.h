@@ -16,6 +16,11 @@ class ExportFlow {
   // in progress this will do nothing and return false.
   virtual bool Store() = 0;
 
+  // Cancel any previous Store() request and restore the state of the
+  // filesystem. The cancellation request may come a few seconds after Store()
+  // is completely finished.
+  virtual void CancelStore() = 0;
+
   // Get the status of the export, which was initiated by Store().
   virtual password_manager::ExportProgressStatus GetExportProgressStatus() = 0;
 

@@ -137,6 +137,11 @@ bool PasswordManagerPorter::Store() {
   return true;
 }
 
+void PasswordManagerPorter::CancelStore() {
+  if (exporter_)
+    exporter_->Cancel();
+}
+
 password_manager::ExportProgressStatus
 PasswordManagerPorter::GetExportProgressStatus() {
   return exporter_ ? exporter_->GetProgressStatus()
