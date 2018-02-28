@@ -38,11 +38,6 @@ void CookieCallback::WaitUntilDone() {
   loop_to_quit_.Run();
 }
 
-StringResultCookieCallback::StringResultCookieCallback() = default;
-StringResultCookieCallback::StringResultCookieCallback(
-    base::Thread* run_in_thread)
-    : CookieCallback(run_in_thread) {}
-
 NoResultCookieCallback::NoResultCookieCallback() = default;
 NoResultCookieCallback::NoResultCookieCallback(base::Thread* run_in_thread)
     : CookieCallback(run_in_thread) {}

@@ -64,7 +64,8 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
                                   const net::AuthCredentials& credentials);
 
   // Called when GetCookies() finishes.
-  void GetCookiesCallback(GetCookieCB callback, const std::string& cookies);
+  void GetCookiesCallback(GetCookieCB callback,
+                          const net::CookieList& cookie_list);
 
   // Called when GetPlatformPathFromFileSystemURL() finishes.
   void GetPlatformPathCallback(GetPlatformPathCB callback,

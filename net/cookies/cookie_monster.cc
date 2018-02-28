@@ -210,8 +210,6 @@ struct OrderByCreationTimeDesc {
 const int kVlogPerCookieMonster = 1;
 const int kVlogGarbageCollection = 5;
 const int kVlogSetCookies = 7;
-const int kVlogGetCookies = 9;
-
 // Mozilla sorts on the path length (longest first), and then it
 // sorts by creation time (oldest first).
 // The RFC says the sort order for the domain attribute is undefined.
@@ -488,19 +486,6 @@ void CookieMonster::SetCookieWithOptionsAsync(const GURL& url,
           // the object.
           &CookieMonster::SetCookieWithOptions, base::Unretained(this), url,
           cookie_line, options, std::move(callback)),
-      url);
-}
-
-void CookieMonster::GetCookiesWithOptionsAsync(const GURL& url,
-                                               const CookieOptions& options,
-                                               GetCookiesCallback callback) {
-  DoCookieCallbackForURL(
-      base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForURL stores
-          // the callback on |*this|, so the callback will not outlive
-          // the object.
-          &CookieMonster::GetCookiesWithOptions, base::Unretained(this), url,
-          options, std::move(callback)),
       url);
 }
 
@@ -786,24 +771,6 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
 
   SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options,
                                       std::move(callback));
-}
-
-void CookieMonster::GetCookiesWithOptions(const GURL& url,
-                                          const CookieOptions& options,
-                                          GetCookiesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::string cookie_line;
-  if (HasCookieableScheme(url)) {
-    std::vector<CanonicalCookie*> cookies;
-    FindCookiesForHostAndDomain(url, options, &cookies);
-    std::sort(cookies.begin(), cookies.end(), CookieSorter);
-
-    cookie_line = BuildCookieLine(cookies);
-
-    VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
-  }
-  MaybeRunCookieCallback(std::move(callback), cookie_line);
 }
 
 void CookieMonster::DeleteCookie(const GURL& url,

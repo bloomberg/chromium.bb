@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/task_scheduler/post_task.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
@@ -48,24 +49,6 @@ class TestPersistentCookieStore
   const GURL kTestCookieURL;
   LoadedCallback loaded_callback_;
   bool flushed_;
-};
-
-// Helper callback to be passed to CookieStore::GetCookiesWithOptionsAsync().
-class GetCookieCallback {
- public:
-  GetCookieCallback();
-
-  // Returns true if the callback has been run.
-  bool did_run();
-
-  // Returns the parameter of the callback.
-  const std::string& cookie_line();
-
-  void Run(const std::string& cookie_line);
-
- private:
-  bool did_run_;
-  std::string cookie_line_;
 };
 
 class TestCookieStoreIOSClient : public CookieStoreIOSClient {

@@ -29,6 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_store_test.h"  // For CookieStore mock
 #include "net/cookies/cookie_store_change_unittest.h"
@@ -860,8 +861,6 @@ using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;
 // TODO(erikwright): Replace the other callbacks and synchronous helper methods
 // in this test suite with these Mocks.
 using MockClosure = base::MockCallback<base::Closure>;
-using MockGetCookiesCallback =
-    base::MockCallback<CookieStore::GetCookiesCallback>;
 using MockSetCookiesCallback =
     base::MockCallback<CookieStore::SetCookiesCallback>;
 using MockGetCookieListCallback =
@@ -889,10 +888,6 @@ ACTION_P(QuitRunLoop, run_loop) {
 // rename these, removing the 'Action' suffix.
 ACTION_P4(DeleteCookieAction, cookie_monster, url, name, callback) {
   cookie_monster->DeleteCookieAsync(url, name, callback->Get());
-}
-ACTION_P3(GetCookiesAction, cookie_monster, url, callback) {
-  cookie_monster->GetCookiesWithOptionsAsync(url, CookieOptions(),
-                                             callback->Get());
 }
 ACTION_P4(SetCookieAction, cookie_monster, url, cookie_line, callback) {
   cookie_monster->SetCookieWithOptionsAsync(url, cookie_line, CookieOptions(),
@@ -1055,24 +1050,27 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
   scoped_refptr<NewMockPersistentCookieStore> persistent_store_;
 };
 
-TEST_F(DeferredCookieTaskTest, DeferredGetCookies) {
+TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookiesCallback get_cookies_callback;
+  MockGetCookieListCallback get_cookie_list_callback;
 
-  BeginWithForDomainKey(http_www_foo_.domain(),
-                        GetCookiesAction(&cookie_monster(), http_www_foo_.url(),
-                                         &get_cookies_callback));
+  BeginWithForDomainKey(
+      http_www_foo_.domain(),
+      GetCookieListForUrlWithOptionsAction(
+          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
 
   WaitForLoadCall();
 
-  EXPECT_CALL(get_cookies_callback, Run("X=1"))
-      .WillOnce(GetCookiesAction(&cookie_monster(), http_www_foo_.url(),
-                                 &get_cookies_callback));
+  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+      .WillOnce(GetCookieListForUrlWithOptionsAction(
+          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
+
   base::RunLoop loop;
-  EXPECT_CALL(get_cookies_callback, Run("X=1")).WillOnce(QuitRunLoop(&loop));
+  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+      .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
   loop.Run();
@@ -1322,14 +1320,15 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookiesCallback get_cookies_callback;
+  MockGetCookieListCallback get_cookie_list_callback;
   MockSetCookiesCallback set_cookies_callback;
-  MockGetCookiesCallback get_cookies_callback_deferred;
+  MockGetCookieListCallback get_cookie_list_callback_deferred;
 
   EXPECT_CALL(*this, Begin())
       .WillOnce(testing::DoAll(
-          GetCookiesAction(&cookie_monster(), http_www_foo_.url(),
-                           &get_cookies_callback),
+          GetCookieListForUrlWithOptionsAction(&cookie_monster(),
+                                               http_www_foo_.url(),
+                                               &get_cookie_list_callback),
           SetCookieAction(&cookie_monster(), http_www_foo_.url(), "A=B",
                           &set_cookies_callback)));
   ExpectLoadCall();
@@ -1337,12 +1336,14 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   Begin();
 
   WaitForLoadCall();
-  EXPECT_CALL(get_cookies_callback, Run("X=1"))
-      .WillOnce(GetCookiesAction(&cookie_monster(), http_www_foo_.url(),
-                                 &get_cookies_callback_deferred));
+  EXPECT_CALL(get_cookie_list_callback, Run(MatchesCookieLine("X=1")))
+      .WillOnce(GetCookieListForUrlWithOptionsAction(
+          &cookie_monster(), http_www_foo_.url(),
+          &get_cookie_list_callback_deferred));
   EXPECT_CALL(set_cookies_callback, Run(true));
   base::RunLoop loop;
-  EXPECT_CALL(get_cookies_callback_deferred, Run("A=B; X=1"))
+  EXPECT_CALL(get_cookie_list_callback_deferred,
+              Run(MatchesCookieLine("A=B; X=1")))
       .WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();

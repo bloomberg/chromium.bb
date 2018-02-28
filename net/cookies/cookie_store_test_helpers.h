@@ -36,11 +36,6 @@ class DelayedCookieMonster : public CookieStore {
                                bool modify_http_only,
                                SetCookiesCallback callback) override;
 
-  void GetCookiesWithOptionsAsync(
-      const GURL& url,
-      const CookieOptions& options,
-      CookieMonster::GetCookiesCallback callback) override;
-
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
@@ -50,9 +45,6 @@ class DelayedCookieMonster : public CookieStore {
   virtual bool SetCookieWithOptions(const GURL& url,
                                     const std::string& cookie_line,
                                     const CookieOptions& options);
-
-  virtual std::string GetCookiesWithOptions(const GURL& url,
-                                            const CookieOptions& options);
 
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name);
@@ -99,9 +91,6 @@ class DelayedCookieMonster : public CookieStore {
   // Invoke the original callbacks.
 
   void InvokeSetCookiesCallback(CookieMonster::SetCookiesCallback callback);
-
-  void InvokeGetCookieStringCallback(
-      CookieMonster::GetCookiesCallback callback);
 
   void InvokeGetCookieListCallback(
       CookieMonster::GetCookieListCallback callback);

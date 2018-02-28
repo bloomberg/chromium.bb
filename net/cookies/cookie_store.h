@@ -60,8 +60,6 @@ class NET_EXPORT CookieStore {
   // Callback definitions.
   typedef base::OnceCallback<void(const CookieList& cookies)>
       GetCookieListCallback;
-  typedef base::OnceCallback<void(const std::string& cookie)>
-      GetCookiesCallback;
   typedef base::OnceCallback<void(bool success)> SetCookiesCallback;
   typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
 
@@ -78,16 +76,6 @@ class NET_EXPORT CookieStore {
   };
 
   virtual ~CookieStore();
-
-  // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
-  // by |cookies|. The string is built in the same order as the given list.
-  //
-  // Deprecated; use CanonicalCookie::BuildCookieLine(
-  //     const std::vector<CanonicalCookie>& cookies) instead.
-  // TODO(http://crbug.com/588081#c3): Believed to only be used (directly
-  // and indirectly) by tests; should be removed.
-  static std::string BuildCookieLine(
-      const std::vector<CanonicalCookie*>& cookies);
 
   // Sets the cookies specified by |cookie_list| returned from |url|
   // with options |options| in effect.  Expects a cookie line, like
@@ -111,23 +99,6 @@ class NET_EXPORT CookieStore {
                                        bool secure_source,
                                        bool modify_http_only,
                                        SetCookiesCallback callback) = 0;
-
-  // TODO(???): what if the total size of all the cookies >4k, can we have a
-  // header that big or do we need multiple Cookie: headers?
-  // Note: Some sites, such as Facebook, occasionally use Cookie headers >4k.
-  //
-  // Simple interface, gets a cookie string "a=b; c=d" for the given URL.
-  // Gets all cookies that apply to |url| given |options|. Use options to
-  // access httponly cookies.
-  //
-  // The returned cookies are ordered by longest path, then earliest
-  // creation date.
-  //
-  // TODO(mkwst): This method is deprecated; callsites should be updated to
-  // use 'GetCookieListWithOptionsAsync'.
-  virtual void GetCookiesWithOptionsAsync(const GURL& url,
-                                          const CookieOptions& options,
-                                          GetCookiesCallback callback) = 0;
 
   // Obtains a CookieList for the given |url| and |options|. The returned
   // cookies are passed into |callback|, ordered by longest path, then earliest

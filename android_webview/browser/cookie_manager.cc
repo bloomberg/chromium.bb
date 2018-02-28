@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "jni/AwCookieManager_jni.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -164,30 +165,30 @@ class CookieManager {
   CookieManager();
   ~CookieManager();
 
-  void ExecCookieTaskSync(const base::Callback<void(BoolCallback)>& task);
-  void ExecCookieTaskSync(const base::Callback<void(IntCallback)>& task);
-  void ExecCookieTaskSync(const base::Callback<void(base::Closure)>& task);
-  void ExecCookieTask(const base::Closure& task);
+  void ExecCookieTaskSync(base::OnceCallback<void(BoolCallback)> task);
+  void ExecCookieTaskSync(base::OnceCallback<void(IntCallback)> task);
+  void ExecCookieTaskSync(base::OnceCallback<void(base::OnceClosure)> task);
+  void ExecCookieTask(base::OnceClosure task);
 
   void SetCookieHelper(const GURL& host,
                        const std::string& value,
                        BoolCallback callback);
 
-  void GetCookieValueAsyncHelper(const GURL& host,
-                                 std::string* result,
-                                 base::Closure complete);
-  void GetCookieValueCompleted(base::Closure complete,
-                               std::string* result,
-                               const std::string& value);
+  void GetCookieListAsyncHelper(const GURL& host,
+                                net::CookieList* result,
+                                base::OnceClosure complete);
+  void GetCookieListCompleted(base::OnceClosure complete,
+                              net::CookieList* result,
+                              const net::CookieList& value);
 
   void RemoveSessionCookiesHelper(BoolCallback callback);
   void RemoveAllCookiesHelper(BoolCallback callback);
   void RemoveCookiesCompleted(BoolCallback callback, uint32_t num_deleted);
 
-  void FlushCookieStoreAsyncHelper(base::Closure complete);
+  void FlushCookieStoreAsyncHelper(base::OnceClosure complete);
 
-  void HasCookiesAsyncHelper(bool* result, base::Closure complete);
-  void HasCookiesCompleted(base::Closure complete,
+  void HasCookiesAsyncHelper(bool* result, base::OnceClosure complete);
+  void HasCookiesCompleted(base::OnceClosure complete,
                            bool* result,
                            const net::CookieList& cookies);
 
@@ -242,22 +243,22 @@ CookieManager::~CookieManager() {}
 //
 // Ignore a bool callback.
 void CookieManager::ExecCookieTaskSync(
-    const base::Callback<void(BoolCallback)>& task) {
+    base::OnceCallback<void(BoolCallback)> task) {
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  ExecCookieTask(
-      base::Bind(task, BoolCallbackAdapter(SignalEventClosure(&completion))));
+  ExecCookieTask(base::BindOnce(
+      std::move(task), BoolCallbackAdapter(SignalEventClosure(&completion))));
   base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
 // Ignore an int callback.
 void CookieManager::ExecCookieTaskSync(
-    const base::Callback<void(IntCallback)>& task) {
+    base::OnceCallback<void(IntCallback)> task) {
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  ExecCookieTask(
-      base::Bind(task, IntCallbackAdapter(SignalEventClosure(&completion))));
+  ExecCookieTask(base::BindOnce(
+      std::move(task), IntCallbackAdapter(SignalEventClosure(&completion))));
   base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
@@ -265,17 +266,18 @@ void CookieManager::ExecCookieTaskSync(
 // Call the supplied closure when you want to signal that the blocked code can
 // continue.
 void CookieManager::ExecCookieTaskSync(
-    const base::Callback<void(base::Closure)>& task) {
+    base::OnceCallback<void(base::OnceClosure)> task) {
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  ExecCookieTask(base::Bind(task, SignalEventClosure(&completion)));
+  ExecCookieTask(
+      base::BindOnce(std::move(task), SignalEventClosure(&completion)));
   base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
 // Executes the |task| using |cookie_store_task_runner_|.
-void CookieManager::ExecCookieTask(const base::Closure& task) {
-  cookie_store_task_runner_->PostTask(FROM_HERE, task);
+void CookieManager::ExecCookieTask(base::OnceClosure task) {
+  cookie_store_task_runner_->PostTask(FROM_HERE, std::move(task));
 }
 
 base::SingleThreadTaskRunner* CookieManager::GetCookieStoreTaskRunner() {
@@ -375,29 +377,30 @@ void CookieManager::SetCookieHelper(const GURL& host,
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
-  std::string cookie_value;
-  ExecCookieTaskSync(base::Bind(&CookieManager::GetCookieValueAsyncHelper,
-                                base::Unretained(this), host, &cookie_value));
-  return cookie_value;
+  net::CookieList cookie_list;
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::GetCookieListAsyncHelper,
+                                    base::Unretained(this), host,
+                                    &cookie_list));
+  return net::CanonicalCookie::BuildCookieLine(cookie_list);
 }
 
-void CookieManager::GetCookieValueAsyncHelper(const GURL& host,
-                                              std::string* result,
-                                              base::Closure complete) {
+void CookieManager::GetCookieListAsyncHelper(const GURL& host,
+                                             net::CookieList* result,
+                                             base::OnceClosure complete) {
   net::CookieOptions options;
   options.set_include_httponly();
 
-  GetCookieStore()->GetCookiesWithOptionsAsync(
+  GetCookieStore()->GetCookieListWithOptionsAsync(
       host, options,
-      base::Bind(&CookieManager::GetCookieValueCompleted,
-                 base::Unretained(this), complete, result));
+      base::BindOnce(&CookieManager::GetCookieListCompleted,
+                     base::Unretained(this), std::move(complete), result));
 }
 
-void CookieManager::GetCookieValueCompleted(base::Closure complete,
-                                            std::string* result,
-                                            const std::string& value) {
+void CookieManager::GetCookieListCompleted(base::OnceClosure complete,
+                                           net::CookieList* result,
+                                           const net::CookieList& value) {
   *result = value;
-  complete.Run();
+  std::move(complete).Run();
 }
 
 void CookieManager::RemoveSessionCookies(
@@ -428,13 +431,13 @@ void CookieManager::RemoveAllCookies(
     std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
       BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
-  ExecCookieTask(base::Bind(&CookieManager::RemoveAllCookiesHelper,
-                            base::Unretained(this), callback));
+  ExecCookieTask(base::BindOnce(&CookieManager::RemoveAllCookiesHelper,
+                                base::Unretained(this), callback));
 }
 
 void CookieManager::RemoveAllCookiesSync() {
-  ExecCookieTaskSync(base::Bind(&CookieManager::RemoveAllCookiesHelper,
-                                base::Unretained(this)));
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::RemoveAllCookiesHelper,
+                                    base::Unretained(this)));
 }
 
 void CookieManager::RemoveAllCookiesHelper(const BoolCallback callback) {
@@ -449,35 +452,35 @@ void CookieManager::RemoveExpiredCookies() {
 }
 
 void CookieManager::FlushCookieStore() {
-  ExecCookieTaskSync(base::Bind(&CookieManager::FlushCookieStoreAsyncHelper,
-                                base::Unretained(this)));
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::FlushCookieStoreAsyncHelper,
+                                    base::Unretained(this)));
 }
 
-void CookieManager::FlushCookieStoreAsyncHelper(base::Closure complete) {
-  GetCookieStore()->FlushStore(complete);
+void CookieManager::FlushCookieStoreAsyncHelper(base::OnceClosure complete) {
+  GetCookieStore()->FlushStore(std::move(complete));
 }
 
 bool CookieManager::HasCookies() {
   bool has_cookies;
-  ExecCookieTaskSync(base::Bind(&CookieManager::HasCookiesAsyncHelper,
-                                base::Unretained(this), &has_cookies));
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::HasCookiesAsyncHelper,
+                                    base::Unretained(this), &has_cookies));
   return has_cookies;
 }
 
 // TODO(kristianm): Simplify this, copying the entire list around
 // should not be needed.
 void CookieManager::HasCookiesAsyncHelper(bool* result,
-                                          base::Closure complete) {
+                                          base::OnceClosure complete) {
   GetCookieStore()->GetAllCookiesAsync(
-      base::Bind(&CookieManager::HasCookiesCompleted, base::Unretained(this),
-                 complete, result));
+      base::BindOnce(&CookieManager::HasCookiesCompleted,
+                     base::Unretained(this), std::move(complete), result));
 }
 
-void CookieManager::HasCookiesCompleted(base::Closure complete,
+void CookieManager::HasCookiesCompleted(base::OnceClosure complete,
                                         bool* result,
                                         const CookieList& cookies) {
   *result = cookies.size() != 0;
-  complete.Run();
+  std::move(complete).Run();
 }
 
 bool CookieManager::AllowFileSchemeCookies() {

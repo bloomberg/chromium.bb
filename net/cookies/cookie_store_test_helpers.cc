@@ -45,12 +45,6 @@ void DelayedCookieMonster::SetCookiesInternalCallback(bool result) {
   did_run_ = true;
 }
 
-void DelayedCookieMonster::GetCookiesWithOptionsInternalCallback(
-    const std::string& cookie) {
-  cookie_ = cookie;
-  did_run_ = true;
-}
-
 void DelayedCookieMonster::GetCookieListWithOptionsInternalCallback(
     const CookieList& cookie_list) {
   cookie_list_ = cookie_list;
@@ -93,23 +87,6 @@ void DelayedCookieMonster::SetCanonicalCookieAsync(
       base::TimeDelta::FromMilliseconds(kDelayedTime));
 }
 
-void DelayedCookieMonster::GetCookiesWithOptionsAsync(
-    const GURL& url,
-    const CookieOptions& options,
-    CookieMonster::GetCookiesCallback callback) {
-  did_run_ = false;
-  cookie_monster_->GetCookiesWithOptionsAsync(
-      url, options,
-      base::Bind(&DelayedCookieMonster::GetCookiesWithOptionsInternalCallback,
-                 base::Unretained(this)));
-  DCHECK_EQ(did_run_, true);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&DelayedCookieMonster::InvokeGetCookieStringCallback,
-                     base::Unretained(this), std::move(callback)),
-      base::TimeDelta::FromMilliseconds(kDelayedTime));
-}
-
 void DelayedCookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
@@ -138,12 +115,6 @@ void DelayedCookieMonster::InvokeSetCookiesCallback(
     std::move(callback).Run(result_);
 }
 
-void DelayedCookieMonster::InvokeGetCookieStringCallback(
-    CookieMonster::GetCookiesCallback callback) {
-  if (!callback.is_null())
-    std::move(callback).Run(cookie_);
-}
-
 void DelayedCookieMonster::InvokeGetCookieListCallback(
     CookieMonster::GetCookieListCallback callback) {
   if (!callback.is_null())
@@ -156,13 +127,6 @@ bool DelayedCookieMonster::SetCookieWithOptions(
     const CookieOptions& options) {
   ADD_FAILURE();
   return false;
-}
-
-std::string DelayedCookieMonster::GetCookiesWithOptions(
-    const GURL& url,
-    const CookieOptions& options) {
-  ADD_FAILURE();
-  return std::string();
 }
 
 void DelayedCookieMonster::DeleteCookie(const GURL& url,

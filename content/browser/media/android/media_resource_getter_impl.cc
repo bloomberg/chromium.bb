@@ -23,6 +23,7 @@
 #include "jni/MediaResourceGetter_jni.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "net/base/auth.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_transaction_factory.h"
@@ -36,9 +37,16 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-static void ReturnResultOnUIThread(
+static void ReturnStringResultOnUIThread(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), result));
+}
+
+static void ReturnCookieListResultOnUIThread(
+    net::CookieStore::GetCookieListCallback callback,
+    const net::CookieList& result) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(std::move(callback), result));
 }
@@ -58,9 +66,9 @@ static void RequestPlaformPathFromFileSystemURL(
   base::FilePath data_storage_path;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
   if (data_storage_path.IsParent(platform_path))
-    ReturnResultOnUIThread(std::move(callback), platform_path.value());
+    ReturnStringResultOnUIThread(std::move(callback), platform_path.value());
   else
-    ReturnResultOnUIThread(std::move(callback), std::string());
+    ReturnStringResultOnUIThread(std::move(callback), std::string());
 }
 
 // Posts a task to the UI thread to run the callback function.
@@ -130,7 +138,7 @@ class MediaResourceGetterTask
   // Called by MediaResourceGetterImpl to start getting cookies for a URL.
   void RequestCookies(const GURL& url,
                       const GURL& site_for_cookies,
-                      media::MediaResourceGetter::GetCookieCB callback);
+                      net::CookieStore::GetCookieListCallback callback);
 
   // Returns the task runner that all methods should be called.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
@@ -141,7 +149,7 @@ class MediaResourceGetterTask
 
   void CheckPolicyForCookies(const GURL& url,
                              const GURL& site_for_cookies,
-                             media::MediaResourceGetter::GetCookieCB callback,
+                             net::CookieStore::GetCookieListCallback callback,
                              const net::CookieList& cookie_list);
 
   // Context getter used to get the CookieStore and auth cache.
@@ -196,19 +204,19 @@ net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
 void MediaResourceGetterTask::RequestCookies(
     const GURL& url,
     const GURL& site_for_cookies,
-    media::MediaResourceGetter::GetCookieCB callback) {
+    net::CookieStore::GetCookieListCallback callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(net::CookieList());
     return;
   }
 
   net::CookieStore* cookie_store =
       context_getter_->GetURLRequestContext()->cookie_store();
   if (!cookie_store) {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(net::CookieList());
     return;
   }
 
@@ -225,18 +233,14 @@ MediaResourceGetterTask::GetTaskRunner() const {
 void MediaResourceGetterTask::CheckPolicyForCookies(
     const GURL& url,
     const GURL& site_for_cookies,
-    media::MediaResourceGetter::GetCookieCB callback,
+    net::CookieStore::GetCookieListCallback callback,
     const net::CookieList& cookie_list) {
   if (GetContentClient()->browser()->AllowGetCookie(
           url, site_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id_)) {
-    net::CookieStore* cookie_store =
-        context_getter_->GetURLRequestContext()->cookie_store();
-    net::CookieOptions options;
-    options.set_include_httponly();
-    cookie_store->GetCookiesWithOptionsAsync(url, options, std::move(callback));
+    std::move(callback).Run(cookie_list);
   } else {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(net::CookieList());
   }
 }
 
@@ -276,14 +280,14 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
   scoped_refptr<MediaResourceGetterTask> task = new MediaResourceGetterTask(
       browser_context_, render_process_id_, render_frame_id_);
 
-  GetCookieCB cb =
+  net::CookieStore::GetCookieListCallback cb =
       base::BindOnce(&MediaResourceGetterImpl::GetCookiesCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback));
   task->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&MediaResourceGetterTask::RequestCookies, task, url,
-                     site_for_cookies,
-                     base::BindOnce(&ReturnResultOnUIThread, std::move(cb))));
+      base::BindOnce(
+          &MediaResourceGetterTask::RequestCookies, task, url, site_for_cookies,
+          base::BindOnce(&ReturnCookieListResultOnUIThread, std::move(cb))));
 }
 
 void MediaResourceGetterImpl::GetAuthCredentialsCallback(
@@ -293,10 +297,12 @@ void MediaResourceGetterImpl::GetAuthCredentialsCallback(
   std::move(callback).Run(credentials.username(), credentials.password());
 }
 
-void MediaResourceGetterImpl::GetCookiesCallback(GetCookieCB callback,
-                                                 const std::string& cookies) {
+void MediaResourceGetterImpl::GetCookiesCallback(
+    GetCookieCB callback,
+    const net::CookieList& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(cookies);
+  std::string cookie_line = net::CanonicalCookie::BuildCookieLine(cookie_list);
+  std::move(callback).Run(std::move(cookie_line));
 }
 
 void MediaResourceGetterImpl::GetPlatformPathFromURL(

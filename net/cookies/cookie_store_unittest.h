@@ -1338,7 +1338,7 @@ TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetweenWithPredicate) {
   EXPECT_EQ(2u,  // Deletes A=B, E=B
             this->DeleteAllCreatedBetweenWithPredicate(
                 cs, now, base::Time::Max(),
-                base::Bind(&CookieHasValue, desired_value)));
+                base::BindRepeating(&CookieHasValue, desired_value)));
 
   // Check that we deleted the right ones.
   this->MatchCookieLines("C=D;Y=Z",
@@ -1353,13 +1353,13 @@ TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetweenWithPredicate) {
   desired_value = "D";
   EXPECT_EQ(0u, this->DeleteAllCreatedBetweenWithPredicate(
                     cs, last_month, last_minute,
-                    base::Bind(&CookieHasValue, desired_value)));
+                    base::BindRepeating(&CookieHasValue, desired_value)));
   this->MatchCookieLines("C=D;Y=Z",
                          this->GetCookies(cs, this->https_www_foo_.url()));
   // Same thing, but with a good time range.
   EXPECT_EQ(1u, this->DeleteAllCreatedBetweenWithPredicate(
                     cs, now, base::Time::Max(),
-                    base::Bind(&CookieHasValue, desired_value)));
+                    base::BindRepeating(&CookieHasValue, desired_value)));
   this->MatchCookieLines("Y=Z",
                          this->GetCookies(cs, this->https_www_foo_.url()));
 }

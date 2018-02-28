@@ -60,15 +60,6 @@ void CookieStoreIOSPersistent::SetCanonicalCookieAsync(
       WrapSetCallback(std::move(callback)));
 }
 
-void CookieStoreIOSPersistent::GetCookiesWithOptionsAsync(
-    const GURL& url,
-    const net::CookieOptions& options,
-    GetCookiesCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  cookie_monster()->GetCookiesWithOptionsAsync(url, options,
-                                               std::move(callback));
-}
-
 void CookieStoreIOSPersistent::GetCookieListWithOptionsAsync(
     const GURL& url,
     const net::CookieOptions& options,

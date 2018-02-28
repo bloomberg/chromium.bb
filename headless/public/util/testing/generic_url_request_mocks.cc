@@ -53,13 +53,6 @@ void MockCookieStore::SetCanonicalCookieAsync(
   cookies_.push_back(std::move(*cookie));
 }
 
-void MockCookieStore::GetCookiesWithOptionsAsync(
-    const GURL& url,
-    const net::CookieOptions& options,
-    GetCookiesCallback callback) {
-  CHECK(false);
-}
-
 void MockCookieStore::GetCookieListWithOptionsAsync(
     const GURL& url,
     const net::CookieOptions& options,

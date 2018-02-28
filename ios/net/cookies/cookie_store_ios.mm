@@ -150,20 +150,6 @@ NSHTTPCookie* GetNSHTTPCookieFromCookieLine(const std::string& cookie_line,
   return corrected_cookie;
 }
 
-
-// Builds a cookie line (such as "key1=value1; key2=value2") from an array of
-// cookies.
-std::string BuildCookieLineWithOptions(NSArray* cookies,
-                                       const net::CookieOptions& options) {
-  // The exclude_httponly() option would only be used by a javascript engine.
-  DCHECK(!options.exclude_httponly());
-
-  // This utility function returns all the cookies, including the httponly ones.
-  // This is fine because we don't support the exclude_httponly option.
-  NSDictionary* header = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
-  return base::SysNSStringToUTF8([header valueForKey:@"Cookie"]);
-}
-
 // Returns an empty closure if |callback| is null callback or binds the
 // callback to |success|.
 base::OnceClosure BindSetCookiesCallback(
@@ -174,16 +160,6 @@ base::OnceClosure BindSetCookiesCallback(
     set_callback = base::BindOnce(std::move(*callback), success);
   }
   return set_callback;
-}
-
-// Runs |callback| on CookieLine generated from |options| and |cookies|.
-void RunGetCookiesCallbackOnSystemCookies(
-    const net::CookieOptions& options,
-    CookieStoreIOS::GetCookiesCallback callback,
-    NSArray<NSHTTPCookie*>* cookies) {
-  if (!callback.is_null()) {
-    std::move(callback).Run(BuildCookieLineWithOptions(cookies, options));
-  }
 }
 
 // Tests whether the |cookie| is a session cookie.
@@ -352,27 +328,6 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
 
   if (!callback.is_null())
     std::move(callback).Run(false);
-}
-
-void CookieStoreIOS::GetCookiesWithOptionsAsync(
-    const GURL& url,
-    const net::CookieOptions& options,
-    GetCookiesCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If cookies are not allowed, a CookieStoreIOS subclass should be used
-  // instead.
-  DCHECK(SystemCookiesAllowed());
-
-  // The exclude_httponly() option would only be used by a javascript
-  // engine.
-  DCHECK(!options.exclude_httponly());
-
-  // TODO(crbug.com/459154): If/when iOS supports Same-Site cookies, we'll need
-  // to pass options in here as well.
-  system_store_->GetCookiesForURLAsync(
-      url, base::BindOnce(&RunGetCookiesCallbackOnSystemCookies, options,
-                          base::Passed(&callback)));
 }
 
 void CookieStoreIOS::GetCookieListWithOptionsAsync(

@@ -55,10 +55,6 @@ class MockCookieStore : public net::CookieStore {
                                bool modify_http_only,
                                SetCookiesCallback callback) override;
 
-  void GetCookiesWithOptionsAsync(const GURL& url,
-                                  const net::CookieOptions& options,
-                                  GetCookiesCallback callback) override;
-
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;

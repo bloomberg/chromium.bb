@@ -13,7 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
+#include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_store_change_unittest.h"
+#include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -79,11 +81,11 @@ class CookieStoreIOSPersistentTest : public PlatformTest {
   ~CookieStoreIOSPersistentTest() override {}
 
   // Gets the cookies. |callback| will be called on completion.
-  void GetCookies(net::CookieStore::GetCookiesCallback callback) {
+  void GetCookies(net::CookieStore::GetCookieListCallback callback) {
     net::CookieOptions options;
     options.set_include_httponly();
-    store_->GetCookiesWithOptionsAsync(kTestCookieURL, options,
-                                       std::move(callback));
+    store_->GetCookieListWithOptionsAsync(kTestCookieURL, options,
+                                          std::move(callback));
   }
 
   // Sets a cookie.
@@ -136,13 +138,12 @@ TEST_F(CookieStoreIOSPersistentTest, SetCookieCallsHook) {
 // Tests that cookies can be read before the backend is loaded.
 TEST_F(CookieStoreIOSPersistentTest, NotSynchronized) {
   // Start fetching the cookie.
-  GetCookieCallback callback;
+  GetCookieListCallback callback;
   GetCookies(
-      base::BindOnce(&GetCookieCallback::Run, base::Unretained(&callback)));
+      base::BindOnce(&GetCookieListCallback::Run, base::Unretained(&callback)));
   // Backend loading completes.
   backend_->RunLoadedCallback();
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
+  EXPECT_THAT(callback.cookies(), MatchesCookieLine("a=b"));
 }
 
 }  // namespace net
