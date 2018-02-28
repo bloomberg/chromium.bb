@@ -1381,6 +1381,7 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        AV1_COMMON *cm) {
+  assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
@@ -1548,6 +1549,8 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   if (bsize != cm->seq_params.sb_size) return 0;
   if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) return 0;
+
+  assert(!cm->all_lossless);
 
   const int is_uv = plane > 0;
 

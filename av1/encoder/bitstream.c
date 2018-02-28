@@ -1906,6 +1906,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
+  assert(!cm->all_lossless);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int all_none = 1, chroma_none = 1;
@@ -2071,6 +2072,8 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   const RestorationInfo *rsi = cm->rst_info + plane;
   RestorationType frame_rtype = rsi->frame_restoration_type;
   if (frame_rtype == RESTORE_NONE) return;
+
+  assert(!cm->all_lossless);
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
   WienerInfo *wiener_info = xd->wiener_info + plane;
@@ -3340,8 +3343,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
   if (!cm->all_lossless) {
     encode_cdef(cm, wb);
+    encode_restoration_mode(cm, wb);
   }
-  encode_restoration_mode(cm, wb);
+
   write_tx_mode(cm, &cm->tx_mode, wb);
 
   if (cpi->allow_comp_inter_inter) {

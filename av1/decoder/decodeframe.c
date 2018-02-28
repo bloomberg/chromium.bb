@@ -901,6 +901,7 @@ static void setup_segmentation(AV1_COMMON *const cm,
 
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
+  assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   int all_none = 1, chroma_none = 1;
@@ -1074,6 +1075,8 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
   const RestorationInfo *rsi = &cm->rst_info[plane];
   RestorationUnitInfo *rui = &rsi->unit_info[rtile_idx];
   if (rsi->frame_restoration_type == RESTORE_NONE) return;
+
+  assert(!cm->all_lossless);
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
   WienerInfo *wiener_info = xd->wiener_info + plane;
@@ -3180,10 +3183,17 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
   cm->all_lossless = all_lossless(cm, xd);
   setup_segmentation_dequant(cm);
-  if (!cm->all_lossless) {
+  if (cm->all_lossless) {
+    assert(cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
+           cm->cdef_uv_strengths[0] == 0);
+    assert(cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
+           cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
+           cm->rst_info[2].frame_restoration_type == RESTORE_NONE);
+  } else {
     setup_cdef(cm, rb);
+    decode_restoration_mode(cm, rb);
   }
-  decode_restoration_mode(cm, rb);
+
   cm->tx_mode = read_tx_mode(cm, rb);
   cm->reference_mode = read_frame_reference_mode(cm, rb);
   if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
