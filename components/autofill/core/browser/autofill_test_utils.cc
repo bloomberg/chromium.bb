@@ -26,9 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -59,26 +56,6 @@ std::unique_ptr<PrefService> PrefServiceForTesting() {
 std::unique_ptr<PrefService> PrefServiceForTesting(
     user_prefs::PrefRegistrySyncable* registry) {
   AutofillManager::RegisterProfilePrefs(registry);
-
-  // PDM depends on these prefs, which are normally registered in
-  // SigninManagerFactory.
-  registry->RegisterStringPref(::prefs::kGoogleServicesAccountId,
-                               std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesLastAccountId,
-                               std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesLastUsername,
-                               std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesUserAccountId,
-                               std::string());
-  registry->RegisterStringPref(::prefs::kGoogleServicesUsername,
-                               std::string());
-
-  // PDM depends on these prefs, which are normally registered in
-  // AccountTrackerServiceFactory.
-  registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
-  registry->RegisterIntegerPref(::prefs::kAccountIdMigrationState,
-                                AccountTrackerService::MIGRATION_NOT_STARTED);
-  registry->RegisterInt64Pref(AccountFetcherService::kLastUpdatePref, 0);
 
   PrefServiceFactory factory;
   factory.set_user_prefs(base::MakeRefCounted<TestingPrefStore>());

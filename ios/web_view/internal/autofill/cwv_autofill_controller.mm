@@ -17,8 +17,6 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/signin/core/browser/profile_identity_provider.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -27,8 +25,6 @@
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
@@ -82,13 +78,6 @@
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
 
-    std::unique_ptr<IdentityProvider> identityProvider(
-        std::make_unique<ProfileIdentityProvider>(
-            ios_web_view::WebViewSigninManagerFactory::GetForBrowserState(
-                browserState->GetRecordingBrowserState()),
-            ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
-                browserState->GetRecordingBrowserState()),
-            base::Closure()));
     _autofillClient.reset(new autofill::WebViewAutofillClientIOS(
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
@@ -96,7 +85,6 @@
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetInstance()
             ->GetForBrowserState(browserState),
-        std::move(identityProvider),
         ios_web_view::WebViewWebDataServiceWrapperFactory::
             GetAutofillWebDataForBrowserState(
                 browserState, ServiceAccessType::EXPLICIT_ACCESS)));

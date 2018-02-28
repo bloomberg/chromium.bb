@@ -6,7 +6,6 @@ include_rules = [
   "+components/metrics",
   "+components/policy",
   "+components/security_state",
-  "+components/signin/core/browser",
   "+components/sync",
   "+components/variations",
   "+components/version_info",

@@ -21,7 +21,6 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "google_apis/gaia/identity_provider.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -37,8 +36,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       infobars::InfoBarManager* infobar_manager,
       id<AutofillClientIOSBridge> bridge,
-      password_manager::PasswordGenerationManager* password_generation_manager,
-      std::unique_ptr<IdentityProvider> identity_provider);
+      password_manager::PasswordGenerationManager* password_generation_manager);
   ~ChromeAutofillClientIOS() override;
 
   // Sets a weak reference to the view controller used to present UI.
@@ -49,7 +47,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
   SaveCardBubbleController* GetSaveCardBubbleController() override;
@@ -99,7 +96,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
-  std::unique_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;

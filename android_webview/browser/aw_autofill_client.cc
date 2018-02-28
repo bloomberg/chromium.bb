@@ -78,10 +78,6 @@ identity::IdentityManager* AwAutofillClient::GetIdentityManager() {
   return nullptr;
 }
 
-IdentityProvider* AwAutofillClient::GetIdentityProvider() {
-  return nullptr;
-}
-
 ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }

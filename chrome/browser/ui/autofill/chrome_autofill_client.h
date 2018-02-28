@@ -52,7 +52,6 @@ class ChromeAutofillClient
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
   SaveCardBubbleController* GetSaveCardBubbleController() override;
@@ -120,9 +119,6 @@ class ChromeAutofillClient
 
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
-
-  // The identity provider, used for Payments integration.
-  std::unique_ptr<IdentityProvider> identity_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };

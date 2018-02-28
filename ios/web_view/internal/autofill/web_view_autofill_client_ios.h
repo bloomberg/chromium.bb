@@ -18,7 +18,6 @@
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "google_apis/gaia/identity_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
 namespace autofill {
@@ -32,7 +31,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<AutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
-      std::unique_ptr<IdentityProvider> identity_provider,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service);
   ~WebViewAutofillClientIOS() override;
 
@@ -41,7 +39,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
-  IdentityProvider* GetIdentityProvider() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   AddressNormalizer* GetAddressNormalizer() override;
   SaveCardBubbleController* GetSaveCardBubbleController() override;
@@ -91,7 +88,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
-  std::unique_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
