@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.variations;
+package org.chromium.android_webview.services;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,7 +16,6 @@ import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 
-import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -72,7 +71,7 @@ public class AwVariationsSeedHandler extends Handler {
     /**
      * Bind to AwVariationsConfigurationService in the current context to ask for a seed.
      */
-    public static void bindToVariationsService() {
+    public static void bindToVariationsService(String webViewPackageName) {
         File appWebViewVariationsDir = null;
         try {
             appWebViewVariationsDir = getOrCreateVariationsDirectory();
@@ -114,7 +113,6 @@ public class AwVariationsSeedHandler extends Handler {
         };
 
         Intent intent = new Intent();
-        String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
         intent.setClassName(webViewPackageName, AwVariationsConfigurationService.class.getName());
         Context context = ContextUtils.getApplicationContext();
         if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.variations;
+package org.chromium.android_webview.services;
 
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -19,11 +19,9 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Base64;
 
-import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -58,12 +56,7 @@ public class AwVariationsConfigurationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Ensure that ContextUtils.getApplicationContext() will return the current context in the
-        // following code for the function won't work when we use the standalone WebView package.
-        ContextUtils.initApplicationContext(this.getApplicationContext());
-        // Ensure that PathUtils.getDataDirectory() will return the app_webview directory in the
-        // following code.
-        PathUtils.setPrivateDataDirectorySuffix(AwBrowserProcess.WEBVIEW_DIR_BASENAME);
+        ServiceInit.init(getApplicationContext());
     }
 
     @Override

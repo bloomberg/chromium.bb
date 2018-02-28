@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.variations;
+package org.chromium.android_webview.services;
 
 import android.app.job.JobParameters;
 import android.app.job.JobService;
@@ -17,7 +17,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
-import org.chromium.android_webview.variations.AwVariationsUtils.SeedPreference;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -42,8 +41,7 @@ public class AwVariationsSeedFetchService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters params) {
-        // Ensure we can use ContextUtils later on.
-        ContextUtils.initApplicationContext(this.getApplicationContext());
+        ServiceInit.init(getApplicationContext());
         mFetchVariationsSeedTask = new FetchVariationsSeedTask(params);
         mFetchVariationsSeedTask.execute();
         return true;
@@ -108,7 +106,7 @@ public class AwVariationsSeedFetchService extends JobService {
         public void onServiceConnected(ComponentName className, IBinder service) {
             Bundle bundle = new Bundle();
             bundle.putByteArray(AwVariationsUtils.KEY_SEED_DATA, mSeedInfo.seedData);
-            ArrayList<String> list = new SeedPreference(mSeedInfo).toArrayList();
+            ArrayList<String> list = new AwVariationsUtils.SeedPreference(mSeedInfo).toArrayList();
             bundle.putStringArrayList(AwVariationsUtils.KEY_SEED_PREF, list);
 
             // Directly set members of AwVariationsConfigurationService to prevent a malicious app

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test.crash;
+package org.chromium.android_webview.test.services;
 
 import android.os.ParcelFileDescriptor;
 import android.support.test.filters.MediumTest;
@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.PlatformServiceBridge;
-import org.chromium.android_webview.crash.AwMinidumpUploaderDelegate;
-import org.chromium.android_webview.crash.CrashReceiverService;
+import org.chromium.android_webview.services.AwMinidumpUploaderDelegate;
+import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;

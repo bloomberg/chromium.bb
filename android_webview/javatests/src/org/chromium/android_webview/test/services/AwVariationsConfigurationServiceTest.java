@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test.variations;
+package org.chromium.android_webview.test.services;
 
-import static org.chromium.android_webview.variations.AwVariationsUtils.SEED_DATA_FILENAME;
-import static org.chromium.android_webview.variations.AwVariationsUtils.SEED_PREF_FILENAME;
+import static org.chromium.android_webview.services.AwVariationsUtils.SEED_DATA_FILENAME;
+import static org.chromium.android_webview.services.AwVariationsUtils.SEED_PREF_FILENAME;
 
 import android.os.ParcelFileDescriptor;
 import android.support.test.InstrumentationRegistry;
@@ -19,10 +19,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwBrowserProcess;
-import org.chromium.android_webview.variations.AwVariationsConfigurationService;
-import org.chromium.android_webview.variations.AwVariationsSeedHandler;
-import org.chromium.android_webview.variations.AwVariationsUtils;
-import org.chromium.android_webview.variations.AwVariationsUtils.SeedPreference;
+import org.chromium.android_webview.services.AwVariationsConfigurationService;
+import org.chromium.android_webview.services.AwVariationsSeedHandler;
+import org.chromium.android_webview.services.AwVariationsUtils;
+import org.chromium.android_webview.services.AwVariationsUtils.SeedPreference;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;

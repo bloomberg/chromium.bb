@@ -16,9 +16,9 @@ import android.os.RemoteException;
 import android.os.StrictMode;
 
 import org.chromium.android_webview.command_line.CommandLineUtil;
-import org.chromium.android_webview.crash.CrashReceiverService;
-import org.chromium.android_webview.crash.ICrashReceiverService;
 import org.chromium.android_webview.policy.AwPolicyProvider;
+import org.chromium.android_webview.services.CrashReceiverService;
+import org.chromium.android_webview.services.ICrashReceiverService;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;

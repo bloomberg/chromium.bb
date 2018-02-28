@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.crash;
+package org.chromium.android_webview.services;
 
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -37,8 +37,7 @@ public class CrashReceiverService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        ContextUtils.initApplicationContext(this.getApplicationContext());
+        ServiceInit.init(getApplicationContext());
     }
 
     private final ICrashReceiverService.Stub mBinder = new ICrashReceiverService.Stub() {
