@@ -3390,7 +3390,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
 crbug.com/417782 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
-crbug.com/417782 [ Win ] http/tests/devtools/editor/text-editor-formatter.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Timeout ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
