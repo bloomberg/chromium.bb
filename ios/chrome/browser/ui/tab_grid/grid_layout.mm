@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid_layout.h"
 
-#import "ios/chrome/browser/ui/ui_util.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -25,13 +23,8 @@ const CGFloat kInterTabSpacing = 20.0f;
 
 - (instancetype)init {
   if (self = [super init]) {
-    if (IsIPadIdiom()) {
-      _startingTabWidth = 200.0f;
-      _maxTabWidth = 250.0f;
-    } else {
-      _startingTabWidth = 160.0f;
-      _maxTabWidth = 200.0f;
-    }
+    _startingTabWidth = 200.0f;
+    _maxTabWidth = 250.0f;
   }
   return self;
 }
