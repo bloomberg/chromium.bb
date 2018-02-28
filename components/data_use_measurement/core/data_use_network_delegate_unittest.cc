@@ -150,9 +150,8 @@ class DataUseNetworkDelegateTest : public testing::Test {
 
 // This function tests data use measurement for requests by services. it makes a
 // query which is similar to a query of a service, so it should affect
-// DataUse.TrafficSize.System.Dimensions and DataUse.MessageSize.ServiceName
-// histograms. AppState and ConnectionType dimensions are always Foreground and
-// NotCellular respectively.
+// DataUse.TrafficSize.System.Dimensions histogram. AppState and ConnectionType
+// dimensions are always Foreground and NotCellular respectively.
 TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementServiceTest) {
   base::HistogramTester histogram_tester;
 
@@ -165,9 +164,6 @@ TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementServiceTest) {
           .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 1);
-  EXPECT_FALSE(histogram_tester
-                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
-                   .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
@@ -194,14 +190,13 @@ TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementUserTest) {
       "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 0);
 }
 
 // This function tests data use measurement for requests by services in case the
 // request is redirected once. it makes a query which is similar to a query of a
 // service, so it should affect DataUse.TrafficSize.System.Dimensions and
-// DataUse.MessageSize.ServiceName histograms. AppState and ConnectionType
-// dimensions are always Foreground and NotCellular respectively.
+// histogram. AppState and ConnectionType dimensions are always Foreground and
+// NotCellular respectively.
 TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementServiceTestWithRedirect) {
   base::HistogramTester histogram_tester;
 
@@ -215,9 +210,6 @@ TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementServiceTestWithRedirect) {
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 2);
   // Two uploads and two downloads message, so totalCount should be 4.
-  EXPECT_FALSE(histogram_tester
-                   .GetTotalCountsForPrefix("DataUse.MessageSize.Suggestions")
-                   .empty());
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
@@ -245,7 +237,6 @@ TEST_F(DataUseNetworkDelegateTest, DataUseMeasurementUserTestWithRedirect) {
       "DataUse.TrafficSize.System.Downstream.Foreground.NotCellular", 0);
   histogram_tester.ExpectTotalCount(
       "DataUse.TrafficSize.System.Upstream.Foreground.NotCellular", 0);
-  histogram_tester.ExpectTotalCount("DataUse.MessageSize.Suggestions", 0);
 }
 
 }  // namespace

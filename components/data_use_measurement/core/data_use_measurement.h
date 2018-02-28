@@ -123,9 +123,8 @@ class DataUseMeasurement {
   void ReportServicesMessageSizeUMA(const net::URLRequest& request);
 
   // Records data use histograms of services. It gets the size of exchanged
-  // message, its direction (which is upstream or downstream) and reports to two
-  // histogram groups. DataUse.MessageSize.ServiceName and
-  // DataUse.Services.{Dimensions}. In the second one, services are buckets.
+  // message, its direction (which is upstream or downstream) and reports to the
+  // histogram DataUse.Services.{Dimensions} with, services as the buckets.
   // |app_state| indicates the app state which can be foreground, background, or
   // unknown.
   void ReportDataUsageServices(
