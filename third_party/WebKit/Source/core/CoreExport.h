@@ -2,48 +2,71 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This header defines macros to export component's symbols.
+// See "platform/PlatformExport.h" for details.
+
 #ifndef CoreExport_h
 #define CoreExport_h
 
 #include "build/build_config.h"
 
-#if defined(COMPONENT_BUILD)
-#if defined(WIN32)
+//
+// BLINK_CORE_IMPLEMENTATION
+//
+#if !defined(BLINK_CORE_IMPLEMENTATION)
+#define BLINK_CORE_IMPLEMENTATION 0
+#endif
 
-#if defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
+//
+// CORE_EXPORT
+//
+#if !defined(COMPONENT_BUILD)
+#define CORE_EXPORT  // No need of export
+#else
+
+#if defined(COMPILER_MSVC)
+#if BLINK_CORE_IMPLEMENTATION
 #define CORE_EXPORT __declspec(dllexport)
 #else
 #define CORE_EXPORT __declspec(dllimport)
-#endif  // defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
+#endif
+#endif  // defined(COMPILER_MSVC)
 
-#else  // defined(WIN32)
-#if defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
+#if defined(COMPILER_GCC)
+#if BLINK_CORE_IMPLEMENTATION
 #define CORE_EXPORT __attribute__((visibility("default")))
 #else
 #define CORE_EXPORT
 #endif
-#endif
+#endif  // defined(COMPILER_GCC)
 
-#else  // defined(COMPONENT_BUILD)
-#define CORE_EXPORT
-#endif
+#endif  // !defined(COMPONENT_BUILD)
 
-#if defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
+//
+// CORE_TEMPLATE_CLASS_EXPORT
+// CORE_EXTERN_TEMPLATE_EXPORT
+// CORE_TEMPLATE_EXPORT
+//
+#if BLINK_CORE_IMPLEMENTATION
+
 #if defined(COMPILER_MSVC)
 #define CORE_TEMPLATE_CLASS_EXPORT
 #define CORE_EXTERN_TEMPLATE_EXPORT CORE_EXPORT
 #define CORE_TEMPLATE_EXPORT CORE_EXPORT
-#elif defined(COMPILER_GCC)
+#endif
+
+#if defined(COMPILER_GCC)
 #define CORE_TEMPLATE_CLASS_EXPORT CORE_EXPORT
 #define CORE_EXTERN_TEMPLATE_EXPORT CORE_EXPORT
 #define CORE_TEMPLATE_EXPORT
-#else
-#error Unknown compiler
 #endif
-#else  // !BLINK_CORE_IMPLEMENTATION
+
+#else  // BLINK_CORE_IMPLEMENTATION
+
 #define CORE_TEMPLATE_CLASS_EXPORT
 #define CORE_EXTERN_TEMPLATE_EXPORT CORE_EXPORT
 #define CORE_TEMPLATE_EXPORT
-#endif
+
+#endif  // BLINK_CORE_IMPLEMENTATION
 
 #endif  // CoreExport_h
