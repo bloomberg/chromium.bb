@@ -7,10 +7,12 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "base/process/process.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/app/dump_hung_process_with_ptype.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
 void RequestSingleCrashUpload_ExportThunk(const char* local_id) {
@@ -62,6 +64,13 @@ HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
 
 const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
   return crash_reporter::GetCrashpadDatabasePathImpl();
+}
+
+bool DumpHungProcessWithPtype_ExportThunk(HANDLE process_handle,
+                                          const char* ptype) {
+  base::Process process(process_handle);
+
+  return crash_reporter::DumpHungProcessWithPtypeImpl(process, ptype);
 }
 
 #if defined(ARCH_CPU_X86_64)
