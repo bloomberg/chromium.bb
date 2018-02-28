@@ -38,8 +38,9 @@ function createRow(rowInfo) {
       new Date(rowInfo.lastMediaPlaybackTime).toISOString() :
       '';
   td[6].textContent = rowInfo.isHigh ? 'Yes' : 'No';
-  td[7].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
-  td[8].getElementsByClassName('engagement-bar')[0].style.width =
+  td[7].textContent = rowInfo.highScoreChanges;
+  td[8].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
+  td[9].getElementsByClassName('engagement-bar')[0].style.width =
       (rowInfo.totalScore * 50) + 'px';
   return document.importNode(template.content, true);
 }
@@ -78,7 +79,8 @@ function compareTableItem(sortKey, a, b) {
 
   if (sortKey == 'visits' || sortKey == 'mediaPlaybacks' ||
       sortKey == 'lastMediaPlaybackTime' || sortKey == 'totalScore' ||
-      sortKey == 'audiblePlaybacks' || sortKey == 'significantPlaybacks') {
+      sortKey == 'audiblePlaybacks' || sortKey == 'significantPlaybacks' ||
+      sortKey == 'highScoreChanges') {
     return val1 - val2;
   }
 

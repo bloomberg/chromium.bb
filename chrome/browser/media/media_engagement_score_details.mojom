@@ -23,6 +23,9 @@ struct MediaEngagementScoreDetails {
   // Data used for experiments.
   int32 audible_playbacks;
   int32 significant_playbacks;
+
+  // How many time the score changed `is_high` status.
+  int32 high_score_changes;
 };
 
 struct MediaEngagementConfig {
