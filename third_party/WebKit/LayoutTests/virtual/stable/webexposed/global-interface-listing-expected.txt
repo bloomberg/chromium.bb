@@ -734,9 +734,7 @@ interface CharacterData : Node
 interface Clipboard : EventTarget
     attribute @@toStringTag
     method constructor
-    method read
     method readText
-    method write
     method writeText
 interface ClipboardEvent : Event
     attribute @@toStringTag
@@ -3939,6 +3937,7 @@ interface Navigator
     getter appName
     getter appVersion
     getter budget
+    getter clipboard
     getter connection
     getter cookieEnabled
     getter credentials
