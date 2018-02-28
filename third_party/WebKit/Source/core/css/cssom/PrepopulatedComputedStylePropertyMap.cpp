@@ -1,0 +1,112 @@
+// Copyright 2018 the Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
+
+#include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSVariableData.h"
+#include "core/css/ComputedStyleCSSValueMapping.h"
+#include "core/css/cssom/CSSUnparsedValue.h"
+#include "core/dom/Document.h"
+#include "core/style/ComputedStyle.h"
+
+namespace blink {
+
+PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
+    const Document& document,
+    const ComputedStyle& style,
+    Node* styled_node,
+    const Vector<CSSPropertyID>& native_properties,
+    const Vector<AtomicString>& custom_properties)
+    : StylePropertyMapReadOnly(), styled_node_(styled_node) {
+  // NOTE: This may over-reserve as shorthand properties will get dropped from
+  // being in the map.
+  native_values_.ReserveCapacityForSize(native_properties.size());
+  custom_values_.ReserveCapacityForSize(custom_properties.size());
+
+  for (const auto& property_id : native_properties) {
+    // Silently drop shorthand properties.
+    DCHECK_NE(property_id, CSSPropertyInvalid);
+    if (CSSProperty::Get(property_id).IsShorthand())
+      continue;
+
+    UpdateNativeProperty(style, property_id);
+  }
+
+  for (const auto& property_name : custom_properties) {
+    UpdateCustomProperty(document, style, property_name);
+  }
+}
+
+unsigned PrepopulatedComputedStylePropertyMap::size() {
+  return native_values_.size() + custom_values_.size();
+}
+
+void PrepopulatedComputedStylePropertyMap::UpdateStyle(
+    const Document& document,
+    const ComputedStyle& style) {
+  for (const auto& property_id : native_values_.Keys()) {
+    DCHECK_NE(property_id, CSSPropertyInvalid);
+    UpdateNativeProperty(style, property_id);
+  }
+
+  for (const auto& property_name : custom_values_.Keys()) {
+    UpdateCustomProperty(document, style, property_name);
+  }
+}
+
+void PrepopulatedComputedStylePropertyMap::UpdateNativeProperty(
+    const ComputedStyle& style,
+    CSSPropertyID property_id) {
+  native_values_.Set(property_id,
+                     CSSProperty::Get(property_id)
+                         .CSSValueFromComputedStyle(
+                             style, /* layout_object */ nullptr, styled_node_,
+                             /* allow_visited_style */ false));
+}
+
+void PrepopulatedComputedStylePropertyMap::UpdateCustomProperty(
+    const Document& document,
+    const ComputedStyle& style,
+    const AtomicString& property_name) {
+  const CSSValue* value = ComputedStyleCSSValueMapping::Get(
+      property_name, style, document.GetPropertyRegistry());
+  if (!value)
+    value = CSSUnparsedValue::Create()->ToCSSValue();
+
+  custom_values_.Set(property_name, value);
+}
+
+const CSSValue* PrepopulatedComputedStylePropertyMap::GetProperty(
+    CSSPropertyID property_id) {
+  return native_values_.at(property_id);
+}
+
+const CSSValue* PrepopulatedComputedStylePropertyMap::GetCustomProperty(
+    AtomicString property_name) {
+  return custom_values_.at(property_name);
+}
+
+void PrepopulatedComputedStylePropertyMap::ForEachProperty(
+    const IterationCallback& callback) {
+  for (const auto& entry : native_values_) {
+    DCHECK(entry.value);
+    callback(CSSProperty::Get(entry.key).GetPropertyNameAtomicString(),
+             *entry.value);
+  }
+
+  for (const auto& entry : custom_values_) {
+    DCHECK(entry.value);
+    callback(entry.key, *entry.value);
+  }
+}
+
+void PrepopulatedComputedStylePropertyMap::Trace(blink::Visitor* visitor) {
+  visitor->Trace(styled_node_);
+  visitor->Trace(native_values_);
+  visitor->Trace(custom_values_);
+  StylePropertyMapReadOnly::Trace(visitor);
+}
+
+}  // namespace blink

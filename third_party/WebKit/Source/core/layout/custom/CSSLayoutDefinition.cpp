@@ -8,7 +8,7 @@
 #include "bindings/core/v8/DictionaryIterator.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8FragmentResultOptions.h"
-#include "core/css/cssom/FilteredComputedStylePropertyMap.h"
+#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/custom/FragmentResultOptions.h"
@@ -71,7 +71,8 @@ bool CSSLayoutDefinition::Instance::Layout(
   // This should be shared with the CSS paint, but without the invalidation.
   DCHECK(layout_custom.GetNode());
   StylePropertyMapReadOnly* style_map =
-      FilteredComputedStylePropertyMap::Create(
+      new PrepopulatedComputedStylePropertyMap(
+          layout_custom.GetDocument(), layout_custom.StyleRef(),
           layout_custom.GetNode(), definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
