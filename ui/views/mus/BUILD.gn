@@ -250,6 +250,7 @@ test("views_mus_interactive_ui_tests") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/events:events_base",
     "//ui/events:test_support",
