@@ -102,7 +102,6 @@ typedef struct {
 } PALETTE_BUFFER;
 
 typedef struct {
-  TX_TYPE tx_type;
   TX_SIZE tx_size;
   TX_SIZE min_tx_size;
   TX_SIZE inter_tx_size[INTER_TX_SIZE_BUF_LEN];

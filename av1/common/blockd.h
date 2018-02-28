@@ -247,7 +247,6 @@ typedef struct MB_MODE_INFO {
   InterpFilters interp_filters;
   MV_REFERENCE_FRAME ref_frame[2];
 
-  TX_TYPE tx_type;
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
 
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
