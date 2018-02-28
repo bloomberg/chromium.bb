@@ -87,9 +87,9 @@ void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
 }
 
 void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
+  OnShow();
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
   std::move(on_shown).Run(true);
-  SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
 }
 
 void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
@@ -100,10 +100,10 @@ void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
     return;
   }
 
+  OnShow();
   // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
   ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
   std::move(on_shown).Run(true);
-  SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
 }
 
 void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
@@ -366,6 +366,11 @@ LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
   if (!ash::LockScreen::IsShown())
     return nullptr;
   return ash::LockScreen::Get()->data_dispatcher();
+}
+
+void LoginScreenController::OnShow() {
+  SetSystemTrayVisibility(SystemTrayVisibility::kPrimary);
+  is_authenticating_ = false;
 }
 
 }  // namespace ash

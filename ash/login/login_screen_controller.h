@@ -120,6 +120,9 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Returns the active data dispatcher or nullptr if there is no lock screen.
   LoginDataDispatcher* DataDispatcher() const;
 
+  // Common code that is called when the login/lock screen is shown.
+  void OnShow();
+
   // Client interface in chrome browser. May be null in tests.
   mojom::LoginScreenClientPtr login_screen_client_;
 

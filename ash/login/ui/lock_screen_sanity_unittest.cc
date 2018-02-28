@@ -172,17 +172,21 @@ TEST_F(LockScreenSanityTest,
   // cleared after the ash callback handler has completed and auth has failed.
   submit_password();
   EXPECT_FALSE(password_test_api.textfield()->text().empty());
+  EXPECT_TRUE(password_test_api.textfield()->read_only());
   std::move(callback).Run(false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(password_test_api.textfield()->text().empty());
+  EXPECT_FALSE(password_test_api.textfield()->read_only());
 
   // Repeat the above process. Verify that the password is not cleared if auth
   // succeeds.
   submit_password();
   EXPECT_FALSE(password_test_api.textfield()->text().empty());
+  EXPECT_TRUE(password_test_api.textfield()->read_only());
   std::move(callback).Run(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(password_test_api.textfield()->text().empty());
+  EXPECT_TRUE(password_test_api.textfield()->read_only());
 }
 
 // Verifies that tabbing from the lock screen will eventually focus the shelf.
