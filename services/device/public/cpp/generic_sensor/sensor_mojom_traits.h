@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_STRUCT_TRAITS_H_
-#define SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_STRUCT_TRAITS_H_
+#ifndef SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_MOJOM_TRAITS_H_
+#define SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_MOJOM_TRAITS_H_
 
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 #include "services/device/public/mojom/sensor.mojom.h"
@@ -23,4 +23,4 @@ struct StructTraits<device::mojom::SensorConfigurationDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_STRUCT_TRAITS_H_
+#endif  // SERVICES_DEVICE_PUBLIC_CPP_GENERIC_SENSOR_SENSOR_MOJOM_TRAITS_H_
