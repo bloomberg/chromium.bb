@@ -36,7 +36,7 @@
  *   FONTS: (undefined|!settings.Route),
  *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
  *   IMPORT_DATA: (undefined|!settings.Route),
- *   INCOMPATIBLE_SOFTWARE: (undefined|!settings.Route),
+ *   INCOMPATIBLE_APPLICATIONS: (undefined|!settings.Route),
  *   INPUT_METHODS: (undefined|!settings.Route),
  *   INTERNET: (undefined|!settings.Route),
  *   INTERNET_NETWORKS: (undefined|!settings.Route),
@@ -391,9 +391,9 @@ cr.define('settings', function() {
         if (loadTimeData.getBoolean('userInitiatedCleanupsEnabled')) {
           r.CHROME_CLEANUP = r.RESET.createChild('/cleanup');
         }
-        if (loadTimeData.getBoolean('showIncompatibleSoftware')) {
-          r.INCOMPATIBLE_SOFTWARE =
-              r.RESET.createChild('/incompatibleSoftware');
+        if (loadTimeData.getBoolean('showIncompatibleApplications')) {
+          r.INCOMPATIBLE_APPLICATIONS =
+              r.RESET.createChild('/incompatibleApplications');
         }
         // </if>
       }

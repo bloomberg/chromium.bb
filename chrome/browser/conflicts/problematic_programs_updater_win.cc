@@ -21,8 +21,8 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 
-const base::Feature kIncompatibleSoftwareWarning{
-    "IncompatibleSoftwareWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIncompatibleApplicationsWarning{
+    "IncompatibleApplicationsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ProblematicProgram ----------------------------------------------------------
 
@@ -59,7 +59,7 @@ ProblematicProgramsUpdater::MaybeCreate(
 
   std::unique_ptr<ProblematicProgramsUpdater> instance;
 
-  if (base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning)) {
+  if (base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning)) {
     instance.reset(
         new ProblematicProgramsUpdater(module_list_filter, installed_programs));
   }
@@ -71,7 +71,7 @@ ProblematicProgramsUpdater::MaybeCreate(
 bool ProblematicProgramsUpdater::TrimCache() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
+  if (!base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning))
     return false;
 
   std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
@@ -105,7 +105,7 @@ bool ProblematicProgramsUpdater::TrimCache() {
 bool ProblematicProgramsUpdater::HasCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
+  if (!base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning))
     return false;
 
   return !g_browser_process->local_state()
@@ -119,7 +119,7 @@ base::Value ProblematicProgramsUpdater::GetCachedPrograms() {
 
   base::Value program_names(base::Value::Type::LIST);
 
-  if (!base::FeatureList::IsEnabled(kIncompatibleSoftwareWarning))
+  if (!base::FeatureList::IsEnabled(kIncompatibleApplicationsWarning))
     return program_names;
 
   std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
