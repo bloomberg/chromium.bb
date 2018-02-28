@@ -157,6 +157,13 @@ void BlobDataItem::PopulateFile(base::FilePath path,
 
 void BlobDataItem::ShrinkFile(uint64_t new_length) {
   DCHECK_EQ(type_, Type::kFile);
+  DCHECK_LE(new_length, length_);
+  length_ = new_length;
+}
+
+void BlobDataItem::GrowFile(uint64_t new_length) {
+  DCHECK_EQ(type_, Type::kFile);
+  DCHECK_GE(new_length, length_);
   length_ = new_length;
 }
 

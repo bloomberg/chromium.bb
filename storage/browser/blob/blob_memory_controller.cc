@@ -667,6 +667,16 @@ void BlobMemoryController::ShrinkFileAllocation(
                           weak_factory_.GetWeakPtr(), old_length - new_length));
 }
 
+void BlobMemoryController::GrowFileAllocation(
+    ShareableFileReference* file_reference,
+    uint64_t delta) {
+  DCHECK_LE(delta, GetAvailableFileSpaceForBlobs());
+  disk_used_ += delta;
+  file_reference->AddFinalReleaseCallback(
+      base::BindRepeating(&BlobMemoryController::OnBlobFileDelete,
+                          weak_factory_.GetWeakPtr(), delta));
+}
+
 void BlobMemoryController::NotifyMemoryItemsUsed(
     const std::vector<scoped_refptr<ShareableBlobDataItem>>& items) {
   for (const auto& item : items) {

@@ -86,6 +86,14 @@ class STORAGE_EXPORT BlobBuilderFromStream {
       std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
       std::vector<BlobMemoryController::FileCreationInfo> info,
       size_t populated_item_index,
+      bool success,
+      uint64_t bytes_written,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      const base::Time& modification_time);
+  void DidWriteToExtendedFile(
+      scoped_refptr<ShareableFileReference> file_reference,
+      uint64_t old_file_size,
+      bool success,
       uint64_t bytes_written,
       mojo::ScopedDataPipeConsumerHandle pipe,
       const base::Time& modification_time);

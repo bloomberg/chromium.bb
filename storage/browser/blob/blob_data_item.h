@@ -127,6 +127,12 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
     return disk_cache_side_stream_index_;
   }
 
+  DataHandle* data_handle() const {
+    DCHECK(type_ == Type::kFile || type_ == Type::kDiskCacheEntry)
+        << static_cast<int>(type_);
+    return data_handle_.get();
+  }
+
   // Returns true if this item was created by CreateFutureFile.
   bool IsFutureFileItem() const;
   // Returns |file_id| given to CreateFutureFile.
@@ -155,6 +161,11 @@ class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
                     base::Time expected_modification_time,
                     scoped_refptr<DataHandle> data_handle);
   void ShrinkFile(uint64_t new_length);
+  void GrowFile(uint64_t new_length);
+  void SetFileModificationTime(base::Time time) {
+    DCHECK_EQ(type_, Type::kFile);
+    expected_modification_time_ = time;
+  }
 
   static void SetFileModificationTimes(
       std::vector<scoped_refptr<BlobDataItem>> items,

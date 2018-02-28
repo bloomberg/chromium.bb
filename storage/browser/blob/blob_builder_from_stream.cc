@@ -65,8 +65,11 @@ class DataPipeConsumerHelper {
   }
   virtual ~DataPipeConsumerHelper() = default;
 
-  virtual void Populate(base::span<const char> data, uint64_t offset) = 0;
+  // Return false if population fails.
+  virtual bool Populate(base::span<const char> data,
+                        uint64_t bytes_previously_written) = 0;
   virtual void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
+                          bool success,
                           uint64_t bytes_written) = 0;
 
  private:
@@ -88,15 +91,19 @@ class DataPipeConsumerHelper {
       }
       DCHECK_EQ(MOJO_RESULT_OK, result);
       size = std::min<uint64_t>(size, max_bytes_to_read_ - current_offset_);
-      Populate(base::make_span(static_cast<const char*>(data), size),
-               current_offset_);
+      if (!Populate(base::make_span(static_cast<const char*>(data), size),
+                    current_offset_)) {
+        InvokeDone(mojo::ScopedDataPipeConsumerHandle(), false,
+                   current_offset_);
+        delete this;
+      }
       current_offset_ += size;
       result = pipe_->EndReadData(size);
       DCHECK_EQ(MOJO_RESULT_OK, result);
     }
 
     // Either the pipe closed, or we filled the entire item.
-    InvokeDone(std::move(pipe_), current_offset_);
+    InvokeDone(std::move(pipe_), true, current_offset_);
     delete this;
   }
 
@@ -115,9 +122,23 @@ class BlobBuilderFromStream::WritePipeToFileHelper
     : public DataPipeConsumerHelper {
  public:
   using DoneCallback =
-      base::OnceCallback<void(uint64_t bytes_written,
+      base::OnceCallback<void(bool success,
+                              uint64_t bytes_written,
                               mojo::ScopedDataPipeConsumerHandle pipe,
                               const base::Time& modification_time)>;
+
+  static void CreateAndAppend(mojo::ScopedDataPipeConsumerHandle pipe,
+                              base::FilePath file_path,
+                              uint64_t max_file_size,
+                              DoneCallback callback) {
+    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &WritePipeToFileHelper::CreateAndAppendOnFileSequence,
+                std::move(pipe), std::move(file_path), max_file_size,
+                base::SequencedTaskRunnerHandle::Get(), std::move(callback)));
+  }
 
   static void CreateAndStart(mojo::ScopedDataPipeConsumerHandle pipe,
                              base::File file,
@@ -133,6 +154,17 @@ class BlobBuilderFromStream::WritePipeToFileHelper
   }
 
  private:
+  static void CreateAndAppendOnFileSequence(
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      base::FilePath file_path,
+      uint64_t max_file_size,
+      scoped_refptr<base::TaskRunner> reply_runner,
+      DoneCallback callback) {
+    base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_APPEND);
+    new WritePipeToFileHelper(std::move(pipe), std::move(file), max_file_size,
+                              std::move(reply_runner), std::move(callback));
+  }
+
   static void CreateAndStartOnFileSequence(
       mojo::ScopedDataPipeConsumerHandle pipe,
       base::File file,
@@ -153,19 +185,23 @@ class BlobBuilderFromStream::WritePipeToFileHelper
         reply_runner_(std::move(reply_runner)),
         callback_(std::move(callback)) {}
 
-  void Populate(base::span<const char> data, uint64_t offset) override {
-    file_.Write(offset, data.data(), data.size());
+  bool Populate(base::span<const char> data,
+                uint64_t bytes_previously_written) override {
+    return file_.WriteAtCurrentPos(data.data(), data.size()) >= 0;
   }
 
   void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
+                  bool success,
                   uint64_t bytes_written) override {
     base::Time last_modified;
-    base::File::Info info;
-    if (file_.Flush() && file_.GetInfo(&info))
-      last_modified = info.last_modified;
-    reply_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(std::move(callback_), bytes_written,
-                                           std::move(pipe), last_modified));
+    if (success) {
+      base::File::Info info;
+      if (file_.Flush() && file_.GetInfo(&info))
+        last_modified = info.last_modified;
+    }
+    reply_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback_), success, bytes_written,
+                                  std::move(pipe), last_modified));
   }
 
   base::File file_;
@@ -197,15 +233,21 @@ class BlobBuilderFromStream::WritePipeToFutureDataHelper
         item_(std::move(item)),
         callback_(std::move(callback)) {}
 
-  void Populate(base::span<const char> data, uint64_t offset) override {
+  bool Populate(base::span<const char> data,
+                uint64_t bytes_previously_written) override {
     if (item_->type() == BlobDataItem::Type::kBytesDescription)
       item_->AllocateBytes();
-    std::memcpy(item_->mutable_bytes().subspan(offset, data.length()).data(),
+    std::memcpy(item_->mutable_bytes()
+                    .subspan(bytes_previously_written, data.length())
+                    .data(),
                 data.data(), data.length());
+    return true;
   }
 
   void InvokeDone(mojo::ScopedDataPipeConsumerHandle pipe,
+                  bool success,
                   uint64_t bytes_written) override {
+    DCHECK(success);
     std::move(callback_).Run(bytes_written, std::move(pipe));
   }
 
@@ -361,12 +403,32 @@ void BlobBuilderFromStream::AllocateMoreFileSpace(
   if (!length_hint)
     length_hint = kFileBlockSize;
 
-  // TODO(mek): Extend existing file until max_page_file_size is reached, rather
-  // then creating multiple min_page_file_size files.
-
   if (context_->memory_controller().GetAvailableFileSpaceForBlobs() <
       length_hint) {
     OnError();
+    return;
+  }
+
+  // If the previous item was also a file, and the file isn't at its maximum
+  // size yet, extend the previous file rather than creating a new one.
+  if (!items_.empty() &&
+      items_.back()->item()->type() == BlobDataItem::Type::kFile &&
+      items_.back()->item()->length() < kMaxFileSize) {
+    auto item = items_.back()->item();
+    uint64_t old_file_size = item->length();
+    scoped_refptr<ShareableFileReference> file_reference =
+        static_cast<ShareableFileReference*>(item->data_handle());
+    DCHECK(file_reference);
+    auto file_size_delta = std::min(kMaxFileSize - old_file_size, length_hint);
+    context_->mutable_memory_controller()->GrowFileAllocation(
+        file_reference.get(), file_size_delta);
+    item->GrowFile(old_file_size + file_size_delta);
+    base::FilePath path = file_reference->path();
+    WritePipeToFileHelper::CreateAndAppend(
+        std::move(pipe), path, file_size_delta,
+        base::BindOnce(&BlobBuilderFromStream::DidWriteToExtendedFile,
+                       weak_factory_.GetWeakPtr(), std::move(file_reference),
+                       old_file_size));
     return;
   }
 
@@ -411,10 +473,11 @@ void BlobBuilderFromStream::DidWriteToFile(
     std::vector<scoped_refptr<ShareableBlobDataItem>> chunk_items,
     std::vector<BlobMemoryController::FileCreationInfo> info,
     size_t populated_item_index,
+    bool success,
     uint64_t bytes_written,
     mojo::ScopedDataPipeConsumerHandle pipe,
     const base::Time& modification_time) {
-  if (!context_ || !callback_) {
+  if (!success || !context_ || !callback_) {
     OnError();
     return;
   }
@@ -452,6 +515,42 @@ void BlobBuilderFromStream::DidWriteToFile(
       item->item()->ShrinkFile(bytes_written);
       items_.push_back(std::move(item));
     }
+    OnSuccess();
+  }
+}
+
+void BlobBuilderFromStream::DidWriteToExtendedFile(
+    scoped_refptr<ShareableFileReference> file_reference,
+    uint64_t old_file_size,
+    bool success,
+    uint64_t bytes_written,
+    mojo::ScopedDataPipeConsumerHandle pipe,
+    const base::Time& modification_time) {
+  if (!success || !context_ || !callback_) {
+    OnError();
+    return;
+  }
+  DCHECK(!items_.empty());
+  auto item = items_.back()->item();
+  DCHECK_EQ(item->type(), BlobDataItem::Type::kFile);
+  DCHECK_EQ(item->data_handle(), file_reference.get());
+
+  item->SetFileModificationTime(modification_time);
+  current_total_size_ += bytes_written;
+
+  if (pipe.is_valid()) {
+    DCHECK_EQ(item->length(), old_file_size + bytes_written);
+    // Once we start writing to file, we keep writing to file.
+    RunCallbackWhenDataPipeReady(
+        std::move(pipe),
+        base::BindOnce(&BlobBuilderFromStream::AllocateMoreFileSpace,
+                       weak_factory_.GetWeakPtr(), 0));
+  } else {
+    // Pipe has closed, so we must be done.
+    DCHECK_LE(old_file_size + bytes_written, item->length());
+    context_->mutable_memory_controller()->ShrinkFileAllocation(
+        file_reference.get(), item->length(), old_file_size + bytes_written);
+    item->ShrinkFile(old_file_size + bytes_written);
     OnSuccess();
   }
 }
