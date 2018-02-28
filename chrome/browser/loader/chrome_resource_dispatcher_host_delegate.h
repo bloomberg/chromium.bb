@@ -72,7 +72,6 @@ class ChromeResourceDispatcherHostDelegate
   bool HandleExternalProtocol(const GURL& url,
                               content::ResourceRequestInfo* info) override;
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,
-                                       const base::FilePath& plugin_path,
                                        const std::string& mime_type,
                                        GURL* origin,
                                        std::string* payload) override;

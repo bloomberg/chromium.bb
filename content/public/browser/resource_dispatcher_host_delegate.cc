@@ -48,7 +48,6 @@ bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
 
 bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     net::URLRequest* request,
-    const base::FilePath& plugin_path,
     const std::string& mime_type,
     GURL* origin,
     std::string* payload) {

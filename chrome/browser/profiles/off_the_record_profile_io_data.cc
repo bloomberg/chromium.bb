@@ -21,6 +21,7 @@
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
@@ -164,6 +165,12 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+#if BUILDFLAG(ENABLE_PLUGINS)
+  io_data_->always_open_pdf_externally()->Init(
+      prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());
+  io_data_->always_open_pdf_externally()->MoveToThread(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+#endif
   io_data_->InitializeOnUIThread(profile_);
 }
 

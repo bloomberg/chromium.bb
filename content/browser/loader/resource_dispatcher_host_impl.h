@@ -225,15 +225,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // resource response to another application (e.g. a web page) without being
   // handled by the browser itself. If the request should be intercepted as a
   // stream, a StreamResourceHandler is returned which provides access to the
-  // response. |plugin_path| is the path to the plugin which is handling the
-  // URL request. This may be empty if there is no plugin handling the request.
+  // response.
   //
   // This function must be called after the ResourceRequestInfo has been created
   // and associated with the request. If |payload| is set to a non-empty value,
   // the caller must send it to the old resource handler instead of cancelling
   // it.
   virtual std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      const base::FilePath& plugin_path,
       net::URLRequest* request,
       network::ResourceResponse* response,
       std::string* payload);

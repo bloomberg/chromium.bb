@@ -530,7 +530,6 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
 
 std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::MaybeInterceptAsStream(
-    const base::FilePath& plugin_path,
     net::URLRequest* request,
     network::ResourceResponse* response,
     std::string* payload) {
@@ -539,9 +538,8 @@ ResourceDispatcherHostImpl::MaybeInterceptAsStream(
   const std::string& mime_type = response->head.mime_type;
 
   GURL origin;
-  if (!delegate_ ||
-      !delegate_->ShouldInterceptResourceAsStream(
-          request, plugin_path, mime_type, &origin, payload)) {
+  if (!delegate_ || !delegate_->ShouldInterceptResourceAsStream(
+                        request, mime_type, &origin, payload)) {
     return std::unique_ptr<ResourceHandler>();
   }
 

@@ -36,6 +36,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "ppapi/features/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_owner.h"
 
@@ -210,6 +211,12 @@ class ProfileIOData {
   IntegerPrefMember* incognito_availibility() const {
     return &incognito_availibility_pref_;
   }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  BooleanPrefMember* always_open_pdf_externally() const {
+    return &always_open_pdf_externally_;
+  }
+#endif
 
 #if defined(OS_CHROMEOS)
   BooleanPrefMember* account_consistency_mirror_required() const {
@@ -580,6 +587,9 @@ class ProfileIOData {
   mutable StringPrefMember allowed_domains_for_apps_;
   mutable IntegerPrefMember network_prediction_options_;
   mutable IntegerPrefMember incognito_availibility_pref_;
+#if BUILDFLAG(ENABLE_PLUGINS)
+  mutable BooleanPrefMember always_open_pdf_externally_;
+#endif
 #if defined(OS_CHROMEOS)
   mutable BooleanPrefMember account_consistency_mirror_required_pref_;
 #endif

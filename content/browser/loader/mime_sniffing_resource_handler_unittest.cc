@@ -74,7 +74,6 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
   }
 
   std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      const base::FilePath& plugin_path,
       net::URLRequest* request,
       network::ResourceResponse* response,
       std::string* payload) override {
