@@ -986,6 +986,28 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(notifications[0].image().IsEmpty());
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PlatformNotificationServiceWithoutContentImageBrowserTest,
+    KillSwitch_NonPersistentNotifications) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript(
+      R"(DisplayNonPersistentNotification('Title2', {
+          image: 'icon.png'
+        }))",
+      &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications(false /* is_persistent */);
+  ASSERT_EQ(1u, notifications.size());
+
+  // Since the kNotificationContentImage kill switch has disabled images, the
+  // notification should be shown without an image.
+  EXPECT_TRUE(notifications[0].image().IsEmpty());
+}
+
 class PlatformNotificationServiceMojoEnabledBrowserTest
     : public PlatformNotificationServiceBrowserTest {
  public:
