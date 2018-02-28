@@ -41,6 +41,22 @@ PLATFORM_EXPORT WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
 
 PLATFORM_EXPORT bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode);
 
+PLATFORM_EXPORT bool EnsurePreflightResultAndCacheOnSuccess(
+    const HTTPHeaderMap& response_header_map,
+    const String& origin,
+    const KURL& request_url,
+    const String& request_method,
+    const HTTPHeaderMap& request_header_map,
+    network::mojom::FetchCredentialsMode request_credentials_mode,
+    String* error_description);
+
+PLATFORM_EXPORT bool CheckIfRequestCanSkipPreflight(
+    const String& origin,
+    const KURL&,
+    network::mojom::FetchCredentialsMode,
+    const String& method,
+    const HTTPHeaderMap& request_header_map);
+
 // Thin wrapper functions that will not be removed even after out-of-renderer
 // CORS is enabled.
 PLATFORM_EXPORT bool IsCORSSafelistedMethod(const String& method);

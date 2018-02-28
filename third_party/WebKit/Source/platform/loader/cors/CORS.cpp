@@ -6,14 +6,17 @@
 
 #include <string>
 
+#include "platform/loader/cors/CORSErrorString.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/cors/preflight_cache.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -28,6 +31,37 @@ base::Optional<std::string> GetHeaderValue(const HTTPHeaderMap& header_map,
     return std::string(string_value.data(), string_value.length());
   }
   return base::nullopt;
+}
+
+network::cors::PreflightCache& GetPerThreadPreflightCache() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<network::cors::PreflightCache>,
+                                  cache, ());
+  return *cache;
+}
+
+base::Optional<std::string> GetOptionalHeaderValue(
+    const HTTPHeaderMap& header_map,
+    const AtomicString& header_name) {
+  const AtomicString& result = header_map.Get(header_name);
+  if (result.IsNull())
+    return base::nullopt;
+
+  return std::string(result.Ascii().data());
+}
+
+std::unique_ptr<net::HttpRequestHeaders> CreateNetHttpRequestHeaders(
+    const HTTPHeaderMap& header_map) {
+  std::unique_ptr<net::HttpRequestHeaders> request_headers =
+      std::make_unique<net::HttpRequestHeaders>();
+  for (HTTPHeaderMap::const_iterator i = header_map.begin(),
+                                     end = header_map.end();
+       i != end; ++i) {
+    DCHECK(!i->key.IsNull());
+    DCHECK(!i->value.IsNull());
+    request_headers->SetHeader(std::string(i->key.Ascii().data()),
+                               std::string(i->value.Ascii().data()));
+  }
+  return request_headers;
 }
 
 }  // namespace
@@ -75,6 +109,79 @@ WTF::Optional<network::mojom::CORSError> CheckExternalPreflight(
 
 bool IsCORSEnabledRequestMode(network::mojom::FetchRequestMode request_mode) {
   return network::cors::IsCORSEnabledRequestMode(request_mode);
+}
+
+bool EnsurePreflightResultAndCacheOnSuccess(
+    const HTTPHeaderMap& response_header_map,
+    const String& origin,
+    const KURL& request_url,
+    const String& request_method,
+    const HTTPHeaderMap& request_header_map,
+    network::mojom::FetchCredentialsMode request_credentials_mode,
+    String* error_description) {
+  DCHECK(!origin.IsNull());
+  DCHECK(!request_method.IsNull());
+  DCHECK(error_description);
+
+  base::Optional<network::mojom::CORSError> error;
+
+  std::unique_ptr<network::cors::PreflightResult> result =
+      network::cors::PreflightResult::Create(
+          request_credentials_mode,
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Allow_Methods),
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Allow_Headers),
+          GetOptionalHeaderValue(response_header_map,
+                                 HTTPNames::Access_Control_Max_Age),
+          &error);
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
+                                                              String()));
+    return false;
+  }
+
+  error = result->EnsureAllowedCrossOriginMethod(
+      std::string(request_method.Ascii().data()));
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(*error,
+                                                              request_method));
+    return false;
+  }
+
+  std::string detected_error_header;
+  error = result->EnsureAllowedCrossOriginHeaders(
+      *CreateNetHttpRequestHeaders(request_header_map), &detected_error_header);
+  if (error) {
+    *error_description = CORS::GetErrorString(
+        CORS::ErrorParameter::CreateForPreflightResponseCheck(
+            *error, String(detected_error_header.data(),
+                           detected_error_header.length())));
+    return false;
+  }
+
+  DCHECK(!error);
+
+  GetPerThreadPreflightCache().AppendEntry(std::string(origin.Ascii().data()),
+                                           request_url, std::move(result));
+  return true;
+}
+
+bool CheckIfRequestCanSkipPreflight(
+    const String& origin,
+    const KURL& url,
+    network::mojom::FetchCredentialsMode credentials_mode,
+    const String& method,
+    const HTTPHeaderMap& request_header_map) {
+  DCHECK(!origin.IsNull());
+  DCHECK(!method.IsNull());
+
+  return GetPerThreadPreflightCache().CheckIfRequestCanSkipPreflight(
+      std::string(origin.Ascii().data()), url, credentials_mode,
+      std::string(method.Ascii().data()),
+      *CreateNetHttpRequestHeaders(request_header_map));
 }
 
 bool IsCORSSafelistedMethod(const String& method) {
