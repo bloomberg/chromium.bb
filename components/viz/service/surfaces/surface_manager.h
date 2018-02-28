@@ -299,12 +299,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Returns true if |surface_id| is in the garbage collector's queue.
   bool IsMarkedForDestruction(const SurfaceId& surface_id);
 
-  // Determines if the provided |owner| FrameSinkId matches the FrameSinkId of
-  // a surface in the set of |fallback_parents|.
-  bool IsOwnerAmongFallbackParents(
-      const base::flat_set<SurfaceId>& fallback_parents,
-      const base::Optional<FrameSinkId>& owner) const;
-
   base::Optional<uint32_t> activation_deadline_in_frames_;
 
   // SurfaceDependencyTracker needs to be destroyed after Surfaces are destroyed
