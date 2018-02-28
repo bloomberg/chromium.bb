@@ -359,7 +359,11 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_METADATA:
         obu_payload_size = read_metadata(data, obu_size);
         break;
-      default: break;
+      case OBU_PADDING:
+      default:
+        // Skip padding and unknown obus for now.
+        obu_payload_size = obu_size;
+        break;
     }
 
     data += obu_payload_size;
