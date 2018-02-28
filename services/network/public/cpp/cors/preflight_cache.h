@@ -43,8 +43,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
       const std::string& method,
       const net::HttpRequestHeaders& headers);
 
-  // Returns current number of cached items for testing.
-  size_t size_for_testing() const;
+  // Counts cached origins for testing.
+  size_t CountOriginsForTesting() const;
+
+  // Counts cached entries for testing.
+  size_t CountEntriesForTesting() const;
 
  private:
   // A map for caching. The outer map takes an origin to find a per-origin
