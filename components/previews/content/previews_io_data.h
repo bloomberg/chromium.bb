@@ -109,6 +109,8 @@ class PreviewsIOData : public PreviewsDecider,
       net::EffectiveConnectionType effective_connection_type_threshold,
       const std::vector<std::string>& host_blacklist_from_server)
       const override;
+  bool IsURLAllowedForPreview(const net::URLRequest& request,
+                              PreviewsType type) const override;
 
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
@@ -125,6 +127,14 @@ class PreviewsIOData : public PreviewsDecider,
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:
+  // Whether |request| is allowed for |type| according to server provided
+  // optimization hints, if available. Returns ALLOWED if no optimization
+  // hints are available.
+  PreviewsEligibilityReason IsPreviewAllowedByOptmizationHints(
+      const net::URLRequest& request,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>* passed_reasons) const;
+
   // The UI thread portion of the inter-thread communication for previews.
   base::WeakPtr<PreviewsUIService> previews_ui_service_;
 

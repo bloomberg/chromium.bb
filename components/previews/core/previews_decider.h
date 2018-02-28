@@ -37,6 +37,13 @@ class PreviewsDecider {
   virtual bool ShouldAllowPreview(const net::URLRequest& request,
                                   PreviewsType type) const = 0;
 
+  // Whether the URL in |request| is allowed to show a preview of |type|.
+  // This only considers whether the URL is constrained/allowed in
+  // blacklists/whitelists. It does not include other constraints such
+  // as the effective connection type.
+  virtual bool IsURLAllowedForPreview(const net::URLRequest& request,
+                                      PreviewsType type) const = 0;
+
  protected:
   PreviewsDecider() {}
   virtual ~PreviewsDecider() {}

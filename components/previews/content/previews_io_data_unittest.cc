@@ -475,6 +475,8 @@ TEST_F(PreviewsIODataTest, TestDisallowPreviewBecauseOfBlackListState) {
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED),
       1);
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+
   variations::testing::ClearAllVariationParams();
 }
 
@@ -812,6 +814,42 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
+TEST_F(PreviewsIODataTest, NoScriptCommitTimeWhitelistCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kNoScriptPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  // First verify not allowed for non-whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_FALSE(io_data()->IsURLAllowedForPreview(*CreateHttpsRequest(),
+                                                   PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.NoScript",
+        static_cast<int>(
+            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+        1);
+  }
+
+  // Now verify preview for whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(io_data()->IsURLAllowedForPreview(
+        *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+        PreviewsType::NOSCRIPT));
+
+    // Expect no eligibility logging.
+    histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+  }
+}
+
 TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
@@ -917,6 +955,47 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesDefault) {
     io_data()->ShouldAllowPreviewAtECT(*CreateRequest(), expected_type,
                                        net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
                                        {});
+    base::RunLoop().RunUntilIdle();
+    // Testing correct log method is called.
+    // Check for all decision upto current decision is logged.
+    for (size_t j = 0; j <= i; j++) {
+      EXPECT_THAT(ui_service()->decision_reasons(),
+                  ::testing::Contains(expected_reasons[j]));
+    }
+    EXPECT_THAT(ui_service()->decision_types(),
+                ::testing::Contains(expected_type));
+  }
+}
+
+TEST_F(PreviewsIODataTest, IsURLAllowedForPreviewBlacklistStatuses) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kNoScriptPreviews}, {});
+  InitializeUIService();
+  auto expected_type = PreviewsType::NOSCRIPT;
+
+  // First verify URL is allowed for no blacklist status.
+  EXPECT_TRUE(
+      io_data()->IsURLAllowedForPreview(*CreateRequest(), expected_type));
+
+  PreviewsEligibilityReason expected_reasons[] = {
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+      PreviewsEligibilityReason::USER_BLACKLISTED,
+      PreviewsEligibilityReason::HOST_BLACKLISTED,
+  };
+
+  const size_t reasons_size = 4;
+
+  for (size_t i = 0; i < reasons_size; i++) {
+    auto expected_reason = expected_reasons[i];
+
+    std::unique_ptr<TestPreviewsBlackList> blacklist =
+        std::make_unique<TestPreviewsBlackList>(expected_reason, io_data());
+    io_data()->InjectTestBlacklist(std::move(blacklist));
+
+    EXPECT_FALSE(
+        io_data()->IsURLAllowedForPreview(*CreateRequest(), expected_type));
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
     // Check for all decision upto current decision is logged.
