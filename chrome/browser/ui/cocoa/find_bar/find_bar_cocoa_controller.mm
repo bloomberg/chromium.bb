@@ -184,13 +184,9 @@ const int kUndefinedResultCount = -1;
 }
 
 - (void)findPboardUpdated:(NSNotification*)notification {
+  [self clearFindResultsForCurrentBrowser];
   if (!suppressPboardUpdateActions_)
     [self prepopulateText:[[FindPasteboard sharedInstance] findText]];
-  [self clearFindResultsForCurrentBrowser];
-
-  BOOL buttonsEnabled = [[findText_ stringValue] length] > 0 ? YES : NO;
-  [previousButton_ setEnabled:buttonsEnabled];
-  [nextButton_ setEnabled:buttonsEnabled];
 }
 
 - (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth {
