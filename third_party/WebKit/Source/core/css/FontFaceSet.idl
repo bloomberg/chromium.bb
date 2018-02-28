@@ -36,7 +36,7 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
 // [NoInterfaceObject]
 [
     NoInterfaceObject,
-    Exposed(Window StableBlinkFeatures, Worker ExperimentalCanvasFeatures)
+    Exposed(Window StableBlinkFeatures, Worker OffscreenCanvasText)
 ] interface FontFaceSet : EventTarget {
     setlike<FontFace>;
 

@@ -71,7 +71,7 @@ class WebRtcCaptureFromElementBrowserTest
         switches::autoplay::kNoUserGestureRequiredPolicy);
     // Allow experimental canvas features.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalCanvasFeatures);
+        switches::kEnableExperimentalWebPlatformFeatures);
     // Allow window.internals for simulating context loss.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kExposeInternalsForTesting);

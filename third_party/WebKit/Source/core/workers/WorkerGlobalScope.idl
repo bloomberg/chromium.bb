@@ -67,7 +67,7 @@
     [Replaceable] readonly attribute DOMString origin;
 
     // TODO(fserb): temporarly until we can enable the interface below.
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute FontFaceSet fonts;
+    [RuntimeEnabled=OffscreenCanvasText] readonly attribute FontFaceSet fonts;
 
 };
 
