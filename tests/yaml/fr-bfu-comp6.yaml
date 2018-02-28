@@ -88,6 +88,3 @@ tests:
   - ["⠨⠨⠓⠉⠠⠄⠇", "HCl"]
   - ["⠨⠍⠉⠨⠙⠕⠝⠁⠇⠙", "McDonald"]
   - ["⠨⠇⠄⠨⠑⠥⠗⠕⠏⠑", "L'Europe"]
-  - ["⠒⠨⠝⠑ ⠏⠁⠎ ⠎⠑ ⠏⠑⠝⠉⠓⠑⠗ ⠁⠥ ⠨⠙⠑⠓⠕⠗⠎⠲ ⠋⠕⠕", "NE PAS SE PENCHER AU DEHORS. foo", xfail: true]
-  - ["⠒⠨⠝⠑ ⠏⠁⠎ ⠎⠑ ⠏⠑⠝⠉⠓⠑⠗ ⠁⠥ ⠙⠑⠓⠕⠗⠎⠨⠒⠲", "NE PAS SE PENCHER AU DEHORS."]
-    
