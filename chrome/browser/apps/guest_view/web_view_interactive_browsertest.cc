@@ -1767,7 +1767,8 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusSimple) {
 // while another window is focused.
 // http://crbug.com/660044.
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusWindowCycle) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // Flaky on MacOSX, crbug.com/817067.
   // Flaky on linux, crbug.com/706830.
   if (GetParam())
     return;
