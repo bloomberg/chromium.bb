@@ -179,6 +179,28 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
 )
 
+_BANNED_IOS_OBJC_FUNCTIONS = (
+    (
+      r'/\bTEST[(]',
+      (
+        'TEST() macro should not be used in Objective-C++ code as it does not ',
+        'drain the autorelease pool at the end of the test. Use TEST_F() ',
+        'macro instead with a fixture inheriting from PlatformTest (or a ',
+        'typedef).'
+      ),
+      True,
+    ),
+    (
+      r'/\btesting::Test\b',
+      (
+        'testing::Test should not be used in Objective-C++ code as it does ',
+        'not drain the autorelease pool at the end of the test. Use ',
+        'PlatformTest instead.'
+      ),
+      True,
+    ),
+)
+
 
 _BANNED_CPP_FUNCTIONS = (
     # Make sure that gtest's FRIEND_TEST() macro is not used; the
@@ -786,6 +808,18 @@ def _CheckNoBannedFunctions(input_api, output_api):
         return True
     return False
 
+  def IsIosObcjFile(affected_file):
+    local_path = affected_file.LocalPath()
+    if input_api.os_path.splitext(local_path)[-1] not in ('.mm', '.m', '.h'):
+      return False
+    basename = input_api.os_path.basename(local_path)
+    if 'ios' in basename.split('_'):
+      return True
+    for sep in (input_api.os_path.sep, input_api.os_path.altsep):
+      if sep and 'ios' in local_path.split(sep):
+        return True
+    return False
+
   def CheckForMatch(affected_file, line_num, line, func_name, message, error):
     matched = False
     if func_name[0:1] == '/':
@@ -812,6 +846,11 @@ def _CheckNoBannedFunctions(input_api, output_api):
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       for func_name, message, error in _BANNED_OBJC_FUNCTIONS:
+        CheckForMatch(f, line_num, line, func_name, message, error)
+
+  for f in input_api.AffectedFiles(file_filter=IsIosObcjFile):
+    for line_num, line in f.ChangedContents():
+      for func_name, message, error in _BANNED_IOS_OBJC_FUNCTIONS:
         CheckForMatch(f, line_num, line, func_name, message, error)
 
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
