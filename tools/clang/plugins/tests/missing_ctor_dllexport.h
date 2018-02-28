@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MISSING_CTOR_H_
-#define MISSING_CTOR_H_
+#ifndef MISSING_CTOR_DLLEXPORT_H_
+#define MISSING_CTOR_DLLEXPORT_H_
 
 struct MyString {
   MyString();
@@ -57,4 +57,4 @@ class __declspec(dllexport) ExplicitlyDefaultedInlineAlsoWarns {
 
 };
 
-#endif  // MISSING_CTOR_H_
+#endif  // MISSING_CTOR_DLLEXPORT_H_
