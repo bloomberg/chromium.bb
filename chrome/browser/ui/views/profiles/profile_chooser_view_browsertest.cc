@@ -548,3 +548,10 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
   EXPECT_EQ(GetDiceSigninPromoShowCount(), 11);
 }
+
+// Verify there is no crash when the chooser is used to display a signed-in
+// profile with an empty username.
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SignedInNoUsername) {
+  AddAccountToProfile(browser()->profile(), "");
+  OpenProfileChooserView(browser());
+}
