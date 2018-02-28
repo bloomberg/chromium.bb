@@ -52,6 +52,7 @@ struct Patterns {
   const RE2 value_pattern;
   const RE2 unquote_pattern;
   const RE2 url_encoded_pattern;
+  const RE2 content_type_octet_stream;
 };
 
 Patterns::Patterns()
@@ -68,9 +69,9 @@ Patterns::Patterns()
       value_pattern("\\bfilename=\"([^\"]*)\""),
       unquote_pattern(kEscapeClosingQuote),
       url_encoded_pattern(std::string("(") + kCharacterPattern + "*)=(" +
-                          kCharacterPattern +
-                          "*)") {
-}
+                          kCharacterPattern + "*)"),
+      content_type_octet_stream(
+          "Content-Type: application\\/octet-stream\\r\\n") {}
 
 base::LazyInstance<Patterns>::Leaky g_patterns = LAZY_INSTANCE_INITIALIZER;
 
@@ -226,10 +227,12 @@ class FormDataParserMultipart : public FormDataParser {
   // possibly |value| from "filename=" fields of that header. Only if the
   // "name" or "filename" fields are found, then |name| or |value| are touched.
   // Returns true iff |source_| is seeked forward. Sets |value_assigned|
-  // to true iff |value| has been assigned to.
+  // to true iff |value| has been assigned to. Sets |value_is_binary| to true if
+  // header has content-type: application/octet-stream.
   bool TryReadHeader(base::StringPiece* name,
                      base::StringPiece* value,
-                     bool* value_assigned);
+                     bool* value_assigned,
+                     bool* value_is_binary);
 
   // Helper to GetNextNameValue. Expects that the input starts with a data
   // portion of a body part. An attempt is made to read the input until the end
@@ -269,6 +272,11 @@ class FormDataParserMultipart : public FormDataParser {
   const RE2& value_pattern() const {
     return patterns_->value_pattern;
   }
+
+  const RE2& content_type_octet_stream() const {
+    return patterns_->content_type_octet_stream;
+  }
+
   // However, this is used in a static method so it needs to be static.
   static const RE2& unquote_pattern() {
     return g_patterns.Get().unquote_pattern;  // No caching g_patterns here.
@@ -292,6 +300,15 @@ class FormDataParserMultipart : public FormDataParser {
 
 FormDataParser::Result::Result() {}
 FormDataParser::Result::~Result() {}
+
+void FormDataParser::Result::SetBinaryValue(base::StringPiece str) {
+  value_ = base::Value(
+      base::Value::BlobStorage(str.data(), str.data() + str.size()));
+}
+
+void FormDataParser::Result::SetStringValue(std::string str) {
+  value_ = base::Value(std::move(str));
+}
 
 FormDataParser::~FormDataParser() {}
 
@@ -383,7 +400,15 @@ bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
   bool success = RE2::ConsumeN(&source_, pattern(), args_, args_size_);
   if (success) {
     result->set_name(net::UnescapeURLComponent(name_, unescape_rules_));
-    result->set_value(net::UnescapeURLComponent(value_, unescape_rules_));
+    const std::string unescaped_value =
+        net::UnescapeURLComponent(value_, unescape_rules_);
+    const base::StringPiece unescaped_data(unescaped_value.data(),
+                                           unescaped_value.length());
+    if (base::IsStringUTF8(unescaped_data)) {
+      result->SetStringValue(std::move(unescaped_value));
+    } else {
+      result->SetBinaryValue(unescaped_data);
+    }
   }
   if (source_.length() > 0) {
     if (source_[0] == '&')
@@ -496,9 +521,14 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   base::StringPiece name;
   base::StringPiece value;
   bool value_assigned = false;
+  bool value_is_binary = false;
   bool value_assigned_temp;
-  while (TryReadHeader(&name, &value, &value_assigned_temp))
+  bool value_is_binary_temp;
+  while (TryReadHeader(&name, &value, &value_assigned_temp,
+                       &value_is_binary_temp)) {
+    value_is_binary |= value_is_binary_temp;
     value_assigned |= value_assigned_temp;
+  }
   if (name.empty() || state_ == STATE_ERROR) {
     state_ = STATE_ERROR;
     return false;
@@ -517,7 +547,7 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
     return_value = true;
     state_ = STATE_SUSPEND;
   } else {
-    return_value = FinishReadingPart(value_assigned ? NULL : &value);
+    return_value = FinishReadingPart(value_assigned ? nullptr : &value);
   }
 
   std::string unescaped_name = net::UnescapeURLComponent(
@@ -526,7 +556,14 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
           net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
           net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   result->set_name(unescaped_name);
-  result->set_value(value);
+  if (value_assigned) {
+    // Hold filename as value.
+    result->SetStringValue(value.as_string());
+  } else if (value_is_binary) {
+    result->SetBinaryValue(value);
+  } else {
+    result->SetStringValue(value.as_string());
+  }
 
   return return_value;
 }
@@ -557,7 +594,7 @@ bool FormDataParserMultipart::SetSource(base::StringPiece source) {
     case STATE_READY:  // Nothing to do.
       break;
     case STATE_SUSPEND:
-      state_ = FinishReadingPart(NULL) ? STATE_READY : STATE_ERROR;
+      state_ = FinishReadingPart(nullptr) ? STATE_READY : STATE_ERROR;
       break;
     default:
       state_ = STATE_ERROR;
@@ -567,8 +604,16 @@ bool FormDataParserMultipart::SetSource(base::StringPiece source) {
 
 bool FormDataParserMultipart::TryReadHeader(base::StringPiece* name,
                                             base::StringPiece* value,
-                                            bool* value_assigned) {
+                                            bool* value_assigned,
+                                            bool* value_is_binary) {
   *value_assigned = false;
+  *value_is_binary = false;
+  // Support Content-Type: application/octet-stream.
+  // Form data with this content type is represented as string of bytes.
+  if (RE2::Consume(&source_, content_type_octet_stream())) {
+    *value_is_binary = true;
+    return true;
+  }
   const char* header_start = source_.data();
   if (!RE2::Consume(&source_, header_pattern()))
     return false;

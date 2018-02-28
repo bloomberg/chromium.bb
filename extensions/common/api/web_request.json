@@ -150,6 +150,14 @@
           }
         },
         "description": "Contains data uploaded in a URL request."
+      },
+      {
+        "id": "FormDataItem",
+        "choices": [
+          { "type": "binary" },
+          { "type": "string" }
+        ],
+        "description": "Contains data passed within form data. For urlencoded form it is stored as string if data is utf-8 string and as ArrayBuffer otherwise. For form-data it is ArrayBuffer. If form-data represents uploading file, it is string with filename, if the filename is provided."
       }
     ],
     "functions": [
@@ -191,7 +199,7 @@
                     "properties": {},
                     "additionalProperties": {
                       "type": "array",
-                      "items": { "type": "string" }
+                      "items": { "$ref": "FormDataItem" }
                     }
                   },
                   "raw" : {

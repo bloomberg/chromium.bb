@@ -123,7 +123,7 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
   FormDataParser::Result result;
   while (parser_->GetNextNameValue(&result)) {
     base::Value* list = GetOrCreateList(dictionary_.get(), result.name());
-    list->GetList().emplace_back(result.value());
+    list->GetList().emplace_back(result.take_value());
   }
 }
 
