@@ -19,8 +19,6 @@ class LoadingDataCollector;
 
 namespace internal {
 
-extern const char kHistogramResourcePrefetchPredictorFirstContentfulPaint[];
-extern const char kHistogramResourcePrefetchPredictorFirstMeaningfulPaint[];
 extern const char
     kHistogramLoadingPredictorFirstContentfulPaintPreconnectable[];
 extern const char
@@ -65,7 +63,6 @@ class LoadingPredictorPageLoadMetricsObserver
   predictors::ResourcePrefetchPredictor* predictor_;
   predictors::LoadingDataCollector* collector_;
   content::WebContents* web_contents_;
-  bool record_histogram_prefetchable_;
   bool record_histogram_preconnectable_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictorPageLoadMetricsObserver);

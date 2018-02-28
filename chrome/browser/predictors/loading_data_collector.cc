@@ -340,11 +340,6 @@ void LoadingDataCollector::RecordURLResponse(
 
   if (config_.is_origin_learning_enabled)
     page_request_summary.UpdateOrAddToOrigins(response);
-
-  if (!response.is_no_store &&
-      response.resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
-    page_request_summary.subresource_requests.push_back(response);
-  }
 }
 
 void LoadingDataCollector::RecordURLRedirect(
@@ -379,12 +374,6 @@ void LoadingDataCollector::RecordMainFrameLoadComplete(
   // Remove the navigation from the inflight navigations.
   std::unique_ptr<PageRequestSummary> summary = std::move(nav_it->second);
   inflight_navigations_.erase(nav_it);
-
-  // Set before_first_contentful paint for each resource.
-  for (auto& request_summary : summary->subresource_requests) {
-    request_summary.before_first_contentful_paint =
-        request_summary.response_time < summary->first_contentful_paint;
-  }
 
   if (stats_collector_)
     stats_collector_->RecordPageRequestSummary(*summary);

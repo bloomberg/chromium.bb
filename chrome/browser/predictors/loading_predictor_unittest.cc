@@ -28,7 +28,7 @@ namespace predictors {
 
 namespace {
 
-// First two are prefetchable, last one is not (see SetUp()).
+// First two are preconnectable, last one is not (see SetUp()).
 const char kUrl[] = "http://www.google.com/cats";
 const char kUrl2[] = "http://www.google.com/dogs";
 const char kUrl3[] =
@@ -91,12 +91,6 @@ void LoadingPredictorTest::SetUp() {
 
   auto mock = std::make_unique<StrictMock<MockResourcePrefetchPredictor>>(
       config, profile_.get());
-  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl), _))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl2), _))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock, GetPrefetchData(GURL(kUrl3), _))
-      .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl), _))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl2), _))
@@ -137,9 +131,6 @@ void LoadingPredictorPreconnectTest::SetUp() {
           predictor_->GetWeakPtr(), profile_->GetRequestContext());
   mock_preconnect_manager_ = mock_preconnect_manager.get();
   predictor_->set_mock_preconnect_manager(std::move(mock_preconnect_manager));
-
-  EXPECT_CALL(*mock_predictor_, GetPrefetchData(_, _))
-      .WillRepeatedly(Return(false));
 }
 
 LoadingPredictorConfig LoadingPredictorPreconnectTest::CreateConfig() {

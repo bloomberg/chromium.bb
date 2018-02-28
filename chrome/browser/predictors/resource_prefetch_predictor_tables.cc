@@ -17,9 +17,6 @@ using google::protobuf::MessageLite;
 namespace {
 
 const char kMetadataTableName[] = "resource_prefetch_predictor_metadata";
-const char kUrlResourceTableName[] = "resource_prefetch_predictor_url";
-const char kUrlRedirectTableName[] = "resource_prefetch_predictor_url_redirect";
-const char kHostResourceTableName[] = "resource_prefetch_predictor_host";
 const char kHostRedirectTableName[] =
     "resource_prefetch_predictor_host_redirect";
 const char kOriginTableName[] = "resource_prefetch_predictor_origin";
@@ -34,46 +31,9 @@ const char kCreateProtoTableStatementTemplate[] =
     "proto BLOB, "
     "PRIMARY KEY(key))";
 
-int GetResourceTypeMultiplier(
-    predictors::ResourceData::ResourceType resource_type) {
-  switch (resource_type) {
-    case predictors::ResourceData::RESOURCE_TYPE_STYLESHEET:
-      return 4;
-    case predictors::ResourceData::RESOURCE_TYPE_SCRIPT:
-      return 3;
-    case predictors::ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
-      return 2;
-    case predictors::ResourceData::RESOURCE_TYPE_IMAGE:
-    default:
-      return 1;
-  }
-}
-
 }  // namespace
 
 namespace predictors {
-
-// static
-void ResourcePrefetchPredictorTables::TrimResources(
-    PrefetchData* data,
-    size_t max_consecutive_misses) {
-  auto new_end = std::remove_if(
-      data->mutable_resources()->begin(), data->mutable_resources()->end(),
-      [max_consecutive_misses](const ResourceData& x) {
-        return x.consecutive_misses() >= max_consecutive_misses;
-      });
-  data->mutable_resources()->erase(new_end, data->mutable_resources()->end());
-}
-
-// static
-void ResourcePrefetchPredictorTables::SortResources(PrefetchData* data) {
-  std::sort(data->mutable_resources()->begin(),
-            data->mutable_resources()->end(),
-            [](const ResourceData& x, const ResourceData& y) {
-              // Decreasing score ordering.
-              return ComputeResourceScore(x) > ComputeResourceScore(y);
-            });
-}
 
 // static
 void ResourcePrefetchPredictorTables::TrimRedirects(
@@ -125,12 +85,6 @@ void ResourcePrefetchPredictorTables::SortOrigins(
 ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
     : PredictorTableBase(db_task_runner) {
-  url_resource_table_ = std::make_unique<GlowplugKeyValueTable<PrefetchData>>(
-      kUrlResourceTableName);
-  url_redirect_table_ = std::make_unique<GlowplugKeyValueTable<RedirectData>>(
-      kUrlRedirectTableName);
-  host_resource_table_ = std::make_unique<GlowplugKeyValueTable<PrefetchData>>(
-      kHostResourceTableName);
   host_redirect_table_ = std::make_unique<GlowplugKeyValueTable<RedirectData>>(
       kHostRedirectTableName);
   origin_table_ =
@@ -138,39 +92,6 @@ ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables(
 }
 
 ResourcePrefetchPredictorTables::~ResourcePrefetchPredictorTables() = default;
-
-// static
-float ResourcePrefetchPredictorTables::ComputeResourceScore(
-    const ResourceData& data) {
-  // The ranking is done by considering, in this order:
-  // 1. Resource Priority
-  // 2. Request resource type
-  // 3. Finally, the average position, giving a higher priotity to earlier
-  //    resources.
-
-  int priority_multiplier;
-  switch (data.priority()) {
-    case ResourceData::REQUEST_PRIORITY_HIGHEST:
-      priority_multiplier = 3;
-      break;
-    case ResourceData::REQUEST_PRIORITY_MEDIUM:
-      priority_multiplier = 2;
-      break;
-    case ResourceData::REQUEST_PRIORITY_LOW:
-    case ResourceData::REQUEST_PRIORITY_LOWEST:
-    case ResourceData::REQUEST_PRIORITY_IDLE:
-    default:
-      priority_multiplier = 1;
-      break;
-  }
-
-  int type_multiplier = GetResourceTypeMultiplier(data.resource_type());
-
-  constexpr int kMaxResourcesPerType = 100;
-  return kMaxResourcesPerType *
-             (priority_multiplier * 100 + type_multiplier * 10) -
-         data.average_position();
-}
 
 // static
 float ResourcePrefetchPredictorTables::ComputeOriginScore(
@@ -212,18 +133,6 @@ void ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBSequence(DBTask task) {
   std::move(task).Run(DB());
 }
 
-GlowplugKeyValueTable<PrefetchData>*
-ResourcePrefetchPredictorTables::url_resource_table() {
-  return url_resource_table_.get();
-}
-GlowplugKeyValueTable<RedirectData>*
-ResourcePrefetchPredictorTables::url_redirect_table() {
-  return url_redirect_table_.get();
-}
-GlowplugKeyValueTable<PrefetchData>*
-ResourcePrefetchPredictorTables::host_resource_table() {
-  return host_resource_table_.get();
-}
 GlowplugKeyValueTable<RedirectData>*
 ResourcePrefetchPredictorTables::host_redirect_table() {
   return host_redirect_table_.get();
@@ -248,6 +157,11 @@ bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
       "resource_prefetch_predictor_host_metadata";
   static const char kManifestTableName[] =
       "resource_prefetch_predictor_manifest";
+  static const char kUrlResourceTableName[] = "resource_prefetch_predictor_url";
+  static const char kUrlRedirectTableName[] =
+      "resource_prefetch_predictor_url_redirect";
+  static const char kHostResourceTableName[] =
+      "resource_prefetch_predictor_host";
 
   if (incompatible_version) {
     for (const char* table_name :
@@ -308,9 +222,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
   bool success = db->BeginTransaction();
   success = success && DropTablesIfOutdated(db);
 
-  for (const char* table_name :
-       {kUrlResourceTableName, kHostResourceTableName, kUrlRedirectTableName,
-        kHostRedirectTableName, kOriginTableName}) {
+  for (const char* table_name : {kHostRedirectTableName, kOriginTableName}) {
     success = success &&
               (db->DoesTableExist(table_name) ||
                db->Execute(base::StringPrintf(
@@ -332,19 +244,7 @@ void ResourcePrefetchPredictorTables::LogDatabaseStats() {
   if (CantAccessDatabase())
     return;
 
-  sql::Statement statement(DB()->GetUniqueStatement(
-      base::StringPrintf("SELECT count(*) FROM %s", kUrlResourceTableName)
-          .c_str()));
-  if (statement.Step())
-    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableRowCount2",
-                         statement.ColumnInt(0));
-
-  statement.Assign(DB()->GetUniqueStatement(
-      base::StringPrintf("SELECT count(*) FROM %s", kHostResourceTableName)
-          .c_str()));
-  if (statement.Step())
-    UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableRowCount2",
-                         statement.ColumnInt(0));
+  // TODO(alexilin): Add existing tables stats.
 }
 
 }  // namespace predictors

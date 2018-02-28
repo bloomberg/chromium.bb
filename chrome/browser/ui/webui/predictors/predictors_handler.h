@@ -40,9 +40,6 @@ class PredictorsHandler : public content::WebUIMessageHandler {
   void RequestResourcePrefetchPredictorDb(const base::ListValue* args);
 
   // Helpers for RequestResourcePrefetchPredictorDb.
-  void AddPrefetchDataMapToListValue(
-      const std::map<std::string, predictors::PrefetchData>& data_map,
-      base::ListValue* db) const;
   void AddOriginDataMapToListValue(
       const std::map<std::string, predictors::OriginData>& data_map,
       base::ListValue* db) const;

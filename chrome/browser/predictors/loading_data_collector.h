@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
@@ -86,9 +85,6 @@ struct PageRequestSummary {
   GURL initial_url;
   base::TimeTicks first_contentful_paint;
 
-  // Stores all subresource requests within a single navigation, from initial
-  // main frame request to navigation completion.
-  std::vector<URLRequestSummary> subresource_requests;
   // Map of origin -> OriginRequestSummary. Only one instance of each origin
   // is kept per navigation, but the summary is updated several times.
   std::map<GURL, OriginRequestSummary> origins;

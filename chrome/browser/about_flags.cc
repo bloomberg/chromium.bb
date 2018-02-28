@@ -803,19 +803,6 @@ const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
     {"Simple load", kNoStatePrefetchSimpleLoad,
      arraysize(kNoStatePrefetchSimpleLoad), nullptr}};
 
-const FeatureEntry::FeatureParam kSpeculativeResourcePrefetchingPrefetching[] =
-    {{predictors::kModeParamName, predictors::kPrefetchingMode}};
-
-const FeatureEntry::FeatureParam kSpeculativeResourcePrefetchingLearning[] = {
-    {predictors::kModeParamName, predictors::kLearningMode}};
-
-const FeatureEntry::FeatureVariation
-    kSpeculativeResourcePrefetchingFeatureVariations[] = {
-        {"Prefetching", kSpeculativeResourcePrefetchingPrefetching,
-         arraysize(kSpeculativeResourcePrefetchingPrefetching), nullptr},
-        {"Learning", kSpeculativeResourcePrefetchingLearning,
-         arraysize(kSpeculativeResourcePrefetchingLearning), nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart[] = {
@@ -3070,13 +3057,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCustomFeedbackUiDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCustomFeedbackUi)},
 #endif  // OS_ANDROID
-
-    {"enable-resource-prefetch", flag_descriptions::kSpeculativePrefetchName,
-     flag_descriptions::kSpeculativePrefetchDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         predictors::kSpeculativeResourcePrefetchingFeature,
-         kSpeculativeResourcePrefetchingFeatureVariations,
-         "SpeculativeResourcePrefetchingValidation")},
 
     {"enable-speculative-service-worker-start-on-query-input",
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputName,

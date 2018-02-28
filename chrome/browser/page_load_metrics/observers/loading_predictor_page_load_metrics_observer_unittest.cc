@@ -65,22 +65,14 @@ class LoadingPredictorPageLoadMetricsObserverTest
             predictor_.get(), collector_.get(), web_contents()));
   }
 
-  void TestHistogramsRecorded(bool is_prefetchable, bool is_preconnectable) {
+  void TestHistogramsRecorded(bool is_preconnectable) {
     const GURL main_frame_url("https://www.google.com");
-    EXPECT_CALL(*predictor_.get(), IsUrlPrefetchable(main_frame_url))
-        .WillOnce(testing::Return(is_prefetchable));
     EXPECT_CALL(*predictor_.get(), IsUrlPreconnectable(main_frame_url))
         .WillOnce(testing::Return(is_preconnectable));
 
     NavigateAndCommit(main_frame_url);
     SimulateTimingUpdate(timing_);
 
-    histogram_tester().ExpectTotalCount(
-        internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
-        is_prefetchable ? 1 : 0);
-    histogram_tester().ExpectTotalCount(
-        internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
-        is_prefetchable ? 1 : 0);
     histogram_tester().ExpectTotalCount(
         internal::kHistogramLoadingPredictorFirstContentfulPaintPreconnectable,
         is_preconnectable ? 1 : 0);
@@ -95,20 +87,11 @@ class LoadingPredictorPageLoadMetricsObserverTest
   std::unique_ptr<LoadingDataCollector> collector_;
 };
 
-TEST_F(LoadingPredictorPageLoadMetricsObserverTest, PrefetchableIsRecorded) {
-  TestHistogramsRecorded(true, false);
-}
-
 TEST_F(LoadingPredictorPageLoadMetricsObserverTest, PreconnectableIsRecorded) {
-  TestHistogramsRecorded(false, true);
+  TestHistogramsRecorded(true);
 }
 
 TEST_F(LoadingPredictorPageLoadMetricsObserverTest,
-       NotPrefetchableAndNotPreconnectableAreNotRecorded) {
-  TestHistogramsRecorded(false, false);
-}
-
-TEST_F(LoadingPredictorPageLoadMetricsObserverTest,
-       BothPrefetchableAndPreconnectableAreRecorded) {
-  TestHistogramsRecorded(true, true);
+       NotPreconnectableIsNotRecorded) {
+  TestHistogramsRecorded(false);
 }

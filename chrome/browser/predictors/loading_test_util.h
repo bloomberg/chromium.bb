@@ -34,23 +34,10 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
     RecordPageRequestSummaryProxy(summary.get());
   }
 
-  MOCK_CONST_METHOD2(GetPrefetchData,
-                     bool(const GURL&, ResourcePrefetchPredictor::Prediction*));
   MOCK_CONST_METHOD2(PredictPreconnectOrigins,
                      bool(const GURL&, PreconnectPrediction*));
   MOCK_METHOD1(RecordPageRequestSummaryProxy, void(PageRequestSummary*));
 };
-
-void InitializeResourceData(ResourceData* resource,
-                            const std::string& resource_url,
-                            content::ResourceType resource_type,
-                            int number_of_hits,
-                            int number_of_misses,
-                            int consecutive_misses,
-                            double average_position,
-                            net::RequestPriority priority,
-                            bool has_validators,
-                            bool always_revalidate);
 
 void InitializeRedirectStat(RedirectStat* redirect,
                             const std::string& url,
@@ -67,8 +54,6 @@ void InitializeOriginStat(OriginStat* origin_stat,
                           bool always_access_network,
                           bool accessed_network);
 
-PrefetchData CreatePrefetchData(const std::string& primary_key,
-                                uint64_t last_visit_time = 0);
 RedirectData CreateRedirectData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 OriginData CreateOriginData(const std::string& host,
@@ -98,10 +83,6 @@ URLRequestSummary CreateRedirectRequestSummary(
     SessionID::id_type session_id,
     const std::string& main_frame_url,
     const std::string& redirect_url);
-
-ResourcePrefetchPredictor::Prediction CreatePrediction(
-    const std::string& main_frame_key,
-    std::vector<GURL> subresource_urls);
 
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,
@@ -182,8 +163,6 @@ std::unique_ptr<net::URLRequest> CreateURLRequest(
     bool is_main_frame);
 
 // For printing failures nicely.
-std::ostream& operator<<(std::ostream& stream, const PrefetchData& data);
-std::ostream& operator<<(std::ostream& stream, const ResourceData& resource);
 std::ostream& operator<<(std::ostream& stream, const RedirectData& data);
 std::ostream& operator<<(std::ostream& stream, const RedirectStat& redirect);
 std::ostream& operator<<(std::ostream& stream,
@@ -198,8 +177,6 @@ std::ostream& operator<<(std::ostream& os, const PreconnectRequest& request);
 std::ostream& operator<<(std::ostream& os,
                          const PreconnectPrediction& prediction);
 
-bool operator==(const PrefetchData& lhs, const PrefetchData& rhs);
-bool operator==(const ResourceData& lhs, const ResourceData& rhs);
 bool operator==(const RedirectData& lhs, const RedirectData& rhs);
 bool operator==(const RedirectStat& lhs, const RedirectStat& rhs);
 bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs);

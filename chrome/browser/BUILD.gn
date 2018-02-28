@@ -1095,8 +1095,6 @@ jumbo_split_static_library("browser") {
     "predictors/resource_prefetch_predictor_tab_helper.h",
     "predictors/resource_prefetch_predictor_tables.cc",
     "predictors/resource_prefetch_predictor_tables.h",
-    "predictors/resource_prefetcher.cc",
-    "predictors/resource_prefetcher.h",
     "prefs/browser_prefs.cc",
     "prefs/browser_prefs.h",
     "prefs/chrome_command_line_pref_store.cc",

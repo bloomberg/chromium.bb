@@ -45,59 +45,10 @@ function updateResourcePrefetchPredictorDbView(database) {
   $('rpp_enabled').style.display = 'block';
   $('rpp_disabled').style.display = 'none';
 
-  var hasUrlData = database.url_db && database.url_db.length > 0;
-  var hasHostData = database.host_db && database.host_db.length > 0;
   var hasOriginData = database.origin_db && database.origin_db.length > 0;
 
-  if (hasUrlData)
-    renderCacheData($('rpp_url_body'), database.url_db);
-  if (hasHostData)
-    renderCacheData($('rpp_host_body'), database.host_db);
   if (hasOriginData)
     renderOriginData($('rpp_origin_body'), database.origin_db);
-}
-
-/**
- * Renders cache data for URL or host based data.
- * @param {HTMLElement} body element of table to render into.
- * @param {Object} database to render.
- */
-function renderCacheData(body, database) {
-  body.textContent = '';
-  for (let main of database) {
-    for (var j = 0; j < main.resources.length; ++j) {
-      var resource = main.resources[j];
-      var row = document.createElement('tr');
-
-      if (j == 0) {
-        var t = document.createElement('td');
-        t.rowSpan = main.resources.length;
-        t.textContent = truncateString(main.main_frame_url);
-        row.appendChild(t);
-      }
-
-      row.className =
-          resource.is_prefetchable ? 'action-prerender' : 'action-none';
-
-      row.appendChild(document.createElement('td')).textContent =
-          truncateString(resource.resource_url);
-      row.appendChild(document.createElement('td')).textContent =
-          resource.resource_type;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.number_of_hits;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.number_of_misses;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.consecutive_misses;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.position;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.score;
-      row.appendChild(document.createElement('td')).textContent =
-          resource.before_first_contentful_paint;
-      body.appendChild(row);
-    }
-  }
 }
 
 /**
