@@ -100,7 +100,9 @@ public class LocationBarLayoutTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestToolbarModel = new TestToolbarModel();
         mTestToolbarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
-        getLocationBar().setToolbarDataProvider(mTestToolbarModel);
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> getLocationBar().setToolbarDataProvider(mTestToolbarModel));
     }
 
     private void setUrlToPageUrl(LocationBarLayout locationBar) {
